@@ -6,27 +6,27 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t	v1_3_manBufNew(void* context);
-// extern int32_t 	v1_3_manBufNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
-// extern int32_t	v1_3_manBufSetBytes(void* context, int32_t manBufHandle, int32_t dataOffset, int32_t dataLength);
-// extern int32_t 	v1_3_manBufGetLength(void* context, int32_t manBufHandle);
-// extern int32_t	v1_3_manBufGetBytes(void* context, int32_t manBufHandle, int32_t resultOffset);
-// extern int32_t	v1_3_manBufExtendFromSlice(void* context, int32_t manBufHandle, int32_t dataOffset, int32_t dataLength);
-// extern int32_t	v1_3_manBufToBigIntUnsigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
-// extern int32_t 	v1_3_manBufToBigIntSigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
-// extern int32_t	v1_3_manBufFromBigIntUnsigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
-// extern int32_t	v1_3_manBufFromBigIntSigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
-// extern int32_t	v1_3_manBufStorageStore(void* context, int32_t keyOffset, int32_t keyLength,int32_t manBufHandle);
-// extern int32_t	v1_3_manBufStorageLoad(void* context, int32_t keyOffset, int32_t keyLength, int32_t manBufHandle);
-// extern int32_t	v1_3_manBufGetArgument(void* context, int32_t id, int32_t manBufHandle);
-// extern int32_t	v1_3_manBufFinish(void* context, int32_t manBufHandle);
+// extern int32_t	v1_4_manBufNew(void* context);
+// extern int32_t 	v1_4_manBufNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_4_manBufSetBytes(void* context, int32_t manBufHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t 	v1_4_manBufGetLength(void* context, int32_t manBufHandle);
+// extern int32_t	v1_4_manBufGetBytes(void* context, int32_t manBufHandle, int32_t resultOffset);
+// extern int32_t	v1_4_manBufExtendFromSlice(void* context, int32_t manBufHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_4_manBufToBigIntUnsigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
+// extern int32_t 	v1_4_manBufToBigIntSigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
+// extern int32_t	v1_4_manBufFromBigIntUnsigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
+// extern int32_t	v1_4_manBufFromBigIntSigned(void* context, int32_t manBufHandle, int32_t bigIntHandle);
+// extern int32_t	v1_4_manBufStorageStore(void* context, int32_t keyOffset, int32_t keyLength,int32_t manBufHandle);
+// extern int32_t	v1_4_manBufStorageLoad(void* context, int32_t keyOffset, int32_t keyLength, int32_t manBufHandle);
+// extern int32_t	v1_4_manBufGetArgument(void* context, int32_t id, int32_t manBufHandle);
+// extern int32_t	v1_4_manBufFinish(void* context, int32_t manBufHandle);
 import "C"
 import (
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
@@ -34,72 +34,72 @@ import (
 func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("manBufNew", v1_3_manBufNew, C.v1_3_manBufNew)
+	imports, err := imports.Append("manBufNew", v1_4_manBufNew, C.v1_4_manBufNew)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufNewFromBytes", v1_3_manBufNewFromBytes, C.v1_3_manBufNewFromBytes)
+	imports, err = imports.Append("manBufNewFromBytes", v1_4_manBufNewFromBytes, C.v1_4_manBufNewFromBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufSetBytes", v1_3_manBufSetBytes, C.v1_3_manBufSetBytes)
+	imports, err = imports.Append("manBufSetBytes", v1_4_manBufSetBytes, C.v1_4_manBufSetBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufGetLength", v1_3_manBufGetLength, C.v1_3_manBufGetLength)
+	imports, err = imports.Append("manBufGetLength", v1_4_manBufGetLength, C.v1_4_manBufGetLength)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufGetBytes", v1_3_manBufGetBytes, C.v1_3_manBufGetBytes)
+	imports, err = imports.Append("manBufGetBytes", v1_4_manBufGetBytes, C.v1_4_manBufGetBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufExtendFromSlice", v1_3_manBufExtendFromSlice, C.v1_3_manBufExtendFromSlice)
+	imports, err = imports.Append("manBufExtendFromSlice", v1_4_manBufExtendFromSlice, C.v1_4_manBufExtendFromSlice)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufToBigIntUnsigned", v1_3_manBufToBigIntUnsigned, C.v1_3_manBufToBigIntUnsigned)
+	imports, err = imports.Append("manBufToBigIntUnsigned", v1_4_manBufToBigIntUnsigned, C.v1_4_manBufToBigIntUnsigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufToBigIntSigned", v1_3_manBufToBigIntSigned, C.v1_3_manBufToBigIntSigned)
+	imports, err = imports.Append("manBufToBigIntSigned", v1_4_manBufToBigIntSigned, C.v1_4_manBufToBigIntSigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufFromBigIntUnsigned", v1_3_manBufFromBigIntUnsigned, C.v1_3_manBufFromBigIntUnsigned)
+	imports, err = imports.Append("manBufFromBigIntUnsigned", v1_4_manBufFromBigIntUnsigned, C.v1_4_manBufFromBigIntUnsigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufFromBigIntSigned", v1_3_manBufFromBigIntSigned, C.v1_3_manBufFromBigIntSigned)
+	imports, err = imports.Append("manBufFromBigIntSigned", v1_4_manBufFromBigIntSigned, C.v1_4_manBufFromBigIntSigned)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufStorageStore", v1_3_manBufStorageStore, C.v1_3_manBufStorageStore)
+	imports, err = imports.Append("manBufStorageStore", v1_4_manBufStorageStore, C.v1_4_manBufStorageStore)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufStorageLoad", v1_3_manBufStorageLoad, C.v1_3_manBufStorageLoad)
+	imports, err = imports.Append("manBufStorageLoad", v1_4_manBufStorageLoad, C.v1_4_manBufStorageLoad)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufGetArgument", v1_3_manBufGetArgument, C.v1_3_manBufGetArgument)
+	imports, err = imports.Append("manBufGetArgument", v1_4_manBufGetArgument, C.v1_4_manBufGetArgument)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("manBufFinish", v1_3_manBufFinish, C.v1_3_manBufFinish)
+	imports, err = imports.Append("manBufFinish", v1_4_manBufFinish, C.v1_4_manBufFinish)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +107,8 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-//export v1_3_manBufNew
-func v1_3_manBufNew(context unsafe.Pointer) int32 {
+//export v1_4_manBufNew
+func v1_4_manBufNew(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -118,8 +118,8 @@ func v1_3_manBufNew(context unsafe.Pointer) int32 {
 	return managedType.NewManagedBuffer()
 }
 
-//export v1_3_manBufNewFromBytes
-func v1_3_manBufNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
+//export v1_4_manBufNewFromBytes
+func v1_4_manBufNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -135,8 +135,8 @@ func v1_3_manBufNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLengt
 	return managedType.NewManagedBufferFromBytes(data)
 }
 
-//export v1_3_manBufSetBytes
-func v1_3_manBufSetBytes(context unsafe.Pointer, manBufHandle int32, dataOffset int32, dataLength int32) int32 {
+//export v1_4_manBufSetBytes
+func v1_4_manBufSetBytes(context unsafe.Pointer, manBufHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -162,8 +162,8 @@ func v1_3_manBufSetBytes(context unsafe.Pointer, manBufHandle int32, dataOffset 
 	return 0
 }
 
-//export v1_3_manBufGetLength
-func v1_3_manBufGetLength(context unsafe.Pointer, manBufHandle int32) int32 {
+//export v1_4_manBufGetLength
+func v1_4_manBufGetLength(context unsafe.Pointer, manBufHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -179,8 +179,8 @@ func v1_3_manBufGetLength(context unsafe.Pointer, manBufHandle int32) int32 {
 	return length
 }
 
-//export v1_3_manBufGetBytes
-func v1_3_manBufGetBytes(context unsafe.Pointer, manBufHandle int32, resultOffset int32) int32 {
+//export v1_4_manBufGetBytes
+func v1_4_manBufGetBytes(context unsafe.Pointer, manBufHandle int32, resultOffset int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -205,8 +205,8 @@ func v1_3_manBufGetBytes(context unsafe.Pointer, manBufHandle int32, resultOffse
 	return 0
 }
 
-//export v1_3_manBufExtendFromSlice
-func v1_3_manBufExtendFromSlice(context unsafe.Pointer, manBufHandle int32, dataOffset int32, dataLength int32) int32 {
+//export v1_4_manBufExtendFromSlice
+func v1_4_manBufExtendFromSlice(context unsafe.Pointer, manBufHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -231,8 +231,8 @@ func v1_3_manBufExtendFromSlice(context unsafe.Pointer, manBufHandle int32, data
 	return 0
 }
 
-//export v1_3_manBufToBigIntUnsigned
-func v1_3_manBufToBigIntUnsigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
+//export v1_4_manBufToBigIntUnsigned
+func v1_4_manBufToBigIntUnsigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -251,8 +251,8 @@ func v1_3_manBufToBigIntUnsigned(context unsafe.Pointer, manBufHandle int32, big
 	return 0
 }
 
-//export v1_3_manBufToBigIntSigned
-func v1_3_manBufToBigIntSigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
+//export v1_4_manBufToBigIntSigned
+func v1_4_manBufToBigIntSigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -271,8 +271,8 @@ func v1_3_manBufToBigIntSigned(context unsafe.Pointer, manBufHandle int32, bigIn
 	return 0
 }
 
-//export v1_3_manBufFromBigIntUnsigned
-func v1_3_manBufFromBigIntUnsigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
+//export v1_4_manBufFromBigIntUnsigned
+func v1_4_manBufFromBigIntUnsigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -293,8 +293,8 @@ func v1_3_manBufFromBigIntUnsigned(context unsafe.Pointer, manBufHandle int32, b
 	return 0
 }
 
-//export v1_3_manBufFromBigIntSigned
-func v1_3_manBufFromBigIntSigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
+//export v1_4_manBufFromBigIntSigned
+func v1_4_manBufFromBigIntSigned(context unsafe.Pointer, manBufHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -315,8 +315,8 @@ func v1_3_manBufFromBigIntSigned(context unsafe.Pointer, manBufHandle int32, big
 	return 0
 }
 
-//export v1_3_manBufStorageStore
-func v1_3_manBufStorageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, manBufHandle int32) int32 {
+//export v1_4_manBufStorageStore
+func v1_4_manBufStorageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, manBufHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -343,8 +343,8 @@ func v1_3_manBufStorageStore(context unsafe.Pointer, keyOffset int32, keyLength 
 	return 0
 }
 
-//export v1_3_manBufStorageLoad
-func v1_3_manBufStorageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, manBufHandle int32) int32 {
+//export v1_4_manBufStorageLoad
+func v1_4_manBufStorageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, manBufHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -368,8 +368,8 @@ func v1_3_manBufStorageLoad(context unsafe.Pointer, keyOffset int32, keyLength i
 	return 0
 }
 
-//export v1_3_manBufGetArgument
-func v1_3_manBufGetArgument(context unsafe.Pointer, id int32, manBufHandle int32) int32 {
+//export v1_4_manBufGetArgument
+func v1_4_manBufGetArgument(context unsafe.Pointer, id int32, manBufHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -389,8 +389,8 @@ func v1_3_manBufGetArgument(context unsafe.Pointer, id int32, manBufHandle int32
 	return 0
 }
 
-//export v1_3_manBufFinish
-func v1_3_manBufFinish(context unsafe.Pointer, manBufHandle int32) int32 {
+//export v1_4_manBufFinish
+func v1_4_manBufFinish(context unsafe.Pointer, manBufHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
