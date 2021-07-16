@@ -178,19 +178,19 @@ const (
     GenerateKeyECC         = 600
 
 	[ManagedBufferAPICost]
-    ManBufNew                   = 2000
-    ManBufNewFromBytes          = 4000
-    ManBufSetBytes              = 2000
-    ManBufGetLength             = 2000
-    ManBufGetBytes              = 2000
-    ManBufToBigIntUnsigned      = 4000
-    ManBufToBigIntSigned        = 10000
-    ManBufFromBigIntUnsigned    = 4000
-    ManBufFromBigIntSigned      = 10000
-    ManBufStorageStore          = 250000
-    ManBufStorageLoad           = 100000
-    ManBufGetArgument           = 1000
-    ManBufFinish                = 1000
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferSetBytes              = 2000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -818,19 +818,19 @@ const (
     GenerateKeyECC         = 1000000
 
 [ManagedBufferAPICost]
-    ManBufNew                   = 2000
-    ManBufNewFromBytes          = 4000
-    ManBufSetBytes              = 2000
-    ManBufGetLength             = 2000
-    ManBufGetBytes              = 2000
-    ManBufToBigIntUnsigned      = 4000
-    ManBufToBigIntSigned        = 10000
-    ManBufFromBigIntUnsigned    = 4000
-    ManBufFromBigIntSigned      = 10000
-    ManBufStorageStore          = 250000
-    ManBufStorageLoad           = 100000
-    ManBufGetArgument           = 1000
-    ManBufFinish                = 1000
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferSetBytes              = 2000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -1460,19 +1460,19 @@ const (
     GenerateKeyECC         = 1000000
 
 [ManagedBufferAPICost]
-    ManBufNew                   = 2000
-    ManBufNewFromBytes          = 4000
-    ManBufSetBytes              = 2000
-    ManBufGetLength             = 2000
-    ManBufGetBytes              = 2000
-    ManBufToBigIntUnsigned      = 4000
-    ManBufToBigIntSigned        = 10000
-    ManBufFromBigIntUnsigned    = 4000
-    ManBufFromBigIntSigned      = 10000
-    ManBufStorageStore          = 250000
-    ManBufStorageLoad           = 100000
-    ManBufGetArgument           = 1000
-    ManBufFinish                = 1000
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferSetBytes              = 2000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1

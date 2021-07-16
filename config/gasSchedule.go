@@ -70,13 +70,13 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	manBufOps := &ManagedBufferAPICost{}
-	err = mapstructure.Decode(gasMap["ManagedBufferAPICost"], manBufOps)
+	MBufferOps := &ManagedBufferAPICost{}
+	err = mapstructure.Decode(gasMap["ManagedBufferAPICost"], MBufferOps)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*manBufOps)
+	err = checkForZeroUint64Fields(*MBufferOps)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		EthAPICost:           *ethOps,
 		ElrondAPICost:        *elrondOps,
 		CryptoAPICost:        *cryptOps,
-		ManagedBufferAPICost: *manBufOps,
+		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       *opcodeCosts,
 	}
 
@@ -326,19 +326,19 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 
 func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
-	gasMap["ManBufNew"] = value
-	gasMap["ManBufNewFromBytes"] = value
-	gasMap["ManBufSetBytes"] = value
-	gasMap["ManBufGetLength"] = value
-	gasMap["ManBufGetBytes"] = value
-	gasMap["ManBufToBigIntUnsigned"] = value
-	gasMap["ManBufToBigIntSigned"] = value
-	gasMap["ManBufFromBigIntUnsigned"] = value
-	gasMap["ManBufFromBigIntSigned"] = value
-	gasMap["ManBufStorageStore"] = value
-	gasMap["ManBufStorageLoad"] = value
-	gasMap["ManBufGetArgument"] = value
-	gasMap["ManBufFinish"] = value
+	gasMap["MBufferNew"] = value
+	gasMap["MBufferNewFromBytes"] = value
+	gasMap["MBufferSetBytes"] = value
+	gasMap["MBufferGetLength"] = value
+	gasMap["MBufferGetBytes"] = value
+	gasMap["MBufferToBigIntUnsigned"] = value
+	gasMap["MBufferToBigIntSigned"] = value
+	gasMap["MBufferFromBigIntUnsigned"] = value
+	gasMap["MBufferFromBigIntSigned"] = value
+	gasMap["MBufferStorageStore"] = value
+	gasMap["MBufferStorageLoad"] = value
+	gasMap["MBufferGetArgument"] = value
+	gasMap["MBufferFinish"] = value
 
 	return gasMap
 }

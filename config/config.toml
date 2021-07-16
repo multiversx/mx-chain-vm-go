@@ -136,19 +136,19 @@
     GenerateKeyECC         = 10
 
 [ManagedBufferAPICost]
-    ManBufNew                   = 10
-    ManBufNewFromBytes          = 10
-    ManBufSetBytes              = 10
-    ManBufGetLength             = 10
-    ManBufGetBytes              = 10
-    ManBufToBigIntUnsigned      = 10
-    ManBufToBigIntSigned        = 10
-    ManBufFromBigIntUnsigned    = 10
-    ManBufFromBigIntSigned      = 10
-    ManBufStorageStore          = 10
-    ManBufStorageLoad           = 10
-    ManBufGetArgument           = 10
-    ManBufFinish                = 10
+    MBufferNew                   = 10
+    MBufferNewFromBytes          = 10
+    MBufferSetBytes              = 10
+    MBufferGetLength             = 10
+    MBufferGetBytes              = 10
+    MBufferToBigIntUnsigned      = 10
+    MBufferToBigIntSigned        = 10
+    MBufferFromBigIntUnsigned    = 10
+    MBufferFromBigIntSigned      = 10
+    MBufferStorageStore          = 10
+    MBufferStorageLoad           = 10
+    MBufferGetArgument           = 10
+    MBufferFinish                = 10
 
 [WASMOpcodeCost]
     Unreachable = 1
