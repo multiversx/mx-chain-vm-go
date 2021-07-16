@@ -1291,13 +1291,13 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	for _, groupConfig := range contracts.AsyncGroupsConfig {
 		groupName := groupConfig[0]
 		for g := 1; g < len(groupConfig); g++ {
-			functionReturnData := groupConfig[g] + test.AsyncReturnDataSuffix
+			functionReturnData := groupConfig[g] + test.TestReturnDataSuffix
 			expectedReturnData = append(expectedReturnData, []byte(functionReturnData))
-			expectedReturnData = append(expectedReturnData, []byte(test.AsyncCallbackPrefix+functionReturnData))
+			expectedReturnData = append(expectedReturnData, []byte(test.TestCallbackPrefix+functionReturnData))
 		}
-		expectedReturnData = append(expectedReturnData, []byte(test.AsyncCallbackPrefix+groupName+test.AsyncReturnDataSuffix))
+		expectedReturnData = append(expectedReturnData, []byte(test.TestCallbackPrefix+groupName+test.TestReturnDataSuffix))
 	}
-	expectedReturnData = append(expectedReturnData, []byte(test.AsyncContextCallbackFunction+test.AsyncReturnDataSuffix))
+	expectedReturnData = append(expectedReturnData, []byte(test.TestContextCallbackFunction+test.TestReturnDataSuffix))
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(

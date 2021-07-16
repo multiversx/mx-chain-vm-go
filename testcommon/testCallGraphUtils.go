@@ -11,16 +11,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// AsyncReturnDataSuffix -
-var AsyncReturnDataSuffix = "_returnData"
+// TestReturnDataSuffix -
+var TestReturnDataSuffix = "_returnData"
 
-// AsyncCallbackPrefix -
-var AsyncCallbackPrefix = "callback_"
+// TestCallbackPrefix -
+var TestCallbackPrefix = "callback_"
 
-// AsyncContextCallbackFunction -
-var AsyncContextCallbackFunction = "contextCallback"
+// TestContextCallbackFunction -
+var TestContextCallbackFunction = "contextCallback"
 
-// CreateMockContractsFromAsyncTestCallGraph -
+// CreateMockContractsFromAsyncTestCallGraph creates the contracts
+// with functions that reflect the behavior specified by the call graph
 func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testConfig *TestConfig) []MockTestSmartContract {
 	contracts := make(map[string]*MockTestSmartContract)
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
@@ -36,8 +37,10 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							instance := mock.GetMockInstance(host)
 							t := instance.T
 
-							crtNode := callGraph.FindNode(string(host.Runtime().GetSCAddress()), host.Runtime().Function())
-							fmt.Println("Executing " + host.Runtime().Function() + " on " + string(host.Runtime().GetSCAddress()))
+							crtFunctionCalled := host.Runtime().Function()
+
+							crtNode := callGraph.FindNode(string(host.Runtime().GetSCAddress()), crtFunctionCalled)
+							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
 							//fmt.Println("Node " + string(crtNode.asyncCall.ContractAddress) + " / " + crtNode.asyncCall.FunctionName)
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
@@ -73,7 +76,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 								}
 							}
 
-							host.Output().Finish([]byte(functionName + AsyncReturnDataSuffix))
+							host.Output().Finish([]byte(crtFunctionCalled + TestReturnDataSuffix))
+							fmt.Println("End of " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
 
 							return instance
 						})

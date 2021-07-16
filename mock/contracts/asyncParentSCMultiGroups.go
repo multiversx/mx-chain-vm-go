@@ -40,7 +40,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig
 				functionName := groupConfig[g]
 				callData.Func(functionName)
 				// child will return this
-				callData.Str(functionName + testcommon.AsyncReturnDataSuffix)
+				callData.Str(functionName + testcommon.TestReturnDataSuffix)
 
 				err := async.RegisterAsyncCall(groupName, &arwen.AsyncCall{
 					Status:          arwen.AsyncCallPending,
@@ -48,21 +48,21 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig
 					Data:            callData.ToBytes(),
 					ValueBytes:      value,
 					GasLimit:        testConfig.GasProvidedToChild,
-					SuccessCallback: testcommon.AsyncCallbackPrefix + functionName,
-					ErrorCallback:   testcommon.AsyncCallbackPrefix + functionName,
+					SuccessCallback: testcommon.TestCallbackPrefix + functionName,
+					ErrorCallback:   testcommon.TestCallbackPrefix + functionName,
 				})
 				require.Nil(t, err)
 			}
 
 			async.SetGroupCallback(
 				groupName,
-				testcommon.AsyncCallbackPrefix+groupName,
+				testcommon.TestCallbackPrefix+groupName,
 				nil,
 				testConfig.GasProvidedToCallback)
 		}
 
 		async.SetContextCallback(
-			testcommon.AsyncContextCallbackFunction,
+			testcommon.TestContextCallbackFunction,
 			nil,
 			testConfig.GasProvidedToCallback)
 
@@ -77,23 +77,23 @@ func CallBackMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig *test.T
 		groupName := groupConfig[0]
 		for g := 1; g < len(groupConfig); g++ {
 			functionName := groupConfig[g]
-			instanceMock.AddMockMethod(testcommon.AsyncCallbackPrefix+functionName,
+			instanceMock.AddMockMethod(testcommon.TestCallbackPrefix+functionName,
 				test.WasteGasWithReturnDataMockMethod(
 					instanceMock,
 					testConfig.GasUsedByCallback,
-					[]byte(testcommon.AsyncCallbackPrefix+functionName+testcommon.AsyncReturnDataSuffix)))
+					[]byte(testcommon.TestCallbackPrefix+functionName+testcommon.TestReturnDataSuffix)))
 		}
 
-		instanceMock.AddMockMethod(testcommon.AsyncCallbackPrefix+groupName,
+		instanceMock.AddMockMethod(testcommon.TestCallbackPrefix+groupName,
 			test.WasteGasWithReturnDataMockMethod(
 				instanceMock,
 				testConfig.GasUsedByCallback,
-				[]byte(testcommon.AsyncCallbackPrefix+groupName+testcommon.AsyncReturnDataSuffix)))
+				[]byte(testcommon.TestCallbackPrefix+groupName+testcommon.TestReturnDataSuffix)))
 
-		instanceMock.AddMockMethod(testcommon.AsyncContextCallbackFunction,
+		instanceMock.AddMockMethod(testcommon.TestContextCallbackFunction,
 			test.WasteGasWithReturnDataMockMethod(
 				instanceMock,
 				testConfig.GasUsedByCallback,
-				[]byte(testcommon.AsyncContextCallbackFunction+testcommon.AsyncReturnDataSuffix)))
+				[]byte(testcommon.TestContextCallbackFunction+testcommon.TestReturnDataSuffix)))
 	}
 }

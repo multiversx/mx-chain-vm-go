@@ -14,7 +14,7 @@ func ChildAsyncMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig *test
 				test.WasteGasWithReturnDataMockMethod(
 					instanceMock,
 					testConfig.GasUsedByChild,
-					[]byte(functionName+test.AsyncReturnDataSuffix)))
+					[]byte(functionName+test.TestReturnDataSuffix)))
 		}
 	}
 }
