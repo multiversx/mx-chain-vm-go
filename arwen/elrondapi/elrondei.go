@@ -94,7 +94,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
@@ -1013,7 +1013,7 @@ func TransferValueExecuteWithTypedArgs(
 	var err error
 	var contractCallInput *vmcommon.ContractCallInput
 
-	if function != nil {
+	if len(function) > 0 {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
 			sender,
@@ -1211,7 +1211,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	sender := runtime.GetSCAddress()
 
 	var contractCallInput *vmcommon.ContractCallInput
-	if function != nil {
+	if len(function) > 0 {
 		contractCallInput, executeErr = prepareIndirectContractCallInput(
 			host,
 			sender,
