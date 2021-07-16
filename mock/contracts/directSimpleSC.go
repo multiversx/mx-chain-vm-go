@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
