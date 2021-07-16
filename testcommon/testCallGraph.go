@@ -1,17 +1,16 @@
 package testcommon
 
-// TestCall -
+// TestCall represents the payload of a node in the call graph
 type TestCall struct {
 	ContractAddress []byte
 	FunctionName    string
 }
 
-// ToString -
+// ToString - string representatin of a TestCall
 func (call *TestCall) ToString() string {
 	return "contract=" + string(call.ContractAddress) + " function=" + call.FunctionName
 }
 
-// buildTestCall -
 func buildTestCall(contractID string, functionName string) *TestCall {
 	return &TestCall{
 		ContractAddress: MakeTestSCAddress(contractID),
@@ -19,20 +18,20 @@ func buildTestCall(contractID string, functionName string) *TestCall {
 	}
 }
 
-// TestCallNode -
+// TestCallNode is a node in the call graph
 type TestCallNode struct {
-	asyncCall     *TestCall
+	call          *TestCall
 	adjacentNodes []*TestCallEdge
 	// needs to be reseted after each traversal!
 	visited bool
 }
 
-// GetAsyncCall -
-func (node *TestCallNode) GetAsyncCall() *TestCall {
-	return node.asyncCall
+// GetCall gets the payload of a node in the call graph
+func (node *TestCallNode) GetCall() *TestCall {
+	return node.call
 }
 
-// TestCallEdge -
+// TestCallEdge an edge between two nodes of the call graph
 type TestCallEdge struct {
 	async    bool
 	callBack string
@@ -40,23 +39,23 @@ type TestCallEdge struct {
 	to       *TestCallNode
 }
 
-// TestCallGraph -
+// TestCallGraph is the call graph
 type TestCallGraph struct {
 	nodes []*TestCallNode
 }
 
-// CreateTestCallGraph -
+// CreateTestCallGraph is the initial build metohd for the call graph
 func CreateTestCallGraph() *TestCallGraph {
 	return &TestCallGraph{
 		nodes: make([]*TestCallNode, 0),
 	}
 }
 
-// AddNode -
+// AddNode adds a node to the call graph
 func (graph *TestCallGraph) AddNode(contractID string, functionName string) *TestCallNode {
 	testCall := buildTestCall(contractID, functionName)
 	testNode := &TestCallNode{
-		asyncCall:     testCall,
+		call:          testCall,
 		adjacentNodes: make([]*TestCallEdge, 0),
 		visited:       false,
 	}
@@ -64,7 +63,7 @@ func (graph *TestCallGraph) AddNode(contractID string, functionName string) *Tes
 	return testNode
 }
 
-// AddEdge -
+// AddEdge adds a sync call edge between two nodes of the call graph
 func (graph *TestCallGraph) AddEdge(from *TestCallNode, to *TestCallNode) {
 	from.adjacentNodes = append(from.adjacentNodes, &TestCallEdge{
 		async:    false,
@@ -74,7 +73,7 @@ func (graph *TestCallGraph) AddEdge(from *TestCallNode, to *TestCallNode) {
 	})
 }
 
-// AddAsyncEdge -
+// AddAsyncEdge adds an async call edge between two nodes of the call graph
 func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, callBack string, group string) {
 	from.adjacentNodes = append(from.adjacentNodes, &TestCallEdge{
 		async:    true,
@@ -84,17 +83,17 @@ func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, c
 	})
 }
 
-// FindNode -
+// FindNode finds the corresponding node in the call graph
 func (graph *TestCallGraph) FindNode(contractID string, functionName string) *TestCallNode {
 	for _, node := range graph.nodes {
-		if string(node.asyncCall.ContractAddress) == contractID && node.asyncCall.FunctionName == functionName {
+		if string(node.call.ContractAddress) == contractID && node.call.FunctionName == functionName {
 			return node
 		}
 	}
 	return nil
 }
 
-// DfsGraph -
+// DfsGraph a standard DFS traversal for the call graph
 func (graph *TestCallGraph) DfsGraph(processNode func([]*TestCallNode, *TestCallNode, *TestCallNode) *TestCallNode) {
 	foundUnvisitedNodes := true
 	for foundUnvisitedNodes {
@@ -104,7 +103,7 @@ func (graph *TestCallGraph) DfsGraph(processNode func([]*TestCallNode, *TestCall
 				continue
 			}
 			foundUnvisitedNodes = true
-			graph.Dfs(nil, node, make([]*TestCallNode, 0), processNode)
+			graph.dfs(nil, node, make([]*TestCallNode, 0), processNode)
 		}
 	}
 	for _, node := range graph.nodes {
@@ -112,8 +111,7 @@ func (graph *TestCallGraph) DfsGraph(processNode func([]*TestCallNode, *TestCall
 	}
 }
 
-// Dfs -
-func (graph *TestCallGraph) Dfs(parent *TestCallNode, node *TestCallNode, path []*TestCallNode, processNode func([]*TestCallNode, *TestCallNode, *TestCallNode) *TestCallNode) *TestCallNode {
+func (graph *TestCallGraph) dfs(parent *TestCallNode, node *TestCallNode, path []*TestCallNode, processNode func([]*TestCallNode, *TestCallNode, *TestCallNode) *TestCallNode) *TestCallNode {
 	if node.visited {
 		return node
 	}
@@ -124,7 +122,7 @@ func (graph *TestCallGraph) Dfs(parent *TestCallNode, node *TestCallNode, path [
 	node.visited = true
 
 	for _, edge := range node.adjacentNodes {
-		graph.Dfs(processedParent, edge.to, path, processNode)
+		graph.dfs(processedParent, edge.to, path, processNode)
 	}
 	return processedParent
 }

@@ -1360,9 +1360,9 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 			test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
-			WithRecipientAddr([]byte(sc1f1.GetAsyncCall().ContractAddress)).
+			WithRecipientAddr([]byte(sc1f1.GetCall().ContractAddress)).
 			WithGasProvided(testConfig.GasProvided).
-			WithFunction(sc1f1.GetAsyncCall().FunctionName).
+			WithFunction(sc1f1.GetCall().FunctionName).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)

@@ -24,9 +24,9 @@ var AsyncContextCallbackFunction = "contextCallback"
 func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testConfig *TestConfig) []MockTestSmartContract {
 	contracts := make(map[string]*MockTestSmartContract)
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
-		contractAddressAsString := string(node.asyncCall.ContractAddress)
+		contractAddressAsString := string(node.call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
-			newContract := CreateMockContract(node.asyncCall.ContractAddress).
+			newContract := CreateMockContract(node.call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
 				WithMethods(func(instanceMock *mock.InstanceMock, testConfig *TestConfig) {
@@ -43,8 +43,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
 							for _, edge := range crtNode.adjacentNodes {
-								destFunctionName := edge.to.asyncCall.FunctionName
-								destAddress := edge.to.asyncCall.ContractAddress
+								destFunctionName := edge.to.call.FunctionName
+								destAddress := edge.to.call.ContractAddress
 								if !edge.async {
 									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
@@ -81,7 +81,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 				})
 			contracts[contractAddressAsString] = &newContract
 		}
-		functionName := node.asyncCall.FunctionName
+		functionName := node.call.FunctionName
 		contract := contracts[contractAddressAsString]
 		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
