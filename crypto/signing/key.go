@@ -3,7 +3,7 @@ package signing
 //TODO delete this when we have elrond-go-core
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/elrond-vm-common/check"
 )
 

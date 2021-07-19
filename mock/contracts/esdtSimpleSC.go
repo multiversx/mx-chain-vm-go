@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
@@ -41,7 +42,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, testConfig *t
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 		}
 
 		return instance
@@ -78,14 +79,19 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, testConfig *te
 		functionName := arguments[1]
 		args := [][]byte{arguments[2]}
 
+		transfer := &vmcommon.ESDTTransfer{
+			ESDTValue:      big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
+			ESDTTokenName:  test.ESDTTestTokenName,
+			ESDTTokenType:  0,
+			ESDTTokenNonce: 0,
+		}
+
 		elrondapi.TransferESDTNFTExecuteWithTypedArgs(
 			host,
-			big.NewInt(int64(testConfig.ESDTTokensToTransfer)),
-			test.ESDTTestTokenName,
 			input.RecipientAddr,
-			0,
+			[]*vmcommon.ESDTTransfer{transfer},
 			int64(testConfig.GasProvidedToChild),
-			[]byte(functionName),
+			functionName,
 			args)
 
 		return instance

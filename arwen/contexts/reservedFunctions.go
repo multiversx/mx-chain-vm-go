@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -11,13 +11,19 @@ type reservedFunctions struct {
 }
 
 // NewReservedFunctions creates a new reservedFunctions
-func NewReservedFunctions(scAPINames vmcommon.FunctionNames, protocolBuiltinFunctions vmcommon.FunctionNames) *reservedFunctions {
+func NewReservedFunctions(scAPINames vmcommon.FunctionNames, builtInFuncContainer vmcommon.BuiltInFunctionContainer) *reservedFunctions {
 	result := &reservedFunctions{
 		functionNames: make(vmcommon.FunctionNames),
 	}
 
-	for name, value := range protocolBuiltinFunctions {
-		result.functionNames[name] = value
+	protocolFuncNames := builtInFuncContainer.Keys()
+	for name := range protocolFuncNames {
+		function, err := builtInFuncContainer.Get(name)
+		if err != nil || !function.IsActive() {
+			continue
+		}
+
+		result.functionNames[name] = struct{}{}
 	}
 
 	for name, value := range scAPINames {

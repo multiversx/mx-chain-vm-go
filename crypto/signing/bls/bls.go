@@ -1,10 +1,10 @@
 package bls
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/mcl"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/mcl/singlesig"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/mcl"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/mcl/singlesig"
 )
 
 type bls struct {

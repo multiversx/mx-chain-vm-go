@@ -3,9 +3,9 @@ package contexts
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -183,7 +183,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 }
 
 // UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
-func (context *meteringContext) UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput) {
+func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
 

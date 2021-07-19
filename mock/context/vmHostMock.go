@@ -1,12 +1,10 @@
 package mock
 
 import (
-	"math/big"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
@@ -111,7 +109,7 @@ func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 
@@ -155,15 +153,6 @@ func (host *VMHostMock) GetAPIMethods() *wasmer.Imports {
 	return host.SCAPIMethods
 }
 
-// GetProtocolBuiltinFunctions mocked method
-func (host *VMHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
-	return make(vmcommon.FunctionNames)
-}
-
-// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
-func (host *VMHostMock) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
-}
-
 // IsBuiltinFunctionName mocked method
 func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
@@ -175,17 +164,21 @@ func (host *VMHostMock) GetGasScheduleMap() config.GasScheduleMap {
 }
 
 // RunSmartContractCall mocked method
-func (host *VMHostMock) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *VMHostMock) RunSmartContractCall(_ *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	return nil, nil
 }
 
 // RunSmartContractCreate mocked method
-func (host *VMHostMock) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *VMHostMock) RunSmartContractCreate(_ *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	return nil, nil
 }
 
 // GasScheduleChange mocked method
-func (host *VMHostMock) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
+func (host *VMHostMock) GasScheduleChange(_ config.GasScheduleMap) {
+}
+
+// SetBuiltInFunctionsContainer mocked method
+func (host *VMHostMock) SetBuiltInFunctionsContainer(_ vmcommon.BuiltInFunctionContainer) {
 }
 
 // IsInterfaceNil mocked method
