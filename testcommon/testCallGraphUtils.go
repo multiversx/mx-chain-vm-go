@@ -39,13 +39,13 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 
 							crtFunctionCalled := host.Runtime().Function()
 
-							crtNode := callGraph.FindNode(string(host.Runtime().GetSCAddress()), crtFunctionCalled)
+							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
 							//fmt.Println("Node " + string(crtNode.asyncCall.ContractAddress) + " / " + crtNode.asyncCall.FunctionName)
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
-							for _, edge := range crtNode.adjacentNodes {
+							for _, edge := range crtNode.adjacentEdges {
 								destFunctionName := edge.to.call.FunctionName
 								destAddress := edge.to.call.ContractAddress
 								if !edge.async {
