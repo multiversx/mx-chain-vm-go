@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go-logger/check"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
@@ -42,9 +43,9 @@ type vmHost struct {
 	storageContext      arwen.StorageContext
 	managedTypesContext arwen.ManagedTypesContext
 
-	gasSchedule              config.GasScheduleMap
-	scAPIMethods             *wasmer.Imports
-	protocolBuiltinFunctions vmcommon.FunctionNames
+	gasSchedule          config.GasScheduleMap
+	scAPIMethods         *wasmer.Imports
+	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 
 	arwenV2EnableEpoch uint32
 	flagArwenV2        atomic.Flag
@@ -78,12 +79,12 @@ func NewArwenVM(
 		managedTypesContext:      nil,
 		gasSchedule:              hostParameters.GasSchedule,
 		scAPIMethods:             nil,
-		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
+		builtInFuncContainer:     hostParameters.BuiltInFuncContainer,
 	}
 
 	var err error
@@ -124,6 +125,7 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		hostParameters.UseWarmInstance,
+		host.builtInFuncContainer,
 	)
 	if err != nil {
 		return nil, err
@@ -298,16 +300,6 @@ func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
 }
 
-// GetProtocolBuiltinFunctions returns the names of the built-in functions, reserved by the protocol
-func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
-	return host.protocolBuiltinFunctions
-}
-
-// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
-func (host *vmHost) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
-	host.protocolBuiltinFunctions = functionNames
-}
-
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
@@ -439,4 +431,12 @@ func (host *vmHost) GetRuntimeErrors() error {
 		return host.runtimeContext.GetAllErrors()
 	}
 	return nil
+}
+
+// SetBuiltInFunctionsContainer sets the built in function container - only for testing
+func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer) {
+	if check.IfNil(builtInFuncs) {
+		return
+	}
+	host.builtInFuncContainer = builtInFuncs
 }

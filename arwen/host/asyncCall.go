@@ -363,6 +363,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
 	}
+	returnWithError := false
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
@@ -372,6 +373,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		// when execution returned error, callBack arguments are:
 		// [error code, error message]
 		arguments = append(arguments, []byte(destinationVMOutput.ReturnMessage))
+		returnWithError = true
 	}
 
 	gasLimit := destinationVMOutput.GasRemaining + asyncCallInfo.GetGasLocked()
@@ -388,14 +390,15 @@ func (host *vmHost) createCallbackContractCallInput(
 	// Return to the sender SC, calling its callback() method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:     callbackInitiator,
-			Arguments:      arguments,
-			CallValue:      host.computeCallValueFromLastOutputTransfer(destinationVMOutput),
-			CallType:       vmcommon.AsynchronousCallBack,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    gasLimit,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
+			CallerAddr:           callbackInitiator,
+			Arguments:            arguments,
+			CallValue:            host.computeCallValueFromLastOutputTransfer(destinationVMOutput),
+			CallType:             vmcommon.AsynchronousCallBack,
+			GasPrice:             runtime.GetVMInput().GasPrice,
+			GasProvided:          gasLimit,
+			CurrentTxHash:        runtime.GetCurrentTxHash(),
+			OriginalTxHash:       runtime.GetOriginalTxHash(),
+			ReturnCallAfterError: returnWithError,
 		},
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      callbackFunction,

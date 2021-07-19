@@ -156,7 +156,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 }
 
 // UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
-func (context *meteringContext) UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput) {
+func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
 

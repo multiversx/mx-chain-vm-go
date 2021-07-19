@@ -8,6 +8,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
 type worldDataModel struct {
@@ -54,6 +55,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 	}
 }
 
@@ -63,7 +65,7 @@ func (w *world) deploySmartContract(request DeployRequest) *DeployResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCreate(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		_ = w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &DeployResponse{}
@@ -80,7 +82,7 @@ func (w *world) upgradeSmartContract(request UpgradeRequest) *UpgradeResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		_ = w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &UpgradeResponse{}
@@ -96,7 +98,7 @@ func (w *world) runSmartContract(request RunRequest) *RunResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		_ = w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &RunResponse{}

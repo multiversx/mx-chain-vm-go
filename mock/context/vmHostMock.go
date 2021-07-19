@@ -141,15 +141,6 @@ func (host *VMHostMock) GetAPIMethods() *wasmer.Imports {
 	return host.SCAPIMethods
 }
 
-// GetProtocolBuiltinFunctions mocked method
-func (host *VMHostMock) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
-	return make(vmcommon.FunctionNames)
-}
-
-// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
-func (host *VMHostMock) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
-}
-
 // IsBuiltinFunctionName mocked method
 func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
@@ -161,17 +152,21 @@ func (host *VMHostMock) GetGasScheduleMap() config.GasScheduleMap {
 }
 
 // RunSmartContractCall mocked method
-func (host *VMHostMock) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *VMHostMock) RunSmartContractCall(_ *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	return nil, nil
 }
 
 // RunSmartContractCreate mocked method
-func (host *VMHostMock) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *VMHostMock) RunSmartContractCreate(_ *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	return nil, nil
 }
 
 // GasScheduleChange mocked method
-func (host *VMHostMock) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
+func (host *VMHostMock) GasScheduleChange(_ config.GasScheduleMap) {
+}
+
+// SetBuiltInFunctionsContainer mocked method
+func (host *VMHostMock) SetBuiltInFunctionsContainer(_ vmcommon.BuiltInFunctionContainer) {
 }
 
 // IsInterfaceNil mocked method

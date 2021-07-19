@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostStub)(nil)
@@ -20,22 +20,20 @@ type VMHostStub struct {
 	ClearStateStackCalled func()
 	GetVersionCalled      func() string
 
-	CryptoCalled                      func() crypto.VMCrypto
-	BlockchainCalled                  func() arwen.BlockchainContext
-	RuntimeCalled                     func() arwen.RuntimeContext
-	ManagedTypesCalled                func() arwen.ManagedTypesContext
-	OutputCalled                      func() arwen.OutputContext
-	MeteringCalled                    func() arwen.MeteringContext
-	StorageCalled                     func() arwen.StorageContext
-	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
-	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
-	GetAPIMethodsCalled               func() *wasmer.Imports
-	GetProtocolBuiltinFunctionsCalled func() vmcommon.FunctionNames
-	SetProtocolBuiltinFunctionsCalled func(vmcommon.FunctionNames)
-	IsBuiltinFunctionNameCalled       func(functionName string) bool
-	AreInSameShardCalled              func(left []byte, right []byte) bool
+	CryptoCalled                func() crypto.VMCrypto
+	BlockchainCalled            func() arwen.BlockchainContext
+	RuntimeCalled               func() arwen.RuntimeContext
+	ManagedTypesCalled          func() arwen.ManagedTypesContext
+	OutputCalled                func() arwen.OutputContext
+	MeteringCalled              func() arwen.MeteringContext
+	StorageCalled               func() arwen.StorageContext
+	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
+	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
+	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
+	GetAPIMethodsCalled         func() *wasmer.Imports
+	IsBuiltinFunctionNameCalled func(functionName string) bool
+	AreInSameShardCalled        func(left []byte, right []byte) bool
 
 	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
 	RunSmartContractCreateCalled func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -45,6 +43,8 @@ type VMHostStub struct {
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 	GetContextsCalled       func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+
+	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
 }
 
 // GetVersion mocked method
@@ -213,21 +213,6 @@ func (vhs *VMHostStub) GetAPIMethods() *wasmer.Imports {
 	return nil
 }
 
-// GetProtocolBuiltinFunctions mocked method
-func (vhs *VMHostStub) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
-	if vhs.GetProtocolBuiltinFunctionsCalled != nil {
-		return vhs.GetProtocolBuiltinFunctionsCalled()
-	}
-	return make(vmcommon.FunctionNames)
-}
-
-// SetProtocolBuiltinFunctions mocked method
-func (vhs *VMHostStub) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
-	if vhs.SetProtocolBuiltinFunctionsCalled != nil {
-		vhs.SetProtocolBuiltinFunctionsCalled(functionNames)
-	}
-}
-
 // IsBuiltinFunctionName mocked method
 func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	if vhs.IsBuiltinFunctionNameCalled != nil {
@@ -264,6 +249,13 @@ func (vhs *VMHostStub) RunSmartContractCreate(input *vmcommon.ContractCreateInpu
 func (vhs *VMHostStub) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	if vhs.GasScheduleChangeCalled != nil {
 		vhs.GasScheduleChangeCalled(newGasSchedule)
+	}
+}
+
+// SetBuiltInFunctionsContainer mocked method
+func (vhs *VMHostStub) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer) {
+	if vhs.SetBuiltInFunctionsContainerCalled != nil {
+		vhs.SetBuiltInFunctionsContainerCalled(builtInFuncs)
 	}
 }
 

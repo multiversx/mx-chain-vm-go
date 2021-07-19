@@ -12,6 +12,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -92,7 +93,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		VMType:                   testcommon.DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasMap,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 	})
 	require.Nil(tb, err)

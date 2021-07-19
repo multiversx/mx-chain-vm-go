@@ -193,9 +193,7 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLim
 		GasProvided:    gasLimit,
 		OriginalTxHash: txHash,
 		CurrentTxHash:  txHash,
-		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:  nil,
-		ESDTTokenNonce: 0,
+		ESDTTransfers:  make([]*vmcommon.ESDTTransfer, 0),
 	}
 	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCreateInput{
@@ -223,9 +221,7 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 		GasProvided:    gasLimit,
 		OriginalTxHash: txHash,
 		CurrentTxHash:  txHash,
-		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:  nil,
-		ESDTTokenNonce: 0,
+		ESDTTransfers:  make([]*vmcommon.ESDTTransfer, 0),
 	}
 	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCallInput{
