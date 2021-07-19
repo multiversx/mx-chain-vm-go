@@ -174,6 +174,7 @@ func v1_4_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	length := managedType.GetLengthForThisManagedBuffer(mBufferHandle)
 	if length == -1 {
 		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return -1
 	}
 
 	return length
@@ -289,6 +290,7 @@ func v1_4_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32,
 	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, bytes)
 	if !isSuccess {
 		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return 1
 	}
 	return 0
 }
@@ -311,6 +313,7 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, bytes)
 	if !isSuccess {
 		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return 1
 	}
 	return 0
 }
@@ -385,6 +388,7 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, mBufferHandle int
 	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, args[id])
 	if !isSuccess {
 		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return 1
 	}
 	return 0
 }
