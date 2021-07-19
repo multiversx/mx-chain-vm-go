@@ -411,7 +411,7 @@ func makeErrorString(errors []error) string {
 func objectStringOrDefault(obj oj.OJsonObject) string {
 	if obj == nil {
 		return ""
-	} else {
-		return oj.JSONString(obj)
 	}
+
+	return oj.JSONString(obj)
 }
