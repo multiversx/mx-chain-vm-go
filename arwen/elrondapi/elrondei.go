@@ -2157,7 +2157,8 @@ func v1_4_writeEventLog(
 	topicLengthsOffset int32,
 	topicOffset int32,
 	dataOffset int32,
-	dataLength int32) {
+	dataLength int32,
+) {
 
 	host := arwen.GetVMHost(context)
 	runtime := arwen.GetRuntimeContext(context)

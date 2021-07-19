@@ -129,10 +129,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, metering arwen.MeteringContext) error {
-	if !host.IsArwenV2Enabled() {
-		return nil
-	}
-
 	getCodeBaseCost := metering.GasSchedule().BaseOperationCost.GetCode
 	if input.GasProvided < getCodeBaseCost {
 		return arwen.ErrNotEnoughGas
@@ -198,10 +194,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
-	if !copyEnabled {
-		return
-	}
+func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
 	currentVMInput := runtime.GetVMInput()
 	if len(currentVMInput.OriginalTxHash) > 0 {
 		input.OriginalTxHash = currentVMInput.OriginalTxHash
@@ -269,7 +262,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	output.PushState()
 	output.CensorVMOutput()
 
-	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
+	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -363,7 +356,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	bigInt.PushState()
 	output.PushState()
 
-	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
+	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -812,10 +805,6 @@ func addOutputTransferToVMOutput(
 }
 
 func (host *vmHost) checkFinalGasAfterExit() error {
-	if !host.IsArwenV2Enabled() {
-		return nil
-	}
-
 	totalUsedPoints := host.Runtime().GetPointsUsed()
 	if totalUsedPoints > host.Metering().GetGasForExecution() {
 		return arwen.ErrNotEnoughGas

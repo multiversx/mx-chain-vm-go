@@ -222,8 +222,9 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	}
 
 	newLogEntry := &vmcommon.LogEntry{
-		Address: address,
-		Data:    data,
+		Address:    address,
+		Data:       data,
+		Identifier: []byte(context.host.Runtime().Function()),
 	}
 	logOutput.Trace("log entry", "address", address, "data", data)
 
@@ -232,11 +233,11 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		return
 	}
 
-	newLogEntry.Identifier = topics[0]
-	newLogEntry.Topics = topics[1:]
+	newLogEntry.Topics = topics
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "identifier", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+	return
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -259,8 +260,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return err
 	}
 
-	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
-	checkPayable = checkPayable || !context.host.IsESDTFunctionsEnabled()
+	isAsyncCall := context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
 	hasValue := value.Cmp(arwen.Zero) > 0
 	if checkPayable && !payable && hasValue && !isAsyncCall {
 		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)

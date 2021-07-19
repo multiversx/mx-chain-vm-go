@@ -135,6 +135,7 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 	if o.WriteLogCalled != nil {
 		o.WriteLogCalled(address, topics, data)
 	}
+	return
 }
 
 // TransferValueOnly mocked method

@@ -247,14 +247,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.IsFunctionImported(name)
 	}
 
-	runtimeWrapper.IsWarmInstanceFunc = func() bool {
-		return runtimeWrapper.runtimeContext.IsWarmInstance()
-	}
-
-	runtimeWrapper.ResetWarmInstanceFunc = func() {
-		runtimeWrapper.runtimeContext.ResetWarmInstance()
-	}
-
 	runtimeWrapper.ReadOnlyFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ReadOnly()
 	}

@@ -35,11 +35,6 @@ type VMHost interface {
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
-	IsArwenV2Enabled() bool
-	IsAheadOfTimeCompileEnabled() bool
-	IsDynamicGasLockingEnabled() bool
-	IsArwenV3Enabled() bool
-	IsESDTFunctionsEnabled() bool
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -126,8 +121,6 @@ type RuntimeContext interface {
 	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
 	RunningInstancesCount() uint64
 	IsFunctionImported(name string) bool
-	IsWarmInstance() bool
-	ResetWarmInstance()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
