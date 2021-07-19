@@ -35,12 +35,12 @@ type vmHost struct {
 
 	ethInput []byte
 
-	blockchainContext arwen.BlockchainContext
-	runtimeContext    arwen.RuntimeContext
-	outputContext     arwen.OutputContext
-	meteringContext   arwen.MeteringContext
-	storageContext    arwen.StorageContext
-	bigIntContext     arwen.BigIntContext
+	blockchainContext   arwen.BlockchainContext
+	runtimeContext      arwen.RuntimeContext
+	outputContext       arwen.OutputContext
+	meteringContext     arwen.MeteringContext
+	storageContext      arwen.StorageContext
+	managedTypesContext arwen.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
 	scAPIMethods         *wasmer.Imports
@@ -74,7 +74,7 @@ func NewArwenVM(
 		runtimeContext:       nil,
 		blockchainContext:    nil,
 		storageContext:       nil,
-		bigIntContext:        nil,
+		managedTypesContext:  nil,
 		gasSchedule:          hostParameters.GasSchedule,
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
@@ -139,7 +139,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.bigIntContext, err = contexts.NewBigIntContext()
+	host.managedTypesContext, err = contexts.NewManagedTypesContext(host)
 	if err != nil {
 		return nil, err
 	}
@@ -195,20 +195,20 @@ func (host *vmHost) Storage() arwen.StorageContext {
 }
 
 // BigInt returns the BigIntContext instance of the host
-func (host *vmHost) BigInt() arwen.BigIntContext {
-	return host.bigIntContext
+func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
+	return host.managedTypesContext
 }
 
 // GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
-	arwen.BigIntContext,
+	arwen.ManagedTypesContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
 	arwen.StorageContext,
 ) {
-	return host.bigIntContext,
+	return host.managedTypesContext,
 		host.blockchainContext,
 		host.meteringContext,
 		host.outputContext,
@@ -223,7 +223,7 @@ func (host *vmHost) InitState() {
 
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
-	host.bigIntContext.InitState()
+	host.managedTypesContext.InitState()
 	host.outputContext.InitState()
 	host.meteringContext.InitState()
 	host.runtimeContext.InitState()
@@ -233,7 +233,7 @@ func (host *vmHost) initContexts() {
 
 // ClearContextStateStack cleans the state stacks of all the contexts of the host
 func (host *vmHost) ClearContextStateStack() {
-	host.bigIntContext.ClearStateStack()
+	host.managedTypesContext.ClearStateStack()
 	host.outputContext.ClearStateStack()
 	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
@@ -258,7 +258,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.gasSchedule = newGasSchedule
 	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
 	if err != nil {
-		log.Error("cannot apply new gas config remained with old one")
+		log.Error("cannot apply new gas config", "err", err)
 		return
 	}
 
