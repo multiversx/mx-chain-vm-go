@@ -161,3 +161,6 @@ var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions contain
 
 // ErrNilBlockChainHook signals that nil blockchain hook was provided
 var ErrNilBlockChainHook = errors.New("nil blockchain hook")
+
+// ErrTooManyESDTTransfers signals that too many ESDT transfers are in sc call
+var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")

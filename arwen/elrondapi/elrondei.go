@@ -38,6 +38,7 @@ package elrondapi
 // extern long long	v1_4_getESDTTokenNonceByIndex(void *context, int32_t index);
 // extern int32_t	v1_4_getESDTTokenTypeByIndex(void *context, int32_t index);
 // extern int32_t	v1_4_getCallValueTokenNameByIndex(void *context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
+// extern int32_t	v1_4_getNumESDTTransfers(void *context);
 // extern long long v1_4_getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
 // extern void		v1_4_writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void		v1_4_writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
@@ -112,6 +113,14 @@ func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.
 		return nil
 	}
 	return esdtTransfers[index]
+}
+
+func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
+	runtime := arwen.GetRuntimeContext(context)
+	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
+		return arwen.WithFault(arwen.ErrTooManyESDTTransfers, context, true)
+	}
+	return false
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
@@ -310,6 +319,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getCallValueTokenNameByIndex", v1_4_getCallValueTokenNameByIndex, C.v1_4_getCallValueTokenNameByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getNumESDTTransfers", v1_4_getNumESDTTransfers, C.v1_4_getNumESDTTransfers)
 	if err != nil {
 		return nil, err
 	}
@@ -1930,6 +1944,7 @@ func v1_4_callValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 //export v1_4_getESDTValue
 func v1_4_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTValueByIndex(context, resultOffset, 0)
 }
 
@@ -1959,6 +1974,7 @@ func v1_4_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index 
 
 //export v1_4_getESDTTokenName
 func v1_4_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTTokenNameByIndex(context, resultOffset, 0)
 }
 
@@ -1986,6 +2002,7 @@ func v1_4_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, in
 
 //export v1_4_getESDTTokenNonce
 func v1_4_getESDTTokenNonce(context unsafe.Pointer) int64 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTTokenNonceByIndex(context, 0)
 }
 
@@ -2033,6 +2050,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 
 //export v1_4_getESDTTokenType
 func v1_4_getESDTTokenType(context unsafe.Pointer) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTTokenTypeByIndex(context, 0)
 }
 
@@ -2051,8 +2069,20 @@ func v1_4_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
 	return 0
 }
 
+//export v1_4_getNumESDTTransfers
+func v1_4_getNumESDTTransfers(context unsafe.Pointer) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	metering.UseGas(gasToUse)
+
+	return int32(len(runtime.GetVMInput().ESDTTransfers))
+}
+
 //export v1_4_getCallValueTokenName
 func v1_4_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getCallValueTokenNameByIndex(context, callValueOffset, tokenNameOffset, 0)
 }
 

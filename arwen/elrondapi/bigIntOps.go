@@ -369,6 +369,7 @@ func v1_4_bigIntGetCallValue(context unsafe.Pointer, destination int32) {
 
 //export v1_4_bigIntGetESDTCallValue
 func v1_4_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	v1_4_bigIntGetESDTCallValueByIndex(context, destination, 0)
 }
 
