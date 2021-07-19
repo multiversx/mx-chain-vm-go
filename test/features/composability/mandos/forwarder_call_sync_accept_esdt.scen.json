@@ -78,8 +78,9 @@
                                         },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:accept_funds_sync_result",
+                        "identifier": "str:forward_sync_accept_funds",
                         "topics": [
+                            "str:accept_funds_sync_result",
                             "str:TEST-TOKEN",
                             "str:FungibleESDT",
                             "1000",
