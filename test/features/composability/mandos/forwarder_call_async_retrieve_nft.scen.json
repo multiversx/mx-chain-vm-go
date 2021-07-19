@@ -54,7 +54,8 @@
                     {
                         "address": "sc:vault",
                         "identifier": "str:retrieve_funds",
-                        "topics": [
+    "topics": [
+        "str:retrieve_funds",
                             "str:NFT-0001",
                             "5",
                             "1"
@@ -73,8 +74,9 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:retrieve_funds_callback",
-                        "topics": [
+                        "identifier": "str:callBack",
+    "topics": [
+        "str:retrieve_funds_callback",
                             "*",
                             "*",
                             "*"

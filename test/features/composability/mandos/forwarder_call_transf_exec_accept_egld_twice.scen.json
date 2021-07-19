@@ -45,23 +45,25 @@
                     {
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
-                        "topics": [
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "1000",
-                            "0"
-                        ],
+    "topics": [
+        "str:accept_funds",
+        "str:EGLD",
+        "str:FungibleESDT",
+        "1000",
+        "0"
+    ],
                         "data": ""
                     },
                     {
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
-                        "topics": [
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "1000",
-                            "0"
-                        ],
+    "topics": [
+        "str:accept_funds",
+        "str:EGLD",
+        "str:FungibleESDT",
+        "1000",
+        "0"
+    ],
                         "data": ""
                     }
                 ],

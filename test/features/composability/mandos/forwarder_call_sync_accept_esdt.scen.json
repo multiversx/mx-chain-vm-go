@@ -66,15 +66,16 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "identifier": "str:accept_funds_echo_payment",
                         "topics": [
+                            "str:accept_funds",
                             "str:TEST-TOKEN",
                             "str:FungibleESDT",
-                            "1000",
-                            "0"
-                        ],
-                        "data": ""
-                    },
+                                                "1000",
+                                                "0"
+                                            ],
+                                            "data": ""
+                                        },
                     {
                         "address": "sc:forwarder",
                         "identifier": "str:accept_funds_sync_result",
