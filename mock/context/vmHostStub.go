@@ -5,7 +5,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostStub)(nil)
@@ -21,7 +21,7 @@ type VMHostStub struct {
 	CryptoCalled                func() crypto.VMCrypto
 	BlockchainCalled            func() arwen.BlockchainContext
 	RuntimeCalled               func() arwen.RuntimeContext
-	BigIntCalled                func() arwen.BigIntContext
+	ManagedTypesCalled          func() arwen.ManagedTypesContext
 	OutputCalled                func() arwen.OutputContext
 	MeteringCalled              func() arwen.MeteringContext
 	StorageCalled               func() arwen.StorageContext
@@ -40,7 +40,7 @@ type VMHostStub struct {
 	IsInterfaceNilCalled         func() bool
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
-	GetContextsCalled       func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
+	GetContextsCalled       func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
 }
@@ -107,9 +107,9 @@ func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
 }
 
 // BigInt mocked method
-func (vhs *VMHostStub) BigInt() arwen.BigIntContext {
-	if vhs.BigIntCalled != nil {
-		return vhs.BigIntCalled()
+func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
+	if vhs.ManagedTypesCalled != nil {
+		return vhs.ManagedTypesCalled()
 	}
 	return nil
 }
@@ -267,7 +267,7 @@ func (vhs *VMHostStub) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (vhs *VMHostStub) GetContexts() (
-	arwen.BigIntContext,
+	arwen.ManagedTypesContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,
