@@ -298,7 +298,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad creator. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Creator.Original),
+				objectStringOrDefault(expectedInstance.Creator.Original),
 				ae.exprReconstructor.Reconstruct(
 					accountInstance.TokenMetaData.Creator,
 					er.AddressHint)))
@@ -319,7 +319,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad hash. Want: %s. Have: %s",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Hash.Original),
+				objectStringOrDefault(expectedInstance.Hash.Original),
 				ae.exprReconstructor.Reconstruct(
 					accountInstance.TokenMetaData.Hash,
 					er.NoHint)))
@@ -340,7 +340,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Uri.Original),
+				objectStringOrDefault(expectedInstance.Uri.Original),
 				ae.exprReconstructor.Reconstruct(
 					actualUri,
 					er.StrHint)))
@@ -351,7 +351,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad attributes. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Attributes.Original),
+				objectStringOrDefault(expectedInstance.Attributes.Original),
 				ae.exprReconstructor.Reconstruct(
 					accountInstance.TokenMetaData.Attributes,
 					er.StrHint)))
@@ -406,4 +406,12 @@ func makeErrorString(errors []error) string {
 		errorString += "\n  " + err.Error()
 	}
 	return errorString
+}
+
+func objectStringOrDefault(obj oj.OJsonObject) string {
+	if obj == nil {
+		return ""
+	} else {
+		return oj.JSONString(obj)
+	}
 }
