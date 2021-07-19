@@ -8,11 +8,6 @@ clean:
 build:
 	go build ./...
 
-arwen:
-	go build -ldflags="-X main.appVersion=$(ARWEN_VERSION)" -o ./cmd/arwen/arwen ./cmd/arwen
-	cp ./cmd/arwen/arwen ./ipc/tests
-	cp ./cmd/arwen/arwen ${ARWEN_PATH}
-
 arwendebug:
 ifndef ARWENDEBUG_PATH
 	$(error ARWENDEBUG_PATH is undefined)

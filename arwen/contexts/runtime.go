@@ -8,9 +8,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -51,16 +51,20 @@ type runtimeContext struct {
 }
 
 // NewRuntimeContext creates a new runtimeContext
-func NewRuntimeContext(host arwen.VMHost, vmType []byte, useWarmInstance bool) (*runtimeContext, error) {
+func NewRuntimeContext(
+	host arwen.VMHost,
+	vmType []byte,
+	useWarmInstance bool,
+	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
-	protocolBuiltinFunctions := host.GetProtocolBuiltinFunctions()
 
 	context := &runtimeContext{
 		host:                host,
 		vmType:              vmType,
 		stateStack:          make([]*runtimeContext, 0),
 		instanceStack:       make([]wasmer.InstanceHandler, 0),
-		validator:           newWASMValidator(scAPINames, protocolBuiltinFunctions),
+		validator:           newWASMValidator(scAPINames, builtInFuncContainer),
 		useWarmInstance:     useWarmInstance,
 		warmInstanceAddress: nil,
 		warmInstance:        nil,
@@ -416,6 +420,17 @@ func (context *runtimeContext) GetVMInput() *vmcommon.VMInput {
 	return context.vmInput
 }
 
+func copyESDTTransfer(esdtTransfer *vmcommon.ESDTTransfer) *vmcommon.ESDTTransfer {
+	newESDTTransfer := &vmcommon.ESDTTransfer{
+		ESDTValue:      big.NewInt(0).Set(esdtTransfer.ESDTValue),
+		ESDTTokenType:  esdtTransfer.ESDTTokenType,
+		ESDTTokenNonce: esdtTransfer.ESDTTokenNonce,
+		ESDTTokenName:  make([]byte, len(esdtTransfer.ESDTTokenName)),
+	}
+	copy(newESDTTransfer.ESDTTokenName, esdtTransfer.ESDTTokenName)
+	return newESDTTransfer
+}
+
 // SetVMInput sets the given vm input as the current context vm input.
 func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 	if vmInput == nil {
@@ -424,15 +439,12 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 	}
 
 	context.vmInput = &vmcommon.VMInput{
-		CallType:       vmInput.CallType,
-		GasPrice:       vmInput.GasPrice,
-		GasProvided:    vmInput.GasProvided,
-		GasLocked:      vmInput.GasLocked,
-		CallValue:      big.NewInt(0),
-		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:  nil,
-		ESDTTokenType:  vmInput.ESDTTokenType,
-		ESDTTokenNonce: vmInput.ESDTTokenNonce,
+		CallType:             vmInput.CallType,
+		GasPrice:             vmInput.GasPrice,
+		GasProvided:          vmInput.GasProvided,
+		GasLocked:            vmInput.GasLocked,
+		CallValue:            big.NewInt(0),
+		ReturnCallAfterError: vmInput.ReturnCallAfterError,
 	}
 
 	if vmInput.CallValue != nil {
@@ -444,13 +456,12 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 		copy(context.vmInput.CallerAddr, vmInput.CallerAddr)
 	}
 
-	if vmInput.ESDTValue != nil {
-		context.vmInput.ESDTValue.Set(vmInput.ESDTValue)
-	}
+	context.vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, len(vmInput.ESDTTransfers))
 
-	if len(vmInput.ESDTTokenName) > 0 {
-		context.vmInput.ESDTTokenName = make([]byte, len(vmInput.ESDTTokenName))
-		copy(context.vmInput.ESDTTokenName, vmInput.ESDTTokenName)
+	if len(vmInput.ESDTTransfers) > 0 {
+		for i, esdtTransfer := range vmInput.ESDTTransfers {
+			context.vmInput.ESDTTransfers[i] = copyESDTTransfer(esdtTransfer)
+		}
 	}
 
 	if len(vmInput.OriginalTxHash) > 0 {

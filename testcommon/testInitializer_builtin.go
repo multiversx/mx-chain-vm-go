@@ -28,6 +28,11 @@ func (m *MockBuiltin) SetNewGasConfig(gasCost *vmcommon.GasCost) {
 	}
 }
 
+// IsActive -
+func (m *MockBuiltin) IsActive() bool {
+	return true
+}
+
 // IsInterfaceNil - see BuiltinFunction.IsInterfaceNil()
 func (m *MockBuiltin) IsInterfaceNil() bool {
 	if m.isInterfaceNil == nil {

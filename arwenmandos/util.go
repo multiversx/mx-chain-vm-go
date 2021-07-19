@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math/big"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
@@ -181,13 +181,15 @@ func generateTxHash(txIndex string) []byte {
 
 func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	if esdtData != nil {
-		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
-		vmInput.ESDTValue = esdtData.Value.Value
-		vmInput.ESDTTokenNonce = esdtData.Nonce.Value
-		if vmInput.ESDTTokenNonce != 0 {
-			vmInput.ESDTTokenType = uint32(vmcommon.NonFungible)
+		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+		vmInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+		vmInput.ESDTTransfers[0].ESDTTokenName = esdtData.TokenIdentifier.Value
+		vmInput.ESDTTransfers[0].ESDTValue = esdtData.Value.Value
+		vmInput.ESDTTransfers[0].ESDTTokenNonce = esdtData.Nonce.Value
+		if vmInput.ESDTTransfers[0].ESDTTokenNonce != 0 {
+			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.NonFungible)
 		} else {
-			vmInput.ESDTTokenType = uint32(vmcommon.Fungible)
+			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.Fungible)
 		}
 	}
 }
