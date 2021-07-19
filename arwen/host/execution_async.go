@@ -3,7 +3,7 @@ package host
 import (
 	"encoding/hex"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
