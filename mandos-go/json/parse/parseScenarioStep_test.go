@@ -32,9 +32,10 @@ func TestParseScenario(t *testing.T) {
 			"logs": [
 				{
 					"address": "''smart_contract_address________s1",
-					"identifier": "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
-					"topics": [
-						"0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
+					"identifier": "str:transferFrom",
+                        "topics": [
+                            "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
+                            "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
 						"0x1234123400000000000000000000000000000000000000000000000000000004"
 					],
 					"data": "0x00"
