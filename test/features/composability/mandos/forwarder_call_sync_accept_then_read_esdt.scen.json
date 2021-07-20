@@ -46,7 +46,10 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "1", "1" ],
+                "out": [
+                    "1",
+                    "1"
+                ],
                 "status": "0",
                 "logs": [
                     {
@@ -61,11 +64,11 @@
                     },
                     {
                         "address": "sc:vault",
-    "identifier": "str:accept_funds",
-    "topics": [
-        "str:accept_funds",
-        "str:TEST-TOKEN",
-        "str:FungibleESDT",
+                        "identifier": "str:accept_funds",
+                        "topics": [
+                            "str:accept_funds",
+                            "str:TEST-TOKEN",
+                            "str:FungibleESDT",
                             "1000",
                             "0"
                         ],
