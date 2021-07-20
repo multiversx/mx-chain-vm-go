@@ -37,11 +37,15 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							instance := mock.GetMockInstance(host)
 							t := instance.T
 
+							async := host.Async()
 							crtFunctionCalled := host.Runtime().Function()
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
+							if crtNode.isStartNode {
+								err := async.SetContextCallback(callGraph.contextCallback.call.FunctionName, []byte{}, 0)
+								require.Nil(t, err)
+							}
 							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
-							//fmt.Println("Node " + string(crtNode.asyncCall.ContractAddress) + " / " + crtNode.asyncCall.FunctionName)
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
@@ -59,7 +63,6 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										make([][]byte, 0)) // args
 								} else {
 									fmt.Println("Async call to " + destFunctionName + " on " + string(destAddress))
-									async := host.Async()
 									callData := txDataBuilder.NewBuilder()
 									callData.Func(destFunctionName)
 
@@ -76,7 +79,12 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 								}
 							}
 
-							host.Output().Finish([]byte(crtFunctionCalled + TestReturnDataSuffix))
+							for group, groupCallbackNode := range crtNode.groupCallbacks {
+								err := async.SetGroupCallback(group, groupCallbackNode.call.FunctionName, []byte{}, 0)
+								require.Nil(t, err)
+							}
+
+							host.Output().Finish([]byte(string(host.Runtime().GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix))
 							fmt.Println("End of " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
 
 							return instance
@@ -87,7 +95,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		}
 		functionName := node.call.FunctionName
 		contract := contracts[contractAddressAsString]
-		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
+		fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
 		return node
 	})
@@ -103,4 +111,60 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 	if !functionPresent {
 		contract.tempFunctionsList[functionName] = isCallBack
 	}
+}
+
+// CreateRunExpectationOrder returns an exepected execution order starting from an execution graph
+func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
+	executionOrder := make([]TestCall, 0)
+	executionGraph.DfsGraphFromNode(executionGraph.startNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
+		if !node.HasAdjacentNodes() {
+			fmt.Println("leaf " + node.GetCall().FunctionName)
+			executionOrder = append(executionOrder, TestCall{
+				ContractAddress: node.call.ContractAddress,
+				FunctionName:    node.call.FunctionName,
+			})
+		}
+		return node
+	}, false)
+	return executionOrder
+}
+
+// CreateGraphTest1 -
+func CreateGraphTest1() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+	sc1f1 := callGraph.AddNode("sc1", "f1")
+	callGraph.SetStartNode(sc1f1)
+
+	sc2f3 := callGraph.AddNode("sc2", "f3")
+	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddEdge(sc1f1, sc2f2)
+
+	sc2f6 := callGraph.AddNode("sc2", "f6")
+	callGraph.AddAsyncEdge(sc1f1, sc2f6, "cb4", "gr1")
+
+	sc3f7 := callGraph.AddNode("sc3", "f7")
+	callGraph.AddAsyncEdge(sc1f1, sc3f7, "cb4", "gr2")
+
+	sc3f4 := callGraph.AddNode("sc3", "f4")
+	callGraph.AddEdge(sc2f3, sc3f4)
+
+	callGraph.AddAsyncEdge(sc2f2, sc3f4, "cb3", "gr3")
+
+	sc1cb1 := callGraph.AddNode("sc1", "cb2")
+	sc4f5 := callGraph.AddNode("sc4", "f5")
+	callGraph.AddEdge(sc1cb1, sc4f5)
+
+	sc2cb3 := callGraph.AddNode("sc2", "cb3")
+	callGraph.AddEdge(sc2cb3, sc3f4)
+
+	callGraph.AddNode("sc1", "cb4")
+
+	sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
+	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1)
+
+	ctxcb := callGraph.AddNode("sc1", "ctxcb")
+	callGraph.SetContextCallback(ctxcb)
+	return callGraph
 }
