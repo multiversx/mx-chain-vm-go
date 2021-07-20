@@ -148,6 +148,7 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
 	AddError(err error, otherInfo ...string)
@@ -176,6 +177,15 @@ type ManagedTypesContext interface {
 	GetScalarMult100xCurveGasCostMultiplier(ecHandle int32) int32
 	GetUCompressed100xCurveGasCostMultiplier(ecHandle int32) int32
 	GetPrivateKeyByteLengthEC(ecHandle int32) int32
+	NewManagedBuffer() int32
+	NewManagedBufferFromBytes(bytes []byte) int32
+	SetBytesForThisManagedBuffer(mBufferHandle int32, bytes []byte) bool
+	GetBytesForThisManagedBuffer(mBufferHandle int32) ([]byte, error)
+	AppendBytesToThisManagedBuffer(mBufferHandle int32, bytes []byte) bool
+	GetLengthForThisManagedBuffer(mBufferHandle int32) int32
+	GetSliceFromManagedBuffer(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
+	DeleteSliceFromManagedBuffer(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
+	InsertSliceInManagedBuffer(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context

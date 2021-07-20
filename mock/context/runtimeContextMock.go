@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -29,6 +29,7 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
+	FailManagedBuffersAPI  bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
 	RunningInstances       uint64
 	CurrentTxHash          []byte
@@ -294,6 +295,11 @@ func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {
 // BigIntAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 	return r.FailBigIntAPI
+}
+
+// ManagedBufferAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) ManagedBufferAPIErrorShouldFailExecution() bool {
+	return r.FailManagedBuffersAPI
 }
 
 // FailExecution mocked method

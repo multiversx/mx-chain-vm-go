@@ -119,6 +119,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	imports, err = elrondapi.ManagedBufferImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = cryptoapi.CryptoImports(imports)
 	if err != nil {
 		return nil, err

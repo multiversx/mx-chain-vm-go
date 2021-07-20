@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -109,6 +109,8 @@ type RuntimeContextWrapper struct {
 	CryptoAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	BigIntAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ExecuteAsyncCallFunc func(address []byte, data []byte, value []byte) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -329,6 +331,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.BigIntAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.BigIntAPIErrorShouldFailExecution()
+	}
+
+	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 	}
 
 	runtimeWrapper.ExecuteAsyncCallFunc = func(address []byte, data []byte, value []byte) error {
@@ -613,6 +619,11 @@ func (contextWrapper *RuntimeContextWrapper) CryptoAPIErrorShouldFailExecution()
 // BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
+}
+
+// ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
+	return contextWrapper.ManagedBufferAPIErrorShouldFailExecution()
 }
 
 // ExecuteAsyncCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
