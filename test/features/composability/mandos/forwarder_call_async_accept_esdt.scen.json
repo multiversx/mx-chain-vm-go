@@ -61,21 +61,21 @@
                     },
                     {
                         "address": "sc:vault",
-    "identifier": "str:accept_funds",
-    "topics": [
-        "str:accept_funds",
-        "str:TEST-TOKEN",
-        "str:FungibleESDT",
-                            "1000",
-                            "0"
-                        ],
-                        "data": ""
-                    }
-                ],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
+                        "identifier": "str:accept_funds",
+                        "topics": [
+                            "str:accept_funds",
+                            "str:TEST-TOKEN",
+                            "str:FungibleESDT",
+                                                "1000",
+                                                "0"
+                                            ],
+                                            "data": ""
+                                        }
+                                    ],
+                                    "gas": "*",
+                                    "refund": "*"
+                                }
+                            },
         {
             "step": "checkState",
             "accounts": {

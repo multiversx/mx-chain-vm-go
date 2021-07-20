@@ -68,10 +68,6 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	IsFunctionImportedFunc func(name string) bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	IsWarmInstanceFunc func() bool
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ResetWarmInstanceFunc func()
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ReadOnlyFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetReadOnlyFunc func(readOnly bool)
@@ -500,16 +496,6 @@ func (contextWrapper *RuntimeContextWrapper) RunningInstancesCount() uint64 {
 // IsFunctionImported calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) IsFunctionImported(name string) bool {
 	return contextWrapper.IsFunctionImportedFunc(name)
-}
-
-// IsWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) IsWarmInstance() bool {
-	return contextWrapper.IsWarmInstanceFunc()
-}
-
-// ResetWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ResetWarmInstance() {
-	contextWrapper.ResetWarmInstanceFunc()
 }
 
 // ReadOnly calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
