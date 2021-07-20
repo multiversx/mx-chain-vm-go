@@ -41,8 +41,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							crtFunctionCalled := host.Runtime().Function()
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
-							if crtNode.isStartNode {
-								err := async.SetContextCallback(callGraph.contextCallback.call.FunctionName, []byte{}, 0)
+							if crtNode.contextCallback != nil {
+								err := async.SetContextCallback(crtNode.contextCallback.call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
 							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
@@ -132,8 +132,7 @@ func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 // CreateGraphTest1 -
 func CreateGraphTest1() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddNode("sc1", "f1")
-	callGraph.SetStartNode(sc1f1)
+	sc1f1 := callGraph.AddStartNode("sc1", "f1")
 
 	sc2f3 := callGraph.AddNode("sc2", "f3")
 	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
@@ -165,6 +164,6 @@ func CreateGraphTest1() *TestCallGraph {
 	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1)
 
 	ctxcb := callGraph.AddNode("sc1", "ctxcb")
-	callGraph.SetContextCallback(ctxcb)
+	callGraph.SetContextCallback(sc1f1, ctxcb)
 	return callGraph
 }

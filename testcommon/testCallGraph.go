@@ -31,6 +31,8 @@ type TestCallNode struct {
 	adjacentEdges []*TestCallEdge
 	// group callbacks
 	groupCallbacks map[string]*TestCallNode
+	// context callback
+	contextCallback *TestCallNode
 	// used by execution graphs - by default these nodes are ignored by FindNode() calls
 	isEndOfSyncExecutionNode bool
 	// will be reseted after each dfs traversal
@@ -59,9 +61,8 @@ type TestCallEdge struct {
 
 // TestCallGraph is the call graph
 type TestCallGraph struct {
-	nodes           []*TestCallNode
-	startNode       *TestCallNode
-	contextCallback *TestCallNode
+	nodes     []*TestCallNode
+	startNode *TestCallNode
 }
 
 // CreateTestCallGraph is the initial build metohd for the call graph
@@ -71,6 +72,14 @@ func CreateTestCallGraph() *TestCallGraph {
 	}
 }
 
+// AddStartNode adds the start node of the call graph
+func (graph *TestCallGraph) AddStartNode(contractID string, functionName string) *TestCallNode {
+	node := graph.AddNode(contractID, functionName)
+	graph.startNode = node
+	node.isStartNode = true
+	return node
+}
+
 // AddNode adds a node to the call graph
 func (graph *TestCallGraph) AddNode(contractID string, functionName string) *TestCallNode {
 	testCall := buildTestCall(contractID, functionName)
@@ -78,6 +87,7 @@ func (graph *TestCallGraph) AddNode(contractID string, functionName string) *Tes
 		call:                     testCall,
 		adjacentEdges:            make([]*TestCallEdge, 0),
 		groupCallbacks:           make(map[string]*TestCallNode, 0),
+		contextCallback:          nil,
 		visited:                  false,
 		isEndOfSyncExecutionNode: false,
 		isStartNode:              false,
@@ -106,12 +116,6 @@ func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, c
 	})
 }
 
-// SetStartNode - start node setter
-func (graph *TestCallGraph) SetStartNode(startNode *TestCallNode) {
-	graph.startNode = startNode
-	startNode.isStartNode = true
-}
-
 // GetStartNode - start node getter
 func (graph *TestCallGraph) GetStartNode() *TestCallNode {
 	return graph.startNode
@@ -123,8 +127,8 @@ func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string,
 }
 
 // SetContextCallback sets the callback for the async context
-func (graph *TestCallGraph) SetContextCallback(contextCallbackNode *TestCallNode) {
-	graph.contextCallback = contextCallbackNode
+func (graph *TestCallGraph) SetContextCallback(node *TestCallNode, contextCallbackNode *TestCallNode) {
+	node.contextCallback = contextCallbackNode
 }
 
 // FindNode finds the corresponding node in the call graph
@@ -188,6 +192,7 @@ func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
 			call:                     node.call.copy(),
 			adjacentEdges:            make([]*TestCallEdge, 0),
 			groupCallbacks:           make(map[string]*TestCallNode, 0),
+			contextCallback:          nil,
 			isEndOfSyncExecutionNode: false,
 			visited:                  false,
 			isStartNode:              node.isStartNode,
@@ -201,9 +206,12 @@ func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
 		}
 	}
 
-	executionGraph.contextCallback = executionGraph.FindNode(
-		graph.contextCallback.call.ContractAddress,
-		graph.contextCallback.call.FunctionName)
+	for _, node := range graph.nodes {
+		if node.contextCallback != nil {
+			executionNode := executionGraph.FindNode(node.call.ContractAddress, node.call.FunctionName)
+			executionNode.contextCallback = executionGraph.FindNode(node.contextCallback.call.ContractAddress, node.contextCallback.call.FunctionName)
+		}
+	}
 
 	return executionGraph
 }
@@ -258,8 +266,10 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 			// for execution tree, this will be a regular edge
 			executionGraph.AddEdge(newSource, newDestination)
 
-			callbackDestination := executionGraph.FindNode(node.call.ContractAddress, edge.callBack)
-			executionGraph.AddEdge(newSource, callbackDestination)
+			if edge.callBack != "" {
+				callbackDestination := executionGraph.FindNode(node.call.ContractAddress, edge.callBack)
+				executionGraph.AddEdge(newSource, callbackDestination)
+			}
 		}
 
 		// add group callbacks calls if any
@@ -271,8 +281,8 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 		}
 
 		// is start node add context callback
-		if newSource.isStartNode {
-			executionGraph.AddEdge(newSource, executionGraph.contextCallback)
+		if newSource.contextCallback != nil {
+			executionGraph.AddEdge(newSource, newSource.contextCallback)
 		}
 
 		return node
