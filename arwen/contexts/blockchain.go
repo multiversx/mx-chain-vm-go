@@ -40,7 +40,7 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 		return nil, err
 	}
 
-	isIndirectDeployment := context.IsSmartContract(creatorAddress) && context.host.IsArwenV3Enabled()
+	isIndirectDeployment := context.IsSmartContract(creatorAddress)
 	if !isIndirectDeployment && nonce > 0 {
 		nonce--
 	}
@@ -99,7 +99,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 
-	readNonceFromBlockChain := isNew || (outputAccount.Nonce == 0 && context.host.IsArwenV3Enabled())
+	readNonceFromBlockChain := isNew || outputAccount.Nonce == 0
 	if !readNonceFromBlockChain {
 		return outputAccount.Nonce, nil
 	}

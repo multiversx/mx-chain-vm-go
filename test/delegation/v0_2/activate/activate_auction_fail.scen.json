@@ -86,8 +86,10 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000004",
-                        "topics": [],
+                        "identifier": "str:callBack",
+                        "topics": [
+                            "0x0000000000000000000000000000000000000000000000000000000000000004"
+                        ],
                         "data": "''auction smart contract deliberate error"
                     }
                 ],

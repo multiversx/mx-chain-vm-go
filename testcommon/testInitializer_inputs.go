@@ -290,8 +290,6 @@ func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.Mock
 		GasSchedule:              gasSchedule,
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		UseWarmInstance:          false,
-		DynGasLockEnableEpoch:    0,
 		ESDTTransferParser:       esdtTransferParser,
 	})
 	require.Nil(tb, err)
@@ -314,8 +312,6 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 		GasSchedule:              gasSchedule,
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		UseWarmInstance:          false,
-		DynGasLockEnableEpoch:    0,
 		ESDTTransferParser:       esdtTransferParser,
 	})
 	require.Nil(tb, err)

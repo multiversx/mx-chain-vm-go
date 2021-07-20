@@ -157,6 +157,7 @@ func (o *OutputContextMock) PrependFinish(data []byte) {
 
 // WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
+	return
 }
 
 // TransferValueOnly mocked method

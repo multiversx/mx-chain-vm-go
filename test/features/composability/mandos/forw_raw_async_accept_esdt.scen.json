@@ -64,6 +64,7 @@
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
+                            "str:accept_funds",
                             "str:TEST-TOKEN",
                             "str:FungibleESDT",
                             "1000",
@@ -73,8 +74,9 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:callback_raw",
+                        "identifier": "str:callBack",
                         "topics": [
+                            "str:callback_raw",
                             "str:EGLD",
                             "0"
                         ],
