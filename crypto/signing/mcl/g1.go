@@ -1,7 +1,7 @@
 package mcl
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/herumi/bls-go-binary/bls"
 )
 

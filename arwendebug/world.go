@@ -3,11 +3,13 @@ package arwendebug
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 type worldDataModel struct {
@@ -49,11 +51,14 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 }
 
 func getHostParameters() *arwen.VMHostParameters {
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &arwen.VMHostParameters{
 		VMType:                   []byte{5, 0},
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+		ESDTTransferParser:       esdtTransferParser,
 	}
 }
 
@@ -63,7 +68,7 @@ func (w *world) deploySmartContract(request DeployRequest) *DeployResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCreate(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		_ = w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &DeployResponse{}
@@ -80,7 +85,7 @@ func (w *world) upgradeSmartContract(request UpgradeRequest) *UpgradeResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		_ = w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &UpgradeResponse{}
@@ -96,7 +101,7 @@ func (w *world) runSmartContract(request RunRequest) *RunResponse {
 
 	vmOutput, err := w.vm.RunSmartContractCall(input)
 	if err == nil {
-		w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		_ = w.blockchainHook.UpdateAccounts(vmOutput.OutputAccounts, nil)
 	}
 
 	response := &RunResponse{}

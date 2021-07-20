@@ -1,11 +1,11 @@
 package factory
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/hashing"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/bls"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/ed25519"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/signing/secp256k1"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/hashing"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/bls"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/ed25519"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/secp256k1"
 )
 
 // NewVMCrypto returns a composite struct containing VMCrypto functionality implementations
