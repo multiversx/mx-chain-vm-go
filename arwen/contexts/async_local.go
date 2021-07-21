@@ -130,6 +130,8 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	input := context.createGroupCallbackInput(group)
 	vmOutput, err := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
+	group.GasAccumulated = vmOutput.GasRemaining
+	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", group.GasAccumulated)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -328,6 +330,7 @@ func (context *asyncContext) createCallbackInput(
 
 func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGroup) *vmcommon.ContractCallInput {
 	runtime := context.host.Runtime()
+
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallType:       vmcommon.AsynchronousCallBack,
@@ -344,6 +347,8 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 		Function:      group.Callback,
 	}
 
+	logAsync.Trace("created group callback input", "group", group.Identifier, "function", input.Function)
+	logAsync.Trace("created group callback input gas", "provided", input.GasProvided, "locked", group.GasLocked, "accumulated", group.GasAccumulated)
 	return input
 }
 
@@ -372,6 +377,9 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 		RecipientAddr: runtime.GetSCAddress(),
 		Function:      context.callback,
 	}
+
+	logAsync.Trace("created context callback input", "sc", runtime.GetSCAddress(), "function", input.Function)
+	logAsync.Trace("created context callback input gas", "provided", input.GasProvided, "accumulated", context.gasAccumulated)
 	return input
 }
 

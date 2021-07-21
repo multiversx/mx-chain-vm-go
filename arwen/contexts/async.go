@@ -7,10 +7,13 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
+
+var logAsync = logger.GetOrCreate("arwen/async")
 
 type asyncContext struct {
 	host       arwen.VMHost
@@ -841,12 +844,16 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 }
 
 func (context *asyncContext) accumulateGasRemainingFromGroups() {
+	sc := context.host.Runtime().GetSCAddress()
+	logAsync.Trace("begin accumulating context gas", "sc", sc, "gas", context.gasAccumulated)
 	for _, group := range context.asyncCallGroups {
 		if group.IsComplete() {
 			context.gasAccumulated = math.AddUint64(context.gasAccumulated, group.GasAccumulated)
 			group.GasAccumulated = 0
+			logAsync.Trace("accumulated gas from group", "group", group.Identifier, "gas", group.GasAccumulated)
 		}
 	}
+	logAsync.Trace("finish accumulating context gas", "sc", sc, "gas", context.gasAccumulated)
 }
 
 // deleteCompletedGroups removes all completed AsyncGroups
@@ -855,6 +862,8 @@ func (context *asyncContext) deleteCompletedGroups() {
 	for _, group := range context.asyncCallGroups {
 		if !group.IsComplete() {
 			remainingAsyncGroups = append(remainingAsyncGroups, group)
+		} else {
+			logAsync.Trace("deleted group", "group", group.Identifier)
 		}
 	}
 

@@ -1279,9 +1279,11 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Groups(t *testing.T) {
+	arwen.SetLoggingForTests()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 10_000
 	testConfig.GasLockCost = 10
+	testConfig.GasProvidedToCallback = 70
 
 	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
 	// gasUsedByChild := testConfig.GasUsedByChild

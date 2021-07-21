@@ -83,12 +83,15 @@ func (acg *AsyncCallGroup) FindByDestination(destination []byte) (int, bool) {
 
 // AccumulateGasRemaining updates the GasAccumulated field with the sum of GasRemaining from all completed AsyncCalls
 func (acg *AsyncCallGroup) AccumulateGasRemaining() {
+	log.Trace("begin accumulating group gas", "group", acg.Identifier, "gas", acg.GasAccumulated)
 	for _, call := range acg.AsyncCalls {
 		if call.Status != AsyncCallPending {
 			acg.GasAccumulated = math.AddUint64(acg.GasAccumulated, call.GasRemaining)
+			log.Trace("accumulated gas from async call", "dest", call.Destination, "gas", call.GasRemaining)
 			call.GasRemaining = 0
 		}
 	}
+	log.Trace("finished accumulating group gas", "group", acg.Identifier, "gas", acg.GasAccumulated)
 }
 
 // DeleteAsyncCall removes an AsyncCall from this AsyncCallGroup, given its index
