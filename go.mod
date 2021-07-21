@@ -6,6 +6,7 @@ require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.4
 	github.com/ElrondNetwork/elrond-vm-common v1.1.0
+	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.1
 	github.com/gogo/protobuf v1.3.2

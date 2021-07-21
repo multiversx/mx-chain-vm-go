@@ -1333,35 +1333,50 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig.GasProvided = 100_000
 	testConfig.GasProvidedToChild = 10_000
 
+	callGraph := test.CreateGraphTest1()
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
+
+func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = 100_000
+	testConfig.GasProvidedToChild = 10_000
+
 	callGraph := test.CreateTestCallGraph()
-	sc1f1 := callGraph.AddNode("sc1", "f1")
-
+	sc1f1 := callGraph.AddStartNode("sc1", "f1")
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddEdge(sc1f1, sc2f2)
+	sc3f3 := callGraph.AddNode("sc3", "f3")
 
-	sc2f3 := callGraph.AddNode("sc2", "f3")
-	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
+	callGraph.AddSyncEdge(sc1f1, sc2f2)
+	callGraph.AddAsyncEdge(sc2f2, sc3f3, "", "")
 
-	sc3f4 := callGraph.AddNode("sc3", "f4")
-	callGraph.AddEdge(sc2f3, sc3f4)
+	sc1ctxcb := callGraph.AddNode("sc1", "ctxcb1")
+	callGraph.SetContextCallback(sc1f1, sc1ctxcb)
 
-	callGraph.AddAsyncEdge(sc2f2, sc3f4, "cb3", "gr2")
+	sc2ctxcb := callGraph.AddNode("sc2", "ctxcb2")
+	callGraph.SetContextCallback(sc2f2, sc2ctxcb)
 
-	sc1cb1 := callGraph.AddNode("sc1", "cb2")
-	sc4f5 := callGraph.AddNode("sc4", "f5")
-	callGraph.AddEdge(sc1cb1, sc4f5)
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
 
-	sc2cb3 := callGraph.AddNode("sc2", "cb3")
-	callGraph.AddEdge(sc2cb3, sc3f4)
+func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGraph *test.TestCallGraph) {
+	expectedReturnData := make([][]byte, 0)
+	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
+	startNode := executionGraph.GetStartNode()
+
+	executionOrder := test.CreateRunExpectationOrder(executionGraph)
+	for _, testCall := range executionOrder {
+		expectedReturnData = append(expectedReturnData, []byte(string(testCall.ContractAddress)+"_"+testCall.FunctionName+test.TestReturnDataSuffix))
+	}
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
-			WithRecipientAddr([]byte(sc1f1.GetCall().ContractAddress)).
+			WithRecipientAddr([]byte(startNode.Call.ContractAddress)).
 			WithGasProvided(testConfig.GasProvided).
-			WithFunction(sc1f1.GetCall().FunctionName).
+			WithFunction(startNode.Call.FunctionName).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
@@ -1369,7 +1384,8 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
-				Ok()
+				Ok().
+				ReturnData(expectedReturnData...)
 		})
 }
 

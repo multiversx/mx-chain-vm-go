@@ -57,6 +57,7 @@ func (context *asyncContext) InitState() {
 	context.gasRemaining = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
+	context.callback = ""
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
