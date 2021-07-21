@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
@@ -120,7 +121,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), asyncCallInfo.Destination, functionName, args)
-			if isESDTTransfer && runtime.GetVMInput().CallType == vmcommon.AsynchronousCall &&
+			if isESDTTransfer && runtime.GetVMInput().CallType == vm.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
 				return arwen.ESDTTransferOnCallBack, nil
 			}
@@ -221,7 +222,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 		asyncCallInfo.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
 		asyncCallInfo.GetData(),
-		vmcommon.AsynchronousCall,
+		vm.AsynchronousCall,
 	)
 	if err != nil {
 		metering := host.Metering()
@@ -255,7 +256,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		0,
 		currentCall.CallValue,
 		retData,
-		vmcommon.AsynchronousCallBack,
+		vm.AsynchronousCallBack,
 	)
 	if err != nil {
 		metering.UseGas(metering.GasLeft())
@@ -281,7 +282,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 		0,
 		currentCall.CallValue,
 		returnData,
-		vmcommon.AsynchronousCallBack,
+		vm.AsynchronousCallBack,
 	)
 	if err != nil {
 		metering.UseGas(metering.GasLeft())
@@ -308,7 +309,7 @@ func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.Async
 			CallerAddr:     sender,
 			Arguments:      arguments,
 			CallValue:      big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
-			CallType:       vmcommon.AsynchronousCall,
+			CallType:       vm.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    metering.GasLeft(),
 			GasLocked:      asyncCallInfo.GetGasLocked(),
@@ -394,7 +395,7 @@ func (host *vmHost) createCallbackContractCallInput(
 			CallerAddr:           callbackInitiator,
 			Arguments:            arguments,
 			CallValue:            host.computeCallValueFromLastOutputTransfer(destinationVMOutput),
-			CallType:             vmcommon.AsynchronousCallBack,
+			CallType:             vm.AsynchronousCallBack,
 			GasPrice:             runtime.GetVMInput().GasPrice,
 			GasProvided:          gasLimit,
 			CurrentTxHash:        runtime.GetCurrentTxHash(),
@@ -802,10 +803,10 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *arwen.AsyncContextInfo) error 
 	return nil
 }
 
-func (host *vmHost) getFunctionByCallType(callType vmcommon.CallType) (wasmer.ExportedFunctionCallback, error) {
+func (host *vmHost) getFunctionByCallType(callType vm.CallType) (wasmer.ExportedFunctionCallback, error) {
 	runtime := host.Runtime()
 
-	if callType != vmcommon.AsynchronousCallBack {
+	if callType != vm.AsynchronousCallBack {
 		return runtime.GetFunctionToCall()
 	}
 

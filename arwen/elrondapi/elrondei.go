@@ -99,9 +99,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -860,7 +862,7 @@ func v1_4_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 		return 1
 	}
 
-	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
+	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vm.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1090,7 +1092,7 @@ func TransferValueExecuteWithTypedArgs(
 	}
 
 	data := makeCrossShardCallFromInput(contractCallInput)
-	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vmcommon.DirectCall)
+	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vm.DirectCall)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1209,10 +1211,10 @@ func v1_4_multiTransferESDTNFTExecute(
 			ESDTTokenName:  transferArgs[tokenStartIndex],
 			ESDTTokenNonce: big.NewInt(0).SetBytes(transferArgs[tokenStartIndex+1]).Uint64(),
 			ESDTValue:      big.NewInt(0).SetBytes(transferArgs[tokenStartIndex+2]),
-			ESDTTokenType:  uint32(vmcommon.Fungible),
+			ESDTTokenType:  uint32(core.Fungible),
 		}
 		if transfer.ESDTTokenNonce > 0 {
-			transfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+			transfer.ESDTTokenType = uint32(core.NonFungible)
 		}
 		transfers[i] = transfer
 	}
@@ -1263,10 +1265,10 @@ func TransferESDTNFTExecuteWithHost(
 		ESDTValue:      callArgs.value,
 		ESDTTokenName:  tokenIdentifier,
 		ESDTTokenNonce: uint64(nonce),
-		ESDTTokenType:  uint32(vmcommon.Fungible),
+		ESDTTokenType:  uint32(core.Fungible),
 	}
 	if nonce > 0 {
-		transfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+		transfer.ESDTTokenType = uint32(core.NonFungible)
 	}
 	return TransferESDTNFTExecuteWithTypedArgs(
 		host,
@@ -2041,7 +2043,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 		return 0
 	}
 
-	key := []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()

@@ -3,7 +3,7 @@ package singlesig
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/mcl"
-	"github.com/ElrondNetwork/elrond-vm-common/check"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/herumi/bls-go-binary/bls"
 )
 

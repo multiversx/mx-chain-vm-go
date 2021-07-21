@@ -1,7 +1,7 @@
 package dex
 
 import (
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"math/big"
 
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
