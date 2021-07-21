@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/awalterschulze/gographviz"
 )
 
