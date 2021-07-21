@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -164,7 +165,7 @@ func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ 
 }
 
 // Transfer mocked method
-func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
+func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vm.CallType) error {
 	return o.TransferResult
 }
 

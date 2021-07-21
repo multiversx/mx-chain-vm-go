@@ -8,6 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -39,7 +40,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 				big.NewInt(1).Bytes(),
 			},
 			CallValue:   big.NewInt(10),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    100000000000000,
 			GasProvided: gasProvided,
 		},
@@ -102,7 +103,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockW
 				totalTokenSupply.Bytes(),
 			},
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},

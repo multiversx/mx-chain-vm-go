@@ -16,6 +16,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
@@ -235,7 +236,7 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 				[]byte("argument 2"),
 			},
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0,
 		},
@@ -251,7 +252,7 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 			CallerAddr:  userAddress,
 			Arguments:   make([][]byte, 0),
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0,
 		},

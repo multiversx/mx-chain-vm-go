@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -99,7 +100,7 @@ func (host *VMHostMock) RevertESDTTransfer(_ *vmcommon.ContractCallInput) {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vmcommon.CallType, _ bool) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ vm.CallType, _ bool) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 

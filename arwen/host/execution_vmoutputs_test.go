@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -919,7 +920,7 @@ func expectedVMOutputDestCtxByCallerSimpleTransfer(value int64) *vmcommon.VMOutp
 		GasLimit:      0,
 		GasLocked:     0,
 		Data:          []byte{},
-		CallType:      vmcommon.DirectCall,
+		CallType:      vm.DirectCall,
 		SenderAddress: childAddress,
 	})
 

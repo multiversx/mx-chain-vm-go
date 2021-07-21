@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common/check"
 	"github.com/herumi/bls-go-binary/bls"
 )
 
