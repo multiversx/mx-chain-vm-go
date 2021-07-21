@@ -300,13 +300,12 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtime, _ := NewRuntimeContext(host, vmType, false)
+	runtime, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
 		GasProvided: 1000,
 		CallValue:   big.NewInt(0),
-		ESDTValue:   big.NewInt(0),
 	}
 	input := &vmcommon.ContractCallInput{
 		VMInput:  vmInput,

@@ -62,7 +62,8 @@ package elrondapi
 // extern void		v1_4_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern void		v1_4_createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
-// extern int32_t	v1_4_setAsyncContextCallback(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t callback, int32_t callbackLength);
+// extern int32_t	v1_4_setAsyncContextCallback(void *context, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
+// extern int32_t v1_4_setAsyncGroupCallback(void *context, int32_t groupIDOffset, int32_t groupIDLength,int32_t callback, int32_t callbackLength,int32_t data, int32_t dataLength,  long long gas);
 //
 // extern int32_t	v1_4_getNumReturnData(void *context);
 // extern int32_t	v1_4_getReturnDataSize(void *context, int32_t resultID);
@@ -86,6 +87,7 @@ package elrondapi
 // extern long long v1_4_getPrevBlockEpoch(void *context);
 // extern void		v1_4_getPrevBlockRandomSeed(void *context, int32_t resultOffset);
 // extern void		v1_4_getOriginalTxHash(void *context, int32_t resultOffset);
+// extern void		v1_4_getPrevTxHash(void *context, int32_t resultOffset);
 import "C"
 
 import (
@@ -1413,7 +1415,7 @@ func v1_4_setAsyncGroupCallback(context unsafe.Pointer,
 	callbackLength int32,
 	data int32,
 	dataLength int32,
-	gas int32,
+	gas int64,
 ) int32 {
 	// TODO Create new API cost for this method
 
@@ -1465,7 +1467,7 @@ func v1_4_setAsyncContextCallback(context unsafe.Pointer,
 	callbackLength int32,
 	data int32,
 	dataLength int32,
-	gas int32,
+	gas int64,
 ) int32 {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()

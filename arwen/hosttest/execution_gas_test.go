@@ -725,7 +725,6 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).

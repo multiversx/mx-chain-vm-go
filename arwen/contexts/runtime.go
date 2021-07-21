@@ -743,9 +743,11 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 		return function, nil
 	}
 
+	// If the requested function is missing from the contract exports, but is
+	// named like arwen.CallbackFunctionName, then a different error is returned
+	// to indicate that, not just a missing function.
 	if context.callFunction == arwen.CallbackFunctionName {
-		// TODO rewrite this condition, until the AsyncContext is merged
-		logRuntime.Error("get function to call", "error", arwen.ErrNilCallbackFunction)
+		logRuntime.Trace("missing function " + arwen.CallbackFunctionName)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 

@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -231,7 +231,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
-	input.GasProvided = 1
+	input.GasProvided = 0
 	err := meteringContext.UseGasForAsyncStep()
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
 

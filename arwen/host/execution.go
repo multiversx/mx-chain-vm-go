@@ -638,6 +638,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 }
 
 func (host *vmHost) callSCMethodIndirect() error {
+	log.Trace("callSCMethodIndirect")
 	function, err := host.Runtime().GetFunctionToCall()
 	if err != nil {
 		if errors.Is(err, arwen.ErrNilCallbackFunction) {
@@ -652,6 +653,16 @@ func (host *vmHost) callSCMethodIndirect() error {
 	}
 
 	return err
+}
+
+// ParseESDTTransfers -
+func (host *vmHost) ParseESDTTransfers(
+	sender []byte,
+	destination []byte,
+	function string,
+	args [][]byte,
+) (*vmcommon.ParsedESDTTransfers, error) {
+	return host.esdtTransferParser.ParseESDTTransfers(sender, destination, function, args)
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
@@ -843,6 +854,8 @@ func (host *vmHost) callInitFunction() error {
 }
 
 func (host *vmHost) callSCMethod() error {
+	log.Trace("callSCMethod")
+
 	runtime := host.Runtime()
 	vmInput := runtime.GetVMInput()
 	async := host.Async()

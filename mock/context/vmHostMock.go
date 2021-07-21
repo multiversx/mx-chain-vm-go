@@ -31,6 +31,8 @@ type VMHostMock struct {
 
 	StoredInputs []*vmcommon.ContractCallInput
 
+	ESDTTransferParser vmcommon.ESDTTransferParser
+
 	VMOutputQueue    []*vmcommon.VMOutput
 	VMOutputToReturn int
 	Err              error
@@ -99,6 +101,15 @@ func (host *VMHostMock) IsDynamicGasLockingEnabled() bool {
 // IsESDTFunctionsEnabled mocked method
 func (host *VMHostMock) IsESDTFunctionsEnabled() bool {
 	return true
+}
+
+// ParseESDTTransfers mocked method
+func (host *VMHostMock) ParseESDTTransfers(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error) {
+	if host.Err != nil {
+		return nil, host.Err
+	}
+
+	return host.ESDTTransferParser.ParseESDTTransfers(sender, dest, function, data)
 }
 
 // AreInSameShard mocked method

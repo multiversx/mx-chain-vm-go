@@ -42,6 +42,7 @@ type VMHost interface {
 	IsArwenV3Enabled() bool
 	IsESDTFunctionsEnabled() bool
 
+	ParseESDTTransfers(sender []byte, dest []byte, function string, args [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
