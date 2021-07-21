@@ -10,6 +10,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
@@ -393,7 +395,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, 0)
-			_ = childAccount.SetTokenRolesAsStrings(test.ESDTTestTokenName, []string{vmcommon.ESDTRoleLocalBurn})
+			_ = childAccount.SetTokenRolesAsStrings(test.ESDTTestTokenName, []string{core.ESDTRoleLocalBurn})
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -541,7 +543,7 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 						WithData(asyncChildArgs).
 						WithGasLimit(gasForAsyncCall).
 						WithGasLocked(testConfig.GasLockCost).
-						WithCallType(vmcommon.AsynchronousCall).
+						WithCallType(vm.AsynchronousCall).
 						WithValue(big.NewInt(testConfig.TransferFromParentToChild)),
 				)
 		})
@@ -572,7 +574,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
 				[]byte(contracts.AsyncChildData),
 				[]byte{0}).
-			WithCallType(vmcommon.AsynchronousCall).
+			WithCallType(vm.AsynchronousCall).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
@@ -596,7 +598,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
 						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
 						WithGasLimit(gasForAsyncCall-gasUsedByChild).
-						WithCallType(vmcommon.AsynchronousCallBack).
+						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
 				)
 		})
@@ -624,7 +626,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			WithGasProvided(gasForAsyncCall-gasUsedByChild+asyncBaseTestConfig.GasLockCost).
 			WithFunction("callBack").
 			WithArguments([]byte{}, []byte{0}, []byte("thirdparty"), []byte("vault")).
-			WithCallType(vmcommon.AsynchronousCallBack).
+			WithCallType(vm.AsynchronousCallBack).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0

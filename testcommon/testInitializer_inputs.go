@@ -17,6 +17,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
@@ -337,7 +338,7 @@ func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
 				[]byte("argument 2"),
 			},
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0,
 		},
@@ -353,7 +354,7 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 			CallerAddr:  UserAddress,
 			Arguments:   make([][]byte, 0),
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0,
 		},
@@ -405,7 +406,7 @@ func (contractInput *ContractCallInputBuilder) WithArguments(arguments ...[]byte
 }
 
 // WithCallType provides the arguments to be called for ContractCallInputBuilder
-func (contractInput *ContractCallInputBuilder) WithCallType(callType vmcommon.CallType) *ContractCallInputBuilder {
+func (contractInput *ContractCallInputBuilder) WithCallType(callType vm.CallType) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.CallType = callType
 	return contractInput
 }

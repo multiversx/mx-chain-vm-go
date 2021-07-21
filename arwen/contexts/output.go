@@ -6,6 +6,8 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -259,7 +261,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return err
 	}
 
-	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
+	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall
 	checkPayable = checkPayable || !context.host.IsESDTFunctionsEnabled()
 	hasValue := value.Cmp(arwen.Zero) > 0
 	if checkPayable && !payable && hasValue && !isAsyncCall {
@@ -279,8 +281,8 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
-	checkPayableIfNotCallback := gasLimit > 0 && callType != vmcommon.AsynchronousCallBack
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error {
+	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
 	if err != nil {
 		return err
@@ -312,10 +314,10 @@ func (context *outputContext) TransferESDT(
 ) (uint64, error) {
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
 	sameShard := context.host.AreInSameShard(sender, destination)
-	callType := vmcommon.DirectCall
+	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
 	if isExecution {
-		callType = vmcommon.ESDTTransferAndExecute
+		callType = vm.ESDTTransferAndExecute
 	}
 
 	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
@@ -349,14 +351,14 @@ func (context *outputContext) TransferESDT(
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
-		Data:          []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
-		CallType:      vmcommon.DirectCall,
+		Data:          []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
+		CallType:      vm.DirectCall,
 		SenderAddress: sender,
 	}
 
 	if nonce > 0 {
 		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-		outputTransfer.Data = []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
+		outputTransfer.Data = []byte(core.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
 			"@" + hex.EncodeToString(nonceAsBytes) + "@" + hex.EncodeToString(value.Bytes()))
 		if sameShard {
 			outputTransfer.Data = append(outputTransfer.Data, []byte("@"+hex.EncodeToString(destination))...)

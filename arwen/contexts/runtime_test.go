@@ -15,6 +15,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
@@ -165,7 +166,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	esdtTransfer := &vmcommon.ESDTTransfer{
 		ESDTValue:      big.NewInt(4242),
 		ESDTTokenName:  []byte("random_token"),
-		ESDTTokenType:  uint32(vmcommon.NonFungible),
+		ESDTTokenType:  uint32(core.NonFungible),
 		ESDTTokenNonce: 94,
 	}
 
@@ -191,7 +192,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeInput := runtimeContext.GetVMInput()
 	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTTransfers[0].ESDTValue))
 	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTransfers[0].ESDTTokenName))
-	require.Equal(t, uint32(vmcommon.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
+	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
 	require.Equal(t, uint64(94), runtimeInput.ESDTTransfers[0].ESDTTokenNonce)
 
 	vmInput2 := vmcommon.VMInput{
