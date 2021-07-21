@@ -1,6 +1,7 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/Elrond/arwen-wasm-vm/test/contracts/managed-buffers/managed-buffers.c"
+        "managed-buffers.c",
+        "../elrond/cbuiltins.c"
     ]
 }

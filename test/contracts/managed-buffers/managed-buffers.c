@@ -1,6 +1,7 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
 #include "../elrond/types.h"
+#include "../elrond/test_utils.h"
 byte mBuffer1[] = {
         0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf, 
         0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24, 
@@ -40,9 +41,9 @@ void mBufferMethod() {
     mBufferSetBytes(mBufferHandle1, mBuffer1, sizeof(mBuffer1));
     int ok = 0;
 
-    if (mBufferHandle1 != 0 || mBufferHandle2 != 0) ok = 1;
+    if (mBufferHandle1 != 0 || mBufferHandle2 != 1) ok = 1;
 
-    if (mBufferGetLength(mBufferHandle1) == mBufferGetLength(mBufferHandle2)) ok = 1;
+    if (mBufferGetLength(mBufferHandle1) != mBufferGetLength(mBufferHandle2)) ok = 1;
 
     mBufferSetBytes(mBufferHandle1, mBuffer2, sizeof(mBuffer2));
     mBufferSetBytes(mBufferHandle2, mBuffer1, sizeof(mBuffer1));
@@ -52,7 +53,7 @@ void mBufferMethod() {
     int bigIntHandle1 = bigIntNew(0);
     int bigIntHandle2 = bigIntNew(0);
     if (bigIntHandle1 != 0 || bigIntHandle2 != 1) ok = 1;
-    
+
     // To/From BigInts functionalities
     mBufferToBigIntUnsigned(mBufferHandle1, bigIntHandle1);
     if(verifyBytesMBufferAndBigInt(bigIntHandle1,mBufferHandle1, 0)==1) ok = 1;
@@ -64,12 +65,12 @@ void mBufferMethod() {
     int mBufferHandle4 = mBufferNew();
     mBufferFromBigIntSigned(mBufferHandle4, bigIntHandle2);
     if( verifyBytesMBufferAndBigInt(bigIntHandle1,mBufferHandle3, 0) != 0) ok = 1;
-    if( verifyBytesMBufferAndBigInt(bigIntHandle2,mBufferHandle4, 0) != 0) ok = 1;
+    if( verifyBytesMBufferAndBigInt(bigIntHandle2,mBufferHandle4, 1) != 0) ok = 1;
     if( verifyIfBuffersAreEqual(mBufferHandle1,mBufferHandle4) != 0) ok = 1;
     if( verifyIfBuffersAreEqual(mBufferHandle1,mBufferHandle3) != 0) ok = 1;
 
     // Storage
-    int storageKeyLength = sizeof(mBufferKey);
+    int storageKeyLength = sizeof(mBufferKey) - 1;
     if( mBufferStorageStore(mBufferKey, storageKeyLength,mBufferHandle4) != 0) ok = 1;
     int mBufferHandle5 = mBufferNew();
     if( mBufferStorageLoad(mBufferKey,storageKeyLength,mBufferHandle5) != 0) ok = 1;
@@ -85,10 +86,7 @@ void mBufferMethod() {
     mBufferSetBytes(mBufferHandle5,returnDataBuffer,lengthReturnData);
     if ( verifyIfBuffersAreEqual(mBufferHandle4,mBufferHandle5) != 0) ok = 1;
     
-    byte successMessage[] = "works well";
-    byte failMessage[] = "doesn't work well";
-    if (ok==0) finish(successMessage,sizeof(successMessage));
-    else finish(failMessage,sizeof(failMessage));
+    finishResult(ok);
 }
 
 int verifyIfBuffersAreEqual(int handle1, int handle2) {
@@ -106,17 +104,23 @@ int verifyIfBuffersAreEqual(int handle1, int handle2) {
 
 int verifyBytesMBufferAndBigInt(int bigIntHandle, int mBufferHandle, int isSigned) {
     byte bufferBytes[255];
-    int length1 = mBufferGetLength(mBufferHandle);
     byte bigIntBytes[255];
-    int length2 = bigIntByteLength(bigIntHandle);
-    if (length1!=length2)
+    int mBufferLength;
+    int bigIntByteLength;
+
+    mBufferLength = mBufferGetLength(mBufferHandle);
+    if (isSigned!=0) bigIntByteLength = bigIntSignedByteLength(bigIntHandle);
+    else bigIntByteLength = bigIntUnsignedByteLength(bigIntHandle);
+
+    if (mBufferLength!=bigIntByteLength)
         return 1;
 
     mBufferGetBytes(mBufferHandle, bufferBytes);
     if (isSigned == 0) { bigIntGetUnsignedBytes(bigIntHandle, bigIntBytes); }
     else { bigIntGetSignedBytes(bigIntHandle, bigIntBytes); }
     
-    return byteArraysAreEqual(bufferBytes, bigIntBytes, length1);
+    return byteArraysAreEqual(bufferBytes, bigIntBytes, mBufferLength);
+    return 0;
 }
 
 int byteArraysAreEqual(byte firstArray[], byte secondArray[], int length) {
