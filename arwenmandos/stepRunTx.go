@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -240,7 +241,7 @@ func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint6
 		tx.ESDTValue.TokenIdentifier.Value,
 		tx.ESDTValue.Nonce.Value,
 		tx.ESDTValue.Value.Value,
-		vmcommon.DirectCall,
+		vm.DirectCall,
 		tx.GasLimit.Value,
 		tx.GasPrice.Value)
 }

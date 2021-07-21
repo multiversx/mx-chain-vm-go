@@ -93,9 +93,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -818,7 +820,7 @@ func v1_3_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 		return 1
 	}
 
-	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
+	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vm.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1048,7 +1050,7 @@ func TransferValueExecuteWithTypedArgs(
 	}
 
 	data := makeCrossShardCallFromInput(contractCallInput)
-	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vmcommon.DirectCall)
+	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vm.DirectCall)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1227,9 +1229,9 @@ func TransferESDTNFTExecuteWithTypedArgs(
 			return 1
 		}
 
-		esdtTokenType := vmcommon.Fungible
+		esdtTokenType := core.Fungible
 		if nonce > 0 {
-			esdtTokenType = vmcommon.NonFungible
+			esdtTokenType = core.NonFungible
 		}
 		contractCallInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
 		contractCallInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{
@@ -1936,7 +1938,7 @@ func v1_3_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 		return 0
 	}
 
-	key := []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()

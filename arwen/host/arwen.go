@@ -12,8 +12,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )

@@ -10,8 +10,8 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -125,7 +125,7 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 	storageError := ""
 	for k := range allKeys {
 		// ignore all reserved "ELROND..." keys
-		if strings.HasPrefix(k, vmcommon.ElrondProtectedKeyPrefix) {
+		if strings.HasPrefix(k, core.ElrondProtectedKeyPrefix) {
 			continue
 		}
 

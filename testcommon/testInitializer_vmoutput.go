@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -243,7 +244,7 @@ func (transferEntry *TransferEntry) WithGasLocked(gas uint64) *TransferEntry {
 }
 
 // WithCallType create sets the data for an output transfer assertion
-func (transferEntry *TransferEntry) WithCallType(callType vmcommon.CallType) *TransferEntry {
+func (transferEntry *TransferEntry) WithCallType(callType vm.CallType) *TransferEntry {
 	transferEntry.CallType = callType
 	return transferEntry
 }

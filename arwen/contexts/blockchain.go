@@ -4,9 +4,9 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 var log = logger.GetOrCreate("arwen/blockchainContext")

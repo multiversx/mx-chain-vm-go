@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -283,7 +284,7 @@ func (context *meteringContext) ClearStateStack() {
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
 func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.VMInput) {
-	if input.CallType != vmcommon.AsynchronousCallBack {
+	if input.CallType != vm.AsynchronousCallBack {
 		return
 	}
 

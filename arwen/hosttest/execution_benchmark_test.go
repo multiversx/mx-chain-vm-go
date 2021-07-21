@@ -11,6 +11,7 @@ import (
 	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
@@ -43,7 +44,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 				big.NewInt(1).Bytes(),
 			},
 			CallValue:   big.NewInt(10),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    100000000000000,
 			GasProvided: gasProvided,
 		},
@@ -106,7 +107,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 				totalTokenSupply.Bytes(),
 			},
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},

@@ -8,6 +8,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -217,7 +218,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	contractSize := uint64(1000)
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallType: vmcommon.AsynchronousCall,
+			CallType: vm.AsynchronousCall,
 		},
 	}
 
@@ -245,7 +246,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	expectedGasLeft := gasProvided - gasToLock
 	require.Equal(t, expectedGasLeft, meteringContext.GasLeft())
 
-	mockRuntime.VMInput.CallType = vmcommon.AsynchronousCallBack
+	mockRuntime.VMInput.CallType = vm.AsynchronousCallBack
 	mockRuntime.VMInput.GasLocked = gasToLock
 	require.Equal(t, gasToLock, meteringContext.GetGasLocked())
 
