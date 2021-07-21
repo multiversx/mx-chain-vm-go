@@ -20,7 +20,7 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 			return err
 		}
 
-		context.deleteCompletedAsyncCalls()
+		context.closeCompletedAsyncCalls()
 	}
 
 	return nil
@@ -74,10 +74,10 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	if asyncCall.HasCallback() {
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+		asyncCall.GasRemaining = callbackVMOutput.GasRemaining
+	} else {
+		asyncCall.GasRemaining = vmOutput.GasRemaining
 	}
-
-	// TODO accumulate remaining gas from the callback into the AsyncContext,
-	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
 
 	return nil
 }
@@ -335,7 +335,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
 			GasPrice:       context.gasPrice,
-			GasProvided:    group.GasLocked,
+			GasProvided:    group.GasLocked + group.GasAccumulated,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
@@ -364,7 +364,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			CallValue:      runtime.GetVMInput().CallValue,
 			CallType:       vmcommon.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    context.gasRemaining,
+			GasProvided:    context.gasAccumulated,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
