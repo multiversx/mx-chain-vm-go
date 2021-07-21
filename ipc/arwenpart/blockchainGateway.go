@@ -2,8 +2,8 @@ package arwenpart
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/ipc/common"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookGateway)(nil)

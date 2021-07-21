@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -147,7 +148,7 @@ func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte,
 }
 
 // Transfer mocked method
-func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, _ vmcommon.CallType) error {
+func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, _ vm.CallType) error {
 	if o.TransferCalled != nil {
 		return o.TransferCalled(destination, sender, gasLimit, gasLocked, value, input)
 	}

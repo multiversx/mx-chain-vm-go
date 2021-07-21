@@ -8,7 +8,9 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/math"
-	"github.com/ElrondNetwork/elrond-go-logger/check"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
@@ -231,7 +233,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
+	if input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
@@ -644,16 +646,16 @@ func (host *vmHost) callSCMethodIndirect() error {
 
 // RevertESDTTransfer calls the ESDT/ESDTNFT transfer with reverted arguments
 func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
-	isESDTTransfer := input.Function == vmcommon.BuiltInFunctionESDTTransfer || input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
+	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
 	if !isESDTTransfer {
 		return
 	}
-	if input.CallType == vmcommon.AsynchronousCallBack {
+	if input.CallType == vm.AsynchronousCallBack {
 		return
 	}
-	numArgsForTransfer := vmcommon.MinLenArgumentsESDTTransfer
-	if input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		numArgsForTransfer = vmcommon.MinLenArgumentsESDTNFTTransfer
+	numArgsForTransfer := core.MinLenArgumentsESDTTransfer
+	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
+		numArgsForTransfer = core.MinLenArgumentsESDTNFTTransfer
 	}
 	if len(input.Arguments) < numArgsForTransfer {
 		return
@@ -664,7 +666,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 			CallerAddr:     input.RecipientAddr,
 			Arguments:      make([][]byte, numArgsForTransfer),
 			CallValue:      big.NewInt(0),
-			CallType:       vmcommon.AsynchronousCallBack,
+			CallType:       vm.AsynchronousCallBack,
 			GasPrice:       input.GasPrice,
 			GasProvided:    host.meteringContext.BlockGasLimit(),
 			GasLocked:      0,
@@ -676,7 +678,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 		AllowInitFunction: false,
 	}
 	copy(revertInput.Arguments, input.Arguments)
-	if input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
+	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
 		actualRecipient := input.CallerAddr
 		actualSender := input.Arguments[numArgsForTransfer-1]
 
@@ -701,7 +703,7 @@ func (host *vmHost) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vm.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -715,12 +717,12 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			GasLocked:   0,
 		},
 		RecipientAddr:     destination,
-		Function:          vmcommon.BuiltInFunctionESDTTransfer,
+		Function:          core.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
 	if nonce > 0 {
-		esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
+		esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
 		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, nonceAsBytes, value.Bytes(), destination)
@@ -750,7 +752,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			gasConsumed, _ = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
-	if callType != vmcommon.AsynchronousCallBack && !isRevert {
+	if callType != vm.AsynchronousCallBack && !isRevert {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
@@ -779,7 +781,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 				gasForwarded := math.AddUint64(outTransfer.GasLocked, outTransfer.GasLimit)
 				gasConsumed = math.AddUint64(gasConsumed, outTransfer.GasLocked)
 
-				if input.CallType != vmcommon.AsynchronousCallBack {
+				if input.CallType != vm.AsynchronousCallBack {
 					metering.ForwardGas(runtime.GetSCAddress(), nil, gasForwarded)
 				} else {
 					gasConsumed, _ = math.SubUint64(gasConsumed, outTransfer.GasLimit)
@@ -820,13 +822,13 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 	if !host.AreInSameShard(input.RecipientAddr, input.CallerAddr) {
 		return
 	}
-	isESDTTransfer := input.Function == vmcommon.BuiltInFunctionESDTTransfer || input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
+	isESDTTransfer := input.Function == core.BuiltInFunctionESDTTransfer || input.Function == core.BuiltInFunctionESDTNFTTransfer
 	if !isESDTTransfer {
 		return
 	}
 
 	recipientAddr := input.RecipientAddr
-	if input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
+	if input.Function == core.BuiltInFunctionESDTNFTTransfer {
 		if len(input.Arguments) != 4 {
 			return
 		}
@@ -840,7 +842,7 @@ func addOutputTransferToVMOutput(
 	arguments [][]byte,
 	sender []byte,
 	recipient []byte,
-	callType vmcommon.CallType,
+	callType vm.CallType,
 	vmOutput *vmcommon.VMOutput,
 ) {
 	esdtTransferTxData := function
@@ -918,7 +920,7 @@ func (host *vmHost) callSCMethod() error {
 	callType := runtime.GetVMInput().CallType
 	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
-		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
+		if callType == vm.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
 			err = host.processCallbackStack()
 			if err != nil {
 				log.Trace("call SC method failed", "error", err)
@@ -943,7 +945,7 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	switch callType {
-	case vmcommon.AsynchronousCall:
+	case vm.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
 			log.Trace("call SC method failed", "error", paiErr)
@@ -952,7 +954,7 @@ func (host *vmHost) callSCMethod() error {
 		if len(pendingMap.AsyncContextMap) == 0 {
 			err = host.sendCallbackToCurrentCaller()
 		}
-	case vmcommon.AsynchronousCallBack:
+	case vm.AsynchronousCallBack:
 		err = host.processCallbackStack()
 	default:
 		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
@@ -975,7 +977,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	}
 
 	isCallBack := functionName == arwen.CallbackFunctionName
-	isInAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCallBack
+	isInAsyncCallBack := runtime.GetVMInput().CallType == vm.AsynchronousCallBack
 	if isCallBack && !isInAsyncCallBack {
 		return arwen.ErrCallBackFuncCalledInRun
 	}
@@ -991,7 +993,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 		return nil, nil
 	}
 	recipient := vmInput.RecipientAddr
-	if vmInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
+	if vmInput.Function == core.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
 		recipient = vmInput.Arguments[3]
 	}
 	if !host.AreInSameShard(vmInput.CallerAddr, recipient) {
@@ -1041,7 +1043,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 }
 
 func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmcommon.ContractCallInput) {
-	isESDTTransfer := fullVMInput.Function == vmcommon.BuiltInFunctionESDTTransfer || fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
+	isESDTTransfer := fullVMInput.Function == core.BuiltInFunctionESDTTransfer || fullVMInput.Function == core.BuiltInFunctionESDTNFTTransfer
 	if !isESDTTransfer {
 		return
 	}
@@ -1051,10 +1053,10 @@ func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmco
 	esdtTransfer.ESDTTokenName = fullVMInput.Arguments[0]
 	esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
 
-	if fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
+	if fullVMInput.Function == core.BuiltInFunctionESDTNFTTransfer {
 		esdtTransfer.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
 		esdtTransfer.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
-		esdtTransfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+		esdtTransfer.ESDTTokenType = uint32(core.NonFungible)
 	}
 
 	newVMInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)

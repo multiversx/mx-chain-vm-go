@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -26,7 +27,7 @@ type VMHostStub struct {
 	MeteringCalled                    func() arwen.MeteringContext
 	StorageCalled                     func() arwen.StorageContext
 	RevertESDTTransferCalled          func(input *vmcommon.ContractCallInput)
-	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vm.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
 	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, uint64, error)
@@ -153,7 +154,7 @@ func (vhs *VMHostStub) RevertESDTTransfer(input *vmcommon.ContractCallInput) {
 }
 
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vm.CallType, isRevert bool) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
 		return vhs.ExecuteESDTTransferCalled(destination, sender, tokenIdentifier, nonce, value, callType, isRevert)
 	}

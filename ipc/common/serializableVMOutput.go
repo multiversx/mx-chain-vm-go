@@ -3,6 +3,7 @@ package common
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -80,7 +81,7 @@ type SerializableOutputTransfer struct {
 	Data          []byte
 	GasLimit      uint64
 	GasLocked     uint64
-	CallType      vmcommon.CallType
+	CallType      vm.CallType
 	SenderAddress []byte
 }
 

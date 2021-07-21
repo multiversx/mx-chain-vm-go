@@ -5,8 +5,8 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
 // ErrNegativeValue signals that a negative value has been detected and it is not allowed
@@ -98,7 +98,7 @@ func (a *Account) SetTokenBalance(tokenKey []byte, balance *big.Int) error {
 func (a *Account) GetTokenData(tokenKey []byte) (*esdt.ESDigitalToken, error) {
 	esdtData := &esdt.ESDigitalToken{
 		Value: big.NewInt(0),
-		Type:  uint32(vmcommon.Fungible),
+		Type:  uint32(core.Fungible),
 		TokenMetaData: &esdt.MetaData{
 			Name:  GetTokenNameFromKey(tokenKey),
 			Nonce: 0,

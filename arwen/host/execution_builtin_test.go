@@ -8,8 +8,10 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +26,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	tokenKey := worldmock.MakeTokenKey(ESDTTestTokenName, 0)
 	err := world.BuiltinFuncs.SetTokenData(parentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
-		Type:  uint32(vmcommon.Fungible),
+		Type:  uint32(core.Fungible),
 	})
 	require.Nil(t, err)
 
@@ -191,7 +193,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	require.Nil(t, err)
 
 	input.RecipientAddr = parentAddress
-	input.Function = vmcommon.BuiltInFunctionESDTTransfer
+	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 1000000
 	input.Arguments = [][]byte{
 		ESDTTestTokenName,
@@ -235,7 +237,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinFail" {
 		return nil, errors.New("whatdidyoudo")
 	}
-	if input.Function == vmcommon.BuiltInFunctionESDTTransfer {
+	if input.Function == core.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
 			GasRemaining: 0,
 		}
@@ -248,7 +250,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 			Value:         big.NewInt(0),
 			GasLimit:      input.GasProvided - ESDTTransferGasCost + input.GasLocked,
 			Data:          []byte(esdtTransferTxData),
-			CallType:      vmcommon.AsynchronousCall,
+			CallType:      vm.AsynchronousCall,
 			SenderAddress: input.CallerAddr,
 		}
 		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
@@ -271,7 +273,7 @@ func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
 	names["builtinClaim"] = empty
 	names["builtinDoSomething"] = empty
 	names["builtinFail"] = empty
-	names[vmcommon.BuiltInFunctionESDTTransfer] = empty
+	names[core.BuiltInFunctionESDTTransfer] = empty
 
 	return names
 }

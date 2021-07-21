@@ -92,9 +92,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -806,7 +808,7 @@ func v1_2_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 		return 1
 	}
 
-	err = output.Transfer(dest, send, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
+	err = output.Transfer(dest, send, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vm.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -883,7 +885,7 @@ func v1_2_transferValueExecute(
 	}
 
 	data := makeCrossShardCallFromInput(contractCallInput)
-	err = output.Transfer(dest, send, uint64(gasLimit), 0, big.NewInt(0).SetBytes(valueBytes), []byte(data), vmcommon.DirectCall)
+	err = output.Transfer(dest, send, uint64(gasLimit), 0, big.NewInt(0).SetBytes(valueBytes), []byte(data), vm.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1004,9 +1006,9 @@ func v1_2_transferESDTNFTExecute(
 			return 1
 		}
 
-		esdtTokenType := vmcommon.Fungible
+		esdtTokenType := core.Fungible
 		if nonce > 0 {
-			esdtTokenType = vmcommon.NonFungible
+			esdtTokenType = core.NonFungible
 		}
 		contractCallInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
 		contractCallInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{
@@ -1028,7 +1030,7 @@ func v1_2_transferESDTNFTExecute(
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
-			_, _, err = host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vmcommon.AsynchronousCallBack, true)
+			_, _, err = host.ExecuteESDTTransfer(sender, dest, tokenIdentifier, uint64(nonce), big.NewInt(0).SetBytes(valueBytes), vm.AsynchronousCallBack, true)
 			if err != nil {
 				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", err)
 				_ = arwen.WithFault(err, context, true)
@@ -1623,7 +1625,7 @@ func v1_2_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 		return 0
 	}
 
-	key := []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
@@ -1994,7 +1996,7 @@ func doESDTTransferAndExecuteSynchronously(
 			CallerAddr:  sender,
 			Arguments:   make([][]byte, 0),
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasProvided: metering.BoundGasLimit(gasLimit),
 		},
 		RecipientAddr: destination,
@@ -2011,19 +2013,19 @@ func doESDTTransferAndExecuteSynchronously(
 	}
 
 	switch function {
-	case vmcommon.BuiltInFunctionESDTTransfer:
-		if len(args) < vmcommon.MinLenArgumentsESDTTransfer {
+	case core.BuiltInFunctionESDTTransfer:
+		if len(args) < core.MinLenArgumentsESDTTransfer {
 			if arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 				return 1
 			}
 		}
 
 		esdtValue.SetBytes(args[1])
-		contractCallInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.Fungible)
-		fillContractCallInputFromArgs(contractCallInput, args, vmcommon.MinLenArgumentsESDTTransfer)
+		contractCallInput.ESDTTransfers[0].ESDTTokenType = uint32(core.Fungible)
+		fillContractCallInputFromArgs(contractCallInput, args, core.MinLenArgumentsESDTTransfer)
 
-	case vmcommon.BuiltInFunctionESDTNFTTransfer:
-		if len(args) < vmcommon.MinLenArgumentsESDTNFTTransfer {
+	case core.BuiltInFunctionESDTNFTTransfer:
+		if len(args) < core.MinLenArgumentsESDTNFTTransfer {
 			if arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 				return 1
 			}
@@ -2035,8 +2037,8 @@ func doESDTTransferAndExecuteSynchronously(
 				return 1
 			}
 		}
-		contractCallInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.NonFungible)
-		fillContractCallInputFromArgs(contractCallInput, args, vmcommon.MinLenArgumentsESDTNFTTransfer)
+		contractCallInput.ESDTTransfers[0].ESDTTokenType = uint32(core.NonFungible)
+		fillContractCallInputFromArgs(contractCallInput, args, core.MinLenArgumentsESDTNFTTransfer)
 
 	default:
 		if arwen.WithFault(arwen.ErrFuncNotFound, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
@@ -2061,7 +2063,7 @@ func doESDTTransferAndExecuteSynchronously(
 		_, _, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if arwen.WithFault(err, context, runtime.ElrondSyncExecAPIErrorShouldFailExecution()) {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", err)
-			_, _, err = host.ExecuteESDTTransfer(sender, destination, tokenID, nonce, esdtValue, vmcommon.AsynchronousCallBack, true)
+			_, _, err = host.ExecuteESDTTransfer(sender, destination, tokenID, nonce, esdtValue, vm.AsynchronousCallBack, true)
 			if err != nil {
 				logEEI.Warn("ESDT revert failed - forced fail execution for context", "error", err)
 				_ = arwen.WithFault(err, context, true)
@@ -2090,8 +2092,8 @@ func detectSyncESDTTransfer(
 		return "", false, err
 	}
 
-	if string(function) == vmcommon.BuiltInFunctionESDTTransfer ||
-		string(function) == vmcommon.BuiltInFunctionESDTNFTTransfer {
+	if string(function) == core.BuiltInFunctionESDTTransfer ||
+		string(function) == core.BuiltInFunctionESDTNFTTransfer {
 		return string(function), true, nil
 	}
 
