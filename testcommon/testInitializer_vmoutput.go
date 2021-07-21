@@ -197,8 +197,6 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value}
 	}
 
-	require.Equal(v.T, len(storage), len(v.VmOutput.OutputAccounts), "Accounts with storage count")
-
 	for _, outputAccount := range v.VmOutput.OutputAccounts {
 		accountStorageMap := storage[string(outputAccount.Address)]
 		require.Equal(v.T, len(accountStorageMap), len(outputAccount.StorageUpdates), "Storage")
