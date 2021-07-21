@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -412,8 +412,10 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	// TODO add exception for the first callback instance of the same address,
 	// which must be allowed to modify the AsyncContext
 	scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
-	if scOccurrences > 0 {
-		// return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
+	callType := runtime.GetVMInput().CallType
+	modifiableAsyncContext := (scOccurrences == 0) || (callType == vmcommon.AsynchronousCallBack)
+	if !modifiableAsyncContext {
+		return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
 	}
 
 	err := metering.UseGasBounded(call.GasLocked)
@@ -688,7 +690,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
-			isESDTTransfer, _, _ := isESDTTransferOnReturnDataFromFunctionAndArgs(functionName, args)
+			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), destination, functionName, args)
 			isAsyncCall := vmInput.CallType == vmcommon.AsynchronousCall
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
 

@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go-logger/check"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -45,9 +46,10 @@ type vmHost struct {
 	storageContext    arwen.StorageContext
 	bigIntContext     arwen.BigIntContext
 
-	gasSchedule              config.GasScheduleMap
-	scAPIMethods             *wasmer.Imports
-	protocolBuiltinFunctions vmcommon.FunctionNames
+	gasSchedule          config.GasScheduleMap
+	scAPIMethods         *wasmer.Imports
+	builtInFuncContainer vmcommon.BuiltInFunctionContainer
+	esdtTransferParser   vmcommon.ESDTTransferParser
 
 	arwenV2EnableEpoch uint32
 	flagArwenV2        atomic.Flag
@@ -73,6 +75,19 @@ func NewArwenVM(
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
+	if check.IfNil(blockChainHook) {
+		return nil, arwen.ErrNilBlockChainHook
+	}
+	if hostParameters == nil {
+		return nil, arwen.ErrNilHostParameters
+	}
+	if check.IfNil(hostParameters.ESDTTransferParser) {
+		return nil, arwen.ErrNilESDTTransferParser
+	}
+	if check.IfNil(hostParameters.BuiltInFuncContainer) {
+		return nil, arwen.ErrNilBuiltInFunctionsContainer
+	}
+
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
 		cryptoHook:               cryptoHook,
@@ -84,13 +99,14 @@ func NewArwenVM(
 		bigIntContext:            nil,
 		gasSchedule:              hostParameters.GasSchedule,
 		scAPIMethods:             nil,
-		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
 		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
 		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
 		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
 		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
 		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
 		callArgsParser:           parsers.NewCallArgsParser(),
+		builtInFuncContainer:     hostParameters.BuiltInFuncContainer,
+		esdtTransferParser:       hostParameters.ESDTTransferParser,
 	}
 
 	var err error
@@ -131,6 +147,7 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		hostParameters.UseWarmInstance,
+		host.builtInFuncContainer,
 	)
 	if err != nil {
 		return nil, err
@@ -313,16 +330,6 @@ func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
 }
 
-// GetProtocolBuiltinFunctions returns the names of the built-in functions, reserved by the protocol
-func (host *vmHost) GetProtocolBuiltinFunctions() vmcommon.FunctionNames {
-	return host.protocolBuiltinFunctions
-}
-
-// SetProtocolBuiltinFunctions sets the names of build-in functions, reserved by the protocol
-func (host *vmHost) SetProtocolBuiltinFunctions(functionNames vmcommon.FunctionNames) {
-	host.protocolBuiltinFunctions = functionNames
-}
-
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
@@ -464,4 +471,12 @@ func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
 // Async returns the AsyncContext instance of the host
 func (host *vmHost) Async() arwen.AsyncContext {
 	return host.asyncContext
+}
+
+// SetBuiltInFunctionsContainer sets the built in function container - only for testing
+func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer) {
+	if check.IfNil(builtInFuncs) {
+		return
+	}
+	host.builtInFuncContainer = builtInFuncs
 }

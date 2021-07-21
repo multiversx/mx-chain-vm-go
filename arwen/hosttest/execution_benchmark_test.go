@@ -6,12 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/gasSchedules"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -88,12 +90,14 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV2())
 	require.Nil(tb, err)
 
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
 		VMType:                   testcommon.DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasMap,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		ESDTTransferParser:       esdtTransferParser,
 	})
 	require.Nil(tb, err)
 

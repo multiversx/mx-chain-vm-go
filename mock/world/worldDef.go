@@ -3,7 +3,7 @@ package worldmock
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 

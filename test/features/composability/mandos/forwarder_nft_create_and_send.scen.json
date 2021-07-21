@@ -112,12 +112,23 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "nonce": "1",
-                            "balance": "1"
-                        },
-                        "str:NFT-0001": {
-                            "nonce": "2",
-                            "balance": "1"
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1"
+                                },
+                                {
+                                    "nonce": "2",
+                                    "balance": "1",
+                                    "creator": "sc:forwarder",
+                                    "royalties": "0",
+                                    "hash": "str:nft-create-hash-----------------",
+                                    "attributes": "0x808080",
+                                    "uri": [
+                                        "str:nft-create-uri"
+                                    ]
+                                }
+                            ]
                         }
                     },
                     "storage": {},
@@ -132,17 +143,6 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1"
-                                },
-                                {
-                                    "nonce": "2",
-                                    "balance": "0",
-                                    "creator": "sc:forwarder",
-                                    "royalties": "0",
-                                    "hash": "str:nft-create-hash-----------------",
-                                    "attributes": "0x808080",
-                                    "uri": [
-                                        "str:nft-create-uri"
-                                    ]
                                 }
                             ],
                             "lastNonce": "2",

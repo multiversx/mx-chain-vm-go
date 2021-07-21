@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 )
 
 // ChildAsyncMultiGroupsMock is an exposed mock contract method

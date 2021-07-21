@@ -5,13 +5,15 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto/factory"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,6 +28,8 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
+	vmType := []byte("type")
+
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
@@ -33,6 +37,8 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 
 	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
+	parser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	host.ESDTTransferParser = parser
 
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
@@ -44,7 +50,7 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	mockWasmerInstance = &wasmer.Instance{
 		Exports: make(wasmer.ExportsMap),
 	}
-	runtimeContext, _ := NewRuntimeContext(host, []byte("vm"), false)
+	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 

@@ -6,20 +6,20 @@ package cryptoapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t v1_3_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t v1_3_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t v1_3_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t v1_3_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t v1_3_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t v1_3_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_4_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_4_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_4_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_4_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_4_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_4_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 import "C"
 
 import (
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
 const blsPublicKeyLength = 96
@@ -33,32 +33,32 @@ const secp256k1SignatureLength = 64
 // CryptoImports adds some crypto imports to the Wasmer Imports map
 func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
-	imports, err := imports.Append("sha256", v1_3_sha256, C.v1_3_sha256)
+	imports, err := imports.Append("sha256", v1_4_sha256, C.v1_4_sha256)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("keccak256", v1_3_keccak256, C.v1_3_keccak256)
+	imports, err = imports.Append("keccak256", v1_4_keccak256, C.v1_4_keccak256)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("ripemd160", v1_3_ripemd160, C.v1_3_ripemd160)
+	imports, err = imports.Append("ripemd160", v1_4_ripemd160, C.v1_4_ripemd160)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("verifyBLS", v1_3_verifyBLS, C.v1_3_verifyBLS)
+	imports, err = imports.Append("verifyBLS", v1_4_verifyBLS, C.v1_4_verifyBLS)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("verifyEd25519", v1_3_verifyEd25519, C.v1_3_verifyEd25519)
+	imports, err = imports.Append("verifyEd25519", v1_4_verifyEd25519, C.v1_4_verifyEd25519)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("verifySecp256k1", v1_3_verifySecp256k1, C.v1_3_verifySecp256k1)
+	imports, err = imports.Append("verifySecp256k1", v1_4_verifySecp256k1, C.v1_4_verifySecp256k1)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +66,8 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, nil
 }
 
-//export v1_3_sha256
-func v1_3_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_4_sha256
+func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -94,8 +94,8 @@ func v1_3_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultO
 	return 0
 }
 
-//export v1_3_keccak256
-func v1_3_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_4_keccak256
+func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -122,8 +122,8 @@ func v1_3_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resu
 	return 0
 }
 
-//export v1_3_ripemd160
-func v1_3_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_4_ripemd160
+func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -150,8 +150,8 @@ func v1_3_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resu
 	return 0
 }
 
-//export v1_3_verifyBLS
-func v1_3_verifyBLS(
+//export v1_4_verifyBLS
+func v1_4_verifyBLS(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -191,8 +191,8 @@ func v1_3_verifyBLS(
 	return 0
 }
 
-//export v1_3_verifyEd25519
-func v1_3_verifyEd25519(
+//export v1_4_verifyEd25519
+func v1_4_verifyEd25519(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -232,8 +232,8 @@ func v1_3_verifyEd25519(
 	return 0
 }
 
-//export v1_3_verifySecp256k1
-func v1_3_verifySecp256k1(
+//export v1_4_verifySecp256k1
+func v1_4_verifySecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
