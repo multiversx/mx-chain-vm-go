@@ -14,8 +14,8 @@ func TestCallGraph_Dfs(t *testing.T) {
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
 		//fmt.Println(string(node.call.ContractAddress) + " " + node.call.FunctionName)
 		traversalOrder = append(traversalOrder, TestCall{
-			ContractAddress: node.call.ContractAddress,
-			FunctionName:    node.call.FunctionName,
+			ContractAddress: node.Call.ContractAddress,
+			FunctionName:    node.Call.FunctionName,
 		})
 		return node
 	})

@@ -25,9 +25,9 @@ var TestContextCallbackFunction = "contextCallback"
 func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testConfig *TestConfig) []MockTestSmartContract {
 	contracts := make(map[string]*MockTestSmartContract)
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
-		contractAddressAsString := string(node.call.ContractAddress)
+		contractAddressAsString := string(node.Call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
-			newContract := CreateMockContract(node.call.ContractAddress).
+			newContract := CreateMockContract(node.Call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
 				WithMethods(func(instanceMock *mock.InstanceMock, testConfig *TestConfig) {
@@ -42,7 +42,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 							if crtNode.contextCallback != nil {
-								err := async.SetContextCallback(crtNode.contextCallback.call.FunctionName, []byte{}, 0)
+								err := async.SetContextCallback(crtNode.contextCallback.Call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
 							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
@@ -50,9 +50,9 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
 							for _, edge := range crtNode.adjacentEdges {
-								destFunctionName := edge.to.call.FunctionName
-								destAddress := edge.to.call.ContractAddress
-								if !edge.async {
+								destFunctionName := edge.To.Call.FunctionName
+								destAddress := edge.To.Call.ContractAddress
+								if !edge.Async {
 									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
@@ -80,7 +80,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							}
 
 							for group, groupCallbackNode := range crtNode.groupCallbacks {
-								err := async.SetGroupCallback(group, groupCallbackNode.call.FunctionName, []byte{}, 0)
+								err := async.SetGroupCallback(group, groupCallbackNode.Call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
 
@@ -93,7 +93,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 				})
 			contracts[contractAddressAsString] = &newContract
 		}
-		functionName := node.call.FunctionName
+		functionName := node.Call.FunctionName
 		contract := contracts[contractAddressAsString]
 		fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
@@ -118,10 +118,10 @@ func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 	executionOrder := make([]TestCall, 0)
 	executionGraph.DfsGraphFromNode(executionGraph.startNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
 		if !node.HasAdjacentNodes() {
-			fmt.Println("leaf " + node.GetCall().FunctionName)
+			fmt.Println("leaf " + node.Call.FunctionName)
 			executionOrder = append(executionOrder, TestCall{
-				ContractAddress: node.call.ContractAddress,
-				FunctionName:    node.call.FunctionName,
+				ContractAddress: node.Call.ContractAddress,
+				FunctionName:    node.Call.FunctionName,
 			})
 		}
 		return node
@@ -138,7 +138,7 @@ func CreateGraphTest1() *TestCallGraph {
 	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddEdge(sc1f1, sc2f2)
+	callGraph.AddSyncEdge(sc1f1, sc2f2)
 
 	sc2f6 := callGraph.AddNode("sc2", "f6")
 	callGraph.AddAsyncEdge(sc1f1, sc2f6, "cb4", "gr1")
@@ -147,16 +147,16 @@ func CreateGraphTest1() *TestCallGraph {
 	callGraph.AddAsyncEdge(sc1f1, sc3f7, "cb4", "gr2")
 
 	sc3f4 := callGraph.AddNode("sc3", "f4")
-	callGraph.AddEdge(sc2f3, sc3f4)
+	callGraph.AddSyncEdge(sc2f3, sc3f4)
 
 	callGraph.AddAsyncEdge(sc2f2, sc3f4, "cb3", "gr3")
 
 	sc1cb1 := callGraph.AddNode("sc1", "cb2")
 	sc4f5 := callGraph.AddNode("sc4", "f5")
-	callGraph.AddEdge(sc1cb1, sc4f5)
+	callGraph.AddSyncEdge(sc1cb1, sc4f5)
 
 	sc2cb3 := callGraph.AddNode("sc2", "cb3")
-	callGraph.AddEdge(sc2cb3, sc3f4)
+	callGraph.AddSyncEdge(sc2cb3, sc3f4)
 
 	callGraph.AddNode("sc1", "cb4")
 

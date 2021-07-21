@@ -1348,7 +1348,7 @@ func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	sc3f3 := callGraph.AddNode("sc3", "f3")
 
-	callGraph.AddEdge(sc1f1, sc2f2)
+	callGraph.AddSyncEdge(sc1f1, sc2f2)
 	callGraph.AddAsyncEdge(sc2f2, sc3f3, "", "")
 
 	sc1ctxcb := callGraph.AddNode("sc1", "ctxcb1")
@@ -1375,9 +1375,9 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 			test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
-			WithRecipientAddr([]byte(startNode.GetCall().ContractAddress)).
+			WithRecipientAddr([]byte(startNode.Call.ContractAddress)).
 			WithGasProvided(testConfig.GasProvided).
-			WithFunction(startNode.GetCall().FunctionName).
+			WithFunction(startNode.Call.FunctionName).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
