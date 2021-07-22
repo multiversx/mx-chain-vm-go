@@ -135,6 +135,21 @@
     UnmarshalCompressedECC = 10
     GenerateKeyECC         = 10
 
+[ManagedBufferAPICost]
+    MBufferNew                   = 10
+    MBufferNewFromBytes          = 10
+    MBufferSetBytes              = 10
+    MBufferGetLength             = 10
+    MBufferGetBytes              = 10
+    MBufferToBigIntUnsigned      = 10
+    MBufferToBigIntSigned        = 10
+    MBufferFromBigIntUnsigned    = 10
+    MBufferFromBigIntSigned      = 10
+    MBufferStorageStore          = 10
+    MBufferStorageLoad           = 10
+    MBufferGetArgument           = 10
+    MBufferFinish                = 10
+
 [WASMOpcodeCost]
     Unreachable = 1
     Nop = 1

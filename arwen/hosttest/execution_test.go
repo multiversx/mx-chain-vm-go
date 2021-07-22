@@ -15,11 +15,20 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
 var counterKey = []byte("COUNTER")
+var mBufferKey = []byte("mBuffer")
+var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
+	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24,
+	0xcb, 0x40, 0xd6, 0x4a, 0x50, 0x1f, 0xba, 0x9c,
+	0x11, 0x84, 0x7b, 0x28, 0x96, 0x5b, 0xc7, 0x37,
+	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24,
+	0xcb, 0x40, 0xd6, 0x4a, 0x50, 0x1f, 0xba, 0x9c,
+	0x11, 0x84, 0x7b, 0x28, 0x96, 0x5b, 0xc7, 0x37,
+	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24}
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
 var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
@@ -27,6 +36,7 @@ var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 const (
 	get                     = "get"
 	increment               = "increment"
+	mBuffer                 = "mBufferMethod"
 	callRecursive           = "callRecursive"
 	parentCallsChild        = "parentCallsChild"
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
@@ -525,6 +535,27 @@ func TestExecution_Call_Successful(t *testing.T) {
 				Ok().
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(counterKey).WithValue(big.NewInt(1002).Bytes()),
+				)
+		})
+}
+
+func TestExecution_ManagedBuffers(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					managedBuffer,
+					[]byte("succ")).
+				Storage(
+					test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer),
 				)
 		})
 }

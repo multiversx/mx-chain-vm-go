@@ -7,7 +7,7 @@ import (
 	"unicode"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -183,11 +183,11 @@ func (storeEntry *StoreEntry) WithValue(value []byte) StoreEntry {
 }
 
 // Storage verifies if StorageUpdate(s) for the speficied accounts are the same as the provided ones
-func (v *VMOutputVerifier) Storage(returnData ...StoreEntry) *VMOutputVerifier {
+func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerifier {
 
 	storage := make(map[string]map[string]vmcommon.StorageUpdate)
 
-	for _, storeEntry := range returnData {
+	for _, storeEntry := range expectedEntries {
 		account := string(storeEntry.address)
 		accountStorageMap, exists := storage[account]
 		if !exists {

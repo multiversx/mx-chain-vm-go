@@ -177,6 +177,21 @@ const (
     UnmarshalCompressedECC = 600
     GenerateKeyECC         = 600
 
+	[ManagedBufferAPICost]
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferSetBytes              = 2000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
+
 [WASMOpcodeCost]
     Unreachable = 1
     Nop = 1
@@ -801,6 +816,21 @@ const (
     UnmarshalECC           = 1000000
     UnmarshalCompressedECC = 1000000
     GenerateKeyECC         = 1000000
+
+[ManagedBufferAPICost]
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferSetBytes              = 2000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -1428,6 +1458,21 @@ const (
     UnmarshalECC           = 1000000
     UnmarshalCompressedECC = 1000000
     GenerateKeyECC         = 1000000
+
+[ManagedBufferAPICost]
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferSetBytes              = 2000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1
