@@ -14,6 +14,8 @@ github.com/ElrondNetwork/elrond-vm-common v1.0.1-0.20210709121514-acfacaa06d62/g
 github.com/ElrondNetwork/elrond-vm-common v1.1.0/go.mod h1:w3i6f8uiuRkE68Ie/gebRcLgTuHqvruJSYrFyZWuLrE=
 github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210721110111-51b198fb52f4 h1:Nyd0Obs3z8lzYzkeVjqgmziw1CPJYTUmwx4DMhvdyu0=
 github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210721110111-51b198fb52f4/go.mod h1:OrXHYASp1YBoXPrESy7rTKU+GdoN6+s46oh5LqZgaE4=
+github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210722060700-90d35cd5b077 h1:32j/UATsff8XYOIIfjQ5wB06ykO7L424Z5aZo7sLPQM=
+github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210722060700-90d35cd5b077/go.mod h1:OrXHYASp1YBoXPrESy7rTKU+GdoN6+s46oh5LqZgaE4=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=

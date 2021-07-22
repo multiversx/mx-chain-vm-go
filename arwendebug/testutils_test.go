@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -150,7 +151,7 @@ func (context *testContext) queryContract(contract string, impersonated string, 
 }
 
 func (response *ContractResponseBase) getFirstResultAsInt64() int64 {
-	result, err := response.Output.GetFirstReturnData(vmcommon.AsBigInt)
+	result, err := response.Output.GetFirstReturnData(vm.AsBigInt)
 	if err != nil {
 		return 0
 	}
