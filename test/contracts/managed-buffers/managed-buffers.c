@@ -71,9 +71,10 @@ void mBufferMethod() {
 
     // Storage
     int storageKeyLength = sizeof(mBufferKey) - 1;
-    if( mBufferStorageStore(mBufferKey, storageKeyLength,mBufferHandle4) != 0) ok = 1;
+    int keyHandle = mBufferNewFromBytes(mBufferKey,storageKeyLength);
+    if( mBufferStorageStore(keyHandle, mBufferHandle4) != 0) ok = 1;
     int mBufferHandle5 = mBufferNew();
-    if( mBufferStorageLoad(mBufferKey,storageKeyLength,mBufferHandle5) != 0) ok = 1;
+    if( mBufferStorageLoad(keyHandle, mBufferHandle5) != 0) ok = 1;
     if( verifyIfBuffersAreEqual(mBufferHandle4,mBufferHandle5) != 0) ok = 1;
 
     // Finish

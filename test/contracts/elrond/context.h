@@ -34,8 +34,8 @@ int	mBufferToBigIntUnsigned(int mBufferHandle, int bigIntHandle);
 int mBufferToBigIntSigned(int mBufferHandle, int bigIntHandle);
 int	mBufferFromBigIntUnsigned(int mBufferHandle, int bigIntHandle);
 int	mBufferFromBigIntSigned(int mBufferHandle, int bigIntHandle);
-int	mBufferStorageStore(byte*keyOffset, int keyLength,int mBufferHandle);
-int	mBufferStorageLoad(byte*keyOffset, int keyLength, int mBufferHandle);
+int	mBufferStorageStore(int keyHandle, int mBufferHandle);
+int	mBufferStorageLoad(int keyHandle, int mBufferHandle);
 int	mBufferGetArgument(int id, int mBufferHandle);
 int	mBufferFinish(int mBufferHandle);
 

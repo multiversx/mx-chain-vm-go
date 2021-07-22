@@ -16,8 +16,8 @@ package elrondapi
 // extern int32_t 	v1_4_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyOffset, int32_t keyLength,int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyOffset, int32_t keyLength, int32_t mBufferHandle);
+// extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
+// extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferFinish(void* context, int32_t mBufferHandle);
 import "C"
@@ -308,7 +308,7 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 }
 
 //export v1_4_mBufferStorageStore
-func v1_4_mBufferStorageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, mBufferHandle int32) int32 {
+func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, mBufferHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -317,7 +317,7 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyOffset int32, keyLength
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferStorageStore
 	metering.UseGas(gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -336,7 +336,7 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyOffset int32, keyLength
 }
 
 //export v1_4_mBufferStorageLoad
-func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, mBufferHandle int32) int32 {
+func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, mBufferHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -345,7 +345,7 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyOffset int32, keyLength 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad
 	metering.UseGas(gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
