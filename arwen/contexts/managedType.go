@@ -321,22 +321,21 @@ func (context *managedTypesContext) NewManagedBuffer() int32 {
 // NewManagedBufferFromBytes creates a new buffer in the managed buffers map, sets the bytes provided, and returns the handle
 func (context *managedTypesContext) NewManagedBufferFromBytes(bytes []byte) int32 {
 	mBufferHandle := context.NewManagedBuffer()
-	context.SetBytesForThisManagedBuffer(mBufferHandle, bytes)
+	context.SetBytes(mBufferHandle, bytes)
 	return mBufferHandle
 }
 
-// SetBytesForThisManagedBuffer sets the bytes given as value for the managed buffer. Returns 0 if success, 1 otherwise
-func (context *managedTypesContext) SetBytesForThisManagedBuffer(mBufferHandle int32, bytes []byte) bool {
+// SetBytes sets the bytes given as value for the managed buffer
+func (context *managedTypesContext) SetBytes(mBufferHandle int32, bytes []byte) {
 	_, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
-		return false
+		context.managedTypesValues.mBufferValues[mBufferHandle] = make([]byte, 0)
 	}
 	context.managedTypesValues.mBufferValues[mBufferHandle] = bytes
-	return true
 }
 
-// GetBytesForThisManagedBuffer returns the bytes for the managed buffer. Returns nil as value and error if buffer is non-existent
-func (context *managedTypesContext) GetBytesForThisManagedBuffer(mBufferHandle int32) ([]byte, error) {
+// GetBytes returns the bytes for the managed buffer. Returns nil as value and error if buffer is non-existent
+func (context *managedTypesContext) GetBytes(mBufferHandle int32) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
 		return nil, arwen.ErrNoManagedBufferUnderThisHandle
@@ -344,8 +343,8 @@ func (context *managedTypesContext) GetBytesForThisManagedBuffer(mBufferHandle i
 	return mBuffer, nil
 }
 
-// AppendBytesToThisManagedBuffer appends the given bytes to the buffer at the end
-func (context *managedTypesContext) AppendBytesToThisManagedBuffer(mBufferHandle int32, bytes []byte) bool {
+// AppendBytes appends the given bytes to the buffer at the end
+func (context *managedTypesContext) AppendBytes(mBufferHandle int32, bytes []byte) bool {
 	_, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
 		return false
@@ -354,8 +353,8 @@ func (context *managedTypesContext) AppendBytesToThisManagedBuffer(mBufferHandle
 	return true
 }
 
-// GetLengthForThisManagedBuffer returns the length of the managed buffer
-func (context *managedTypesContext) GetLengthForThisManagedBuffer(mBufferHandle int32) int32 {
+// GetLength returns the length of the managed buffer
+func (context *managedTypesContext) GetLength(mBufferHandle int32) int32 {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
 		return -1
@@ -363,8 +362,8 @@ func (context *managedTypesContext) GetLengthForThisManagedBuffer(mBufferHandle 
 	return int32(len(mBuffer))
 }
 
-// GetSliceFromManagedBuffer returns a slice of given length beginning at given start position from the managed buffer
-func (context *managedTypesContext) GetSliceFromManagedBuffer(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error) {
+// GetSlice returns a slice of given length beginning at given start position from the managed buffer
+func (context *managedTypesContext) GetSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
 		return nil, arwen.ErrNoManagedBufferUnderThisHandle
@@ -375,8 +374,8 @@ func (context *managedTypesContext) GetSliceFromManagedBuffer(mBufferHandle int3
 	return mBuffer[startPosition:(startPosition + lengthOfSlice)], nil
 }
 
-// DeleteSliceFromManagedBuffer deletes a slice from the managed buffer. Returns (new buffer, nil) if success, (nil, error) otherwise
-func (context *managedTypesContext) DeleteSliceFromManagedBuffer(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error) {
+// DeleteSlice deletes a slice from the managed buffer. Returns (new buffer, nil) if success, (nil, error) otherwise
+func (context *managedTypesContext) DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
 		return nil, arwen.ErrNoManagedBufferUnderThisHandle
@@ -393,8 +392,8 @@ func (context *managedTypesContext) DeleteSliceFromManagedBuffer(mBufferHandle i
 	return context.managedTypesValues.mBufferValues[mBufferHandle], nil
 }
 
-// InsertSliceInManagedBuffer inserts a slice in the managed buffer at the given startPosition. Returns (new buffer, nil) if success, (nil, error) otherwise
-func (context *managedTypesContext) InsertSliceInManagedBuffer(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error) {
+// InsertSlice inserts a slice in the managed buffer at the given startPosition. Returns (new buffer, nil) if success, (nil, error) otherwise
+func (context *managedTypesContext) InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
 		return nil, arwen.ErrNoManagedBufferUnderThisHandle

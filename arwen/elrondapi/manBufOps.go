@@ -11,7 +11,7 @@ package elrondapi
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
 // extern int32_t 	v1_4_mBufferGetLength(void* context, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
-// extern int32_t	v1_4_mBufferExtendFromSlice(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_4_mBufferAppend(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
 // extern int32_t	v1_4_mBufferToBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t 	v1_4_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
@@ -59,7 +59,7 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("mBufferExtendFromSlice", v1_4_mBufferExtendFromSlice, C.v1_4_mBufferExtendFromSlice)
+	imports, err = imports.Append("mBufferAppend", v1_4_mBufferAppend, C.v1_4_mBufferAppend)
 	if err != nil {
 		return nil, err
 	}
@@ -147,14 +147,10 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, data)
-	if !isSuccess {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return 1
 	}
+
+	managedType.SetBytes(mBufferHandle, data)
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseGas(gasToUse)
@@ -171,7 +167,7 @@ func v1_4_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetLength
 	metering.UseGas(gasToUse)
 
-	length := managedType.GetLengthForThisManagedBuffer(mBufferHandle)
+	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
 		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return -1
@@ -189,7 +185,7 @@ func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOff
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetBytes
 	metering.UseGas(gasToUse)
 
-	managedBuffer, err := managedType.GetBytesForThisManagedBuffer(mBufferHandle)
+	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -206,8 +202,8 @@ func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOff
 	return 0
 }
 
-//export v1_4_mBufferExtendFromSlice
-func v1_4_mBufferExtendFromSlice(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
+//export v1_4_mBufferAppend
+func v1_4_mBufferAppend(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -220,7 +216,7 @@ func v1_4_mBufferExtendFromSlice(context unsafe.Pointer, mBufferHandle int32, da
 		return 1
 	}
 
-	isSuccess := managedType.AppendBytesToThisManagedBuffer(mBufferHandle, data)
+	isSuccess := managedType.AppendBytes(mBufferHandle, data)
 	if !isSuccess {
 		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return 1
@@ -241,7 +237,7 @@ func v1_4_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, b
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntUnsigned
 	metering.UseGas(gasToUse)
 
-	managedBuffer, err := managedType.GetBytesForThisManagedBuffer(mBufferHandle)
+	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -261,7 +257,7 @@ func v1_4_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, big
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntSigned
 	metering.UseGas(gasToUse)
 
-	managedBuffer, err := managedType.GetBytesForThisManagedBuffer(mBufferHandle)
+	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -287,11 +283,8 @@ func v1_4_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32,
 	}
 	bytes := value.Bytes()
 
-	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, bytes)
-	if !isSuccess {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
-		return 1
-	}
+	managedType.SetBytes(mBufferHandle, bytes)
+
 	return 0
 }
 
@@ -310,11 +303,7 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 	}
 	bytes := twos.ToBytes(value)
 
-	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, bytes)
-	if !isSuccess {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
-		return 1
-	}
+	managedType.SetBytes(mBufferHandle, bytes)
 	return 0
 }
 
@@ -333,7 +322,7 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyOffset int32, keyLength
 		return 1
 	}
 
-	managedBuffer, err := managedType.GetBytesForThisManagedBuffer(mBufferHandle)
+	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -362,11 +351,7 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyOffset int32, keyLength 
 	}
 	bytes := storage.GetStorage(key)
 
-	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, bytes)
-	if !isSuccess {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
-		return 1
-	}
+	managedType.SetBytes(mBufferHandle, bytes)
 
 	return 0
 }
@@ -384,12 +369,7 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, mBufferHandle int
 	if int32(len(args)) <= id {
 		return 1
 	}
-
-	isSuccess := managedType.SetBytesForThisManagedBuffer(mBufferHandle, args[id])
-	if !isSuccess {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
-		return 1
-	}
+	managedType.SetBytes(mBufferHandle, args[id])
 	return 0
 }
 
@@ -403,7 +383,7 @@ func v1_4_mBufferFinish(context unsafe.Pointer, mBufferHandle int32) int32 {
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFinish
 	metering.UseGas(gasToUse)
 
-	managedBuffer, err := managedType.GetBytesForThisManagedBuffer(mBufferHandle)
+	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}

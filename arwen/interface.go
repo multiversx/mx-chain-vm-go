@@ -179,13 +179,13 @@ type ManagedTypesContext interface {
 	GetPrivateKeyByteLengthEC(ecHandle int32) int32
 	NewManagedBuffer() int32
 	NewManagedBufferFromBytes(bytes []byte) int32
-	SetBytesForThisManagedBuffer(mBufferHandle int32, bytes []byte) bool
-	GetBytesForThisManagedBuffer(mBufferHandle int32) ([]byte, error)
-	AppendBytesToThisManagedBuffer(mBufferHandle int32, bytes []byte) bool
-	GetLengthForThisManagedBuffer(mBufferHandle int32) int32
-	GetSliceFromManagedBuffer(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
-	DeleteSliceFromManagedBuffer(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
-	InsertSliceInManagedBuffer(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
+	SetBytes(mBufferHandle int32, bytes []byte)
+	GetBytes(mBufferHandle int32) ([]byte, error)
+	AppendBytes(mBufferHandle int32, bytes []byte) bool
+	GetLength(mBufferHandle int32) int32
+	GetSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
+	DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
+	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context

@@ -47,7 +47,7 @@ void mBufferMethod() {
 
     mBufferSetBytes(mBufferHandle1, mBuffer2, sizeof(mBuffer2));
     mBufferSetBytes(mBufferHandle2, mBuffer1, sizeof(mBuffer1));
-    mBufferExtendFromSlice(mBufferHandle2,mBuffer3, sizeof(mBuffer3));
+    mBufferAppend(mBufferHandle2,mBuffer3, sizeof(mBuffer3));
     if (verifyIfBuffersAreEqual(mBufferHandle1, mBufferHandle2)==1) ok = 1;
 
     int bigIntHandle1 = bigIntNew(0);
