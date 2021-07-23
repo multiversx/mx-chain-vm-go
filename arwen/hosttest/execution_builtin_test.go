@@ -10,9 +10,11 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,7 +28,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	tokenKey := worldmock.MakeTokenKey(test.ESDTTestTokenName, 0)
 	err := world.BuiltinFuncs.SetTokenData(test.ParentAddress, tokenKey, &esdt.ESDigitalToken{
 		Value: big.NewInt(100),
-		Type:  uint32(vmcommon.Fungible),
+		Type:  uint32(core.Fungible),
 	})
 	require.Nil(t, err)
 
@@ -219,7 +221,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	esdtValue := int64(5)
 	input.CallerAddr = test.ParentAddress
 	input.RecipientAddr = exchangeAddress
-	input.Function = vmcommon.BuiltInFunctionESDTTransfer
+	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
 		test.ESDTTestTokenName,
@@ -261,7 +263,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinFail" {
 		return nil, errors.New("whatdidyoudo")
 	}
-	if input.Function == vmcommon.BuiltInFunctionESDTTransfer {
+	if input.Function == core.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
 			GasRemaining: 0,
 		}
@@ -274,7 +276,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 			Value:         big.NewInt(0),
 			GasLimit:      input.GasProvided - test.ESDTTransferGasCost + input.GasLocked,
 			Data:          []byte(esdtTransferTxData),
-			CallType:      vmcommon.AsynchronousCall,
+			CallType:      vm.AsynchronousCall,
 			SenderAddress: input.CallerAddr,
 		}
 		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
@@ -295,7 +297,7 @@ func getDummyBuiltinFunctionsContainer() vmcommon.BuiltInFunctionContainer {
 	_ = builtInContainer.Add("builtinClaim", &test.MockBuiltin{})
 	_ = builtInContainer.Add("builtinDoSomething", &test.MockBuiltin{})
 	_ = builtInContainer.Add("builtinFail", &test.MockBuiltin{})
-	_ = builtInContainer.Add(vmcommon.BuiltInFunctionESDTTransfer, &test.MockBuiltin{})
+	_ = builtInContainer.Add(core.BuiltInFunctionESDTTransfer, &test.MockBuiltin{})
 
 	return builtInContainer
 }

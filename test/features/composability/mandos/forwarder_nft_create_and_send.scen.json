@@ -72,8 +72,9 @@
                     },
                     {
                       "address": "sc:forwarder",
-                      "identifier": "str:create",
+                      "identifier": "str:create_and_send",
                       "topics": [
+                        "str:create",
                         "str:NFT-0001",
                         "2",
                         "1"
@@ -92,8 +93,9 @@
                     },
                     {
                       "address": "sc:forwarder",
-                      "identifier": "str:send",
+                      "identifier": "str:create_and_send",
                       "topics": [
+                        "str:send",
                         "address:a_user",
                         "str:NFT-0001",
                         "2",

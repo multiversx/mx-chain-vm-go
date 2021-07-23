@@ -77,14 +77,18 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000003",
-                        "topics": [],
+                        "identifier": "str:callBack",
+                        "topics": [
+                            "0x0000000000000000000000000000000000000000000000000000000000000003"
+                        ],
                         "data": "0x"
                     },
                     {
                         "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000004",
-                        "topics": [],
+                        "identifier": "str:callBack",
+                        "topics": [
+                            "0x0000000000000000000000000000000000000000000000000000000000000004"
+                        ],
                         "data": "''staking failed for some nodes"
                     }
                 ],

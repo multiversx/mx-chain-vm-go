@@ -15,6 +15,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
@@ -57,7 +58,7 @@ func TestNewRuntimeContext(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, err := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
@@ -73,7 +74,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, err := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
@@ -97,7 +98,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, err := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	require.Nil(t, err)
 
 	runtimeContext.SetMaxInstanceCount(1)
@@ -124,7 +125,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	vmType := []byte("type")
 
-	runtimeContext, err := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, err := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	require.Nil(t, err)
 
 	runtimeContext.SetMaxInstanceCount(1)
@@ -159,13 +160,13 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 
 	arguments := [][]byte{[]byte("argument 1"), []byte("argument 2")}
 	esdtTransfer := &vmcommon.ESDTTransfer{
 		ESDTValue:      big.NewInt(4242),
 		ESDTTokenName:  []byte("random_token"),
-		ESDTTokenType:  uint32(vmcommon.NonFungible),
+		ESDTTokenType:  uint32(core.NonFungible),
 		ESDTTokenNonce: 94,
 	}
 
@@ -191,7 +192,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeInput := runtimeContext.GetVMInput()
 	require.Zero(t, big.NewInt(4242).Cmp(runtimeInput.ESDTTransfers[0].ESDTValue))
 	require.True(t, bytes.Equal([]byte("random_token"), runtimeInput.ESDTTransfers[0].ESDTTokenName))
-	require.Equal(t, uint32(vmcommon.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
+	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
 	require.Equal(t, uint64(94), runtimeInput.ESDTTransfers[0].ESDTTokenNonce)
 
 	vmInput2 := vmcommon.VMInput{
@@ -210,7 +211,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -240,7 +241,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	vmInput := vmcommon.VMInput{
@@ -297,7 +298,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -349,7 +350,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	host.OutputContext = mockOutput
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -402,7 +403,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -434,7 +435,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -464,7 +465,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -528,7 +529,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
@@ -593,7 +594,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.SetMaxInstanceCount(2)
 
 	gasLimit := uint64(100000000)
@@ -655,7 +656,7 @@ func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
@@ -667,7 +668,7 @@ func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.PopDiscard()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
@@ -679,7 +680,7 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 
 	vmType := []byte("type")
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.popInstance()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))

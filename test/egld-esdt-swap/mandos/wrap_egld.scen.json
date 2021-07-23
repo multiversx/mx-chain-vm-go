@@ -51,8 +51,9 @@
                     },
                     {
                         "address": "sc:egld-esdt-swap",
-                        "identifier": "str:wrap-egld",
+                        "identifier": "str:wrapEgld",
                         "topics": [
+                            "str:wrap-egld",
                             "address:user"
                         ],
                         "data": "500"

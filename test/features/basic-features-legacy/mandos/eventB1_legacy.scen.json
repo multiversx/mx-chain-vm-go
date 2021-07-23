@@ -41,8 +41,9 @@
                 "logs": [
                     {
                         "address": "sc:basic-features",
-                        "identifier": "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000b",
+                        "identifier": "str:logEventB",
                         "topics": [
+                            "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000b",
                             "0x00000000000000000000000000000000000000000000000000000000000000a1",
                             "``arg2_an_address_______________s3"
                         ],
