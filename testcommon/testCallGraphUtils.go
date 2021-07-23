@@ -41,15 +41,15 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							crtFunctionCalled := host.Runtime().Function()
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
-							if crtNode.contextCallback != nil {
-								err := async.SetContextCallback(crtNode.contextCallback.Call.FunctionName, []byte{}, 0)
+							if crtNode.ContextCallback != nil {
+								err := async.SetContextCallback(crtNode.ContextCallback.Call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
 							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
-							for _, edge := range crtNode.adjacentEdges {
+							for _, edge := range crtNode.AdjacentEdges {
 								destFunctionName := edge.To.Call.FunctionName
 								destAddress := edge.To.Call.ContractAddress
 								if !edge.Async {
@@ -66,20 +66,20 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 									callData := txDataBuilder.NewBuilder()
 									callData.Func(destFunctionName)
 
-									err := async.RegisterAsyncCall(edge.group, &arwen.AsyncCall{
+									err := async.RegisterAsyncCall(edge.Group, &arwen.AsyncCall{
 										Status:          arwen.AsyncCallPending,
 										Destination:     destAddress,
 										Data:            callData.ToBytes(),
 										ValueBytes:      value.Bytes(),
 										GasLimit:        testConfig.GasProvidedToChild,
-										SuccessCallback: edge.callBack,
-										ErrorCallback:   edge.callBack,
+										SuccessCallback: edge.CallBack,
+										ErrorCallback:   edge.CallBack,
 									})
 									require.Nil(t, err)
 								}
 							}
 
-							for group, groupCallbackNode := range crtNode.groupCallbacks {
+							for group, groupCallbackNode := range crtNode.GroupCallbacks {
 								err := async.SetGroupCallback(group, groupCallbackNode.Call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
@@ -116,7 +116,6 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 // CreateRunExpectationOrder returns an exepected execution order starting from an execution graph
 func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 	executionOrder := make([]TestCall, 0)
-
 	pathsTree := pathsTreeFromDag(executionGraph)
 	pathsTree.DfsGraphFromNode(pathsTree.startNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
 		if node.IsEndOfSyncExecutionNode {

@@ -11,9 +11,9 @@ import (
 )
 
 func main() {
-	// callGraph := test.CreateGraphTest1()
+	callGraph := test.CreateGraphTest1()
 	// callGraph := test.CreateGraphTestSimple1()
-	callGraph := test.CreateGraphTestSimple2()
+	// callGraph := test.CreateGraphTestSimple2()
 
 	///////////////////
 
@@ -103,7 +103,7 @@ func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) 
 	if node.Call.FunctionName == "X" {
 		prefix = "X"
 	} else {
-		prefix = node.OriginalContractID + "_" + node.Call.FunctionName
+		prefix = node.Label
 	}
 
 	counter, present := nodeCounters[prefix]
