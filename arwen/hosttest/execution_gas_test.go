@@ -1349,7 +1349,7 @@ func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	sc3f3 := callGraph.AddNode("sc3", "f3")
 
-	callGraph.AddSyncEdge(sc1f1, sc2f2)
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "", "")
 	callGraph.AddAsyncEdge(sc2f2, sc3f3, "", "")
 
 	sc1ctxcb := callGraph.AddNode("sc1", "ctxcb1")
