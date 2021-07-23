@@ -38,7 +38,7 @@ func TestCallGraph_Dfs(t *testing.T) {
 	require.True(t, reflect.DeepEqual(expectedOrder, traversalOrder))
 }
 
-func TestExecutionGraph_Creation(t *testing.T) {
+func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 	callGraph := CreateGraphTest1()
 
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
@@ -60,6 +60,41 @@ func TestExecutionGraph_Creation(t *testing.T) {
 		*buildTestCall("sc1", "cb4"),
 		*buildTestCall("sc1", "cbg1"),
 		*buildTestCall("sc1", "ctxcb"),
+	}
+
+	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
+}
+
+func TestExecutionGraph_Execution_GraphTestSimple1(t *testing.T) {
+	callGraph := CreateGraphTestSimple1()
+
+	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
+	executionOrder := CreateRunExpectationOrder(executionGraph)
+
+	expectedOrder := []TestCall{
+		*buildTestCall("sc1", "f1"),
+		*buildTestCall("sc2", "f2"),
+		*buildTestCall("sc1", "cb1"),
+		*buildTestCall("sc2", "f3"),
+		*buildTestCall("sc1", "cb1"),
+	}
+
+	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
+}
+
+func TestExecutionGraph_Execution_GraphTestSimple2(t *testing.T) {
+	callGraph := CreateGraphTestSimple2()
+
+	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
+	executionOrder := CreateRunExpectationOrder(executionGraph)
+
+	expectedOrder := []TestCall{
+		*buildTestCall("sc2", "f2"),
+		*buildTestCall("sc3", "f3"),
+		*buildTestCall("sc2", "cb1"),
+		*buildTestCall("sc2", "cb1"),
+		*buildTestCall("sc4", "f4"),
+		*buildTestCall("sc1", "f1"),
 	}
 
 	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
