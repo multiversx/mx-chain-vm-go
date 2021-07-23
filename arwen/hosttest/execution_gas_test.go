@@ -1333,7 +1333,8 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig.GasProvided = 100_000
 	testConfig.GasProvidedToChild = 10_000
 
-	callGraph := test.CreateGraphTest1()
+	callGraph := test.CreateGraphTestSimple1()
+
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 

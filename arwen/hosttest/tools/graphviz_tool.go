@@ -4,20 +4,29 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"strings"
+	"strconv"
 
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/awalterschulze/gographviz"
 )
 
 func main() {
-	callGraph := test.CreateGraphTest1()
+	// callGraph := test.CreateGraphTest1()
+	// callGraph := test.CreateGraphTestSimple1()
+	callGraph := test.CreateGraphTestSimple2()
+
+	///////////////////
+
 	graphviz := toGraphviz(callGraph)
 	createSvg("call-graph", graphviz)
 
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	graphviz = toGraphviz(executionGraph)
 	createSvg("execution-graph", graphviz)
+
+	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
+	graphviz = toGraphviz(gasGraph)
+	createSvg("gas-graph", graphviz)
 }
 
 func createSvg(file string, graphviz *gographviz.Graph) {
@@ -47,46 +56,66 @@ func toGraphviz(graph *test.TestCallGraph) *gographviz.Graph {
 	graphviz.Directed = true
 	graphName := "G"
 
+	nodeCounters := make(map[string]int)
+	for _, node := range graph.Nodes {
+		nodeLabel := getGraphvizNodeLabel(node, nodeCounters)
+		node.Label = nodeLabel
+	}
+
 	for _, node := range graph.Nodes {
 		attrs := make(map[string]string)
 		if node.IsStartNode {
 			attrs["shape"] = "box"
 		}
-		attrs["bgcolor"] = "grey"
-		attrs["style"] = "filled"
-		graphviz.AddNode(graphName, getGraphvizNodeLabel(node), attrs)
+		if !node.IsEndOfSyncExecutionNode {
+			attrs["bgcolor"] = "grey"
+			attrs["style"] = "filled"
+		}
+		from := getGraphvizNodeLabel(node, nil)
+		graphviz.AddNode(graphName, from, attrs)
 		for _, edge := range node.GetEdges() {
-			from := getGraphvizNodeLabel(node)
-			to := getGraphvizNodeLabel(edge.To)
-			if edge.To.OriginalContractID != "" {
-				attrs := make(map[string]string)
-				if edge.Label != "" {
-					attrs["label"] = edge.Label
-				}
-				if edge.Color != "" {
-					attrs["color"] = edge.Color
-				} else {
-					attrs["color"] = "black"
-				}
-				graphviz.AddEdge(from, to, true, attrs)
+			to := getGraphvizNodeLabel(edge.To, nil)
+			attrs := make(map[string]string)
+			if edge.To.IsEndOfSyncExecutionNode {
+				attrs["style"] = "dotted"
 			}
+			if edge.Label != "" {
+				attrs["label"] = edge.Label
+			}
+			if edge.Color != "" {
+				attrs["color"] = edge.Color
+			} else {
+				attrs["color"] = "black"
+			}
+			graphviz.AddEdge(from, to, true, attrs)
 		}
-	}
-
-	toRemove := make([]string, 0)
-	for _, gvNode := range graphviz.Nodes.Nodes {
-		if strings.HasPrefix(gvNode.Name, "_") {
-			toRemove = append(toRemove, gvNode.Name)
-		}
-	}
-
-	for _, nodeToRemove := range toRemove {
-		graphviz.RemoveNode(graphName, nodeToRemove)
 	}
 
 	return graphviz
 }
 
-func getGraphvizNodeLabel(node *test.TestCallNode) string {
-	return node.OriginalContractID + "_" + node.Call.FunctionName
+func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) string {
+	if nodeCounters == nil {
+		return node.Label
+	}
+
+	var prefix string
+	if node.Call.FunctionName == "X" {
+		prefix = "X"
+	} else {
+		prefix = node.OriginalContractID + "_" + node.Call.FunctionName
+	}
+
+	counter, present := nodeCounters[prefix]
+	if !present {
+		counter = 0
+	}
+	counter++
+	nodeCounters[prefix] = counter
+
+	suffix := ""
+	if counter > 1 {
+		suffix = "_" + strconv.Itoa(counter)
+	}
+	return prefix + suffix
 }
