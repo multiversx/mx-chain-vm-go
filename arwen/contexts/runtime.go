@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -546,6 +546,11 @@ func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
 
 // CryptoAPIErrorShouldFailExecution returns true
 func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+// ManagedBufferAPIErrorShouldFailExecution returns true
+func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return true
 }
 

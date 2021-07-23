@@ -70,6 +70,17 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
+	MBufferOps := &ManagedBufferAPICost{}
+	err = mapstructure.Decode(gasMap["ManagedBufferAPICost"], MBufferOps)
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkForZeroUint64Fields(*MBufferOps)
+	if err != nil {
+		return nil, err
+	}
+
 	opcodeCosts := &WASMOpcodeCost{}
 	err = mapstructure.Decode(gasMap["WASMOpcodeCost"], opcodeCosts)
 	if err != nil {
@@ -82,12 +93,13 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	}
 
 	gasCost := &GasCost{
-		BaseOperationCost: *baseOps,
-		BigIntAPICost:     *bigIntOps,
-		EthAPICost:        *ethOps,
-		ElrondAPICost:     *elrondOps,
-		CryptoAPICost:     *cryptOps,
-		WASMOpcodeCost:    *opcodeCosts,
+		BaseOperationCost:    *baseOps,
+		BigIntAPICost:        *bigIntOps,
+		EthAPICost:           *ethOps,
+		ElrondAPICost:        *elrondOps,
+		CryptoAPICost:        *cryptOps,
+		ManagedBufferAPICost: *MBufferOps,
+		WASMOpcodeCost:       *opcodeCosts,
 	}
 
 	return gasCost, nil
@@ -122,6 +134,7 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMap_CryptoAPICosts(value)
+	gasMap["ManagedBufferAPICost"] = FillGasMap_ManagedBufferAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMap_WASMOpcodeValues(value)
 
 	return gasMap
@@ -307,6 +320,25 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap["UnmarshalECC"] = value
 	gasMap["UnmarshalCompressedECC"] = value
 	gasMap["GenerateKeyECC"] = value
+
+	return gasMap
+}
+
+func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
+	gasMap["MBufferNew"] = value
+	gasMap["MBufferNewFromBytes"] = value
+	gasMap["MBufferSetBytes"] = value
+	gasMap["MBufferGetLength"] = value
+	gasMap["MBufferGetBytes"] = value
+	gasMap["MBufferToBigIntUnsigned"] = value
+	gasMap["MBufferToBigIntSigned"] = value
+	gasMap["MBufferFromBigIntUnsigned"] = value
+	gasMap["MBufferFromBigIntSigned"] = value
+	gasMap["MBufferStorageStore"] = value
+	gasMap["MBufferStorageLoad"] = value
+	gasMap["MBufferGetArgument"] = value
+	gasMap["MBufferFinish"] = value
 
 	return gasMap
 }
