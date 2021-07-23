@@ -74,9 +74,15 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	if asyncCall.HasCallback() {
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
-		asyncCall.GasRemaining = callbackVMOutput.GasRemaining
+		context.gasAccumulated = 0
+		if callbackVMOutput != nil {
+			context.accumulateGas(callbackVMOutput.GasRemaining)
+		}
 	} else {
-		asyncCall.GasRemaining = vmOutput.GasRemaining
+		context.gasAccumulated = 0
+		if vmOutput != nil {
+			context.accumulateGas(vmOutput.GasRemaining)
+		}
 	}
 
 	return nil
@@ -128,10 +134,11 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	}
 
 	input := context.createGroupCallbackInput(group)
+	context.gasAccumulated = 0
 	vmOutput, err := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
-	group.GasAccumulated = vmOutput.GasRemaining
-	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", group.GasAccumulated)
+	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
+	context.accumulateGas(vmOutput.GasRemaining)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -284,6 +291,7 @@ func (context *asyncContext) createCallbackInput(
 	callbackFunction := asyncCall.GetCallbackName()
 
 	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
+	gasLimit = math.AddUint64(gasLimit, context.gasAccumulated)
 	dataLength := computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
@@ -294,6 +302,12 @@ func (context *asyncContext) createCallbackInput(
 		return nil, arwen.ErrNotEnoughGas
 	}
 	gasLimit -= gasToUse
+
+	logAsync.Trace("createCallbackInput", "vmOutput.GasRemaining", vmOutput.GasRemaining)
+	logAsync.Trace("createCallbackInput", "gas locked", asyncCall.GetGasLocked())
+	logAsync.Trace("createCallbackInput", "context.gasAccumulated", context.gasAccumulated)
+	logAsync.Trace("createCallbackInput", "gasToUse", gasToUse)
+	logAsync.Trace("createCallbackInput", "gasLimit", gasLimit)
 
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -338,7 +352,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
 			GasPrice:       context.gasPrice,
-			GasProvided:    group.GasLocked + group.GasAccumulated,
+			GasProvided:    group.GasLocked + context.gasAccumulated,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
@@ -348,7 +362,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 	}
 
 	logAsync.Trace("created group callback input", "group", group.Identifier, "function", input.Function)
-	logAsync.Trace("created group callback input gas", "provided", input.GasProvided, "locked", group.GasLocked, "accumulated", group.GasAccumulated)
+	logAsync.Trace("created group callback input gas", "provided", input.GasProvided, "locked", group.GasLocked, "accumulated", context.gasAccumulated)
 	return input
 }
 

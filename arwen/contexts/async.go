@@ -468,8 +468,16 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
 	if context.IsComplete() {
+		logAsync.Trace("no async calls")
 		return nil
 	}
+
+	metering := context.host.Metering()
+	gasLeft := metering.GasLeft()
+	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
+	context.accumulateGas(gasLeft)
+
+	logAsync.Trace("async.Execute() execute locals")
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
 	// (includes smart contracts and built-in functions in the same shard)
@@ -478,17 +486,17 @@ func (context *asyncContext) Execute() error {
 		return err
 	}
 
+	logAsync.Trace("async.Execute() complete locals")
+
 	// This call to closeCompletedAsyncCall() is necessary to remove the
 	// AsyncCall that has been just before async.Execute() was called, within
 	// host.callSCMethod(). This happens when a cross-shard callback returns and
 	// finalizes an AsyncCall.
-	// Moreover, closeCompletedAsyncCalls() triggers callback gas accumulation.
-	// TODO try to move this call somewhere else, where its intent is more obvious
 	context.closeCompletedAsyncCalls()
 	context.executeCompletedGroupCallbacks()
-	context.accumulateGasRemainingFromGroups()
 	context.deleteCompletedGroups()
 
+	logAsync.Trace("async.Execute() execute remote")
 	// Step 2: in one combined step, do the following:
 	// * locally execute built-in functions with cross-shard
 	//   destinations, whereby the cross-shard OutputAccount entries are generated
@@ -506,9 +514,11 @@ func (context *asyncContext) Execute() error {
 
 	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
 	if !context.HasPendingCallGroups() {
+		logAsync.Trace("async.Execute() execute context callback")
 		context.executeContextCallback()
 	}
 
+	logAsync.Trace("async.Execute() save")
 	err = context.Save()
 	if err != nil {
 		return err
@@ -843,17 +853,9 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	return int(dataLength)
 }
 
-func (context *asyncContext) accumulateGasRemainingFromGroups() {
-	sc := context.host.Runtime().GetSCAddress()
-	logAsync.Trace("begin accumulating context gas", "sc", sc, "gas", context.gasAccumulated)
-	for _, group := range context.asyncCallGroups {
-		if group.IsComplete() {
-			context.gasAccumulated = math.AddUint64(context.gasAccumulated, group.GasAccumulated)
-			group.GasAccumulated = 0
-			logAsync.Trace("accumulated gas from group", "group", group.Identifier, "gas", group.GasAccumulated)
-		}
-	}
-	logAsync.Trace("finish accumulating context gas", "sc", sc, "gas", context.gasAccumulated)
+func (context *asyncContext) accumulateGas(gas uint64) {
+	context.gasAccumulated = math.AddUint64(context.gasAccumulated, gas)
+	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
 }
 
 // deleteCompletedGroups removes all completed AsyncGroups
@@ -872,7 +874,6 @@ func (context *asyncContext) deleteCompletedGroups() {
 
 func (context *asyncContext) closeCompletedAsyncCalls() {
 	for _, group := range context.asyncCallGroups {
-		group.AccumulateGasRemaining()
 		group.DeleteCompletedAsyncCalls()
 	}
 }

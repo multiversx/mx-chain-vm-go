@@ -2,30 +2,26 @@ package arwen
 
 import (
 	"bytes"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 )
 
 // AsyncCallGroup is a structure containing a group of async calls and a callback
 // that should be called when all these async calls are resolved
 type AsyncCallGroup struct {
-	Callback       string
-	GasLocked      uint64
-	GasAccumulated uint64
-	CallbackData   []byte
-	Identifier     string
-	AsyncCalls     []*AsyncCall
+	Callback     string
+	GasLocked    uint64
+	CallbackData []byte
+	Identifier   string
+	AsyncCalls   []*AsyncCall
 }
 
 // NewAsyncCallGroup creates a new instance of AsyncCallGroup
 func NewAsyncCallGroup(identifier string) *AsyncCallGroup {
 	return &AsyncCallGroup{
-		Callback:       "",
-		GasLocked:      0,
-		GasAccumulated: 0,
-		CallbackData:   make([]byte, 0),
-		Identifier:     identifier,
-		AsyncCalls:     make([]*AsyncCall, 0),
+		Callback:     "",
+		GasLocked:    0,
+		CallbackData: make([]byte, 0),
+		Identifier:   identifier,
+		AsyncCalls:   make([]*AsyncCall, 0),
 	}
 }
 
@@ -33,11 +29,10 @@ func NewAsyncCallGroup(identifier string) *AsyncCallGroup {
 func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 	callCount := len(acg.AsyncCalls)
 	clone := &AsyncCallGroup{
-		Callback:       acg.Callback,
-		GasLocked:      acg.GasLocked,
-		GasAccumulated: acg.GasAccumulated,
-		Identifier:     acg.Identifier,
-		AsyncCalls:     make([]*AsyncCall, callCount),
+		Callback:   acg.Callback,
+		GasLocked:  acg.GasLocked,
+		Identifier: acg.Identifier,
+		AsyncCalls: make([]*AsyncCall, callCount),
 	}
 
 	copy(clone.CallbackData, acg.CallbackData)
@@ -79,19 +74,6 @@ func (acg *AsyncCallGroup) FindByDestination(destination []byte) (int, bool) {
 		}
 	}
 	return -1, false
-}
-
-// AccumulateGasRemaining updates the GasAccumulated field with the sum of GasRemaining from all completed AsyncCalls
-func (acg *AsyncCallGroup) AccumulateGasRemaining() {
-	log.Trace("begin accumulating group gas", "group", acg.Identifier, "gas", acg.GasAccumulated)
-	for _, call := range acg.AsyncCalls {
-		if call.Status != AsyncCallPending {
-			acg.GasAccumulated = math.AddUint64(acg.GasAccumulated, call.GasRemaining)
-			log.Trace("accumulated gas from async call", "dest", call.Destination, "gas", call.GasRemaining)
-			call.GasRemaining = 0
-		}
-	}
-	log.Trace("finished accumulating group gas", "group", acg.Identifier, "gas", acg.GasAccumulated)
 }
 
 // DeleteAsyncCall removes an AsyncCall from this AsyncCallGroup, given its index
