@@ -95,7 +95,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		}
 		functionName := node.Call.FunctionName
 		contract := contracts[contractAddressAsString]
-		fmt.Println("Add " + functionName + " to " + contractAddressAsString)
+		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
 		return node
 	})

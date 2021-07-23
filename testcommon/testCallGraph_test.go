@@ -47,7 +47,6 @@ func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc3", "f4"),
-		*buildTestCall("sc3", "f4"),
 		*buildTestCall("sc2", "cb3"),
 		*buildTestCall("sc1", "f1"),
 		*buildTestCall("sc3", "f4"),
