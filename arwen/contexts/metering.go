@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -204,10 +205,6 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 }
 
 func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
-	if !context.host.IsArwenV2Enabled() {
-		return nil
-	}
-
 	gasUsed := context.getCurrentTotalUsedGas()
 	totalGas := math.AddUint64(gasUsed, vmOutput.GasRemaining)
 	gasProvided := context.GetGasProvided()
@@ -283,7 +280,7 @@ func (context *meteringContext) ClearStateStack() {
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
 func (context *meteringContext) unlockGasIfAsyncCallback(input *vmcommon.VMInput) {
-	if input.CallType != vmcommon.AsynchronousCallBack {
+	if input.CallType != vm.AsynchronousCallBack {
 		return
 	}
 
@@ -348,13 +345,7 @@ func (context *meteringContext) GasSpentByContract() uint64 {
 	runtime := context.host.Runtime()
 	executionGasUsed := runtime.GetPointsUsed()
 
-	gasSpent := uint64(0)
-	if context.host.IsArwenV2Enabled() {
-		gasSpent = context.initialCost
-	}
-
-	gasSpent = math.AddUint64(gasSpent, executionGasUsed)
-
+	gasSpent := math.AddUint64(context.initialCost, executionGasUsed)
 	return gasSpent
 }
 
@@ -414,17 +405,10 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	baseGasSchedule := context.GasSchedule().BaseOperationCost
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
-
-	costPerByte := baseGasSchedule.CompilePerByte
-	if context.host.IsAheadOfTimeCompileEnabled() {
-		costPerByte = baseGasSchedule.AoTPreparePerByte
-	}
+	costPerByte := baseGasSchedule.AoTPreparePerByte
 
 	// Exact amount of gas required to compile this SC again, to execute the callback
-	compilationGasLock := uint64(0)
-	if context.host.IsDynamicGasLockingEnabled() {
-		compilationGasLock = math.MulUint64(codeSize, costPerByte)
-	}
+	compilationGasLock := math.MulUint64(codeSize, costPerByte)
 
 	// Minimum amount required to execute the callback
 	executionGasLock := math.AddUint64(apiGasSchedule.AsyncCallStep, apiGasSchedule.AsyncCallbackGasLock)
@@ -446,12 +430,8 @@ func (context *meteringContext) BlockGasLimit() uint64 {
 
 // DeductInitialGasForExecution deducts gas for compilation and locks gas if the execution is an asynchronous call
 func (context *meteringContext) DeductInitialGasForExecution(contract []byte) error {
-	costPerByte := context.gasSchedule.BaseOperationCost.CompilePerByte
-	baseCost := uint64(0)
-	if context.host.IsAheadOfTimeCompileEnabled() {
-		costPerByte = context.gasSchedule.BaseOperationCost.AoTPreparePerByte
-		baseCost = context.gasSchedule.BaseOperationCost.GetCode
-	}
+	costPerByte := context.gasSchedule.BaseOperationCost.AoTPreparePerByte
+	baseCost := context.gasSchedule.BaseOperationCost.GetCode
 	err := context.deductInitialGas(contract, baseCost, costPerByte)
 	if err != nil {
 		return err

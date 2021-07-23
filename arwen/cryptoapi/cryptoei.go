@@ -398,8 +398,7 @@ func v1_4_addEC(
 	metering.UseGas(gasToUse)
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
-	if err1 != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err1, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -452,8 +451,7 @@ func v1_4_doubleEC(
 	metering.UseGas(gasToUse)
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
-	if err1 != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err1, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -494,8 +492,7 @@ func v1_4_isOnCurveEC(
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -546,8 +543,7 @@ func v1_4_scalarBaseMultEC(
 	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -559,7 +555,7 @@ func v1_4_scalarBaseMultEC(
 
 	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
 	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
-	if ec.IsOnCurve(xResultSBM, yResultSBM) {
+	if !ec.IsOnCurve(xResultSBM, yResultSBM) {
 		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
@@ -604,8 +600,7 @@ func v1_4_scalarMultEC(
 	}
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
-	if err1 != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err1, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -622,7 +617,7 @@ func v1_4_scalarMultEC(
 
 	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
-	if ec.IsOnCurve(xResultSM, yResultSM) {
+	if !ec.IsOnCurve(xResultSM, yResultSM) {
 		arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
@@ -653,8 +648,7 @@ func v1_4_marshalEC(
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -702,8 +696,7 @@ func v1_4_marshalCompressedEC(
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -757,8 +750,7 @@ func v1_4_unmarshalEC(
 	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	byteLen := (ec.BitSize + 7) / 8
@@ -812,8 +804,7 @@ func v1_4_unmarshalCompressedEC(
 	}
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	byteLen := (ec.BitSize+7)/8 + 1
@@ -863,8 +854,7 @@ func v1_4_generateKeyEC(
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -969,8 +959,7 @@ func v1_4_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOr
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if err != nil {
-		arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	fieldOrder, basePointOrder, err := managedType.GetTwoBigInt(fieldOrderHandle, basePointOrderHandle)

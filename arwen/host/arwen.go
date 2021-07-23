@@ -12,10 +12,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go-logger/check"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -47,21 +46,6 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
-
-	arwenV2EnableEpoch uint32
-	flagArwenV2        atomic.Flag
-
-	aotEnableEpoch  uint32
-	flagAheadOfTime atomic.Flag
-
-	dynGasLockEnableEpoch uint32
-	flagDynGasLock        atomic.Flag
-
-	arwenV3EnableEpoch uint32
-	flagArwenV3        atomic.Flag
-
-	eSDTFunctionsEnableEpoch uint32
-	flagESDTFunctions        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -85,21 +69,16 @@ func NewArwenVM(
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
-		cryptoHook:               cryptoHook,
-		meteringContext:          nil,
-		runtimeContext:           nil,
-		blockchainContext:        nil,
-		storageContext:           nil,
-		managedTypesContext:      nil,
-		gasSchedule:              hostParameters.GasSchedule,
-		scAPIMethods:             nil,
-		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
-		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
-		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
-		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
-		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
-		builtInFuncContainer:     hostParameters.BuiltInFuncContainer,
-		esdtTransferParser:       hostParameters.ESDTTransferParser,
+		cryptoHook:           cryptoHook,
+		meteringContext:      nil,
+		runtimeContext:       nil,
+		blockchainContext:    nil,
+		storageContext:       nil,
+		managedTypesContext:  nil,
+		gasSchedule:          hostParameters.GasSchedule,
+		scAPIMethods:         nil,
+		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
+		esdtTransferParser:   hostParameters.ESDTTransferParser,
 	}
 
 	var err error
@@ -144,7 +123,6 @@ func NewArwenVM(
 	host.runtimeContext, err = contexts.NewRuntimeContext(
 		host,
 		hostParameters.VMType,
-		hostParameters.UseWarmInstance,
 		host.builtInFuncContainer,
 	)
 	if err != nil {
@@ -226,31 +204,6 @@ func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
 	return host.managedTypesContext
 }
 
-// IsArwenV2Enabled returns whether the Arwen V2 mode is enabled
-func (host *vmHost) IsArwenV2Enabled() bool {
-	return host.flagArwenV2.IsSet()
-}
-
-// IsArwenV3Enabled returns whether the V3 features are enabled
-func (host *vmHost) IsArwenV3Enabled() bool {
-	return host.flagArwenV3.IsSet()
-}
-
-// IsAheadOfTimeCompileEnabled returns whether ahead-of-time compilation is enabled
-func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
-	return host.flagAheadOfTime.IsSet()
-}
-
-// IsDynamicGasLockingEnabled returns whether dynamic gas locking mode is enabled
-func (host *vmHost) IsDynamicGasLockingEnabled() bool {
-	return host.flagDynGasLock.IsSet()
-}
-
-// IsESDTFunctionsEnabled returns whether ESDT functions are enabled
-func (host *vmHost) IsESDTFunctionsEnabled() bool {
-	return host.flagESDTFunctions.IsSet()
-}
-
 // GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
 	arwen.ManagedTypesContext,
@@ -271,21 +224,6 @@ func (host *vmHost) GetContexts() (
 // InitState resets the contexts of the host and reconfigures its flags
 func (host *vmHost) InitState() {
 	host.initContexts()
-	currentEpoch := host.Blockchain().CurrentEpoch()
-	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
-	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
-
-	host.flagAheadOfTime.Toggle(currentEpoch >= host.aotEnableEpoch)
-	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
-
-	host.flagDynGasLock.Toggle(currentEpoch >= host.dynGasLockEnableEpoch)
-	log.Trace("dynamic gas locking", "enabled", host.flagDynGasLock.IsSet())
-
-	host.flagArwenV3.Toggle(currentEpoch >= host.arwenV3EnableEpoch)
-	log.Trace("arwen v3 improvement", "enabled", host.flagArwenV3.IsSet())
-
-	host.flagESDTFunctions.Toggle(currentEpoch >= host.eSDTFunctionsEnableEpoch)
-	log.Trace("esdt functions", "enabled", host.flagESDTFunctions.IsSet())
 }
 
 func (host *vmHost) initContexts() {
@@ -309,9 +247,6 @@ func (host *vmHost) ClearContextStateStack() {
 
 // Clean closes the currently running Wasmer instance
 func (host *vmHost) Clean() {
-	if host.runtimeContext.IsWarmInstance() {
-		return
-	}
 	host.runtimeContext.CleanWasmerInstance()
 }
 
@@ -380,11 +315,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	tryCall := func() {
 		vmOutput = host.doRunSmartContractCall(input)
-
-		if host.hasRetriableExecutionError(vmOutput) {
-			log.Error("Retriable execution error detected. Will reset warm Wasmer instance.")
-			host.runtimeContext.ResetWarmInstance()
-		}
 	}
 
 	catch := func(caught error) {
@@ -416,14 +346,6 @@ func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string)
 	}()
 
 	try()
-}
-
-func (host *vmHost) hasRetriableExecutionError(vmOutput *vmcommon.VMOutput) bool {
-	if !host.runtimeContext.IsWarmInstance() {
-		return false
-	}
-
-	return vmOutput.ReturnMessage == "allocation error"
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard

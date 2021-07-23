@@ -8,9 +8,10 @@ import (
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
@@ -54,7 +55,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 			tokenBalance := instance.Balance.Value
 			tokenData := &esdt.ESDigitalToken{
 				Value:      tokenBalance,
-				Type:       uint32(vmcommon.Fungible),
+				Type:       uint32(core.Fungible),
 				Properties: makeESDTUserMetadataBytes(isFrozen),
 				TokenMetaData: &esdt.MetaData{
 					Name:       tokenName,
@@ -187,9 +188,9 @@ func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 		vmInput.ESDTTransfers[0].ESDTValue = esdtData.Value.Value
 		vmInput.ESDTTransfers[0].ESDTTokenNonce = esdtData.Nonce.Value
 		if vmInput.ESDTTransfers[0].ESDTTokenNonce != 0 {
-			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.NonFungible)
+			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(core.NonFungible)
 		} else {
-			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.Fungible)
+			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(core.Fungible)
 		}
 	}
 }
