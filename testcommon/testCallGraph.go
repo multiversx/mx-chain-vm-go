@@ -1,5 +1,7 @@
 package testcommon
 
+import "fmt"
+
 // TestCall represents the payload of a node in the call graph
 type TestCall struct {
 	ContractAddress []byte
@@ -67,12 +69,22 @@ func (node *TestCallNode) copy() *TestCallNode {
 	}
 }
 
+// TestCallEdgeType the type of TestCallEdges
+type TestCallEdgeType int
+
+// types of TestCallEdges
+const (
+	Sync = iota
+	Async
+	Callback
+)
+
 // TestCallEdge an edge between two nodes of the call graph
 type TestCallEdge struct {
-	Async    bool
-	CallBack string
-	Group    string
-	To       *TestCallNode
+	Type           TestCallEdgeType
+	CallbackToCall string
+	Group          string
+	To             *TestCallNode
 	// used only for visualization
 	Label string
 	Color string
@@ -80,19 +92,19 @@ type TestCallEdge struct {
 
 func (edge *TestCallEdge) copy() *TestCallEdge {
 	return &TestCallEdge{
-		Async:    edge.Async,
-		CallBack: edge.CallBack,
-		Group:    edge.Group,
-		To:       edge.To,
-		Label:    edge.Label,
-		Color:    edge.Color,
+		Type:           edge.Type,
+		CallbackToCall: edge.CallbackToCall,
+		Group:          edge.Group,
+		To:             edge.To,
+		Label:          edge.Label,
+		Color:          edge.Color,
 	}
 }
 
 // TestCallGraph is the call graph
 type TestCallGraph struct {
 	Nodes     []*TestCallNode
-	startNode *TestCallNode
+	StartNode *TestCallNode
 }
 
 // CreateTestCallGraph is the initial build metohd for the call graph
@@ -105,7 +117,7 @@ func CreateTestCallGraph() *TestCallGraph {
 // AddStartNode adds the start node of the call graph
 func (graph *TestCallGraph) AddStartNode(contractID string, functionName string) *TestCallNode {
 	node := graph.AddNode(contractID, functionName)
-	graph.startNode = node
+	graph.StartNode = node
 	node.IsStartNode = true
 	return node
 }
@@ -157,10 +169,10 @@ func (graph *TestCallGraph) addEdgeAtStart(from *TestCallNode, to *TestCallNode)
 
 func buildEdge(to *TestCallNode) *TestCallEdge {
 	edge := &TestCallEdge{
-		Async:    false,
-		CallBack: "",
-		Group:    "",
-		To:       to,
+		Type:           Sync,
+		CallbackToCall: "",
+		Group:          "",
+		To:             to,
 	}
 	return edge
 }
@@ -168,10 +180,10 @@ func buildEdge(to *TestCallNode) *TestCallEdge {
 // AddAsyncEdge adds an async call edge between two nodes of the call graph
 func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, callBack string, group string) {
 	edge := &TestCallEdge{
-		Async:    true,
-		CallBack: callBack,
-		Group:    group,
-		To:       to,
+		Type:           Async,
+		CallbackToCall: callBack,
+		Group:          group,
+		To:             to,
 	}
 	edge.Label = "Async"
 	edge.Color = "red"
@@ -186,7 +198,7 @@ func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, c
 
 // GetStartNode - start node getter
 func (graph *TestCallGraph) GetStartNode() *TestCallNode {
-	return graph.startNode
+	return graph.StartNode
 }
 
 // SetGroupCallback sets the callback for the specified group id
@@ -326,20 +338,45 @@ func (graph *TestCallGraph) getPathsInternal(path *TestCallPath, addPathToResult
 
 	if lastNodeInPath.IsLeaf() {
 		addPathToResult(path)
-		// fmt.Println()
-		// for pathIdx, node := range path.nodes {
-		// 	if pathIdx > 0 {
-		// 		fmt.Print(path.edges[pathIdx-1] + "/")
-		// 	}
-		// 	fmt.Print(node.Label + " ")
-		// }
+		// path.print()
 		return
 	}
 
+	var lastEdgeInPath *TestCallEdge
+	if len(path.nodes) > 1 {
+		lastEdgeInPath = path.edges[len(path.nodes)-2]
+	}
+
+	// if lastEdgeInPath != nil {
+	// 	fmt.Println("-> [" + lastEdgeInPath.Label + "] " + lastEdgeInPath.To.Label)
+	// }
+
 	for _, edge := range lastNodeInPath.AdjacentEdges {
+		if
+		// don't follow a path in the form of sync -> callback
+		(lastEdgeInPath != nil && lastEdgeInPath.Type == Sync && edge.Type == Callback) ||
+			// don't follow a path from async -> callback that is not your own
+			(lastEdgeInPath != nil && lastEdgeInPath.Type == Async &&
+				edge.Type == Callback && lastEdgeInPath.CallbackToCall != edge.To.Call.FunctionName) {
+			continue
+		}
+		// fmt.Println("add [" + edge.Label + "] " + edge.To.Label)
 		newPath := addToPath(path, edge)
 		graph.getPathsInternal(newPath, addPathToResult)
 	}
+	// fmt.Println("end of edges for " + lastNodeInPath.Label)
+}
+
+func (path *TestCallPath) print() {
+	fmt.Println()
+	fmt.Print("path = ")
+	for pathIdx, node := range path.nodes {
+		if pathIdx > 0 {
+			fmt.Print(" [" + path.edges[pathIdx-1].Label + "] ")
+		}
+		fmt.Print(node.Label + " ")
+	}
+	fmt.Println()
 }
 
 func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
@@ -370,9 +407,9 @@ func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
 func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 
 	executionGraph := graph.newGraphUsingNodes()
-	executionGraph.startNode = executionGraph.FindNode(
-		graph.startNode.Call.ContractAddress,
-		graph.startNode.Call.FunctionName)
+	executionGraph.StartNode = executionGraph.FindNode(
+		graph.StartNode.Call.ContractAddress,
+		graph.StartNode.Call.FunctionName)
 
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
 
@@ -384,7 +421,7 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 
 		// process sync edges
 		for _, edge := range node.AdjacentEdges {
-			if edge.Async {
+			if edge.Type != Sync {
 				continue
 			}
 
@@ -392,6 +429,7 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 			newDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
 
 			execEdge := executionGraph.addEdge(newSource, newDestination)
+			execEdge.Type = Sync
 			execEdge.Color = "blue"
 			execEdge.Label = "Sync"
 		}
@@ -402,7 +440,7 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 
 		// add async and callback edges
 		for _, edge := range node.AdjacentEdges {
-			if !edge.Async {
+			if edge.Type != Async {
 				continue
 			}
 
@@ -416,35 +454,49 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 
 			// for execution tree, this will be a regular edge
 			execEdge := executionGraph.addEdge(newSource, newAsyncDestination)
+			execEdge.Type = Async
+			execEdge.CallbackToCall = edge.CallbackToCall
 			execEdge.Label = "Async"
 			execEdge.Color = "red"
+
 			if edge.Group != "" {
 				execEdge.Label += "_" + edge.Group
 			}
-			if edge.CallBack != "" {
-				execEdge.Label += "_" + edge.CallBack
-			}
-
-			if edge.CallBack != "" {
-				callbackDestination := executionGraph.FindNode(node.Call.ContractAddress, edge.CallBack)
+			if edge.CallbackToCall != "" {
+				execEdge.Label += "_" + edge.CallbackToCall
+				callbackDestination := executionGraph.FindNode(node.Call.ContractAddress, edge.CallbackToCall)
 				execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination)
-				execEdge.Label = "Callback" // + "_" + edge.To.OriginalContractID + "_" + edge.To.Call.FunctionName
+				execEdge.Type = Callback
+				execEdge.Label = "Callback"
 			}
 		}
+
+		// callbacks were added by async source node processing and must be moved to the end of the node
+		// after all other node activity (sync & async calls)
+		nonCallBackEdges := make([]*TestCallEdge, 0)
+		callBackEdges := make([]*TestCallEdge, 0)
+		for _, newEdge := range newSource.AdjacentEdges {
+			if newEdge.Type == Callback {
+				callBackEdges = append(callBackEdges, newEdge)
+			} else {
+				nonCallBackEdges = append(nonCallBackEdges, newEdge)
+			}
+		}
+		newSource.AdjacentEdges = append(nonCallBackEdges, callBackEdges...)
 
 		// add group callbacks calls if any
 		for _, group := range groups {
 			groupCallbackNode := newSource.GroupCallbacks[group]
 			if groupCallbackNode != nil {
 				execEdge := executionGraph.addEdge(newSource, groupCallbackNode)
-				execEdge.Label = "GroupCallBack" + "_" + group
+				execEdge.Label = "Group_Callback_" + group
 			}
 		}
 
 		// is start node add context callback
 		if newSource.ContextCallback != nil {
 			execEdge := executionGraph.addEdge(newSource, newSource.ContextCallback)
-			execEdge.Label = "ContextCallBack"
+			execEdge.Label = "Context_Callback"
 		}
 
 		return node
@@ -490,7 +542,7 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 				crtNode = newGraph.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
 				if crtNode == nil {
 					crtNode = newGraph.AddNodeCopy(node)
-					newGraph.startNode = crtNode
+					newGraph.StartNode = crtNode
 				}
 				continue
 			}

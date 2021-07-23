@@ -14,6 +14,7 @@ func main() {
 	callGraph := test.CreateGraphTest1()
 	// callGraph := test.CreateGraphTestSimple1()
 	// callGraph := test.CreateGraphTestSimple2()
+	// callGraph := test.CreateGraphTestSimple3()
 
 	///////////////////
 

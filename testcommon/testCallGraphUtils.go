@@ -52,7 +52,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							for _, edge := range crtNode.AdjacentEdges {
 								destFunctionName := edge.To.Call.FunctionName
 								destAddress := edge.To.Call.ContractAddress
-								if !edge.Async {
+								if edge.Type == Sync {
 									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
@@ -72,8 +72,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										Data:            callData.ToBytes(),
 										ValueBytes:      value.Bytes(),
 										GasLimit:        testConfig.GasProvidedToChild,
-										SuccessCallback: edge.CallBack,
-										ErrorCallback:   edge.CallBack,
+										SuccessCallback: edge.CallbackToCall,
+										ErrorCallback:   edge.CallbackToCall,
 									})
 									require.Nil(t, err)
 								}
@@ -117,7 +117,7 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 	executionOrder := make([]TestCall, 0)
 	pathsTree := pathsTreeFromDag(executionGraph)
-	pathsTree.DfsGraphFromNode(pathsTree.startNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
+	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
 		if node.IsEndOfSyncExecutionNode {
 			fmt.Println("end exec " + parent.Label)
 			executionOrder = append(executionOrder, TestCall{
@@ -202,6 +202,25 @@ func CreateGraphTestSimple2() *TestCallGraph {
 	sc2cb1 := callGraph.AddNode("sc2", "cb1")
 	callGraph.AddSyncEdge(sc4f4, sc2cb1)
 	// callGraph.AddSyncEdge(sc2cb1, sc3f3)
+
+	return callGraph
+}
+
+// CreateGraphTestSimple3 -
+func CreateGraphTestSimple3() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+	sc1f1 := callGraph.AddStartNode("sc1", "f1")
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddSyncEdge(sc1f1, sc2f2)
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb2", "")
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddSyncEdge(sc2f2, sc3f3)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc1", "cb2")
 
 	return callGraph
 }
