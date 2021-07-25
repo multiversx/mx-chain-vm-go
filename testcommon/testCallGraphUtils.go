@@ -72,8 +72,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										Data:            callData.ToBytes(),
 										ValueBytes:      value.Bytes(),
 										GasLimit:        testConfig.GasProvidedToChild,
-										SuccessCallback: edge.CallbackToCall,
-										ErrorCallback:   edge.CallbackToCall,
+										SuccessCallback: edge.Callback,
+										ErrorCallback:   edge.Callback,
 									})
 									require.Nil(t, err)
 								}
@@ -172,15 +172,25 @@ func CreateGraphTest1() *TestCallGraph {
 // CreateGraphTestSimple1 -
 func CreateGraphTestSimple1() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1")
 
-	sc2f2 := callGraph.AddNode("sc2", "f2")
+	sc1f1 := callGraph.AddStartNode("sc1", "f1").
+		SetGasLimit(100).
+		SetGasUsed(10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2").
+		SetGasLimit(40).
+		SetGasUsed(10)
+
 	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1")
 
-	sc2f3 := callGraph.AddNode("sc2", "f3")
+	sc2f3 := callGraph.AddNode("sc2", "f3").
+		SetGasLimit(30).
+		SetGasUsed(10)
+
 	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb1", "gr2")
 
-	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc1", "cb1").
+		SetGasUsed(10)
 
 	return callGraph
 }

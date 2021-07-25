@@ -59,8 +59,7 @@ func toGraphviz(graph *test.TestCallGraph) *gographviz.Graph {
 
 	nodeCounters := make(map[string]int)
 	for _, node := range graph.Nodes {
-		nodeLabel := getGraphvizNodeLabel(node, nodeCounters)
-		node.Label = nodeLabel
+		node.Label, node.VisualLabel = getGraphvizNodeLabel(node, nodeCounters)
 	}
 
 	for _, node := range graph.Nodes {
@@ -68,20 +67,22 @@ func toGraphviz(graph *test.TestCallGraph) *gographviz.Graph {
 		if node.IsStartNode {
 			attrs["shape"] = "box"
 		}
+		setGasLabel(node, attrs)
 		if !node.IsEndOfSyncExecutionNode {
 			attrs["bgcolor"] = "grey"
 			attrs["style"] = "filled"
 		}
-		from := getGraphvizNodeLabel(node, nil)
+		from := node.Label
+		attrs["label"] = node.VisualLabel
 		graphviz.AddNode(graphName, from, attrs)
 		for _, edge := range node.GetEdges() {
-			to := getGraphvizNodeLabel(edge.To, nil)
+			to := edge.To.Label
 			attrs := make(map[string]string)
-			if edge.To.IsEndOfSyncExecutionNode {
-				attrs["style"] = "dotted"
-			}
+			// if edge.To.IsEndOfSyncExecutionNode {
+			// 	attrs["style"] = "dotted"
+			// }
 			if edge.Label != "" {
-				attrs["label"] = edge.Label
+				attrs["label"] = strconv.Quote(edge.Label)
 			}
 			if edge.Color != "" {
 				attrs["color"] = edge.Color
@@ -95,16 +96,16 @@ func toGraphviz(graph *test.TestCallGraph) *gographviz.Graph {
 	return graphviz
 }
 
-func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) string {
+func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) (string, string) {
 	if nodeCounters == nil {
-		return node.Label
+		return node.Label, node.Label
 	}
 
 	var prefix string
-	if node.Call.FunctionName == "X" {
-		prefix = "X"
+	if node.Call.FunctionName == test.SpecialLabel {
+		prefix = test.SpecialLabel
 	} else {
-		prefix = node.Label
+		prefix, _ = strconv.Unquote(node.Label)
 	}
 
 	counter, present := nodeCounters[prefix]
@@ -118,5 +119,20 @@ func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) 
 	if counter > 1 {
 		suffix = "_" + strconv.Itoa(counter)
 	}
-	return prefix + suffix
+	return strconv.Quote(prefix + suffix), strconv.Quote(prefix)
+}
+
+func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
+	if node.GasLimit == 0 {
+		return
+	}
+	gasLimit := strconv.Itoa(int(node.GasLimit))
+	gasRemaining := strconv.Itoa(int(node.GasRemaining))
+	var prefix string
+	if node.IsEndOfSyncExecutionNode {
+		prefix = "U"
+	} else {
+		prefix = "L"
+	}
+	attrs["xlabel"] = "<<font color='green'>" + prefix + gasLimit + "<br/>R" + gasRemaining + "</font>>"
 }
