@@ -1342,7 +1342,7 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 100_000
-	testConfig.GasProvidedToChild = 10_000
+	testConfig.GasProvidedToChild = 60_000
 
 	callGraph := test.CreateTestCallGraph()
 	sc1f1 := callGraph.AddStartNode("sc1", "f1")

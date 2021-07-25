@@ -39,6 +39,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 
 							async := host.Async()
 							crtFunctionCalled := host.Runtime().Function()
+							gasProvided := host.Runtime().GetVMInput().GasProvided
+							gasForChildren := 3 * gasProvided / 4
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 							if crtNode.ContextCallback != nil {
@@ -56,7 +58,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
-										int64(testConfig.GasProvidedToChild),
+										int64(gasForChildren),
 										value,
 										[]byte(destFunctionName),
 										destAddress,
@@ -71,7 +73,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										Destination:     destAddress,
 										Data:            callData.ToBytes(),
 										ValueBytes:      value.Bytes(),
-										GasLimit:        testConfig.GasProvidedToChild,
+										GasLimit:        gasForChildren,
 										SuccessCallback: edge.CallBack,
 										ErrorCallback:   edge.CallBack,
 									})
