@@ -1334,7 +1334,7 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig.GasProvidedToChild = 10_000
 
 	// callGraph := test.CreateGraphTestSimple1()
-	callGraph := test.CreateGraphTest1()
+	callGraph := test.CreateGraphTest2()
 
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
@@ -1345,7 +1345,7 @@ func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
 	testConfig.GasProvidedToChild = 10_000
 
 	callGraph := test.CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1")
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	sc3f3 := callGraph.AddNode("sc3", "f3")
 
