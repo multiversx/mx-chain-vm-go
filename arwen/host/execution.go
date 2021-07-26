@@ -217,7 +217,7 @@ func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, inp
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function)
+	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
 	scExecutionInput := input
 
@@ -340,14 +340,15 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		output.PopSetActiveState()
 	}
 
+	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetSCAddress()), "function", runtime.Function())
+	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract, "gas remaining", vmOutput.GasRemaining)
+
 	// Return to the caller context completely
 	runtime.PopSetActiveState()
 	async.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
-
-	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract)
 
 	return vmOutput
 }

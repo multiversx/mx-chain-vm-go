@@ -7,10 +7,13 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
+
+var logAsync = logger.GetOrCreate("arwen/async")
 
 type asyncContext struct {
 	host       arwen.VMHost
@@ -20,7 +23,7 @@ type asyncContext struct {
 	callback        string
 	callbackData    []byte
 	gasPrice        uint64
-	gasRemaining    uint64
+	gasAccumulated  uint64
 	returnData      []byte
 	asyncCallGroups []*arwen.AsyncCallGroup
 }
@@ -30,7 +33,7 @@ type serializableAsyncContext struct {
 	Callback        string
 	CallbackData    []byte
 	GasPrice        uint64
-	GasRemaining    uint64
+	GasAccumulated  uint64
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
 }
@@ -44,7 +47,7 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 		callback:        "",
 		callbackData:    nil,
 		gasPrice:        0,
-		gasRemaining:    0,
+		gasAccumulated:  0,
 		returnData:      nil,
 		asyncCallGroups: make([]*arwen.AsyncCallGroup, 0),
 	}
@@ -54,7 +57,7 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 func (context *asyncContext) InitState() {
 	context.callerAddr = make([]byte, 0)
 	context.gasPrice = 0
-	context.gasRemaining = 0
+	context.gasAccumulated = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 	context.callback = ""
@@ -66,7 +69,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.InitState()
 	context.callerAddr = input.CallerAddr
 	context.gasPrice = input.GasPrice
-	context.gasRemaining = 0
+	context.gasAccumulated = 0
 }
 
 // PushState creates a deep clone of the internal state and pushes it onto the
@@ -77,7 +80,7 @@ func (context *asyncContext) PushState() {
 		callback:        context.callback,
 		callbackData:    context.callbackData,
 		gasPrice:        context.gasPrice,
-		gasRemaining:    context.gasRemaining,
+		gasAccumulated:  context.gasAccumulated,
 		returnData:      context.returnData,
 		asyncCallGroups: context.asyncCallGroups,
 	}
@@ -115,7 +118,7 @@ func (context *asyncContext) PopSetActiveState() {
 	context.callback = prevState.callback
 	context.callbackData = prevState.callbackData
 	context.gasPrice = prevState.gasPrice
-	context.gasRemaining = prevState.gasRemaining
+	context.gasAccumulated = prevState.gasAccumulated
 	context.returnData = prevState.returnData
 	context.asyncCallGroups = prevState.asyncCallGroups
 }
@@ -213,7 +216,7 @@ func (context *asyncContext) SetContextCallback(callbackName string, data []byte
 		return err
 	}
 
-	context.gasRemaining = gasToLock
+	context.gasAccumulated = gasToLock
 	context.callback = callbackName
 	context.callbackData = data
 
@@ -465,8 +468,18 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
 	if context.IsComplete() {
+		logAsync.Trace("no async calls")
 		return nil
 	}
+
+	metering := context.host.Metering()
+	gasLeft := metering.GasLeft()
+	context.accumulateGas(gasLeft)
+	// TODO decide whether gasLeft should be consumed here as well, to mark it as
+	// unavailable for VMOutput.GasRemaining
+	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
+
+	logAsync.Trace("async.Execute() execute locals")
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
 	// (includes smart contracts and built-in functions in the same shard)
@@ -475,16 +488,17 @@ func (context *asyncContext) Execute() error {
 		return err
 	}
 
-	// This call to deleteCompletedAsyncCall() is necessary to remove the
+	logAsync.Trace("async.Execute() complete locals")
+
+	// This call to closeCompletedAsyncCall() is necessary to remove the
 	// AsyncCall that has been just before async.Execute() was called, within
 	// host.callSCMethod(). This happens when a cross-shard callback returns and
 	// finalizes an AsyncCall.
-	// TODO try to move this call somewhere else, where its intent is more obvious
-	context.deleteCompletedAsyncCalls()
-
+	context.closeCompletedAsyncCalls()
 	context.executeCompletedGroupCallbacks()
 	context.deleteCompletedGroups()
 
+	logAsync.Trace("async.Execute() execute remote")
 	// Step 2: in one combined step, do the following:
 	// * locally execute built-in functions with cross-shard
 	//   destinations, whereby the cross-shard OutputAccount entries are generated
@@ -501,11 +515,12 @@ func (context *asyncContext) Execute() error {
 	}
 
 	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
-
 	if !context.HasPendingCallGroups() {
+		logAsync.Trace("async.Execute() execute context callback")
 		context.executeContextCallback()
 	}
 
+	logAsync.Trace("async.Execute() save")
 	err = context.Save()
 	if err != nil {
 		return err
@@ -577,9 +592,6 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	if !ok {
 		return arwen.ErrCallBackFuncNotExpected
 	}
-
-	// TODO accumulate remaining gas from the callback into the AsyncContext,
-	// after fixing the bug caught by TestExecution_ExecuteOnDestContext_GasRemaining().
 
 	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 	if currentCallGroup.HasPendingCalls() {
@@ -738,6 +750,8 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
 	if !context.HasCallback() {
+		// TODO decide whether context.gasAccumulated should be restored here to
+		// mark it as available for VMOutput.GasRemaining
 		return nil
 	}
 
@@ -762,7 +776,7 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 	err := output.Transfer(
 		context.callerAddr,
 		runtime.GetSCAddress(),
-		context.gasRemaining,
+		context.gasAccumulated,
 		0,
 		currentCall.CallValue,
 		context.returnData,
@@ -798,7 +812,7 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 		Callback:        context.callback,
 		CallbackData:    context.callbackData,
 		GasPrice:        context.gasPrice,
-		GasRemaining:    context.gasRemaining,
+		GasAccumulated:  context.gasAccumulated,
 		ReturnData:      context.returnData,
 		AsyncCallGroups: context.asyncCallGroups,
 	}
@@ -812,7 +826,7 @@ func (context *asyncContext) fromSerializable(serializedContext *serializableAsy
 		callback:        serializedContext.Callback,
 		callbackData:    serializedContext.CallbackData,
 		gasPrice:        serializedContext.GasPrice,
-		gasRemaining:    serializedContext.GasRemaining,
+		gasAccumulated:  serializedContext.GasAccumulated,
 		returnData:      serializedContext.ReturnData,
 		asyncCallGroups: serializedContext.AsyncCallGroups,
 	}
@@ -843,19 +857,26 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 	return int(dataLength)
 }
 
+func (context *asyncContext) accumulateGas(gas uint64) {
+	context.gasAccumulated = math.AddUint64(context.gasAccumulated, gas)
+	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
+}
+
 // deleteCompletedGroups removes all completed AsyncGroups
 func (context *asyncContext) deleteCompletedGroups() {
 	remainingAsyncGroups := make([]*arwen.AsyncCallGroup, 0)
-	for _, asyncGroup := range context.asyncCallGroups {
-		if !asyncGroup.IsComplete() {
-			remainingAsyncGroups = append(remainingAsyncGroups, asyncGroup)
+	for _, group := range context.asyncCallGroups {
+		if !group.IsComplete() {
+			remainingAsyncGroups = append(remainingAsyncGroups, group)
+		} else {
+			logAsync.Trace("deleted group", "group", group.Identifier)
 		}
 	}
 
 	context.asyncCallGroups = remainingAsyncGroups
 }
 
-func (context *asyncContext) deleteCompletedAsyncCalls() {
+func (context *asyncContext) closeCompletedAsyncCalls() {
 	for _, group := range context.asyncCallGroups {
 		group.DeleteCompletedAsyncCalls()
 	}

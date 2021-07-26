@@ -301,7 +301,8 @@ func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.Co
 		"caller", input.CallerAddr,
 		"contract", input.RecipientAddr,
 		"func", input.Function,
-		"args", input.Arguments)
+		"args", input.Arguments,
+		"gas provided", input.GasProvided)
 }
 
 // SetCustomCallFunction sets a custom function to be called next, instead of
