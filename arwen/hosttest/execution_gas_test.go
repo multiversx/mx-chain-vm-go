@@ -10,7 +10,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
@@ -409,7 +411,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, 0)
-			_ = childAccount.SetTokenRolesAsStrings(test.ESDTTestTokenName, []string{vmcommon.ESDTRoleLocalBurn})
+			_ = childAccount.SetTokenRolesAsStrings(test.ESDTTestTokenName, []string{core.ESDTRoleLocalBurn})
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -537,7 +539,7 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 						WithData(asyncChildArgs).
 						WithGasLimit(gasForAsyncCall).
 						WithGasLocked(testConfig.GasLockCost).
-						WithCallType(vmcommon.AsynchronousCall).
+						WithCallType(vm.AsynchronousCall).
 						WithValue(big.NewInt(testConfig.TransferFromParentToChild)),
 				)
 		})
@@ -566,7 +568,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
 				[]byte(contracts.AsyncChildData),
 				[]byte{0}).
-			WithCallType(vmcommon.AsynchronousCall).
+			WithCallType(vm.AsynchronousCall).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1

@@ -8,9 +8,10 @@ import (
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
@@ -54,7 +55,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 			tokenBalance := instance.Balance.Value
 			tokenData := &esdt.ESDigitalToken{
 				Value:      tokenBalance,
-				Type:       uint32(vmcommon.Fungible),
+				Type:       uint32(core.Fungible),
 				Properties: makeESDTUserMetadataBytes(isFrozen),
 				TokenMetaData: &esdt.MetaData{
 					Name:       tokenName,
@@ -179,17 +180,21 @@ func generateTxHash(txIndex string) []byte {
 	return txIndexBytes
 }
 
-func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
-	if esdtData != nil {
-		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
-		vmInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
-		vmInput.ESDTTransfers[0].ESDTTokenName = esdtData.TokenIdentifier.Value
-		vmInput.ESDTTransfers[0].ESDTValue = esdtData.Value.Value
-		vmInput.ESDTTransfers[0].ESDTTokenNonce = esdtData.Nonce.Value
-		if vmInput.ESDTTransfers[0].ESDTTokenNonce != 0 {
-			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.NonFungible)
-		} else {
-			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(vmcommon.Fungible)
+func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
+	esdtDataLen := len(esdtData)
+
+	if esdtDataLen > 0 {
+		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, esdtDataLen)
+		for i := 0; i < esdtDataLen; i++ {
+			vmInput.ESDTTransfers[i] = &vmcommon.ESDTTransfer{}
+			vmInput.ESDTTransfers[i].ESDTTokenName = esdtData[i].TokenIdentifier.Value
+			vmInput.ESDTTransfers[i].ESDTValue = esdtData[i].Value.Value
+			vmInput.ESDTTransfers[i].ESDTTokenNonce = esdtData[i].Nonce.Value
+			if vmInput.ESDTTransfers[i].ESDTTokenNonce != 0 {
+				vmInput.ESDTTransfers[i].ESDTTokenType = uint32(core.NonFungible)
+			} else {
+				vmInput.ESDTTransfers[i].ESDTTokenType = uint32(core.Fungible)
+			}
 		}
 	}
 }

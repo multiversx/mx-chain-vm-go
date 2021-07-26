@@ -39,6 +39,7 @@ package elrondapi
 // extern long long	v1_4_getESDTTokenNonceByIndex(void *context, int32_t index);
 // extern int32_t	v1_4_getESDTTokenTypeByIndex(void *context, int32_t index);
 // extern int32_t	v1_4_getCallValueTokenNameByIndex(void *context, int32_t callValueOffset, int32_t tokenNameOffset, int32_t index);
+// extern int32_t	v1_4_getNumESDTTransfers(void *context);
 // extern long long v1_4_getCurrentESDTNFTNonce(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen);
 // extern void		v1_4_writeLog(void *context, int32_t pointer, int32_t length, int32_t topicPtr, int32_t numTopics);
 // extern void		v1_4_writeEventLog(void *context, int32_t numTopics, int32_t topicLengthsOffset, int32_t topicOffset, int32_t dataOffset, int32_t dataLength);
@@ -101,9 +102,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -115,6 +118,14 @@ func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.
 		return nil
 	}
 	return esdtTransfers[index]
+}
+
+func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
+	runtime := arwen.GetRuntimeContext(context)
+	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
+		return arwen.WithFault(arwen.ErrTooManyESDTTransfers, context, true)
+	}
+	return false
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
@@ -318,6 +329,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getCallValueTokenNameByIndex", v1_4_getCallValueTokenNameByIndex, C.v1_4_getCallValueTokenNameByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getNumESDTTransfers", v1_4_getNumESDTTransfers, C.v1_4_getNumESDTTransfers)
 	if err != nil {
 		return nil, err
 	}
@@ -774,14 +790,14 @@ func v1_4_getESDTTokenData(
 	royaltiesHandle int32,
 	urisOffset int32,
 ) int32 {
-	bigInt := arwen.GetBigIntContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	value := bigInt.GetOne(valueHandle)
+	value := managedType.GetBigIntOrCreate(valueHandle)
 	value.Set(esdtData.Value)
 
 	err = runtime.MemStore(propertiesOffset, esdtData.Properties)
@@ -807,7 +823,7 @@ func v1_4_getESDTTokenData(
 			return 0
 		}
 
-		royalties := bigInt.GetOne(royaltiesHandle)
+		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
 		royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
 
 		if len(esdtData.TokenMetaData.URIs) > 0 {
@@ -853,7 +869,7 @@ func v1_4_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 		return 1
 	}
 
-	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vmcommon.DirectCall)
+	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vm.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1083,7 +1099,7 @@ func TransferValueExecuteWithTypedArgs(
 	}
 
 	data := makeCrossShardCallFromInput(contractCallInput)
-	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vmcommon.DirectCall)
+	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vm.DirectCall)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1202,10 +1218,10 @@ func v1_4_multiTransferESDTNFTExecute(
 			ESDTTokenName:  transferArgs[tokenStartIndex],
 			ESDTTokenNonce: big.NewInt(0).SetBytes(transferArgs[tokenStartIndex+1]).Uint64(),
 			ESDTValue:      big.NewInt(0).SetBytes(transferArgs[tokenStartIndex+2]),
-			ESDTTokenType:  uint32(vmcommon.Fungible),
+			ESDTTokenType:  uint32(core.Fungible),
 		}
 		if transfer.ESDTTokenNonce > 0 {
-			transfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+			transfer.ESDTTokenType = uint32(core.NonFungible)
 		}
 		transfers[i] = transfer
 	}
@@ -1256,10 +1272,10 @@ func TransferESDTNFTExecuteWithHost(
 		ESDTValue:      callArgs.value,
 		ESDTTokenName:  tokenIdentifier,
 		ESDTTokenNonce: uint64(nonce),
-		ESDTTokenType:  uint32(vmcommon.Fungible),
+		ESDTTokenType:  uint32(core.Fungible),
 	}
 	if nonce > 0 {
-		transfer.ESDTTokenType = uint32(vmcommon.NonFungible)
+		transfer.ESDTTokenType = uint32(core.NonFungible)
 	}
 	return TransferESDTNFTExecuteWithTypedArgs(
 		host,
@@ -2003,6 +2019,7 @@ func v1_4_callValue(context unsafe.Pointer, resultOffset int32) int32 {
 
 //export v1_4_getESDTValue
 func v1_4_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTValueByIndex(context, resultOffset, 0)
 }
 
@@ -2032,6 +2049,7 @@ func v1_4_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index 
 
 //export v1_4_getESDTTokenName
 func v1_4_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTTokenNameByIndex(context, resultOffset, 0)
 }
 
@@ -2059,6 +2077,7 @@ func v1_4_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, in
 
 //export v1_4_getESDTTokenNonce
 func v1_4_getESDTTokenNonce(context unsafe.Pointer) int64 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTTokenNonceByIndex(context, 0)
 }
 
@@ -2097,7 +2116,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 		return 0
 	}
 
-	key := []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier + string(tokenID))
+	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
@@ -2106,6 +2125,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 
 //export v1_4_getESDTTokenType
 func v1_4_getESDTTokenType(context unsafe.Pointer) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getESDTTokenTypeByIndex(context, 0)
 }
 
@@ -2124,8 +2144,20 @@ func v1_4_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
 	return 0
 }
 
+//export v1_4_getNumESDTTransfers
+func v1_4_getNumESDTTransfers(context unsafe.Pointer) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	metering.UseGas(gasToUse)
+
+	return int32(len(runtime.GetVMInput().ESDTTransfers))
+}
+
 //export v1_4_getCallValueTokenName
 func v1_4_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
+	_ = failIfMoreThanOneESDTTransfer(context)
 	return v1_4_getCallValueTokenNameByIndex(context, callValueOffset, tokenNameOffset, 0)
 }
 
@@ -2200,7 +2232,8 @@ func v1_4_writeEventLog(
 	topicLengthsOffset int32,
 	topicOffset int32,
 	dataOffset int32,
-	dataLength int32) {
+	dataLength int32,
+) {
 
 	host := arwen.GetVMHost(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -3147,7 +3180,7 @@ func prepareIndirectContractCallInput(
 			CallValue:   value,
 			GasPrice:    0,
 			GasProvided: metering.BoundGasLimit(gasLimit),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 		},
 		RecipientAddr: destination,
 		Function:      string(function),

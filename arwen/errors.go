@@ -180,6 +180,21 @@ var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not
 // ErrTransferValueOnESDTCall signals that balance transfer was given in esdt call
 var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
 
+// ErrNoBigIntUnderThisHandle signals that there is no bigInt for the given handle
+var ErrNoBigIntUnderThisHandle = errors.New("no bigInt under the given handle")
+
+// ErrLengthOfBufferNotCorrect signals that length of the buffer is not correct
+var ErrLengthOfBufferNotCorrect = errors.New("length of buffer is not correct")
+
+// ErrNoEllipticCurveUnderThisHandle singals that there is no elliptic curve for the given handle
+var ErrNoEllipticCurveUnderThisHandle = errors.New("no elliptic curve under the given handle")
+
+// ErrPointNotOnCurve signals that the point to be used is not on curve
+var ErrPointNotOnCurve = errors.New("point is not on curve")
+
+// ErrNoManagedBufferUnderThisHandle signals that there is no buffer for the given handle
+var ErrNoManagedBufferUnderThisHandle = errors.New("no managed buffer under the given handle")
+
 // ErrNilHostParameters signals that nil host parameters was provided
 var ErrNilHostParameters = errors.New("nil host parameters")
 
@@ -191,3 +206,6 @@ var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions contain
 
 // ErrNilBlockChainHook signals that nil blockchain hook was provided
 var ErrNilBlockChainHook = errors.New("nil blockchain hook")
+
+// ErrTooManyESDTTransfers signals that too many ESDT transfers are in sc call
+var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")

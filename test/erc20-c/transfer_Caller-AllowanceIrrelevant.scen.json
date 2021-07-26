@@ -43,8 +43,9 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "0x7134692b230b9e1ffa39098904722134159652b09c5bc41d88d6698779d228ff",
+                        "identifier": "str:approve",
                         "topics": [
+                            "0x7134692b230b9e1ffa39098904722134159652b09c5bc41d88d6698779d228ff",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
                         ],
@@ -76,8 +77,9 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
+                        "identifier": "str:transferToken",
                         "topics": [
+                            "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
                         ],

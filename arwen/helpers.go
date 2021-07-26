@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
@@ -183,6 +184,7 @@ func U64MulToBigInt(x, y uint64) *big.Int {
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
 	logger.SetLogLevel("*:TRACE")
+	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }
 
@@ -282,7 +284,7 @@ func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
 			CallerAddr:           nil,
 			Arguments:            make([][]byte, 0),
 			CallValue:            big.NewInt(0),
-			CallType:             vmcommon.DirectCall,
+			CallType:             vm.DirectCall,
 			GasPrice:             1,
 			GasProvided:          0,
 			ReturnCallAfterError: false,
@@ -349,9 +351,9 @@ func GetCryptoContext(vmHostPtr unsafe.Pointer) crypto.VMCrypto {
 	return GetVMHost(vmHostPtr).Crypto()
 }
 
-// GetBigIntContext returns the big int context
-func GetBigIntContext(vmHostPtr unsafe.Pointer) BigIntContext {
-	return GetVMHost(vmHostPtr).BigInt()
+// GetManagedTypesContext returns the big int context
+func GetManagedTypesContext(vmHostPtr unsafe.Pointer) ManagedTypesContext {
+	return GetVMHost(vmHostPtr).ManagedTypes()
 }
 
 // GetOutputContext returns the output context

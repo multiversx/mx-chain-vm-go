@@ -19,23 +19,22 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 	nonce := rand.Intn(stakersLen) + 1
 	user := pfe.farmers[nonce].user
 	amount := pfe.farmers[nonce].value
-	rps := pfe.farmers[nonce].rps
 	if pfe.farmers[nonce].value == 0 {
 		return nil
 	}
 
+	farm := pfe.farmers[nonce].farm
 	unstakeAmount := int64(amountMax)
 	if int64(amountMax) > amount {
 		unstakeAmount = amount
+		delete(pfe.farmers, nonce)
 	} else {
 		unstakeAmount = int64(amountMax)
-	}
-	farm := pfe.farmers[nonce].farm
-	pfe.farmers[nonce] = FarmerInfo{
-		value: amount - unstakeAmount,
-		user:  user,
-		farm:  farm,
-		rps:   rps,
+		pfe.farmers[nonce] = FarmerInfo{
+			value: amount - unstakeAmount,
+			user:  user,
+			farm:  farm,
+		}
 	}
 
 	mexBefore, err := pfe.getTokens(user, pfe.mexTokenId)
@@ -94,6 +93,7 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 
 		expectedErrors := map[string]bool{
 			"Exit too early for lock rewards option": true,
+			"Farming token amount is zero":           true,
 		}
 
 		_, expected := expectedErrors[output.ReturnMessage]

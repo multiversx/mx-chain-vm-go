@@ -15,12 +15,20 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
 var counterKey = []byte("COUNTER")
+var mBufferKey = []byte("mBuffer")
+var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
+	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24,
+	0xcb, 0x40, 0xd6, 0x4a, 0x50, 0x1f, 0xba, 0x9c,
+	0x11, 0x84, 0x7b, 0x28, 0x96, 0x5b, 0xc7, 0x37,
+	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24,
+	0xcb, 0x40, 0xd6, 0x4a, 0x50, 0x1f, 0xba, 0x9c,
+	0x11, 0x84, 0x7b, 0x28, 0x96, 0x5b, 0xc7, 0x37,
+	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24}
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
 var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
@@ -28,6 +36,7 @@ var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 const (
 	get                     = "get"
 	increment               = "increment"
+	mBuffer                 = "mBufferMethod"
 	callRecursive           = "callRecursive"
 	parentCallsChild        = "parentCallsChild"
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
@@ -531,6 +540,27 @@ func TestExecution_Call_Successful(t *testing.T) {
 		})
 }
 
+func TestExecution_ManagedBuffers(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					managedBuffer,
+					[]byte("succ")).
+				Storage(
+					test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer),
+				)
+		})
+}
+
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
 	gasWithZeroLocals, gasSchedule := callCustomSCAndGetGasUsed(t, 0)
 	costPerLocal := uint64(gasSchedule.WASMOpcodeCost.LocalAllocate)
@@ -987,11 +1017,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, 0).
-				GasUsed(test.ParentAddress, 25424).
+				GasUsed(test.ParentAddress, 25916).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1023,7 +1053,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 							WithKey([]byte(fmt.Sprintf("Rkey%03d.........................", recursiveCalls))).
 							WithValue([]byte(fmt.Sprintf("Rvalue%03d", recursiveCalls))),
 					)
-				require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+				require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
@@ -1105,11 +1135,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, (big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))).Int64()).
-				GasUsed(test.ParentAddress, 29593).
+				GasUsed(test.ParentAddress, 30162).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1188,16 +1218,16 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-				GasUsed(test.ParentAddress, 5426).
+				GasUsed(test.ParentAddress, 5576).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-				GasUsed(test.ChildAddress, 3652).
+				GasUsed(test.ChildAddress, 3752).
 				// other
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.BigInt().GetOne(88).Int64())
+			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
 		})
 }
 
@@ -1258,7 +1288,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
-				GasUsed(test.ParentAddress, 4309).
+				GasUsed(test.ParentAddress, 4317).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1385,7 +1415,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					)
-				require.Equal(t, int64(42), host.BigInt().GetOne(12).Int64())
+				require.Equal(t, int64(42), host.ManagedTypes().GetBigIntOrCreate(12).Int64())
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
@@ -1426,7 +1456,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4444).
+				GasUsed(test.ParentAddress, 4452).
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
@@ -1488,7 +1518,7 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4652).
+				GasUsed(test.ParentAddress, 4660).
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
@@ -1608,7 +1638,7 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-				GasUsed(test.ParentAddress, 4366).
+				GasUsed(test.ParentAddress, 4374).
 				/// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 99).
 				GasUsed(test.ChildAddress, 2259).
@@ -1666,11 +1696,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 29670).
+				GasUsed(test.ParentAddress, 30244).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(1), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1726,11 +1756,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 				Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 38083).
+				GasUsed(test.ParentAddress, 38816).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(0), host.BigInt().GetOne(16).Int64())
+			require.Equal(t, int64(0), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1802,16 +1832,16 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -balanceDelta).
-				GasUsed(test.ParentAddress, 7252).
+				GasUsed(test.ParentAddress, 7452).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, balanceDelta).
-				GasUsed(test.ChildAddress, 5464).
+				GasUsed(test.ChildAddress, 5614).
 				// others
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(1), host.BigInt().GetOne(88).Int64())
+			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
 		})
 }
 

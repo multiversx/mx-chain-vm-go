@@ -71,6 +71,7 @@
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
+                            "str:accept_funds",
                             "str:NFT-0001",
                             "str:NonFungibleESDT",
                             "1",
@@ -78,7 +79,6 @@
                         ],
                         "data": ""
                     }
-
                 ],
                 "gas": "*",
                 "refund": "*"

@@ -5,6 +5,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
@@ -18,13 +19,13 @@ type VMHostMock struct {
 
 	EthInput []byte
 
-	BlockchainContext arwen.BlockchainContext
-	RuntimeContext    arwen.RuntimeContext
-	AsyncContext      arwen.AsyncContext
-	OutputContext     arwen.OutputContext
-	MeteringContext   arwen.MeteringContext
-	StorageContext    arwen.StorageContext
-	BigIntContext     arwen.BigIntContext
+	BlockchainContext   arwen.BlockchainContext
+	RuntimeContext      arwen.RuntimeContext
+	AsyncContext        arwen.AsyncContext
+	OutputContext       arwen.OutputContext
+	MeteringContext     arwen.MeteringContext
+	StorageContext      arwen.StorageContext
+	ManagedTypesContext arwen.ManagedTypesContext
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
@@ -74,8 +75,8 @@ func (host *VMHostMock) Storage() arwen.StorageContext {
 }
 
 // BigInt mocked method
-func (host *VMHostMock) BigInt() arwen.BigIntContext {
-	return host.BigIntContext
+func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
+	return host.ManagedTypesContext
 }
 
 // IsArwenV2Enabled mocked method
@@ -120,7 +121,7 @@ func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 }
 
 // ExecuteESDTTransfer mocked method
-func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (host *VMHostMock) ExecuteESDTTransfer(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	return nil, 0, nil
 }
 
@@ -199,7 +200,7 @@ func (host *VMHostMock) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (host *VMHostMock) GetContexts() (
-	arwen.BigIntContext,
+	arwen.ManagedTypesContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,
@@ -207,7 +208,7 @@ func (host *VMHostMock) GetContexts() (
 	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
-	return host.BigIntContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.AsyncContext, host.StorageContext
+	return host.ManagedTypesContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.AsyncContext, host.StorageContext
 }
 
 // SetRuntimeContext mocked method

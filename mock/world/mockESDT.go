@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ESDTTokenKeyPrefix is the prefix of storage keys belonging to ESDT tokens.
-var ESDTTokenKeyPrefix = []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTKeyIdentifier)
+var ESDTTokenKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
 
 // ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles.
-var ESDTRoleKeyPrefix = []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTRoleIdentifier + vmcommon.ESDTKeyIdentifier)
+var ESDTRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 
 // ESDTNonceKeyPrefix is the prefix of storage keys belonging to ESDT nonces.
-var ESDTNonceKeyPrefix = []byte(vmcommon.ElrondProtectedKeyPrefix + vmcommon.ESDTNFTLatestNonceIdentifier)
+var ESDTNonceKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
 
 // GetTokenBalance returns the ESDT balance of an account for the given token
 // key (token keys are built from the token identifier using MakeTokenKey).
@@ -57,7 +60,7 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 	token []byte,
 	nonce uint64,
 	value *big.Int,
-	callType vmcommon.CallType,
+	callType vm.CallType,
 	gasLimit uint64,
 	gasPrice uint64,
 ) (uint64, error) {
@@ -72,12 +75,12 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 			GasLocked:   0,
 		},
 		RecipientAddr:     receiver,
-		Function:          vmcommon.BuiltInFunctionESDTTransfer,
+		Function:          core.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
 	if nonce > 0 {
-		esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
+		esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
 		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
 		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
 		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, token, nonceAsBytes, value.Bytes(), receiver)
@@ -93,6 +96,56 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return 0, fmt.Errorf(
 			"ESDTtransfer failed: retcode = %d, msg = %s",
+			vmOutput.ReturnCode,
+			vmOutput.ReturnMessage)
+	}
+
+	return vmOutput.GasRemaining, nil
+}
+
+func (bf *BuiltinFunctionsWrapper) PerformDirectMultiESDTTransfer(
+	sender []byte,
+	receiver []byte,
+	esdtTransfers []*mj.ESDTTxData,
+	callType vm.CallType,
+	gasLimit uint64,
+	gasPrice uint64,
+) (uint64, error) {
+	nrTransfers := len(esdtTransfers)
+	nrTransfersAsBytes := big.NewInt(0).SetUint64(uint64(nrTransfers)).Bytes()
+
+	multiTransferInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   make([][]byte, 0),
+			CallValue:   big.NewInt(0),
+			CallType:    callType,
+			GasPrice:    gasPrice,
+			GasProvided: gasLimit,
+			GasLocked:   0,
+		},
+		RecipientAddr:     sender,
+		Function:          core.BuiltInFunctionMultiESDTNFTTransfer,
+		AllowInitFunction: false,
+	}
+	multiTransferInput.Arguments = append(multiTransferInput.Arguments, receiver, nrTransfersAsBytes)
+
+	for i := 0; i < nrTransfers; i++ {
+		token := esdtTransfers[i].TokenIdentifier.Value
+		nonceAsBytes := big.NewInt(0).SetUint64(esdtTransfers[i].Nonce.Value).Bytes()
+		value := esdtTransfers[i].Value.Value
+
+		multiTransferInput.Arguments = append(multiTransferInput.Arguments, token, nonceAsBytes, value.Bytes())
+	}
+
+	vmOutput, err := bf.ProcessBuiltInFunction(multiTransferInput)
+	if err != nil {
+		return 0, err
+	}
+
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		return 0, fmt.Errorf(
+			"MultiESDTtransfer failed: retcode = %d, msg = %s",
 			vmOutput.ReturnCode,
 			vmOutput.ReturnMessage)
 	}
