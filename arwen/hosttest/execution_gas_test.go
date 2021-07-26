@@ -12,7 +12,7 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
@@ -622,7 +622,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			WithGasProvided(gasForAsyncCall - gasUsedByChild + testConfig.GasLockCost).
 			WithFunction("callBack").
 			WithArguments(arguments...).
-			WithCallType(vmcommon.AsynchronousCallBack).
+			WithCallType(vm.AsynchronousCallBack).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
