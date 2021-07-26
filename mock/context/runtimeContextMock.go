@@ -25,6 +25,7 @@ type RuntimeContextMock struct {
 	MemLoadResult            []byte
 	MemLoadMultipleResult    [][]byte
 	FailCryptoAPI            bool
+	FailBigIntAPI            bool
 	FailElrondAPI            bool
 	FailElrondSyncExecAPI    bool
 	FailManagedBuffersAPI    bool
