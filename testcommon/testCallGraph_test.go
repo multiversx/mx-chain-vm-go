@@ -11,7 +11,7 @@ func TestCallGraph_Dfs(t *testing.T) {
 	callGraph := CreateGraphTest1()
 
 	traversalOrder := make([]TestCall, 0)
-	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
+	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		//fmt.Println(string(node.call.ContractAddress) + " " + node.call.FunctionName)
 		traversalOrder = append(traversalOrder, TestCall{
 			ContractAddress: node.Call.ContractAddress,
@@ -46,7 +46,6 @@ func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
-		*buildTestCall("sc3", "f4"),
 		*buildTestCall("sc3", "f4"),
 		*buildTestCall("sc2", "cb3"),
 		*buildTestCall("sc1", "f1"),

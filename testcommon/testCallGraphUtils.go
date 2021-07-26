@@ -24,7 +24,7 @@ var TestContextCallbackFunction = "contextCallback"
 // with functions that reflect the behavior specified by the call graph
 func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testConfig *TestConfig) []MockTestSmartContract {
 	contracts := make(map[string]*MockTestSmartContract)
-	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
+	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		contractAddressAsString := string(node.Call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
 			newContract := CreateMockContract(node.Call.ContractAddress).
@@ -54,7 +54,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							for _, edge := range crtNode.AdjacentEdges {
 								destFunctionName := edge.To.Call.FunctionName
 								destAddress := edge.To.Call.ContractAddress
-								if !edge.Async {
+								if edge.Type == Sync {
 									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
@@ -75,8 +75,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										Data:            callData.ToBytes(),
 										ValueBytes:      value.Bytes(),
 										GasLimit:        gasForChildren,
-										SuccessCallback: edge.CallBack,
-										ErrorCallback:   edge.CallBack,
+										SuccessCallback: edge.Callback,
+										ErrorCallback:   edge.Callback,
 									})
 									require.Nil(t, err)
 								}
@@ -98,7 +98,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		}
 		functionName := node.Call.FunctionName
 		contract := contracts[contractAddressAsString]
-		fmt.Println("Add " + functionName + " to " + contractAddressAsString)
+		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
 		return node
 	})
@@ -120,7 +120,7 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 	executionOrder := make([]TestCall, 0)
 	pathsTree := pathsTreeFromDag(executionGraph)
-	pathsTree.DfsGraphFromNode(pathsTree.startNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode) *TestCallNode {
+	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsEndOfSyncExecutionNode {
 			fmt.Println("end exec " + parent.Label)
 			executionOrder = append(executionOrder, TestCall{
@@ -136,7 +136,7 @@ func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 // CreateGraphTest1 -
 func CreateGraphTest1() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1")
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
 
 	sc2f3 := callGraph.AddNode("sc2", "f3")
 	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
@@ -160,8 +160,6 @@ func CreateGraphTest1() *TestCallGraph {
 	callGraph.AddSyncEdge(sc1cb1, sc4f5)
 
 	callGraph.AddNode("sc2", "cb3")
-	// callGraph.AddSyncEdge(sc2cb3, sc3f4)
-
 	callGraph.AddNode("sc1", "cb4")
 
 	sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
@@ -175,13 +173,22 @@ func CreateGraphTest1() *TestCallGraph {
 // CreateGraphTestSimple1 -
 func CreateGraphTestSimple1() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1")
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 100, 10)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(35).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5).
+		SetGasLocked(10)
 
 	sc2f3 := callGraph.AddNode("sc2", "f3")
-	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb1", "gr2")
+	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb1", "gr2").
+		SetGasLimit(30).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3).
+		SetGasLocked(12)
 
 	callGraph.AddNode("sc1", "cb1")
 
@@ -191,7 +198,7 @@ func CreateGraphTestSimple1() *TestCallGraph {
 // CreateGraphTestSimple2 -
 func CreateGraphTestSimple2() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1")
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	callGraph.AddSyncEdge(sc1f1, sc2f2)
@@ -205,6 +212,84 @@ func CreateGraphTestSimple2() *TestCallGraph {
 	sc2cb1 := callGraph.AddNode("sc2", "cb1")
 	callGraph.AddSyncEdge(sc4f4, sc2cb1)
 	// callGraph.AddSyncEdge(sc2cb1, sc3f3)
+
+	return callGraph
+}
+
+// CreateGraphTestSimple3 -
+func CreateGraphTestSimple3() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddSyncEdge(sc1f1, sc2f2).
+		SetGasLimit(20).
+		SetGasUsed(5)
+
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(35).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5).
+		SetGasLocked(10)
+
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb2", "").
+		SetGasLimit(30).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3).
+		SetGasLocked(12)
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddSyncEdge(sc2f2, sc3f3).
+		SetGasLimit(6).
+		SetGasUsed(6)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc1", "cb2")
+
+	return callGraph
+}
+
+// CreateGraphTest2 -
+func CreateGraphTest2() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddSyncEdge(sc1f1, sc2f2).
+		SetGasLimit(20).
+		SetGasUsed(5)
+
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(35).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5).
+		SetGasLocked(10)
+
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb2", "").
+		SetGasLimit(30).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3).
+		SetGasLocked(12)
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddSyncEdge(sc2f2, sc3f3).
+		SetGasLimit(6).
+		SetGasUsed(6)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	sc1cb1 := callGraph.AddNode("sc1", "cb1")
+	callGraph.AddSyncEdge(sc1cb1, sc4f4).
+		SetGasLimit(10).
+		SetGasUsed(5)
+
+	sc1cb2 := callGraph.AddNode("sc1", "cb2")
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+
+	callGraph.AddAsyncEdge(sc1cb2, sc5f5, "cb1", "").
+		SetGasLimit(20).
+		SetGasUsed(4).
+		SetGasUsedByCallback(3).
+		SetGasLocked(6)
 
 	return callGraph
 }
