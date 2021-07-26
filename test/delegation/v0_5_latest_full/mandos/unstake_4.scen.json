@@ -211,7 +211,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:stake",
+                        "endpoint": "str:stake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "address:node_address"
