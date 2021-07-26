@@ -9,7 +9,7 @@ import (
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
@@ -235,15 +235,39 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 }
 
 func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint64, error) {
-	return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
-		tx.From.Value,
-		tx.To.Value,
-		tx.ESDTValue.TokenIdentifier.Value,
-		tx.ESDTValue.Nonce.Value,
-		tx.ESDTValue.Value.Value,
-		vm.DirectCall,
-		tx.GasLimit.Value,
-		tx.GasPrice.Value)
+	nrTransfers := len(tx.ESDTValue)
+
+	if nrTransfers == 1 {
+		return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
+			tx.From.Value,
+			tx.To.Value,
+			tx.ESDTValue[0].TokenIdentifier.Value,
+			tx.ESDTValue[0].Nonce.Value,
+			tx.ESDTValue[0].Value.Value,
+			vm.DirectCall,
+			tx.GasLimit.Value,
+			tx.GasPrice.Value)
+	} else {
+		tokens := [][]byte{}
+		nonces := []uint64{}
+		values := []*big.Int{}
+
+		for i := 0; i < nrTransfers; i++ {
+			tokens = append(tokens, tx.ESDTValue[i].TokenIdentifier.Value)
+			nonces = append(nonces, tx.ESDTValue[i].Nonce.Value)
+			values = append(values, tx.ESDTValue[i].Value.Value)
+		}
+
+		return ae.World.BuiltinFuncs.PerformDirectMultiESDTTransfer(
+			tx.From.Value,
+			tx.To.Value,
+			tokens,
+			nonces,
+			values,
+			vm.DirectCall,
+			tx.GasLimit.Value,
+			tx.GasPrice.Value)
+	}
 }
 
 func (ae *ArwenTestExecutor) updateStateAfterTx(
