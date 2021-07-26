@@ -474,8 +474,10 @@ func (context *asyncContext) Execute() error {
 
 	metering := context.host.Metering()
 	gasLeft := metering.GasLeft()
-	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
 	context.accumulateGas(gasLeft)
+	// TODO decide whether gasLeft should be consumed here as well, to mark it as
+	// unavailable for VMOutput.GasRemaining
+	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
 
 	logAsync.Trace("async.Execute() execute locals")
 
@@ -748,6 +750,8 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
 	if !context.HasCallback() {
+		// TODO decide whether context.gasAccumulated should be restored here to
+		// mark it as available for VMOutput.GasRemaining
 		return nil
 	}
 
