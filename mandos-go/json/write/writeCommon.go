@@ -63,7 +63,7 @@ func LogToString(logEntry *mj.LogEntry) string {
 func logToOJ(logEntry *mj.LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
 	logOJ.Put("address", checkBytesToOJ(logEntry.Address))
-	logOJ.Put("identifier", checkBytesToOJ(logEntry.Identifier))
+	logOJ.Put("endpoint", checkBytesToOJ(logEntry.Endpoint))
 
 	var topicsList []oj.OJsonObject
 	for _, topic := range logEntry.Topics {

@@ -238,7 +238,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	newLogEntry.Topics = topics
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
-	logOutput.Trace("log entry", "identifier", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
 	return
 }
 

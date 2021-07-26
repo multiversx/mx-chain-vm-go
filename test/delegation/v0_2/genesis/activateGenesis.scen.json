@@ -80,7 +80,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:activateGenesis",
+                        "endpoint": "str:activateGenesis",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000003"
                         ],

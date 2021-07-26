@@ -10,7 +10,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
@@ -155,7 +155,7 @@ func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry
 			outputLog.Address,
 			ae.exprReconstructor.Reconstruct(outputLog.Address,
 				er.AddressHint)),
-		Identifier: mj.JSONCheckBytesReconstructed(
+		Endpoint: mj.JSONCheckBytesReconstructed(
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),

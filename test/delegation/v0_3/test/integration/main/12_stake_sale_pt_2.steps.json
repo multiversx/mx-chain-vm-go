@@ -104,7 +104,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:purchaseStake",
+                        "endpoint": "str:purchaseStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000009",
                             "''delegator_1___________________s1",
