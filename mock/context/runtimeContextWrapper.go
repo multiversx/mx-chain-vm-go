@@ -58,10 +58,6 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	IsFunctionImportedFunc func(name string) bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	IsWarmInstanceFunc func() bool
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ResetWarmInstanceFunc func()
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ReadOnlyFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetReadOnlyFunc func(readOnly bool)
@@ -99,6 +95,8 @@ type RuntimeContextWrapper struct {
 	CryptoAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	BigIntAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ReplaceInstanceBuilderFunc func(builder arwen.InstanceBuilder)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -211,14 +209,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.IsFunctionImported(name)
 	}
 
-	runtimeWrapper.IsWarmInstanceFunc = func() bool {
-		return runtimeWrapper.runtimeContext.IsWarmInstance()
-	}
-
-	runtimeWrapper.ResetWarmInstanceFunc = func() {
-		runtimeWrapper.runtimeContext.ResetWarmInstance()
-	}
-
 	runtimeWrapper.ReadOnlyFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ReadOnly()
 	}
@@ -295,6 +285,9 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.BigIntAPIErrorShouldFailExecution()
 	}
 
+	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
+	}
 	runtimeWrapper.ReplaceInstanceBuilderFunc = func(builder arwen.InstanceBuilder) {
 		runtimeWrapper.runtimeContext.ReplaceInstanceBuilder(builder)
 	}
@@ -445,16 +438,6 @@ func (contextWrapper *RuntimeContextWrapper) IsFunctionImported(name string) boo
 	return contextWrapper.IsFunctionImportedFunc(name)
 }
 
-// IsWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) IsWarmInstance() bool {
-	return contextWrapper.IsWarmInstanceFunc()
-}
-
-// ResetWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ResetWarmInstance() {
-	contextWrapper.ResetWarmInstanceFunc()
-}
-
 // ReadOnly calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ReadOnly() bool {
 	return contextWrapper.ReadOnlyFunc()
@@ -548,6 +531,11 @@ func (contextWrapper *RuntimeContextWrapper) CryptoAPIErrorShouldFailExecution()
 // BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
+}
+
+// ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
+	return contextWrapper.ManagedBufferAPIErrorShouldFailExecution()
 }
 
 // ReplaceInstanceBuilder calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

@@ -10,8 +10,8 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -125,7 +125,7 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 	storageError := ""
 	for k := range allKeys {
 		// ignore all reserved "ELROND..." keys
-		if strings.HasPrefix(k, vmcommon.ElrondProtectedKeyPrefix) {
+		if strings.HasPrefix(k, core.ElrondProtectedKeyPrefix) {
 			continue
 		}
 
@@ -298,7 +298,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad creator. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Creator.Original),
+				objectStringOrDefault(expectedInstance.Creator.Original),
 				ae.exprReconstructor.Reconstruct(
 					accountInstance.TokenMetaData.Creator,
 					er.AddressHint)))
@@ -319,7 +319,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad hash. Want: %s. Have: %s",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Hash.Original),
+				objectStringOrDefault(expectedInstance.Hash.Original),
 				ae.exprReconstructor.Reconstruct(
 					accountInstance.TokenMetaData.Hash,
 					er.NoHint)))
@@ -340,7 +340,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Uri.Original),
+				objectStringOrDefault(expectedInstance.Uri.Original),
 				ae.exprReconstructor.Reconstruct(
 					actualUri,
 					er.StrHint)))
@@ -351,7 +351,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				"for token: %s, nonce: %d: Bad attributes. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
-				oj.JSONString(expectedInstance.Attributes.Original),
+				objectStringOrDefault(expectedInstance.Attributes.Original),
 				ae.exprReconstructor.Reconstruct(
 					accountInstance.TokenMetaData.Attributes,
 					er.StrHint)))
@@ -406,4 +406,12 @@ func makeErrorString(errors []error) string {
 		errorString += "\n  " + err.Error()
 	}
 	return errorString
+}
+
+func objectStringOrDefault(obj oj.OJsonObject) string {
+	if obj == nil {
+		return ""
+	}
+
+	return oj.JSONString(obj)
 }

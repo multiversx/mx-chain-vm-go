@@ -183,6 +183,7 @@ func U64MulToBigInt(x, y uint64) *big.Int {
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
 	logger.SetLogLevel("*:TRACE")
+	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }
 
@@ -349,9 +350,9 @@ func GetCryptoContext(vmHostPtr unsafe.Pointer) crypto.VMCrypto {
 	return GetVMHost(vmHostPtr).Crypto()
 }
 
-// GetBigIntContext returns the big int context
-func GetBigIntContext(vmHostPtr unsafe.Pointer) BigIntContext {
-	return GetVMHost(vmHostPtr).BigInt()
+// GetManagedTypesContext returns the big int context
+func GetManagedTypesContext(vmHostPtr unsafe.Pointer) ManagedTypesContext {
+	return GetVMHost(vmHostPtr).ManagedTypes()
 }
 
 // GetOutputContext returns the output context

@@ -73,8 +73,9 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "identifier": "str:accept_funds_echo_payment",
                         "topics": [
+                            "str:accept_funds",
                             "str:NFT-0001",
                             "str:NonFungibleESDT",
                             "1",
@@ -84,8 +85,9 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:accept_funds_sync_result",
+                        "identifier": "str:forward_sync_accept_funds",
                         "topics": [
+                            "str:accept_funds_sync_result",
                             "str:NFT-0001",
                             "str:NonFungibleESDT",
                             "1",

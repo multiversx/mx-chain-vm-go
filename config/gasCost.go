@@ -3,12 +3,13 @@ package config
 import "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 
 type GasCost struct {
-	BaseOperationCost BaseOperationCost
-	BigIntAPICost     BigIntAPICost
-	EthAPICost        EthAPICost
-	ElrondAPICost     ElrondAPICost
-	CryptoAPICost     CryptoAPICost
-	WASMOpcodeCost    WASMOpcodeCost
+	BaseOperationCost    BaseOperationCost
+	BigIntAPICost        BigIntAPICost
+	EthAPICost           EthAPICost
+	ElrondAPICost        ElrondAPICost
+	ManagedBufferAPICost ManagedBufferAPICost
+	CryptoAPICost        CryptoAPICost
+	WASMOpcodeCost       WASMOpcodeCost
 }
 
 type BaseOperationCost struct {
@@ -112,6 +113,9 @@ type BigIntAPICost struct {
 	BigIntAdd                  uint64
 	BigIntSub                  uint64
 	BigIntMul                  uint64
+	BigIntSqrt                 uint64
+	BigIntPow                  uint64
+	BigIntLog                  uint64
 	BigIntTDiv                 uint64
 	BigIntTMod                 uint64
 	BigIntEDiv                 uint64
@@ -137,12 +141,38 @@ type BigIntAPICost struct {
 }
 
 type CryptoAPICost struct {
-	SHA256          uint64
-	Keccak256       uint64
-	Ripemd160       uint64
-	VerifyBLS       uint64
-	VerifyEd25519   uint64
-	VerifySecp256k1 uint64
+	SHA256                 uint64
+	Keccak256              uint64
+	Ripemd160              uint64
+	VerifyBLS              uint64
+	VerifyEd25519          uint64
+	VerifySecp256k1        uint64
+	EllipticCurveNew       uint64
+	AddECC                 uint64
+	DoubleECC              uint64
+	IsOnCurveECC           uint64
+	ScalarMultECC          uint64
+	MarshalECC             uint64
+	MarshalCompressedECC   uint64
+	UnmarshalECC           uint64
+	UnmarshalCompressedECC uint64
+	GenerateKeyECC         uint64
+}
+
+type ManagedBufferAPICost struct {
+	MBufferNew                uint64
+	MBufferNewFromBytes       uint64
+	MBufferSetBytes           uint64
+	MBufferGetLength          uint64
+	MBufferGetBytes           uint64
+	MBufferToBigIntUnsigned   uint64
+	MBufferToBigIntSigned     uint64
+	MBufferFromBigIntUnsigned uint64
+	MBufferFromBigIntSigned   uint64
+	MBufferStorageStore       uint64
+	MBufferStorageLoad        uint64
+	MBufferGetArgument        uint64
+	MBufferFinish             uint64
 }
 
 type WASMOpcodeCost struct {

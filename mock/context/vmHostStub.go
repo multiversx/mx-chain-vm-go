@@ -5,6 +5,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -18,15 +19,16 @@ type VMHostStub struct {
 	ClearStateStackCalled func()
 	GetVersionCalled      func() string
 
-	CryptoCalled      func() crypto.VMCrypto
-	BlockchainCalled  func() arwen.BlockchainContext
-	RuntimeCalled     func() arwen.RuntimeContext
-	BigIntCalled      func() arwen.BigIntContext
-	OutputCalled      func() arwen.OutputContext
-	MeteringCalled    func() arwen.MeteringContext
-	AsyncCalled       func() arwen.AsyncContext
-	StorageCalled     func() arwen.StorageContext
-	GetContextsCalled func() (arwen.BigIntContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
+	CryptoCalled       func() crypto.VMCrypto
+	BlockchainCalled   func() arwen.BlockchainContext
+	RuntimeCalled      func() arwen.RuntimeContext
+	BigIntCalled       func() arwen.BigIntContext
+	OutputCalled       func() arwen.OutputContext
+	MeteringCalled     func() arwen.MeteringContext
+	AsyncCalled        func() arwen.AsyncContext
+	StorageCalled      func() arwen.StorageContext
+	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
+	ManagedTypesCalled func() arwen.ManagedTypesContext
 
 	ParseESDTTransfersCalled    func(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
@@ -44,7 +46,6 @@ type VMHostStub struct {
 	IsInterfaceNilCalled         func() bool
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
-	CallArgsParserCalled    func() arwen.CallArgsParser
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
 }
@@ -111,9 +112,9 @@ func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
 }
 
 // BigInt mocked method
-func (vhs *VMHostStub) BigInt() arwen.BigIntContext {
-	if vhs.BigIntCalled != nil {
-		return vhs.BigIntCalled()
+func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
+	if vhs.ManagedTypesCalled != nil {
+		return vhs.ManagedTypesCalled()
 	}
 	return nil
 }
@@ -176,7 +177,7 @@ func (vhs *VMHostStub) ParseESDTTransfers(sender []byte, destination []byte, fun
 }
 
 // ExecuteESDTTransfer mocked method
-func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
 		return vhs.ExecuteESDTTransferCalled(destination, sender, transfers, callType)
 	}
@@ -279,7 +280,7 @@ func (vhs *VMHostStub) IsInterfaceNil() bool {
 
 // GetContexts mocked method
 func (vhs *VMHostStub) GetContexts() (
-	arwen.BigIntContext,
+	arwen.ManagedTypesContext,
 	arwen.BlockchainContext,
 	arwen.MeteringContext,
 	arwen.OutputContext,

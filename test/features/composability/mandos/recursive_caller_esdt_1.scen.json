@@ -53,6 +53,7 @@
                         "address": "sc:recursive-caller",
                         "identifier": "str:recursive_send_funds",
                         "topics": [
+                            "str:recursive_send_funds",
                             "sc:vault",
                             "str:REC-TOKEN",
                             "1"
@@ -73,6 +74,7 @@
                         "address": "sc:vault",
                         "identifier": "str:accept_funds",
                         "topics": [
+                            "str:accept_funds",
                             "str:REC-TOKEN",
                             "str:FungibleESDT",
                             "1",
@@ -82,8 +84,9 @@
                     },
                     {
                         "address": "sc:recursive-caller",
-                        "identifier": "str:recursive_send_funds_callback",
+                        "identifier": "str:callBack",
                         "topics": [
+                            "str:recursive_send_funds_callback",
                             "sc:vault",
                             "str:REC-TOKEN",
                             "1"

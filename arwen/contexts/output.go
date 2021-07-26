@@ -6,6 +6,8 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -222,8 +224,9 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	}
 
 	newLogEntry := &vmcommon.LogEntry{
-		Address: address,
-		Data:    data,
+		Address:    address,
+		Data:       data,
+		Identifier: []byte(context.host.Runtime().Function()),
 	}
 	logOutput.Trace("log entry", "address", address, "data", data)
 
@@ -232,11 +235,11 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		return
 	}
 
-	newLogEntry.Identifier = topics[0]
-	newLogEntry.Topics = topics[1:]
+	newLogEntry.Topics = topics
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "identifier", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+	return
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -259,8 +262,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return err
 	}
 
-	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
-	checkPayable = checkPayable || !context.host.IsESDTFunctionsEnabled()
+	isAsyncCall := context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall
 	hasValue := value.Cmp(arwen.Zero) > 0
 	if checkPayable && !payable && hasValue && !isAsyncCall {
 		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
@@ -279,8 +281,8 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
-	checkPayableIfNotCallback := gasLimit > 0 && callType != vmcommon.AsynchronousCallBack
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error {
+	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
 	if err != nil {
 		return err
@@ -314,10 +316,10 @@ func (context *outputContext) TransferESDT(
 
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
 	sameShard := context.host.AreInSameShard(sender, destination)
-	callType := vmcommon.DirectCall
+	callType := vm.DirectCall
 	isExecution := isSmartContract && callInput != nil
 	if isExecution {
-		callType = vmcommon.ESDTTransferAndExecute
+		callType = vm.ESDTTransferAndExecute
 	}
 
 	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, transfers, callType)
@@ -352,7 +354,7 @@ func (context *outputContext) TransferESDT(
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
 		Data:          []byte{},
-		CallType:      vmcommon.DirectCall,
+		CallType:      vm.DirectCall,
 		SenderAddress: sender,
 	}
 
@@ -384,7 +386,7 @@ func (context *outputContext) getOutputTransferDataFromESDTTransfer(
 ) []byte {
 
 	if len(transfers) == 1 && transfers[0].ESDTTokenNonce == 0 {
-		return []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
+		return []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
 	}
 
 	if !sameShard {
@@ -395,7 +397,7 @@ func (context *outputContext) getOutputTransferDataFromESDTTransfer(
 	}
 
 	if len(transfers) == 1 {
-		data := []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" +
+		data := []byte(core.BuiltInFunctionESDTNFTTransfer + "@" +
 			hex.EncodeToString(transfers[0].ESDTTokenName) + "@" +
 			hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" +
 			hex.EncodeToString(transfers[0].ESDTValue.Bytes()) + "@" +
@@ -403,7 +405,7 @@ func (context *outputContext) getOutputTransferDataFromESDTTransfer(
 		return data
 	}
 
-	data := vmcommon.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())
+	data := core.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())
 	for _, transfer := range transfers {
 		data += "@" + hex.EncodeToString(transfer.ESDTTokenName) + "@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfer.ESDTValue.Bytes())
 	}

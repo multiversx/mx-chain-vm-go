@@ -4,8 +4,9 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
-	github.com/ElrondNetwork/elrond-go-logger v1.0.4
-	github.com/ElrondNetwork/elrond-vm-common v1.1.0
+	github.com/ElrondNetwork/elrond-go-core v1.0.1-0.20210721121720-f02fb03b2e1a
+	github.com/ElrondNetwork/elrond-go-logger v1.0.5
+	github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210722060700-90d35cd5b077
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.1
@@ -13,8 +14,8 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/herumi/bls-go-binary v0.0.0-20200324054641-17de9ae04665
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/pelletier/go-toml v1.9.0
+	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli v1.22.5
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )

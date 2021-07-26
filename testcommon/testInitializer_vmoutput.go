@@ -8,7 +8,7 @@ import (
 	"unicode"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -230,11 +230,11 @@ func (storeEntry *StoreEntry) WithValue(value []byte) StoreEntry {
 }
 
 // Storage verifies if StorageUpdate(s) for the speficied accounts are the same as the provided ones
-func (v *VMOutputVerifier) Storage(returnData ...StoreEntry) *VMOutputVerifier {
+func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerifier {
 
 	storage := make(map[string]map[string]vmcommon.StorageUpdate)
 
-	for _, storeEntry := range returnData {
+	for _, storeEntry := range expectedEntries {
 		account := string(storeEntry.address)
 		accountStorageMap, exists := storage[account]
 		if !exists {
@@ -290,7 +290,7 @@ func (transferEntry *TransferEntry) WithGasLocked(gas uint64) *TransferEntry {
 }
 
 // WithCallType create sets the data for an output transfer assertion
-func (transferEntry *TransferEntry) WithCallType(callType vmcommon.CallType) *TransferEntry {
+func (transferEntry *TransferEntry) WithCallType(callType vm.CallType) *TransferEntry {
 	transferEntry.CallType = callType
 	return transferEntry
 }
