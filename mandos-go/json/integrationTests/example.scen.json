@@ -434,6 +434,33 @@
         {
             "step": "dumpState",
             "comment": "print everything to console"
+        },
+        {
+            "step": "transfer",
+            "txId": "multi-transfer",
+            "comment": "test ESDT multi-transfer",
+            "tx": {
+                "from": "address:A",
+                "to": "address:B",
+                "value": "",
+                "esdt": [
+                    {
+                        "tokenIdentifier": "str:TOK-123",
+                        "value": "100"
+                    },
+                    {
+                        "tokenIdentifier": "str:OTHERTOK-123",
+                        "value": "1000"
+                    },
+                    {
+                        "tokenIdentifier": "str:NFT-123",
+                        "nonce": "5",
+                        "value": "10"
+                    }
+                ],
+                "gasLimit": "0x100000000",
+                "gasPrice": "0x01"
+            }
         }
     ]
 }

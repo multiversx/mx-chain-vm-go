@@ -180,17 +180,21 @@ func generateTxHash(txIndex string) []byte {
 	return txIndexBytes
 }
 
-func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
-	if esdtData != nil {
-		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
-		vmInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
-		vmInput.ESDTTransfers[0].ESDTTokenName = esdtData.TokenIdentifier.Value
-		vmInput.ESDTTransfers[0].ESDTValue = esdtData.Value.Value
-		vmInput.ESDTTransfers[0].ESDTTokenNonce = esdtData.Nonce.Value
-		if vmInput.ESDTTransfers[0].ESDTTokenNonce != 0 {
-			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(core.NonFungible)
-		} else {
-			vmInput.ESDTTransfers[0].ESDTTokenType = uint32(core.Fungible)
+func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
+	esdtDataLen := len(esdtData)
+
+	if esdtDataLen > 0 {
+		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, esdtDataLen)
+		for i := 0; i < esdtDataLen; i++ {
+			vmInput.ESDTTransfers[i] = &vmcommon.ESDTTransfer{}
+			vmInput.ESDTTransfers[i].ESDTTokenName = esdtData[i].TokenIdentifier.Value
+			vmInput.ESDTTransfers[i].ESDTValue = esdtData[i].Value.Value
+			vmInput.ESDTTransfers[i].ESDTTokenNonce = esdtData[i].Nonce.Value
+			if vmInput.ESDTTransfers[i].ESDTTokenNonce != 0 {
+				vmInput.ESDTTransfers[i].ESDTTokenType = uint32(core.NonFungible)
+			} else {
+				vmInput.ESDTTransfers[i].ESDTTokenType = uint32(core.Fungible)
+			}
 		}
 	}
 }
