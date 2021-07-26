@@ -926,6 +926,10 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
+	//TODO reenable test after contracts are allowed to call themselves
+	// repeatedly with async calls (see restriction in asyncContext.addAsyncCall())
+	t.Skip("recursive async self-call currently disabled")
+
 	testConfig := makeTestConfig()
 	testConfig.RecursiveChildCalls = 3
 
@@ -1332,7 +1336,7 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 100_000
-	testConfig.GasProvidedToChild = 10_000
+	testConfig.GasProvidedToChild = 30_000
 
 	callGraph := test.CreateGraphTestSimple1()
 

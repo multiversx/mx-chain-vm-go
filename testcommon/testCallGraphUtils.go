@@ -40,14 +40,14 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							async := host.Async()
 							crtFunctionCalled := host.Runtime().Function()
 							gasProvided := host.Runtime().GetVMInput().GasProvided
-							gasForChildren := 3 * gasProvided / 4
+							gasForChildren := gasProvided / 4
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 							if crtNode.ContextCallback != nil {
 								err := async.SetContextCallback(crtNode.ContextCallback.Call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
-							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
+							log.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
@@ -64,7 +64,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										destAddress,
 										make([][]byte, 0)) // args
 								} else {
-									fmt.Println("Async call to " + destFunctionName + " on " + string(destAddress))
+									log.Trace("Async call", "to", string(destAddress), "func", destFunctionName, "gas", gasForChildren)
+
 									callData := txDataBuilder.NewBuilder()
 									callData.Func(destFunctionName)
 
