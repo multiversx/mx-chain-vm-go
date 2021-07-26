@@ -472,6 +472,11 @@ func (context *asyncContext) Execute() error {
 		return nil
 	}
 
+	metering := context.host.Metering()
+	gasLeft := metering.GasLeft()
+	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
+	context.accumulateGas(gasLeft)
+
 	logAsync.Trace("async.Execute() execute locals")
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
@@ -490,12 +495,6 @@ func (context *asyncContext) Execute() error {
 	context.closeCompletedAsyncCalls()
 	context.executeCompletedGroupCallbacks()
 	context.deleteCompletedGroups()
-
-	metering := context.host.Metering()
-	gasLeft := metering.GasLeft()
-	context.accumulateGas(gasLeft)
-	// TODO decide whether gasLeft should be consumed right now
-	logAsync.Trace("async.Execute() after locals", "gas left", gasLeft, "gas acc", context.gasAccumulated)
 
 	logAsync.Trace("async.Execute() execute remote")
 	// Step 2: in one combined step, do the following:
@@ -749,7 +748,6 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
 	if !context.HasCallback() {
-		// TODO decide whether context.gasAccumulated should be restored here
 		return nil
 	}
 
