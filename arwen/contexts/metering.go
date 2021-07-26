@@ -50,6 +50,7 @@ func NewMeteringContext(
 
 func (context *meteringContext) PrintState() {
 	sc := context.host.Runtime().GetSCAddress()
+	function := context.host.Runtime().Function()
 	scAccount, _ := context.host.Output().GetOutputAccount(sc)
 	outputAccounts := context.host.Output().GetOutputAccounts()
 	gasSpent := context.GasSpentByContract()
@@ -59,6 +60,7 @@ func (context *meteringContext) PrintState() {
 	gasUsed = math.SubUint64(gasUsed, gasTransferred)
 	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
 	logMetering.Trace("metering state", "┌----------            sc", string(sc))
+	logMetering.Trace("              ", "┌                function", function)
 	logMetering.Trace("              ", "|        initial provided", context.initialGasProvided)
 	logMetering.Trace("              ", "|            initial cost", context.initialCost)
 	logMetering.Trace("              ", "|            gas for exec", context.gasForExecution)
@@ -236,6 +238,7 @@ func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
 	totalGas := math.AddUint64(gasUsed, vmOutput.GasRemaining)
 	gasProvided := context.GetGasProvided()
 
+	context.PrintState()
 	if totalGas != gasProvided {
 		logOutput.Error("gas usage mismatch", "total gas", totalGas, "gas provided", gasProvided)
 		return arwen.ErrInputAndOutputGasDoesNotMatch
@@ -337,6 +340,7 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 func (context *meteringContext) UseGas(gas uint64) {
 	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
 	context.host.Runtime().SetPointsUsed(gasUsed)
+	logMetering.Trace("used gas", "gas", gas)
 }
 
 // RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance.
@@ -346,6 +350,7 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 		gasUsed = math.SubUint64(gasUsed, gas)
 		context.host.Runtime().SetPointsUsed(gasUsed)
 	}
+	logMetering.Trace("restored gas", "gas", gas)
 }
 
 // FreeGas refunds the specified amount of gas to the caller.

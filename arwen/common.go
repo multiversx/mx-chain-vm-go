@@ -2,6 +2,7 @@ package arwen
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -10,6 +11,8 @@ const ArwenVersion = "v1.4"
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
+
+var log = logger.GetOrCreate("arwen/general")
 
 const (
 	// BreakpointNone signifies the lack of a breakpoint

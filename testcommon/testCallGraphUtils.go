@@ -39,13 +39,15 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 
 							async := host.Async()
 							crtFunctionCalled := host.Runtime().Function()
+							gasProvided := host.Runtime().GetVMInput().GasProvided
+							gasForChildren := gasProvided / 4
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 							if crtNode.ContextCallback != nil {
 								err := async.SetContextCallback(crtNode.ContextCallback.Call.FunctionName, []byte{}, 0)
 								require.Nil(t, err)
 							}
-							fmt.Println("Executing " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
+							log.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
@@ -56,13 +58,14 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
-										int64(testConfig.GasProvidedToChild),
+										int64(gasForChildren),
 										value,
 										[]byte(destFunctionName),
 										destAddress,
 										make([][]byte, 0)) // args
 								} else {
-									fmt.Println("Async call to " + destFunctionName + " on " + string(destAddress))
+									log.Trace("Async call", "to", string(destAddress), "func", destFunctionName, "gas", gasForChildren)
+
 									callData := txDataBuilder.NewBuilder()
 									callData.Func(destFunctionName)
 
@@ -71,7 +74,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 										Destination:     destAddress,
 										Data:            callData.ToBytes(),
 										ValueBytes:      value.Bytes(),
-										GasLimit:        testConfig.GasProvidedToChild,
+										GasLimit:        gasForChildren,
 										SuccessCallback: edge.Callback,
 										ErrorCallback:   edge.Callback,
 									})

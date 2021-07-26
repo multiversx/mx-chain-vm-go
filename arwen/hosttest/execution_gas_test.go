@@ -926,6 +926,10 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
+	//TODO reenable test after contracts are allowed to call themselves
+	// repeatedly with async calls (see restriction in asyncContext.addAsyncCall())
+	t.Skip("recursive async self-call currently disabled")
+
 	testConfig := makeTestConfig()
 	testConfig.RecursiveChildCalls = 3
 
@@ -1282,6 +1286,7 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 10_000
 	testConfig.GasLockCost = 10
+	testConfig.GasProvidedToCallback = 60
 
 	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
 	// gasUsedByChild := testConfig.GasUsedByChild
@@ -1331,7 +1336,7 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 100_000
-	testConfig.GasProvidedToChild = 10_000
+	testConfig.GasProvidedToChild = 30_000
 
 	// callGraph := test.CreateGraphTestSimple1()
 	callGraph := test.CreateGraphTest2()
@@ -1342,14 +1347,14 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 100_000
-	testConfig.GasProvidedToChild = 10_000
+	testConfig.GasProvidedToChild = 60_000
 
 	callGraph := test.CreateTestCallGraph()
 	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	sc3f3 := callGraph.AddNode("sc3", "f3")
 
-	callGraph.AddSyncEdge(sc1f1, sc2f2)
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "", "")
 	callGraph.AddAsyncEdge(sc2f2, sc3f3, "", "")
 
 	sc1ctxcb := callGraph.AddNode("sc1", "ctxcb1")

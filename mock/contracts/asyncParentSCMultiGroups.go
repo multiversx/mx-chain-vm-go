@@ -12,8 +12,7 @@ import (
 )
 
 var AsyncGroupsConfig = [][]string{
-	{"reserveHousingGroup", "reserveMotel", "reserveHotel"},
-	{"reserveTravelGroup", "reserveTrain", "reserveCar", "reserveAirplane"},
+	{"reserveHousingGroup", "reserveMotel"},
 }
 
 // ForwardAsyncCallMultiGroupsMock is an exposed mock contract method
