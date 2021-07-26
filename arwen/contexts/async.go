@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -288,7 +289,7 @@ func (context *asyncContext) findCall(destination []byte) (string, int, error) {
 // the status of the AsyncCall with its value.
 func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error) {
 	vmInput := context.host.Runtime().GetVMInput()
-	if vmInput.CallType != vmcommon.AsynchronousCallBack {
+	if vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
 
@@ -401,7 +402,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 	vmInput := context.host.Runtime().GetVMInput()
 	noGroups := len(context.asyncCallGroups) == 0
-	notInCallback := vmInput.CallType != vmcommon.AsynchronousCallBack
+	notInCallback := vmInput.CallType != vm.AsynchronousCallBack
 
 	return noGroups && notInCallback
 }
@@ -416,7 +417,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	// which must be allowed to modify the AsyncContext
 	scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
 	callType := runtime.GetVMInput().CallType
-	modifiableAsyncContext := (scOccurrences == 0) || (callType == vmcommon.AsynchronousCallBack)
+	modifiableAsyncContext := (scOccurrences == 0) || (callType == vm.AsynchronousCallBack)
 	if !modifiableAsyncContext {
 		return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
 	}
@@ -551,17 +552,8 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 		return 0, err
 	}
 
-	var shouldLockGas bool
-	if !context.host.IsDynamicGasLockingEnabled() {
-		// Legacy mode: static gas locking, always enabled
-		shouldLockGas = true
-	} else {
-		// Dynamic mode: lock only if callBack() exists
-		shouldLockGas = context.host.Runtime().HasFunction(arwen.CallbackFunctionName)
-	}
-
 	gasToLock := uint64(0)
-	if shouldLockGas {
+	if context.HasCallback() {
 		gasToLock = metering.ComputeGasLockedForAsync()
 	}
 
@@ -703,7 +695,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 		if sameShard {
 			vmInput := runtime.GetVMInput()
 			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), destination, functionName, args)
-			isAsyncCall := vmInput.CallType == vmcommon.AsynchronousCall
+			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
 
 			if isESDTTransfer && isAsyncCall && isReturningCall {
@@ -736,7 +728,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		asyncCall.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCall.GetValue()),
 		asyncCall.GetData(),
-		vmcommon.AsynchronousCall,
+		vm.AsynchronousCall,
 	)
 	if err != nil {
 		return err
@@ -780,7 +772,7 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		0,
 		currentCall.CallValue,
 		context.returnData,
-		vmcommon.AsynchronousCallBack,
+		vm.AsynchronousCallBack,
 	)
 	if err != nil {
 		metering.UseGas(metering.GasLeft())

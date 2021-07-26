@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
@@ -283,7 +284,7 @@ func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
 			CallerAddr:           nil,
 			Arguments:            make([][]byte, 0),
 			CallValue:            big.NewInt(0),
-			CallType:             vmcommon.DirectCall,
+			CallType:             vm.DirectCall,
 			GasPrice:             1,
 			GasProvided:          0,
 			ReturnCallAfterError: false,

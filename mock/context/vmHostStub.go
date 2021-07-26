@@ -22,7 +22,6 @@ type VMHostStub struct {
 	CryptoCalled       func() crypto.VMCrypto
 	BlockchainCalled   func() arwen.BlockchainContext
 	RuntimeCalled      func() arwen.RuntimeContext
-	BigIntCalled       func() arwen.BigIntContext
 	OutputCalled       func() arwen.OutputContext
 	MeteringCalled     func() arwen.MeteringContext
 	AsyncCalled        func() arwen.AsyncContext
@@ -30,8 +29,9 @@ type VMHostStub struct {
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
+	CallArgsParserCalled        func() arwen.CallArgsParser
 	ParseESDTTransfersCalled    func(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error)
-	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)

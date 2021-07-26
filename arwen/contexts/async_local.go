@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -240,7 +241,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 			CallerAddr:     sender,
 			Arguments:      arguments,
 			CallValue:      big.NewInt(0).SetBytes(asyncCall.GetValue()),
-			CallType:       vmcommon.AsynchronousCall,
+			CallType:       vm.AsynchronousCall,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
 			GasLocked:      asyncCall.GetGasLocked(),
@@ -315,7 +316,7 @@ func (context *asyncContext) createCallbackInput(
 			CallerAddr:           asyncCall.Destination,
 			Arguments:            arguments,
 			CallValue:            context.computeCallValueFromVMOutput(vmOutput),
-			CallType:             vmcommon.AsynchronousCallBack,
+			CallType:             vm.AsynchronousCallBack,
 			GasPrice:             runtime.GetVMInput().GasPrice,
 			GasProvided:          gasLimit,
 			GasLocked:            0,
@@ -347,7 +348,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 
 	input := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallType:       vmcommon.AsynchronousCallBack,
+			CallType:       vm.AsynchronousCallBack,
 			CallerAddr:     context.callerAddr,
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
@@ -381,7 +382,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			CallerAddr:     context.callerAddr,
 			Arguments:      arguments,
 			CallValue:      runtime.GetVMInput().CallValue,
-			CallType:       vmcommon.AsynchronousCallBack,
+			CallType:       vm.AsynchronousCallBack,
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    context.gasAccumulated,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
