@@ -5,17 +5,35 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
-func esdtTxDataToOJ(esdtItem *mj.ESDTTxData) *oj.OJsonMap {
+func esdtTxDataToOJ(esdtItems []*mj.ESDTTxData) oj.OJsonObject {
+	nrTransfers := len(esdtItems)
+
+	if nrTransfers == 1 {
+		return esdtTxRawEntryToOJ(esdtItems[0])
+	} else {
+		esdtItemList := oj.OJsonList{}
+		for _, esdtItemRaw := range esdtItems {
+			esdtItemOJ := esdtTxRawEntryToOJ(esdtItemRaw)
+			esdtItemList = append(esdtItemList, esdtItemOJ)
+		}
+
+		return &esdtItemList
+	}
+}
+
+func esdtTxRawEntryToOJ(esdtItemRaw *mj.ESDTTxData) *oj.OJsonMap {
 	esdtItemOJ := oj.NewMap()
-	if len(esdtItem.TokenIdentifier.Original) > 0 {
-		esdtItemOJ.Put("tokenIdentifier", bytesFromStringToOJ(esdtItem.TokenIdentifier))
+
+	if len(esdtItemRaw.TokenIdentifier.Original) > 0 {
+		esdtItemOJ.Put("tokenIdentifier", bytesFromStringToOJ(esdtItemRaw.TokenIdentifier))
 	}
-	if len(esdtItem.Nonce.Original) > 0 {
-		esdtItemOJ.Put("nonce", uint64ToOJ(esdtItem.Nonce))
+	if len(esdtItemRaw.Nonce.Original) > 0 {
+		esdtItemOJ.Put("nonce", uint64ToOJ(esdtItemRaw.Nonce))
 	}
-	if len(esdtItem.Value.Original) > 0 {
-		esdtItemOJ.Put("value", bigIntToOJ(esdtItem.Value))
+	if len(esdtItemRaw.Value.Original) > 0 {
+		esdtItemOJ.Put("value", bigIntToOJ(esdtItemRaw.Value))
 	}
+
 	return esdtItemOJ
 }
 

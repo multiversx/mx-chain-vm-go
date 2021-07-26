@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"math/big"
 
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ESDTTokenKeyPrefix is the prefix of storage keys belonging to ESDT tokens.
@@ -95,6 +96,56 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return 0, fmt.Errorf(
 			"ESDTtransfer failed: retcode = %d, msg = %s",
+			vmOutput.ReturnCode,
+			vmOutput.ReturnMessage)
+	}
+
+	return vmOutput.GasRemaining, nil
+}
+
+func (bf *BuiltinFunctionsWrapper) PerformDirectMultiESDTTransfer(
+	sender []byte,
+	receiver []byte,
+	esdtTransfers []*mj.ESDTTxData,
+	callType vm.CallType,
+	gasLimit uint64,
+	gasPrice uint64,
+) (uint64, error) {
+	nrTransfers := len(esdtTransfers)
+	nrTransfersAsBytes := big.NewInt(0).SetUint64(uint64(nrTransfers)).Bytes()
+
+	multiTransferInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   make([][]byte, 0),
+			CallValue:   big.NewInt(0),
+			CallType:    callType,
+			GasPrice:    gasPrice,
+			GasProvided: gasLimit,
+			GasLocked:   0,
+		},
+		RecipientAddr:     sender,
+		Function:          core.BuiltInFunctionMultiESDTNFTTransfer,
+		AllowInitFunction: false,
+	}
+	multiTransferInput.Arguments = append(multiTransferInput.Arguments, receiver, nrTransfersAsBytes)
+
+	for i := 0; i < nrTransfers; i++ {
+		token := esdtTransfers[i].TokenIdentifier.Value
+		nonceAsBytes := big.NewInt(0).SetUint64(esdtTransfers[i].Nonce.Value).Bytes()
+		value := esdtTransfers[i].Value.Value
+
+		multiTransferInput.Arguments = append(multiTransferInput.Arguments, token, nonceAsBytes, value.Bytes())
+	}
+
+	vmOutput, err := bf.ProcessBuiltInFunction(multiTransferInput)
+	if err != nil {
+		return 0, err
+	}
+
+	if vmOutput.ReturnCode != vmcommon.Ok {
+		return 0, fmt.Errorf(
+			"MultiESDTtransfer failed: retcode = %d, msg = %s",
 			vmOutput.ReturnCode,
 			vmOutput.ReturnMessage)
 	}
