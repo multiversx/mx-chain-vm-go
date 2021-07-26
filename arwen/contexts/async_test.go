@@ -11,6 +11,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -50,7 +51,7 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	mockWasmerInstance = &wasmer.Instance{
 		Exports: make(wasmer.ExportsMap),
 	}
-	runtimeContext, _ := NewRuntimeContext(host, vmType, false, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 
@@ -78,7 +79,7 @@ func InitializeArwenAndWasmer_AsyncContext_AliceAndBob() (
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     OriginalCaller,
 			Arguments:      nil,
-			CallType:       vmcommon.DirectCall,
+			CallType:       vm.DirectCall,
 			GasPrice:       1,
 			CurrentTxHash:  []byte("txhash"),
 			PrevTxHash:     []byte("txhash"),
@@ -436,7 +437,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 		VMInput: vmcommon.VMInput{
 			CallerAddr: []byte("caller"),
 			Arguments:  [][]byte{{0}},
-			CallType:   vmcommon.DirectCall,
+			CallType:   vm.DirectCall,
 		},
 	}
 
@@ -450,7 +451,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
-	vmInput.CallType = vmcommon.AsynchronousCall
+	vmInput.CallType = vm.AsynchronousCall
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, err = async.UpdateCurrentCallStatus()
 	require.Nil(t, asyncCall)
@@ -458,7 +459,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == AsynchronousCallback, but no AsyncCalls registered in the
 	// AsyncContext, so async.UpdateCurrentCallStatus() returns an error
-	vmInput.CallType = vmcommon.AsynchronousCallBack
+	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, err = async.UpdateCurrentCallStatus()
@@ -467,7 +468,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == AsynchronousCallback, but no AsyncCalls registered in the
 	// AsyncContext, so async.UpdateCurrentCallStatus() returns an error
-	vmInput.CallType = vmcommon.AsynchronousCallBack
+	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, err = async.UpdateCurrentCallStatus()
@@ -482,7 +483,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	vmInput.CallType = vmcommon.AsynchronousCallBack
+	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, err = async.UpdateCurrentCallStatus()
@@ -497,7 +498,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	vmInput.CallType = vmcommon.AsynchronousCallBack
+	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, err = async.UpdateCurrentCallStatus()
@@ -508,7 +509,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	// CallType == AsynchronousCallback, there is a corresponding AsyncCall
 	// registered, causing async.UpdateCurrentCallStatus() to find and update the
 	// AsyncCall, but with AsyncCallRejected
-	vmInput.CallType = vmcommon.AsynchronousCallBack
+	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, err = async.UpdateCurrentCallStatus()
@@ -562,7 +563,7 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	require.Equal(t, uint64(42), asyncTransfer.GasLimit)
 	require.Equal(t, uint64(98), asyncTransfer.GasLocked)
 	require.Equal(t, []byte("some_data"), asyncTransfer.Data)
-	require.Equal(t, vmcommon.AsynchronousCall, asyncTransfer.CallType)
+	require.Equal(t, vm.AsynchronousCall, asyncTransfer.CallType)
 }
 
 func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
@@ -775,7 +776,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	arwen.AddArgument(expectedInput, []byte(vmOutput.ReturnMessage))
 	arwen.CopyTxHashes(expectedInput, originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
-	expectedInput.CallType = vmcommon.AsynchronousCallBack
+	expectedInput.CallType = vm.AsynchronousCallBack
 	expectedInput.ReturnCallAfterError = true
 	require.Equal(t, expectedInput, callbackInput)
 }
@@ -888,7 +889,7 @@ func defaultCallInput_AliceToBob(originalVMInput *vmcommon.ContractCallInput) *v
 	arwen.CopyTxHashes(destInput, originalVMInput)
 	arwen.AddArgument(destInput, []byte{10, 11, 12})
 	arwen.AddArgument(destInput, []byte{3})
-	destInput.CallType = vmcommon.AsynchronousCall
+	destInput.CallType = vm.AsynchronousCall
 
 	return destInput
 }
@@ -924,7 +925,7 @@ func defaultCallbackInput_BobToAlice(originalVMInput *vmcommon.ContractCallInput
 	arwen.AddArgument(input, []byte{})
 	arwen.AddArgument(input, []byte("third"))
 	arwen.CopyTxHashes(input, originalVMInput)
-	input.CallType = vmcommon.AsynchronousCallBack
+	input.CallType = vm.AsynchronousCallBack
 	return input
 }
 

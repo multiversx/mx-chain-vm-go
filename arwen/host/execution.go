@@ -853,7 +853,7 @@ func (host *vmHost) callSCMethod() error {
 	async := host.Async()
 	callType := vmInput.CallType
 
-	if callType == vmcommon.AsynchronousCallBack {
+	if callType == vm.AsynchronousCallBack {
 		async.Load()
 		asyncCall, err := async.UpdateCurrentCallStatus()
 		if err != nil {
@@ -904,11 +904,11 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	switch callType {
-	case vmcommon.DirectCall:
+	case vm.DirectCall:
 		break
-	case vmcommon.AsynchronousCall:
+	case vm.AsynchronousCall:
 		err = host.sendAsyncCallbackToCaller()
-	case vmcommon.AsynchronousCallBack:
+	case vm.AsynchronousCallBack:
 		err = async.PostprocessCrossShardCallback()
 	default:
 		err = arwen.ErrUnknownCallType
