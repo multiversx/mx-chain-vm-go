@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -105,18 +106,12 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectESDTTransfer(
 func (bf *BuiltinFunctionsWrapper) PerformDirectMultiESDTTransfer(
 	sender []byte,
 	receiver []byte,
-	tokens [][]byte,
-	nonces []uint64,
-	values []*big.Int,
+	esdtTransfers []*mj.ESDTTxData,
 	callType vm.CallType,
 	gasLimit uint64,
 	gasPrice uint64,
 ) (uint64, error) {
-	if len(tokens) != len(nonces) || len(nonces) != len(values) {
-		return 0, fmt.Errorf("ESDT tokens, nonces and values array lenghts mismatch")
-	}
-
-	nrTransfers := len(tokens)
+	nrTransfers := len(esdtTransfers)
 	nrTransfersAsBytes := big.NewInt(0).SetUint64(uint64(nrTransfers)).Bytes()
 
 	multiTransferInput := &vmcommon.ContractCallInput{
@@ -136,8 +131,11 @@ func (bf *BuiltinFunctionsWrapper) PerformDirectMultiESDTTransfer(
 	multiTransferInput.Arguments = append(multiTransferInput.Arguments, receiver, nrTransfersAsBytes)
 
 	for i := 0; i < nrTransfers; i++ {
-		nonceAsBytes := big.NewInt(0).SetUint64(nonces[i]).Bytes()
-		multiTransferInput.Arguments = append(multiTransferInput.Arguments, tokens[i], nonceAsBytes, values[i].Bytes())
+		token := esdtTransfers[i].TokenIdentifier.Value
+		nonceAsBytes := big.NewInt(0).SetUint64(esdtTransfers[i].Nonce.Value).Bytes()
+		value := esdtTransfers[i].Value.Value
+
+		multiTransferInput.Arguments = append(multiTransferInput.Arguments, token, nonceAsBytes, value.Bytes())
 	}
 
 	vmOutput, err := bf.ProcessBuiltInFunction(multiTransferInput)

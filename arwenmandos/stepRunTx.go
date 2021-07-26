@@ -248,22 +248,10 @@ func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint6
 			tx.GasLimit.Value,
 			tx.GasPrice.Value)
 	} else {
-		tokens := [][]byte{}
-		nonces := []uint64{}
-		values := []*big.Int{}
-
-		for i := 0; i < nrTransfers; i++ {
-			tokens = append(tokens, tx.ESDTValue[i].TokenIdentifier.Value)
-			nonces = append(nonces, tx.ESDTValue[i].Nonce.Value)
-			values = append(values, tx.ESDTValue[i].Value.Value)
-		}
-
 		return ae.World.BuiltinFuncs.PerformDirectMultiESDTTransfer(
 			tx.From.Value,
 			tx.To.Value,
-			tokens,
-			nonces,
-			values,
+			tx.ESDTValue,
 			vm.DirectCall,
 			tx.GasLimit.Value,
 			tx.GasPrice.Value)
