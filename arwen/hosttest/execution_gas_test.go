@@ -1336,13 +1336,11 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
-	testConfig := makeTestConfig()
-	testConfig.GasProvided = 100_000
-	testConfig.GasProvidedToChild = 30_000
-
 	// callGraph := test.CreateGraphTestSimple1()
 	callGraph := test.CreateGraphTest2()
 
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = callGraph.StartNode.GasLimit
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 
@@ -1368,7 +1366,13 @@ func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 
+type usedGasPerContract struct {
+	contractAddress []byte
+	gasUsed         uint64
+}
+
 func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGraph *test.TestCallGraph) {
+	// compute execution order (return data) assertions
 	expectedReturnData := make([][]byte, 0)
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	startNode := executionGraph.GetStartNode()
@@ -1377,6 +1381,30 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 	for _, testCall := range executionOrder {
 		expectedReturnData = append(expectedReturnData, []byte(string(testCall.ContractAddress)+"_"+testCall.FunctionName+test.TestReturnDataSuffix))
 	}
+
+	// compute gas assertions
+	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
+	gasGraph.ComputeRemainingGasBeforeCallbacks()
+	gasGraph.ComputeFinalRemainingGas()
+
+	totalGasUsed := uint64(0)
+	expectedGasUsagePerContract := make(map[string]*usedGasPerContract)
+	gasGraph.DfsGraph(func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+		if !node.IsLeaf() {
+			return node
+		}
+		gasPerContract := expectedGasUsagePerContract[string(parent.Call.ContractAddress)]
+		if gasPerContract == nil {
+			gasPerContract = &usedGasPerContract{
+				contractAddress: parent.Call.ContractAddress,
+				gasUsed:         0,
+			}
+			expectedGasUsagePerContract[string(parent.Call.ContractAddress)] = gasPerContract
+		}
+		gasPerContract.gasUsed += node.GasUsed
+		totalGasUsed += node.GasUsed
+		return node
+	})
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1392,9 +1420,13 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
+			verifier := verify.
 				Ok().
-				ReturnData(expectedReturnData...)
+				ReturnDataForGraphTesting(expectedReturnData...).
+				GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
+			for _, gasPerContract := range expectedGasUsagePerContract {
+				verifier.GasUsed(gasPerContract.contractAddress, gasPerContract.gasUsed)
+			}
 		})
 }
 

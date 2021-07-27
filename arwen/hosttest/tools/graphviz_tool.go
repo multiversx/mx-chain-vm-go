@@ -37,7 +37,7 @@ func main() {
 	createSvg("gas-graph-callbacksgasremaining", graphviz)
 
 	gasGraph.ComputeFinalRemainingGas()
-	graphviz = toGraphviz(gasGraph, false)
+	graphviz = toGraphviz(gasGraph, true)
 	createSvg("gas-graph-final", graphviz)
 }
 

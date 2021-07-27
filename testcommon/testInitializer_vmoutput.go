@@ -184,6 +184,26 @@ func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
 	return v
 }
 
+// ReturnDataForGraphTesting verifies if ReturnData is the same as the provided one
+func (v *VMOutputVerifier) ReturnDataForGraphTesting(returnData ...[]byte) *VMOutputVerifier {
+	processedReturnData := make([][]byte, 0)
+	// eliminte from the final return data the gas used for callback arguments
+	// in order to be able to compare them with the provided return data
+	for i := 0; i < len(v.VmOutput.ReturnData); i++ {
+		retDataItem := v.VmOutput.ReturnData[i]
+		if len(retDataItem) == 1 && retDataItem[0] == Callback {
+			i++ // jump over next item
+			continue
+		}
+		processedReturnData = append(processedReturnData, retDataItem)
+	}
+	require.Equal(v.T, len(returnData), len(processedReturnData), "ReturnData length")
+	for idx := range returnData {
+		require.Equal(v.T, returnData[idx], processedReturnData[idx], "ReturnData")
+	}
+	return v
+}
+
 // ReturnDataContains verifies that ReturnData contains the provided element
 func (v *VMOutputVerifier) ReturnDataContains(element []byte) *VMOutputVerifier {
 	require.True(v.T, v.isInReturnData(element), fmt.Sprintf("ReturnData does not contain '%s'", element))
