@@ -26,6 +26,7 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	return nil
 }
 
+// TODO compare with asyncContext.sendContextCallbackToOriginalCaller()
 func (host *vmHost) sendAsyncCallbackToCaller() error {
 	runtime := host.Runtime()
 	output := host.Output()

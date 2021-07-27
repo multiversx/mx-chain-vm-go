@@ -61,7 +61,7 @@ func (context *meteringContext) PrintState() {
 	gasUsed = math.SubUint64(gasUsed, gasTransferred)
 	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
 	logMetering.Trace("metering state", "┌----------            sc", string(sc))
-	logMetering.Trace("              ", "┌                function", function)
+	logMetering.Trace("              ", "|                function", function)
 	logMetering.Trace("              ", "|        initial provided", context.initialGasProvided)
 	logMetering.Trace("              ", "|            initial cost", context.initialCost)
 	logMetering.Trace("              ", "|            gas for exec", context.gasForExecution)
@@ -171,6 +171,7 @@ func (context *meteringContext) addToGasUsedByAccounts(gasUsed map[string]uint64
 
 // UpdateGasStateOnSuccess performs final gas accounting after a successful execution.
 func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error {
+	logMetering.Trace("UpdateGasStateOnSuccess")
 	context.updateSCGasUsed()
 	err := context.setGasUsedToOutputAccounts(vmOutput)
 	if err != nil {
@@ -187,6 +188,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 
 // UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
 func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
+	logMetering.Trace("UpdateGasStateOnFailure")
 	runtime := context.host.Runtime()
 	output := context.host.Output()
 
@@ -235,6 +237,7 @@ func (context *meteringContext) TrackGasUsedByBuiltinFunction(
 }
 
 func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
+	logMetering.Trace("check gas")
 	gasUsed := context.getCurrentTotalUsedGas()
 	totalGas := math.AddUint64(gasUsed, vmOutput.GasRemaining)
 	gasProvided := context.GetGasProvided()

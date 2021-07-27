@@ -578,6 +578,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
+				Print().
 				Ok().
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
 				GasRemaining(gasForAsyncCall-testConfig.GasUsedByChild).

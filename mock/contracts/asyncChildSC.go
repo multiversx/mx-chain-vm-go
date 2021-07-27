@@ -17,7 +17,8 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, testCon
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 
-		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+		metering := host.Metering()
+		err := metering.UseGasBounded(testConfig.GasUsedByChild)
 		if err != nil {
 			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 			return instance
