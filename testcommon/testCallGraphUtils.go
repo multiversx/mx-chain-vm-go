@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var logGenContr = logger.GetOrCreate("arwen/gencontr")
+var logGenContr = logger.GetOrCreate("arwen/graph")
 
 // TestReturnDataSuffix -
 var TestReturnDataSuffix = "_returnData"

@@ -1345,6 +1345,7 @@ func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
