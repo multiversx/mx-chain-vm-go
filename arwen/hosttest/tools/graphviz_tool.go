@@ -12,10 +12,11 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
-	callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
+	// callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
-	// callGraph := test.CreateGraphTestGroupCallbacks()
+	// callGraph := test.CreateGraphTestAsyncCallsAsync2()
+	callGraph := test.CreateGraphTestGroupCallbacks()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
 	// callGraph := test.CreateGraphTest1()
@@ -42,11 +43,11 @@ func main() {
 	createSvg("4 gas-graph-gasaftercallbacks", graphviz)
 
 	gasGraph.ComputeGasAccumulation()
-	graphviz = toGraphviz(gasGraph, true)
+	graphviz = toGraphviz(gasGraph, false)
 	createSvg("5 gas-graph-gasaccumulation", graphviz)
 
 	gasGraph.ComputeRemainingGasAfterGroupCallbacks()
-	graphviz = toGraphviz(gasGraph, true)
+	graphviz = toGraphviz(gasGraph, false)
 	createSvg("6 gas-graph-gasaftergroupcallbacks", graphviz)
 }
 

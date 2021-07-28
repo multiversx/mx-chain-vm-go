@@ -50,7 +50,7 @@ type TestCallNode struct {
 	// used only for visualization
 	VisualLabel string
 	Label       string
-	// back pointer / "edge" to parent (not part of the graph)
+	// back pointer / "edge" to parent for trees (not part of the graph)
 	Parent *TestCallNode
 	// info used for gas assertions
 	// set from an incoming edge edge
@@ -729,8 +729,10 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterGroupCallbacks() {
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if !node.IsStartNode && (incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback) {
 			node.GasLimit = parent.GasRemaining + node.GasLocked
-			parent.GasRemaining = node.GasLimit - node.GasUsed
-			node.GasRemaining = parent.GasRemaining
+			node.GasRemaining = node.GasLimit - node.GasUsed
+			for crtParent := parent; crtParent != nil; crtParent = crtParent.Parent {
+				crtParent.GasRemaining -= (node.GasUsed - node.GasLocked)
+			}
 		}
 		return node
 	})
