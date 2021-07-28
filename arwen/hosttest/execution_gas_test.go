@@ -1381,7 +1381,7 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	startNode := executionGraph.GetStartNode()
 
-	executionOrder := test.CreateRunExpectationOrder(executionGraph)
+	executionOrder := test.CreateRunOrderFromExecutionGraph(executionGraph)
 	for _, testCall := range executionOrder {
 		expectedReturnData = append(expectedReturnData, []byte(string(testCall.ContractAddress)+"_"+testCall.FunctionName+test.TestReturnDataSuffix))
 	}

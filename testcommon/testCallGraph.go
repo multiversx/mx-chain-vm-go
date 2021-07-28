@@ -683,7 +683,8 @@ func isGroupPresent(group string, groups []string) bool {
 // ComputeRemainingGasBeforeCallbacks -
 func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsLeaf() {
+		if node.IsLeaf() ||
+			(!node.IsStartNode && (incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback)) {
 			return node
 		}
 		if !node.IsStartNode && incomingEdge.Type == Callback {

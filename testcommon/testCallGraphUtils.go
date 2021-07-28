@@ -158,8 +158,8 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 	}
 }
 
-// CreateRunExpectationOrder returns an exepected execution order starting from an execution graph
-func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
+// CreateRunOrderFromExecutionGraph returns an exepected execution order starting from an execution graph
+func CreateRunOrderFromExecutionGraph(executionGraph *TestCallGraph) []TestCall {
 	executionOrder := make([]TestCall, 0)
 	pathsTree := pathsTreeFromDag(executionGraph)
 	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
@@ -308,7 +308,7 @@ func CreateGraphTestOneAsyncCallWithGroupCallback() *TestCallGraph {
 
 	callGraph.AddNode("sc1", "cb1")
 
-	sc1cbg1 := callGraph.AddNode("sc2", "cbg1")
+	sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
 	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1, 10, 30)
 
 	ctxcb := callGraph.AddNode("sc1", "ctxcb")

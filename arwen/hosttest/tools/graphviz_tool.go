@@ -12,8 +12,8 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
-	// callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
-	callGraph := test.CreateGraphTestTwoAsyncCalls()
+	callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
+	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestGroupCallbacks()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
@@ -171,7 +171,7 @@ func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 	if node.IsEndOfSyncExecutionNode {
 		attrs["label"] = gasFontStart + gasUsed + gasFontEnd
 	} else {
-		// display only gas locked for uncomputed gas values (e.g. group callbacks)
+		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)
 		if node.GasLimit == 0 {
 			xlabel += gasFontStart + "L" + gasLocked + gasFontEnd
 			attrs["xlabel"] = xlabel
