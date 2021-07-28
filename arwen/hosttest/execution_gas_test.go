@@ -1344,6 +1344,15 @@ func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 
+func TestGasUsed_OneAsyncCallWithGroupCallback_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = callGraph.StartNode.GasLimit
+
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
+
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
 	arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
@@ -1357,28 +1366,6 @@ func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
-
-	runGraphCallTestTemplate(t, testConfig, callGraph)
-}
-
-func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
-	testConfig := makeTestConfig()
-	testConfig.GasProvided = 100_000
-	testConfig.GasProvidedToChild = 60_000
-
-	callGraph := test.CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
-	sc2f2 := callGraph.AddNode("sc2", "f2")
-	sc3f3 := callGraph.AddNode("sc3", "f3")
-
-	callGraph.AddAsyncEdge(sc1f1, sc2f2, "", "")
-	callGraph.AddAsyncEdge(sc2f2, sc3f3, "", "")
-
-	sc1ctxcb := callGraph.AddNode("sc1", "ctxcb1")
-	callGraph.SetContextCallback(sc1f1, sc1ctxcb)
-
-	sc2ctxcb := callGraph.AddNode("sc2", "ctxcb2")
-	callGraph.SetContextCallback(sc2f2, sc2ctxcb)
 
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }

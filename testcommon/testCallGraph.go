@@ -290,8 +290,11 @@ func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string,
 }
 
 // SetContextCallback sets the callback for the async context
-func (graph *TestCallGraph) SetContextCallback(node *TestCallNode, contextCallbackNode *TestCallNode) {
+func (graph *TestCallGraph) SetContextCallback(node *TestCallNode, contextCallbackNode *TestCallNode,
+	gasLocked uint64, gasUsed uint64) {
 	node.ContextCallback = contextCallbackNode
+	node.ContextCallback.GasLocked = gasLocked
+	node.ContextCallback.GasUsed = gasUsed
 }
 
 // FindNode finds the corresponding node in the call graph
@@ -723,7 +726,7 @@ func (graph *TestCallGraph) ComputeGasAccumulation() {
 // ComputeRemainingGasAfterGroupCallbacks -
 func (graph *TestCallGraph) ComputeRemainingGasAfterGroupCallbacks() {
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if !node.IsStartNode && incomingEdge.Type == GroupCallback {
+		if !node.IsStartNode && (incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback) {
 			node.GasLimit = parent.GasRemaining + node.GasLocked
 			parent.GasRemaining = node.GasLimit - node.GasUsed
 			node.GasRemaining = parent.GasRemaining

@@ -12,6 +12,7 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
+	// callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestGroupCallbacks()
