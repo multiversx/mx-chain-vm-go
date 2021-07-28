@@ -1335,6 +1335,15 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 		})
 }
 
+func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCall()
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = callGraph.StartNode.GasLimit
+
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
+
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	testConfig := makeTestConfig()

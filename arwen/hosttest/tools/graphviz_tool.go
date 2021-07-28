@@ -11,13 +11,15 @@ import (
 )
 
 func main() {
-	// callGraph := test.CreateGraphTest1()
-	// callGraph := test.CreateGraphTest2()
+	callGraph := test.CreateGraphTestOneAsyncCall()
+	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestGroupCallbacks()
-	callGraph := test.CreateGraphTestTwoAsyncCalls()
-	// callGraph := test.CreateGraphTestSimple2()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+
+	// callGraph := test.CreateGraphTest1()
+	// callGraph := test.CreateGraphTest2()
+	// callGraph := test.CreateGraphTestSimple2()
 
 	///////////////////
 
