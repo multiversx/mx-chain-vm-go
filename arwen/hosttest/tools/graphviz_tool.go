@@ -12,33 +12,39 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTest1()
-	callGraph := test.CreateGraphTest2()
-	// callGraph := test.CreateGraphTestSimple1()
+	// callGraph := test.CreateGraphTest2()
+	// callGraph := test.CreateGraphTestAsyncCallsAsync()
+	// callGraph := test.CreateGraphTestGroupCallbacks()
+	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestSimple2()
-	// callGraph := test.CreateGraphTestSimple3()
+	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
 	///////////////////
 
 	graphviz := toGraphviz(callGraph, true)
-	createSvg("call-graph", graphviz)
+	createSvg("1 call-graph", graphviz)
 
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	graphviz = toGraphviz(executionGraph, false)
-	createSvg("execution-graph", graphviz)
+	createSvg("2 execution-graph", graphviz)
 
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
 
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	graphviz = toGraphviz(gasGraph, false)
-	createSvg("gas-graph-beforecallbacks", graphviz)
+	createSvg("3 gas-graph-gasbeforecallbacks", graphviz)
 
-	gasGraph.ComputeRemainingGasForCallbacks()
+	gasGraph.ComputeRemainingGasAfterCallbacks()
 	graphviz = toGraphviz(gasGraph, false)
-	createSvg("gas-graph-callbacksgasremaining", graphviz)
+	createSvg("4 gas-graph-gasaftercallbacks", graphviz)
 
-	gasGraph.ComputeFinalRemainingGas()
+	gasGraph.ComputeGasAccumulation()
 	graphviz = toGraphviz(gasGraph, true)
-	createSvg("gas-graph-final", graphviz)
+	createSvg("5 gas-graph-gasaccumulation", graphviz)
+
+	gasGraph.ComputeRemainingGasAfterGroupCallbacks()
+	graphviz = toGraphviz(gasGraph, true)
+	createSvg("6 gas-graph-gasaftergroupcallbacks", graphviz)
 }
 
 func createSvg(file string, graphviz *gographviz.Graph) {
@@ -92,7 +98,7 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 			attrs := make(map[string]string)
 			if edge.Label != "" {
 				attrs["label"] = edge.Label
-				if showGasEdgeLabels {
+				if showGasEdgeLabels && edge.Type != test.Callback && edge.Type != test.GroupCallback {
 					attrs["label"] += "\n" +
 						"P" + strconv.Itoa(int(edge.GasLimit)) +
 						"/U" + strconv.Itoa(int(edge.GasUsed))
@@ -162,6 +168,12 @@ func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 	if node.IsEndOfSyncExecutionNode {
 		attrs["label"] = gasFontStart + gasUsed + gasFontEnd
 	} else {
+		// display only gas locked for uncomputed gas values (e.g. group callbacks)
+		if node.GasLimit == 0 {
+			xlabel += gasFontStart + "L" + gasLocked + gasFontEnd
+			attrs["xlabel"] = xlabel
+			return
+		}
 		xlabel = gasFontStart
 		xlabel += "P" + gasLimit
 		if node.GasLocked != 0 {

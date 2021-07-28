@@ -87,9 +87,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 											big.NewInt(int64(Sync)).Bytes(),
 											big.NewInt(int64(edge.GasUsed)).Bytes()}) // args
 								} else {
-									// log.Trace("Async call", "to", string(destAddress), "func", destFunctionName, "gas", gasForChildren)
-									// fmt.Println("Async call to" + string(destAddress) + " func " + destFunctionName + " gas " + strconv.Itoa(int(edge.GasLimit)))
-									fmt.Println("Async call", "to", string(destAddress), "func", destFunctionName, "gas", strconv.Itoa(int(edge.GasLimit)))
+									// log.Trace("Register async call", "to", string(destAddress), "func", destFunctionName, "gas", gasForChildren)
+									fmt.Println("Register async call", "to", string(destAddress), "func", destFunctionName, "gas", strconv.Itoa(int(edge.GasLimit)))
 
 									callData := txDataBuilder.NewBuilder()
 									callData.Func(destFunctionName)
@@ -150,7 +149,7 @@ func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 	pathsTree := pathsTreeFromDag(executionGraph)
 	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsEndOfSyncExecutionNode {
-			fmt.Println("end exec " + parent.Label)
+			//fmt.Println("end exec " + parent.Label)
 			executionOrder = append(executionOrder, TestCall{
 				ContractAddress: parent.Call.ContractAddress,
 				FunctionName:    parent.Call.FunctionName,
@@ -191,18 +190,78 @@ func CreateGraphTest1() *TestCallGraph {
 	callGraph.AddNode("sc1", "cb4")
 
 	sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
-	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1)
+	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1, 0, 0)
 
 	ctxcb := callGraph.AddNode("sc1", "ctxcb")
 	callGraph.SetContextCallback(sc1f1, ctxcb)
 	return callGraph
 }
 
-// CreateGraphTestSimple1 -
-func CreateGraphTestSimple1() *TestCallGraph {
+// CreateGraphTestAsyncCallsAsync -
+func CreateGraphTestAsyncCallsAsync() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
 
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 100, 10)
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(100).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5).
+		SetGasLocked(10)
+
+	callGraph.AddNode("sc1", "cb1")
+
+	sc2f3 := callGraph.AddNode("sc2", "f3")
+	callGraph.AddAsyncEdge(sc2f2, sc2f3, "cb2", "gr2").
+		SetGasLimit(30).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3).
+		SetGasLocked(12)
+
+	callGraph.AddNode("sc2", "cb2")
+
+	return callGraph
+}
+
+// CreateGraphTestGroupCallbacks -
+func CreateGraphTestGroupCallbacks() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(100).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5).
+		SetGasLocked(10)
+
+	callGraph.AddNode("sc1", "cb1")
+
+	// sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
+	// callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1, 20, 10)
+
+	sc2f3 := callGraph.AddNode("sc2", "f3")
+	callGraph.AddAsyncEdge(sc2f2, sc2f3, "cb2", "gr2").
+		SetGasLimit(30).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3).
+		SetGasLocked(12)
+
+	callGraph.AddNode("sc2", "cb2")
+
+	// sc2cbg2 := callGraph.AddNode("sc2", "cbg2")
+	// callGraph.SetGroupCallback(sc2f2, "gr2", sc2cbg2, 10, 20)
+
+	return callGraph
+}
+
+// CreateGraphTestTwoAsyncCalls -
+func CreateGraphTestTwoAsyncCalls() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
@@ -244,8 +303,8 @@ func CreateGraphTestSimple2() *TestCallGraph {
 	return callGraph
 }
 
-// CreateGraphTestSimple3 -
-func CreateGraphTestSimple3() *TestCallGraph {
+// CreateGraphTestDifferentTypeOfCallsToSameFunction -
+func CreateGraphTestDifferentTypeOfCallsToSameFunction() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
 	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
 

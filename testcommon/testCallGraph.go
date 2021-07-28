@@ -100,6 +100,8 @@ const (
 	Sync = iota
 	Async
 	Callback
+	GroupCallback
+	ContextCallback
 )
 
 // TestCallEdge an edge between two nodes of the call graph
@@ -280,7 +282,10 @@ func (graph *TestCallGraph) GetStartNode() *TestCallNode {
 }
 
 // SetGroupCallback sets the callback for the specified group id
-func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string, groupCallbackNode *TestCallNode) {
+func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string, groupCallbackNode *TestCallNode,
+	gasLocked uint64, gasUsed uint64) {
+	groupCallbackNode.GasLocked = gasLocked
+	groupCallbackNode.GasUsed = gasUsed
 	node.GroupCallbacks[groupID] = groupCallbackNode
 }
 
@@ -414,7 +419,6 @@ func (graph *TestCallGraph) getPaths() []*TestCallPath {
 
 func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResult func(*TestCallPath)) {
 	lastNodeInPath := path.nodes[len(path.nodes)-1]
-
 	if lastNodeInPath.IsLeaf() {
 		lastNodeInPath.GasUsed = path.nodes[len(path.nodes)-2].GasUsed
 		lastNodeInPath.GasLimit = lastNodeInPath.GasUsed
@@ -573,16 +577,22 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 			groupCallbackNode := newSource.GroupCallbacks[group]
 			if groupCallbackNode != nil {
 				execEdge := executionGraph.addEdge(newSource, groupCallbackNode)
-				execEdge.Label = "Callback\n" + group
+				execEdge.Type = GroupCallback
+				execEdge.Label = "Callback[" + group + "]"
 				execEdge.Color = "gray"
+				execEdge.GasUsed = groupCallbackNode.GasUsed
+				execEdge.GasLocked = groupCallbackNode.GasLocked
 			}
 		}
 
 		// is start node add context callback
 		if newSource.ContextCallback != nil {
 			execEdge := executionGraph.addEdge(newSource, newSource.ContextCallback)
+			execEdge.Type = ContextCallback
 			execEdge.Label = "Callback\nContext"
 			execEdge.Color = "gray"
+			execEdge.GasUsed = newSource.ContextCallback.GasUsed
+			execEdge.GasLocked = newSource.ContextCallback.GasLocked
 		}
 
 		return node
@@ -685,8 +695,8 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	})
 }
 
-// ComputeRemainingGasForCallbacks -
-func (graph *TestCallGraph) ComputeRemainingGasForCallbacks() {
+// ComputeRemainingGasAfterCallbacks -
+func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if !node.IsStartNode && incomingEdge.Type == Callback {
 			parent.GasRemaining = 0
@@ -699,13 +709,25 @@ func (graph *TestCallGraph) ComputeRemainingGasForCallbacks() {
 	})
 }
 
-// ComputeFinalRemainingGas -
-func (graph *TestCallGraph) ComputeFinalRemainingGas() {
+// ComputeGasAccumulation -
+func (graph *TestCallGraph) ComputeGasAccumulation() {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsStartNode {
 			return node
 		}
 		parent.GasRemaining += node.GasRemaining
+		return node
+	})
+}
+
+// ComputeRemainingGasAfterGroupCallbacks -
+func (graph *TestCallGraph) ComputeRemainingGasAfterGroupCallbacks() {
+	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+		if !node.IsStartNode && incomingEdge.Type == GroupCallback {
+			node.GasLimit = parent.GasRemaining + node.GasLocked
+			parent.GasRemaining = node.GasLimit - node.GasUsed
+			node.GasRemaining = parent.GasRemaining
+		}
 		return node
 	})
 }

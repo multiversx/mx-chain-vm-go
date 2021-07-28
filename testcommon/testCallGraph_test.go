@@ -64,8 +64,8 @@ func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
 }
 
-func TestExecutionGraph_Execution_GraphTestSimple1(t *testing.T) {
-	callGraph := CreateGraphTestSimple1()
+func TestExecutionGraph_Execution_TwoAsyncCalls(t *testing.T) {
+	callGraph := CreateGraphTestTwoAsyncCalls()
 
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	executionOrder := CreateRunExpectationOrder(executionGraph)
