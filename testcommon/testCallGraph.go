@@ -143,6 +143,9 @@ func (edge *TestCallEdge) SetGasLimit(gasLimit uint64) *TestCallEdge {
 
 // SetGasUsedByCallback - builder style setter
 func (edge *TestCallEdge) SetGasUsedByCallback(gasUsedByCallback uint64) *TestCallEdge {
+	if edge.Type != Async {
+		panic("Callbacks are only for async edges")
+	}
 	edge.GasUsedByCallback = gasUsedByCallback
 	return edge
 }
@@ -155,6 +158,9 @@ func (edge *TestCallEdge) SetGasUsed(gasUsed uint64) *TestCallEdge {
 
 // SetGasLocked - builder style setter
 func (edge *TestCallEdge) SetGasLocked(gasLocked uint64) *TestCallEdge {
+	if edge.Type != Async {
+		panic("Gas locked is only for async edges")
+	}
 	edge.GasLocked = gasLocked
 	return edge
 }
@@ -694,6 +700,9 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 		node.GasRemaining = node.GasLimit
 		for _, edge := range node.AdjacentEdges {
 			node.GasRemaining -= edge.To.GasLimit + edge.To.GasLocked
+			if node.GasRemaining < 0 {
+				panic("Bad test gas configuration")
+			}
 		}
 		return node
 	})

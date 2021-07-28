@@ -16,12 +16,13 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2()
-	callGraph := test.CreateGraphTestGroupCallbacks()
+	// callGraph := test.CreateGraphTestGroupCallbacks()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
+	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
+	callGraph := test.CreateGraphTest2()
+
 	// callGraph := test.CreateGraphTest1()
-	// callGraph := test.CreateGraphTest2()
-	// callGraph := test.CreateGraphTestSimple2()
 
 	///////////////////
 

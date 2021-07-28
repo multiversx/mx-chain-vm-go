@@ -321,8 +321,8 @@ func CreateGraphTestOneAsyncCall() *TestCallGraph {
 	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
 		SetGasLimit(35).
 		SetGasUsed(7).
-		SetGasUsedByCallback(5).
-		SetGasLocked(10)
+		SetGasUsedByCallback(6).
+		SetGasLocked(9)
 
 	callGraph.AddNode("sc1", "cb1")
 
@@ -378,23 +378,32 @@ func CreateGraphTestTwoAsyncCalls() *TestCallGraph {
 	return callGraph
 }
 
-// CreateGraphTestSimple2 -
-func CreateGraphTestSimple2() *TestCallGraph {
+// CreateGraphTestSimpleSyncAndAsync1 -
+func CreateGraphTestSimpleSyncAndAsync1() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddSyncEdge(sc1f1, sc2f2)
+	callGraph.AddSyncEdge(sc1f1, sc2f2).
+		SetGasLimit(100).
+		SetGasUsed(7)
 
 	sc3f3 := callGraph.AddNode("sc3", "f3")
-	callGraph.AddAsyncEdge(sc2f2, sc3f3, "cb1", "")
+	callGraph.AddAsyncEdge(sc2f2, sc3f3, "cb1", "").
+		SetGasLimit(30).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3).
+		SetGasLocked(12)
 
 	sc4f4 := callGraph.AddNode("sc4", "f4")
-	callGraph.AddSyncEdge(sc1f1, sc4f4)
+	callGraph.AddSyncEdge(sc1f1, sc4f4).
+		SetGasLimit(20).
+		SetGasUsed(1)
 
 	sc2cb1 := callGraph.AddNode("sc2", "cb1")
-	callGraph.AddSyncEdge(sc4f4, sc2cb1)
-	// callGraph.AddSyncEdge(sc2cb1, sc3f3)
+	callGraph.AddSyncEdge(sc4f4, sc2cb1).
+		SetGasLimit(10).
+		SetGasUsed(5)
 
 	return callGraph
 }
@@ -435,7 +444,7 @@ func CreateGraphTestDifferentTypeOfCallsToSameFunction() *TestCallGraph {
 // CreateGraphTest2 -
 func CreateGraphTest2() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 2000, 10)
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 100, 10)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	callGraph.AddSyncEdge(sc1f1, sc2f2).
