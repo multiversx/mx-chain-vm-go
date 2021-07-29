@@ -1343,14 +1343,6 @@ func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallWithGroupCallback_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
-	testConfig := makeTestConfig()
-	testConfig.GasProvided = callGraph.StartNode.GasLimit
-
-	runGraphCallTestTemplate(t, testConfig, callGraph)
-}
-
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	testConfig := makeTestConfig()
@@ -1399,6 +1391,14 @@ func TestGasUsed_SimpleSyncAndAsync2_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 
+func TestGasUsed_GraphTest1_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTest1()
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = callGraph.StartNode.GasLimit
+
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
+
 func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTest2()
 	testConfig := makeTestConfig()
@@ -1428,9 +1428,7 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 	// compute gas assertions
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
-	// gasGraph.ComputeRemainingGasAfterCallbacks()
-	// gasGraph.ComputeGasAccumulation()
-	// gasGraph.ComputeRemainingGasAfterGroupCallbacks()
+	gasGraph.ComputeGasStepByStep(func(graph *test.TestCallGraph, step int) {})
 
 	totalGasUsed := uint64(0)
 	expectedGasUsagePerContract := make(map[string]*usedGasPerContract)

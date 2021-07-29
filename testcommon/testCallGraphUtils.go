@@ -185,37 +185,59 @@ func CreateRunOrderFromExecutionGraph(executionGraph *TestCallGraph) []TestCall 
 // CreateGraphTest1 -
 func CreateGraphTest1() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 0, 0)
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 300, 10)
 
 	sc2f3 := callGraph.AddNode("sc2", "f3")
-	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1")
+	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb2", "gr1").
+		SetGasLimit(100).
+		SetGasUsed(7).
+		SetGasUsedByCallback(10).
+		SetGasLocked(0)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddSyncEdge(sc1f1, sc2f2)
+	callGraph.AddSyncEdge(sc1f1, sc2f2).
+		SetGasLimit(50).
+		SetGasUsed(7)
 
 	sc2f6 := callGraph.AddNode("sc2", "f6")
-	callGraph.AddAsyncEdge(sc1f1, sc2f6, "cb4", "gr1")
+	callGraph.AddAsyncEdge(sc1f1, sc2f6, "cb4", "gr1").
+		SetGasLimit(80).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5).
+		SetGasLocked(0)
 
 	sc3f7 := callGraph.AddNode("sc3", "f7")
-	callGraph.AddAsyncEdge(sc1f1, sc3f7, "cb4", "gr2")
+	callGraph.AddAsyncEdge(sc1f1, sc3f7, "cb4", "gr2").
+		SetGasLimit(30).
+		SetGasUsed(5).
+		SetGasUsedByCallback(5).
+		SetGasLocked(0)
 
 	sc3f4 := callGraph.AddNode("sc3", "f4")
-	callGraph.AddSyncEdge(sc2f3, sc3f4)
+	callGraph.AddSyncEdge(sc2f3, sc3f4).
+		SetGasLimit(20).
+		SetGasUsed(12)
 
-	callGraph.AddAsyncEdge(sc2f2, sc3f4, "cb3", "gr3")
+	callGraph.AddAsyncEdge(sc2f2, sc3f4, "cb3", "gr3").
+		SetGasLimit(20).
+		SetGasUsed(2).
+		SetGasUsedByCallback(3).
+		SetGasLocked(0)
 
-	sc1cb1 := callGraph.AddNode("sc1", "cb2")
+	sc1cb2 := callGraph.AddNode("sc1", "cb2")
 	sc4f5 := callGraph.AddNode("sc4", "f5")
-	callGraph.AddSyncEdge(sc1cb1, sc4f5)
+	callGraph.AddSyncEdge(sc1cb2, sc4f5).
+		SetGasLimit(4).
+		SetGasUsed(2)
 
 	callGraph.AddNode("sc2", "cb3")
 	callGraph.AddNode("sc1", "cb4")
 
-	sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
-	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1, 0, 0)
+	// sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
+	// callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1, 0, 0)
 
-	ctxcb := callGraph.AddNode("sc1", "ctxcb")
-	callGraph.SetContextCallback(sc1f1, ctxcb, 0, 0)
+	// ctxcb := callGraph.AddNode("sc1", "ctxcb")
+	// callGraph.SetContextCallback(sc1f1, ctxcb, 0, 0)
 	return callGraph
 }
 
@@ -239,7 +261,7 @@ func CreateGraphTestAsyncCallsAsync() *TestCallGraph {
 		SetGasLimit(30).
 		SetGasUsed(6).
 		SetGasUsedByCallback(3).
-		SetGasLocked(12)
+		SetGasLocked(0)
 
 	callGraph.AddNode("sc2", "cb2")
 
@@ -359,30 +381,6 @@ func CreateGraphTestOneAsyncCall() *TestCallGraph {
 		SetGasLocked(0)
 
 	callGraph.AddNode("sc1", "cb1")
-
-	return callGraph
-}
-
-// CreateGraphTestOneAsyncCallWithGroupCallback -
-func CreateGraphTestOneAsyncCallWithGroupCallback() *TestCallGraph {
-	callGraph := CreateTestCallGraph()
-
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
-
-	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
-		SetGasLimit(50).
-		SetGasUsed(20).
-		SetGasUsedByCallback(10).
-		SetGasLocked(0)
-
-	callGraph.AddNode("sc1", "cb1")
-
-	sc1cbg1 := callGraph.AddNode("sc1", "cbg1")
-	callGraph.SetGroupCallback(sc1f1, "gr1", sc1cbg1, 10, 30)
-
-	ctxcb := callGraph.AddNode("sc1", "ctxcb")
-	callGraph.SetContextCallback(sc1f1, ctxcb, 20, 10)
 
 	return callGraph
 }

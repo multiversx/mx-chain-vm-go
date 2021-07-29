@@ -30,8 +30,6 @@ func TestCallGraph_Dfs(t *testing.T) {
 		*buildTestCall("sc4", "f5"),
 		*buildTestCall("sc2", "cb3"),
 		*buildTestCall("sc1", "cb4"),
-		*buildTestCall("sc1", "cbg1"),
-		*buildTestCall("sc1", "ctxcb"),
 	}
 
 	require.True(t, reflect.DeepEqual(expectedOrder, traversalOrder))
@@ -39,50 +37,16 @@ func TestCallGraph_Dfs(t *testing.T) {
 
 func TestExecutionGraph_Execution_OneAsyncCall(t *testing.T) {
 	callGraph := CreateGraphTestOneAsyncCall()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc1", "cb1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
-}
-
-func TestExecutionGraph_Execution_OneAsyncCallWithGroupCallback(t *testing.T) {
-	callGraph := CreateGraphTestOneAsyncCallWithGroupCallback()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
-	expectedOrder := []TestCall{
-		*buildTestCall("sc1", "f1"),
-		*buildTestCall("sc2", "f2"),
-		*buildTestCall("sc1", "cb1"),
-		*buildTestCall("sc1", "cbg1"),
-		*buildTestCall("sc1", "ctxcb"),
-	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_TwoAsyncCalls(t *testing.T) {
 	callGraph := CreateGraphTestTwoAsyncCalls()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
 		*buildTestCall("sc2", "f2"),
@@ -90,20 +54,11 @@ func TestExecutionGraph_Execution_TwoAsyncCalls(t *testing.T) {
 		*buildTestCall("sc2", "f3"),
 		*buildTestCall("sc1", "cb1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_AsyncCallsAsync(t *testing.T) {
 	callGraph := CreateGraphTestAsyncCallsAsync()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
 		*buildTestCall("sc2", "f2"),
@@ -111,20 +66,11 @@ func TestExecutionGraph_Execution_AsyncCallsAsync(t *testing.T) {
 		*buildTestCall("sc2", "cb2"),
 		*buildTestCall("sc1", "cb1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_AsyncCallsAsync2(t *testing.T) {
 	callGraph := CreateGraphTestAsyncCallsAsync2()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
 		*buildTestCall("sc2", "f2"),
@@ -134,87 +80,39 @@ func TestExecutionGraph_Execution_AsyncCallsAsync2(t *testing.T) {
 		*buildTestCall("sc2", "cb2"),
 		*buildTestCall("sc1", "cb1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
-}
-
-func TestExecutionGraph_Execution_GroupCallbacks(t *testing.T) {
-	callGraph := CreateGraphTestGroupCallbacks()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
-	expectedOrder := []TestCall{
-		*buildTestCall("sc1", "f1"),
-		*buildTestCall("sc2", "f2"),
-		*buildTestCall("sc2", "f3"),
-		*buildTestCall("sc2", "cb2"),
-		*buildTestCall("sc2", "cbg2"),
-		*buildTestCall("sc1", "cb1"),
-		*buildTestCall("sc1", "cbg1"),
-		*buildTestCall("sc1", "ctxcb"),
-	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_SimpleSyncAndAsync1(t *testing.T) {
 	callGraph := CreateGraphTestSimpleSyncAndAsync1()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc3", "f3"),
+		*buildTestCall("sc5", "f5"),
 		*buildTestCall("sc2", "cb1"),
+		*buildTestCall("sc5", "f5"),
 		*buildTestCall("sc2", "cb1"),
 		*buildTestCall("sc4", "f4"),
 		*buildTestCall("sc1", "f1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_SimpleSyncAndAsync2(t *testing.T) {
 	callGraph := CreateGraphTestSimpleSyncAndAsync2()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
+		*buildTestCall("sc5", "f5"),
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc4", "f4"),
 		*buildTestCall("sc3", "f3"),
 		*buildTestCall("sc1", "cb1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	// gasGraph := computeFinalGasGraph(executionGraph)
-	// expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	// require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_GraphTest2(t *testing.T) {
 	callGraph := CreateGraphTest2()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc3", "f3"),
 		*buildTestCall("sc2", "f2"),
@@ -230,20 +128,11 @@ func TestExecutionGraph_Execution_GraphTest2(t *testing.T) {
 		*buildTestCall("sc4", "f4"),
 		*buildTestCall("sc1", "cb1"),
 	}
-
-	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
-
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	runAsserts(callGraph, t, expectedOrder)
 }
 
 func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 	callGraph := CreateGraphTest1()
-
-	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
-
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc3", "f4"),
@@ -257,15 +146,25 @@ func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 		*buildTestCall("sc1", "cb4"),
 		*buildTestCall("sc3", "f7"),
 		*buildTestCall("sc1", "cb4"),
-		*buildTestCall("sc1", "cbg1"),
-		*buildTestCall("sc1", "ctxcb"),
 	}
+	runAsserts(callGraph, t, expectedOrder)
+}
+
+func runAsserts(callGraph *TestCallGraph, t *testing.T, expectedOrder []TestCall) {
+	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
+	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
 
 	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
 
-	//gasGraph := computeFinalGasGraph(executionGraph)
-	//expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
-	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+	gasGraph := computeFinalGasGraph(executionGraph)
+	expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
+	var actualGasRemaining uint64
+	if gasGraph.StartNode.GasRemainingAfterCallback != 0 {
+		actualGasRemaining = gasGraph.StartNode.GasRemainingAfterCallback
+	} else {
+		actualGasRemaining = gasGraph.StartNode.GasRemaining
+	}
+	require.Equal(t, expectedRemainingGas, actualGasRemaining)
 }
 
 func computeExpectedRemainingGas(gasGraph *TestCallGraph) uint64 {
@@ -282,8 +181,6 @@ func computeExpectedRemainingGas(gasGraph *TestCallGraph) uint64 {
 func computeFinalGasGraph(executionGraph *TestCallGraph) *TestCallGraph {
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
-	// gasGraph.ComputeRemainingGasAfterCallbacks()
-	// gasGraph.ComputeGasAccumulation()
-	// gasGraph.ComputeRemainingGasAfterGroupCallbacks()
+	gasGraph.ComputeGasStepByStep(func(graph *TestCallGraph, step int) {})
 	return gasGraph
 }

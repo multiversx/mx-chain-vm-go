@@ -741,41 +741,59 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	})
 }
 
-// ComputeRemainingGasAfterCallbacks -
-func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
-	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if !node.IsStartNode && incomingEdge.Type == Callback {
-			parent.GasRemaining = 0
-			node.GasRemaining = node.GasLimit
-			for _, edge := range node.AdjacentEdges {
-				node.GasRemaining -= edge.To.GasLimit + edge.To.GasLocked
-			}
-		}
-		return node
-	})
-}
+// ComputeGasStepByStep -
+func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph *TestCallGraph, step int)) {
+	step := 1
+	finishedOneStepDfs := false
+	for ; !finishedOneStepDfs; step++ {
+		finishedOneStepDfs = graph.OneStepDfsFromNodePostOrder(func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+			if parent != nil {
+				if node.IsLeaf() && node.Parent.IncomingEdgeType == Callback {
+					callBackNode := parent
+					asyncNode := callBackNode.Parent
+					asyncInitiator := asyncNode.Parent
 
-// ComputeGasAccumulation -
-func (graph *TestCallGraph) ComputeGasAccumulation() {
-	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsStartNode {
+					var asyncInitiatorGasRemaining uint64
+					if asyncInitiator.GasRemainingAfterCallback == 0 {
+						asyncInitiatorGasRemaining = asyncInitiator.GasRemaining
+					} else {
+						asyncInitiatorGasRemaining = asyncInitiator.GasRemainingAfterCallback
+					}
+					var asyncNodeGasRemaining uint64
+					if asyncNode.GasRemainingAfterCallback == 0 {
+						asyncNodeGasRemaining = asyncNode.GasRemaining
+					} else {
+						asyncNodeGasRemaining = asyncNode.GasRemainingAfterCallback
+					}
+					callBackNode.GasLimit = asyncInitiatorGasRemaining + asyncNodeGasRemaining
+
+					callBackNode.GasRemaining = callBackNode.GasLimit
+					for _, edge := range callBackNode.GetEdges() {
+						if edge.Type != Async {
+							callBackNode.GasRemaining -= edge.To.GasLimit - edge.To.GasRemaining
+						} else {
+							callBackNode.GasRemaining -= edge.To.GasLimit
+						}
+					}
+				} else if !node.IsLeaf() && node.IncomingEdgeType == Callback {
+					var callBackNodeGasRemaining uint64
+					if node.GasRemainingAfterCallback == 0 {
+						callBackNodeGasRemaining = node.GasRemaining
+					} else {
+						callBackNodeGasRemaining = node.GasRemainingAfterCallback
+					}
+					node.Parent.Parent.GasRemainingAfterCallback = callBackNodeGasRemaining
+				} else if !node.IsLeaf() && node.IncomingEdgeType == Sync {
+					if node.GasRemainingAfterCallback == 0 {
+						parent.GasRemaining += node.GasRemaining
+					} else {
+						parent.GasRemaining += node.GasRemainingAfterCallback
+					}
+				}
+			}
 			return node
-		}
-		parent.GasRemaining += node.GasRemaining
-		return node
-	})
-}
-
-// ComputeRemainingGasAfterGroupCallbacks -
-func (graph *TestCallGraph) ComputeRemainingGasAfterGroupCallbacks() {
-	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if !node.IsStartNode && (incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback) {
-			node.GasLimit = parent.GasRemaining + node.GasLocked
-			node.GasRemaining = node.GasLimit - node.GasUsed
-			for crtParent := parent; crtParent != nil; crtParent = crtParent.Parent {
-				crtParent.GasRemaining -= (node.GasUsed - node.GasLocked)
-			}
-		}
-		return node
-	})
+		})
+		executeAfterEachStep(graph, step)
+	}
+	graph.clearVisitedNodesFlag()
 }
