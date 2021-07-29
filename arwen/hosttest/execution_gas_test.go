@@ -1400,6 +1400,8 @@ type usedGasPerContract struct {
 }
 
 func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGraph *test.TestCallGraph) {
+	testConfig.GasLockCost = 0
+
 	// compute execution order (return data) assertions
 	expectedReturnData := make([][]byte, 0)
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()

@@ -165,6 +165,7 @@ func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 		}
 		return
 	}
+
 	gasLimit := strconv.Itoa(int(node.GasLimit))
 	gasUsed := strconv.Itoa(int(node.GasUsed))
 	gasRemaining := strconv.Itoa(int(node.GasRemaining))
