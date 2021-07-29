@@ -23,6 +23,11 @@ func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_CallbackCallsAsync_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestCallbackCallsAsync()
 	runGraphCallTestTemplate(t, callGraph)

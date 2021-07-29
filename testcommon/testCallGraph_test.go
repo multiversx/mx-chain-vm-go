@@ -35,7 +35,7 @@ func TestCallGraph_Dfs(t *testing.T) {
 	require.True(t, reflect.DeepEqual(expectedOrder, traversalOrder))
 }
 
-func TestExecutionGraph_Execution_OneAsyncCall(t *testing.T) {
+func TestExecutionGraph_OneAsyncCall(t *testing.T) {
 	callGraph := CreateGraphTestOneAsyncCall()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
@@ -45,7 +45,7 @@ func TestExecutionGraph_Execution_OneAsyncCall(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_TwoAsyncCalls(t *testing.T) {
+func TestExecutionGraph_TwoAsyncCalls(t *testing.T) {
 	callGraph := CreateGraphTestTwoAsyncCalls()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
@@ -57,7 +57,7 @@ func TestExecutionGraph_Execution_TwoAsyncCalls(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_AsyncCallsAsync(t *testing.T) {
+func TestExecutionGraph_AsyncCallsAsync(t *testing.T) {
 	callGraph := CreateGraphTestAsyncCallsAsync()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
@@ -69,7 +69,7 @@ func TestExecutionGraph_Execution_AsyncCallsAsync(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_AsyncCallsAsync2(t *testing.T) {
+func TestExecutionGraph_AsyncCallsAsync2(t *testing.T) {
 	callGraph := CreateGraphTestAsyncCallsAsync2()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
@@ -83,7 +83,7 @@ func TestExecutionGraph_Execution_AsyncCallsAsync2(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_SimpleSyncAndAsync1(t *testing.T) {
+func TestExecutionGraph_SimpleSyncAndAsync1(t *testing.T) {
 	callGraph := CreateGraphTestSimpleSyncAndAsync1()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
@@ -98,7 +98,7 @@ func TestExecutionGraph_Execution_SimpleSyncAndAsync1(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_SimpleSyncAndAsync2(t *testing.T) {
+func TestExecutionGraph_SimpleSyncAndAsync2(t *testing.T) {
 	callGraph := CreateGraphTestSimpleSyncAndAsync2()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
@@ -111,7 +111,7 @@ func TestExecutionGraph_Execution_SimpleSyncAndAsync2(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_GraphTest2(t *testing.T) {
+func TestExecutionGraph_GraphTest2(t *testing.T) {
 	callGraph := CreateGraphTest2()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc3", "f3"),
@@ -131,7 +131,7 @@ func TestExecutionGraph_Execution_GraphTest2(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
+func TestExecutionGraph_GraphTest1(t *testing.T) {
 	callGraph := CreateGraphTest1()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
@@ -146,6 +146,22 @@ func TestExecutionGraph_Execution_GraphTest1(t *testing.T) {
 		*buildTestCall("sc1", "cb4"),
 		*buildTestCall("sc3", "f7"),
 		*buildTestCall("sc1", "cb4"),
+	}
+	runAsserts(callGraph, t, expectedOrder)
+}
+
+func TestExecutionGraph_DifferentTypeOfCallsToSameFunction(t *testing.T) {
+	callGraph := CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	expectedOrder := []TestCall{
+		*buildTestCall("sc3", "f3"),
+		*buildTestCall("sc2", "f2"),
+		*buildTestCall("sc1", "f1"),
+		*buildTestCall("sc3", "f3"),
+		*buildTestCall("sc2", "f2"),
+		*buildTestCall("sc1", "cb1"),
+		*buildTestCall("sc3", "f3"),
+		*buildTestCall("sc2", "f2"),
+		*buildTestCall("sc1", "cb2"),
 	}
 	runAsserts(callGraph, t, expectedOrder)
 }
