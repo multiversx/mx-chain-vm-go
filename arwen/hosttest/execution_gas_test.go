@@ -1413,8 +1413,8 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 	// compute gas assertions
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
-	gasGraph.ComputeGasAccumulation()
-	gasGraph.ComputeRemainingGasAfterGroupCallbacks()
+	// gasGraph.ComputeGasAccumulation()
+	// gasGraph.ComputeRemainingGasAfterGroupCallbacks()
 
 	totalGasUsed := uint64(0)
 	expectedGasUsagePerContract := make(map[string]*usedGasPerContract)

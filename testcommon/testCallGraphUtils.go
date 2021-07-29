@@ -444,7 +444,7 @@ func CreateGraphTestDifferentTypeOfCallsToSameFunction() *TestCallGraph {
 // CreateGraphTest2 -
 func CreateGraphTest2() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 100, 10)
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	callGraph.AddSyncEdge(sc1f1, sc2f2).

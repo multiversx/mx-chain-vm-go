@@ -13,14 +13,14 @@ import (
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
 	// callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
-	// callGraph := test.CreateGraphTestTwoAsyncCalls()
+	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2()
 	// callGraph := test.CreateGraphTestGroupCallbacks()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
-	callGraph := test.CreateGraphTest2()
+	// callGraph := test.CreateGraphTest2()
 
 	// callGraph := test.CreateGraphTest1()
 
@@ -39,17 +39,17 @@ func main() {
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 gas-graph-gasbeforecallbacks", graphviz)
 
-	gasGraph.ComputeRemainingGasAfterCallbacks()
-	graphviz = toGraphviz(gasGraph, false)
-	createSvg("4 gas-graph-gasaftercallbacks", graphviz)
+	// gasGraph.ComputeRemainingGasAfterCallbacks()
+	// graphviz = toGraphviz(gasGraph, false)
+	// createSvg("4 gas-graph-gasaftercallbacks", graphviz)
 
-	gasGraph.ComputeGasAccumulation()
-	graphviz = toGraphviz(gasGraph, false)
-	createSvg("5 gas-graph-gasaccumulation", graphviz)
+	// gasGraph.ComputeGasAccumulation()
+	// graphviz = toGraphviz(gasGraph, false)
+	// createSvg("5 gas-graph-gasaccumulation", graphviz)
 
-	gasGraph.ComputeRemainingGasAfterGroupCallbacks()
-	graphviz = toGraphviz(gasGraph, false)
-	createSvg("6 gas-graph-gasaftergroupcallbacks", graphviz)
+	// gasGraph.ComputeRemainingGasAfterGroupCallbacks()
+	// graphviz = toGraphviz(gasGraph, false)
+	// createSvg("6 gas-graph-gasaftergroupcallbacks", graphviz)
 }
 
 func createSvg(file string, graphviz *gographviz.Graph) {
