@@ -1064,12 +1064,15 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
+	gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	gasUsedByChild := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasLockCost
+
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(contracts.ExecESDTTransferAndAsyncCallChild),
+				WithMethods(contracts.ExecESDTTransferAndAsyncCallChild, contracts.SimpleCallbackMock),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
@@ -1091,7 +1094,8 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				HasRuntimeErrors(arwen.ErrNotEnoughGas.Error())
+				GasUsed(test.ChildAddress, gasUsedByChild).
+				GasUsed(test.ParentAddress, gasUsedByParent)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
