@@ -371,10 +371,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	host := context.host
 	runtime := host.Runtime()
 
-	_, arguments, err := host.CallArgsParser().ParseData(string(context.returnData))
-	if err != nil {
-		arguments = [][]byte{context.returnData}
-	}
+	arguments := [][]byte{context.callbackData}
 
 	// TODO ensure a new value for VMInput.CurrentTxHash
 	input := &vmcommon.ContractCallInput{

@@ -188,6 +188,27 @@ func TestExecutionGraph_Execution_SimpleSyncAndAsync1(t *testing.T) {
 	//require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
 }
 
+func TestExecutionGraph_Execution_SimpleSyncAndAsync2(t *testing.T) {
+	callGraph := CreateGraphTestSimpleSyncAndAsync2()
+
+	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
+	executionOrder := CreateRunOrderFromExecutionGraph(executionGraph)
+
+	expectedOrder := []TestCall{
+		*buildTestCall("sc1", "f1"),
+		*buildTestCall("sc2", "f2"),
+		*buildTestCall("sc4", "f4"),
+		*buildTestCall("sc3", "f3"),
+		*buildTestCall("sc1", "cb1"),
+	}
+
+	require.True(t, reflect.DeepEqual(expectedOrder, executionOrder))
+
+	// gasGraph := computeFinalGasGraph(executionGraph)
+	// expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
+	// require.Equal(t, expectedRemainingGas, gasGraph.StartNode.GasRemaining)
+}
+
 func TestExecutionGraph_Execution_GraphTest2(t *testing.T) {
 	callGraph := CreateGraphTest2()
 

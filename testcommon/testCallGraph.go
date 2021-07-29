@@ -568,19 +568,6 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 			}
 		}
 
-		// callbacks were added by async source node processing and must be moved to the end of the node
-		// after all other node activity (sync & async calls)
-		nonCallBackEdges := make([]*TestCallEdge, 0)
-		callBackEdges := make([]*TestCallEdge, 0)
-		for _, newEdge := range newSource.AdjacentEdges {
-			if newEdge.Type == Callback {
-				callBackEdges = append(callBackEdges, newEdge)
-			} else {
-				nonCallBackEdges = append(nonCallBackEdges, newEdge)
-			}
-		}
-		newSource.AdjacentEdges = append(nonCallBackEdges, callBackEdges...)
-
 		// add group callbacks calls if any
 		for _, group := range groups {
 			groupCallbackNode := newSource.GroupCallbacks[group]
@@ -593,6 +580,19 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 				execEdge.GasLocked = groupCallbackNode.GasLocked
 			}
 		}
+
+		// callbacks were added by async source node processing and must be moved to the end of the node
+		// after all other node activity (sync & async calls)
+		nonCallBackEdges := make([]*TestCallEdge, 0)
+		callBackEdges := make([]*TestCallEdge, 0)
+		for _, newEdge := range newSource.AdjacentEdges {
+			if newEdge.Type == Callback {
+				callBackEdges = append(callBackEdges, newEdge)
+			} else {
+				nonCallBackEdges = append(nonCallBackEdges, newEdge)
+			}
+		}
+		newSource.AdjacentEdges = append(nonCallBackEdges, callBackEdges...)
 
 		// is start node add context callback
 		if newSource.ContextCallback != nil {

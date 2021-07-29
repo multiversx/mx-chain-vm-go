@@ -13,13 +13,14 @@ import (
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
 	// callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
-	callGraph := test.CreateGraphTestTwoAsyncCalls()
+	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2()
 	// callGraph := test.CreateGraphTestGroupCallbacks()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
+	callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest2()
 
 	// callGraph := test.CreateGraphTest1()
@@ -36,7 +37,7 @@ func main() {
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
 
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
-	graphviz = toGraphviz(gasGraph, false)
+	graphviz = toGraphviz(gasGraph, true)
 	createSvg("3 gas-graph-gasbeforecallbacks", graphviz)
 
 	// gasGraph.ComputeRemainingGasAfterCallbacks()

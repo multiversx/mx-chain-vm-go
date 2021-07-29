@@ -1336,7 +1336,6 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 }
 
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCall()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
@@ -1345,7 +1344,6 @@ func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_OneAsyncCallWithGroupCallback_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCallWithGroupCallback()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
@@ -1354,7 +1352,6 @@ func TestGasUsed_OneAsyncCallWithGroupCallback_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
@@ -1380,6 +1377,14 @@ func TestGasUsed_GroupCallbacks_CallGraph(t *testing.T) {
 
 func TestGasUsed_SimpleSyncAndAsync1_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = callGraph.StartNode.GasLimit
+
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
+
+func TestGasUsed_SimpleSyncAndAsync2_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
 
@@ -1415,6 +1420,7 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 	// compute gas assertions
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
+	// gasGraph.ComputeRemainingGasAfterCallbacks()
 	// gasGraph.ComputeGasAccumulation()
 	// gasGraph.ComputeRemainingGasAfterGroupCallbacks()
 
