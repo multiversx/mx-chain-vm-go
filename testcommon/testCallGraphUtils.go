@@ -361,17 +361,17 @@ func CreateGraphTestTwoAsyncCalls() *TestCallGraph {
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
-		SetGasLimit(35).
+		SetGasLimit(50).
 		SetGasUsed(7).
 		SetGasUsedByCallback(5).
-		SetGasLocked(10)
+		SetGasLocked(0)
 
 	sc2f3 := callGraph.AddNode("sc2", "f3")
 	callGraph.AddAsyncEdge(sc1f1, sc2f3, "cb1", "gr2").
 		SetGasLimit(30).
 		SetGasUsed(6).
 		SetGasUsedByCallback(3).
-		SetGasLocked(12)
+		SetGasLocked(0)
 
 	callGraph.AddNode("sc1", "cb1")
 
