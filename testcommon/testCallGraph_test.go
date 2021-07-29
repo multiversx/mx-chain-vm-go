@@ -153,8 +153,8 @@ func TestExecutionGraph_Execution_GroupCallbacks(t *testing.T) {
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc2", "f3"),
 		*buildTestCall("sc2", "cb2"),
-		*buildTestCall("sc1", "cb1"),
 		*buildTestCall("sc2", "cbg2"),
+		*buildTestCall("sc1", "cb1"),
 		*buildTestCall("sc1", "cbg1"),
 		*buildTestCall("sc1", "ctxcb"),
 	}
