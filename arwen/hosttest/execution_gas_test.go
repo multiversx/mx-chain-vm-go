@@ -1367,6 +1367,14 @@ func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, testConfig, callGraph)
 }
 
+func TestGasUsed_CallbackCallsAsync_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestCallbackCallsAsync()
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = callGraph.StartNode.GasLimit
+
+	runGraphCallTestTemplate(t, testConfig, callGraph)
+}
+
 func TestGasUsed_GroupCallbacks_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestGroupCallbacks()
 	testConfig := makeTestConfig()

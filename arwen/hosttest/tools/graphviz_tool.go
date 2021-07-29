@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -19,9 +20,10 @@ func main() {
 	// callGraph := test.CreateGraphTestGroupCallbacks()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
+	// callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
-	callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
-	// callGraph := test.CreateGraphTest2()
+	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
+	callGraph := test.CreateGraphTest2()
 
 	// callGraph := test.CreateGraphTest1()
 
@@ -31,14 +33,53 @@ func main() {
 	createSvg("1 call-graph", graphviz)
 
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
-	graphviz = toGraphviz(executionGraph, false)
+	graphviz = toGraphviz(executionGraph, true)
 	createSvg("2 execution-graph", graphviz)
 
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
+	graphviz = toGraphviz(gasGraph, true)
+	createSvg("3 tree-call-graph", graphviz)
 
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	graphviz = toGraphviz(gasGraph, true)
-	createSvg("3 gas-graph-gasbeforecallbacks", graphviz)
+	createSvg("4 gas-graph-gasbeforecallbacks", graphviz)
+
+	step := 1
+	finishedOneStepDfs := false
+	for ; !finishedOneStepDfs; step++ {
+		finishedOneStepDfs = gasGraph.OneStepDfsFromNodePostOrder(func(parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+			if parent != nil {
+				if node.IsLeaf() && node.Parent.IncomingEdgeType == test.Callback {
+					callBackNode := parent
+					asyncNode := callBackNode.Parent
+					asyncInitiator := asyncNode.Parent
+					if asyncInitiator.GasRemainingAfterCallback == 0 {
+						callBackNode.GasLimit = asyncInitiator.GasRemaining + asyncNode.GasRemaining
+					} else {
+						callBackNode.GasLimit = asyncInitiator.GasRemainingAfterCallback + asyncNode.GasRemaining
+					}
+					callBackNode.GasRemaining = callBackNode.GasLimit
+					for _, edge := range callBackNode.GetEdges() {
+						if edge.Type != test.Async {
+							callBackNode.GasRemaining -= edge.To.GasLimit - edge.To.GasRemaining
+						} else {
+							callBackNode.GasRemaining -= edge.To.GasLimit
+						}
+					}
+					asyncInitiator.GasRemainingAfterCallback = callBackNode.GasRemaining
+				} else if !node.IsLeaf() && node.IncomingEdgeType == test.Sync {
+					if node.GasRemainingAfterCallback == 0 {
+						parent.GasRemaining += node.GasRemaining
+					} else {
+						parent.GasRemaining += node.GasRemainingAfterCallback
+					}
+				}
+			}
+			return node
+		})
+		graphviz = toGraphviz(gasGraph, false)
+		createSvg(fmt.Sprintf("step %d", step), graphviz)
+	}
 
 	// gasGraph.ComputeRemainingGasAfterCallbacks()
 	// graphviz = toGraphviz(gasGraph, false)
@@ -90,6 +131,9 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 		attrs := make(map[string]string)
 		if node.IsStartNode {
 			attrs["shape"] = "box"
+		}
+		if node.Visited {
+			attrs["penwidth"] = "4"
 		}
 		setGasLabel(node, attrs)
 		if !node.IsEndOfSyncExecutionNode {
@@ -177,8 +221,8 @@ func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 	} else {
 		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)
 		if node.GasLimit == 0 {
-			xlabel += gasFontStart + "L" + gasLocked + gasFontEnd
-			attrs["xlabel"] = xlabel
+			// xlabel += gasFontStart + "L" + gasLocked + gasFontEnd
+			// attrs["xlabel"] = xlabel
 			return
 		}
 		xlabel = gasFontStart

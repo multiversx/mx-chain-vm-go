@@ -51,14 +51,16 @@ type TestCallNode struct {
 	VisualLabel string
 	Label       string
 	// back pointer / "edge" to parent for trees (not part of the graph)
-	Parent *TestCallNode
+	Parent           *TestCallNode
+	IncomingEdgeType TestCallEdgeType
 	// info used for gas assertions
 	// set from an incoming edge edge
 	GasLimit  uint64
 	GasUsed   uint64
 	GasLocked uint64
 	// computed info
-	GasRemaining uint64
+	GasRemaining              uint64
+	GasRemainingAfterCallback uint64
 }
 
 // SpecialLabel - special node label for IsEndOfSyncExecutionNode
@@ -89,6 +91,7 @@ func (node *TestCallNode) copy() *TestCallNode {
 		GasRemaining:             node.GasRemaining,
 		GasUsed:                  node.GasUsed,
 		GasLocked:                node.GasLocked,
+		IncomingEdgeType:         node.IncomingEdgeType,
 	}
 }
 
@@ -196,6 +199,7 @@ func (graph *TestCallGraph) AddStartNode(contractID string, functionName string,
 	graph.StartNode = node
 	node.IsStartNode = true
 	node.GasLimit = gasLimit
+	node.GasRemaining = gasLimit
 	node.GasUsed = gasUsed
 	return node
 }
@@ -273,9 +277,9 @@ func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, c
 func (edge *TestCallEdge) setAsyncEdgeAttributes(group string, callBack string) {
 	edge.Label = "Async"
 	edge.Color = "red"
-	if group != "" {
-		edge.Label += "[" + group + "]"
-	}
+	// if group != "" {
+	// 	edge.Label += "[" + group + "]"
+	// }
 	edge.Label += "\n"
 	if callBack != "" {
 		edge.Label += callBack
@@ -378,6 +382,32 @@ func (graph *TestCallGraph) dfsFromNodePostOrder(parent *TestCallNode, node *Tes
 	return processedParent
 }
 
+// OneStepDfsFromNodePostOrder -
+func (graph *TestCallGraph) OneStepDfsFromNodePostOrder(processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) bool {
+	if graph.StartNode.Visited {
+		return true
+	}
+	graph.oneStepDfsFromNodePostOrder(nil, graph.StartNode, nil, processNode)
+	return false
+}
+
+func (graph *TestCallGraph) oneStepDfsFromNodePostOrder(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) bool {
+	for _, edge := range node.AdjacentEdges {
+		if graph.oneStepDfsFromNodePostOrder(node, edge.To, edge, processNode) {
+			return true
+		}
+	}
+
+	if node.Visited {
+		return false
+	}
+
+	processNode(parent, node, incomingEdge)
+	node.Visited = true
+
+	return true
+}
+
 // TestCallPath a path in a tree
 type TestCallPath struct {
 	nodes []*TestCallNode
@@ -430,6 +460,7 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 	lastNodeInPath := path.nodes[len(path.nodes)-1]
 	if lastNodeInPath.IsLeaf() {
 		lastNodeInPath.GasUsed = path.nodes[len(path.nodes)-2].GasUsed
+		// path.nodes[len(path.nodes)-2].GasUsed = 0 // TODO matei-p
 		lastNodeInPath.GasLimit = lastNodeInPath.GasUsed
 		addPathToResult(path)
 		// path.print()
@@ -458,12 +489,14 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 		}
 
 		edge.To.GasLimit = edge.GasLimit
+		edge.To.GasRemaining = edge.GasLimit
 		edge.To.GasLocked = edge.GasLocked
 		if lastEdgeInPath != nil && lastEdgeInPath.Type == Async && edge.Type == Callback {
 			edge.To.GasUsed = lastEdgeInPath.GasUsedByCallback
 		} else {
 			edge.To.GasUsed = edge.GasUsed
 		}
+		edge.To.IncomingEdgeType = edge.Type
 
 		// fmt.Println("add [" + edge.Label + "] " + edge.To.Label)
 		newPath := addToPath(path, edge)
@@ -690,13 +723,13 @@ func isGroupPresent(group string, groups []string) bool {
 func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() ||
-			(!node.IsStartNode && (incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback)) {
+			(!node.IsStartNode && (incomingEdge.Type == Callback || incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback)) {
 			return node
 		}
-		if !node.IsStartNode && incomingEdge.Type == Callback {
-			node.GasLimit = parent.GasRemaining + parent.GasLocked
-			return node
-		}
+		// if !node.IsStartNode && incomingEdge.Type == Callback {
+		// 	node.GasLimit = parent.GasRemaining + parent.GasLocked
+		// 	return node
+		// }
 		node.GasRemaining = node.GasLimit
 		for _, edge := range node.AdjacentEdges {
 			node.GasRemaining -= edge.To.GasLimit + edge.To.GasLocked
