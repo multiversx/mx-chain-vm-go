@@ -66,6 +66,7 @@
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:TEST-TOKEN",
+                            "",
                             "1000",
                             "sc:forwarder"
                         ],
