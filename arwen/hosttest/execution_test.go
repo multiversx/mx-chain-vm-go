@@ -2158,9 +2158,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 998352).
-				// GasRemaining(1648).
+				GasUsed(test.ParentAddress, 998351).
+				GasUsed(test.ChildAddress, 0).
+				GasRemaining(1649).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),

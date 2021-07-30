@@ -1094,8 +1094,9 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				GasUsed(test.ChildAddress, gasUsedByChild).
-				GasUsed(test.ParentAddress, gasUsedByParent)
+				GasRemaining(50).
+				GasUsed(test.ParentAddress, gasUsedByParent).
+				GasUsed(test.ChildAddress, gasUsedByChild)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
