@@ -5,6 +5,9 @@ import (
 	"strconv"
 )
 
+// DefaultCallGraphLockedGas is the default gas locked value
+const DefaultCallGraphLockedGas = 150
+
 // TestCall represents the payload of a node in the call graph
 type TestCall struct {
 	ContractAddress []byte
@@ -264,10 +267,11 @@ func buildEdge(to *TestCallNode) *TestCallEdge {
 // AddAsyncEdge adds an async call edge between two nodes of the call graph
 func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, callBack string, group string) *TestCallEdge {
 	edge := &TestCallEdge{
-		Type:     Async,
-		Callback: callBack,
-		Group:    group,
-		To:       to,
+		Type:      Async,
+		Callback:  callBack,
+		Group:     group,
+		To:        to,
+		GasLocked: DefaultCallGraphLockedGas,
 	}
 	edge.setAsyncEdgeAttributes(group, callBack)
 	from.AdjacentEdges = append(from.AdjacentEdges, edge)
@@ -726,17 +730,14 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 			(!node.IsStartNode && (incomingEdge.Type == Callback || incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback)) {
 			return node
 		}
-		// if !node.IsStartNode && incomingEdge.Type == Callback {
-		// 	node.GasLimit = parent.GasRemaining + parent.GasLocked
-		// 	return node
-		// }
-		node.GasRemaining = node.GasLimit
+		nodeGasRemaining := int64(node.GasLimit)
 		for _, edge := range node.AdjacentEdges {
-			node.GasRemaining -= edge.To.GasLimit + edge.To.GasLocked
-			if node.GasRemaining < 0 {
-				panic("Bad test gas configuration")
+			nodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
+			if nodeGasRemaining < 0 {
+				panic(fmt.Sprintf("Bad test gas configuration %s incoming edge %s", node.Label, incomingEdge.Label))
 			}
 		}
+		node.GasRemaining = uint64(nodeGasRemaining)
 		return node
 	})
 }
@@ -765,15 +766,19 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 					} else {
 						asyncNodeGasRemaining = asyncNode.GasRemainingAfterCallback
 					}
-					callBackNode.GasLimit = asyncInitiatorGasRemaining + asyncNodeGasRemaining
+					callBackNode.GasLimit = asyncInitiatorGasRemaining + asyncNodeGasRemaining + asyncNode.GasLocked
 
-					callBackNode.GasRemaining = callBackNode.GasLimit
+					callBackNodeGasRemaining := int64(callBackNode.GasLimit)
 					for _, edge := range callBackNode.GetEdges() {
 						if edge.Type != Async {
-							callBackNode.GasRemaining -= edge.To.GasLimit - edge.To.GasRemaining
+							callBackNodeGasRemaining -= int64(edge.To.GasLimit - edge.To.GasRemaining)
 						} else {
-							callBackNode.GasRemaining -= edge.To.GasLimit
+							callBackNodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
 						}
+						if callBackNodeGasRemaining < 0 {
+							panic(fmt.Sprintf("Bad test callback gas configuration %s (%s)", node.Label, callBackNode.Label))
+						}
+						callBackNode.GasRemaining = uint64(callBackNodeGasRemaining)
 					}
 				} else if !node.IsLeaf() && node.IncomingEdgeType == Callback {
 					var callBackNodeGasRemaining uint64

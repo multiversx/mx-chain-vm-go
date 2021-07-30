@@ -16,13 +16,13 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2() // not allowed to run!
-	callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
 	// callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest1()
-	// callGraph := test.CreateGraphTest2()
+	callGraph := test.CreateGraphTest2()
 
 	///////////////////
 
@@ -34,11 +34,11 @@ func main() {
 	createSvg("2 execution-graph", graphviz)
 
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
-	graphviz = toGraphviz(gasGraph, true)
+	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 tree-call-graph", graphviz)
 
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
-	graphviz = toGraphviz(gasGraph, true)
+	graphviz = toGraphviz(gasGraph, false)
 	createSvg("4 gas-graph-gasbeforecallbacks", graphviz)
 
 	gasGraph.ComputeGasStepByStep(func(graph *test.TestCallGraph, step int) {
@@ -58,7 +58,7 @@ func createSvg(file string, graphviz *gographviz.Graph) {
 		panic(err)
 	}
 
-	out, err := exec.Command("dot", "-Tsvg", destDot).Output()
+	out, err := exec.Command("dot" /*"-extent 800x1500",*/, "-Tsvg", destDot).Output()
 	if err != nil {
 		panic(err)
 	}

@@ -69,20 +69,6 @@ func TestExecutionGraph_AsyncCallsAsync(t *testing.T) {
 	runAsserts(callGraph, t, expectedOrder)
 }
 
-func TestExecutionGraph_AsyncCallsAsync2(t *testing.T) {
-	callGraph := CreateGraphTestAsyncCallsAsync2()
-	expectedOrder := []TestCall{
-		*buildTestCall("sc1", "f1"),
-		*buildTestCall("sc2", "f2"),
-		*buildTestCall("sc2", "f3"),
-		*buildTestCall("sc2", "f4"),
-		*buildTestCall("sc2", "cb3"),
-		*buildTestCall("sc2", "cb2"),
-		*buildTestCall("sc1", "cb1"),
-	}
-	runAsserts(callGraph, t, expectedOrder)
-}
-
 func TestExecutionGraph_SimpleSyncAndAsync1(t *testing.T) {
 	callGraph := CreateGraphTestSimpleSyncAndAsync1()
 	expectedOrder := []TestCall{

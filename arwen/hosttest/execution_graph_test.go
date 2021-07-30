@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
@@ -30,11 +31,6 @@ func TestGasUsed_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
 
 func TestGasUsed_CallbackCallsAsync_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestCallbackCallsAsync()
-	runGraphCallTestTemplate(t, callGraph)
-}
-
-func TestGasUsed_GroupCallbacks_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestGroupCallbacks()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -66,17 +62,17 @@ type usedGasPerContract struct {
 func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
-	testConfig.GasLockCost = 0
+	testConfig.GasLockCost = test.DefaultCallGraphLockedGas
 
 	// compute execution order (return data) assertions
 	expectedReturnData := make([][]byte, 0)
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	startNode := executionGraph.GetStartNode()
 
-	executionOrder := test.CreateRunOrderFromExecutionGraph(executionGraph)
-	for _, testCall := range executionOrder {
-		expectedReturnData = append(expectedReturnData, []byte(string(testCall.ContractAddress)+"_"+testCall.FunctionName+test.TestReturnDataSuffix))
-	}
+	// executionOrder := test.CreateRunOrderFromExecutionGraph(executionGraph)
+	// for _, testCall := range executionOrder {
+	// 	expectedReturnData = append(expectedReturnData, []byte(string(testCall.ContractAddress)+"_"+testCall.FunctionName+test.TestReturnDataSuffix))
+	// }
 
 	// compute gas assertions
 	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
@@ -99,6 +95,18 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		}
 		gasPerContract.gasUsed += node.GasUsed
 		totalGasUsed += node.GasUsed
+
+		expectedNodeRetData := txDataBuilder.NewBuilder()
+		expectedNodeRetData.Func(parent.Call.FunctionName)
+		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
+		// fmt.Println("exp\t" + string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
+		expectedNodeRetData.Int64(int64(parent.GasLimit))
+		// fmt.Println(fmt.Sprintf("exp\t%d", parent.GasLimit))
+		expectedNodeRetData.Int64(int64(parent.GasRemaining))
+		// fmt.Println(fmt.Sprintf("exp\t%d", parent.GasRemaining))
+		// fmt.Println()
+		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
+
 		return node
 	})
 
