@@ -1064,8 +1064,8 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
-	gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	gasUsedByChild := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasLockCost
+	expectedGasRemaining := uint64(50)
+	gasUsedByParent := testConfig.GasProvided - expectedGasRemaining
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1096,7 +1096,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 				Ok().
 				GasRemaining(50).
 				GasUsed(test.ParentAddress, gasUsedByParent).
-				GasUsed(test.ChildAddress, gasUsedByChild)
+				GasUsed(test.ChildAddress, 0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
