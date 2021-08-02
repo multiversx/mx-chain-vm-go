@@ -578,9 +578,10 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
+				Print().
 				Ok().
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-				GasRemaining(gasForAsyncCall-testConfig.GasUsedByChild).
+				GasRemaining(0).
 				ReturnData(childAsyncReturnData...).
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
@@ -589,11 +590,11 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
-					// test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-					// 	WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-					// 	WithGasLimit(gasForAsyncCall-gasUsedByChild).
-					// 	WithCallType(vmcommon.AsynchronousCallBack).
-					// 	WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithGasLimit(gasForAsyncCall-testConfig.GasUsedByChild).
+						WithCallType(vm.AsynchronousCallBack).
+						WithValue(big.NewInt(0)),
 				)
 		})
 }
@@ -1063,12 +1064,15 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
+	expectedGasRemaining := uint64(50)
+	gasUsedByParent := testConfig.GasProvided - expectedGasRemaining
+
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(contracts.ExecESDTTransferAndAsyncCallChild),
+				WithMethods(contracts.ExecESDTTransferAndAsyncCallChild, contracts.SimpleCallbackMock),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
@@ -1090,7 +1094,9 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				HasRuntimeErrors(arwen.ErrNotEnoughGas.Error())
+				GasRemaining(50).
+				GasUsed(test.ParentAddress, gasUsedByParent).
+				GasUsed(test.ChildAddress, 0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)

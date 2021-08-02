@@ -7,7 +7,10 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var logMTypes = logger.GetOrCreate("arwen/mtypes")
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -171,6 +174,7 @@ func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 func (context *managedTypesContext) GetBigInt(handle int32) (*big.Int, error) {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
+		logMTypes.Trace("missing big int", "handle", handle)
 		return nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	return value, nil
@@ -181,10 +185,12 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	bigIntValues := context.managedTypesValues.bigIntValues
 	value1, ok := bigIntValues[handle1]
 	if !ok {
+		logMTypes.Trace("missing big int", "handle", handle1)
 		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	value2, ok := bigIntValues[handle2]
 	if !ok {
+		logMTypes.Trace("missing big int", "handle", handle2)
 		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	return value1, value2, nil

@@ -1433,8 +1433,8 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 
 	parentGasBeforeExecuteAPI := uint64(168)
 	executeAPICost := uint64(42)
-	childExecutionCost := uint64(91)
-	finalCost := uint64(65)
+	childExecutionCost := uint64(93)
+	finalCost := uint64(63)
 	childTransferValue := int64(12)
 
 	test.BuildInstanceCallTest(t).
@@ -1461,7 +1461,7 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-				GasUsed(test.ChildAddress, 2250).
+				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
 				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
@@ -1495,8 +1495,8 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 
 	parentGasBeforeExecuteAPI := uint64(168)
 	executeAPICost := uint64(42)
-	childExecutionCost := uint64(91)
-	parentGasAfterExecuteAPI := uint64(273)
+	childExecutionCost := uint64(93)
+	parentGasAfterExecuteAPI := uint64(271)
 	childTransferValue := int64(12)
 
 	test.BuildInstanceCallTest(t).
@@ -1523,7 +1523,7 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-				GasUsed(test.ChildAddress, 2250).
+				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
 				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
@@ -1606,7 +1606,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
 	verify.
 		Ok().
-		GasRemaining(7758)
+		GasRemaining(7729)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -1642,7 +1642,7 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 				GasUsed(test.ParentAddress, 4374).
 				/// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 99).
-				GasUsed(test.ChildAddress, 2259).
+				GasUsed(test.ChildAddress, 2288).
 				// other
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -2158,9 +2158,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 998352).
-				// GasRemaining(1648).
+				GasUsed(test.ParentAddress, 998351).
+				GasUsed(test.ChildAddress, 0).
+				GasRemaining(1649).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
