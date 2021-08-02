@@ -581,7 +581,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 				Print().
 				Ok().
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-				GasRemaining(gasForAsyncCall-testConfig.GasUsedByChild).
+				GasRemaining(0).
 				ReturnData(childAsyncReturnData...).
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
@@ -590,11 +590,11 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
-					// test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-					// 	WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-					// 	WithGasLimit(gasForAsyncCall-gasUsedByChild).
-					// 	WithCallType(vmcommon.AsynchronousCallBack).
-					// 	WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithGasLimit(gasForAsyncCall-testConfig.GasUsedByChild).
+						WithCallType(vm.AsynchronousCallBack).
+						WithValue(big.NewInt(0)),
 				)
 		})
 }

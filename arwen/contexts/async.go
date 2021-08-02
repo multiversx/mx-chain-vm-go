@@ -795,6 +795,12 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		return err
 	}
 
+	log.Trace(
+		"sendContextCallbackToOriginalCaller",
+		"caller", context.callerAddr,
+		"data", context.returnData,
+		"gas", context.gasAccumulated)
+
 	return nil
 }
 

@@ -58,10 +58,18 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.Balance.String())
 		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.BalanceDelta.String())
 		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GasUsed)
-		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
 		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.StorageUpdates))
 		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.Code))
 		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.CodeMetadata)
+		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
+		for i, transfer := range account.OutputTransfers {
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Sender", string(transfer.SenderAddress))
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].CallType", transfer.CallType)
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].GasLimit", transfer.GasLimit)
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].GasLocked", transfer.GasLocked)
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Value", transfer.Value)
+			log.Trace("VMOutput", "└ OutputTransfers["+fmt.Sprint(i)+"].Data", transfer.Data)
+		}
 	}
 	return v
 }

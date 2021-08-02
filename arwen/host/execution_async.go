@@ -38,20 +38,28 @@ func (host *vmHost) sendAsyncCallbackToCaller() error {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}
 
+	gasLeft := metering.GasLeft()
+
 	err := output.Transfer(
 		currentCall.CallerAddr,
 		runtime.GetSCAddress(),
-		metering.GasLeft(),
+		gasLeft,
 		0,
 		currentCall.CallValue,
 		retData,
 		vm.AsynchronousCallBack,
 	)
+	metering.UseGas(gasLeft)
 	if err != nil {
-		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
 		return err
 	}
+
+	log.Trace(
+		"sendAsyncCallbackToCaller",
+		"caller", currentCall.CallerAddr,
+		"data", retData,
+		"gas", gasLeft)
 
 	return nil
 }
