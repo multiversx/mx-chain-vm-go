@@ -35,39 +35,45 @@ func buildTestCall(contractID string, functionName string) *TestCall {
 
 // TestCallNode is a node in the call graph
 type TestCallNode struct {
+
+	// entry point in call graph
+	IsStartNode bool
+
 	// node payload
 	Call *TestCall
 	// connected nodes
 	AdjacentEdges []*TestCallEdge
+
 	// group callbacks
-	GroupCallbacks map[string]*TestCallNode
+	// GroupCallbacks map[string]*TestCallNode
 	// context callback
-	ContextCallback *TestCallNode
-	// used by execution graphs - by default these nodes are ignored by FindNode() calls
-	// TODO matei-p is this necessary? all these are leafs !!!
-	// we could rename it, to IsLeaf because in certain cases we don't have yet the edges
-	IsEndOfSyncExecutionNode bool
-	IsStartNode              bool
+	// ContextCallback *TestCallNode
+
 	// will be reseted after each dfs traversal
 	Visited bool
-	// used only for visualization
+
+	// labels used only for visualization & debugging
 	VisualLabel string
-	Label       string
-	// back pointer / "edge" to parent for trees (not part of the graph)
+	// needs to be unique (will be in te form of contract_function_index)
+	Label string
+
+	// back pointer / "edge" to parent for trees (not part of the actual graph, not traversed)
 	Parent           *TestCallNode
 	IncomingEdgeType TestCallEdgeType
+
 	// info used for gas assertions
 	// set from an incoming edge edge
 	GasLimit  uint64
 	GasUsed   uint64
 	GasLocked uint64
+
 	// computed info
-	GasRemaining              uint64
-	GasRemainingAfterCallback uint64
+	GasRemaining                uint64
+	GasAccumulatedAfterCallback uint64
 }
 
-// SpecialLabel - special node label for IsEndOfSyncExecutionNode
-const SpecialLabel = "*"
+// LeafLabel - special node label for leafs
+const LeafLabel = "*"
 
 // GetEdges gets the outgoing edges of the node
 func (node *TestCallNode) GetEdges() []*TestCallEdge {
@@ -82,19 +88,18 @@ func (node *TestCallNode) IsLeaf() bool {
 // Copy copyies the node call info into a new node
 func (node *TestCallNode) copy() *TestCallNode {
 	return &TestCallNode{
-		Call:                     node.Call.copy(),
-		AdjacentEdges:            make([]*TestCallEdge, 0),
-		GroupCallbacks:           make(map[string]*TestCallNode, 0),
-		ContextCallback:          nil,
-		IsEndOfSyncExecutionNode: node.IsEndOfSyncExecutionNode,
-		Visited:                  false,
-		IsStartNode:              node.IsStartNode,
-		Label:                    node.Label,
-		GasLimit:                 node.GasLimit,
-		GasRemaining:             node.GasRemaining,
-		GasUsed:                  node.GasUsed,
-		GasLocked:                node.GasLocked,
-		IncomingEdgeType:         node.IncomingEdgeType,
+		Call:          node.Call.copy(),
+		AdjacentEdges: make([]*TestCallEdge, 0),
+		// GroupCallbacks:   make(map[string]*TestCallNode, 0),
+		// ContextCallback:  nil,
+		Visited:          false,
+		IsStartNode:      node.IsStartNode,
+		Label:            node.Label,
+		GasLimit:         node.GasLimit,
+		GasRemaining:     node.GasRemaining,
+		GasUsed:          node.GasUsed,
+		GasLocked:        node.GasLocked,
+		IncomingEdgeType: node.IncomingEdgeType,
 	}
 }
 
@@ -106,38 +111,41 @@ const (
 	Sync = iota
 	Async
 	Callback
-	GroupCallback
-	ContextCallback
+	// GroupCallback
+	// ContextCallback
 )
 
 // TestCallEdge an edge between two nodes of the call graph
 type TestCallEdge struct {
-	Type     TestCallEdgeType
+	Type TestCallEdgeType
+
+	// callback function name
 	Callback string
-	Group    string
-	To       *TestCallNode
-	// gas config for the outgoing node (To)
+	// Group    string
+	// outgoing node
+	To *TestCallNode
+
+	// gas config for the outgoing node (represented by To)
 	GasLimit          uint64
 	GasUsed           uint64
 	GasUsedByCallback uint64
 	GasLocked         uint64
-	// used only for visualization
+
+	// used only for visualization & debugging
 	Label string
-	Color string
 }
 
 func (edge *TestCallEdge) copy() *TestCallEdge {
 	return &TestCallEdge{
-		Type:              edge.Type,
-		Callback:          edge.Callback,
-		Group:             edge.Group,
+		Type:     edge.Type,
+		Callback: edge.Callback,
+		// Group:             edge.Group,
 		To:                edge.To,
 		GasLimit:          edge.GasLimit,
 		GasUsed:           edge.GasUsed,
 		GasUsedByCallback: edge.GasUsedByCallback,
 		GasLocked:         edge.GasLocked,
 		Label:             edge.Label,
-		Color:             edge.Color,
 	}
 }
 
@@ -174,12 +182,11 @@ func (edge *TestCallEdge) SetGasLocked(gasLocked uint64) *TestCallEdge {
 func (edge *TestCallEdge) copyAttributesFrom(sourceEdge *TestCallEdge) {
 	edge.Type = sourceEdge.Type
 	edge.Callback = sourceEdge.Callback
-	edge.Group = sourceEdge.Group
+	// edge.Group = sourceEdge.Group
 	edge.GasLimit = sourceEdge.GasLimit
 	edge.GasLocked = sourceEdge.GasLocked
 	edge.GasUsed = sourceEdge.GasUsed
 	edge.GasUsedByCallback = sourceEdge.GasUsedByCallback
-	edge.Color = sourceEdge.Color
 	edge.Label = sourceEdge.Label
 }
 
@@ -218,14 +225,13 @@ func (graph *TestCallGraph) AddNodeCopy(node *TestCallNode) *TestCallNode {
 func (graph *TestCallGraph) AddNode(contractID string, functionName string) *TestCallNode {
 	testCall := buildTestCall(contractID, functionName)
 	testNode := &TestCallNode{
-		Call:                     testCall,
-		AdjacentEdges:            make([]*TestCallEdge, 0),
-		GroupCallbacks:           make(map[string]*TestCallNode, 0),
-		ContextCallback:          nil,
-		Visited:                  false,
-		IsEndOfSyncExecutionNode: false,
-		IsStartNode:              false,
-		Label:                    strconv.Quote(contractID + "." + functionName),
+		Call:          testCall,
+		AdjacentEdges: make([]*TestCallEdge, 0),
+		// GroupCallbacks:  make(map[string]*TestCallNode, 0),
+		// ContextCallback: nil,
+		Visited:     false,
+		IsStartNode: false,
+		Label:       strconv.Quote(contractID + "." + functionName),
 	}
 	graph.Nodes = append(graph.Nodes, testNode)
 	return testNode
@@ -235,7 +241,6 @@ func (graph *TestCallGraph) AddNode(contractID string, functionName string) *Tes
 func (graph *TestCallGraph) AddSyncEdge(from *TestCallNode, to *TestCallNode) *TestCallEdge {
 	edge := graph.addEdge(from, to)
 	edge.Label = "Sync"
-	edge.Color = "blue"
 	return edge
 }
 
@@ -258,8 +263,8 @@ func buildEdge(to *TestCallNode) *TestCallEdge {
 	edge := &TestCallEdge{
 		Type:     Sync,
 		Callback: "",
-		Group:    "",
-		To:       to,
+		// Group:    "",
+		To: to,
 	}
 	return edge
 }
@@ -267,9 +272,9 @@ func buildEdge(to *TestCallNode) *TestCallEdge {
 // AddAsyncEdge adds an async call edge between two nodes of the call graph
 func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, callBack string, group string) *TestCallEdge {
 	edge := &TestCallEdge{
-		Type:      Async,
-		Callback:  callBack,
-		Group:     group,
+		Type:     Async,
+		Callback: callBack,
+		// Group:     group,
 		To:        to,
 		GasLocked: DefaultCallGraphLockedGas,
 	}
@@ -280,7 +285,6 @@ func (graph *TestCallGraph) AddAsyncEdge(from *TestCallNode, to *TestCallNode, c
 
 func (edge *TestCallEdge) setAsyncEdgeAttributes(group string, callBack string) {
 	edge.Label = "Async"
-	edge.Color = "red"
 	// if group != "" {
 	// 	edge.Label += "[" + group + "]"
 	// }
@@ -296,20 +300,20 @@ func (graph *TestCallGraph) GetStartNode() *TestCallNode {
 }
 
 // SetGroupCallback sets the callback for the specified group id
-func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string, groupCallbackNode *TestCallNode,
-	gasLocked uint64, gasUsed uint64) {
-	groupCallbackNode.GasLocked = gasLocked
-	groupCallbackNode.GasUsed = gasUsed
-	node.GroupCallbacks[groupID] = groupCallbackNode
-}
+// func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string, groupCallbackNode *TestCallNode,
+// 	gasLocked uint64, gasUsed uint64) {
+// 	groupCallbackNode.GasLocked = gasLocked
+// 	groupCallbackNode.GasUsed = gasUsed
+// 	// node.GroupCallbacks[groupID] = groupCallbackNode
+// }
 
 // SetContextCallback sets the callback for the async context
-func (graph *TestCallGraph) SetContextCallback(node *TestCallNode, contextCallbackNode *TestCallNode,
-	gasLocked uint64, gasUsed uint64) {
-	node.ContextCallback = contextCallbackNode
-	node.ContextCallback.GasLocked = gasLocked
-	node.ContextCallback.GasUsed = gasUsed
-}
+// func (graph *TestCallGraph) SetContextCallback(node *TestCallNode, contextCallbackNode *TestCallNode,
+// 	gasLocked uint64, gasUsed uint64) {
+// 	node.ContextCallback = contextCallbackNode
+// 	node.ContextCallback.GasLocked = gasLocked
+// 	node.ContextCallback.GasUsed = gasUsed
+// }
 
 // FindNode finds the corresponding node in the call graph
 func (graph *TestCallGraph) FindNode(contractAddress []byte, functionName string) *TestCallNode {
@@ -317,8 +321,7 @@ func (graph *TestCallGraph) FindNode(contractAddress []byte, functionName string
 	// but for test call graphs we are ok
 	for _, node := range graph.Nodes {
 		if string(node.Call.ContractAddress) == string(contractAddress) &&
-			node.Call.FunctionName == functionName &&
-			!node.IsEndOfSyncExecutionNode {
+			node.Call.FunctionName == functionName {
 			return node
 		}
 	}
@@ -386,7 +389,7 @@ func (graph *TestCallGraph) dfsFromNodePostOrder(parent *TestCallNode, node *Tes
 	return processedParent
 }
 
-// OneStepDfsFromNodePostOrder -
+// OneStepDfsFromNodePostOrder - post order DFS that stops after visiting a node (visited nodes are of course, not cleared between runs)
 func (graph *TestCallGraph) OneStepDfsFromNodePostOrder(processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) bool {
 	if graph.StartNode.Visited {
 		return true
@@ -412,7 +415,158 @@ func (graph *TestCallGraph) oneStepDfsFromNodePostOrder(parent *TestCallNode, no
 	return true
 }
 
-// TestCallPath a path in a tree
+func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
+	graphCopy := CreateTestCallGraph()
+
+	for _, node := range graph.Nodes {
+		graphCopy.AddNodeCopy(node)
+	}
+
+	// for _, nodeCopy := range graphCopy.Nodes {
+	// 	node := graph.FindNode(nodeCopy.Call.ContractAddress, nodeCopy.Call.FunctionName)
+	// 	for group, callBackNode := range node.GroupCallbacks {
+	// 		nodeCopy.GroupCallbacks[group] = graphCopy.FindNode(callBackNode.Call.ContractAddress, callBackNode.Call.FunctionName)
+	// 	}
+	// }
+
+	// for _, node := range graph.Nodes {
+	// 	if node.ContextCallback != nil {
+	// 		executionNode := graphCopy.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
+	// 		executionNode.ContextCallback = graphCopy.FindNode(node.ContextCallback.Call.ContractAddress, node.ContextCallback.Call.FunctionName)
+	// 	}
+	// }
+
+	return graphCopy
+}
+
+// CreateExecutionGraphFromCallGraph - creates an execution graph from the call graph
+func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
+
+	executionGraph := graph.newGraphUsingNodes()
+	executionGraph.StartNode = executionGraph.FindNode(
+		graph.StartNode.Call.ContractAddress,
+		graph.StartNode.Call.FunctionName)
+
+	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+
+		newSource := executionGraph.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
+		if node.IsLeaf() {
+			addFinishNodeAsFirstEdge(executionGraph, newSource)
+			return node
+		}
+
+		addSyncEdgesToExecutionGraph(node, executionGraph, newSource)
+
+		addFinishNode(executionGraph, newSource)
+
+		addAsyncEdgesToExecutionGraph(node, executionGraph, newSource)
+
+		// callbacks were added by async source node processing and must be moved to the end of the node
+		// after all other node activity (sync & async calls)
+		moveCallbacksToTheEndOfEdges(newSource)
+
+		// add group callbacks calls if any
+		// for _, group := range groups {
+		// 	groupCallbackNode := newSource.GroupCallbacks[group]
+		// 	if groupCallbackNode != nil {
+		// 		execEdge := executionGraph.addEdge(newSource, groupCallbackNode)
+		// 		execEdge.Type = GroupCallback
+		// 		execEdge.Label = "Callback[" + group + "]"
+		// 		execEdge.GasUsed = groupCallbackNode.GasUsed
+		// 		execEdge.GasLocked = groupCallbackNode.GasLocked
+		// 	}
+		// }
+
+		// // is start node add context callback
+		// if newSource.ContextCallback != nil {
+		// 	execEdge := executionGraph.addEdge(newSource, newSource.ContextCallback)
+		// 	execEdge.Type = ContextCallback
+		// 	execEdge.Label = "Callback\nContext"
+		// 	execEdge.GasUsed = newSource.ContextCallback.GasUsed
+		// 	execEdge.GasLocked = newSource.ContextCallback.GasLocked
+		// }
+
+		return node
+	})
+	return executionGraph
+}
+
+func moveCallbacksToTheEndOfEdges(newSource *TestCallNode) {
+	nonCallBackEdges := make([]*TestCallEdge, 0)
+	callBackEdges := make([]*TestCallEdge, 0)
+	for _, newEdge := range newSource.AdjacentEdges {
+		if newEdge.Type == Callback {
+			callBackEdges = append(callBackEdges, newEdge)
+		} else {
+			nonCallBackEdges = append(nonCallBackEdges, newEdge)
+		}
+	}
+	newSource.AdjacentEdges = append(nonCallBackEdges, callBackEdges...)
+}
+
+func addSyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallGraph, newSource *TestCallNode) {
+	for _, edge := range node.AdjacentEdges {
+		if edge.Type != Sync {
+			continue
+		}
+
+		originalDestination := edge.To.Call
+		newDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
+
+		execEdge := executionGraph.addEdge(newSource, newDestination)
+		execEdge.copyAttributesFrom(edge)
+	}
+}
+
+func addAsyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallGraph, newSource *TestCallNode) {
+	// groups := make([]string, 0)
+	for _, edge := range node.AdjacentEdges {
+		if edge.Type != Async {
+			continue
+		}
+
+		// crtGroup := edge.Group
+		// if !isGroupPresent(crtGroup, groups) {
+		// 	groups = append(groups, crtGroup)
+		// }
+
+		originalDestination := edge.To.Call
+		newAsyncDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
+
+		execEdge := executionGraph.addEdge(newSource, newAsyncDestination)
+		execEdge.copyAttributesFrom(edge)
+
+		if edge.Callback != "" {
+			callbackDestination := executionGraph.FindNode(node.Call.ContractAddress, edge.Callback)
+			execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination)
+			execEdge.Type = Callback
+			execEdge.GasUsedByCallback = edge.GasUsedByCallback
+			execEdge.Label = "Callback"
+		}
+	}
+}
+
+// add a new 'finish' edge to a special end of sync execution node
+func addFinishNode(graph *TestCallGraph, sourceNode *TestCallNode) {
+	addFinishNodeWithEdgeFunc(graph, sourceNode, graph.addEdge)
+}
+
+func addFinishNodeAsFirstEdge(graph *TestCallGraph, sourceNode *TestCallNode) {
+	addFinishNodeWithEdgeFunc(graph, sourceNode, graph.addEdgeAtStart)
+}
+
+func addFinishNodeWithEdgeFunc(graph *TestCallGraph, sourceNode *TestCallNode, addEdge func(*TestCallNode, *TestCallNode) *TestCallEdge) {
+	finishNode := buildFinishNode(graph, sourceNode)
+	addEdge(sourceNode, finishNode)
+}
+
+func buildFinishNode(graph *TestCallGraph, sourceNode *TestCallNode) *TestCallNode {
+	finishNode := graph.AddNode("", LeafLabel)
+	finishNode.Label = LeafLabel
+	return finishNode
+}
+
+// TestCallPath a path in a tree, len(edges) = len(nodes) - 1
 type TestCallPath struct {
 	nodes []*TestCallNode
 	edges []*TestCallEdge
@@ -425,6 +579,7 @@ func addToPath(path *TestCallPath, edge *TestCallEdge) *TestCallPath {
 	}
 }
 
+// deep copy of a path
 func (path *TestCallPath) copy() *TestCallPath {
 	return &TestCallPath{
 		nodes: copyNodesList(path.nodes),
@@ -432,6 +587,7 @@ func (path *TestCallPath) copy() *TestCallPath {
 	}
 }
 
+// deep copy of a node list
 func copyNodesList(source []*TestCallNode) []*TestCallNode {
 	dest := make([]*TestCallNode, len(source))
 	for idxNode, node := range source {
@@ -440,6 +596,7 @@ func copyNodesList(source []*TestCallNode) []*TestCallNode {
 	return dest
 }
 
+// deep copy of an edge list
 func copyEdgeList(source []*TestCallEdge) []*TestCallEdge {
 	dest := make([]*TestCallEdge, len(source))
 	for idxEdge, edge := range source {
@@ -448,6 +605,7 @@ func copyEdgeList(source []*TestCallEdge) []*TestCallEdge {
 	return dest
 }
 
+// gets all the paths (as a list) from a DAG
 func (graph *TestCallGraph) getPaths() []*TestCallPath {
 	path := &TestCallPath{
 		nodes: []*TestCallNode{graph.GetStartNode()},
@@ -460,14 +618,16 @@ func (graph *TestCallGraph) getPaths() []*TestCallPath {
 	return paths
 }
 
+// follow the paths in DAG, bun only the allowed paths
+// (we can have multiple INs and OUTs for a node, but not all pairs will be paths)
 func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResult func(*TestCallPath)) {
 	lastNodeInPath := path.nodes[len(path.nodes)-1]
+
 	if lastNodeInPath.IsLeaf() {
 		lastNodeInPath.GasUsed = path.nodes[len(path.nodes)-2].GasUsed
-		// path.nodes[len(path.nodes)-2].GasUsed = 0 // TODO matei-p
 		lastNodeInPath.GasLimit = lastNodeInPath.GasUsed
 		addPathToResult(path)
-		// path.print()
+		LogGraph.Trace("end of path")
 		return
 	}
 
@@ -475,10 +635,6 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 	if len(path.nodes) > 1 {
 		lastEdgeInPath = path.edges[len(path.nodes)-2]
 	}
-
-	// if lastEdgeInPath != nil {
-	// 	fmt.Println("-> [" + lastEdgeInPath.Label + "] " + lastEdgeInPath.To.Label)
-	// }
 
 	// for each outgoing edge from the last node in path, if it's allowed to continue on that edge from
 	// the current path, add the next node to the current path and recurse
@@ -502,185 +658,38 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 		}
 		edge.To.IncomingEdgeType = edge.Type
 
-		// fmt.Println("add [" + edge.Label + "] " + edge.To.Label)
+		LogGraph.Trace("add [" + edge.Label + "] " + edge.To.Label)
 		newPath := addToPath(path, edge)
 		graph.getPathsRecursive(newPath, addPathToResult)
 	}
-	// fmt.Println("end of edges for " + lastNodeInPath.Label)
+	LogGraph.Trace("end of edges for " + lastNodeInPath.Label)
 }
 
 func (path *TestCallPath) print() {
-	fmt.Println()
-	fmt.Print("path = ")
+	LogGraph.Trace("path = ")
 	for pathIdx, node := range path.nodes {
 		if pathIdx > 0 {
-			fmt.Print(" [" + path.edges[pathIdx-1].Label + "] ")
+			LogGraph.Trace(" [" + path.edges[pathIdx-1].Label + "] ")
 		}
-		fmt.Print(node.Label + " ")
+		LogGraph.Trace(node.Label + " ")
 	}
-	fmt.Println()
 }
 
-func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
-	graphCopy := CreateTestCallGraph()
-
-	for _, node := range graph.Nodes {
-		graphCopy.AddNodeCopy(node)
-	}
-
-	for _, nodeCopy := range graphCopy.Nodes {
-		node := graph.FindNode(nodeCopy.Call.ContractAddress, nodeCopy.Call.FunctionName)
-		for group, callBackNode := range node.GroupCallbacks {
-			nodeCopy.GroupCallbacks[group] = graphCopy.FindNode(callBackNode.Call.ContractAddress, callBackNode.Call.FunctionName)
-		}
-	}
-
-	for _, node := range graph.Nodes {
-		if node.ContextCallback != nil {
-			executionNode := graphCopy.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
-			executionNode.ContextCallback = graphCopy.FindNode(node.ContextCallback.Call.ContractAddress, node.ContextCallback.Call.FunctionName)
-		}
-	}
-
-	return graphCopy
-}
-
-// CreateExecutionGraphFromCallGraph - creates an execution graph from the call graph
-func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
-
-	executionGraph := graph.newGraphUsingNodes()
-	executionGraph.StartNode = executionGraph.FindNode(
-		graph.StartNode.Call.ContractAddress,
-		graph.StartNode.Call.FunctionName)
-
-	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-
-		newSource := executionGraph.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
-		if node.IsLeaf() {
-			addFinishNodeAsFirstEdge(executionGraph, newSource)
-			return node
-		}
-
-		// process sync edges
-		for _, edge := range node.AdjacentEdges {
-			if edge.Type != Sync {
-				continue
-			}
-
-			originalDestination := edge.To.Call
-			newDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
-
-			execEdge := executionGraph.addEdge(newSource, newDestination)
-			execEdge.copyAttributesFrom(edge)
-		}
-
-		addFinishNode(executionGraph, newSource)
-
-		groups := make([]string, 0)
-
-		// add async and callback edges
-		for _, edge := range node.AdjacentEdges {
-			if edge.Type != Async {
-				continue
-			}
-
-			crtGroup := edge.Group
-			if !isGroupPresent(crtGroup, groups) {
-				groups = append(groups, crtGroup)
-			}
-
-			originalDestination := edge.To.Call
-			newAsyncDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
-
-			execEdge := executionGraph.addEdge(newSource, newAsyncDestination)
-			execEdge.copyAttributesFrom(edge)
-
-			if edge.Callback != "" {
-				callbackDestination := executionGraph.FindNode(node.Call.ContractAddress, edge.Callback)
-				execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination)
-				execEdge.Type = Callback
-				execEdge.GasUsedByCallback = edge.GasUsedByCallback
-				execEdge.Label = "Callback"
-				execEdge.Color = "grey"
-			}
-		}
-
-		// add group callbacks calls if any
-		for _, group := range groups {
-			groupCallbackNode := newSource.GroupCallbacks[group]
-			if groupCallbackNode != nil {
-				execEdge := executionGraph.addEdge(newSource, groupCallbackNode)
-				execEdge.Type = GroupCallback
-				execEdge.Label = "Callback[" + group + "]"
-				execEdge.Color = "gray"
-				execEdge.GasUsed = groupCallbackNode.GasUsed
-				execEdge.GasLocked = groupCallbackNode.GasLocked
-			}
-		}
-
-		// callbacks were added by async source node processing and must be moved to the end of the node
-		// after all other node activity (sync & async calls)
-		nonCallBackEdges := make([]*TestCallEdge, 0)
-		callBackEdges := make([]*TestCallEdge, 0)
-		for _, newEdge := range newSource.AdjacentEdges {
-			if newEdge.Type == Callback {
-				callBackEdges = append(callBackEdges, newEdge)
-			} else {
-				nonCallBackEdges = append(nonCallBackEdges, newEdge)
-			}
-		}
-		newSource.AdjacentEdges = append(nonCallBackEdges, callBackEdges...)
-
-		// is start node add context callback
-		if newSource.ContextCallback != nil {
-			execEdge := executionGraph.addEdge(newSource, newSource.ContextCallback)
-			execEdge.Type = ContextCallback
-			execEdge.Label = "Callback\nContext"
-			execEdge.Color = "gray"
-			execEdge.GasUsed = newSource.ContextCallback.GasUsed
-			execEdge.GasLocked = newSource.ContextCallback.GasLocked
-		}
-
-		return node
-	})
-	return executionGraph
-}
-
-// add a new 'finish' edge to a special end of sync execution node
-func addFinishNode(graph *TestCallGraph, sourceNode *TestCallNode) {
-	addFinishNodeWithEdgeFunc(graph, sourceNode, graph.addEdge)
-}
-
-func addFinishNodeAsFirstEdge(graph *TestCallGraph, sourceNode *TestCallNode) {
-	addFinishNodeWithEdgeFunc(graph, sourceNode, graph.addEdgeAtStart)
-}
-
-func addFinishNodeWithEdgeFunc(graph *TestCallGraph, sourceNode *TestCallNode, addEdge func(*TestCallNode, *TestCallNode) *TestCallEdge) {
-	finishNode := buildFinishNode(graph, sourceNode)
-	addEdge(sourceNode, finishNode)
-}
-
-func buildFinishNode(graph *TestCallGraph, sourceNode *TestCallNode) *TestCallNode {
-	finishNode := graph.AddNode("", SpecialLabel)
-	finishNode.Label = SpecialLabel
-	finishNode.IsEndOfSyncExecutionNode = true
-	return finishNode
-}
-
-// CreateGasGraphFromExecutionGraph - creates a gas graph from an execution graph
-func (graph *TestCallGraph) CreateGasGraphFromExecutionGraph() *TestCallGraph {
+// ComputeGasGraphFromExecutionGraph - creates a gas graph from an execution graph
+func (graph *TestCallGraph) ComputeGasGraphFromExecutionGraph() *TestCallGraph {
 	return pathsTreeFromDag(graph)
 }
 
+// This will create a list of paths from the DAG and merge them into a call tree
+// The merging is done by following the paths in the building tree and complete with nodes from the paths when necessary
 func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 	newGraph := CreateTestCallGraph()
 
 	paths := graph.getPaths()
-	// fmt.Println()
 
+	LogGraph.Trace("process path")
 	var crtNode *TestCallNode
 	for _, path := range paths {
-		// fmt.Println("process path")
 	nextNode:
 		for pathIdx, node := range path.nodes {
 			if pathIdx == 0 {
@@ -693,7 +702,7 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 			}
 			for _, edge := range crtNode.AdjacentEdges {
 				crtChild := edge.To
-				//fmt.Println(edge.Label + "==" + path.edges[pathIdx-1].Label + "\n=>" + strconv.FormatBool(edge.Label == path.edges[pathIdx-1].Label))
+				LogGraph.Trace(edge.Label + "==" + path.edges[pathIdx-1].Label + "\n=>" + strconv.FormatBool(edge.Label == path.edges[pathIdx-1].Label))
 				if string(crtChild.Call.ContractAddress) == string(node.Call.ContractAddress) &&
 					crtChild.Call.FunctionName == node.Call.FunctionName &&
 					edge.Label == path.edges[pathIdx-1].Label {
@@ -704,7 +713,7 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 			parent := crtNode
 			crtNode = newGraph.AddNodeCopy(node)
 
-			// fmt.Println("add edge " + parent.Label + " -> " + crtNode.Label)
+			LogGraph.Trace("add edge " + parent.Label + " -> " + crtNode.Label)
 			pathEdge := path.edges[pathIdx-1]
 			newEdge := newGraph.addEdge(parent, crtNode)
 			newEdge.copyAttributesFrom(pathEdge)
@@ -723,11 +732,12 @@ func isGroupPresent(group string, groups []string) bool {
 	return false
 }
 
-// ComputeRemainingGasBeforeCallbacks -
+// ComputeRemainingGasBeforeCallbacks - adjusts the gas graph / tree remaining gas info using the gas provided to children
+// this will not take into consideration callback nodes that don't have provided gas info computed yet (see ComputeGasStepByStep)
 func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() ||
-			(!node.IsStartNode && (incomingEdge.Type == Callback || incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback)) {
+			(!node.IsStartNode && (incomingEdge.Type == Callback /*|| incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback*/)) {
 			return node
 		}
 		nodeGasRemaining := int64(node.GasLimit)
@@ -742,7 +752,8 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	})
 }
 
-// ComputeGasStepByStep -
+// ComputeGasStepByStep - Uses step by step DFS postorder traversal of the executiongas graph / tree to compute
+// provided gas values fro callback noeds and remaining gas values after callback execution
 func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph *TestCallGraph, step int)) {
 	step := 1
 	finishedOneStepDfs := false
@@ -754,18 +765,8 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 					asyncNode := callBackNode.Parent
 					asyncInitiator := asyncNode.Parent
 
-					var asyncInitiatorGasRemaining uint64
-					if asyncInitiator.GasRemainingAfterCallback == 0 {
-						asyncInitiatorGasRemaining = asyncInitiator.GasRemaining
-					} else {
-						asyncInitiatorGasRemaining = asyncInitiator.GasRemainingAfterCallback
-					}
-					var asyncNodeGasRemaining uint64
-					if asyncNode.GasRemainingAfterCallback == 0 {
-						asyncNodeGasRemaining = asyncNode.GasRemaining
-					} else {
-						asyncNodeGasRemaining = asyncNode.GasRemainingAfterCallback
-					}
+					asyncInitiatorGasRemaining := getGasRemaining(asyncInitiator)
+					asyncNodeGasRemaining := getGasRemaining(asyncNode)
 					callBackNode.GasLimit = asyncInitiatorGasRemaining + asyncNodeGasRemaining + asyncNode.GasLocked
 
 					callBackNodeGasRemaining := int64(callBackNode.GasLimit)
@@ -781,19 +782,9 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 						callBackNode.GasRemaining = uint64(callBackNodeGasRemaining)
 					}
 				} else if !node.IsLeaf() && node.IncomingEdgeType == Callback {
-					var callBackNodeGasRemaining uint64
-					if node.GasRemainingAfterCallback == 0 {
-						callBackNodeGasRemaining = node.GasRemaining
-					} else {
-						callBackNodeGasRemaining = node.GasRemainingAfterCallback
-					}
-					node.Parent.Parent.GasRemainingAfterCallback = callBackNodeGasRemaining
+					node.Parent.Parent.GasAccumulatedAfterCallback = getGasRemaining(node)
 				} else if !node.IsLeaf() && node.IncomingEdgeType == Sync {
-					if node.GasRemainingAfterCallback == 0 {
-						parent.GasRemaining += node.GasRemaining
-					} else {
-						parent.GasRemaining += node.GasRemainingAfterCallback
-					}
+					parent.GasRemaining += getGasRemaining(node)
 				}
 			}
 			return node
@@ -801,4 +792,12 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 		executeAfterEachStep(graph, step)
 	}
 	graph.clearVisitedNodesFlag()
+}
+
+func getGasRemaining(node *TestCallNode) uint64 {
+	if node.GasAccumulatedAfterCallback == 0 {
+		return node.GasRemaining
+	} else {
+		return node.GasAccumulatedAfterCallback
+	}
 }

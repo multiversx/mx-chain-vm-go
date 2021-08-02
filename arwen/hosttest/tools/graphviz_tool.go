@@ -33,7 +33,7 @@ func main() {
 	graphviz = toGraphviz(executionGraph, true)
 	createSvg("2 execution-graph", graphviz)
 
-	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
+	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 tree-call-graph", graphviz)
 
@@ -89,7 +89,7 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 			attrs["penwidth"] = "4"
 		}
 		setGasLabel(node, attrs)
-		if !node.IsEndOfSyncExecutionNode {
+		if !node.IsLeaf() {
 			attrs["bgcolor"] = "grey"
 			attrs["style"] = "filled"
 			attrs["label"] = node.VisualLabel
@@ -101,7 +101,7 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 			attrs := make(map[string]string)
 			if edge.Label != "" {
 				attrs["label"] = edge.Label
-				if showGasEdgeLabels && edge.Type != test.Callback && edge.Type != test.GroupCallback {
+				if showGasEdgeLabels && edge.Type != test.Callback /*&& edge.Type != test.GroupCallback*/ {
 					attrs["label"] += "\n" +
 						"P" + strconv.Itoa(int(edge.GasLimit)) +
 						"/U" + strconv.Itoa(int(edge.GasUsed))
@@ -111,11 +111,18 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 				}
 				attrs["label"] = strconv.Quote(attrs["label"])
 			}
-			if edge.Color != "" {
-				attrs["color"] = edge.Color
-			} else {
+
+			switch edge.Type {
+			case test.Sync:
+				attrs["color"] = "blue"
+			case test.Async:
+				attrs["color"] = "red"
+			case test.Callback:
+				attrs["color"] = "grey"
+			default:
 				attrs["color"] = "black"
 			}
+
 			graphviz.AddEdge(from, to, true, attrs)
 		}
 	}
@@ -132,8 +139,8 @@ func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) 
 	}
 
 	var prefix string
-	if node.Call.FunctionName == test.SpecialLabel {
-		prefix = test.SpecialLabel
+	if node.Call.FunctionName == test.LeafLabel {
+		prefix = test.LeafLabel
 	} else {
 		prefix, _ = strconv.Unquote(node.Label)
 	}
@@ -158,7 +165,7 @@ const gasFontEnd = "</font>>"
 func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 	if node.GasLimit == 0 && node.GasUsed == 0 {
 		// special label for end nodes without gas info
-		if node.IsEndOfSyncExecutionNode {
+		if node.IsLeaf() {
 			attrs["label"] = strconv.Quote("*")
 		}
 		return
@@ -167,10 +174,10 @@ func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 	gasLimit := strconv.Itoa(int(node.GasLimit))
 	gasUsed := strconv.Itoa(int(node.GasUsed))
 	gasRemaining := strconv.Itoa(int(node.GasRemaining))
-	gasRemainingAfterCallback := strconv.Itoa(int(node.GasRemainingAfterCallback))
+	gasRemainingAfterCallback := strconv.Itoa(int(node.GasAccumulatedAfterCallback))
 	gasLocked := strconv.Itoa(int(node.GasLocked))
 	var xlabel string
-	if node.IsEndOfSyncExecutionNode {
+	if node.IsLeaf() {
 		attrs["label"] = gasFontStart + gasUsed + gasFontEnd
 	} else {
 		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)
@@ -189,7 +196,7 @@ func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
 		// xlabel += "/U" + strconv.Itoa(int(node.GasUsed))
 
 		xlabel += "<br/>R" + gasRemaining
-		if node.GasRemainingAfterCallback != 0 {
+		if node.GasAccumulatedAfterCallback != 0 {
 			xlabel += "<br/>A" + gasRemainingAfterCallback
 		}
 		xlabel += gasFontEnd

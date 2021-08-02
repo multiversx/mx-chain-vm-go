@@ -65,50 +65,15 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	testConfig.GasLockCost = test.DefaultCallGraphLockedGas
 
 	// compute execution order (return data) assertions
-	expectedReturnData := make([][]byte, 0)
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	startNode := executionGraph.GetStartNode()
 
-	// executionOrder := test.CreateRunOrderFromExecutionGraph(executionGraph)
-	// for _, testCall := range executionOrder {
-	// 	expectedReturnData = append(expectedReturnData, []byte(string(testCall.ContractAddress)+"_"+testCall.FunctionName+test.TestReturnDataSuffix))
-	// }
-
 	// compute gas assertions
-	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
+	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	gasGraph.ComputeGasStepByStep(func(graph *test.TestCallGraph, step int) {})
 
-	totalGasUsed := uint64(0)
-	expectedGasUsagePerContract := make(map[string]*usedGasPerContract)
-	gasGraph.DfsGraph(func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-		if !node.IsLeaf() {
-			return node
-		}
-		gasPerContract := expectedGasUsagePerContract[string(parent.Call.ContractAddress)]
-		if gasPerContract == nil {
-			gasPerContract = &usedGasPerContract{
-				contractAddress: parent.Call.ContractAddress,
-				gasUsed:         0,
-			}
-			expectedGasUsagePerContract[string(parent.Call.ContractAddress)] = gasPerContract
-		}
-		gasPerContract.gasUsed += node.GasUsed
-		totalGasUsed += node.GasUsed
-
-		expectedNodeRetData := txDataBuilder.NewBuilder()
-		expectedNodeRetData.Func(parent.Call.FunctionName)
-		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
-		// fmt.Println("exp\t" + string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
-		expectedNodeRetData.Int64(int64(parent.GasLimit))
-		// fmt.Println(fmt.Sprintf("exp\t%d", parent.GasLimit))
-		expectedNodeRetData.Int64(int64(parent.GasRemaining))
-		// fmt.Println(fmt.Sprintf("exp\t%d", parent.GasRemaining))
-		// fmt.Println()
-		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
-
-		return node
-	})
+	totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -132,4 +97,35 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				verifier.GasUsed(gasPerContract.contractAddress, gasPerContract.gasUsed)
 			}
 		})
+}
+
+func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]*usedGasPerContract, [][]byte) {
+	totalGasUsed := uint64(0)
+	expectedGasUsagePerContract := make(map[string]*usedGasPerContract)
+	expectedReturnData := make([][]byte, 0)
+	gasGraph.DfsGraph(func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+		if !node.IsLeaf() {
+			return node
+		}
+		gasPerContract := expectedGasUsagePerContract[string(parent.Call.ContractAddress)]
+		if gasPerContract == nil {
+			gasPerContract = &usedGasPerContract{
+				contractAddress: parent.Call.ContractAddress,
+				gasUsed:         0,
+			}
+			expectedGasUsagePerContract[string(parent.Call.ContractAddress)] = gasPerContract
+		}
+		gasPerContract.gasUsed += node.GasUsed
+		totalGasUsed += node.GasUsed
+
+		expectedNodeRetData := txDataBuilder.NewBuilder()
+		expectedNodeRetData.Func(parent.Call.FunctionName)
+		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
+		expectedNodeRetData.Int64(int64(parent.GasLimit))
+		expectedNodeRetData.Int64(int64(parent.GasRemaining))
+		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
+
+		return node
+	})
+	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
 }

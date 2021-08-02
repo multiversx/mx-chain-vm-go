@@ -161,8 +161,8 @@ func runAsserts(callGraph *TestCallGraph, t *testing.T, expectedOrder []TestCall
 	gasGraph := computeFinalGasGraph(executionGraph)
 	expectedRemainingGas := computeExpectedRemainingGas(gasGraph)
 	var actualGasRemaining uint64
-	if gasGraph.StartNode.GasRemainingAfterCallback != 0 {
-		actualGasRemaining = gasGraph.StartNode.GasRemainingAfterCallback
+	if gasGraph.StartNode.GasAccumulatedAfterCallback != 0 {
+		actualGasRemaining = gasGraph.StartNode.GasAccumulatedAfterCallback
 	} else {
 		actualGasRemaining = gasGraph.StartNode.GasRemaining
 	}
@@ -181,7 +181,7 @@ func computeExpectedRemainingGas(gasGraph *TestCallGraph) uint64 {
 }
 
 func computeFinalGasGraph(executionGraph *TestCallGraph) *TestCallGraph {
-	gasGraph := executionGraph.CreateGasGraphFromExecutionGraph()
+	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	gasGraph.ComputeGasStepByStep(func(graph *TestCallGraph, step int) {})
 	return gasGraph

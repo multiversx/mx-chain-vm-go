@@ -13,7 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var logGenContr = logger.GetOrCreate("arwen/graph")
+// LogGraph -
+var LogGraph = logger.GetOrCreate("arwen/graph")
 
 // TestReturnDataSuffix -
 var TestReturnDataSuffix = "_returnData"
@@ -44,7 +45,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							async := host.Async()
 							crtFunctionCalled := host.Runtime().Function()
 
-							logGenContr.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
+							LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 
@@ -80,13 +81,13 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							}
 
 							// burn gas for function
-							logGenContr.Trace("Burning", gasUsed, "gas for", crtFunctionCalled)
+							LogGraph.Trace("Burning", gasUsed, "gas for", crtFunctionCalled)
 							host.Metering().UseGasBounded(uint64(gasUsed))
 
-							if crtNode.ContextCallback != nil {
-								err := async.SetContextCallback(crtNode.ContextCallback.Call.FunctionName, big.NewInt(int64(crtNode.ContextCallback.GasUsed)).Bytes(), 0)
-								require.Nil(t, err)
-							}
+							// if crtNode.ContextCallback != nil {
+							// 	err := async.SetContextCallback(crtNode.ContextCallback.Call.FunctionName, big.NewInt(int64(crtNode.ContextCallback.GasUsed)).Bytes(), 0)
+							// 	require.Nil(t, err)
+							// }
 
 							value := big.NewInt(testConfig.TransferFromParentToChild)
 
@@ -94,7 +95,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 								destFunctionName := edge.To.Call.FunctionName
 								destAddress := edge.To.Call.ContractAddress
 								if edge.Type == Sync {
-									logGenContr.Trace("Sync call to ", string(destAddress), " func ", destFunctionName, " gas ", edge.GasLimit)
+									LogGraph.Trace("Sync call to ", string(destAddress), " func ", destFunctionName, " gas ", edge.GasLimit)
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
 										int64(edge.GasLimit),
@@ -105,7 +106,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 											big.NewInt(int64(Sync)).Bytes(),
 											big.NewInt(int64(edge.GasUsed)).Bytes()}) // args
 								} else {
-									logGenContr.Trace("Register async call", "to", string(destAddress), "func", destFunctionName, "gas", edge.GasLimit)
+									LogGraph.Trace("Register async call", "to", string(destAddress), "func", destFunctionName, "gas", edge.GasLimit)
 
 									callData := txDataBuilder.NewBuilder()
 									callData.Func(destFunctionName)
@@ -113,7 +114,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 									callData.Int64(int64(edge.GasUsed))
 									callData.Int64(int64(edge.GasUsedByCallback))
 
-									err := async.RegisterAsyncCall(edge.Group, &arwen.AsyncCall{
+									err := async.RegisterAsyncCall("" /*edge.Group*/, &arwen.AsyncCall{
 										Status:          arwen.AsyncCallPending,
 										Destination:     destAddress,
 										Data:            callData.ToBytes(),
@@ -126,10 +127,10 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 								}
 							}
 
-							for group, groupCallbackNode := range crtNode.GroupCallbacks {
-								err := async.SetGroupCallback(group, groupCallbackNode.Call.FunctionName, big.NewInt(int64(groupCallbackNode.GasUsed)).Bytes(), 0)
-								require.Nil(t, err)
-							}
+							// for group, groupCallbackNode := range crtNode.GroupCallbacks {
+							// 	err := async.SetGroupCallback(group, groupCallbackNode.Call.FunctionName, big.NewInt(int64(groupCallbackNode.GasUsed)).Bytes(), 0)
+							// 	require.Nil(t, err)
+							// }
 
 							returnData := txDataBuilder.NewBuilder()
 							returnData.Func(crtFunctionCalled)
@@ -137,7 +138,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							returnData.Int64(int64(host.Runtime().GetVMInput().GasProvided))
 							returnData.Int64(int64(host.Metering().GasLeft()))
 							host.Output().Finish(returnData.ToBytes())
-							logGenContr.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
+							LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
 							fmt.Println("Gas for", crtFunctionCalled+"\t", "provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided), "remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
 
 							return instance
@@ -171,7 +172,7 @@ func CreateRunOrderFromExecutionGraph(executionGraph *TestCallGraph) []TestCall 
 	executionOrder := make([]TestCall, 0)
 	pathsTree := pathsTreeFromDag(executionGraph)
 	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsEndOfSyncExecutionNode {
+		if node.IsLeaf() {
 			//fmt.Println("end exec " + parent.Label)
 			executionOrder = append(executionOrder, TestCall{
 				ContractAddress: parent.Call.ContractAddress,
