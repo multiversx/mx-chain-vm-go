@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -52,10 +53,9 @@ func NewMeteringContext(
 func (context *meteringContext) PrintState() {
 	sc := context.host.Runtime().GetSCAddress()
 	function := context.host.Runtime().Function()
-	scAccount, _ := context.host.Output().GetOutputAccount(sc)
 	outputAccounts := context.host.Output().GetOutputAccounts()
 	gasSpent := context.GasSpentByContract()
-	gasTransferred := context.getGasTransferredByAccount(scAccount)
+	gasTransferred := context.getGasTransferredByAccount(sc, outputAccounts)
 	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
 	gasUsed := gasSpent
 	gasUsed = math.SubUint64(gasUsed, gasTransferred)
@@ -198,13 +198,11 @@ func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 
 func (context *meteringContext) updateSCGasUsed() {
 	runtime := context.host.Runtime()
-	output := context.host.Output()
 
 	currentAccountAddress := runtime.GetSCAddress()
-	currentContractAccount, _ := output.GetOutputAccount(currentAccountAddress)
 	outputAccounts := context.host.Output().GetOutputAccounts()
 
-	gasTransferredByCurrentAccount := context.getGasTransferredByAccount(currentContractAccount)
+	gasTransferredByCurrentAccount := context.getGasTransferredByAccount(currentAccountAddress, outputAccounts)
 	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
 
 	gasUsed := context.GasSpentByContract()
@@ -256,7 +254,7 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 
 	gasUsed := uint64(0)
 	for _, outputAccount := range outputAccounts {
-		gasTransferred := context.getGasTransferredByAccount(outputAccount)
+		gasTransferred := context.getGasTransferredByAccount(outputAccount.Address, outputAccounts)
 		gasUsed = math.AddUint64(gasUsed, outputAccount.GasUsed)
 		gasUsed = math.AddUint64(gasUsed, gasTransferred)
 	}
@@ -268,7 +266,7 @@ func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[
 	gasUsedAndTransferred := uint64(0)
 	currentAccountAddress := string(context.host.Runtime().GetSCAddress())
 	for address, account := range outputAccounts {
-		gasTransferred := context.getGasTransferredByAccount(account)
+		gasTransferred := context.getGasTransferredByAccount(account.Address, outputAccounts)
 
 		gasUsed := uint64(0)
 		if address != currentAccountAddress {
@@ -282,14 +280,18 @@ func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[
 	return gasUsedAndTransferred
 }
 
-func (context *meteringContext) getGasTransferredByAccount(account *vmcommon.OutputAccount) uint64 {
-	gasUsed := uint64(0)
-	for _, outputTransfer := range account.OutputTransfers {
-		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLimit)
-		gasUsed = math.AddUint64(gasUsed, outputTransfer.GasLocked)
+func (context *meteringContext) getGasTransferredByAccount(sender []byte, outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
+	gasTransferred := uint64(0)
+	for _, outputAccount := range outputAccounts {
+		for _, outputTransfer := range outputAccount.OutputTransfers {
+			if bytes.Equal(sender, outputTransfer.SenderAddress) {
+				gasTransferred = math.AddUint64(gasTransferred, outputTransfer.GasLimit)
+				gasTransferred = math.AddUint64(gasTransferred, outputTransfer.GasLocked)
+			}
+		}
 	}
 
-	return gasUsed
+	return gasTransferred
 }
 
 func (context *meteringContext) setGasUsedToOutputAccounts(vmOutput *vmcommon.VMOutput) error {
