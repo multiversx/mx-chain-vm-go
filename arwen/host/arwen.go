@@ -126,16 +126,15 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(
-		host,
-		hostParameters.VMType,
-		host.builtInFuncContainer,
-	)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType, host.builtInFuncContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	host.asyncContext = contexts.NewAsyncContext(host)
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser)
+	if err != nil {
+		return nil, err
+	}
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
@@ -387,11 +386,6 @@ func (host *vmHost) GetRuntimeErrors() error {
 		return host.runtimeContext.GetAllErrors()
 	}
 	return nil
-}
-
-// CallArgsParser returns the CallArgsParser instance of the host
-func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
-	return host.callArgsParser
 }
 
 // Async returns the AsyncContext instance of the host

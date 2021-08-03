@@ -36,18 +36,6 @@ func BooleanToInt(b bool) int {
 	return 0
 }
 
-// GuardedMakeByteSlice2D instantiates a [][]byte slice of the specified
-// length, guarding against negative argument.
-// TODO find usages and see if this function can be removed.
-func GuardedMakeByteSlice2D(length int32) ([][]byte, error) {
-	if length < 0 {
-		return nil, fmt.Errorf("GuardedMakeByteSlice2D: negative length (%d)", length)
-	}
-
-	result := make([][]byte, length)
-	return result, nil
-}
-
 // GuardedGetBytesSlice extracts a subslice from a given slice, guarding against overstepping the bounds.
 func GuardedGetBytesSlice(data []byte, offset int32, length int32) ([]byte, error) {
 	dataLength := uint32(len(data))

@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -45,6 +46,10 @@ func NewRuntimeContext(
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 ) (*runtimeContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{

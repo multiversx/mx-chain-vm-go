@@ -224,7 +224,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
 
-	function, arguments, err := host.CallArgsParser().ParseData(string(asyncCall.GetData()))
+	function, arguments, err := context.callArgsParser.ParseData(string(asyncCall.GetData()))
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +371,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	host := context.host
 	runtime := host.Runtime()
 
-	_, arguments, err := host.CallArgsParser().ParseData(string(context.returnData))
+	_, arguments, err := context.callArgsParser.ParseData(string(context.returnData))
 	if err != nil {
 		arguments = [][]byte{context.returnData}
 	}
@@ -406,8 +406,7 @@ func (context *asyncContext) isESDTTransferOnReturnDataWithNoAdditionalData(
 		return false, "", nil
 	}
 
-	argParser := context.host.CallArgsParser()
-	functionName, args, err := argParser.ParseData(string(destinationVMOutput.ReturnData[0]))
+	functionName, args, err := context.callArgsParser.ParseData(string(destinationVMOutput.ReturnData[0]))
 	if err != nil {
 		return false, "", nil
 	}

@@ -46,13 +46,12 @@ type VMHost interface {
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
+	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
 	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, AsyncContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
-
-	CallArgsParser() CallArgsParser
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()

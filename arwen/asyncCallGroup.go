@@ -105,3 +105,8 @@ func (acg *AsyncCallGroup) DeleteCompletedAsyncCalls() {
 
 	acg.AsyncCalls = remainingAsyncCalls
 }
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (acg *AsyncCallGroup) IsInterfaceNil() bool {
+	return acg == nil
+}

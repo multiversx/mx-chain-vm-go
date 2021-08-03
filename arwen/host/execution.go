@@ -436,6 +436,12 @@ func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	return function.IsActive()
 }
 
+// IsBuiltinFunctionCall returns true if the given data contains a call to a protocol builtin function
+func (host *vmHost) IsBuiltinFunctionCall(data []byte) bool {
+	functionName, _, _ := host.callArgsParser.ParseData(string(data))
+	return host.IsBuiltinFunctionName(functionName)
+}
+
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
 func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newContractAddress []byte, err error) {
 	newContractAddress = nil
@@ -970,8 +976,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	callType := vmInput.CallType
 	scCallOutTransfer := outAcc.OutputTransfers[0]
 
-	argParser := host.CallArgsParser()
-	function, arguments, err := argParser.ParseData(string(scCallOutTransfer.Data))
+	function, arguments, err := host.callArgsParser.ParseData(string(scCallOutTransfer.Data))
 	if err != nil {
 		return nil, err
 	}

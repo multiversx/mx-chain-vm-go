@@ -4,9 +4,10 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var log = logger.GetOrCreate("arwen/blockchainContext")
@@ -24,6 +25,9 @@ func NewBlockchainContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
 ) (*blockchainContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
 
 	context := &blockchainContext{
 		blockChainHook: blockChainHook,

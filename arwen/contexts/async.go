@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -27,6 +28,7 @@ type asyncContext struct {
 	gasAccumulated  uint64
 	returnData      []byte
 	asyncCallGroups []*arwen.AsyncCallGroup
+	callArgsParser  arwen.CallArgsParser
 }
 
 type serializableAsyncContext struct {
@@ -40,8 +42,12 @@ type serializableAsyncContext struct {
 }
 
 // NewAsyncContext creates a new asyncContext.
-func NewAsyncContext(host arwen.VMHost) *asyncContext {
-	return &asyncContext{
+func NewAsyncContext(host arwen.VMHost, callArgsParser arwen.CallArgsParser) (*asyncContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
+	context := &asyncContext{
 		host:            host,
 		stateStack:      nil,
 		callerAddr:      nil,
@@ -51,7 +57,9 @@ func NewAsyncContext(host arwen.VMHost) *asyncContext {
 		gasAccumulated:  0,
 		returnData:      nil,
 		asyncCallGroups: make([]*arwen.AsyncCallGroup, 0),
+		callArgsParser:  callArgsParser,
 	}
+	return context, nil
 }
 
 // InitState initializes the internal state of the AsyncContext.

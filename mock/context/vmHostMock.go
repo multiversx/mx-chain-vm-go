@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -170,6 +169,11 @@ func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
 }
 
+// IsBuiltinFunctionName mocked method
+func (host *VMHostMock) IsBuiltinFunctionCall(_ []byte) bool {
+	return host.IsBuiltinFunc
+}
+
 // GetGasScheduleMap mocked method
 func (host *VMHostMock) GetGasScheduleMap() config.GasScheduleMap {
 	return make(config.GasScheduleMap)
@@ -214,11 +218,6 @@ func (host *VMHostMock) GetContexts() (
 // SetRuntimeContext mocked method
 func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.RuntimeContext = runtime
-}
-
-// CallArgsParser mocked method
-func (host *VMHostMock) CallArgsParser() arwen.CallArgsParser {
-	return parsers.NewCallArgsParser()
 }
 
 // Async mocked method

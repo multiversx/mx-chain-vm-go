@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const maxBigIntByteLenForNormalCost = 32
@@ -43,6 +44,10 @@ type managedTypesState struct {
 
 // NewBigIntContext creates a new bigIntContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	context := &managedTypesContext{
 		host: host,
 		managedTypesValues: managedTypesState{

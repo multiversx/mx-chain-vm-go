@@ -29,7 +29,6 @@ type VMHostStub struct {
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
-	CallArgsParserCalled        func() arwen.CallArgsParser
 	ParseESDTTransfersCalled    func(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -37,6 +36,7 @@ type VMHostStub struct {
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethodsCalled         func() *wasmer.Imports
 	IsBuiltinFunctionNameCalled func(functionName string) bool
+	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
 
 	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -232,6 +232,14 @@ func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	return false
 }
 
+// IsBuiltinFunctionName mocked method
+func (vhs *VMHostStub) IsBuiltinFunctionCall(data []byte) bool {
+	if vhs.IsBuiltinFunctionCallCalled != nil {
+		return vhs.IsBuiltinFunctionCallCalled(data)
+	}
+	return false
+}
+
 // GetGasScheduleMap returns the currently stored gas schedule
 func (vhs *VMHostStub) GetGasScheduleMap() config.GasScheduleMap {
 	if vhs.GetGasScheduleMapCalled != nil {
@@ -299,14 +307,6 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
 	}
-}
-
-// CallArgsParser mocked method
-func (vhs *VMHostStub) CallArgsParser() arwen.CallArgsParser {
-	if vhs.CallArgsParserCalled != nil {
-		return vhs.CallArgsParserCalled()
-	}
-	return nil
 }
 
 func (vhs *VMHostStub) Async() arwen.AsyncContext {
