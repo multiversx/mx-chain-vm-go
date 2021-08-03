@@ -77,60 +77,71 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 
 	nodeCounters := make(map[string]int)
 	for _, node := range graph.Nodes {
-		node.Label, node.VisualLabel = getGraphvizNodeLabel(node, nodeCounters)
+		node.Label, node.VisualLabel = computeUniqueGraphvizNodeLabel(node, nodeCounters)
 	}
 
 	for _, node := range graph.Nodes {
-		attrs := make(map[string]string)
-		if node.IsStartNode {
-			attrs["shape"] = "box"
-		}
-		if node.Visited {
-			attrs["penwidth"] = "4"
-		}
-		setGasLabel(node, attrs)
-		if !node.IsLeaf() {
-			attrs["bgcolor"] = "grey"
-			attrs["style"] = "filled"
-			attrs["label"] = node.VisualLabel
-		}
+		nodeAttrs := make(map[string]string)
+		setNodeAttributes(node, nodeAttrs)
 		from := node.Label
-		graphviz.AddNode(graphName, from, attrs)
+		graphviz.AddNode(graphName, from, nodeAttrs)
 		for _, edge := range node.GetEdges() {
 			to := edge.To.Label
-			attrs := make(map[string]string)
+			edgeAttrs := make(map[string]string)
 			if edge.Label != "" {
-				attrs["label"] = edge.Label
-				if showGasEdgeLabels && edge.Type != test.Callback /*&& edge.Type != test.GroupCallback*/ {
-					attrs["label"] += "\n" +
-						"P" + strconv.Itoa(int(edge.GasLimit)) +
-						"/U" + strconv.Itoa(int(edge.GasUsed))
-					if edge.Type == test.Async {
-						attrs["label"] += "/CU" + strconv.Itoa(int(edge.GasUsedByCallback))
-					}
-				}
-				attrs["label"] = strconv.Quote(attrs["label"])
+				setEdgeLabel(edgeAttrs, edge, showGasEdgeLabels)
 			}
-
-			switch edge.Type {
-			case test.Sync:
-				attrs["color"] = "blue"
-			case test.Async:
-				attrs["color"] = "red"
-			case test.Callback:
-				attrs["color"] = "grey"
-			default:
-				attrs["color"] = "black"
-			}
-
-			graphviz.AddEdge(from, to, true, attrs)
+			setEdgeColor(edge, edgeAttrs)
+			graphviz.AddEdge(from, to, true, edgeAttrs)
 		}
 	}
 
 	return graphviz
 }
 
-func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) (string, string) {
+func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
+	if node.IsStartNode {
+		attrs["shape"] = "box"
+	}
+	if node.Visited {
+		attrs["penwidth"] = "4"
+	}
+	setGasLabelForNode(node, attrs)
+	if !node.IsLeaf() {
+		attrs["bgcolor"] = "grey"
+		attrs["style"] = "filled"
+		attrs["label"] = node.VisualLabel
+	}
+}
+
+func setEdgeLabel(attrs map[string]string, edge *test.TestCallEdge, showGasEdgeLabels bool) {
+	attrs["label"] = edge.Label
+	if showGasEdgeLabels && edge.Type != test.Callback {
+		attrs["label"] += "\n" +
+			"P" + strconv.Itoa(int(edge.GasLimit)) +
+			"/U" + strconv.Itoa(int(edge.GasUsed))
+		if edge.Type == test.Async {
+			attrs["label"] += "/CU" + strconv.Itoa(int(edge.GasUsedByCallback))
+		}
+	}
+	attrs["label"] = strconv.Quote(attrs["label"])
+}
+
+func setEdgeColor(edge *test.TestCallEdge, attrs map[string]string) {
+	switch edge.Type {
+	case test.Sync:
+		attrs["color"] = "blue"
+	case test.Async:
+		attrs["color"] = "red"
+	case test.Callback:
+		attrs["color"] = "grey"
+	default:
+		attrs["color"] = "black"
+	}
+}
+
+// generates unique graphviz node label using "_number" suffix if necessary
+func computeUniqueGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) (string, string) {
 	if nodeCounters == nil {
 		return node.Label, node.Label
 	}
@@ -162,7 +173,7 @@ func getGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[string]int) 
 const gasFontStart = "<<font color='green'>"
 const gasFontEnd = "</font>>"
 
-func setGasLabel(node *test.TestCallNode, attrs map[string]string) {
+func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	if node.GasLimit == 0 && node.GasUsed == 0 {
 		// special label for end nodes without gas info
 		if node.IsLeaf() {
