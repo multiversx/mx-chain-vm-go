@@ -18,11 +18,11 @@ func main() {
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2() // not allowed to run!
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
-	// callGraph := test.CreateGraphTestCallbackCallsAsync()
+	callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest1()
-	callGraph := test.CreateGraphTest2()
+	// callGraph := test.CreateGraphTest2()
 
 	///////////////////
 
@@ -128,6 +128,10 @@ func setEdgeLabel(attrs map[string]string, edge *test.TestCallEdge, showGasEdgeL
 }
 
 func setEdgeColor(edge *test.TestCallEdge, attrs map[string]string) {
+	if edge.To.IsLeaf() {
+		attrs["color"] = "black"
+		return
+	}
 	switch edge.Type {
 	case test.Sync:
 		attrs["color"] = "blue"

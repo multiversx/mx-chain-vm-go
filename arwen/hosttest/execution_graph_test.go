@@ -81,7 +81,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr([]byte(startNode.Call.ContractAddress)).
-			WithGasProvided(testConfig.GasProvided).
+			WithGasProvided(startNode.GasLimit).
 			WithFunction(startNode.Call.FunctionName).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
