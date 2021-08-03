@@ -84,7 +84,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
 		return node
-	})
+	}, true)
 	contractsList := make([]MockTestSmartContract, 0)
 	for _, contract := range contracts {
 		contractsList = append(contractsList, *contract)
@@ -200,7 +200,7 @@ func CreateRunOrderFromExecutionGraph(executionGraph *TestCallGraph) []TestCall 
 			})
 		}
 		return node
-	})
+	}, true)
 	return executionOrder
 }
 
@@ -516,6 +516,31 @@ func CreateGraphTest2() *TestCallGraph {
 		SetGasLimit(20).
 		SetGasUsed(4).
 		SetGasUsedByCallback(3)
+
+	return callGraph
+}
+
+// CreateGraphTestOneAsyncCallCrossShard -
+func CreateGraphTestOneAsyncCallCrossShard() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 500, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+
+	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(35).
+		SetGasUsed(7).
+		SetGasUsedByCallback(6)
+
+	callGraph.AddNode("sc1", "cb1")
+
+	// callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb2", "").
+	// 	SetGasLimit(30).
+	// 	SetGasUsed(5).
+	// 	SetGasUsedByCallback(3)
+
+	// callGraph.AddNode("sc1", "cb2")
 
 	return callGraph
 }

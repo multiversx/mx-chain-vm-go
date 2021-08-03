@@ -54,12 +54,12 @@ func (callerTest *MockInstancesTestTemplate) WithSetup(setup func(arwen.VMHost, 
 }
 
 // AndAssertResults provides the function that will aserts the results
-func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) {
+func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) *vmcommon.VMOutput {
 	callerTest.assertResults = assertResults
-	callerTest.runTest()
+	return callerTest.runTest()
 }
 
-func (callerTest *MockInstancesTestTemplate) runTest() {
+func (callerTest *MockInstancesTestTemplate) runTest() *vmcommon.VMOutput {
 
 	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.t)
 
@@ -76,6 +76,8 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 	allErrors := host.Runtime().GetAllErrors()
 	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
 	callerTest.assertResults(world, verify)
+
+	return vmOutput
 }
 
 // SimpleWasteGasMockMethod is a simple waste gas mock method

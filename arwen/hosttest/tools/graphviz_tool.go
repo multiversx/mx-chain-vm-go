@@ -13,12 +13,14 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
+
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2() // not allowed to run!
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
-	callGraph := test.CreateGraphTestCallbackCallsAsync()
+	// callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest1()
@@ -91,7 +93,7 @@ func toGraphviz(graph *test.TestCallGraph, showGasEdgeLabels bool) *gographviz.G
 			if edge.Label != "" {
 				setEdgeLabel(edgeAttrs, edge, showGasEdgeLabels)
 			}
-			setEdgeColor(edge, edgeAttrs)
+			setEdgeAttributes(edge, edgeAttrs)
 			graphviz.AddEdge(from, to, true, edgeAttrs)
 		}
 	}
@@ -107,7 +109,7 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 		attrs["penwidth"] = "4"
 	}
 	setGasLabelForNode(node, attrs)
-	if !node.IsLeaf() {
+	if !node.IsGasLeaf() {
 		attrs["bgcolor"] = "grey"
 		attrs["style"] = "filled"
 		attrs["label"] = node.VisualLabel
@@ -116,19 +118,19 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 
 func setEdgeLabel(attrs map[string]string, edge *test.TestCallEdge, showGasEdgeLabels bool) {
 	attrs["label"] = edge.Label
-	if showGasEdgeLabels && edge.Type != test.Callback {
+	if showGasEdgeLabels && edge.Type != test.Callback && edge.Type != test.CallbackCrossShard {
 		attrs["label"] += "\n" +
 			"P" + strconv.Itoa(int(edge.GasLimit)) +
 			"/U" + strconv.Itoa(int(edge.GasUsed))
-		if edge.Type == test.Async {
+		if edge.Type == test.Async || edge.Type == test.AsyncCrossShard {
 			attrs["label"] += "/CU" + strconv.Itoa(int(edge.GasUsedByCallback))
 		}
 	}
 	attrs["label"] = strconv.Quote(attrs["label"])
 }
 
-func setEdgeColor(edge *test.TestCallEdge, attrs map[string]string) {
-	if edge.To.IsLeaf() {
+func setEdgeAttributes(edge *test.TestCallEdge, attrs map[string]string) {
+	if edge.To.IsGasLeaf() {
 		attrs["color"] = "black"
 		return
 	}
@@ -137,8 +139,14 @@ func setEdgeColor(edge *test.TestCallEdge, attrs map[string]string) {
 		attrs["color"] = "blue"
 	case test.Async:
 		attrs["color"] = "red"
+	case test.AsyncCrossShard:
+		attrs["color"] = "red"
+		attrs["style"] = "dashed"
 	case test.Callback:
 		attrs["color"] = "grey"
+	case test.CallbackCrossShard:
+		attrs["color"] = "grey"
+		attrs["style"] = "dashed"
 	default:
 		attrs["color"] = "black"
 	}
@@ -180,7 +188,7 @@ const gasFontEnd = "</font>>"
 func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	if node.GasLimit == 0 && node.GasUsed == 0 {
 		// special label for end nodes without gas info
-		if node.IsLeaf() {
+		if node.IsGasLeaf() {
 			attrs["label"] = strconv.Quote("*")
 		}
 		return
@@ -192,7 +200,7 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	gasRemainingAfterCallback := strconv.Itoa(int(node.GasAccumulatedAfterCallback))
 	gasLocked := strconv.Itoa(int(node.GasLocked))
 	var xlabel string
-	if node.IsLeaf() {
+	if node.IsGasLeaf() {
 		attrs["label"] = gasFontStart + gasUsed + gasFontEnd
 	} else {
 		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)
@@ -207,7 +215,7 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 			xlabel += "/L" + gasLocked
 		}
 
-		// TODO matei-p only for debug
+		// only for debug
 		// xlabel += "/U" + strconv.Itoa(int(node.GasUsed))
 
 		xlabel += "<br/>R" + gasRemaining

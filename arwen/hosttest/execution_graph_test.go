@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
@@ -54,6 +55,11 @@ func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+// func TestGasUsed_OneAsyncCall_CrossShard_CallGraph(t *testing.T) {
+// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
+
 type usedGasPerContract struct {
 	contractAddress []byte
 	gasUsed         uint64
@@ -64,18 +70,17 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	testConfig.GasProvided = callGraph.StartNode.GasLimit
 	testConfig.GasLockCost = test.DefaultCallGraphLockedGas
 
-	// compute execution order (return data) assertions
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 	startNode := executionGraph.GetStartNode()
 
-	// compute gas assertions
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	gasGraph.ComputeGasStepByStep(func(graph *test.TestCallGraph, step int) {})
 
+	// compute execution order (return data) assertions and compute gas assertions
 	totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
 
-	test.BuildMockInstanceCallTest(t).
+	vmOutput := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
 		).
@@ -97,6 +102,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				verifier.GasUsed(gasPerContract.contractAddress, gasPerContract.gasUsed)
 			}
 		})
+
+	extractOuptutTransferCalls(vmOutput)
 }
 
 func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]*usedGasPerContract, [][]byte) {
@@ -126,6 +133,10 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]*us
 		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
 
 		return node
-	})
+	}, true)
 	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
+}
+
+func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput) {
+	// TODO matei-p
 }

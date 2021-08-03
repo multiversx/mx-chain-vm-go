@@ -17,7 +17,7 @@ func TestCallGraph_Dfs(t *testing.T) {
 			FunctionName:    node.Call.FunctionName,
 		})
 		return node
-	})
+	}, true)
 
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
