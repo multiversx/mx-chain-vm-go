@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
@@ -59,14 +60,15 @@ func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_OneAsyncCall_CrossShard_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTests()
+	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-type usedGasPerContract struct {
-	contractAddress []byte
-	gasUsed         uint64
+func TestGasUsed_OneAsyncCall2_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
+	runGraphCallTestTemplate(t, callGraph)
 }
 
 func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
@@ -85,10 +87,14 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	crossShardCallsQueue.Enqueue(test.UserAddress, startNode, vm.DirectCall, [][]byte{})
 
 	// compute execution order (return data) assertions and compute gas assertions
-	// totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
+	//totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
+	_, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
 
 	// account -> (key -> value)
 	storage := make(map[string]map[string][]byte)
+	gasUsedPerContract := make(map[string]uint64)
+
+	globalReturnData := make([][]byte, 0)
 
 	var crossShardCall *test.CrossShardCall
 	for !crossShardCallsQueue.IsEmpty() {
@@ -159,27 +165,31 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 			})
 
 		extractStores(vmOutput, storage)
+		extractGasUsedPerContract(vmOutput, gasUsedPerContract)
+		fmt.Println("-> gas remaining ", vmOutput.GasRemaining)
+		globalReturnData = append(globalReturnData, vmOutput.ReturnData...)
 		// extractOuptutTransferCalls(vmOutput, crossShardCallsQueue)
 	}
+
+	fmt.Println("-> expectedGasUsagePerContract ", expectedGasUsagePerContract)
+	test.CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
+	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
 }
 
-func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]*usedGasPerContract, [][]byte) {
+func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {
 	totalGasUsed := uint64(0)
-	expectedGasUsagePerContract := make(map[string]*usedGasPerContract)
+	expectedGasUsagePerContract := make(map[string]uint64)
 	expectedReturnData := make([][]byte, 0)
 	gasGraph.DfsGraphFromNode(gasGraph.StartNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
 		if !node.IsLeaf() {
 			return node
 		}
-		gasPerContract := expectedGasUsagePerContract[string(parent.Call.ContractAddress)]
-		if gasPerContract == nil {
-			gasPerContract = &usedGasPerContract{
-				contractAddress: parent.Call.ContractAddress,
-				gasUsed:         0,
-			}
-			expectedGasUsagePerContract[string(parent.Call.ContractAddress)] = gasPerContract
+
+		contractAddr := string(parent.Call.ContractAddress)
+		if _, ok := expectedGasUsagePerContract[contractAddr]; !ok {
+			expectedGasUsagePerContract[contractAddr] = 0
 		}
-		gasPerContract.gasUsed += node.GasUsed
+		expectedGasUsagePerContract[contractAddr] += node.GasUsed
 		totalGasUsed += node.GasUsed
 
 		expectedNodeRetData := txDataBuilder.NewBuilder()
@@ -194,14 +204,13 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]*us
 	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
 }
 
+// TODO matei-p
 func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardCallsQueue *test.CrossShardCallsQueue) {
 	for _, outputAccount := range vmOutput.OutputAccounts {
 		for _, outputTransfer := range outputAccount.OutputTransfers {
 			fmt.Println(outputTransfer)
-			// crossShardCallsQueue.Enqueue()
 		}
 	}
-	// TODO matei-p
 }
 
 func extractStores(vmOutput *vmcommon.VMOutput, storage map[string]map[string][]byte) {
@@ -214,5 +223,20 @@ func extractStores(vmOutput *vmcommon.VMOutput, storage map[string]map[string][]
 			}
 			storage[string(outputAccount.Address)][string(storageUpdate.Offset)] = storageUpdate.Data
 		}
+	}
+}
+
+func extractGasUsedPerContract(vmOutput *vmcommon.VMOutput, gasUsedPerContract map[string]uint64) {
+	for _, outputAccount := range vmOutput.OutputAccounts {
+		if _, ok := gasUsedPerContract[string(outputAccount.Address)]; !ok {
+			gasUsedPerContract[string(outputAccount.Address)] = 0
+		}
+		gasUsedPerContract[string(outputAccount.Address)] += outputAccount.GasUsed
+	}
+}
+
+func CheckUsedGasPerContract(t testing.TB, expectedGasUsagePerContract map[string]uint64, gasUsedPerContract map[string]uint64) {
+	for expectedContract, expectedGas := range expectedGasUsagePerContract {
+		require.Equal(t, expectedGas, gasUsedPerContract[expectedContract])
 	}
 }

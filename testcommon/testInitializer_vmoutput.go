@@ -195,27 +195,33 @@ func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
 
 // ReturnDataForGraphTesting verifies if ReturnData is the same as the provided one
 func (v *VMOutputVerifier) ReturnDataForGraphTesting(returnData ...[]byte) *VMOutputVerifier {
+	CheckReturnDataForGraphTesting(v.T, v.VmOutput.ReturnData, returnData)
+	return v
+}
+
+// CheckReturnDataForGraphTesting verifies if ReturnData is the same as the provided one
+func CheckReturnDataForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
 	processedReturnData := make([][]byte, 0)
 	returnDataPerser := parsers.NewCallArgsParser()
+
 	// eliminte from the final return data the gas used for callback arguments
 	// in order to be able to compare them with the provided return data
-	for i := 0; i < len(v.VmOutput.ReturnData); i++ {
-		retDataItem := v.VmOutput.ReturnData[i]
+	for i := 0; i < len(returnData); i++ {
+		retDataItem := returnData[i]
 		if len(retDataItem) == 1 && retDataItem[0] == Callback {
 			i++ // jump over next item
 			continue
 		}
 		processedReturnData = append(processedReturnData, retDataItem)
 	}
-	require.Equal(v.T, len(returnData), len(processedReturnData), "ReturnData length")
-	for idx := range returnData {
-		_, expRetData, _ := returnDataPerser.ParseData(string(returnData[idx]))
+	require.Equal(t, len(expectedReturnData), len(processedReturnData), "ReturnData length")
+	for idx := range expectedReturnData {
+		_, expRetData, _ := returnDataPerser.ParseData(string(expectedReturnData[idx]))
 		_, actualRetData, _ := returnDataPerser.ParseData(string(processedReturnData[idx]))
-		require.Equal(v.T, string(expRetData[0]), string(actualRetData[0]), "ReturnData - Call")
-		require.Equal(v.T, big.NewInt(0).SetBytes(expRetData[1]), big.NewInt(0).SetBytes(actualRetData[1]), "ReturnData - Gas Limit")
-		require.Equal(v.T, big.NewInt(0).SetBytes(expRetData[2]), big.NewInt(0).SetBytes(actualRetData[2]), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+		require.Equal(t, string(expRetData[0]), string(actualRetData[0]), "ReturnData - Call")
+		require.Equal(t, big.NewInt(0).SetBytes(expRetData[1]), big.NewInt(0).SetBytes(actualRetData[1]), "ReturnData - Gas Limit")
+		require.Equal(t, big.NewInt(0).SetBytes(expRetData[2]), big.NewInt(0).SetBytes(actualRetData[2]), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
-	return v
 }
 
 // ReturnDataContains verifies that ReturnData contains the provided element

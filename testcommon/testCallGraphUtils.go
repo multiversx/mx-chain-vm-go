@@ -144,7 +144,7 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	returnData.Int64(int64(host.Metering().GasLeft()))
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
-	fmt.Println("Gas for", crtFunctionCalled+"\t", "provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided), "remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
+	fmt.Println("Gas for", string(host.Runtime().GetSCAddress()), crtFunctionCalled+"\t", "provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided), "remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
 }
 
 func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
@@ -535,12 +535,48 @@ func CreateGraphTestOneAsyncCallCrossShard() *TestCallGraph {
 
 	callGraph.AddNode("sc1", "cb1")
 
-	// callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb2", "").
-	// 	SetGasLimit(30).
-	// 	SetGasUsed(5).
-	// 	SetGasUsedByCallback(3)
+	return callGraph
+}
 
-	// callGraph.AddNode("sc1", "cb2")
+// CreateGraphTestOneAsyncCallCrossShard2 -
+func CreateGraphTestOneAsyncCallCrossShard2() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 800, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+
+	// callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
+	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(220).
+		SetGasUsed(27).
+		SetGasUsedByCallback(23)
+
+	sc2f4 := callGraph.AddNode("sc2", "f4")
+	callGraph.AddSyncEdge(sc2f2, sc2f4).
+		SetGasLimit(3).
+		SetGasUsed(1)
+
+	sc3f6 := callGraph.AddNode("sc3", "f6")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncEdge(sc2f2, sc3f6, "cb2", "").
+		SetGasLimit(30).
+		SetGasUsed(10).
+		SetGasUsedByCallback(6)
+
+	sc1cb1 := callGraph.AddNode("sc1", "cb1")
+
+	sc1f3 := callGraph.AddNode("sc1", "f3")
+	callGraph.AddSyncEdge(sc1cb1, sc1f3).
+		SetGasLimit(10).
+		SetGasUsed(5)
+
+	callGraph.AddNode("sc1", "cb2")
+	sc4f7 := callGraph.AddNode("sc4", "f7")
+	callGraph.AddAsyncEdge(sc1cb1, sc4f7, "cb2", "").
+		SetGasLimit(30).
+		SetGasUsed(5).
+		SetGasUsedByCallback(3)
 
 	return callGraph
 }

@@ -884,6 +884,9 @@ func (host *vmHost) callSCMethod() error {
 			return err
 		}
 
+		async.Save()
+		async.ClearAsyncCalls()
+
 		_, err = function()
 		if err != nil {
 			err = host.handleBreakpointIfAny(err)
@@ -902,6 +905,8 @@ func (host *vmHost) callSCMethod() error {
 			return err
 		}
 	}
+
+	async.Load()
 
 	switch callType {
 	case vm.DirectCall:

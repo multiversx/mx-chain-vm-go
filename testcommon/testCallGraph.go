@@ -776,7 +776,11 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 		for _, edge := range node.AdjacentEdges {
 			nodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
 			if nodeGasRemaining < 0 {
-				panic(fmt.Sprintf("Bad test gas configuration %s incoming edge %s", node.Label, incomingEdge.Label))
+				var incomingEdgeLabel string
+				if incomingEdge != nil {
+					incomingEdgeLabel = incomingEdge.Label
+				}
+				panic(fmt.Sprintf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel))
 			}
 		}
 		node.GasRemaining = uint64(nodeGasRemaining)
