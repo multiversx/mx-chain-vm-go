@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -12,7 +13,7 @@ import (
 func (context *asyncContext) executeAsyncLocalCalls() error {
 	for {
 		call := context.getNextLocalAsyncCall()
-		if call == nil {
+		if check.IfNil(call) {
 			break
 		}
 
@@ -33,7 +34,6 @@ func (context *asyncContext) executeCompletedGroupCallbacks() {
 			context.executeCallGroupCallback(group)
 		}
 	}
-
 }
 
 func (context *asyncContext) getNextLocalAsyncCall() *arwen.AsyncCall {
@@ -67,6 +67,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	if err != nil {
+		return err
+	}
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.

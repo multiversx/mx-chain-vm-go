@@ -496,10 +496,7 @@ func (context *asyncContext) Execute() error {
 	metering := context.host.Metering()
 	gasLeft := metering.GasLeft()
 	context.accumulateGas(gasLeft)
-	// TODO decide whether gasLeft should be consumed here as well, to mark it as
-	// unavailable for VMOutput.GasRemaining
 	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
-
 	logAsync.Trace("async.Execute() execute locals")
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously

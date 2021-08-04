@@ -201,6 +201,11 @@ func (host *vmHost) Metering() arwen.MeteringContext {
 	return host.meteringContext
 }
 
+// Async returns the AsyncContext instance of the host
+func (host *vmHost) Async() arwen.AsyncContext {
+	return host.asyncContext
+}
+
 // Storage returns the StorageContext instance of the host
 func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
@@ -386,11 +391,6 @@ func (host *vmHost) GetRuntimeErrors() error {
 		return host.runtimeContext.GetAllErrors()
 	}
 	return nil
-}
-
-// Async returns the AsyncContext instance of the host
-func (host *vmHost) Async() arwen.AsyncContext {
-	return host.asyncContext
 }
 
 // SetBuiltInFunctionsContainer sets the built in function container - only for testing
