@@ -850,7 +850,7 @@ func v1_4_generateKeyEC(
 	if curveMultiplier == 250 {
 		curveMultiplier = 500
 	}
-	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalCompressedECC * uint64(curveMultiplier) / 100
+	gasToUse := metering.GasSchedule().CryptoAPICost.GenerateKeyECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
