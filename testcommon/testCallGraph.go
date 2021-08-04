@@ -667,6 +667,7 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 		if
 		// don't follow a path in the form of sync -> callback
 		(lastEdgeInPath != nil && lastEdgeInPath.Type == Sync && (edge.Type == Callback || edge.Type == CallbackCrossShard)) ||
+			// don't follow mixed local / cross-shard paths
 			(lastEdgeInPath != nil && lastEdgeInPath.Type == Async && edge.Type == CallbackCrossShard) ||
 			(lastEdgeInPath != nil && lastEdgeInPath.Type == AsyncCrossShard && edge.Type == Callback) ||
 			// don't follow a path from async -> callback that is not your own

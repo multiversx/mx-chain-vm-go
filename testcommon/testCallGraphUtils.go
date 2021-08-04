@@ -49,7 +49,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							gasUsed := readGasUsedFromArguments(crtNode, host)
 
 							// burn gas for function
-							LogGraph.Trace("Burning", gasUsed, "gas for", crtFunctionCalled)
+							LogGraph.Trace("Burning", "gas", gasUsed, "function", crtFunctionCalled)
 							host.Metering().UseGasBounded(uint64(gasUsed))
 
 							for _, edge := range crtNode.AdjacentEdges {

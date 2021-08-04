@@ -394,6 +394,12 @@ func (contractInput *ContractCallInputBuilder) WithGasProvided(gas uint64) *Cont
 	return contractInput
 }
 
+// WithGasLocked provides the locked gas of ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithGasLocked(gas uint64) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.GasLocked = gas
+	return contractInput
+}
+
 // WithFunction provides the function to be called for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithFunction(function string) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.Function = function
