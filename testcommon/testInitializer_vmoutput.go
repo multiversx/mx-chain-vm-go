@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -189,31 +188,6 @@ func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
 	require.Equal(v.T, len(returnData), len(v.VmOutput.ReturnData), "ReturnData length")
 	for idx := range v.VmOutput.ReturnData {
 		require.Equal(v.T, returnData[idx], v.VmOutput.ReturnData[idx], "ReturnData")
-	}
-	return v
-}
-
-// ReturnDataForGraphTesting verifies if ReturnData is the same as the provided one
-func (v *VMOutputVerifier) ReturnDataForGraphTesting(returnData ...[]byte) *VMOutputVerifier {
-	processedReturnData := make([][]byte, 0)
-	returnDataPerser := parsers.NewCallArgsParser()
-	// eliminte from the final return data the gas used for callback arguments
-	// in order to be able to compare them with the provided return data
-	for i := 0; i < len(v.VmOutput.ReturnData); i++ {
-		retDataItem := v.VmOutput.ReturnData[i]
-		if len(retDataItem) == 1 && retDataItem[0] == Callback {
-			i++ // jump over next item
-			continue
-		}
-		processedReturnData = append(processedReturnData, retDataItem)
-	}
-	require.Equal(v.T, len(returnData), len(processedReturnData), "ReturnData length")
-	for idx := range returnData {
-		_, expRetData, _ := returnDataPerser.ParseData(string(returnData[idx]))
-		_, actualRetData, _ := returnDataPerser.ParseData(string(processedReturnData[idx]))
-		require.Equal(v.T, string(expRetData[0]), string(actualRetData[0]), "ReturnData - Call")
-		require.Equal(v.T, big.NewInt(0).SetBytes(expRetData[1]), big.NewInt(0).SetBytes(actualRetData[1]), "ReturnData - Gas Limit")
-		require.Equal(v.T, big.NewInt(0).SetBytes(expRetData[2]), big.NewInt(0).SetBytes(actualRetData[2]), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
 	return v
 }

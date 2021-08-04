@@ -895,6 +895,10 @@ func (context *asyncContext) closeCompletedAsyncCalls() {
 	}
 }
 
+func (context *asyncContext) ClearAsyncCalls() {
+	context.asyncCallGroups = nil
+}
+
 func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arwen.AsyncCall, error) {
 	if groupIndex > len(context.asyncCallGroups)-1 {
 		return nil, arwen.ErrAsyncCallGroupDoesNotExist
