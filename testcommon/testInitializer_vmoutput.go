@@ -43,29 +43,6 @@ func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput,
 	}
 }
 
-func (v *VMOutputVerifier) Print() *VMOutputVerifier {
-	vmOutput := v.VmOutput
-	log := logger.GetOrCreate("VMOutputVerifier")
-	log.Trace("VMOutput", "ReturnCode", vmOutput.ReturnCode)
-	log.Trace("VMOutput", "ReturnMessage", vmOutput.ReturnMessage)
-	log.Trace("VMOutput", "GasRemaining", vmOutput.GasRemaining)
-	for i, data := range vmOutput.ReturnData {
-		log.Trace("VMOutput", fmt.Sprintf("ReturnData[%d]", i), string(data))
-	}
-
-	for address, account := range vmOutput.OutputAccounts {
-		log.Trace("VMOutput", "OutputAccount["+address+"].Nonce", account.Nonce)
-		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.Balance.String())
-		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.BalanceDelta.String())
-		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GasUsed)
-		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
-		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.StorageUpdates))
-		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.Code))
-		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.CodeMetadata)
-	}
-	return v
-}
-
 // Ok verifies if return code is vmcommon.Ok
 func (v *VMOutputVerifier) Ok() *VMOutputVerifier {
 	return v.ReturnCode(vmcommon.Ok)
@@ -358,6 +335,30 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 	}
 	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
 
+	return v
+}
+
+// Print writes the contents of the VMOutput with log.Trace()
+func (v *VMOutputVerifier) Print() *VMOutputVerifier {
+	vmOutput := v.VmOutput
+	log := logger.GetOrCreate("VMOutputVerifier")
+	log.Trace("VMOutput", "ReturnCode", vmOutput.ReturnCode)
+	log.Trace("VMOutput", "ReturnMessage", vmOutput.ReturnMessage)
+	log.Trace("VMOutput", "GasRemaining", vmOutput.GasRemaining)
+	for i, data := range vmOutput.ReturnData {
+		log.Trace("VMOutput", fmt.Sprintf("ReturnData[%d]", i), string(data))
+	}
+
+	for address, account := range vmOutput.OutputAccounts {
+		log.Trace("VMOutput", "OutputAccount["+address+"].Nonce", account.Nonce)
+		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.Balance.String())
+		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.BalanceDelta.String())
+		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GasUsed)
+		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
+		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.StorageUpdates))
+		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.Code))
+		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.CodeMetadata)
+	}
 	return v
 }
 

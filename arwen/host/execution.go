@@ -281,15 +281,19 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	var err error
 	var vmOutput *vmcommon.VMOutput
 
+	defer func() {
+		vmOutput = host.finishExecuteOnDestContext(err)
+		if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
+			err = arwen.ErrExecutionFailed
+		}
+		runtime.AddError(err, input.Function)
+	}()
+
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
 	if input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
-			vmOutput = host.finishExecuteOnDestContext(err)
-			if err == nil && vmOutput.ReturnCode != vmcommon.Ok {
-				err = arwen.ErrExecutionFailed
-			}
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
 			return vmOutput, err
 		}
@@ -298,12 +302,10 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
-		vmOutput = host.finishExecuteOnDestContext(err)
 		return vmOutput, err
 	}
 
 	err = async.Execute()
-	vmOutput = host.finishExecuteOnDestContext(err)
 	return vmOutput, err
 }
 
@@ -350,7 +352,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 // ExecuteOnSameContext executes the contract call with the given input
 // on the same runtime context. Some other contexts are backed up.
-func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err error) {
+func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	log.Trace("ExecuteOnSameContext", "function", input.Function)
 
 	if host.IsBuiltinFunctionName(input.Function) {
@@ -373,18 +375,20 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (err
 
 	blockchain.PushState()
 
+	var err error
+
+	defer host.finishExecuteOnSameContext(err)
+
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
 	err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 	if err != nil {
 		runtime.AddError(err, input.Function)
-		host.finishExecuteOnSameContext(err)
-		return
+		return err
 	}
 
 	err = host.execute(input)
 	runtime.AddError(err, input.Function)
-	host.finishExecuteOnSameContext(err)
 	return err
 }
 

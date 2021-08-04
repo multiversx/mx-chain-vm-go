@@ -300,6 +300,7 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	}
 }
 
+// Async mocked method
 func (vhs *VMHostStub) Async() arwen.AsyncContext {
 	if vhs.AsyncCalled != nil {
 		return vhs.AsyncCalled()

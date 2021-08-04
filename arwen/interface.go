@@ -289,6 +289,7 @@ type InstanceBuilder interface {
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }
 
+// AsyncContext defines the functionality needed for interacting with the asynchronous execution context
 type AsyncContext interface {
 	StateStack
 

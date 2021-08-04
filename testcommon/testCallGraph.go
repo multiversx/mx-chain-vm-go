@@ -3,7 +3,11 @@ package testcommon
 import (
 	"fmt"
 	"strconv"
+
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var logTestGraph = logger.GetOrCreate("arwen/testgraph")
 
 // TestCall represents the payload of a node in the call graph
 type TestCall struct {
@@ -419,7 +423,6 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 		lastNodeInPath.GasUsed = path.nodes[len(path.nodes)-2].GasUsed
 		lastNodeInPath.GasLimit = lastNodeInPath.GasUsed
 		addPathToResult(path)
-		// path.print()
 		return
 	}
 
@@ -427,10 +430,6 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 	if len(path.nodes) > 1 {
 		lastEdgeInPath = path.edges[len(path.nodes)-2]
 	}
-
-	// if lastEdgeInPath != nil {
-	// 	fmt.Println("-> [" + lastEdgeInPath.Label + "] " + lastEdgeInPath.To.Label)
-	// }
 
 	// for each outgoing edge from the last node in path, if it's allowed to continue on that edge from
 	// the current path, add the next node to the current path and recurse
@@ -452,14 +451,13 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 			edge.To.GasUsed = edge.GasUsed
 		}
 
-		// fmt.Println("add [" + edge.Label + "] " + edge.To.Label)
 		newPath := addToPath(path, edge)
 		graph.getPathsRecursive(newPath, addPathToResult)
 	}
-	// fmt.Println("end of edges for " + lastNodeInPath.Label)
 }
 
 func (path *TestCallPath) print() {
+	// TODO replace fmt.Println() with log.Trace()
 	fmt.Println()
 	fmt.Print("path = ")
 	for pathIdx, node := range path.nodes {
@@ -620,11 +618,9 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 	newGraph := CreateTestCallGraph()
 
 	paths := graph.getPaths()
-	// fmt.Println()
 
 	var crtNode *TestCallNode
 	for _, path := range paths {
-		// fmt.Println("process path")
 	nextNode:
 		for pathIdx, node := range path.nodes {
 			if pathIdx == 0 {
@@ -637,7 +633,6 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 			}
 			for _, edge := range crtNode.AdjacentEdges {
 				crtChild := edge.To
-				//fmt.Println(edge.Label + "==" + path.edges[pathIdx-1].Label + "\n=>" + strconv.FormatBool(edge.Label == path.edges[pathIdx-1].Label))
 				if string(crtChild.Call.ContractAddress) == string(node.Call.ContractAddress) &&
 					crtChild.Call.FunctionName == node.Call.FunctionName &&
 					edge.Label == path.edges[pathIdx-1].Label {
@@ -648,7 +643,6 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 			parent := crtNode
 			crtNode = newGraph.AddNodeCopy(node)
 
-			// fmt.Println("add edge " + parent.Label + " -> " + crtNode.Label)
 			pathEdge := path.edges[pathIdx-1]
 			newEdge := newGraph.addEdge(parent, crtNode)
 			newEdge.copyAttributesFrom(pathEdge)
