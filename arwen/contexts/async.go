@@ -21,14 +21,15 @@ type asyncContext struct {
 	host       arwen.VMHost
 	stateStack []*asyncContext
 
-	callerAddr      []byte
-	callback        string
-	callbackData    []byte
-	gasPrice        uint64
-	gasAccumulated  uint64
-	returnData      []byte
-	asyncCallGroups []*arwen.AsyncCallGroup
-	callArgsParser  arwen.CallArgsParser
+	callerAddr         []byte
+	callback           string
+	callbackData       []byte
+	gasPrice           uint64
+	gasAccumulated     uint64
+	returnData         []byte
+	asyncCallGroups    []*arwen.AsyncCallGroup
+	callArgsParser     arwen.CallArgsParser
+	esdtTransferParser vmcommon.ESDTTransferParser
 }
 
 type serializableAsyncContext struct {
@@ -42,22 +43,33 @@ type serializableAsyncContext struct {
 }
 
 // NewAsyncContext creates a new asyncContext.
-func NewAsyncContext(host arwen.VMHost, callArgsParser arwen.CallArgsParser) (*asyncContext, error) {
+func NewAsyncContext(
+	host arwen.VMHost,
+	callArgsParser arwen.CallArgsParser,
+	esdtTransferParser vmcommon.ESDTTransferParser,
+) (*asyncContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
 	}
+	if check.IfNil(callArgsParser) {
+		return nil, arwen.ErrNilCallArgsParser
+	}
+	if check.IfNil(esdtTransferParser) {
+		return nil, arwen.ErrNilESDTTransferParser
+	}
 
 	context := &asyncContext{
-		host:            host,
-		stateStack:      nil,
-		callerAddr:      nil,
-		callback:        "",
-		callbackData:    nil,
-		gasPrice:        0,
-		gasAccumulated:  0,
-		returnData:      nil,
-		asyncCallGroups: make([]*arwen.AsyncCallGroup, 0),
-		callArgsParser:  callArgsParser,
+		host:               host,
+		stateStack:         nil,
+		callerAddr:         nil,
+		callback:           "",
+		callbackData:       nil,
+		gasPrice:           0,
+		gasAccumulated:     0,
+		returnData:         nil,
+		asyncCallGroups:    make([]*arwen.AsyncCallGroup, 0),
+		callArgsParser:     callArgsParser,
+		esdtTransferParser: esdtTransferParser,
 	}
 	return context, nil
 }
@@ -693,7 +705,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
-	functionName, args, err := context.host.CallArgsParser().ParseData(string(data))
+	functionName, args, err := context.callArgsParser.ParseData(string(data))
 	if err != nil {
 		return arwen.AsyncUnknown, err
 	}

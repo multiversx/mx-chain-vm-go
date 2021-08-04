@@ -29,7 +29,6 @@ type VMHostStub struct {
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
-	ParseESDTTransfersCalled    func(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
@@ -166,14 +165,6 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 		return vhs.StorageCalled()
 	}
 	return nil
-}
-
-// ParseESDTTransfers mocked method
-func (vhs *VMHostStub) ParseESDTTransfers(sender []byte, destination []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error) {
-	if vhs.ParseESDTTransfersCalled != nil {
-		return vhs.ParseESDTTransfersCalled(sender, destination, function, data)
-	}
-	return nil, nil
 }
 
 // ExecuteESDTTransfer mocked method

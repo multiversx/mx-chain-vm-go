@@ -657,16 +657,6 @@ func (host *vmHost) callSCMethodIndirect() error {
 	return err
 }
 
-// ParseESDTTransfers -
-func (host *vmHost) ParseESDTTransfers(
-	sender []byte,
-	destination []byte,
-	function string,
-	args [][]byte,
-) (*vmcommon.ParsedESDTTransfers, error) {
-	return host.esdtTransferParser.ParseESDTTransfers(sender, destination, function, args)
-}
-
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
 // there are no NFTs with nonce == 0, it will call multi transfer if multiple tokens are sent
 func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {

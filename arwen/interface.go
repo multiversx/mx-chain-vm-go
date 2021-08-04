@@ -39,7 +39,6 @@ type VMHost interface {
 	Metering() MeteringContext
 	Storage() StorageContext
 
-	ParseESDTTransfers(sender []byte, dest []byte, function string, args [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error

@@ -219,6 +219,9 @@ var ErrNilHostParameters = errors.New("nil host parameters")
 // ErrNilESDTTransferParser signals that nil esdt transfer parser was provided
 var ErrNilESDTTransferParser = errors.New("nil esdt transfer parser")
 
+// ErrNilCallArgsParser signals that nil call arguments parser was provided
+var ErrNilCallArgsParser = errors.New("nil call args parser")
+
 // ErrNilBuiltInFunctionsContainer signals that nil built in functions container was provided
 var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions container")
 

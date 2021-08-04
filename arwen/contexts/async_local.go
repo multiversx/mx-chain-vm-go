@@ -419,7 +419,7 @@ func (context *asyncContext) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
-	parsedTransfer, err := context.host.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
+	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args
 	}

@@ -131,7 +131,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser)
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser)
 	if err != nil {
 		return nil, err
 	}
