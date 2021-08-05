@@ -1,7 +1,4 @@
 #![no_std]
-#![no_main]
-#![allow(unused_attributes)]
-#![feature(lang_items)]
 
 use elrond_wasm::api::{ContractHookApi, EndpointArgumentApi, EndpointFinishApi, StorageReadApi, StorageWriteApi};
 use elrond_wasm_node::ArwenApiImpl;
