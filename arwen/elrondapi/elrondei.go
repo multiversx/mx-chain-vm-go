@@ -1015,7 +1015,7 @@ func TransferValueExecuteWithTypedArgs(
 	var err error
 	var contractCallInput *vmcommon.ContractCallInput
 
-	if len(function) > 0 {
+	if function != nil {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
 			sender,
@@ -1213,7 +1213,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	sender := runtime.GetSCAddress()
 
 	var contractCallInput *vmcommon.ContractCallInput
-	if len(function) > 0 {
+	if function != nil {
 		contractCallInput, executeErr = prepareIndirectContractCallInput(
 			host,
 			sender,
