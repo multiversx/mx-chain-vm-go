@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -621,18 +622,18 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	require.Equal(t, destInput, host.StoredInputs[0])
 
 	// Verify the final VMOutput, containing the failure.
-	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput := testcommon.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.ReturnMessage = "not enough gas"
 	expectedOutput.GasRemaining = 0
-	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
-	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
+	testcommon.AddFinishData(expectedOutput, []byte("out of gas"))
+	testcommon.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
 	// host.Output().GetVMOutput(), which creates and caches an empty account for
 	// her.
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
+	testcommon.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
 	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	vmOutput := host.Output().GetVMOutput()
@@ -691,7 +692,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// the test uses a mocked host.ExecuteOnDestContext(), which does not know to
 	// manipulate the state stack of the OutputContext, therefore VMOutputs are
 	// not merged between executions.
-	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput := testcommon.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.GasRemaining = 0
 
@@ -699,7 +700,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Alice, because of a call to host.Output().GetOutputAccount() in
 	// host.Output().GetVMOutput(), which creates and caches an empty account for
 	// her.
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
+	testcommon.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
 	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	actualOutput := host.Output().GetVMOutput()
@@ -780,10 +781,10 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
-	expectedInput := arwen.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
-	arwen.AddArgument(expectedInput, []byte{byte(vmcommon.UserError)})
-	arwen.AddArgument(expectedInput, []byte(vmOutput.ReturnMessage))
-	arwen.CopyTxHashes(expectedInput, originalVMInput)
+	expectedInput := testcommon.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
+	testcommon.AddArgument(expectedInput, []byte{byte(vmcommon.UserError)})
+	testcommon.AddArgument(expectedInput, []byte(vmOutput.ReturnMessage))
+	testcommon.CopyTxHashes(expectedInput, originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
 	expectedInput.CallType = vm.AsynchronousCallBack
 	expectedInput.ReturnCallAfterError = true
@@ -822,8 +823,8 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	// Alice, because of a call to host.Output().GetOutputAccount() in
 	// host.Output().GetVMOutput(), which creates and caches an empty account for
 	// her.
-	expectedOutput := arwen.MakeVMOutput()
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
+	expectedOutput := testcommon.MakeEmptyVMOutput()
+	testcommon.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
 	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
@@ -837,17 +838,17 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	syncExecErr := arwen.ErrNotEnoughGas
 	async.finishAsyncLocalExecution(nil, syncExecErr)
 
-	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput := testcommon.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.ReturnMessage = syncExecErr.Error()
-	arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
-	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
+	testcommon.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
+	testcommon.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
 	// host.Output().GetVMOutput(), which creates and caches an empty account for
 	// her.
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
+	testcommon.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
 	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
@@ -858,23 +859,23 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
-	syncExecOutput := arwen.MakeVMOutput()
+	syncExecOutput := testcommon.MakeEmptyVMOutput()
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
 	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr)
 
-	expectedOutput := arwen.MakeVMOutput()
+	expectedOutput := testcommon.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok
 	expectedOutput.ReturnMessage = "user made an error"
-	arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
-	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
+	testcommon.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
+	testcommon.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
 	// host.Output().GetVMOutput(), which creates and caches an empty account for
 	// her.
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
+	testcommon.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
 	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
@@ -894,10 +895,10 @@ func defaultAsyncCall_AliceToBob() *arwen.AsyncCall {
 }
 
 func defaultCallInput_AliceToBob(originalVMInput *vmcommon.ContractCallInput) *vmcommon.ContractCallInput {
-	destInput := arwen.MakeContractCallInput(Alice, Bob, "function", 88)
-	arwen.CopyTxHashes(destInput, originalVMInput)
-	arwen.AddArgument(destInput, []byte{10, 11, 12})
-	arwen.AddArgument(destInput, []byte{3})
+	destInput := testcommon.MakeContractCallInput(Alice, Bob, "function", 88)
+	testcommon.CopyTxHashes(destInput, originalVMInput)
+	testcommon.AddArgument(destInput, []byte{10, 11, 12})
+	testcommon.AddArgument(destInput, []byte{3})
 	destInput.CallType = vm.AsynchronousCall
 
 	return destInput
@@ -927,21 +928,21 @@ func defaultDestOutput_Ok() *vmcommon.VMOutput {
 }
 
 func defaultCallbackInput_BobToAlice(originalVMInput *vmcommon.ContractCallInput) *vmcommon.ContractCallInput {
-	input := arwen.MakeContractCallInput(Bob, Alice, "successCallback", 0)
-	arwen.AddArgument(input, big.NewInt(int64(vmcommon.Ok)).Bytes())
-	arwen.AddArgument(input, []byte("first"))
-	arwen.AddArgument(input, []byte("second"))
-	arwen.AddArgument(input, []byte{})
-	arwen.AddArgument(input, []byte("third"))
-	arwen.CopyTxHashes(input, originalVMInput)
+	input := testcommon.MakeContractCallInput(Bob, Alice, "successCallback", 0)
+	testcommon.AddArgument(input, big.NewInt(int64(vmcommon.Ok)).Bytes())
+	testcommon.AddArgument(input, []byte("first"))
+	testcommon.AddArgument(input, []byte("second"))
+	testcommon.AddArgument(input, []byte{})
+	testcommon.AddArgument(input, []byte("third"))
+	testcommon.CopyTxHashes(input, originalVMInput)
 	input.CallType = vm.AsynchronousCallBack
 	return input
 }
 
 func defaultCallbackOutput_Ok() *vmcommon.VMOutput {
-	vmOutput := arwen.MakeVMOutput()
-	arwen.AddFinishData(vmOutput, []byte("cbFirst"))
-	arwen.AddFinishData(vmOutput, []byte("cbSecond"))
+	vmOutput := testcommon.MakeEmptyVMOutput()
+	testcommon.AddFinishData(vmOutput, []byte("cbFirst"))
+	testcommon.AddFinishData(vmOutput, []byte("cbSecond"))
 
 	return vmOutput
 }
