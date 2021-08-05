@@ -576,11 +576,11 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
-					// test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-					// 	WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-					// 	WithGasLimit(gasForAsyncCall-gasUsedByChild).
-					// 	WithCallType(vmcommon.AsynchronousCallBack).
-					// 	WithValue(big.NewInt(0)),
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithGasLimit(gasForAsyncCall-testConfig.GasUsedByChild).
+						WithCallType(vm.AsynchronousCallBack).
+						WithValue(big.NewInt(0)),
 				)
 		})
 }
@@ -1387,7 +1387,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 
 	_ = world.BuiltinFuncs.Container.Add("builtinClaim", &test.MockBuiltin{
 		ProcessBuiltinFunctionCall: func(acntSnd, _ vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-			vmOutput := test.MakeVMOutput()
+			vmOutput := test.MakeEmptyVMOutput()
 			test.AddNewOutputTransfer(
 				vmOutput,
 				nil,
@@ -1407,7 +1407,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 
 	world.BuiltinFuncs.Container.Add("sendMessage", &test.MockBuiltin{
 		ProcessBuiltinFunctionCall: func(acntSnd, acntRecv vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-			vmOutput := test.MakeVMOutput()
+			vmOutput := test.MakeEmptyVMOutput()
 			if acntRecv != nil {
 				// acntSnd and acntRecv are in the same shard
 				test.AddFinishData(vmOutput, []byte("ok"))

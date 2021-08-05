@@ -214,6 +214,7 @@ func (host *VMHostMock) Async() arwen.AsyncContext {
 	return host.AsyncContext
 }
 
+// StoreInput enqueues the given ContractCallInput
 func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
 	if host.StoredInputs == nil {
 		host.StoredInputs = make([]*vmcommon.ContractCallInput, 0)
@@ -221,6 +222,7 @@ func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
 	host.StoredInputs = append(host.StoredInputs, input)
 }
 
+// EnqueueVMOutput enqueues the given VMOutput
 func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
 	if host.VMOutputQueue == nil {
 		host.VMOutputQueue = make([]*vmcommon.VMOutput, 1)
@@ -232,6 +234,7 @@ func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
 	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
 }
 
+// GetNextVMOutput returns the next VMOutput in the queue
 func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
 		return nil
