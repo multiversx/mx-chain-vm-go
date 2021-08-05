@@ -195,8 +195,7 @@ func (context *storageContext) isArwenProtectedKey(key []byte) bool {
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
-	prefixElrond := bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
-	return prefixElrond
+	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 }
 
 func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {

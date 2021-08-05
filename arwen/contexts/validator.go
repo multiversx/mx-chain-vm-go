@@ -109,7 +109,7 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 func validCharactersOnly(input string) bool {
 	input = strings.ToLower(input)
 	for i := 0; i < len(input); i++ {
-		c := strings.ToLower(string(input[i]))
+		c := string(input[i])
 		if !strings.Contains(allowedCharsInFunctionName, c) {
 			return false
 		}

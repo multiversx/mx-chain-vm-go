@@ -39,7 +39,7 @@ func makeAsyncContext(t testing.TB, host arwen.VMHost) *asyncContext {
 	return async
 }
 
-func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmock.MockWorld) {
+func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmock.MockWorld) {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
@@ -72,12 +72,12 @@ func InitializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	return host, world
 }
 
-func InitializeArwenAndWasmer_AsyncContext_AliceAndBob() (
+func initializeArwenAndWasmer_AsyncContextWithAliceAndBob() (
 	*contextmock.VMHostMock,
 	*worldmock.MockWorld,
 	*vmcommon.ContractCallInput,
 ) {
-	host, world := InitializeArwenAndWasmer_AsyncContext()
+	host, world := initializeArwenAndWasmer_AsyncContext()
 	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: Alice,
 		Balance: big.NewInt(88),
@@ -105,7 +105,7 @@ func InitializeArwenAndWasmer_AsyncContext_AliceAndBob() (
 }
 
 func TestNewAsyncContext(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	require.NotNil(t, async.host)
@@ -117,7 +117,7 @@ func TestNewAsyncContext(t *testing.T) {
 }
 
 func TestAsyncContext_InitState(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	async.callerAddr = []byte("some address")
@@ -137,7 +137,7 @@ func TestAsyncContext_InitState(t *testing.T) {
 }
 
 func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	async.callerAddr = []byte("some address")
@@ -163,7 +163,7 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 }
 
 func TestAsyncContext_GettersAndSetters(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	async.callerAddr = []byte("some address")
@@ -179,7 +179,7 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 }
 
 func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 
 	async := makeAsyncContext(t, host)
 
@@ -213,7 +213,7 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 }
 
 func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 
 	async := makeAsyncContext(t, host)
 	require.Equal(t, 0, len(async.asyncCallGroups))
@@ -243,7 +243,7 @@ func TestAsyncContext_RegisterAsyncCall_ValidationAndFields(t *testing.T) {
 }
 
 func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 	mockWasmerInstance.Exports["callbackFunction"] = nil
 
@@ -252,7 +252,7 @@ func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
 }
 
 func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
@@ -270,7 +270,7 @@ func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
 }
 
 func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
@@ -309,7 +309,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 		ShardID: 0,
 	}
 
-	host, world := InitializeArwenAndWasmer_AsyncContext()
+	host, world := initializeArwenAndWasmer_AsyncContext()
 	world.AcctMap.PutAccount(leftAccount)
 	world.AcctMap.PutAccount(rightAccount)
 	runtime := host.Runtime()
@@ -363,7 +363,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 }
 
 func TestAsyncContext_IsValidCallbackName(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	mockWasmerInstance.Exports["a"] = nil
@@ -396,7 +396,7 @@ func TestAsyncContext_IsValidCallbackName(t *testing.T) {
 }
 
 func TestAsyncContext_FindCall(t *testing.T) {
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	groupID, index, err := async.findCall([]byte("somewhere"))
@@ -447,7 +447,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 		},
 	}
 
-	host, _ := InitializeArwenAndWasmer_AsyncContext()
+	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
@@ -525,7 +525,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 }
 
 func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
-	host, world := InitializeArwenAndWasmer_AsyncContext()
+	host, world := initializeArwenAndWasmer_AsyncContext()
 	world.AcctMap.PutAccount(&worldmock.Account{
 		Address: []byte("smartcontract"),
 		Balance: big.NewInt(88),
@@ -577,7 +577,7 @@ func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	// Scenario 1
 	// Assert error propagation in async.executeSyncCall() from
 	// async.createContractCallInput()
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
@@ -592,7 +592,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	// Scenario 2
 	// Successful execution at destination, but not enough gas for callback execution
 	// (this situation should not happen in practice, due to dynamic gas locking)
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
@@ -643,7 +643,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Scenario 3
 	// Successful execution at destination, and successful callback execution;
 	// the AsyncCall contains sufficient gas this time.
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 
 	async := makeAsyncContext(t, host)
@@ -707,7 +707,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 }
 
 func TestAsyncContext_CreateContractCallInput(t *testing.T) {
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 	asyncCall := &arwen.AsyncCall{
@@ -738,7 +738,7 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T) {
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
@@ -763,7 +763,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
@@ -792,7 +792,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 
 func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	// Due to dynamic gas locking, this situation should never happen
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
@@ -813,7 +813,7 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 }
 
 func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 	async.finishAsyncLocalExecution(nil, nil)
@@ -830,7 +830,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 }
 
 func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
@@ -854,7 +854,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 }
 
 func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
-	host, _, originalVMInput := InitializeArwenAndWasmer_AsyncContext_AliceAndBob()
+	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
 
