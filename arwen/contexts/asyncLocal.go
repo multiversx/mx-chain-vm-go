@@ -303,12 +303,6 @@ func (context *asyncContext) createCallbackInput(
 	}
 	gasLimit -= gasToUse
 
-	logAsync.Trace("createCallbackInput", "vmOutput.GasRemaining", vmOutput.GasRemaining)
-	logAsync.Trace("createCallbackInput", "gas locked", asyncCall.GetGasLocked())
-	logAsync.Trace("createCallbackInput", "context.gasAccumulated", context.gasAccumulated)
-	logAsync.Trace("createCallbackInput", "gasToUse", gasToUse)
-	logAsync.Trace("createCallbackInput", "gasLimit", gasLimit)
-
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{

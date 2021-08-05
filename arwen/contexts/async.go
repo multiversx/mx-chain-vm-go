@@ -733,7 +733,11 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
-			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), destination, functionName, args)
+			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
+				runtime.GetSCAddress(),
+				destination,
+				functionName,
+				args)
 			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
 

@@ -18,9 +18,7 @@ type blockchainContext struct {
 	stateStack     []int
 }
 
-// NewAddress yields the address of a new SC account, when one such account is created.
-// The result should only depend on the creator address and nonce.
-// Returning an empty address lets the VM decide what the new address should be.
+// NewBlockchainContext creates a new blockchainContext
 func NewBlockchainContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
