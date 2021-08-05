@@ -1015,7 +1015,7 @@ func TransferValueExecuteWithTypedArgs(
 	var err error
 	var contractCallInput *vmcommon.ContractCallInput
 
-	if len(function) > 0 {
+	if function != nil {
 		contractCallInput, err = prepareIndirectContractCallInput(
 			host,
 			sender,
@@ -1074,12 +1074,12 @@ func makeCrossShardCallFromInput(vmInput *vmcommon.ContractCallInput) string {
 //export v1_3_transferESDT
 func v1_3_transferESDT(
 	context unsafe.Pointer,
-	destOffset int32,
-	tokenIDOffset int32,
-	tokenIDLen int32,
-	valueOffset int32,
-	gasLimit int64,
-	dataOffset int32,
+	_ int32,
+	_ int32,
+	_ int32,
+	_ int32,
+	_ int64,
+	_ int32,
 	length int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
@@ -1213,7 +1213,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	sender := runtime.GetSCAddress()
 
 	var contractCallInput *vmcommon.ContractCallInput
-	if len(function) > 0 {
+	if function != nil {
 		contractCallInput, executeErr = prepareIndirectContractCallInput(
 			host,
 			sender,
@@ -2859,7 +2859,7 @@ func createContract(
 	code []byte,
 	codeMetadata []byte,
 	host arwen.VMHost,
-	runtime arwen.RuntimeContext,
+	_ arwen.RuntimeContext,
 ) ([]byte, error) {
 	contractCreate := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
@@ -2946,7 +2946,7 @@ func prepareIndirectContractCallInput(
 	destination []byte,
 	function []byte,
 	data [][]byte,
-	gasToUse uint64,
+	_ uint64,
 	syncExecutionRequired bool,
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
