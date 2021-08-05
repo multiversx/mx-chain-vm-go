@@ -31,20 +31,41 @@ const (
 	BreakpointOutOfGas
 )
 
+const (
+	// BreakpointNoneString is the human-readable name of BreakpointNone
+	BreakpointNoneString = "BreakpointNone"
+
+	// BreakpointExecutionFailedString is the human-readable name of BreakpointExecutionFailed
+	BreakpointExecutionFailedString = "BreakpointExecutionFailed"
+
+	// BreakpointAsyncCallString is the human-readable name of BreakpointAsyncCall
+	BreakpointAsyncCallString = "BreakpointAsyncCall"
+
+	// BreakpointSignalErrorString is the human-readable name of BreakpointSignalError
+	BreakpointSignalErrorString = "BreakpointSignalError"
+
+	// BreakpointOutOfGasString is the human-readable name of BreakpointOutOfGas
+	BreakpointOutOfGasString = "BreakpointOutOfGas"
+
+	// UnknownBreakpointString is the human-readable label for an unknown breakpoint value
+	UnknownBreakpointString = "unknown breakpoint"
+)
+
+// String returns the human-readable name of a BreakpointValue
 func (b BreakpointValue) String() string {
 	switch b {
 	case BreakpointNone:
-		return "BreakpointNone"
+		return BreakpointNoneString
 	case BreakpointExecutionFailed:
-		return "BreakpointExecutionFailed"
+		return BreakpointExecutionFailedString
 	case BreakpointAsyncCall:
-		return "BreakpointAsyncCall"
+		return BreakpointAsyncCallString
 	case BreakpointSignalError:
-		return "BreakpointSignalError"
+		return BreakpointSignalErrorString
 	case BreakpointOutOfGas:
-		return "BreakpointOutOfGas"
+		return BreakpointOutOfGasString
 	default:
-		return "unknown breakpoint"
+		return UnknownBreakpointString
 	}
 }
 

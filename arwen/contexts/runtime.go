@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -45,6 +46,10 @@ func NewRuntimeContext(
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 ) (*runtimeContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
@@ -153,6 +158,13 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	}
 
 	context.instance = newInstance
+	context.MustVerifyNextContractCode()
+	err = context.VerifyContractCode()
+	if err != nil {
+		context.CleanWasmerInstance()
+		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
+		return err
+	}
 
 	if newCode || len(codeHash) == 0 {
 		codeHash, err = context.host.Crypto().Sha256(contract)
@@ -167,15 +179,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
-
-	if newCode {
-		err = context.VerifyContractCode()
-		if err != nil {
-			context.CleanWasmerInstance()
-			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
-			return err
-		}
-	}
 
 	logRuntime.Trace("new instance created", "code", "bytecode")
 

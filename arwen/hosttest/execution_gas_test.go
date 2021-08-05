@@ -57,8 +57,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasRemaining(testConfig.GasProvided-testConfig.GasUsedByParent).
 				GasUsed(test.ParentAddress, testConfig.GasUsedByParent)
 		})
@@ -84,8 +83,7 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasRemaining(testConfig.GasProvided-testConfig.GasUsedByParent-gasUsedByBuiltinClaim).
 				GasUsed(test.ParentAddress, testConfig.GasUsedByParent+gasUsedByBuiltinClaim).
 				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim)
@@ -112,8 +110,7 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				ReturnMessage("Return value 1").
 				HasRuntimeErrors("whatdidyoudo").
 				GasRemaining(0)
@@ -148,8 +145,7 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				setZeroCodeCosts(host)
 			}).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-				verify.
-					Ok().
+				verify.Ok().
 					GasRemaining(expectedGasRemaining).
 					GasUsed(test.ParentAddress, testConfig.GasUsedByParent)
 				if numCalls > 0 {
@@ -187,8 +183,7 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 				setZeroCodeCosts(host)
 			}).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-				verify.
-					Ok().
+				verify.Ok().
 					GasRemaining(expectedGasRemaining).
 					GasUsed(test.ParentAddress, testConfig.GasUsedByParent)
 				if numCalls > 0 {
@@ -236,8 +231,7 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasUsed(alphaAddress, testConfig.GasUsedByParent).
 				GasUsed(betaAddress, testConfig.GasUsedByChild).
 				GasUsed(gammaAddress, testConfig.GasUsedByChild).
@@ -277,8 +271,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasUsed(test.ParentAddress, testConfig.GasUsedByParent+esdtTransferGasCost).
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
 				GasRemaining(testConfig.GasProvided - esdtTransferGasCost - testConfig.GasUsedByParent - testConfig.GasUsedByChild)
@@ -323,8 +316,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				HasRuntimeErrors("forced fail").
 				GasRemaining(0)
 
@@ -368,8 +360,7 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				HasRuntimeErrors("insufficient funds").
 				GasRemaining(0)
 
@@ -416,8 +407,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				HasRuntimeErrors("forced fail")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -458,8 +448,7 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasUsed(test.ParentAddress, gasUsedByParent).
 				GasUsed(test.ChildAddress, gasUsedByChild).
 				GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild).
@@ -522,8 +511,7 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasUsed(test.ParentAddress, gasUsedByParent).
 				GasRemaining(0).
 				ReturnData(test.ParentFinishA, test.ParentFinishB).
@@ -577,9 +565,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Print().
-				Ok().
+			verify.Ok().
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
 				GasRemaining(0).
 				ReturnData(childAsyncReturnData...).
@@ -660,8 +646,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild-testConfig.GasUsedByCallback).
 				ReturnData([]byte{0}, []byte("succ"))
 		})
@@ -694,8 +679,7 @@ func TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, amountToGiveByBuiltinClaim).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.UserAddress, 0).
@@ -732,8 +716,7 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				HasRuntimeErrors("whatdidyoudo").
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.UserAddress, 0).
@@ -769,8 +752,7 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasRemaining(0).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent)
 		})
@@ -807,8 +789,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 			createMockBuiltinFunctions(t, host, world)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok()
+			verify.Ok()
 			// TODO matei-p add asserts when in-shard builtin works
 			// TODO matei-p enable gas assertions
 			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
@@ -846,8 +827,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				HasRuntimeErrors("child error").
 				BalanceDelta(test.ParentAddress, -(testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, testConfig.TransferToThirdParty).
@@ -899,8 +879,7 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnMessage("callBack error").
 				HasRuntimeErrors("callBack error").
 				BalanceDelta(test.ParentAddress, -(2*testConfig.TransferToThirdParty+testConfig.TransferToVault)).
@@ -962,8 +941,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, expectedGasUsedByChild).
@@ -1002,8 +980,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, -2*testConfig.TransferFromParentToChild).
 				BalanceDelta(test.ChildAddress, 2*testConfig.TransferFromParentToChild).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
@@ -1045,8 +1022,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_Success(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok()
+			verify.Ok()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1092,8 +1068,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				GasRemaining(50).
 				GasUsed(test.ParentAddress, gasUsedByParent).
 				GasUsed(test.ChildAddress, 0)
@@ -1139,8 +1114,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnMessage("wrong num of arguments")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -1185,8 +1159,7 @@ func TestGasUsed_ESDTTransferInCallback(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok()
+			verify.Ok()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
@@ -1230,8 +1203,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -1276,8 +1248,7 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				HasRuntimeErrors("callback failed intentionally").
 				Print()
 
@@ -1333,8 +1304,7 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				Print().
 				ReturnDataDoesNotContain([]byte("out of gas")).
 				ReturnData(expectedReturnData...)
@@ -1398,8 +1368,7 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(expectedReturnData...)
 		})
 }
@@ -1423,7 +1392,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 
 	_ = world.BuiltinFuncs.Container.Add("builtinClaim", &test.MockBuiltin{
 		ProcessBuiltinFunctionCall: func(acntSnd, _ vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-			vmOutput := test.MakeVMOutput()
+			vmOutput := test.MakeEmptyVMOutput()
 			test.AddNewOutputTransfer(
 				vmOutput,
 				nil,
@@ -1443,7 +1412,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 
 	world.BuiltinFuncs.Container.Add("sendMessage", &test.MockBuiltin{
 		ProcessBuiltinFunctionCall: func(acntSnd, acntRecv vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-			vmOutput := test.MakeVMOutput()
+			vmOutput := test.MakeEmptyVMOutput()
 			if acntRecv != nil {
 				// acntSnd and acntRecv are in the same shard
 				test.AddFinishData(vmOutput, []byte("ok"))

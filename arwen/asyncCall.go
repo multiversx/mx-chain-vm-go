@@ -89,9 +89,9 @@ func (ac *AsyncCall) HasCallback() bool {
 	return true
 }
 
-// IsInterfaceNil returns true if there is no value under the interface
-func (ac *AsyncCall) IsInterfaceNil() bool {
-	return ac == nil
+// HasDefinedAnyCallback returns true if this AsyncCall defines at least one non-empty callback name
+func (ac *AsyncCall) HasDefinedAnyCallback() bool {
+	return len(ac.SuccessCallback) > 0 || len(ac.ErrorCallback) > 0
 }
 
 // UpdateStatus sets the status of the async call depending on the provided ReturnCode
@@ -115,4 +115,9 @@ func (ac *AsyncCall) GetCallbackName() string {
 	}
 
 	return ac.ErrorCallback
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (ac *AsyncCall) IsInterfaceNil() bool {
+	return ac == nil
 }

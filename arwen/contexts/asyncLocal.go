@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -12,7 +13,7 @@ import (
 func (context *asyncContext) executeAsyncLocalCalls() error {
 	for {
 		call := context.getNextLocalAsyncCall()
-		if call == nil {
+		if check.IfNil(call) {
 			break
 		}
 
@@ -33,7 +34,6 @@ func (context *asyncContext) executeCompletedGroupCallbacks() {
 			context.executeCallGroupCallback(group)
 		}
 	}
-
 }
 
 func (context *asyncContext) getNextLocalAsyncCall() *arwen.AsyncCall {
@@ -67,6 +67,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	if err != nil {
+		return err
+	}
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
 	// by design. Using it without checking for err is safe here.
@@ -92,7 +95,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
 	context.host.Output().PrependFinish(asyncCall.Data)
 
-	// TODO discuss: the contract has already paid the gas for GasLimit and
+	// The contract has already paid the gas for GasLimit and
 	// GasLocked, as if the call were destined to another contract. Both
 	// GasLimit and GasLocked are restored in the case of
 	// ESDTTransferOnCallBack because:
@@ -208,11 +211,7 @@ func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutp
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
-	// TODO Discuss consistency between in-shard and cross-shard results
-	// TODO of the callback, and how they're accessible to the caller / user.
-	// TODO Currently, a failed callback in-shard leaves the ReturnCode to
-	// TODO vmcommon.Ok, unless the following line is uncommented.
-	// output.SetReturnCode(vmOutput.ReturnCode)
+	output.SetReturnCode(vmOutput.ReturnCode)
 
 	output.SetReturnMessage(vmOutput.ReturnMessage)
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
@@ -224,7 +223,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	runtime := host.Runtime()
 	sender := runtime.GetSCAddress()
 
-	function, arguments, err := host.CallArgsParser().ParseData(string(asyncCall.GetData()))
+	function, arguments, err := context.callArgsParser.ParseData(string(asyncCall.GetData()))
 	if err != nil {
 		return nil, err
 	}
@@ -304,12 +303,6 @@ func (context *asyncContext) createCallbackInput(
 	}
 	gasLimit -= gasToUse
 
-	logAsync.Trace("createCallbackInput", "vmOutput.GasRemaining", vmOutput.GasRemaining)
-	logAsync.Trace("createCallbackInput", "gas locked", asyncCall.GetGasLocked())
-	logAsync.Trace("createCallbackInput", "context.gasAccumulated", context.gasAccumulated)
-	logAsync.Trace("createCallbackInput", "gasToUse", gasToUse)
-	logAsync.Trace("createCallbackInput", "gasLimit", gasLimit)
-
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -371,7 +364,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	host := context.host
 	runtime := host.Runtime()
 
-	_, arguments, err := host.CallArgsParser().ParseData(string(context.returnData))
+	_, arguments, err := context.callArgsParser.ParseData(string(context.returnData))
 	if err != nil {
 		arguments = [][]byte{context.returnData}
 	}
@@ -406,8 +399,7 @@ func (context *asyncContext) isESDTTransferOnReturnDataWithNoAdditionalData(
 		return false, "", nil
 	}
 
-	argParser := context.host.CallArgsParser()
-	functionName, args, err := argParser.ParseData(string(destinationVMOutput.ReturnData[0]))
+	functionName, args, err := context.callArgsParser.ParseData(string(destinationVMOutput.ReturnData[0]))
 	if err != nil {
 		return false, "", nil
 	}
@@ -420,7 +412,7 @@ func (context *asyncContext) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
-	parsedTransfer, err := context.host.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
+	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args
 	}

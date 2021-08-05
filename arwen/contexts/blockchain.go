@@ -4,9 +4,10 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var log = logger.GetOrCreate("arwen/blockchainContext")
@@ -17,13 +18,14 @@ type blockchainContext struct {
 	stateStack     []int
 }
 
-// NewAddress yields the address of a new SC account, when one such account is created.
-// The result should only depend on the creator address and nonce.
-// Returning an empty address lets the VM decide what the new address should be.
+// NewBlockchainContext creates a new blockchainContext
 func NewBlockchainContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
 ) (*blockchainContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
 
 	context := &blockchainContext{
 		blockChainHook: blockChainHook,

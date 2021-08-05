@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const noArity = -1
@@ -93,7 +93,7 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 	if len(functionName) >= maxLengthOfFunctionName {
 		return errInvalidName
 	}
-	if functionName[0] >= '0' && functionName[0] <= '9' {
+	if isFirstCharacterNumeric(functionName) {
 		return errInvalidName
 	}
 	if !validCharactersOnly(functionName) {
@@ -109,11 +109,15 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 func validCharactersOnly(input string) bool {
 	input = strings.ToLower(input)
 	for i := 0; i < len(input); i++ {
-		c := strings.ToLower(string(input[i]))
+		c := string(input[i])
 		if !strings.Contains(allowedCharsInFunctionName, c) {
 			return false
 		}
 	}
 
 	return true
+}
+
+func isFirstCharacterNumeric(name string) bool {
+	return name[0] >= '0' && name[0] <= '9'
 }

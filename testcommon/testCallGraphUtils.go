@@ -1,7 +1,6 @@
 package testcommon
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -55,7 +54,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 								destFunctionName := edge.To.Call.FunctionName
 								destAddress := edge.To.Call.ContractAddress
 								if edge.Type == Sync {
-									fmt.Println("Sync call to " + destFunctionName + " on " + string(destAddress))
+									log.Trace("Sync call", "to", string(destAddress), "func", destFunctionName, "gas", gasForChildren)
 									elrondapi.ExecuteOnDestContextWithTypedArgs(
 										host,
 										int64(gasForChildren),
@@ -88,7 +87,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							}
 
 							host.Output().Finish([]byte(string(host.Runtime().GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix))
-							fmt.Println("End of " + crtFunctionCalled + " on " + string(host.Runtime().GetSCAddress()))
+							log.Trace("End of function", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
 
 							return instance
 						})
@@ -98,7 +97,6 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		}
 		functionName := node.Call.FunctionName
 		contract := contracts[contractAddressAsString]
-		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
 		return node
 	})
@@ -122,7 +120,7 @@ func CreateRunExpectationOrder(executionGraph *TestCallGraph) []TestCall {
 	pathsTree := pathsTreeFromDag(executionGraph)
 	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsEndOfSyncExecutionNode {
-			fmt.Println("end exec " + parent.Label)
+			logTestGraph.Trace("end execution", "label", parent.Label)
 			executionOrder = append(executionOrder, TestCall{
 				ContractAddress: parent.Call.ContractAddress,
 				FunctionName:    parent.Call.FunctionName,

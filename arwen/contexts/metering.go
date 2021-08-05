@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -30,6 +31,9 @@ func NewMeteringContext(
 	gasMap config.GasScheduleMap,
 	blockGasLimit uint64,
 ) (*meteringContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
 
 	gasSchedule, err := config.CreateGasConfig(gasMap)
 	if err != nil {
@@ -47,35 +51,6 @@ func NewMeteringContext(
 	context.InitState()
 
 	return context, nil
-}
-
-func (context *meteringContext) PrintState() {
-	sc := context.host.Runtime().GetSCAddress()
-	function := context.host.Runtime().Function()
-	scAccount, _ := context.host.Output().GetOutputAccount(sc)
-	outputAccounts := context.host.Output().GetOutputAccounts()
-	gasSpent := context.GasSpentByContract()
-	gasTransferred := context.getGasTransferredByAccount(scAccount)
-	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
-	gasUsed := gasSpent
-	gasUsed = math.SubUint64(gasUsed, gasTransferred)
-	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
-	logMetering.Trace("metering state", "┌----------            sc", string(sc))
-	logMetering.Trace("              ", "|                function", function)
-	logMetering.Trace("              ", "|        initial provided", context.initialGasProvided)
-	logMetering.Trace("              ", "|            initial cost", context.initialCost)
-	logMetering.Trace("              ", "|            gas for exec", context.gasForExecution)
-	logMetering.Trace("              ", "|            instance gas", context.host.Runtime().GetPointsUsed())
-	logMetering.Trace("              ", "|                gas left", context.GasLeft())
-	logMetering.Trace("              ", "|         gas spent by sc", gasSpent)
-	logMetering.Trace("              ", "|         gas transferred", gasTransferred)
-	logMetering.Trace("              ", "|      gas used by others", gasUsedByOthers)
-	logMetering.Trace("              ", "| adjusted gas used by sc", gasUsed)
-	for key, gas := range context.gasUsedByAccounts {
-		logMetering.Trace("              ", "| gas per acct", gas, "key", string(key))
-	}
-	logMetering.Trace("              ", "└ stack size", len(context.stateStack))
-
 }
 
 // InitState resets the internal state of the MeteringContext
@@ -512,4 +487,33 @@ func (context *meteringContext) deductInitialGas(
 	context.initialCost = initialCost
 	context.gasForExecution = input.GasProvided - initialCost
 	return nil
+}
+
+// PrintState dumps the internal state of the meteringContext to the TRACE output
+func (context *meteringContext) PrintState() {
+	sc := context.host.Runtime().GetSCAddress()
+	function := context.host.Runtime().Function()
+	scAccount, _ := context.host.Output().GetOutputAccount(sc)
+	outputAccounts := context.host.Output().GetOutputAccounts()
+	gasSpent := context.GasSpentByContract()
+	gasTransferred := context.getGasTransferredByAccount(scAccount)
+	gasUsedByOthers := context.getGasUsedByAllOtherAccounts(outputAccounts)
+	gasUsed := gasSpent
+	gasUsed = math.SubUint64(gasUsed, gasTransferred)
+	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
+	logMetering.Trace("metering state", "┌----------            sc", string(sc))
+	logMetering.Trace("              ", "|                function", function)
+	logMetering.Trace("              ", "|        initial provided", context.initialGasProvided)
+	logMetering.Trace("              ", "|            initial cost", context.initialCost)
+	logMetering.Trace("              ", "|            gas for exec", context.gasForExecution)
+	logMetering.Trace("              ", "|            instance gas", context.host.Runtime().GetPointsUsed())
+	logMetering.Trace("              ", "|                gas left", context.GasLeft())
+	logMetering.Trace("              ", "|         gas spent by sc", gasSpent)
+	logMetering.Trace("              ", "|         gas transferred", gasTransferred)
+	logMetering.Trace("              ", "|      gas used by others", gasUsedByOthers)
+	logMetering.Trace("              ", "| adjusted gas used by sc", gasUsed)
+	for key, gas := range context.gasUsedByAccounts {
+		logMetering.Trace("              ", "| gas per acct", gas, "key", string(key))
+	}
+	logMetering.Trace("              ", "└ stack size", len(context.stateStack))
 }

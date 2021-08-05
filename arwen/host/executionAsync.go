@@ -2,9 +2,11 @@ package host
 
 import (
 	"encoding/hex"
+	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -33,9 +35,16 @@ func (host *vmHost) sendAsyncCallbackToCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	retData := []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
-	for _, data := range output.ReturnData() {
-		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
+	retCode := output.ReturnCode()
+	retCodeBytes := big.NewInt(int64(retCode)).Bytes()
+	retData := []byte("@" + hex.EncodeToString(retCodeBytes))
+	if retCode == vmcommon.Ok {
+		for _, data := range output.ReturnData() {
+			retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
+		}
+	} else {
+		retMessage := []byte(output.ReturnMessage())
+		retData = append(retData, []byte("@"+hex.EncodeToString(retMessage))...)
 	}
 
 	gasLeft := metering.GasLeft()

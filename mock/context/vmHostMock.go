@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -31,8 +30,6 @@ type VMHostMock struct {
 	IsBuiltinFunc bool
 
 	StoredInputs []*vmcommon.ContractCallInput
-
-	ESDTTransferParser vmcommon.ESDTTransferParser
 
 	VMOutputQueue    []*vmcommon.VMOutput
 	VMOutputToReturn int
@@ -104,15 +101,6 @@ func (host *VMHostMock) IsESDTFunctionsEnabled() bool {
 	return true
 }
 
-// ParseESDTTransfers mocked method
-func (host *VMHostMock) ParseESDTTransfers(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error) {
-	if host.Err != nil {
-		return nil, host.Err
-	}
-
-	return host.ESDTTransferParser.ParseESDTTransfers(sender, dest, function, data)
-}
-
 // AreInSameShard mocked method
 func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
 	leftShard := host.BlockchainContext.GetShardOfAddress(left)
@@ -170,6 +158,11 @@ func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
 }
 
+// IsBuiltinFunctionName mocked method
+func (host *VMHostMock) IsBuiltinFunctionCall(_ []byte) bool {
+	return host.IsBuiltinFunc
+}
+
 // GetGasScheduleMap mocked method
 func (host *VMHostMock) GetGasScheduleMap() config.GasScheduleMap {
 	return make(config.GasScheduleMap)
@@ -216,16 +209,12 @@ func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.RuntimeContext = runtime
 }
 
-// CallArgsParser mocked method
-func (host *VMHostMock) CallArgsParser() arwen.CallArgsParser {
-	return parsers.NewCallArgsParser()
-}
-
 // Async mocked method
 func (host *VMHostMock) Async() arwen.AsyncContext {
 	return host.AsyncContext
 }
 
+// StoreInput enqueues the given ContractCallInput
 func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
 	if host.StoredInputs == nil {
 		host.StoredInputs = make([]*vmcommon.ContractCallInput, 0)
@@ -233,6 +222,7 @@ func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
 	host.StoredInputs = append(host.StoredInputs, input)
 }
 
+// EnqueueVMOutput enqueues the given VMOutput
 func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
 	if host.VMOutputQueue == nil {
 		host.VMOutputQueue = make([]*vmcommon.VMOutput, 1)
@@ -244,6 +234,7 @@ func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
 	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
 }
 
+// GetNextVMOutput returns the next VMOutput in the queue
 func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
 		return nil

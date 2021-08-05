@@ -39,11 +39,6 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, testConfig *tes
 		err = host.Output().Transfer(test.ThirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
 		require.Nil(t, err)
 
-		// function to be called on child
-		// value to send to third party
-		// data for child -> third party tx
-		// behavior param for child
-		// amount to transfer from parent to child
 		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
 		require.Nil(t, err)
 

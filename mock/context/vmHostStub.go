@@ -29,14 +29,13 @@ type VMHostStub struct {
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
-	CallArgsParserCalled        func() arwen.CallArgsParser
-	ParseESDTTransfersCalled    func(sender []byte, dest []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethodsCalled         func() *wasmer.Imports
 	IsBuiltinFunctionNameCalled func(functionName string) bool
+	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
 
 	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -168,14 +167,6 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	return nil
 }
 
-// ParseESDTTransfers mocked method
-func (vhs *VMHostStub) ParseESDTTransfers(sender []byte, destination []byte, function string, data [][]byte) (*vmcommon.ParsedESDTTransfers, error) {
-	if vhs.ParseESDTTransfersCalled != nil {
-		return vhs.ParseESDTTransfersCalled(sender, destination, function, data)
-	}
-	return nil, nil
-}
-
 // ExecuteESDTTransfer mocked method
 func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
@@ -228,6 +219,14 @@ func (vhs *VMHostStub) GetAPIMethods() *wasmer.Imports {
 func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	if vhs.IsBuiltinFunctionNameCalled != nil {
 		return vhs.IsBuiltinFunctionNameCalled(functionName)
+	}
+	return false
+}
+
+// IsBuiltinFunctionName mocked method
+func (vhs *VMHostStub) IsBuiltinFunctionCall(data []byte) bool {
+	if vhs.IsBuiltinFunctionCallCalled != nil {
+		return vhs.IsBuiltinFunctionCallCalled(data)
 	}
 	return false
 }
@@ -301,14 +300,7 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	}
 }
 
-// CallArgsParser mocked method
-func (vhs *VMHostStub) CallArgsParser() arwen.CallArgsParser {
-	if vhs.CallArgsParserCalled != nil {
-		return vhs.CallArgsParserCalled()
-	}
-	return nil
-}
-
+// Async mocked method
 func (vhs *VMHostStub) Async() arwen.AsyncContext {
 	if vhs.AsyncCalled != nil {
 		return vhs.AsyncCalled()
