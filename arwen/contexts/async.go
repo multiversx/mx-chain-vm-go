@@ -30,6 +30,9 @@ type asyncContext struct {
 	asyncCallGroups    []*arwen.AsyncCallGroup
 	callArgsParser     arwen.CallArgsParser
 	esdtTransferParser vmcommon.ESDTTransferParser
+
+	groupCallbacksEnabled  bool
+	contextCallbackEnabled bool
 }
 
 type serializableAsyncContext struct {
@@ -59,18 +62,21 @@ func NewAsyncContext(
 	}
 
 	context := &asyncContext{
-		host:               host,
-		stateStack:         nil,
-		callerAddr:         nil,
-		callback:           "",
-		callbackData:       nil,
-		gasPrice:           0,
-		gasAccumulated:     0,
-		returnData:         nil,
-		asyncCallGroups:    make([]*arwen.AsyncCallGroup, 0),
-		callArgsParser:     callArgsParser,
-		esdtTransferParser: esdtTransferParser,
+		host:                   host,
+		stateStack:             nil,
+		callerAddr:             nil,
+		callback:               "",
+		callbackData:           nil,
+		gasPrice:               0,
+		gasAccumulated:         0,
+		returnData:             nil,
+		asyncCallGroups:        make([]*arwen.AsyncCallGroup, 0),
+		callArgsParser:         callArgsParser,
+		esdtTransferParser:     esdtTransferParser,
+		groupCallbacksEnabled:  false,
+		contextCallbackEnabled: false,
 	}
+
 	return context, nil
 }
 
@@ -195,6 +201,10 @@ func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 
 // SetGroupCallback registers the name of the callback method to be called upon the completion of the specified AsyncCallGroup.
 func (context *asyncContext) SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error {
+	if !context.groupCallbacksEnabled {
+		return arwen.ErrGroupCallbacksDisabled
+	}
+
 	group, exists := context.GetCallGroup(groupID)
 	if !exists {
 		return arwen.ErrAsyncCallGroupDoesNotExist
@@ -225,6 +235,10 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 
 // SetContextCallback registers the name of the callback method to be called upon the completion of all the groups
 func (context *asyncContext) SetContextCallback(callbackName string, data []byte, gas uint64) error {
+	if !context.contextCallbackEnabled {
+		return arwen.ErrContextCallbackDisabled
+	}
+
 	err := context.host.Runtime().ValidateCallbackName(callbackName)
 	if err != nil {
 		return err
@@ -513,7 +527,9 @@ func (context *asyncContext) Execute() error {
 	// host.callSCMethod(). This happens when a cross-shard callback returns and
 	// finalizes an AsyncCall.
 	context.closeCompletedAsyncCalls()
-	context.executeCompletedGroupCallbacks()
+	if context.groupCallbacksEnabled {
+		context.executeCompletedGroupCallbacks()
+	}
 	context.deleteCompletedGroups()
 
 	logAsync.Trace("async.Execute() execute remote")
@@ -533,7 +549,7 @@ func (context *asyncContext) Execute() error {
 	}
 
 	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
-	if !context.HasPendingCallGroups() {
+	if !context.HasPendingCallGroups() && context.contextCallbackEnabled {
 		logAsync.Trace("async.Execute() execute context callback")
 		context.executeContextCallback()
 	}
@@ -607,9 +623,11 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return nil
 	}
 
-	// The current group expects no more callbacks, so its own callback can be
-	// executed now.
-	context.executeCallGroupCallback(currentCallGroup)
+	if context.groupCallbacksEnabled {
+		// The current group expects no more callbacks, so its own callback can be
+		// executed now.
+		context.executeCallGroupCallback(currentCallGroup)
+	}
 	context.deleteCallGroupByID(currentGroupID)
 	// Are we still waiting for callbacks to return?
 	if context.HasPendingCallGroups() {
@@ -623,7 +641,11 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return err
 	}
 
-	return context.executeContextCallback()
+	if context.contextCallbackEnabled {
+		return context.executeContextCallback()
+	}
+
+	return nil
 }
 
 func (context *asyncContext) HasCallback() bool {

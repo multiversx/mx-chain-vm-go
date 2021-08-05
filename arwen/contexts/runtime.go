@@ -158,6 +158,13 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	}
 
 	context.instance = newInstance
+	context.MustVerifyNextContractCode()
+	err = context.VerifyContractCode()
+	if err != nil {
+		context.CleanWasmerInstance()
+		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
+		return err
+	}
 
 	if newCode || len(codeHash) == 0 {
 		codeHash, err = context.host.Crypto().Sha256(contract)
@@ -172,13 +179,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
-
-	err = context.VerifyContractCode()
-	if err != nil {
-		context.CleanWasmerInstance()
-		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
-		return err
-	}
 
 	logRuntime.Trace("new instance created", "code", "bytecode")
 

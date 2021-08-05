@@ -95,7 +95,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
 	context.host.Output().PrependFinish(asyncCall.Data)
 
-	// TODO discuss: the contract has already paid the gas for GasLimit and
+	// The contract has already paid the gas for GasLimit and
 	// GasLocked, as if the call were destined to another contract. Both
 	// GasLimit and GasLocked are restored in the case of
 	// ESDTTransferOnCallBack because:
@@ -211,11 +211,7 @@ func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutp
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
-	// TODO Discuss consistency between in-shard and cross-shard results
-	// TODO of the callback, and how they're accessible to the caller / user.
-	// TODO Currently, a failed callback in-shard leaves the ReturnCode to
-	// TODO vmcommon.Ok, unless the following line is uncommented.
-	// output.SetReturnCode(vmOutput.ReturnCode)
+	output.SetReturnCode(vmOutput.ReturnCode)
 
 	output.SetReturnMessage(vmOutput.ReturnMessage)
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
