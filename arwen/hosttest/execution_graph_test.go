@@ -172,7 +172,12 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		// extractOuptutTransferCalls(vmOutput, crossShardCallsQueue)
 	}
 
+<<<<<<< HEAD
 	CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
+=======
+	fmt.Println("-> expectedGasUsagePerContract ", expectedGasUsagePerContract)
+	test.CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
+>>>>>>> 744c961168ab6b7a520f5bb23cb926ae0ecf4e1a
 	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
 }
 
@@ -235,6 +240,7 @@ func extractGasUsedPerContract(vmOutput *vmcommon.VMOutput, gasUsedPerContract m
 	}
 }
 
+<<<<<<< HEAD
 // CheckReturnDataForGraphTesting verifies if ReturnData is the same as the provided one
 func CheckReturnDataForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
 	processedReturnData := make([][]byte, 0)
@@ -260,6 +266,8 @@ func CheckReturnDataForGraphTesting(t testing.TB, expectedReturnData [][]byte, r
 	}
 }
 
+=======
+>>>>>>> 744c961168ab6b7a520f5bb23cb926ae0ecf4e1a
 func CheckUsedGasPerContract(t testing.TB, expectedGasUsagePerContract map[string]uint64, gasUsedPerContract map[string]uint64) {
 	for expectedContract, expectedGas := range expectedGasUsagePerContract {
 		require.Equal(t, expectedGas, gasUsedPerContract[expectedContract])
