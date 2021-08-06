@@ -13,13 +13,8 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCall()
-<<<<<<< HEAD
-	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
-	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
-=======
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
->>>>>>> 744c961168ab6b7a520f5bb23cb926ae0ecf4e1a
 
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
