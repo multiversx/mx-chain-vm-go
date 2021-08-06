@@ -315,6 +315,4 @@ type AsyncContext interface {
 	Load() error
 	Save() error
 	Delete() error
-
-	ClearAsyncCalls()
 }
