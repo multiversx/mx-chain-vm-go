@@ -255,7 +255,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	return postBuiltinInput, builtinOutput, nil
 }
 
-func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	bigInt, _, metering, output, runtime, async, storage := host.GetContexts()
 	bigInt.PushState()
 	bigInt.InitState()
@@ -277,9 +277,6 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 
 	storage.PushState()
 	storage.SetAddress(runtime.GetSCAddress())
-
-	var err error
-	var vmOutput *vmcommon.VMOutput
 
 	defer func() {
 		vmOutput = host.finishExecuteOnDestContext(err)

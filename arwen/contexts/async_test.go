@@ -247,6 +247,7 @@ func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
 	async := makeAsyncContext(t, host)
 	mockWasmerInstance.Exports["callbackFunction"] = nil
 
+	async.groupCallbacksEnabled = true
 	err := async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallGroupDoesNotExist))
 }
@@ -254,6 +255,7 @@ func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
 func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
+	mockWasmerInstance.Exports["callbackFunction"] = nil
 
 	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
@@ -264,7 +266,7 @@ func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
 	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
 	mockMetering.Err = arwen.ErrNotEnoughGas
 
-	mockWasmerInstance.Exports["callbackFunction"] = nil
+	async.groupCallbacksEnabled = true
 	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
@@ -275,6 +277,7 @@ func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
 
 	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
 	mockMetering.GasComputedToLock = 42
+	async.groupCallbacksEnabled = true
 
 	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 		Destination: []byte("somewhere"),
@@ -622,7 +625,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 
 	// Verify the final VMOutput, containing the failure.
 	expectedOutput := arwen.MakeEmptyVMOutput()
-	expectedOutput.ReturnCode = vmcommon.Ok
+	expectedOutput.ReturnCode = vmcommon.OutOfGas
 	expectedOutput.ReturnMessage = "not enough gas"
 	expectedOutput.GasRemaining = 0
 	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
@@ -838,7 +841,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async.finishAsyncLocalExecution(nil, syncExecErr)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
-	expectedOutput.ReturnCode = vmcommon.Ok
+	expectedOutput.ReturnCode = vmcommon.OutOfGas
 	expectedOutput.ReturnMessage = syncExecErr.Error()
 	arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
 	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
@@ -865,7 +868,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
-	expectedOutput.ReturnCode = vmcommon.Ok
+	expectedOutput.ReturnCode = vmcommon.UserError
 	expectedOutput.ReturnMessage = "user made an error"
 	arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
 	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)

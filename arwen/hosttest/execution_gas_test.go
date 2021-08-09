@@ -879,7 +879,7 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.UserError().
 				ReturnMessage("callBack error").
 				HasRuntimeErrors("callBack error").
 				BalanceDelta(test.ParentAddress, -(2*testConfig.TransferToThirdParty+testConfig.TransferToVault)).
@@ -1114,7 +1114,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.UserError().
 				ReturnMessage("wrong num of arguments")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -1203,7 +1203,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.ExecutionFailed().
 				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
@@ -1248,7 +1248,7 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.UserError().
 				HasRuntimeErrors("callback failed intentionally").
 				Print()
 
@@ -1267,9 +1267,8 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	testConfig.GasLockCost = 10
 	testConfig.GasProvidedToCallback = 60
 
-	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// gasUsedByChild := testConfig.GasUsedByChild
-
+	asyncGroupCallbackEnabled := false
+	asyncContextCallbackEnabled := false
 	expectedReturnData := make([][]byte, 0)
 	for _, groupConfig := range contracts.AsyncGroupsConfig {
 		groupName := groupConfig[0]
@@ -1278,9 +1277,13 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 			expectedReturnData = append(expectedReturnData, []byte(functionReturnData))
 			expectedReturnData = append(expectedReturnData, []byte(test.TestCallbackPrefix+functionReturnData))
 		}
-		expectedReturnData = append(expectedReturnData, []byte(test.TestCallbackPrefix+groupName+test.TestReturnDataSuffix))
+		if asyncGroupCallbackEnabled {
+			expectedReturnData = append(expectedReturnData, []byte(test.TestCallbackPrefix+groupName+test.TestReturnDataSuffix))
+		}
 	}
-	expectedReturnData = append(expectedReturnData, []byte(test.TestContextCallbackFunction+test.TestReturnDataSuffix))
+	if asyncContextCallbackEnabled {
+		expectedReturnData = append(expectedReturnData, []byte(test.TestContextCallbackFunction+test.TestReturnDataSuffix))
+	}
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1323,6 +1326,8 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CallGraph_ContextCallback(t *testing.T) {
+	t.Skip("context callbacks are disabled")
+
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 100_000
 	testConfig.GasProvidedToChild = 60_000
@@ -1456,7 +1461,8 @@ func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	retData := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+	retCode := string(big.NewInt(int64(returnCode)).Bytes())
+	retData := []byte("@" + retCode)
 	for _, data := range returnData {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}

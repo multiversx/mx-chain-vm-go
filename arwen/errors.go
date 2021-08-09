@@ -131,6 +131,9 @@ var ErrAsyncCallGroupAlreadyComplete = errors.New("async call group already comp
 // ErrOnlyOneAsyncCallAllowedToAddress signals that there was an attempt to add an AsyncCall to an address already called asynchronously
 var ErrOnlyOneAsyncCallAllowedToAddress = errors.New("only one async call allowed to an address")
 
+// ErrNilDestinationCallVMOutput signals that the destination call execution returned a nil VMOutput
+var ErrNilDestinationCallVMOutput = errors.New("nil destination call VMOutput")
+
 // ErrNilCallbackVMOutput signals that the callback execution returned a nil VMOutput
 var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
 

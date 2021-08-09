@@ -28,8 +28,8 @@ func NewVMOutputVerifier(t testing.TB, vmOutput *vmcommon.VMOutput, err error) *
 
 // NewVMOutputVerifierWithAllErrors builds a new verifier with all errors included
 func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput, err error, allErrors error) *VMOutputVerifier {
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
+	require.Nil(t, err, "Error is not nil")
+	require.NotNil(t, vmOutput, "Provided VMOutput is nil")
 
 	var allErrorsAsWrappable arwen.WrappableError
 	if allErrors != nil {

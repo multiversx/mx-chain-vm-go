@@ -2132,7 +2132,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.UserError().
 				ReturnMessage("callBack error").
 				// TODO matei-p enable gas checks
 				// GasUsed(test.ParentAddress, 197437).
