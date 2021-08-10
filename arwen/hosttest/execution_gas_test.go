@@ -550,6 +550,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 	gasForAsyncCall := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasLockCost
 
 	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
+	prevTxHash := []byte{1, 2, 3}
 
 	// async cross-shard parent -> child
 	test.BuildMockInstanceCallTest(t).
@@ -569,6 +570,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 				[]byte(contracts.AsyncChildData),
 				[]byte{0}).
 			WithCallType(vm.AsynchronousCall).
+			WithPrevTxHash(prevTxHash).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
@@ -591,7 +593,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithData(computeReturnDataForCallback(prevTxHash, vmcommon.Ok, childAsyncReturnData)).
 						WithGasLimit(gasForAsyncCall-testConfig.GasUsedByChild).
 						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
@@ -1425,8 +1427,9 @@ func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
 }
 
-func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	retData := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+func computeReturnDataForCallback(prevTxHash []byte, returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
+	retData := []byte("@" + hex.EncodeToString(prevTxHash))
+	retData = append(retData, []byte("@"+returnCode.String())...)
 	for _, data := range returnData {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}

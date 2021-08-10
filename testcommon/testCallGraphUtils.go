@@ -43,7 +43,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							t := instance.T
 
 							crtFunctionCalled := host.Runtime().Function()
-							LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
+							LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled, "txHash", host.Runtime().GetCurrentTxHash())
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
 							gasUsed := readGasUsedFromArguments(crtNode, host)
@@ -163,9 +163,11 @@ func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
 				edgeTypeArgIndex := 0
 				gasUsedArgIndex := 1
 				if host.Runtime().GetVMInput().CallType == vm.AsynchronousCallBack {
-					// for callbacks, arguments[0] is the return code of the async call
-					edgeTypeArgIndex = 1
-					gasUsedArgIndex = 2
+					// for callbacks,
+					// arguments[0] is the hash of the prev prev transaction
+					// arguments[1] is the return code of the async call
+					edgeTypeArgIndex = 2
+					gasUsedArgIndex = 3
 				}
 				edgeType := big.NewInt(0).SetBytes(arguments[edgeTypeArgIndex]).Int64()
 				if edgeType == Async {
@@ -545,9 +547,56 @@ func CreateGraphTestOneAsyncCallCrossShard2() *TestCallGraph {
 	sc1f1 := callGraph.AddStartNode("sc1", "f1", 800, 10)
 
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-
-	// callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
 	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(220).
+		SetGasUsed(27).
+		SetGasUsedByCallback(23)
+
+	sc3f6 := callGraph.AddNode("sc3", "f6")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc2f2, sc3f6, "cb2", "").
+		SetGasLimit(30).
+		SetGasUsed(10).
+		SetGasUsedByCallback(6)
+
+	callGraph.AddNode("sc1", "cb1")
+
+	return callGraph
+}
+
+// CreateGraphTestOneAsyncCallCrossShard3 -
+func CreateGraphTestOneAsyncCallCrossShard3() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 800, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(220).
+		SetGasUsed(27).
+		SetGasUsedByCallback(23)
+
+	sc3f6 := callGraph.AddNode("sc3", "f6")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc2f2, sc3f6, "cb2", "").
+		SetGasLimit(30).
+		SetGasUsed(10).
+		SetGasUsedByCallback(6)
+
+	callGraph.AddNode("sc1", "cb1")
+
+	return callGraph
+}
+
+// CreateGraphTestOneAsyncCallCrossShardComplex -
+func CreateGraphTestOneAsyncCallCrossShardComplex() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 800, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "").
+		// callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
 		SetGasLimit(220).
 		SetGasUsed(27).
 		SetGasUsedByCallback(23)
@@ -559,7 +608,8 @@ func CreateGraphTestOneAsyncCallCrossShard2() *TestCallGraph {
 
 	sc3f6 := callGraph.AddNode("sc3", "f6")
 	callGraph.AddNode("sc2", "cb2")
-	callGraph.AddAsyncEdge(sc2f2, sc3f6, "cb2", "").
+	callGraph.AddAsyncCrossShardEdge(sc2f2, sc3f6, "cb2", "").
+		// callGraph.AddAsyncEdge(sc2f2, sc3f6, "cb2", "").
 		SetGasLimit(30).
 		SetGasUsed(10).
 		SetGasUsedByCallback(6)
@@ -571,12 +621,20 @@ func CreateGraphTestOneAsyncCallCrossShard2() *TestCallGraph {
 		SetGasLimit(10).
 		SetGasUsed(5)
 
-	callGraph.AddNode("sc1", "cb2")
+	callGraph.AddNode("sc1", "cb3")
 	sc4f7 := callGraph.AddNode("sc4", "f7")
-	callGraph.AddAsyncEdge(sc1cb1, sc4f7, "cb2", "").
-		SetGasLimit(30).
+	callGraph.AddAsyncEdge(sc1cb1, sc4f7, "cb3", "").
+		SetGasLimit(200).
 		SetGasUsed(5).
 		SetGasUsedByCallback(3)
+
+	callGraph.AddNode("sc4", "cb4")
+	sc5f8 := callGraph.AddNode("sc5", "f8")
+	callGraph.AddAsyncCrossShardEdge(sc4f7, sc5f8, "cb4", "").
+		// callGraph.AddAsyncEdge(sc4f7, sc5f8, "cb4", "").
+		SetGasLimit(10).
+		SetGasUsed(5).
+		SetGasUsedByCallback(2)
 
 	return callGraph
 }

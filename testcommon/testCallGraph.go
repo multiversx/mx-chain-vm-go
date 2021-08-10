@@ -70,6 +70,9 @@ type TestCallNode struct {
 	// computed info
 	GasRemaining                uint64
 	GasAccumulatedAfterCallback uint64
+
+	// set automaticaly when the test is run
+	CrtTxHash []byte
 }
 
 // LeafLabel - special node label for leafs
@@ -789,7 +792,7 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 }
 
 // ComputeGasStepByStep - Uses step by step DFS postorder traversal of the executiongas graph / tree to compute
-// provided gas values fro callback noeds and remaining gas values after callback execution
+// provided gas values fro callback nodes and remaining gas values after callback execution
 func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph *TestCallGraph, step int)) {
 	step := 1
 	finishedOneStepDfs := false

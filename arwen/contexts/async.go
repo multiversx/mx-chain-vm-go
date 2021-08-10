@@ -302,8 +302,8 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 		return nil, err
 	}
 
-	// The first argument of the callback is the return code of the destination call
-	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
+	// The second argument of the callback is the return code of the destination call
+	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[1]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
 	return call, nil
@@ -620,6 +620,9 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return err
 	}
 
+	asyncStoredKey := runtime.Arguments()[0]
+	context.save(asyncStoredKey)
+
 	return context.executeContextCallback()
 }
 
@@ -639,14 +642,17 @@ func (context *asyncContext) IsComplete() bool {
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
 func (context *asyncContext) Save() error {
+	runtime := context.host.Runtime()
+	return context.save(runtime.GetCurrentTxHash())
+}
+
+func (context *asyncContext) save(txHash []byte) error {
 	if len(context.asyncCallGroups) == 0 {
 		return nil
 	}
 
 	storage := context.host.Storage()
-	runtime := context.host.Runtime()
-
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, txHash)
 	data, err := context.Serialize()
 	if err != nil {
 		return err
@@ -665,7 +671,8 @@ func (context *asyncContext) Load() error {
 	runtime := context.host.Runtime()
 	storage := context.host.Storage()
 
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
+	prevPrevTxHash := runtime.Arguments()[0]
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, prevPrevTxHash)
 	data := storage.GetStorage(storageKey)
 	if len(data) == 0 {
 		return arwen.ErrNoStoredAsyncContextFound

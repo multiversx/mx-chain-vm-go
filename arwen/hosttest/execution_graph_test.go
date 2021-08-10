@@ -16,6 +16,7 @@ import (
 )
 
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCall()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -60,17 +61,29 @@ func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// func TestGasUsed_OneAsyncCall_CrossShard_CallGraph(t *testing.T) {
-// 	// arwen.SetLoggingForTests()
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall_CrossShard_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
-// func TestGasUsed_OneAsyncCall2_CrossShard_CallGraph(t *testing.T) {
-// 	// arwen.SetLoggingForTests()
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard3()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_AsyncCall_CrossShard_Complex_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShardComplex()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
 func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	testConfig := makeTestConfig()
@@ -96,9 +109,11 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	gasUsedPerContract := make(map[string]uint64)
 
 	globalReturnData := make([][]byte, 0)
+	crtTxNumber := 0
 
 	var crossShardCall *test.CrossShardCall
 	for !crossShardCallsQueue.IsEmpty() {
+		crtTxNumber++
 		crossShardCall = crossShardCallsQueue.Dequeue()
 		startNode = crossShardCall.StartNode
 
@@ -126,6 +141,13 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 			return node
 		}, false)
 
+		crtTxHash := big.NewInt(int64(crtTxNumber)).Bytes()
+		crossShardCall.StartNode.CrtTxHash = crtTxHash
+
+		if crossShardCall.CallType == vm.AsynchronousCallBack {
+			crossShardCall.Arguments = append([][]byte{crossShardCall.StartNode.Parent.Parent.CrtTxHash}, crossShardCall.Arguments...)
+		}
+
 		vmOutput := test.BuildMockInstanceCallTest(t).
 			WithContracts(
 				test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
@@ -138,6 +160,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				WithGasLocked(startNode.GasLocked).
 				WithCallType(crossShardCall.CallType).
 				WithArguments(crossShardCall.Arguments...).
+				WithPrevTxHash(big.NewInt(int64(crtTxNumber - 1)).Bytes()).
+				WithCurrentTxHash(crtTxHash).
 				Build()).
 			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 				for _, crossShardAccount := range crossShardNodes {
@@ -167,7 +191,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		extractStores(vmOutput, storage)
 		extractGasUsedPerContract(vmOutput, gasUsedPerContract)
-		fmt.Println("-> gas remaining ", vmOutput.GasRemaining)
+		// fmt.Println("-> gas remaining ", vmOutput.GasRemaining)
 		globalReturnData = append(globalReturnData, vmOutput.ReturnData...)
 		// extractOuptutTransferCalls(vmOutput, crossShardCallsQueue)
 	}
@@ -181,27 +205,52 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 	totalGasUsed := uint64(0)
 	expectedGasUsagePerContract := make(map[string]uint64)
 	expectedReturnData := make([][]byte, 0)
-	gasGraph.DfsGraphFromNode(gasGraph.StartNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-		if !node.IsLeaf() {
+	// gasGraph.DfsGraphFromNode(gasGraph.StartNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+
+	crossShardCallsQueue := test.NewCrossShardCallQueue()
+	crossShardCallsQueue.Enqueue(test.UserAddress, gasGraph.StartNode, vm.DirectCall, [][]byte{})
+	var crossShardCall *test.CrossShardCall
+	for !crossShardCallsQueue.IsEmpty() {
+		crossShardCall = crossShardCallsQueue.Dequeue()
+		startNode := crossShardCall.StartNode
+
+		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+			for _, edge := range node.AdjacentEdges {
+				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
+					destinationNode := edge.To
+					var callType vm.CallType
+					switch edge.Type {
+					case test.AsyncCrossShard:
+						callType = vm.AsynchronousCall
+					case test.CallbackCrossShard:
+						callType = vm.AsynchronousCallBack
+					}
+					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, nil)
+				}
+			}
+
+			if !node.IsLeaf() {
+				return node
+			}
+
+			contractAddr := string(parent.Call.ContractAddress)
+			if _, ok := expectedGasUsagePerContract[contractAddr]; !ok {
+				expectedGasUsagePerContract[contractAddr] = 0
+			}
+			expectedGasUsagePerContract[contractAddr] += node.GasUsed
+			totalGasUsed += node.GasUsed
+
+			expectedNodeRetData := txDataBuilder.NewBuilder()
+			expectedNodeRetData.Func(parent.Call.FunctionName)
+			expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
+			expectedNodeRetData.Int64(int64(parent.GasLimit))
+			expectedNodeRetData.Int64(int64(parent.GasRemaining))
+			expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
+			fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
+
 			return node
-		}
-
-		contractAddr := string(parent.Call.ContractAddress)
-		if _, ok := expectedGasUsagePerContract[contractAddr]; !ok {
-			expectedGasUsagePerContract[contractAddr] = 0
-		}
-		expectedGasUsagePerContract[contractAddr] += node.GasUsed
-		totalGasUsed += node.GasUsed
-
-		expectedNodeRetData := txDataBuilder.NewBuilder()
-		expectedNodeRetData.Func(parent.Call.FunctionName)
-		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
-		expectedNodeRetData.Int64(int64(parent.GasLimit))
-		expectedNodeRetData.Int64(int64(parent.GasRemaining))
-		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
-
-		return node
-	}, true)
+		}, false)
+	}
 	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
 }
 

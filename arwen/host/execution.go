@@ -866,6 +866,7 @@ func (host *vmHost) callSCMethod() error {
 		}
 
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
+		async.InitState()
 	}
 
 	// TODO refactor this, and apply this condition in other places where a
@@ -909,6 +910,7 @@ func (host *vmHost) callSCMethod() error {
 	case vm.AsynchronousCall:
 		err = host.sendAsyncCallbackToCaller()
 	case vm.AsynchronousCallBack:
+		async.Load()
 		err = async.PostprocessCrossShardCallback()
 	default:
 		err = arwen.ErrUnknownCallType

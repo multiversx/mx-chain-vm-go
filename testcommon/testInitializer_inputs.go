@@ -424,6 +424,12 @@ func (contractInput *ContractCallInputBuilder) WithCurrentTxHash(txHash []byte) 
 	return contractInput
 }
 
+// WithPrevTxHash provides the PrevTxHash for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithPrevTxHash(txHash []byte) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.PrevTxHash = txHash
+	return contractInput
+}
+
 func (contractInput *ContractCallInputBuilder) initESDTTransferIfNeeded() {
 	if len(contractInput.ESDTTransfers) == 0 {
 		contractInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
