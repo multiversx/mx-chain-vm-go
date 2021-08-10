@@ -4,6 +4,7 @@ import (
 	"crypto/elliptic"
 	basicMath "math"
 	"math/big"
+	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
@@ -33,6 +34,7 @@ type managedTypesContext struct {
 	host               arwen.VMHost
 	managedTypesValues managedTypesState
 	managedTypesStack  []managedTypesState
+	Reader             *math.SeedRandReader
 }
 
 type managedTypesState struct {
@@ -41,7 +43,7 @@ type managedTypesState struct {
 	mBufferValues managedBufferMap
 }
 
-// NewBigIntContext creates a new bigIntContext
+// NewBigIntContext creates a new managedTypesContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	context := &managedTypesContext{
 		host: host,
@@ -54,6 +56,19 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	}
 
 	return context, nil
+}
+
+func initRandomizer(host arwen.VMHost) *math.SeedRandReader {
+	randomizer, _ := math.NewSeedRandReader(append(host.Blockchain().CurrentRandomSeed(), host.Runtime().GetCurrentTxHash()...))
+
+	return randomizer
+}
+
+func (context *managedTypesContext) GetRandReader(ctx unsafe.Pointer) *math.SeedRandReader {
+	if context.Reader == nil {
+		context.Reader = initRandomizer(arwen.GetVMHost(ctx))
+	}
+	return context.Reader
 }
 
 // InitState initializes the underlying values map

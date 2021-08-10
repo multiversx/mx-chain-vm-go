@@ -12,3 +12,6 @@ var ErrSubtractionUnderflow = errors.New("subtraction underflow")
 
 // ErrMultiplicationOverflow is raised when there is an overflow because of the multiplication of two numbers
 var ErrMultiplicationOverflow = errors.New("multiplication overflow")
+
+// ErrSeedLengthIsZero is raised when length of given seed is 0
+var ErrSeedLengthIsZero = errors.New("seed length cannot be 0")

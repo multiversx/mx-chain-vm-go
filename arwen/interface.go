@@ -3,9 +3,11 @@ package arwen
 import (
 	"crypto/elliptic"
 	"math/big"
+	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -157,6 +159,7 @@ type RuntimeContext interface {
 type ManagedTypesContext interface {
 	StateStack
 
+	GetRandReader(context unsafe.Pointer) *math.SeedRandReader
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
