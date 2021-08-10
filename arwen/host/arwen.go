@@ -126,16 +126,15 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(
-		host,
-		hostParameters.VMType,
-		host.builtInFuncContainer,
-	)
+	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType, host.builtInFuncContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	host.asyncContext = contexts.NewAsyncContext(host)
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser)
+	if err != nil {
+		return nil, err
+	}
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
@@ -200,6 +199,11 @@ func (host *vmHost) Output() arwen.OutputContext {
 // Metering returns the MeteringContext instance of the host
 func (host *vmHost) Metering() arwen.MeteringContext {
 	return host.meteringContext
+}
+
+// Async returns the AsyncContext instance of the host
+func (host *vmHost) Async() arwen.AsyncContext {
+	return host.asyncContext
 }
 
 // Storage returns the StorageContext instance of the host
@@ -387,16 +391,6 @@ func (host *vmHost) GetRuntimeErrors() error {
 		return host.runtimeContext.GetAllErrors()
 	}
 	return nil
-}
-
-// CallArgsParser returns the CallArgsParser instance of the host
-func (host *vmHost) CallArgsParser() arwen.CallArgsParser {
-	return host.callArgsParser
-}
-
-// Async returns the AsyncContext instance of the host
-func (host *vmHost) Async() arwen.AsyncContext {
-	return host.asyncContext
 }
 
 // SetBuiltInFunctionsContainer sets the built in function container - only for testing

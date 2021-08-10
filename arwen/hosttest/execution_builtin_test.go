@@ -43,8 +43,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	vmOutput, err := host.RunSmartContractCall(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.
-		Ok()
+	verify.Ok()
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
@@ -64,8 +63,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, 42).
 				GasUsed(test.ParentAddress, parentGasUsed).
 				GasRemaining(test.GasProvided - parentGasUsed).
@@ -90,8 +88,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(arwen.One, arwen.One).Int64()).
 				GasUsed(test.ParentAddress, parentGasUsed).
 				GasRemaining(test.GasProvided - parentGasUsed).
@@ -115,8 +112,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				ReturnMessage(arwen.ErrFuncNotFound.Error()).
 				GasRemaining(0)
 		})
@@ -138,8 +134,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) 
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				ReturnMessage("whatdidyoudo").
 				GasRemaining(0)
 		})
@@ -162,9 +157,7 @@ func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				Print().
+			verify.Ok().
 				ReturnData([]byte("hello"), []byte{10})
 		})
 }
@@ -187,8 +180,7 @@ func TestESDT_GettersAPI(t *testing.T) {
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok()
+			verify.Ok()
 		})
 }
 
@@ -233,8 +225,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	vmOutput, err := host.ExecuteOnDestContext(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.
-		Ok()
+	verify.Ok()
 
 	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)
