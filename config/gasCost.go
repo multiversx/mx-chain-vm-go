@@ -162,6 +162,7 @@ type CryptoAPICost struct {
 type ManagedBufferAPICost struct {
 	MBufferNew                uint64
 	MBufferNewFromBytes       uint64
+	MBufferNewRandom          uint64
 	MBufferSetBytes           uint64
 	MBufferGetLength          uint64
 	MBufferGetBytes           uint64

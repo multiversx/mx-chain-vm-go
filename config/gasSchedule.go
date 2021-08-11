@@ -328,6 +328,7 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["MBufferNew"] = value
 	gasMap["MBufferNewFromBytes"] = value
+	gasMap["MBufferNewRandom"] = value
 	gasMap["MBufferSetBytes"] = value
 	gasMap["MBufferGetLength"] = value
 	gasMap["MBufferGetBytes"] = value

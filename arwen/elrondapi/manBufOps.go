@@ -8,6 +8,7 @@ package elrondapi
 //
 // extern int32_t	v1_4_mBufferNew(void* context);
 // extern int32_t 	v1_4_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_4_mBufferNewRandom(void* context, int32_t length);
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
 // extern int32_t 	v1_4_mBufferGetLength(void* context, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
@@ -392,4 +393,29 @@ func v1_4_mBufferFinish(context unsafe.Pointer, mBufferHandle int32) int32 {
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(managedBuffer)))
 	metering.UseGas(gasToUse)
 	return 0
+}
+
+//export v1_4_mBufferNewRandom
+func v1_4_mBufferNewRandom(context unsafe.Pointer, length int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	if length < 1 {
+		arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return -1
+	}
+
+	baseGasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferNewFromBytes
+	lengthDependentGasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+	metering.UseGas(baseGasToUse + lengthDependentGasToUse)
+
+	randomizer := managedType.GetRandReader()
+	buffer := make([]byte, length)
+	_, err := randomizer.Read(buffer)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return managedType.NewManagedBufferFromBytes(buffer)
 }
