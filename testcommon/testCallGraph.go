@@ -3,10 +3,14 @@ package testcommon
 import (
 	"fmt"
 	"strconv"
+
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // DefaultCallGraphLockedGas is the default gas locked value
 const DefaultCallGraphLockedGas = 150
+
+var logTestGraph = logger.GetOrCreate("arwen/testgraph")
 
 // TestCall represents the payload of a node in the call graph
 type TestCall struct {

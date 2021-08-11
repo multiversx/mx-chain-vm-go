@@ -39,20 +39,18 @@ type VMHost interface {
 	Metering() MeteringContext
 	Storage() StorageContext
 
-	ParseESDTTransfers(sender []byte, dest []byte, function string, args [][]byte) (*vmcommon.ParsedESDTTransfers, error)
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
+	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
 	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, AsyncContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
-
-	CallArgsParser() CallArgsParser
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
@@ -149,6 +147,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
+	GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
@@ -291,6 +290,7 @@ type InstanceBuilder interface {
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }
 
+// AsyncContext defines the functionality needed for interacting with the asynchronous execution context
 type AsyncContext interface {
 	StateStack
 
@@ -312,7 +312,7 @@ type AsyncContext interface {
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 	UpdateCurrentCallStatus() (*AsyncCall, error)
 
-	Load() error
-	Save() error
+	Load(prevPrevTxHash []byte) error
+	Save(currentTxHash []byte) error
 	Delete() error
 }

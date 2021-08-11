@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -20,13 +21,18 @@ type asyncContext struct {
 	host       arwen.VMHost
 	stateStack []*asyncContext
 
-	callerAddr      []byte
-	callback        string
-	callbackData    []byte
-	gasPrice        uint64
-	gasAccumulated  uint64
-	returnData      []byte
-	asyncCallGroups []*arwen.AsyncCallGroup
+	callerAddr         []byte
+	callback           string
+	callbackData       []byte
+	gasPrice           uint64
+	gasAccumulated     uint64
+	returnData         []byte
+	asyncCallGroups    []*arwen.AsyncCallGroup
+	callArgsParser     arwen.CallArgsParser
+	esdtTransferParser vmcommon.ESDTTransferParser
+
+	groupCallbacksEnabled  bool
+	contextCallbackEnabled bool
 }
 
 type serializableAsyncContext struct {
@@ -40,18 +46,38 @@ type serializableAsyncContext struct {
 }
 
 // NewAsyncContext creates a new asyncContext.
-func NewAsyncContext(host arwen.VMHost) *asyncContext {
-	return &asyncContext{
-		host:            host,
-		stateStack:      nil,
-		callerAddr:      nil,
-		callback:        "",
-		callbackData:    nil,
-		gasPrice:        0,
-		gasAccumulated:  0,
-		returnData:      nil,
-		asyncCallGroups: make([]*arwen.AsyncCallGroup, 0),
+func NewAsyncContext(
+	host arwen.VMHost,
+	callArgsParser arwen.CallArgsParser,
+	esdtTransferParser vmcommon.ESDTTransferParser,
+) (*asyncContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
 	}
+	if check.IfNil(callArgsParser) {
+		return nil, arwen.ErrNilCallArgsParser
+	}
+	if check.IfNil(esdtTransferParser) {
+		return nil, arwen.ErrNilESDTTransferParser
+	}
+
+	context := &asyncContext{
+		host:                   host,
+		stateStack:             nil,
+		callerAddr:             nil,
+		callback:               "",
+		callbackData:           nil,
+		gasPrice:               0,
+		gasAccumulated:         0,
+		returnData:             nil,
+		asyncCallGroups:        make([]*arwen.AsyncCallGroup, 0),
+		callArgsParser:         callArgsParser,
+		esdtTransferParser:     esdtTransferParser,
+		groupCallbacksEnabled:  false,
+		contextCallbackEnabled: false,
+	}
+
+	return context, nil
 }
 
 // InitState initializes the internal state of the AsyncContext.
@@ -175,6 +201,10 @@ func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 
 // SetGroupCallback registers the name of the callback method to be called upon the completion of the specified AsyncCallGroup.
 func (context *asyncContext) SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error {
+	if !context.groupCallbacksEnabled {
+		return arwen.ErrGroupCallbacksDisabled
+	}
+
 	group, exists := context.GetCallGroup(groupID)
 	if !exists {
 		return arwen.ErrAsyncCallGroupDoesNotExist
@@ -205,6 +235,10 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 
 // SetContextCallback registers the name of the callback method to be called upon the completion of all the groups
 func (context *asyncContext) SetContextCallback(callbackName string, data []byte, gas uint64) error {
+	if !context.contextCallbackEnabled {
+		return arwen.ErrContextCallbackDisabled
+	}
+
 	err := context.host.Runtime().ValidateCallbackName(callbackName)
 	if err != nil {
 		return err
@@ -302,8 +336,8 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 		return nil, err
 	}
 
-	// The second argument of the callback is the return code of the destination call
-	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[1]).Uint64()
+	// The first argument of the callback is the return code of the destination call
+	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
 	return call, nil
@@ -490,10 +524,7 @@ func (context *asyncContext) Execute() error {
 	metering := context.host.Metering()
 	gasLeft := metering.GasLeft()
 	context.accumulateGas(gasLeft)
-	// TODO decide whether gasLeft should be consumed here as well, to mark it as
-	// unavailable for VMOutput.GasRemaining
 	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
-
 	logAsync.Trace("async.Execute() execute locals")
 
 	// Step 1: execute all AsyncCalls that can be executed synchronously
@@ -510,7 +541,9 @@ func (context *asyncContext) Execute() error {
 	// host.callSCMethod(). This happens when a cross-shard callback returns and
 	// finalizes an AsyncCall.
 	context.closeCompletedAsyncCalls()
-	context.executeCompletedGroupCallbacks()
+	if context.groupCallbacksEnabled {
+		context.executeCompletedGroupCallbacks()
+	}
 	context.deleteCompletedGroups()
 
 	logAsync.Trace("async.Execute() execute remote")
@@ -530,13 +563,13 @@ func (context *asyncContext) Execute() error {
 	}
 
 	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
-	if !context.HasPendingCallGroups() {
+	if !context.HasPendingCallGroups() && context.contextCallbackEnabled {
 		logAsync.Trace("async.Execute() execute context callback")
 		context.executeContextCallback()
 	}
 
 	logAsync.Trace("async.Execute() save")
-	err = context.Save()
+	err = context.Save(context.host.Runtime().GetCurrentTxHash())
 	if err != nil {
 		return err
 	}
@@ -604,9 +637,11 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return nil
 	}
 
-	// The current group expects no more callbacks, so its own callback can be
-	// executed now.
-	context.executeCallGroupCallback(currentCallGroup)
+	if context.groupCallbacksEnabled {
+		// The current group expects no more callbacks, so its own callback can be
+		// executed now.
+		context.executeCallGroupCallback(currentCallGroup)
+	}
 	context.deleteCallGroupByID(currentGroupID)
 	// Are we still waiting for callbacks to return?
 	if context.HasPendingCallGroups() {
@@ -621,9 +656,13 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	}
 
 	asyncStoredKey := runtime.Arguments()[0]
-	context.save(asyncStoredKey)
+	context.Save(asyncStoredKey)
 
-	return context.executeContextCallback()
+	if context.contextCallbackEnabled {
+		return context.executeContextCallback()
+	}
+
+	return nil
 }
 
 func (context *asyncContext) HasCallback() bool {
@@ -641,18 +680,13 @@ func (context *asyncContext) IsComplete() bool {
 }
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
-func (context *asyncContext) Save() error {
-	runtime := context.host.Runtime()
-	return context.save(runtime.GetCurrentTxHash())
-}
-
-func (context *asyncContext) save(txHash []byte) error {
+func (context *asyncContext) Save(currentTxHash []byte) error {
 	if len(context.asyncCallGroups) == 0 {
 		return nil
 	}
 
 	storage := context.host.Storage()
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, txHash)
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, currentTxHash)
 	data, err := context.Serialize()
 	if err != nil {
 		return err
@@ -667,11 +701,9 @@ func (context *asyncContext) save(txHash []byte) error {
 }
 
 // Load restores the internal state of the AsyncContext from the storage of the contract.
-func (context *asyncContext) Load() error {
-	runtime := context.host.Runtime()
+func (context *asyncContext) Load(prevPrevTxHash []byte) error {
 	storage := context.host.Storage()
 
-	prevPrevTxHash := runtime.Arguments()[0]
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, prevPrevTxHash)
 	data := storage.GetStorage(storageKey)
 	if len(data) == 0 {
@@ -706,7 +738,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 
 	// If ArgParser cannot read the Data field, then this is neither a SC call,
 	// nor a built-in function call.
-	functionName, args, err := context.host.CallArgsParser().ParseData(string(data))
+	functionName, args, err := context.callArgsParser.ParseData(string(data))
 	if err != nil {
 		return arwen.AsyncUnknown, err
 	}
@@ -715,7 +747,11 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
-			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), destination, functionName, args)
+			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
+				runtime.GetSCAddress(),
+				destination,
+				functionName,
+				args)
 			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
 

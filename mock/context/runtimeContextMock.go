@@ -344,3 +344,8 @@ func (r *RuntimeContextMock) HasFunction(functionName string) bool {
 func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
+
+// GetPPTxHashAndUpdateArgumentsForAsyncCallBack mocked method
+func (r *RuntimeContextMock) GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+	return nil
+}

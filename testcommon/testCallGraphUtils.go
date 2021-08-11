@@ -61,16 +61,6 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 								}
 							}
 
-							// if crtNode.ContextCallback != nil {
-							// 	err := async.SetContextCallback(crtNode.ContextCallback.Call.FunctionName, big.NewInt(int64(crtNode.ContextCallback.GasUsed)).Bytes(), 0)
-							// 	require.Nil(t, err)
-							// }
-
-							// for group, groupCallbackNode := range crtNode.GroupCallbacks {
-							// 	err := async.SetGroupCallback(group, groupCallbackNode.Call.FunctionName, big.NewInt(int64(groupCallbackNode.GasUsed)).Bytes(), 0)
-							// 	require.Nil(t, err)
-							// }
-
 							computeReturnData(crtFunctionCalled, host)
 
 							return instance
@@ -81,7 +71,6 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		}
 		functionName := node.Call.FunctionName
 		contract := contracts[contractAddressAsString]
-		//fmt.Println("Add " + functionName + " to " + contractAddressAsString)
 		addFunctionToTempList(contract, functionName, true)
 		return node
 	}, true)
@@ -118,7 +107,7 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(destFunctionName)
-	callData.Bytes(big.NewInt(int64(Async)).Bytes())
+	callData.Bytes(big.NewInt(int64(edge.Type)).Bytes())
 	callData.Int64(int64(edge.GasUsed))
 	callData.Int64(int64(edge.GasUsedByCallback))
 
@@ -163,11 +152,16 @@ func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
 				edgeTypeArgIndex := 0
 				gasUsedArgIndex := 1
 				if host.Runtime().GetVMInput().CallType == vm.AsynchronousCallBack {
-					// for callbacks,
-					// arguments[0] is the hash of the prev prev transaction
-					// arguments[1] is the return code of the async call
-					edgeTypeArgIndex = 2
-					gasUsedArgIndex = 3
+					// if len(arguments) == 5 {
+					// 	// for cross shard callbacks,
+					// 	// arguments[0] is the hash of the prev prev transaction
+					// 	// arguments[1] is the return code of the async call
+					// 	edgeTypeArgIndex = 2
+					// 	gasUsedArgIndex = 3
+					// } else {
+					edgeTypeArgIndex = 1
+					gasUsedArgIndex = 2
+					// }
 				}
 				edgeType := big.NewInt(0).SetBytes(arguments[edgeTypeArgIndex]).Int64()
 				if edgeType == Async {
@@ -195,7 +189,6 @@ func CreateRunOrderFromExecutionGraph(executionGraph *TestCallGraph) []TestCall 
 	pathsTree := pathsTreeFromDag(executionGraph)
 	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() {
-			//fmt.Println("end exec " + parent.Label)
 			executionOrder = append(executionOrder, TestCall{
 				ContractAddress: parent.Call.ContractAddress,
 				FunctionName:    parent.Call.FunctionName,
