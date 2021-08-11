@@ -29,6 +29,47 @@ func TestNewManagedTypes(t *testing.T) {
 	require.Equal(t, 0, len(managedTypesContext.managedTypesStack))
 }
 
+func TestManagedTypesContext_Randomness(t *testing.T) {
+	t.Parallel()
+
+	mockRuntime := &contextmock.RuntimeContextMock{
+		CurrentTxHash: []byte{0xf, 0xf, 0xf, 0xf, 0xf, 0xf},
+	}
+	host := &contextmock.VMHostMock{
+		RuntimeContext: mockRuntime,
+	}
+	mockBlockchain := &contextmock.BlockchainHookStub{
+		CurrentRandomSeedCalled: func() []byte {
+			return []byte{0xf, 0xf, 0xf, 0xf, 0xa, 0xb}
+		},
+	}
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	host.BlockchainContext = blockchainContext
+	copyHost := host
+
+	managedTypesContext, _ := NewManagedTypesContext(host)
+	require.Nil(t, managedTypesContext.randomnessGenerator)
+	managedTypesContext.initRandomizer()
+	firstRandomizer := managedTypesContext.randomnessGenerator
+
+	managedTypesContextCopy, _ := NewManagedTypesContext(copyHost)
+	require.Nil(t, managedTypesContextCopy.randomnessGenerator)
+	managedTypesContextCopy.initRandomizer()
+	secondRandomizer := managedTypesContextCopy.randomnessGenerator
+
+	require.Equal(t, firstRandomizer, secondRandomizer)
+
+	prg := managedTypesContext.GetRandReader()
+	a := make([]byte, 100)
+	prg.Read(a)
+	b := make([]byte, 100)
+	for i := 0; i < 1000; i++ {
+		prg.Read(b)
+		require.NotEqual(t, a, b)
+		copy(a, b)
+	}
+}
+
 func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	t.Parallel()
 	host := &contextmock.VMHostStub{}

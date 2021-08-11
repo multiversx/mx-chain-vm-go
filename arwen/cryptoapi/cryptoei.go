@@ -30,7 +30,6 @@ import "C"
 
 import (
 	"crypto/elliptic"
-	"crypto/rand"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -865,7 +864,8 @@ func v1_4_generateKeyEC(
 	}
 	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
 
-	result, xPubKeyGK, yPubKeyGK, err := elliptic.GenerateKey(ec, rand.Reader)
+	ioReader := managedType.GetRandReader()
+	result, xPubKeyGK, yPubKeyGK, err := elliptic.GenerateKey(ec, ioReader)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return int32(len(result))
 	}

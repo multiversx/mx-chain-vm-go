@@ -2,6 +2,7 @@ package arwen
 
 import (
 	"crypto/elliptic"
+	"io"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
@@ -157,6 +158,7 @@ type RuntimeContext interface {
 type ManagedTypesContext interface {
 	StateStack
 
+	GetRandReader() io.Reader
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBigIntCopy(values ...*big.Int)

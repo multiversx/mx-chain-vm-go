@@ -2,11 +2,13 @@ package contexts
 
 import (
 	"crypto/elliptic"
+	"io"
 	basicMath "math"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const maxBigIntByteLenForNormalCost = 32
@@ -30,9 +32,10 @@ type bigIntMap map[int32]*big.Int
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type managedTypesContext struct {
-	host               arwen.VMHost
-	managedTypesValues managedTypesState
-	managedTypesStack  []managedTypesState
+	host                arwen.VMHost
+	managedTypesValues  managedTypesState
+	managedTypesStack   []managedTypesState
+	randomnessGenerator math.RandomnessGenerator
 }
 
 type managedTypesState struct {
@@ -41,7 +44,7 @@ type managedTypesState struct {
 	mBufferValues managedBufferMap
 }
 
-// NewBigIntContext creates a new bigIntContext
+// NewBigIntContext creates a new managedTypesContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	context := &managedTypesContext{
 		host: host,
@@ -54,6 +57,19 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	}
 
 	return context, nil
+}
+
+func (context *managedTypesContext) initRandomizer() {
+	randomizer := math.NewSeedRandReader(append(context.host.Blockchain().CurrentRandomSeed(), context.host.Runtime().GetCurrentTxHash()...))
+	context.randomnessGenerator = randomizer
+}
+
+// GetRandReader returns pseudo-randomness generator that implements io.Reader interface
+func (context *managedTypesContext) GetRandReader() io.Reader {
+	if check.IfNil(context.randomnessGenerator) {
+		context.initRandomizer()
+	}
+	return context.randomnessGenerator
 }
 
 // InitState initializes the underlying values map
