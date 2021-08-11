@@ -2,6 +2,8 @@ package contexts
 
 import (
 	"crypto/elliptic"
+	"encoding/hex"
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -27,6 +29,49 @@ func TestNewManagedTypes(t *testing.T) {
 	require.Equal(t, 0, len(managedTypesContext.managedTypesValues.ecValues))
 	require.Equal(t, 0, len(managedTypesContext.managedTypesValues.mBufferValues))
 	require.Equal(t, 0, len(managedTypesContext.managedTypesStack))
+}
+
+func TestManagedTypesContext_Randomness(t *testing.T) {
+	t.Parallel()
+
+	mockRuntime := &contextmock.RuntimeContextMock{
+		CurrentTxHash: []byte{0xf, 0xf, 0xf, 0xf, 0xf, 0xf},
+	}
+	host := &contextmock.VMHostMock{
+		RuntimeContext: mockRuntime,
+	}
+	mockBlockchain := &contextmock.BlockchainHookStub{
+		CurrentRandomSeedCalled: func() []byte {
+			return []byte{0xf, 0xf, 0xf, 0xf, 0xa, 0xb}
+		},
+	}
+	blockchainContext, _ := NewBlockchainContext(host, mockBlockchain)
+	host.BlockchainContext = blockchainContext
+	copyHost := host
+
+	managedTypesContext, _ := NewManagedTypesContext(host)
+	require.Nil(t, managedTypesContext.srr)
+	managedTypesContext.initRandomizer()
+	firstRandomizer := managedTypesContext.srr
+
+	managedTypesContextCopy, _ := NewManagedTypesContext(copyHost)
+	require.Nil(t, managedTypesContextCopy.srr)
+	managedTypesContextCopy.initRandomizer()
+	secondRandomizer := managedTypesContextCopy.srr
+
+	require.Equal(t, firstRandomizer, secondRandomizer)
+
+	prg := managedTypesContext.GetRandReader()
+	a := make([]byte, 100)
+	prg.Read(a)
+	b := make([]byte, 100)
+	for i := 0; i < 1000; i++ {
+		prg.Read(b)
+		require.NotEqual(t, a, b)
+		fmt.Println(hex.EncodeToString(a))
+		fmt.Println(hex.EncodeToString(b))
+		copy(a, b)
+	}
 }
 
 func TestManagedTypesContext_ClearStateStack(t *testing.T) {

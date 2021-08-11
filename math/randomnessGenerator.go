@@ -6,32 +6,29 @@ import (
 	"math/rand"
 )
 
-type SeedRandReader struct {
+type seedRandReader struct {
 	rand *rand.Rand
 }
 
-func NewSeedRandReader(seed []byte) (*SeedRandReader, error) {
-	if len(seed) == 0 {
-		return nil, ErrSeedLengthIsZero
-	}
-
+// NewSeedRandReader creates and returns a new SeedRandReader
+func NewSeedRandReader(seed []byte) *seedRandReader {
 	seedHash := sha256.Sum256(seed)
 	seedNumber := binary.BigEndian.Uint64(seedHash[:])
 
 	source := rand.NewSource(int64(seedNumber))
 	rand := rand.New(source)
 
-	return &SeedRandReader{
+	return &seedRandReader{
 		rand: rand,
-	}, nil
+	}
 }
 
-// Read will read upto len(p) bytes. It will rotate the existing byte buffer (seed) until it will fill up the provided
-// p buffer
-func (srr *SeedRandReader) Read(p []byte) (n int, err error) {
-	if len(p) == 0 {
-		return 0, ErrSeedLengthIsZero
-	}
-
+// Read generates len(p) random bytes and writes them into p. It always returns len(p) and a nil error.
+func (srr *seedRandReader) Read(p []byte) (n int, err error) {
 	return srr.rand.Read(p)
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (srr *seedRandReader) IsInterfaceNil() bool {
+	return srr == nil
 }
