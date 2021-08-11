@@ -853,7 +853,7 @@ func (host *vmHost) callSCMethod() error {
 	var prevPrevTxHash []byte
 
 	if callType == vm.AsynchronousCallBack {
-		prevPrevTxHash := runtime.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
+		prevPrevTxHash = runtime.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
 		async.Load(prevPrevTxHash)
 		asyncCall, err := async.UpdateCurrentCallStatus()
 		if err != nil {

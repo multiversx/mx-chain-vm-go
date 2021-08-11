@@ -651,7 +651,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild-testConfig.GasUsedByCallback).
+				GasRemaining(testConfig.GasProvided-gasUsedByParent-gasUsedByChild-testConfig.GasUsedByCallback).
 				ReturnData([]byte{0}, []byte("succ"))
 		})
 }

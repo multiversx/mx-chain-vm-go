@@ -107,7 +107,7 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(destFunctionName)
-	callData.Bytes(big.NewInt(int64(Async)).Bytes())
+	callData.Bytes(big.NewInt(int64(edge.Type)).Bytes())
 	callData.Int64(int64(edge.GasUsed))
 	callData.Int64(int64(edge.GasUsedByCallback))
 
@@ -152,11 +152,16 @@ func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
 				edgeTypeArgIndex := 0
 				gasUsedArgIndex := 1
 				if host.Runtime().GetVMInput().CallType == vm.AsynchronousCallBack {
-					// for callbacks,
-					// arguments[0] is the hash of the prev prev transaction
-					// arguments[1] is the return code of the async call
-					edgeTypeArgIndex = 2
-					gasUsedArgIndex = 3
+					// if len(arguments) == 5 {
+					// 	// for cross shard callbacks,
+					// 	// arguments[0] is the hash of the prev prev transaction
+					// 	// arguments[1] is the return code of the async call
+					// 	edgeTypeArgIndex = 2
+					// 	gasUsedArgIndex = 3
+					// } else {
+					edgeTypeArgIndex = 1
+					gasUsedArgIndex = 2
+					// }
 				}
 				edgeType := big.NewInt(0).SetBytes(arguments[edgeTypeArgIndex]).Int64()
 				if edgeType == Async {

@@ -16,7 +16,7 @@ import (
 )
 
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTests()
+	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCall()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -61,17 +61,17 @@ func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// func TestGasUsed_AsyncCall_CrossShard_CallGraph(t *testing.T) {
-// 	arwen.SetLoggingForTests()
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
-// func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
-// 	// arwen.SetLoggingForTests()
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
 // func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
 // 	// arwen.SetLoggingForTests()
@@ -129,10 +129,10 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 					switch edge.Type {
 					case test.AsyncCrossShard:
 						callType = vm.AsynchronousCall
-						args = [][]byte{big.NewInt(int64(test.Async)).Bytes(), big.NewInt(int64(edge.GasUsed)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
+						args = [][]byte{big.NewInt(int64(test.AsyncCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsed)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
 					case test.CallbackCrossShard:
 						callType = vm.AsynchronousCallBack
-						args = [][]byte{{0}, big.NewInt(int64(test.Callback)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
+						args = [][]byte{{0}, big.NewInt(int64(test.CallbackCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
 					}
 
 					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, args)
