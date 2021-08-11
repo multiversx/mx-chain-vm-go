@@ -147,6 +147,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
+	GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
@@ -311,7 +312,7 @@ type AsyncContext interface {
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 	UpdateCurrentCallStatus() (*AsyncCall, error)
 
-	Load() error
+	Load(prevPrevTxHash []byte) error
 	Save() error
 	Delete() error
 }

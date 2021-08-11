@@ -336,8 +336,8 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 		return nil, err
 	}
 
-	// The second argument of the callback is the return code of the destination call
-	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[1]).Uint64()
+	// The first argument of the callback is the return code of the destination call
+	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
 	return call, nil
@@ -706,11 +706,9 @@ func (context *asyncContext) save(txHash []byte) error {
 }
 
 // Load restores the internal state of the AsyncContext from the storage of the contract.
-func (context *asyncContext) Load() error {
-	runtime := context.host.Runtime()
+func (context *asyncContext) Load(prevPrevTxHash []byte) error {
 	storage := context.host.Storage()
 
-	prevPrevTxHash := runtime.Arguments()[0]
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, prevPrevTxHash)
 	data := storage.GetStorage(storageKey)
 	if len(data) == 0 {

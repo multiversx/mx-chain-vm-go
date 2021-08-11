@@ -850,8 +850,11 @@ func (host *vmHost) callSCMethod() error {
 	async := host.Async()
 	callType := vmInput.CallType
 
+	var prevPrevTxHash []byte
+
 	if callType == vm.AsynchronousCallBack {
-		async.Load()
+		prevPrevTxHash := runtime.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
+		async.Load(prevPrevTxHash)
 		asyncCall, err := async.UpdateCurrentCallStatus()
 		if err != nil {
 			log.Trace("UpdateCurrentCallStatus failed", "error", err)
@@ -907,7 +910,7 @@ func (host *vmHost) callSCMethod() error {
 	case vm.AsynchronousCall:
 		err = host.sendAsyncCallbackToCaller()
 	case vm.AsynchronousCallBack:
-		async.Load()
+		async.Load(prevPrevTxHash)
 		err = async.PostprocessCrossShardCallback()
 	default:
 		err = arwen.ErrUnknownCallType

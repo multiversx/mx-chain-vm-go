@@ -592,3 +592,8 @@ func (contextWrapper *RuntimeContextWrapper) HasFunction(functionName string) bo
 func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 	return contextWrapper.GetPrevTxHash()
 }
+
+// GetPPTxHashAndUpdateArgumentsForAsyncCallBack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+	return contextWrapper.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
+}

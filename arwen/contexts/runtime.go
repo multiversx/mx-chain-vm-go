@@ -800,3 +800,9 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	_, ok := context.instance.GetExports()[functionName]
 	return ok
 }
+
+func (context *runtimeContext) GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+	prevPrevTxHash := context.vmInput.Arguments[0]
+	context.vmInput.Arguments = context.vmInput.Arguments[1:]
+	return prevPrevTxHash
+}

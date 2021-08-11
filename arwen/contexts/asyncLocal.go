@@ -266,7 +266,6 @@ func (context *asyncContext) createCallbackInput(
 
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
-		runtime.GetPrevTxHash(),
 		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
 	}
 

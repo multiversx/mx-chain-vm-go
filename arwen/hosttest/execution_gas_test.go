@@ -600,7 +600,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 		WithConfig(testConfig).
 		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
 
-	arguments := [][]byte{{}, {0}, []byte("thirdparty"), []byte("vault")}
+	arguments := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
 
 	// async cross shard callback child -> parent
 	test.BuildMockInstanceCallTest(t).
