@@ -2,8 +2,6 @@ package contexts
 
 import (
 	"crypto/elliptic"
-	"encoding/hex"
-	"fmt"
 	"math/big"
 	"testing"
 
@@ -68,8 +66,6 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		prg.Read(b)
 		require.NotEqual(t, a, b)
-		fmt.Println(hex.EncodeToString(a))
-		fmt.Println(hex.EncodeToString(b))
 		copy(a, b)
 	}
 }

@@ -1,12 +1,14 @@
 package math
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestRandomnessGenerator(t *testing.T) {
+	t.Parallel()
 	firstStr := "the usage of the same seed must generate 2 equal randomizers"
 	firstSeed := []byte(firstStr)
 	var firstRandomizer *seedRandReader
@@ -16,11 +18,8 @@ func TestRandomnessGenerator(t *testing.T) {
 
 	secondStr := "the usage of the same seed must generate 2 equal randomizers"
 	secondSeed := []byte(secondStr)
-	var secondRandomizer *seedRandReader
-	require.True(t, secondRandomizer.IsInterfaceNil())
-	secondRandomizer = NewSeedRandReader(secondSeed)
+	secondRandomizer := NewSeedRandReader(secondSeed)
 	require.Equal(t, firstRandomizer, secondRandomizer)
-	require.False(t, secondRandomizer.IsInterfaceNil())
 
 	thirdStr := "the usage of two different seeds must generate 2 different randomizers"
 	thirdSeed := []byte(thirdStr)
@@ -41,4 +40,23 @@ func TestRandomnessGenerator(t *testing.T) {
 	c := make([]byte, 100)
 	thirdRandomizer.Read(c)
 	require.NotEqual(t, a, c)
+
+	len, err := thirdRandomizer.Read(nil)
+	require.Nil(t, err)
+	require.Equal(t, 0, len)
+
+	c = make([]byte, 0)
+	len, err = thirdRandomizer.Read(c)
+	require.Nil(t, err)
+	require.Equal(t, 0, len)
+}
+
+func TestBackwardsCompatible(t *testing.T) {
+	t.Parallel()
+	str := "Backwards compatible test string"
+	seed := []byte(str)
+	randomizer := NewSeedRandReader(seed)
+	a := make([]byte, 32)
+	randomizer.Read(a)
+	require.Equal(t, "7459d163b20b5b0269ce2211a2cc061cc9e512fdcbe025b0fa359014f6619ed0", hex.EncodeToString(a))
 }
