@@ -48,14 +48,14 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 	copyHost := host
 
 	managedTypesContext, _ := NewManagedTypesContext(host)
-	require.Nil(t, managedTypesContext.srr)
+	require.Nil(t, managedTypesContext.randomnessGenerator)
 	managedTypesContext.initRandomizer()
-	firstRandomizer := managedTypesContext.srr
+	firstRandomizer := managedTypesContext.randomnessGenerator
 
 	managedTypesContextCopy, _ := NewManagedTypesContext(copyHost)
-	require.Nil(t, managedTypesContextCopy.srr)
+	require.Nil(t, managedTypesContextCopy.randomnessGenerator)
 	managedTypesContextCopy.initRandomizer()
-	secondRandomizer := managedTypesContextCopy.srr
+	secondRandomizer := managedTypesContextCopy.randomnessGenerator
 
 	require.Equal(t, firstRandomizer, secondRandomizer)
 

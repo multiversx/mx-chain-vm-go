@@ -32,10 +32,10 @@ type bigIntMap map[int32]*big.Int
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type managedTypesContext struct {
-	host               arwen.VMHost
-	managedTypesValues managedTypesState
-	managedTypesStack  []managedTypesState
-	srr                math.RandomnessGenerator
+	host                arwen.VMHost
+	managedTypesValues  managedTypesState
+	managedTypesStack   []managedTypesState
+	randomnessGenerator math.RandomnessGenerator
 }
 
 type managedTypesState struct {
@@ -61,15 +61,15 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 
 func (context *managedTypesContext) initRandomizer() {
 	randomizer := math.NewSeedRandReader(append(context.host.Blockchain().CurrentRandomSeed(), context.host.Runtime().GetCurrentTxHash()...))
-	context.srr = randomizer
+	context.randomnessGenerator = randomizer
 }
 
 // GetRandReader returns pseudo-randomness generator that implements io.Reader interface
 func (context *managedTypesContext) GetRandReader() io.Reader {
-	if check.IfNil(context.srr) {
+	if check.IfNil(context.randomnessGenerator) {
 		context.initRandomizer()
 	}
-	return context.srr
+	return context.randomnessGenerator
 }
 
 // InitState initializes the underlying values map
