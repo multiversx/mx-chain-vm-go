@@ -60,7 +60,7 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 }
 
 func (context *managedTypesContext) initRandomizer() {
-	randomizer := math.NewSeedRandReader(append(context.host.Blockchain().CurrentRandomSeed(), context.host.Runtime().GetCurrentTxHash()...))
+	randomizer := math.NewSeedRandReader(append(append(context.host.Blockchain().CurrentRandomSeed(), context.host.Runtime().GetCurrentTxHash()...), context.host.Blockchain().LastRandomSeed()...))
 	context.randomnessGenerator = randomizer
 }
 
