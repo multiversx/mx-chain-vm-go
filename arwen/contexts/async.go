@@ -569,7 +569,7 @@ func (context *asyncContext) Execute() error {
 	}
 
 	logAsync.Trace("async.Execute() save")
-	err = context.Save()
+	err = context.Save(context.host.Runtime().GetCurrentTxHash())
 	if err != nil {
 		return err
 	}
@@ -656,7 +656,7 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	}
 
 	asyncStoredKey := runtime.Arguments()[0]
-	context.save(asyncStoredKey)
+	context.Save(asyncStoredKey)
 
 	if context.contextCallbackEnabled {
 		return context.executeContextCallback()
@@ -680,18 +680,13 @@ func (context *asyncContext) IsComplete() bool {
 }
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
-func (context *asyncContext) Save() error {
-	runtime := context.host.Runtime()
-	return context.save(runtime.GetCurrentTxHash())
-}
-
-func (context *asyncContext) save(txHash []byte) error {
+func (context *asyncContext) Save(currentTxHash []byte) error {
 	if len(context.asyncCallGroups) == 0 {
 		return nil
 	}
 
 	storage := context.host.Storage()
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, txHash)
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, currentTxHash)
 	data, err := context.Serialize()
 	if err != nil {
 		return err

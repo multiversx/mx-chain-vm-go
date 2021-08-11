@@ -313,6 +313,6 @@ type AsyncContext interface {
 	UpdateCurrentCallStatus() (*AsyncCall, error)
 
 	Load(prevPrevTxHash []byte) error
-	Save() error
+	Save(currentTxHash []byte) error
 	Delete() error
 }
