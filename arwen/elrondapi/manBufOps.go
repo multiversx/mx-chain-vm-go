@@ -45,6 +45,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("mBufferNewRandom", v1_4_mBufferNewRandom, C.v1_4_mBufferNewRandom)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("mBufferSetBytes", v1_4_mBufferSetBytes, C.v1_4_mBufferSetBytes)
 	if err != nil {
 		return nil, err
