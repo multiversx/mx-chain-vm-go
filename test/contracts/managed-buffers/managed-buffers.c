@@ -88,15 +88,16 @@ void mBufferMethod() {
     if ( verifyIfBuffersAreEqual(mBufferHandle4,mBufferHandle5) != 0) ok = 1;
 
     //Random
-    int randomBufferHandle = mBufferNewRandom(100);
-    if (mBufferGetLength(randomBufferHandle) != 100) ok = 1;
+    int randomBufferHandle = mBufferNew();
+    int result = mBufferSetRandom(randomBufferHandle, 100);
+    if (mBufferGetLength(randomBufferHandle) != 100 || result == 1) ok = 1;
     
     finishResult(ok);
 }
 
 void mBufferNewTest() {
     int reps;
-    int64getArgument(reps);
+    reps = int64getArgument(0);
     for (int i = 0; i < reps; i++)
     {
         int handle = mBufferNew();
@@ -105,122 +106,132 @@ void mBufferNewTest() {
 
 void mBufferNewFromBytesTest() {
     int reps, lengthOfBuffer;
-    int64getArgument(reps);
-    int64getArgument(lengthOfBuffer);
+    reps = int64getArgument(0);
+    lengthOfBuffer = int64getArgument(1);
     for (int i = 0; i < reps; i++)
     {
         int handle = mBufferNewFromBytes(mBuffer2,lengthOfBuffer);
     }
 }
 
-void mBufferNewRandomTest() {
-    int reps;
-    int64getArgument(reps);
+void mBufferSetRandomTest() {
+    int reps, result;
+    reps = int64getArgument(0);
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int handle = mBufferNewRandom(i+1);
+         result = mBufferSetRandom(randomBufferHandle, i+1);
     }
 }
 
 void mBufferGetLengthTest() {
-    int reps;
-    int64getArgument(reps);
+    int reps, result;
+    reps = int64getArgument(0);
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int handle = mBufferNewRandom(i+1);
-        int length = mBufferGetLength(handle);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        int length = mBufferGetLength(randomBufferHandle);
     }
 }
 
 void mBufferGetBytesTest() {
-    int reps;
-    int64getArgument(reps);
+    int reps, result;
+    reps = int64getArgument(0);
     byte returnDataBuffer[255];
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int handle = mBufferNewRandom(i+1);
-        mBufferGetBytes(handle, returnDataBuffer);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferGetBytes(randomBufferHandle, returnDataBuffer);
     }  
 }
 
 void mBufferAppendTest() {
-    int reps;
-    int64getArgument(reps);
+    int reps, result;
+    reps = int64getArgument(0);
     byte returnDataBuffer[255];
-    int mBufferHandle = mBufferNew(); 
+    int randomBufferHandle = mBufferNew();
+    int handle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int handle = mBufferNewRandom(i+1);
-        mBufferGetBytes(handle, returnDataBuffer);
-        mBufferAppend(mBufferHandle,returnDataBuffer,i+1);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferGetBytes(randomBufferHandle, returnDataBuffer);
+        mBufferAppend(handle,returnDataBuffer,i+1);
+        mBufferFinish(handle);
     }
 }
 
 void mBufferToBigIntUnsignedTest() {
-    int reps;
-    int64getArgument(reps);
-    int bigIntHandle;
+    int reps, result, bigIntHandle;
+    reps = int64getArgument(0);
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int mBufferHandle = mBufferNewRandom(i+1);
-        mBufferToBigIntUnsigned(mBufferHandle,bigIntHandle);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferToBigIntUnsigned(randomBufferHandle,bigIntHandle);
     }
 }
 
 void mBufferToBigIntSignedTest() {
-    int reps;
-    int64getArgument(reps);
-    int bigIntHandle;
+    int reps, result, bigIntHandle;
+    reps = int64getArgument(0);
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int mBufferHandle = mBufferNewRandom(i+1);
-        mBufferToBigIntSigned(mBufferHandle,bigIntHandle);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferToBigIntSigned(randomBufferHandle,bigIntHandle);
     }
 }
 
 void mBufferFromBigIntUnsignedTest() {
-    int reps;
-    int64getArgument(reps);
-    int bigIntHandle;
+    int reps, result, bigIntHandle;
+    reps = int64getArgument(0);
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int mBufferHandle = mBufferNewRandom(i+1);
-        mBufferToBigIntUnsigned(mBufferHandle,bigIntHandle);
-        mBufferFromBigIntUnsigned(mBufferHandle,bigIntHandle);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferToBigIntUnsigned(randomBufferHandle,bigIntHandle);
+        mBufferFromBigIntUnsigned(randomBufferHandle,bigIntHandle);
     }
 }
 
 void mBufferFromBigIntSignedTest() {
-    int reps;
-    int64getArgument(reps);
+    int reps, result;
+    reps = int64getArgument(0);
     int bigIntHandle;
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int mBufferHandle = mBufferNewRandom(i+1);
-        mBufferToBigIntSigned(mBufferHandle,bigIntHandle);
-        mBufferFromBigIntSigned(mBufferHandle,bigIntHandle);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferToBigIntSigned(randomBufferHandle,bigIntHandle);
+        mBufferFromBigIntSigned(randomBufferHandle,bigIntHandle);
     }
 }
 
 void mBufferStorageStoreTest() {
-    int reps;
-    int64getArgument(reps);
+    int reps, result;
+    reps = int64getArgument(0);
+    int randomBufferHandle = mBufferNew();
+    int randomKeyHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int keyHandle = mBufferNewRandom(5);
-        int mBufferHandle = mBufferNewRandom(i+1);
-        mBufferStorageStore(keyHandle,mBufferHandle);
+        result = mBufferSetRandom(randomKeyHandle,5);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferStorageStore(randomKeyHandle,randomBufferHandle);
     }  
 }
 
 void mBufferStorageLoadTest() {
-    int reps;
-    int64getArgument(reps);
+    int reps, result;
+    reps = int64getArgument(0);
+    int randomKeyHandle = mBufferNew();
+    int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        int keyHandle = mBufferNewRandom(5);
-        int mBufferHandle = mBufferNewRandom(i+1);
-        mBufferStorageLoad(keyHandle,mBufferHandle);
+        result = mBufferSetRandom(randomKeyHandle, 5);
+        result = mBufferSetRandom(randomBufferHandle,i+1);
+        mBufferStorageLoad(randomKeyHandle,randomBufferHandle);
     }  
 }
 

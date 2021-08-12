@@ -2,7 +2,7 @@ init
 mBufferMethod
 mBufferNewTest
 mBufferNewFromBytesTest
-mBufferNewRandomTest
+mBufferSetRandomTest
 mBufferGetLengthTest
 mBufferGetBytesTest
 mBufferAppendTest
