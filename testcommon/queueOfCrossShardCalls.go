@@ -1,6 +1,8 @@
 package testcommon
 
-import "github.com/ElrondNetwork/elrond-go-core/data/vm"
+import (
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+)
 
 // CrossShardCall -
 type CrossShardCall struct {

@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -113,36 +115,15 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	var crossShardCall *test.CrossShardCall
 	for !crossShardCallsQueue.IsEmpty() {
-		crtTxNumber++
 		crossShardCall = crossShardCallsQueue.Dequeue()
 		startNode = crossShardCall.StartNode
 
-		crossShardNodes := make([]*test.TestCallNode, 0)
-		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-			for _, edge := range node.AdjacentEdges {
-				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
-					destinationNode := edge.To
-					crossShardNodes = append(crossShardNodes, destinationNode)
-
-					var args [][]byte
-					var callType vm.CallType
-					switch edge.Type {
-					case test.AsyncCrossShard:
-						callType = vm.AsynchronousCall
-						args = [][]byte{big.NewInt(int64(test.AsyncCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsed)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
-					case test.CallbackCrossShard:
-						callType = vm.AsynchronousCallBack
-						args = [][]byte{{0}, big.NewInt(int64(test.CallbackCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
-					}
-
-					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, args)
-				}
-			}
-			return node
-		}, false)
-
+		crtTxNumber++
 		crtTxHash := big.NewInt(int64(crtTxNumber)).Bytes()
+		fmt.Println("set tx hash for " + crossShardCall.StartNode.Label + " to " + fmt.Sprintf("%d", crtTxNumber))
 		crossShardCall.StartNode.CrtTxHash = crtTxHash
+
+		crossShardNodes := preprocessLocalCallSubtree(gasGraph, startNode, crossShardCallsQueue)
 
 		if crossShardCall.CallType == vm.AsynchronousCallBack {
 			crossShardCall.Arguments = append([][]byte{crossShardCall.StartNode.Parent.Parent.CrtTxHash}, crossShardCall.Arguments...)
@@ -199,6 +180,64 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	fmt.Println("-> expectedGasUsagePerContract ", expectedGasUsagePerContract)
 	CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
 	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
+}
+
+func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue) []*test.TestCallNode {
+	crossShardNodes := make([]*test.TestCallNode, 0)
+	gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+		indexOfAsyncCall := -1
+		for _, edge := range node.AdjacentEdges {
+			if edge.Type == test.Async {
+				indexOfAsyncCall++
+			}
+			assignCrtTxHashToNode(edge, node, indexOfAsyncCall)
+			if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
+				crossShardNodes = enqueueCrossShardCall(edge, crossShardNodes, crossShardCallsQueue, node)
+			}
+		}
+		return node
+	}, false)
+	return crossShardNodes
+}
+
+func assignCrtTxHashToNode(edge *test.TestCallEdge, node *test.TestCallNode, indexOfAsyncCall int) {
+	if edge.Type == test.Sync || edge.Type == test.Callback {
+		edge.To.CrtTxHash = node.CrtTxHash
+	}
+	if edge.Type == test.Async {
+		var prevTxHash []byte
+		if node.Parent != nil {
+			prevTxHash = node.Parent.CrtTxHash
+		}
+
+		// TODO matei-p reuse / factor out to match async call id assignement logic
+		asyncCallIdentifier := fmt.Sprint(indexOfAsyncCall)
+		edge.To.CrtTxHash = contexts.NewTxHashForLocalAsyncCall(
+			factory.NewVMCrypto(),
+			[]byte(asyncCallIdentifier),
+			node.CrtTxHash,
+			prevTxHash,
+		)
+	}
+}
+
+func enqueueCrossShardCall(edge *test.TestCallEdge, crossShardNodes []*test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue, node *test.TestCallNode) []*test.TestCallNode {
+	destinationNode := edge.To
+	crossShardNodes = append(crossShardNodes, destinationNode)
+
+	var args [][]byte
+	var callType vm.CallType
+	switch edge.Type {
+	case test.AsyncCrossShard:
+		callType = vm.AsynchronousCall
+		args = [][]byte{big.NewInt(int64(test.AsyncCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsed)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
+	case test.CallbackCrossShard:
+		callType = vm.AsynchronousCallBack
+		args = [][]byte{{0}, big.NewInt(int64(test.CallbackCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
+	}
+
+	crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, args)
+	return crossShardNodes
 }
 
 func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {

@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -231,11 +232,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
-	// TODO matei-p factor out to use also in tests
-	// newTxHash := NewTxHashFromExisting([]byte(asyncCall.Identifier), runtime.GetCurrentTxHash(), runtime.GetPrevTxHash())
-	newTxHash := append([]byte(asyncCall.Identifier), runtime.GetCurrentTxHash()...)
-	newTxHash = append(newTxHash, runtime.GetPrevTxHash()...)
-	newTxHash, _ = host.Crypto().Sha256(newTxHash)
+	newTxHash := NewTxHashForLocalAsyncCall(host.Crypto(), []byte(asyncCall.Identifier), runtime.GetCurrentTxHash(), runtime.GetPrevTxHash())
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -255,6 +252,13 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 
 	return contractCallInput, nil
+}
+
+func NewTxHashForLocalAsyncCall(crypto crypto.VMCrypto, asyncCallIdentifier []byte, currentTxHash []byte, prevTxHash []byte) []byte {
+	newTxHash := append(asyncCallIdentifier, currentTxHash...)
+	newTxHash = append(newTxHash, prevTxHash...)
+	newTxHash, _ = crypto.Sha256(newTxHash)
+	return newTxHash
 }
 
 // TODO function too large; refactor needed
