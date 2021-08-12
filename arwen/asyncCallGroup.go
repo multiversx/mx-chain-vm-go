@@ -2,6 +2,7 @@ package arwen
 
 import (
 	"bytes"
+	"fmt"
 )
 
 // AsyncCallGroup is a structure containing a group of async calls and a callback
@@ -46,6 +47,7 @@ func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 
 // AddAsyncCall adds a given AsyncCall to the AsyncCallGroup
 func (acg *AsyncCallGroup) AddAsyncCall(call *AsyncCall) {
+	call.Identifier = acg.Identifier + fmt.Sprint(len(acg.AsyncCalls))
 	acg.AsyncCalls = append(acg.AsyncCalls, call)
 }
 

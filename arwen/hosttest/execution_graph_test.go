@@ -73,11 +73,11 @@ func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
-// 	// arwen.SetLoggingForTests()
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard3()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard3()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
 // func TestGasUsed_AsyncCall_CrossShard_Complex_CallGraph(t *testing.T) {
 // 	arwen.SetLoggingForTests()
@@ -254,7 +254,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
 }
 
-// TODO matei-p
+// TODO matei-p generate asserts from this
 func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardCallsQueue *test.CrossShardCallsQueue) {
 	for _, outputAccount := range vmOutput.OutputAccounts {
 		for _, outputTransfer := range outputAccount.OutputTransfers {

@@ -2038,10 +2038,9 @@ func TestExecution_AsyncCall(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// TODO matei-p restore correct gas assertions
-				// GasUsed(test.ParentAddress, 9114).
-				// GasUsed(test.ChildAddress, 2534).
-				// GasRemaining(104352).
+				GasUsed(test.ParentAddress, 9114).
+				GasUsed(test.ChildAddress, 2534).
+				GasRemaining(104352).
 				Balance(test.ParentAddress, 1000).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ThirdPartyAddress, 6).
@@ -2134,12 +2133,11 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.UserError().
 				ReturnMessage("callBack error").
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 197437).
-				// GasUsed(test.ChildAddress, 2534).
+				GasUsed(test.ParentAddress, 197420).
+				GasUsed(test.ChildAddress, 2534).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				// GasRemaining(29).
+				GasRemaining(46).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).

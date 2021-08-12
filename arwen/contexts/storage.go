@@ -118,14 +118,6 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
 func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) []byte {
-	metering := context.host.Metering()
-
-	extraBytes := len(key) - arwen.AddressLen
-	if extraBytes > 0 {
-		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		metering.UseGas(gasToUse)
-	}
-
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
@@ -136,6 +128,19 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		if !metadata.Readable {
 			return nil
 		}
+	}
+
+	return context.GetStorageFromAddressNoChecks(address, key)
+}
+
+// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by arwen, so no permissions checks are necessary
+func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) []byte {
+	metering := context.host.Metering()
+
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes > 0 {
+		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		metering.UseGas(gasToUse)
 	}
 
 	// If the requested key is protected by the Elrond node, the stored value

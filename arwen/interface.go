@@ -269,6 +269,7 @@ type StorageContext interface {
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) []byte
+	GetStorageFromAddressNoChecks(address []byte, key []byte) []byte
 	GetStorage(key []byte) []byte
 	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
@@ -310,7 +311,6 @@ type AsyncContext interface {
 	Execute() error
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
-	UpdateCurrentCallStatus() (*AsyncCall, error)
 
 	Load(prevPrevTxHash []byte) error
 	Save(currentTxHash []byte) error

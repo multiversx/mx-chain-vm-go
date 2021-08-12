@@ -66,6 +66,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
+	txHashOfNewCall := destinationCallInput.CurrentTxHash
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
@@ -75,7 +76,10 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	if asyncCall.HasCallback() {
+	receiverAddr := destinationCallInput.RecipientAddr
+	deserializedAsyncCtx, _ := NewSerializedAsyncContextFromStore(context.host.Storage(), receiverAddr, txHashOfNewCall)
+
+	if asyncCall.HasCallback() && (deserializedAsyncCtx == nil || !deserializedAsyncCtx.HasPendingCallGroups()) {
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 		context.gasAccumulated = 0
@@ -188,14 +192,6 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	return nil
 }
 
-// executeSyncContextCallback will execute the callback of the original caller
-// synchronously, already assuming the original caller is in the same shard
-func (context *asyncContext) executeSyncContextCallback() {
-	callbackCallInput := context.createContextCallbackInput()
-	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr)
-}
-
 // TODO return values are never used by code that calls finishAsyncLocalExecution
 func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutput, err error) {
 	if err == nil {
@@ -235,6 +231,12 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
+	// TODO matei-p factor out to use also in tests
+	// newTxHash := NewTxHashFromExisting([]byte(asyncCall.Identifier), runtime.GetCurrentTxHash(), runtime.GetPrevTxHash())
+	newTxHash := append([]byte(asyncCall.Identifier), runtime.GetCurrentTxHash()...)
+	newTxHash = append(newTxHash, runtime.GetPrevTxHash()...)
+	newTxHash, _ = host.Crypto().Sha256(newTxHash)
+
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     sender,
@@ -244,9 +246,9 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
 			GasLocked:      asyncCall.GetGasLocked(),
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
+			CurrentTxHash:  newTxHash,
 			OriginalTxHash: runtime.GetOriginalTxHash(),
-			PrevTxHash:     runtime.GetPrevTxHash(),
+			PrevTxHash:     runtime.GetCurrentTxHash(),
 		},
 		RecipientAddr: asyncCall.GetDestination(),
 		Function:      function,

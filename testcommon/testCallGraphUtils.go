@@ -152,16 +152,9 @@ func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
 				edgeTypeArgIndex := 0
 				gasUsedArgIndex := 1
 				if host.Runtime().GetVMInput().CallType == vm.AsynchronousCallBack {
-					// if len(arguments) == 5 {
-					// 	// for cross shard callbacks,
-					// 	// arguments[0] is the hash of the prev prev transaction
-					// 	// arguments[1] is the return code of the async call
-					// 	edgeTypeArgIndex = 2
-					// 	gasUsedArgIndex = 3
-					// } else {
+					// for callbacks, first argument is return code
 					edgeTypeArgIndex = 1
 					gasUsedArgIndex = 2
-					// }
 				}
 				edgeType := big.NewInt(0).SetBytes(arguments[edgeTypeArgIndex]).Int64()
 				if edgeType == Async {

@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -196,6 +197,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 }
 
 func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
+	// for DirectCalls tx hashses are not filled
+	if input.CallType != vm.DirectCall {
+		return
+	}
 	currentVMInput := runtime.GetVMInput()
 	if len(currentVMInput.OriginalTxHash) > 0 {
 		input.OriginalTxHash = currentVMInput.OriginalTxHash
@@ -854,8 +859,8 @@ func (host *vmHost) callSCMethod() error {
 
 	if callType == vm.AsynchronousCallBack {
 		prevPrevTxHash = runtime.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
-		async.Load(prevPrevTxHash)
-		asyncCall, err := async.UpdateCurrentCallStatus()
+		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
+		asyncCall, err := contexts.UpdateCurrentAsyncCallStatus(host.Storage(), runtime.GetSCAddress(), vmInput, prevPrevTxHash)
 		if err != nil {
 			log.Trace("UpdateCurrentCallStatus failed", "error", err)
 			err = async.PostprocessCrossShardCallback()
@@ -866,7 +871,6 @@ func (host *vmHost) callSCMethod() error {
 		}
 
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
-		async.InitState()
 	}
 
 	// TODO refactor this, and apply this condition in other places where a

@@ -244,3 +244,8 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	host.VMOutputToReturn += 1
 	return vmOutput
 }
+
+// UpdateCurrentAsyncCallStatus mock method
+func (host *VMHostMock) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
+	return nil, nil
+}

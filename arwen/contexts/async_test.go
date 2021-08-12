@@ -69,6 +69,8 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = factory.NewVMCrypto()
+	host.StorageContext, _ = NewStorageContext(host, world, elrondReservedTestPrefix)
+
 	return host, world
 }
 
@@ -453,16 +455,21 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
+	storage := host.Storage()
+	(&serializableAsyncContext{}).writeToStorage(storage, []byte{})
+
+	address := host.Runtime().GetSCAddress()
+
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err := async.UpdateCurrentCallStatus()
+	asyncCall, err := UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
 	vmInput.CallType = vm.AsynchronousCall
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
@@ -471,7 +478,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrCannotInterpretCallbackArgs))
 
@@ -480,7 +487,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
@@ -495,7 +502,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
@@ -507,10 +514,24 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	})
 	require.Nil(t, err)
 
+	serializedAsyncCtx := &serializableAsyncContext{
+		AsyncCallGroups: []*arwen.AsyncCallGroup{
+			{
+				Identifier: "",
+				AsyncCalls: []*arwen.AsyncCall{
+					{
+						Destination: []byte("caller"),
+					},
+				},
+			},
+		},
+	}
+	serializedAsyncCtx.writeToStorage(storage, []byte{})
+
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
@@ -521,7 +542,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = UpdateCurrentAsyncCallStatus(storage, address, &vmInput.VMInput, []byte{})
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallRejected, asyncCall.Status)
@@ -619,8 +640,11 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	require.Len(t, host.StoredInputs, 1)
 
 	// The ContractCallInput generated to execute the destination call synchronously
+	originalCurrentTxHash := originalVMInput.CurrentTxHash
+	originalVMInput.CurrentTxHash, _ = host.Crypto().Sha256(append(originalVMInput.CurrentTxHash, originalVMInput.PrevTxHash...))
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
 	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
+
 	require.Equal(t, destInput, host.StoredInputs[0])
 
 	// Verify the final VMOutput, containing the failure.
@@ -629,7 +653,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	expectedOutput.ReturnMessage = "not enough gas"
 	expectedOutput.GasRemaining = 0
 	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
-	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
+	arwen.AddFinishData(expectedOutput, originalCurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -639,6 +663,8 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 
 	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
 	vmOutput := host.Output().GetVMOutput()
+	// Bob entry is retuned by the MockWorld.GetStorageData()
+	delete(vmOutput.OutputAccounts, string(Bob))
 	require.Equal(t, expectedOutput, vmOutput)
 }
 
@@ -661,6 +687,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
 	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
 	destInput.GasLocked = asyncCall.GasLocked
+	destInput.CurrentTxHash, _ = host.Crypto().Sha256(append(originalVMInput.CurrentTxHash, originalVMInput.PrevTxHash...))
 
 	// Prepare the output of Bob (the destination call)
 	destOutput := defaultDestOutput_Ok()
@@ -704,8 +731,10 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	actualOutput := host.Output().GetVMOutput()
+	// Bob entry is retuned empty by the MockWorld.GetStorageData()
+	delete(actualOutput.OutputAccounts, string(Bob))
 	require.Equal(t, expectedOutput, actualOutput)
 }
 
@@ -736,6 +765,7 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 	require.NotNil(t, input)
 
 	expectedInput := defaultCallInput_AliceToBob(originalVMInput)
+	expectedInput.CurrentTxHash, _ = host.Crypto().Sha256(append(originalVMInput.CurrentTxHash, originalVMInput.PrevTxHash...))
 	expectedInput.GasProvided = 1
 	require.Equal(t, expectedInput, input)
 }

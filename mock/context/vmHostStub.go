@@ -47,6 +47,8 @@ type VMHostStub struct {
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
+
+	UpdateCurrentAsyncCallStatusCalled func(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error)
 }
 
 // GetVersion mocked method
@@ -306,4 +308,12 @@ func (vhs *VMHostStub) Async() arwen.AsyncContext {
 		return vhs.AsyncCalled()
 	}
 	return nil
+}
+
+// UpdateCurrentAsyncCallStatus mock method
+func (vhs *VMHostStub) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
+	if vhs.UpdateCurrentAsyncCallStatusCalled != nil {
+		return vhs.UpdateCurrentAsyncCallStatusCalled(vmInput, prevPrevTxHash)
+	}
+	return nil, nil
 }

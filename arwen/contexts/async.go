@@ -308,7 +308,11 @@ func (context *asyncContext) callExists(destination []byte) bool {
 }
 
 func (context *asyncContext) findCall(destination []byte) (string, int, error) {
-	for _, group := range context.asyncCallGroups {
+	return findCallInAsyncCallGroups(context.asyncCallGroups, destination)
+}
+
+func findCallInAsyncCallGroups(asyncCallGroups []*arwen.AsyncCallGroup, destination []byte) (string, int, error) {
+	for _, group := range asyncCallGroups {
 		callIndex, ok := group.FindByDestination(destination)
 		if ok {
 			return group.Identifier, callIndex, nil
@@ -318,11 +322,15 @@ func (context *asyncContext) findCall(destination []byte) (string, int, error) {
 	return "", -1, arwen.ErrAsyncCallNotFound
 }
 
-// UpdateCurrentCallStatus detects the AsyncCall returning as callback,
+// UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
 // extracts the ReturnCode from data provided by the destination call, and updates
 // the status of the AsyncCall with its value.
-func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error) {
-	vmInput := context.host.Runtime().GetVMInput()
+func UpdateCurrentAsyncCallStatus(storage arwen.StorageContext, address []byte, vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
+	deserializedContext, err := NewSerializedAsyncContextFromStore(storage, address, prevPrevTxHash)
+	if err != nil {
+		return nil, err
+	}
+
 	if vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
@@ -331,7 +339,7 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 		return nil, arwen.ErrCannotInterpretCallbackArgs
 	}
 
-	call, err := context.getCurrentCall()
+	call, err := deserializedContext.getCall(vmInput.CallerAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -340,18 +348,25 @@ func (context *asyncContext) UpdateCurrentCallStatus() (*arwen.AsyncCall, error)
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
-	return call, nil
-}
-
-func (context *asyncContext) getCurrentCall() (*arwen.AsyncCall, error) {
-	vmInput := context.host.Runtime().GetVMInput()
-	groupID, index, err := context.findCall(vmInput.CallerAddr)
+	err = deserializedContext.writeToStorage(storage, prevPrevTxHash)
 	if err != nil {
 		return nil, err
 	}
 
-	group, _ := context.GetCallGroup(groupID)
-	call := group.AsyncCalls[index]
+	return call, nil
+}
+
+func (context *serializableAsyncContext) getCall(caller []byte) (*arwen.AsyncCall, error) {
+	groupID, index, err := findCallInAsyncCallGroups(context.AsyncCallGroups, caller)
+	if err != nil {
+		return nil, err
+	}
+
+	groupIndex, groupFound := findGroupByIDInAsyncCallGroups(context.AsyncCallGroups, groupID)
+	if !groupFound {
+		return nil, err
+	}
+	call := context.AsyncCallGroups[groupIndex].AsyncCalls[index]
 	return call, nil
 }
 
@@ -658,9 +673,20 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	asyncStoredKey := runtime.Arguments()[0]
 	context.Save(asyncStoredKey)
 
+	// TODO matei-p factor out and call from async.Execute(), DONT execute twice!
 	if context.contextCallbackEnabled {
-		return context.executeContextCallback()
+		err := context.executeContextCallback()
+		if err != nil {
+			return err
+		}
 	}
+
+	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
+	if !sameShard {
+		return context.sendCallbackToOriginalCaller()
+	}
+
+	// TODO matei-p call ExecuteOnDest() for local callback
 
 	return nil
 }
@@ -684,10 +710,13 @@ func (context *asyncContext) Save(currentTxHash []byte) error {
 	if len(context.asyncCallGroups) == 0 {
 		return nil
 	}
+	return context.toSerializable().writeToStorage(context.host.Storage(), currentTxHash)
+}
 
-	storage := context.host.Storage()
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, currentTxHash)
-	data, err := context.Serialize()
+func (context *serializableAsyncContext) writeToStorage(storage arwen.StorageContext, txHash []byte) error {
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, txHash)
+
+	data, err := json.Marshal(context)
 	if err != nil {
 		return err
 	}
@@ -700,26 +729,40 @@ func (context *asyncContext) Save(currentTxHash []byte) error {
 	return nil
 }
 
+func (context *serializableAsyncContext) HasPendingCallGroups() bool {
+	return len(context.AsyncCallGroups) > 0
+}
+
 // Load restores the internal state of the AsyncContext from the storage of the contract.
 func (context *asyncContext) Load(prevPrevTxHash []byte) error {
 	storage := context.host.Storage()
-
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, prevPrevTxHash)
-	data := storage.GetStorage(storageKey)
-	if len(data) == 0 {
-		return arwen.ErrNoStoredAsyncContextFound
-	}
-
-	loadedContext, err := context.deserialize(data)
+	address := context.host.Runtime().GetSCAddress()
+	deserializedContext, err := NewSerializedAsyncContextFromStore(storage, address, prevPrevTxHash)
 	if err != nil {
 		return err
 	}
+	loadedContext := context.fromSerializable(deserializedContext)
 
 	context.callerAddr = loadedContext.callerAddr
 	context.returnData = loadedContext.returnData
 	context.asyncCallGroups = loadedContext.asyncCallGroups
 
 	return nil
+}
+
+// NewSerializedAsyncContextFromStore read a new serializableAsyncContext from storage of the address account
+func NewSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, prevPrevTxHash []byte) (*serializableAsyncContext, error) {
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, prevPrevTxHash)
+	data := storage.GetStorageFromAddressNoChecks(address, storageKey)
+	if len(data) == 0 {
+		return nil, arwen.ErrNoStoredAsyncContextFound
+	}
+
+	deserializedContext, err := deserializeAsyncContext(data)
+	if err != nil {
+		return nil, err
+	}
+	return deserializedContext, nil
 }
 
 // Delete deletes the persisted state of the AsyncContext from the contract storage.
@@ -804,19 +847,15 @@ func (context *asyncContext) executeContextCallback() error {
 		return nil
 	}
 
-	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
-	if !sameShard {
-		return context.sendContextCallbackToOriginalCaller()
-	}
-
-	// The caller is in the same shard, execute its callback
-	context.executeSyncContextCallback()
+	callbackCallInput := context.createContextCallbackInput()
+	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
+	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr)
 
 	return nil
 }
 
 // TODO compare with host.sendAsyncCallbackToCaller()
-func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
+func (context *asyncContext) sendCallbackToOriginalCaller() error {
 	host := context.host
 	runtime := host.Runtime()
 	output := host.Output()
@@ -852,14 +891,13 @@ func (context *asyncContext) Serialize() ([]byte, error) {
 	return json.Marshal(serializableContext)
 }
 
-func (context *asyncContext) deserialize(data []byte) (*asyncContext, error) {
+func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
 	deserializedContext := &serializableAsyncContext{}
 	err := json.Unmarshal(data, deserializedContext)
 	if err != nil {
 		return nil, err
 	}
-
-	return context.fromSerializable(deserializedContext), nil
+	return deserializedContext, nil
 }
 
 func (context *asyncContext) toSerializable() *serializableAsyncContext {
@@ -889,7 +927,11 @@ func (context *asyncContext) fromSerializable(serializedContext *serializableAsy
 }
 
 func (context *asyncContext) findGroupByID(groupID string) (int, bool) {
-	for index, group := range context.asyncCallGroups {
+	return findGroupByIDInAsyncCallGroups(context.asyncCallGroups, groupID)
+}
+
+func findGroupByIDInAsyncCallGroups(asyncCallGroups []*arwen.AsyncCallGroup, groupID string) (int, bool) {
+	for index, group := range asyncCallGroups {
 		if group.Identifier == groupID {
 			return index, true
 		}

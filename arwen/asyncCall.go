@@ -7,6 +7,7 @@ import (
 
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
+	Identifier      string // groupIdentifier + call index in group
 	Status          AsyncCallStatus
 	ExecutionMode   AsyncCallExecutionMode
 	Destination     []byte
@@ -21,6 +22,7 @@ type AsyncCall struct {
 // Clone creates a deep clone of the AsyncCall
 func (ac *AsyncCall) Clone() *AsyncCall {
 	clone := &AsyncCall{
+		Identifier:      ac.Identifier,
 		Status:          ac.Status,
 		ExecutionMode:   ac.ExecutionMode,
 		Destination:     make([]byte, len(ac.Destination)),
@@ -37,6 +39,11 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 	copy(clone.ValueBytes, ac.ValueBytes)
 
 	return clone
+}
+
+// GetIdentifier returns the identifier of an async call
+func (ac *AsyncCall) GetIdentifier() string {
+	return ac.Identifier
 }
 
 // GetDestination returns the destination of an async call
