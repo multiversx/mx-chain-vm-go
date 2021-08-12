@@ -858,7 +858,7 @@ func (host *vmHost) callSCMethod() error {
 	var prevPrevTxHash []byte
 
 	if callType == vm.AsynchronousCallBack {
-		prevPrevTxHash = runtime.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
+		prevPrevTxHash = runtime.GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack()
 		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
 		asyncCall, err := contexts.UpdateCurrentAsyncCallStatus(host.Storage(), runtime.GetSCAddress(), vmInput, prevPrevTxHash)
 		if err != nil {

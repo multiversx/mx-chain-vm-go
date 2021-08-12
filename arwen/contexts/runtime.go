@@ -801,7 +801,7 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	return ok
 }
 
-func (context *runtimeContext) GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+func (context *runtimeContext) GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
 	prevPrevTxHash := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]
 	return prevPrevTxHash

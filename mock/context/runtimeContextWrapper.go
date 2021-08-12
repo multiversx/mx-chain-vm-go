@@ -593,7 +593,7 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 	return contextWrapper.GetPrevTxHash()
 }
 
-// GetPPTxHashAndUpdateArgumentsForAsyncCallBack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetPPTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
-	return contextWrapper.GetPPTxHashAndUpdateArgumentsForAsyncCallBack()
+// GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+	return contextWrapper.GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack()
 }

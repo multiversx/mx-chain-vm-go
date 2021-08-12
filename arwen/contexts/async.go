@@ -673,6 +673,10 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 	asyncStoredKey := runtime.Arguments()[0]
 	context.Save(asyncStoredKey)
 
+	return nil
+}
+
+func (context *asyncContext) CallContextCallback() error {
 	// TODO matei-p factor out and call from async.Execute(), DONT execute twice!
 	if context.contextCallbackEnabled {
 		err := context.executeContextCallback()
@@ -681,6 +685,10 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		}
 	}
 
+	return nil
+}
+
+func (context *asyncContext) CallCallbackOfOriginalCaller() error {
 	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
 	if !sameShard {
 		return context.sendCallbackToOriginalCaller()
