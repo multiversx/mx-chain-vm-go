@@ -8,7 +8,7 @@ package elrondapi
 //
 // extern int32_t	v1_4_mBufferNew(void* context);
 // extern int32_t 	v1_4_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
-// extern int32_t	v1_4_mBufferNewRandom(void* context, int32_t length);
+// extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t mBufferHandle, int32_t length);
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
 // extern int32_t 	v1_4_mBufferGetLength(void* context, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
@@ -45,7 +45,7 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("mBufferNewRandom", v1_4_mBufferNewRandom, C.v1_4_mBufferNewRandom)
+	imports, err = imports.Append("mBufferSetRandom", v1_4_mBufferSetRandom, C.v1_4_mBufferSetRandom)
 	if err != nil {
 		return nil, err
 	}
@@ -400,18 +400,18 @@ func v1_4_mBufferFinish(context unsafe.Pointer, mBufferHandle int32) int32 {
 	return 0
 }
 
-//export v1_4_mBufferNewRandom
-func v1_4_mBufferNewRandom(context unsafe.Pointer, length int32) int32 {
+//export v1_4_mBufferSetRandom
+func v1_4_mBufferSetRandom(context unsafe.Pointer, mBufferHandle int32, length int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	if length < 1 {
 		_ = arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
-		return -1
+		return 1
 	}
 
-	baseGasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferNewRandom
+	baseGasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetRandom
 	lengthDependentGasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	metering.UseGas(math.AddUint64(baseGasToUse, lengthDependentGasToUse))
 
@@ -422,5 +422,6 @@ func v1_4_mBufferNewRandom(context unsafe.Pointer, length int32) int32 {
 		return -1
 	}
 
-	return managedType.NewManagedBufferFromBytes(buffer)
+	managedType.SetBytes(mBufferHandle, buffer)
+	return 0
 }

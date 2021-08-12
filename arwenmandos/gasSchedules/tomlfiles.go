@@ -180,7 +180,7 @@ const (
 	[ManagedBufferAPICost]
     MBufferNew                   = 2000
     MBufferNewFromBytes          = 4000
-    MBufferNewRandom             = 6000
+    MBufferSetRandom             = 6000
     MBufferSetBytes              = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
@@ -821,7 +821,7 @@ const (
 [ManagedBufferAPICost]
     MBufferNew                   = 2000
     MBufferNewFromBytes          = 4000
-    MBufferNewRandom             = 6000
+    MBufferSetRandom             = 6000
     MBufferSetBytes              = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
@@ -1464,7 +1464,7 @@ const (
 [ManagedBufferAPICost]
     MBufferNew                   = 2000
     MBufferNewFromBytes          = 4000
-    MBufferNewRandom             = 6000
+    MBufferSetRandom             = 6000
     MBufferSetBytes              = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
