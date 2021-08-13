@@ -162,10 +162,13 @@ type CryptoAPICost struct {
 type ManagedBufferAPICost struct {
 	MBufferNew                uint64
 	MBufferNewFromBytes       uint64
-	MBufferSetRandom          uint64
-	MBufferSetBytes           uint64
 	MBufferGetLength          uint64
 	MBufferGetBytes           uint64
+	MBufferGetByteSlice       uint64
+	MBufferCopyByteSlice      uint64
+	MBufferSetBytes           uint64
+	MBufferAppend             uint64
+	MBufferAppendBytes        uint64
 	MBufferToBigIntUnsigned   uint64
 	MBufferToBigIntSigned     uint64
 	MBufferFromBigIntUnsigned uint64
@@ -174,6 +177,7 @@ type ManagedBufferAPICost struct {
 	MBufferStorageLoad        uint64
 	MBufferGetArgument        uint64
 	MBufferFinish             uint64
+	MBufferSetRandom          uint64
 }
 
 type WASMOpcodeCost struct {
