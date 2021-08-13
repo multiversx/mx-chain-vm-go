@@ -23,7 +23,7 @@ package elrondapi
 // extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferFinish(void* context, int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t mBufferHandle, int32_t length);
+// extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
 import "C"
 import (
 	"unsafe"
@@ -425,7 +425,7 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 }
 
 //export v1_4_mBufferStorageStore
-func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, mBufferHandle int32) int32 {
+func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -439,12 +439,12 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, mBufferHa
 		return 1
 	}
 
-	managedBuffer, err := managedType.GetBytes(mBufferHandle)
+	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	_, err = storage.SetStorage(key, managedBuffer)
+	_, err = storage.SetStorage(key, sourceBytes)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -453,7 +453,7 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, mBufferHa
 }
 
 //export v1_4_mBufferStorageLoad
-func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, mBufferHandle int32) int32 {
+func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -468,13 +468,13 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, mBufferHan
 	}
 	bytes := storage.GetStorage(key)
 
-	managedType.SetBytes(mBufferHandle, bytes)
+	managedType.SetBytes(destinationHandle, bytes)
 
 	return 0
 }
 
 //export v1_4_mBufferGetArgument
-func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, mBufferHandle int32) int32 {
+func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -486,12 +486,12 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, mBufferHandle int
 	if int32(len(args)) <= id {
 		return 1
 	}
-	managedType.SetBytes(mBufferHandle, args[id])
+	managedType.SetBytes(destinationHandle, args[id])
 	return 0
 }
 
 //export v1_4_mBufferFinish
-func v1_4_mBufferFinish(context unsafe.Pointer, mBufferHandle int32) int32 {
+func v1_4_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -500,19 +500,19 @@ func v1_4_mBufferFinish(context unsafe.Pointer, mBufferHandle int32) int32 {
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFinish
 	metering.UseGas(gasToUse)
 
-	managedBuffer, err := managedType.GetBytes(mBufferHandle)
+	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	output.Finish(managedBuffer)
+	output.Finish(sourceBytes)
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(managedBuffer)))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(sourceBytes)))
 	metering.UseGas(gasToUse)
 	return 0
 }
 
 //export v1_4_mBufferSetRandom
-func v1_4_mBufferSetRandom(context unsafe.Pointer, mBufferHandle int32, length int32) int32 {
+func v1_4_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -533,6 +533,6 @@ func v1_4_mBufferSetRandom(context unsafe.Pointer, mBufferHandle int32, length i
 		return -1
 	}
 
-	managedType.SetBytes(mBufferHandle, buffer)
+	managedType.SetBytes(destinationHandle, buffer)
 	return 0
 }
