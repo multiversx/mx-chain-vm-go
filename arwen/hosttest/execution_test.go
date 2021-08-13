@@ -4,17 +4,20 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -36,7 +39,6 @@ var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 const (
 	get                     = "get"
 	increment               = "increment"
-	mBuffer                 = "mBufferMethod"
 	callRecursive           = "callRecursive"
 	parentCallsChild        = "parentCallsChild"
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
@@ -540,13 +542,19 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_ManagedBuffers(t *testing.T) {
+	var functionNumber = 0
+	var mBuffer = [...]string{"mBufferMethod", "mBufferNewTest", "mBufferNewFromBytesTest", "mBufferSetRandomTest",
+		"mBufferGetLengthTest", "mBufferGetBytesTest", "mBufferAppendTest", "mBufferToBigIntUnsignedTest",
+		"mBufferToBigIntSignedTest", "mBufferFromBigIntUnsignedTest", "mBufferFromBigIntSignedTest",
+		"mBufferStorageStoreTest", "mBufferStorageLoadTest"}
+
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction(mBuffer).
+			WithFunction(mBuffer[functionNumber]). // mBufferMethod
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -558,6 +566,301 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer),
 				)
 		})
+	functionNumber++
+
+	numberOfReps := 100
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferNewTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					[]byte{byte(numberOfReps - 1)})
+		})
+	functionNumber++
+
+	lengthOfBuffer := 64
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferNewFromBytesTest
+			WithArguments([]byte{byte(numberOfReps)}, []byte{byte(lengthOfBuffer)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					managedBuffer)
+		})
+	functionNumber++
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferSetRandomTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferGetLengthTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					[]byte{byte(numberOfReps)})
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferGetBytesTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, randomBuffer[:numberOfReps])
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferAppendTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			finalBuffer := make([]byte, 0)
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+				finalBuffer = append(finalBuffer, randomBuffer...)
+			}
+			verify.
+				Ok().
+				ReturnData(finalBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferToBigIntUnsignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, randomBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferToBigIntSignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:])
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferFromBigIntUnsignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, randomBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferFromBigIntSignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:])
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferStorageStoreTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			lastRandomBuffer := make([]byte, numberOfReps)
+			lastRandomKey := make([]byte, 5)
+			storage := make([]test.StoreEntry, 0)
+			for i := 0; i < numberOfReps; i++ {
+				keyBuffer := make([]byte, 5)
+				randomBuffer := make([]byte, numberOfReps)
+				randReader.Read(keyBuffer)
+				randReader.Read(randomBuffer)
+				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
+				storage = append(storage, entry)
+				if i == numberOfReps-1 {
+					lastRandomBuffer = randomBuffer
+					lastRandomKey = keyBuffer
+				}
+			}
+			verify.
+				Ok().
+				ReturnData(lastRandomBuffer, lastRandomKey).
+				Storage(
+					storage...,
+				)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferStorageLoadTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			lastRandomBuffer := make([]byte, numberOfReps)
+			lastRandomKey := make([]byte, 5)
+			storage := make([]test.StoreEntry, 0)
+			for i := 0; i < numberOfReps; i++ {
+				keyBuffer := make([]byte, 5)
+				randomBuffer := make([]byte, numberOfReps)
+				randReader.Read(keyBuffer)
+				randReader.Read(randomBuffer)
+				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
+				storage = append(storage, entry)
+				if i == numberOfReps-1 {
+					lastRandomBuffer = randomBuffer
+					lastRandomKey = keyBuffer
+				}
+			}
+			verify.
+				Ok().
+				ReturnData(lastRandomBuffer, lastRandomKey).
+				Storage(
+					storage...,
+				)
+		})
+
+}
+
+func buildRandomizer(host arwen.VMHost) io.Reader {
+	// building the randomizer
+	blockchainContext := host.Blockchain()
+	previousRandomSeed := blockchainContext.LastRandomSeed()
+	currentRandomSeed := blockchainContext.CurrentRandomSeed()
+	txHash := host.Runtime().GetCurrentTxHash()
+
+	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
+	randomSeed := append(blocksRandomSeed, txHash...)
+	randReader := arwenMath.NewSeedRandReader(randomSeed)
+	return randReader
 }
 
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
