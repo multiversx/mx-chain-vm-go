@@ -1,7 +1,7 @@
-package gasschedules
+package gasschedules 
 
 const (
-	gasScheduleV1 = `[BuiltInCost]
+gasScheduleV1 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 5000000
@@ -116,7 +116,6 @@ const (
     GetBlockTimeStamp   = 1000
 
 [BigIntAPICost]
-    EllipticCurveNew         = 500
     BigIntNew                = 100
     BigIntByteLength         = 100
     BigIntUnsignedByteLength = 100
@@ -133,9 +132,6 @@ const (
     BigIntAdd                = 100
     BigIntSub                = 100
     BigIntMul                = 600
-    BigIntSqrt               = 600
-    BigIntPow                = 600
-    BigIntLog                = 600
     BigIntTDiv               = 100
     BigIntTMod               = 100
     BigIntEDiv               = 100
@@ -167,35 +163,6 @@ const (
     VerifyBLS              = 1000
     VerifyEd25519          = 1000
     VerifySecp256k1        = 1000
-    AddECC                 = 600
-    DoubleECC              = 600
-    IsOnCurveECC           = 600
-    ScalarMultECC          = 600
-    MarshalECC             = 600
-    MarshalCompressedECC   = 600
-    UnmarshalECC           = 600
-    UnmarshalCompressedECC = 600
-    GenerateKeyECC         = 600
-
-[ManagedBufferAPICost]
-    MBufferNew                   = 2000
-    MBufferNewFromBytes          = 4000
-    MBufferGetLength             = 2000
-    MBufferGetBytes              = 2000
-    MBufferGetByteSlice          = 2000
-    MBufferCopyByteSlice         = 2000
-    MBufferSetBytes              = 2000
-    MBufferAppend                = 2000
-    MBufferAppendBytes           = 2000
-    MBufferToBigIntUnsigned      = 4000
-    MBufferToBigIntSigned        = 10000
-    MBufferFromBigIntUnsigned    = 4000
-    MBufferFromBigIntSigned      = 10000
-    MBufferStorageStore          = 250000
-    MBufferStorageLoad           = 100000
-    MBufferGetArgument           = 1000
-    MBufferFinish                = 1000
-    MBufferSetRandom             = 6000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -648,7 +615,7 @@ const (
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-	gasScheduleV2 = `[BuiltInCost]
+gasScheduleV2 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -777,9 +744,6 @@ const (
     BigIntAdd                = 2000
     BigIntSub                = 2000
     BigIntMul                = 6000
-    BigIntSqrt               = 6000
-    BigIntPow                = 6000
-    BigIntLog                = 6000
     BigIntTDiv               = 6000
     BigIntTMod               = 6000
     BigIntEDiv               = 6000
@@ -811,32 +775,6 @@ const (
     VerifyBLS              = 5000000
     VerifyEd25519          = 2000000
     VerifySecp256k1        = 2000000
-    EllipticCurveNew       = 10000
-    AddECC                 = 1000000
-    DoubleECC              = 1000000
-    IsOnCurveECC           = 1000000
-    ScalarMultECC          = 1000000
-    MarshalECC             = 1000000
-    MarshalCompressedECC   = 1000000
-    UnmarshalECC           = 1000000
-    UnmarshalCompressedECC = 1000000
-    GenerateKeyECC         = 1000000
-
-[ManagedBufferAPICost]
-    MBufferNew                   = 2000
-    MBufferNewFromBytes          = 4000
-    MBufferSetRandom             = 6000
-    MBufferSetBytes              = 2000
-    MBufferGetLength             = 2000
-    MBufferGetBytes              = 2000
-    MBufferToBigIntUnsigned      = 4000
-    MBufferToBigIntSigned        = 10000
-    MBufferFromBigIntUnsigned    = 4000
-    MBufferFromBigIntSigned      = 10000
-    MBufferStorageStore          = 250000
-    MBufferStorageLoad           = 100000
-    MBufferGetArgument           = 1000
-    MBufferFinish                = 1000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -1289,7 +1227,7 @@ const (
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-	gasScheduleV3 = `[BuiltInCost]
+gasScheduleV3 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -1448,30 +1386,33 @@ const (
     BigIntGetExternalBalance    = 10000
 
 [CryptoAPICost]
-    EllipticCurveNew       = 10000
     SHA256                 = 1000000
     Keccak256              = 1000000
     Ripemd160              = 1000000
     VerifyBLS              = 5000000
     VerifyEd25519          = 2000000
     VerifySecp256k1        = 2000000
-    AddECC                 = 1000000
-    DoubleECC              = 1000000
-    IsOnCurveECC           = 1000000
-    ScalarMultECC          = 1000000
-    MarshalECC             = 1000000
-    MarshalCompressedECC   = 1000000
-    UnmarshalECC           = 1000000
-    UnmarshalCompressedECC = 1000000
-    GenerateKeyECC         = 1000000
+    EllipticCurveNew       = 10000
+    AddECC                 = 75000
+    DoubleECC              = 65000
+    IsOnCurveECC           = 10000
+    ScalarMultECC          = 400000
+    MarshalECC             = 13000
+    MarshalCompressedECC   = 15000
+    UnmarshalECC           = 20000
+    UnmarshalCompressedECC = 270000
+    GenerateKeyECC         = 7000000
 
 [ManagedBufferAPICost]
     MBufferNew                   = 2000
     MBufferNewFromBytes          = 4000
-    MBufferSetRandom             = 6000
-    MBufferSetBytes              = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
+    MBufferGetByteSlice          = 2000
+    MBufferCopyByteSlice         = 2000
+    MBufferSetBytes              = 2000
+    MBufferAppend                = 2000
+    MBufferAppendBytes           = 2000
     MBufferToBigIntUnsigned      = 4000
     MBufferToBigIntSigned        = 10000
     MBufferFromBigIntUnsigned    = 4000
@@ -1480,6 +1421,7 @@ const (
     MBufferStorageLoad           = 100000
     MBufferGetArgument           = 1000
     MBufferFinish                = 1000
+    MBufferSetRandom             = 6000
 
 [WASMOpcodeCost]
     Unreachable = 1
