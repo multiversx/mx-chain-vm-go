@@ -96,22 +96,24 @@ void mBufferMethod() {
 }
 
 void mBufferNewTest() {
-    int reps;
+    int reps, handle;
     reps = int64getArgument(0);
     for (int i = 0; i < reps; i++)
     {
-        int handle = mBufferNew();
+        handle = mBufferNew();
     }
+    int64finish(handle);
 }
 
 void mBufferNewFromBytesTest() {
-    int reps, lengthOfBuffer;
+    int reps, lengthOfBuffer, handle;
     reps = int64getArgument(0);
     lengthOfBuffer = int64getArgument(1);
     for (int i = 0; i < reps; i++)
     {
-        int handle = mBufferNewFromBytes(mBuffer2,lengthOfBuffer);
+        handle = mBufferNewFromBytes(mBuffer2,lengthOfBuffer);      
     }
+    mBufferFinish(handle);
 }
 
 void mBufferSetRandomTest() {
@@ -120,19 +122,21 @@ void mBufferSetRandomTest() {
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-         result = mBufferSetRandom(randomBufferHandle, i+1);
+        result = mBufferSetRandom(randomBufferHandle, reps);
     }
+    mBufferFinish(randomBufferHandle);
 }
 
 void mBufferGetLengthTest() {
-    int reps, result;
+    int reps, result, length;
     reps = int64getArgument(0);
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
         result = mBufferSetRandom(randomBufferHandle,i+1);
-        int length = mBufferGetLength(randomBufferHandle);
+        length = mBufferGetLength(randomBufferHandle);
     }
+    int64finish(length);
 }
 
 void mBufferGetBytesTest() {
@@ -142,9 +146,11 @@ void mBufferGetBytesTest() {
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferGetBytes(randomBufferHandle, returnDataBuffer);
-    }  
+    }
+    mBufferFinish(randomBufferHandle);
+    finish(returnDataBuffer,reps);
 }
 
 void mBufferAppendTest() {
@@ -155,11 +161,11 @@ void mBufferAppendTest() {
     int handle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferGetBytes(randomBufferHandle, returnDataBuffer);
-        mBufferAppend(handle,returnDataBuffer,i+1);
-        mBufferFinish(handle);
+        mBufferAppend(handle,returnDataBuffer,reps);
     }
+    mBufferFinish(handle);
 }
 
 void mBufferToBigIntUnsignedTest() {
@@ -168,9 +174,11 @@ void mBufferToBigIntUnsignedTest() {
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferToBigIntUnsigned(randomBufferHandle,bigIntHandle);
     }
+    mBufferFinish(randomBufferHandle);
+    bigIntFinishUnsigned(bigIntHandle);
 }
 
 void mBufferToBigIntSignedTest() {
@@ -179,9 +187,11 @@ void mBufferToBigIntSignedTest() {
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferToBigIntSigned(randomBufferHandle,bigIntHandle);
     }
+    mBufferFinish(randomBufferHandle);
+    bigIntFinishSigned(bigIntHandle);
 }
 
 void mBufferFromBigIntUnsignedTest() {
@@ -190,10 +200,12 @@ void mBufferFromBigIntUnsignedTest() {
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferToBigIntUnsigned(randomBufferHandle,bigIntHandle);
         mBufferFromBigIntUnsigned(randomBufferHandle,bigIntHandle);
     }
+    mBufferFinish(randomBufferHandle);
+    bigIntFinishUnsigned(bigIntHandle);
 }
 
 void mBufferFromBigIntSignedTest() {
@@ -203,10 +215,12 @@ void mBufferFromBigIntSignedTest() {
     int randomBufferHandle = mBufferNew();
     for (int i = 0; i < reps; i++)
     {
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferToBigIntSigned(randomBufferHandle,bigIntHandle);
         mBufferFromBigIntSigned(randomBufferHandle,bigIntHandle);
     }
+    mBufferFinish(randomBufferHandle);
+    bigIntFinishSigned(bigIntHandle);
 }
 
 void mBufferStorageStoreTest() {
@@ -217,9 +231,11 @@ void mBufferStorageStoreTest() {
     for (int i = 0; i < reps; i++)
     {
         result = mBufferSetRandom(randomKeyHandle,5);
-        result = mBufferSetRandom(randomBufferHandle,i+1);
-        mBufferStorageStore(randomKeyHandle,randomBufferHandle);
-    }  
+        result = mBufferSetRandom(randomBufferHandle,reps);
+        mBufferStorageStore(randomKeyHandle,randomBufferHandle);        
+    }
+    mBufferFinish(randomBufferHandle);
+    mBufferFinish(randomKeyHandle);
 }
 
 void mBufferStorageLoadTest() {
@@ -230,9 +246,12 @@ void mBufferStorageLoadTest() {
     for (int i = 0; i < reps; i++)
     {
         result = mBufferSetRandom(randomKeyHandle, 5);
-        result = mBufferSetRandom(randomBufferHandle,i+1);
+        result = mBufferSetRandom(randomBufferHandle,reps);
+        mBufferStorageStore(randomKeyHandle,randomBufferHandle);
         mBufferStorageLoad(randomKeyHandle,randomBufferHandle);
-    }  
+    }
+    mBufferFinish(randomBufferHandle);
+    mBufferFinish(randomKeyHandle);    
 }
 
 int verifyIfBuffersAreEqual(int handle1, int handle2) {
