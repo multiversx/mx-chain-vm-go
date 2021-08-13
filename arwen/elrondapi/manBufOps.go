@@ -8,6 +8,7 @@ package elrondapi
 //
 // extern int32_t	v1_4_mBufferNew(void* context);
 // extern int32_t 	v1_4_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t mBufferHandle, int32_t length);
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
 // extern int32_t 	v1_4_mBufferGetLength(void* context, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
@@ -40,6 +41,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferNewFromBytes", v1_4_mBufferNewFromBytes, C.v1_4_mBufferNewFromBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferSetRandom", v1_4_mBufferSetRandom, C.v1_4_mBufferSetRandom)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +175,7 @@ func v1_4_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 
 	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -218,7 +224,7 @@ func v1_4_mBufferAppend(context unsafe.Pointer, mBufferHandle int32, dataOffset 
 
 	isSuccess := managedType.AppendBytes(mBufferHandle, data)
 	if !isSuccess {
-		arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -391,5 +397,31 @@ func v1_4_mBufferFinish(context unsafe.Pointer, mBufferHandle int32) int32 {
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(managedBuffer)))
 	metering.UseGas(gasToUse)
+	return 0
+}
+
+//export v1_4_mBufferSetRandom
+func v1_4_mBufferSetRandom(context unsafe.Pointer, mBufferHandle int32, length int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	if length < 1 {
+		_ = arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	baseGasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetRandom
+	lengthDependentGasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+	metering.UseGas(math.AddUint64(baseGasToUse, lengthDependentGasToUse))
+
+	randomizer := managedType.GetRandReader()
+	buffer := make([]byte, length)
+	_, err := randomizer.Read(buffer)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	managedType.SetBytes(mBufferHandle, buffer)
 	return 0
 }
