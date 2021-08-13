@@ -214,7 +214,7 @@ func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, starti
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetBytes
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetByteSlice
 	metering.UseGas(gasToUse)
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
@@ -246,7 +246,7 @@ func v1_4_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, start
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetBytes
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferCopyByteSlice
 	metering.UseGas(gasToUse)
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
@@ -298,7 +298,7 @@ func v1_4_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHan
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferAppend
 	metering.UseGas(gasToUse)
 
 	dataBufferBytes, err := managedType.GetBytes(dataHandle)
@@ -325,7 +325,7 @@ func v1_4_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, da
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferAppendBytes
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)

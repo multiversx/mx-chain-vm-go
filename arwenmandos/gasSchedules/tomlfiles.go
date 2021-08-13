@@ -177,13 +177,16 @@ const (
     UnmarshalCompressedECC = 600
     GenerateKeyECC         = 600
 
-	[ManagedBufferAPICost]
+[ManagedBufferAPICost]
     MBufferNew                   = 2000
     MBufferNewFromBytes          = 4000
-    MBufferSetRandom             = 6000
-    MBufferSetBytes              = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
+    MBufferGetByteSlice          = 2000
+    MBufferCopyByteSlice         = 2000
+    MBufferSetBytes              = 2000
+    MBufferAppend                = 2000
+    MBufferAppendBytes           = 2000
     MBufferToBigIntUnsigned      = 4000
     MBufferToBigIntSigned        = 10000
     MBufferFromBigIntUnsigned    = 4000
@@ -192,6 +195,7 @@ const (
     MBufferStorageLoad           = 100000
     MBufferGetArgument           = 1000
     MBufferFinish                = 1000
+    MBufferSetRandom             = 6000
 
 [WASMOpcodeCost]
     Unreachable = 1

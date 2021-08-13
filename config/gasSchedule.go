@@ -328,10 +328,13 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["MBufferNew"] = value
 	gasMap["MBufferNewFromBytes"] = value
-	gasMap["MBufferSetRandom"] = value
-	gasMap["MBufferSetBytes"] = value
 	gasMap["MBufferGetLength"] = value
 	gasMap["MBufferGetBytes"] = value
+	gasMap["MBufferGetByteSlice"] = value
+	gasMap["MBufferCopyByteSlice"] = value
+	gasMap["MBufferSetBytes"] = value
+	gasMap["MBufferAppend"] = value
+	gasMap["MBufferAppendBytes"] = value
 	gasMap["MBufferToBigIntUnsigned"] = value
 	gasMap["MBufferToBigIntSigned"] = value
 	gasMap["MBufferFromBigIntUnsigned"] = value
@@ -340,6 +343,7 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferStorageLoad"] = value
 	gasMap["MBufferGetArgument"] = value
 	gasMap["MBufferFinish"] = value
+	gasMap["MBufferSetRandom"] = value
 
 	return gasMap
 }
