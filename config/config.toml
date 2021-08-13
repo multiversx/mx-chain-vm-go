@@ -138,6 +138,7 @@
 [ManagedBufferAPICost]
     MBufferNew                   = 10
     MBufferNewFromBytes          = 10
+    MBufferSetRandom             = 10
     MBufferSetBytes              = 10
     MBufferGetLength             = 10
     MBufferGetBytes              = 10
