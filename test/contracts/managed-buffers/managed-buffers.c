@@ -47,7 +47,7 @@ void mBufferMethod() {
 
     mBufferSetBytes(mBufferHandle1, mBuffer2, sizeof(mBuffer2));
     mBufferSetBytes(mBufferHandle2, mBuffer1, sizeof(mBuffer1));
-    mBufferAppend(mBufferHandle2,mBuffer3, sizeof(mBuffer3));
+    mBufferAppendBytes(mBufferHandle2,mBuffer3, sizeof(mBuffer3));
     if (verifyIfBuffersAreEqual(mBufferHandle1, mBufferHandle2)==1) ok = 1;
 
     int bigIntHandle1 = bigIntNew(0);
@@ -163,7 +163,7 @@ void mBufferAppendTest() {
     {
         result = mBufferSetRandom(randomBufferHandle,reps);
         mBufferGetBytes(randomBufferHandle, returnDataBuffer);
-        mBufferAppend(handle,returnDataBuffer,reps);
+        mBufferAppendBytes(handle,returnDataBuffer,reps);
     }
     mBufferFinish(handle);
 }
