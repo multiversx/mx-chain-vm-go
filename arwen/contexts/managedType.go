@@ -29,6 +29,7 @@ const p521CurveUnmarshalCompressedMultiplier = 400
 
 type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
+type bigFloatMap map[int32]*big.Float
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type managedTypesContext struct {
@@ -39,9 +40,10 @@ type managedTypesContext struct {
 }
 
 type managedTypesState struct {
-	bigIntValues  bigIntMap
-	ecValues      ellipticCurveMap
-	mBufferValues managedBufferMap
+	bigIntValues   bigIntMap
+	bigFloatValues bigFloatMap
+	ecValues       ellipticCurveMap
+	mBufferValues  managedBufferMap
 }
 
 // NewBigIntContext creates a new managedTypesContext
@@ -49,9 +51,10 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	context := &managedTypesContext{
 		host: host,
 		managedTypesValues: managedTypesState{
-			bigIntValues:  make(bigIntMap),
-			ecValues:      make(ellipticCurveMap),
-			mBufferValues: make(managedBufferMap),
+			bigIntValues:   make(bigIntMap),
+			bigFloatValues: make(bigFloatMap),
+			ecValues:       make(ellipticCurveMap),
+			mBufferValues:  make(managedBufferMap),
 		},
 		managedTypesStack: make([]managedTypesState, 0),
 	}
@@ -83,18 +86,20 @@ func (context *managedTypesContext) GetRandReader() io.Reader {
 // InitState initializes the underlying values map
 func (context *managedTypesContext) InitState() {
 	context.managedTypesValues = managedTypesState{
-		bigIntValues:  make(bigIntMap),
-		ecValues:      make(ellipticCurveMap),
-		mBufferValues: make(managedBufferMap)}
+		bigIntValues:   make(bigIntMap),
+		bigFloatValues: make(bigFloatMap),
+		ecValues:       make(ellipticCurveMap),
+		mBufferValues:  make(managedBufferMap)}
 }
 
 // PushState appends the values map to the state stack
 func (context *managedTypesContext) PushState() {
-	newBigIntState, newEcState, newmBufferState := context.clone()
+	newBigIntState, newBigFloatState, newEcState, newmBufferState := context.clone()
 	context.managedTypesStack = append(context.managedTypesStack, managedTypesState{
-		bigIntValues:  newBigIntState,
-		ecValues:      newEcState,
-		mBufferValues: newmBufferState,
+		bigIntValues:   newBigIntState,
+		bigFloatValues: newBigFloatState,
+		ecValues:       newEcState,
+		mBufferValues:  newmBufferState,
 	})
 }
 
@@ -104,11 +109,14 @@ func (context *managedTypesContext) PopSetActiveState() {
 	if managedTypesStackLen == 0 {
 		return
 	}
+
 	prevState := context.managedTypesStack[managedTypesStackLen-1]
 	prevBigIntValues := prevState.bigIntValues
+	prevBigFloatValues := prevState.bigFloatValues
 	prevEcValues := prevState.ecValues
 	prevmBufferValues := prevState.mBufferValues
 	context.managedTypesValues.bigIntValues = prevBigIntValues
+	context.managedTypesValues.bigFloatValues = prevBigFloatValues
 	context.managedTypesValues.ecValues = prevEcValues
 	context.managedTypesValues.mBufferValues = prevmBufferValues
 	context.managedTypesStack = context.managedTypesStack[:managedTypesStackLen-1]
@@ -128,12 +136,16 @@ func (context *managedTypesContext) ClearStateStack() {
 	context.managedTypesStack = make([]managedTypesState, 0)
 }
 
-func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, managedBufferMap) {
+func (context *managedTypesContext) clone() (bigIntMap, bigFloatMap, ellipticCurveMap, managedBufferMap) {
 	newBigIntState := make(bigIntMap, len(context.managedTypesValues.bigIntValues))
+	newBigFloatState := make(bigFloatMap, len(context.managedTypesValues.bigFloatValues))
 	newEcState := make(ellipticCurveMap, len(context.managedTypesValues.ecValues))
 	newmBufferState := make(managedBufferMap, len(context.managedTypesValues.mBufferValues))
 	for bigIntHandle, bigInt := range context.managedTypesValues.bigIntValues {
 		newBigIntState[bigIntHandle] = big.NewInt(0).Set(bigInt)
+	}
+	for bigFloatHandle, bigFloat := range context.managedTypesValues.bigFloatValues {
+		newBigFloatState[bigFloatHandle] = big.NewFloat(0).Set(bigFloat)
 	}
 	for ecHandle, ec := range context.managedTypesValues.ecValues {
 		newEcState[ecHandle] = ec
@@ -141,7 +153,7 @@ func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, manage
 	for mBufferHandle, mBuffer := range context.managedTypesValues.mBufferValues {
 		newmBufferState[mBufferHandle] = mBuffer
 	}
-	return newBigIntState, newEcState, newmBufferState
+	return newBigIntState, newBigFloatState, newEcState, newmBufferState
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
@@ -181,7 +193,7 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 
 // BIGINT
 
-// GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
+// GetBigIntOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
 func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
@@ -224,6 +236,54 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 		newHandle++
 	}
 	context.managedTypesValues.bigIntValues[newHandle] = big.NewInt(value)
+	return newHandle
+}
+
+// BIG FLOAT
+
+// GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
+func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) *big.Float {
+	value, ok := context.managedTypesValues.bigFloatValues[handle]
+	if !ok {
+		value = big.NewFloat(0)
+		context.managedTypesValues.bigFloatValues[handle] = value
+	}
+	return value
+}
+
+// GetBigFloat returns the value at the given handle. If there is no value under that handle, it will return error
+func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error) {
+	value, ok := context.managedTypesValues.bigFloatValues[handle]
+	if !ok {
+		return nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	return value, nil
+}
+
+// GetTwoBigFloat returns the values at the two given handles. If there is at least one missing value, it will return error
+func (context *managedTypesContext) GetTwoBigFloat(handle1 int32, handle2 int32) (*big.Float, *big.Float, error) {
+	bigFloatValues := context.managedTypesValues.bigFloatValues
+	value1, ok := bigFloatValues[handle1]
+	if !ok {
+		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	value2, ok := bigFloatValues[handle2]
+	if !ok {
+		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	return value1, value2, nil
+}
+
+// PutBigFloat adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) PutBigFloat(value float64) int32 {
+	newHandle := int32(len(context.managedTypesValues.bigFloatValues))
+	for {
+		if _, ok := context.managedTypesValues.bigFloatValues[newHandle]; !ok {
+			break
+		}
+		newHandle++
+	}
+	context.managedTypesValues.bigFloatValues[newHandle] = big.NewFloat(value)
 	return newHandle
 }
 
