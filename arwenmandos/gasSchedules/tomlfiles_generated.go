@@ -1,7 +1,7 @@
-package gasschedules 
+package gasschedules
 
 const (
-gasScheduleV1 = `[BuiltInCost]
+	gasScheduleV1 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 5000000
@@ -615,7 +615,7 @@ gasScheduleV1 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV2 = `[BuiltInCost]
+	gasScheduleV2 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -1227,7 +1227,7 @@ gasScheduleV2 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV3 = `[BuiltInCost]
+	gasScheduleV3 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000

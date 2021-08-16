@@ -1,3 +1,44 @@
+[BuiltInCost]
+    ChangeOwnerAddress       = 10
+    ClaimDeveloperRewards    = 10
+    SaveUserName             = 10
+    SaveKeyValue             = 10
+    ESDTTransfer             = 10
+    ESDTBurn                 = 10
+    ESDTLocalMint            = 10
+    ESDTLocalBurn            = 10
+    ESDTNFTCreate            = 10
+    ESDTNFTAddQuantity       = 10
+    ESDTNFTBurn              = 10
+    ESDTNFTTransfer          = 10
+    ESDTNFTChangeCreateOwner = 10
+    ESDTNFTAddUri            = 10
+    ESDTNFTUpdateAttributes  = 10
+    ESDTNFTMultiTransfer     = 10
+
+[MetaChainSystemSCsCost]
+    Stake                 = 10
+    UnStake               = 10
+    UnBond                = 10
+    Claim                 = 10
+    Get                   = 10
+    ChangeRewardAddress   = 10
+    ChangeValidatorKeys   = 10
+    UnJail                = 10
+    DelegationOps         = 10
+    DelegationMgrOps      = 10
+    ValidatorToDelegation = 10
+    ESDTIssue             = 10
+    ESDTOperations        = 10
+    Proposal              = 10
+    Vote                  = 10
+    DelegateVote          = 10
+    RevokeVote            = 10
+    CloseProposal         = 10
+    GetAllNodeStates      = 10
+    UnstakeTokens         = 10
+    UnbondTokens          = 10
+
 [BaseOperationCost]
     StorePerByte      = 10
     DataCopyPerByte   = 10
