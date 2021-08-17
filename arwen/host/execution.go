@@ -149,9 +149,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		host.Clean()
 	}()
 
-	_, _, metering, output, runtime, _, storage := host.GetContexts()
+	_, _, metering, output, runtime, async, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
+	async.InitStateFromInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
@@ -871,6 +872,9 @@ func (host *vmHost) callSCMethod() error {
 		}
 
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
+	} else if callType == vm.AsynchronousCall {
+		prevTxHash := runtime.GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack()
+		runtime.GetVMInput().PrevTxHash = prevTxHash
 	}
 
 	// TODO refactor this, and apply this condition in other places where a
@@ -912,7 +916,8 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		err = host.sendAsyncCallbackToCaller()
+		// 	err = host.sendAsyncCallbackToCaller()
+		break
 	case vm.AsynchronousCallBack:
 		async.Load(prevPrevTxHash)
 		err = async.PostprocessCrossShardCallback()

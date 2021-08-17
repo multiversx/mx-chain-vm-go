@@ -32,9 +32,16 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		contractAddressAsString := string(node.Call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
+			var shardID uint32
+			if incomingEdge == nil {
+				shardID = 1
+			} else if incomingEdge.Type == AsyncCrossShard {
+				shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
+			}
 			newContract := CreateMockContract(node.Call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
+				WithShardID(shardID).
 				WithMethods(func(instanceMock *mock.InstanceMock, testConfig *TestConfig) {
 					for functionName := range contracts[contractAddressAsString].tempFunctionsList {
 						instanceMock.AddMockMethod(functionName, func() *mock.InstanceMock {
@@ -133,7 +140,11 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	returnData.Int64(int64(host.Metering().GasLeft()))
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
-	fmt.Println("Gas for", string(host.Runtime().GetSCAddress()), crtFunctionCalled+"\t", "provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided), "remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
+	fmt.Println(
+		"tx\t", host.Runtime().GetCurrentTxHash(),
+		"for contract ", string(host.Runtime().GetSCAddress()), "/ "+crtFunctionCalled+"\t",
+		"gas provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided),
+		"gas remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
 }
 
 func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {

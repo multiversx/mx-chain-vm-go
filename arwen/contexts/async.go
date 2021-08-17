@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"math/big"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
@@ -33,6 +35,10 @@ type asyncContext struct {
 
 	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
+
+	returnCode       vmcommon.ReturnCode
+	retData          [][]byte // TODO matei-p replace with returnData
+	initiatingTxHash []byte
 }
 
 type serializableAsyncContext struct {
@@ -43,6 +49,10 @@ type serializableAsyncContext struct {
 	GasAccumulated  uint64
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
+
+	ReturnCode       vmcommon.ReturnCode
+	RetData          [][]byte // TODO matei-p replace with ReturnData
+	InitiatingTxHash []byte
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -348,10 +358,10 @@ func UpdateCurrentAsyncCallStatus(storage arwen.StorageContext, address []byte, 
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
-	err = deserializedContext.writeToStorage(storage, prevPrevTxHash)
-	if err != nil {
-		return nil, err
-	}
+	// err = deserializedContext.writeToStorage(storage, prevPrevTxHash)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return call, nil
 }
@@ -531,62 +541,70 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // AsyncContext and work with a clean state before calling Execute(), making
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
-	if context.IsComplete() {
-		logAsync.Trace("no async calls")
-		return nil
-	}
+	if !context.IsComplete() {
+		metering := context.host.Metering()
+		gasLeft := metering.GasLeft()
+		context.accumulateGas(gasLeft)
+		logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
+		logAsync.Trace("async.Execute() execute locals")
 
-	metering := context.host.Metering()
-	gasLeft := metering.GasLeft()
-	context.accumulateGas(gasLeft)
-	logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
-	logAsync.Trace("async.Execute() execute locals")
+		// Step 1: execute all AsyncCalls that can be executed synchronously
+		// (includes smart contracts and built-in functions in the same shard)
+		err := context.executeAsyncLocalCalls()
+		if err != nil {
+			return err
+		}
 
-	// Step 1: execute all AsyncCalls that can be executed synchronously
-	// (includes smart contracts and built-in functions in the same shard)
-	err := context.executeAsyncLocalCalls()
-	if err != nil {
-		return err
-	}
+		logAsync.Trace("async.Execute() complete locals")
 
-	logAsync.Trace("async.Execute() complete locals")
+		// This call to closeCompletedAsyncCall() is necessary to remove the
+		// AsyncCall that has been just before async.Execute() was called, within
+		// host.callSCMethod(). This happens when a cross-shard callback returns and
+		// finalizes an AsyncCall.
+		context.closeCompletedAsyncCalls()
+		if context.groupCallbacksEnabled {
+			context.executeCompletedGroupCallbacks()
+		}
+		context.deleteCompletedGroups()
 
-	// This call to closeCompletedAsyncCall() is necessary to remove the
-	// AsyncCall that has been just before async.Execute() was called, within
-	// host.callSCMethod(). This happens when a cross-shard callback returns and
-	// finalizes an AsyncCall.
-	context.closeCompletedAsyncCalls()
-	if context.groupCallbacksEnabled {
-		context.executeCompletedGroupCallbacks()
-	}
-	context.deleteCompletedGroups()
-
-	logAsync.Trace("async.Execute() execute remote")
-	// Step 2: in one combined step, do the following:
-	// * locally execute built-in functions with cross-shard
-	//   destinations, whereby the cross-shard OutputAccount entries are generated
-	// * call host.sendAsyncCallCrossShard() for each pending AsyncCall, to
-	//   generate the corresponding cross-shard OutputAccount entries
-	// Note that all async calls below this point are pending by definition.
-	for _, group := range context.asyncCallGroups {
-		for _, call := range group.AsyncCalls {
-			err = context.executeAsyncCall(call)
-			if err != nil {
-				return err
+		logAsync.Trace("async.Execute() execute remote")
+		// Step 2: in one combined step, do the following:
+		// * locally execute built-in functions with cross-shard
+		//   destinations, whereby the cross-shard OutputAccount entries are generated
+		// * call host.sendAsyncCallCrossShard() for each pending AsyncCall, to
+		//   generate the corresponding cross-shard OutputAccount entries
+		// Note that all async calls below this point are pending by definition.
+		for _, group := range context.asyncCallGroups {
+			for _, call := range group.AsyncCalls {
+				err = context.executeAsyncCall(call)
+				if err != nil {
+					return err
+				}
 			}
 		}
+
+		context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
+	} else {
+		logAsync.Trace("no async calls")
 	}
 
-	context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
-	if !context.HasPendingCallGroups() && context.contextCallbackEnabled {
-		logAsync.Trace("async.Execute() execute context callback")
-		context.executeContextCallback()
-	}
-
-	logAsync.Trace("async.Execute() save")
-	err = context.Save(context.host.Runtime().GetCurrentTxHash())
-	if err != nil {
-		return err
+	if !context.HasPendingCallGroups() {
+		if context.contextCallbackEnabled {
+			logAsync.Trace("async.Execute() execute context callback")
+			context.executeContextCallback()
+		}
+		if context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall {
+			context.callCallbackOfOriginalCaller()
+		}
+	} else {
+		logAsync.Trace("async.Execute() save")
+		context.initiatingTxHash = context.host.Runtime().GetPrevTxHash()
+		context.returnCode = context.host.Output().ReturnCode()
+		context.retData = context.host.Output().ReturnData()
+		err := context.Save(context.host.Runtime().GetCurrentTxHash())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -647,6 +665,12 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
+	// in the end update stored async context
+	defer func() {
+		asyncStoredKey := runtime.Arguments()[0]
+		context.Save(asyncStoredKey)
+	}()
+
 	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 	if currentCallGroup.HasPendingCalls() {
 		return nil
@@ -670,31 +694,27 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return err
 	}
 
-	asyncStoredKey := runtime.Arguments()[0]
-	context.Save(asyncStoredKey)
-
+	// TODO matei-p call original callback
 	return nil
 }
 
-func (context *asyncContext) CallContextCallback() error {
-	// TODO matei-p factor out and call from async.Execute(), DONT execute twice!
-	if context.contextCallbackEnabled {
-		err := context.executeContextCallback()
-		if err != nil {
-			return err
-		}
-	}
+func (context *asyncContext) callCallbackOfOriginalCaller() error {
+	// TODO matei-p don't check context callback! we need call's callback here
+	// if !context.HasCallback() {
+	// 	return nil
+	// }
 
-	return nil
-}
-
-func (context *asyncContext) CallCallbackOfOriginalCaller() error {
 	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
 	if !sameShard {
 		return context.sendCallbackToOriginalCaller()
 	}
 
-	// TODO matei-p call ExecuteOnDest() for local callback
+	// TODO matei-p,
+	// from vmOutput we only need return data, return code, return message (we can take them from output context)
+	// err should be the err returned but function()
+	// asyncCall provides destination and callback name
+	// 		refactor UpdateCurrentAsyncCallStatus() in order to reuse call from serialized async context
+	// callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 
 	return nil
 }
@@ -754,6 +774,10 @@ func (context *asyncContext) Load(prevPrevTxHash []byte) error {
 	context.callerAddr = loadedContext.callerAddr
 	context.returnData = loadedContext.returnData
 	context.asyncCallGroups = loadedContext.asyncCallGroups
+
+	context.returnCode = loadedContext.returnCode
+	context.retData = loadedContext.retData
+	context.initiatingTxHash = loadedContext.initiatingTxHash
 
 	return nil
 }
@@ -829,13 +853,25 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	runtime := host.Runtime()
 	output := host.Output()
 
-	err := output.Transfer(
+	function, arguments, err := context.callArgsParser.ParseData(string(asyncCall.GetData()))
+	if err != nil {
+		return err
+	}
+
+	callData := txDataBuilder.NewBuilder()
+	callData.Func(function)
+	callData.Bytes(runtime.GetCurrentTxHash())
+	for _, argument := range arguments {
+		callData.Bytes(argument)
+	}
+
+	err = output.Transfer(
 		asyncCall.GetDestination(),
 		runtime.GetSCAddress(),
 		asyncCall.GetGasLimit(),
 		asyncCall.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCall.GetValue()),
-		asyncCall.GetData(),
+		callData.ToBytes(),
 		vm.AsynchronousCall,
 	)
 	if err != nil {
@@ -870,28 +906,74 @@ func (context *asyncContext) sendCallbackToOriginalCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
+	retCode := output.ReturnCode()
+	retCodeBytes := big.NewInt(int64(retCode)).Bytes()
+	retData := []byte("callBack@" + hex.EncodeToString(runtime.GetPrevTxHash()))
+	retData = append(retData, []byte("@"+hex.EncodeToString(retCodeBytes))...)
+	if retCode == vmcommon.Ok {
+		for _, data := range output.ReturnData() {
+			retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
+		}
+	} else {
+		retMessage := []byte(output.ReturnMessage())
+		retData = append(retData, []byte("@"+hex.EncodeToString(retMessage))...)
+	}
+
+	gasLeft := metering.GasLeft()
+
 	err := output.Transfer(
-		context.callerAddr,
+		currentCall.CallerAddr,
 		runtime.GetSCAddress(),
-		context.gasAccumulated,
+		gasLeft,
 		0,
 		currentCall.CallValue,
-		context.returnData,
+		retData,
 		vm.AsynchronousCallBack,
 	)
+	metering.UseGas(gasLeft)
 	if err != nil {
-		metering.UseGas(metering.GasLeft())
 		runtime.FailExecution(err)
 		return err
 	}
 
 	log.Trace(
-		"sendContextCallbackToOriginalCaller",
-		"caller", context.callerAddr,
-		"data", context.returnData,
-		"gas", context.gasAccumulated)
+		"sendAsyncCallbackToCaller",
+		"caller", currentCall.CallerAddr,
+		"data", retData,
+		"gas", gasLeft)
 
 	return nil
+
+	/*
+		host := context.host
+		runtime := host.Runtime()
+		output := host.Output()
+		metering := host.Metering()
+		currentCall := runtime.GetVMInput()
+
+		err := output.Transfer(
+			context.callerAddr,
+			runtime.GetSCAddress(),
+			context.gasAccumulated,
+			0,
+			currentCall.CallValue,
+			context.returnData,
+			vm.AsynchronousCallBack,
+		)
+		if err != nil {
+			metering.UseGas(metering.GasLeft())
+			runtime.FailExecution(err)
+			return err
+		}
+
+		log.Trace(
+			"sendContextCallbackToOriginalCaller",
+			"caller", context.callerAddr,
+			"data", context.returnData,
+			"gas", context.gasAccumulated)
+
+		return nil
+	*/
 }
 
 func (context *asyncContext) Serialize() ([]byte, error) {
@@ -917,6 +999,10 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 		GasAccumulated:  context.gasAccumulated,
 		ReturnData:      context.returnData,
 		AsyncCallGroups: context.asyncCallGroups,
+
+		ReturnCode:       context.returnCode,
+		RetData:          context.retData,
+		InitiatingTxHash: context.initiatingTxHash,
 	}
 }
 

@@ -801,6 +801,13 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	return ok
 }
 
+func (context *runtimeContext) GetPrevTxHashAndUpdateArgumentsForAsyncCall() []byte {
+	prevTxHash := context.vmInput.Arguments[0]
+	context.vmInput.PrevTxHash = prevTxHash
+	context.vmInput.Arguments = context.vmInput.Arguments[1:]
+	return prevTxHash
+}
+
 func (context *runtimeContext) GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
 	prevPrevTxHash := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]

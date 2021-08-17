@@ -136,6 +136,7 @@ type TestCallEdge struct {
 	// callback function name
 	Callback string
 	// Group    string
+
 	// outgoing node
 	To *TestCallNode
 
