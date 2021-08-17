@@ -9,7 +9,7 @@ type CrossShardCall struct {
 	CallerAddress []byte
 	StartNode     *TestCallNode
 	CallType      vm.CallType
-	Arguments     []byte
+	Data          []byte
 }
 
 // CrossShardCallsQueue -
@@ -23,13 +23,12 @@ func NewCrossShardCallQueue() *CrossShardCallsQueue {
 }
 
 // Enqueue -
-func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, arguments []byte) {
+func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
 	queue.data = append(queue.data, &CrossShardCall{
 		CallerAddress: callerAddress,
 		StartNode:     startNode,
 		CallType:      callType,
-		// TODO matei-p  change to Data
-		Arguments: arguments,
+		Data:          data,
 	})
 }
 

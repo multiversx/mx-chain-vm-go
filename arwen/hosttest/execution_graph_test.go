@@ -132,8 +132,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		// }
 
 		arguments := [][]byte{}
-		if len(crossShardCall.Arguments) != 0 {
-			_, parsedArguments, err := parsers.NewCallArgsParser().ParseData(string(crossShardCall.Arguments))
+		if len(crossShardCall.Data) != 0 {
+			_, parsedArguments, err := parsers.NewCallArgsParser().ParseData(string(crossShardCall.Data))
 			if err != nil {
 				panic(err)
 			}
@@ -212,6 +212,21 @@ func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.Te
 		}
 		return node
 	}, false /* don't followCrossShardEdges */)
+
+	// if a parent context async exists, add it's callback edge also
+	if startNode.IncomingEdgeType == test.CallbackCrossShard &&
+		startNode.Parent != nil && startNode.Parent.Parent != nil {
+		prevPrevNode := startNode.Parent.Parent
+		if prevPrevNode.IncomingEdgeType == test.Async ||
+			prevPrevNode.IncomingEdgeType == test.AsyncCrossShard {
+			for _, edge := range prevPrevNode.AdjacentEdges {
+				if edge.Type == test.Callback || edge.Type == test.CallbackCrossShard {
+					crossShardEdges = append(crossShardEdges, edge)
+				}
+			}
+		}
+	}
+
 	return crossShardEdges
 }
 
@@ -321,16 +336,16 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 				callType := outputTransfer.CallType
 				transferSenderAddress := string(outputTransfer.SenderAddress)
 				var encodedArgs []byte
-				if callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack {
+				if edgeFromAddress == transferSenderAddress &&
+					(callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) {
+					fmt.Println(
+						"Found transfer from sender", string(outputTransfer.SenderAddress),
+						"to", string(outputAccount.Address),
+						"gas limit", outputTransfer.GasLimit,
+						"callType", callType,
+						"data", string(outputTransfer.Data))
 					if callType == vm.AsynchronousCall {
-						if edgeFromAddress == transferSenderAddress {
-							fmt.Println(
-								"Found transfer from sender", string(outputTransfer.SenderAddress),
-								"to", string(outputAccount.Address),
-								"gas limit", outputTransfer.GasLimit,
-								"data", string(outputTransfer.Data))
-							encodedArgs = outputTransfer.Data
-						}
+						encodedArgs = outputTransfer.Data
 					} else if callType == vm.AsynchronousCallBack {
 						// this is the only place where we can add the test framework arguments
 						argParser := parsers.NewCallArgsParser()

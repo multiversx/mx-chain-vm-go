@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"math/big"
 
@@ -36,9 +35,7 @@ type asyncContext struct {
 	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
 
-	returnCode       vmcommon.ReturnCode
-	retData          [][]byte // TODO matei-p replace with returnData
-	initiatingTxHash []byte
+	gasLocked uint64
 }
 
 type serializableAsyncContext struct {
@@ -50,9 +47,7 @@ type serializableAsyncContext struct {
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
 
-	ReturnCode       vmcommon.ReturnCode
-	RetData          [][]byte // TODO matei-p replace with ReturnData
-	InitiatingTxHash []byte
+	GasLocked uint64
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -593,14 +588,14 @@ func (context *asyncContext) Execute() error {
 			logAsync.Trace("async.Execute() execute context callback")
 			context.executeContextCallback()
 		}
-		if context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall {
-			context.callCallbackOfOriginalCaller()
+		runtime := context.host.Runtime()
+		if runtime.GetVMInput().CallType == vm.AsynchronousCall {
+			context.callCallbackOfOriginalCaller(runtime.GetSCAddress(), runtime.GetVMInput().CallerAddr, context.GetEncodedDataForAsyncCallbackTransfer())
 		}
 	} else {
 		logAsync.Trace("async.Execute() save")
-		context.initiatingTxHash = context.host.Runtime().GetPrevTxHash()
-		context.returnCode = context.host.Output().ReturnCode()
-		context.retData = context.host.Output().ReturnData()
+		context.gasLocked = context.host.Runtime().GetVMInput().GasLocked
+		context.returnData = context.GetEncodedDataForAsyncCallbackTransfer()
 		err := context.Save(context.host.Runtime().GetCurrentTxHash())
 		if err != nil {
 			return err
@@ -694,27 +689,34 @@ func (context *asyncContext) PostprocessCrossShardCallback() error {
 		return err
 	}
 
-	// TODO matei-p call original callback
+	callbackSender := runtime.GetSCAddress()
+	callbackDestination := context.callerAddr
+	returnData := context.GetReturnData()
+	context.callCallbackOfOriginalCaller(callbackSender, callbackDestination, returnData)
+
 	return nil
 }
 
-func (context *asyncContext) callCallbackOfOriginalCaller() error {
-	// TODO matei-p don't check context callback! we need call's callback here
-	// if !context.HasCallback() {
-	// 	return nil
-	// }
-
-	sameShard := context.host.AreInSameShard(context.host.Runtime().GetSCAddress(), context.callerAddr)
+func (context *asyncContext) callCallbackOfOriginalCaller(sender []byte, destination []byte, data []byte) error {
+	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		return context.sendCallbackToOriginalCaller()
+		return context.sendCallbackToOriginalCaller(sender, destination, data)
 	}
 
 	// TODO matei-p,
 	// from vmOutput we only need return data, return code, return message (we can take them from output context)
-	// err should be the err returned but function()
-	// asyncCall provides destination and callback name
+	// err should be the err returned by function()
+	// asyncCall provides destination, callback name, gas locked
 	// 		refactor UpdateCurrentAsyncCallStatus() in order to reuse call from serialized async context
-	// callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+
+	// context.executeSyncCallbackAndAccumulateGas(
+	// 	&arwen.AsyncCall{
+	// 		Destination: destination,
+	// 		SuccessCallback: ,
+	// 		GasLocked: ,
+	// 	},
+	// 	vmOutput,
+	// 	err)
 
 	return nil
 }
@@ -775,9 +777,7 @@ func (context *asyncContext) Load(prevPrevTxHash []byte) error {
 	context.returnData = loadedContext.returnData
 	context.asyncCallGroups = loadedContext.asyncCallGroups
 
-	context.returnCode = loadedContext.returnCode
-	context.retData = loadedContext.retData
-	context.initiatingTxHash = loadedContext.initiatingTxHash
+	context.gasLocked = loadedContext.gasLocked
 
 	return nil
 }
@@ -899,35 +899,22 @@ func (context *asyncContext) executeContextCallback() error {
 }
 
 // TODO compare with host.sendAsyncCallbackToCaller()
-func (context *asyncContext) sendCallbackToOriginalCaller() error {
+func (context *asyncContext) sendCallbackToOriginalCaller(sender []byte, destination []byte, data []byte) error {
 	host := context.host
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	retCode := output.ReturnCode()
-	retCodeBytes := big.NewInt(int64(retCode)).Bytes()
-	retData := []byte("callBack@" + hex.EncodeToString(runtime.GetPrevTxHash()))
-	retData = append(retData, []byte("@"+hex.EncodeToString(retCodeBytes))...)
-	if retCode == vmcommon.Ok {
-		for _, data := range output.ReturnData() {
-			retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
-		}
-	} else {
-		retMessage := []byte(output.ReturnMessage())
-		retData = append(retData, []byte("@"+hex.EncodeToString(retMessage))...)
-	}
-
 	gasLeft := metering.GasLeft()
 
 	err := output.Transfer(
-		currentCall.CallerAddr,
-		runtime.GetSCAddress(),
+		destination,
+		sender,
 		gasLeft,
 		0,
 		currentCall.CallValue,
-		retData,
+		data,
 		vm.AsynchronousCallBack,
 	)
 	metering.UseGas(gasLeft)
@@ -939,7 +926,7 @@ func (context *asyncContext) sendCallbackToOriginalCaller() error {
 	log.Trace(
 		"sendAsyncCallbackToCaller",
 		"caller", currentCall.CallerAddr,
-		"data", retData,
+		"data", data,
 		"gas", gasLeft)
 
 	return nil
@@ -976,6 +963,36 @@ func (context *asyncContext) sendCallbackToOriginalCaller() error {
 	*/
 }
 
+func (context *asyncContext) GetEncodedDataForAsyncCallbackTransfer() []byte {
+	host := context.host
+	runtime := host.Runtime()
+	output := host.Output()
+
+	retCode := output.ReturnCode()
+
+	transferData := txDataBuilder.NewBuilder()
+	transferData.Func("callBack")
+	transferData.Bytes(runtime.GetPrevTxHash())
+	transferData.Int64(int64(retCode))
+
+	// retCodeBytes := big.NewInt(int64(retCode)).Bytes()
+	// retData := []byte("callBack@" + hex.EncodeToString(runtime.GetPrevTxHash()))
+	// retData = append(retData, []byte("@"+hex.EncodeToString(retCodeBytes))...)
+	if retCode == vmcommon.Ok {
+		for _, data := range output.ReturnData() {
+			transferData.Bytes(data)
+		}
+		// for _, data := range output.ReturnData() {
+		// 	retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
+		// }
+	} else {
+		transferData.Str(output.ReturnMessage())
+		// retMessage := []byte(output.ReturnMessage())
+		// retData = append(retData, []byte("@"+hex.EncodeToString(retMessage))...)
+	}
+	return transferData.ToBytes()
+}
+
 func (context *asyncContext) Serialize() ([]byte, error) {
 	serializableContext := context.toSerializable()
 	return json.Marshal(serializableContext)
@@ -999,10 +1016,7 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 		GasAccumulated:  context.gasAccumulated,
 		ReturnData:      context.returnData,
 		AsyncCallGroups: context.asyncCallGroups,
-
-		ReturnCode:       context.returnCode,
-		RetData:          context.retData,
-		InitiatingTxHash: context.initiatingTxHash,
+		GasLocked:       context.gasLocked,
 	}
 }
 
@@ -1017,6 +1031,7 @@ func (context *asyncContext) fromSerializable(serializedContext *serializableAsy
 		gasAccumulated:  serializedContext.GasAccumulated,
 		returnData:      serializedContext.ReturnData,
 		asyncCallGroups: serializedContext.AsyncCallGroups,
+		gasLocked:       serializedContext.GasLocked,
 	}
 }
 

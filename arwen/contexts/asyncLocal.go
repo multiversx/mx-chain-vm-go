@@ -81,12 +81,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	deserializedAsyncCtx, _ := NewSerializedAsyncContextFromStore(context.host.Storage(), receiverAddr, txHashOfNewCall)
 
 	if asyncCall.HasCallback() && (deserializedAsyncCtx == nil || !deserializedAsyncCtx.HasPendingCallGroups()) {
-		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
-		context.gasAccumulated = 0
-		if callbackVMOutput != nil {
-			context.accumulateGas(callbackVMOutput.GasRemaining)
-		}
+		context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
 	} else {
 		context.gasAccumulated = 0
 		if vmOutput != nil {
@@ -95,6 +90,16 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	}
 
 	return nil
+}
+
+func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) {
+	callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+	// TODO matei-p would the below be ok for error vmOutput? the other use of executeSyncCallback()
+	context.gasAccumulated = 0
+	if callbackVMOutput != nil {
+		context.accumulateGas(callbackVMOutput.GasRemaining)
+	}
 }
 
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
