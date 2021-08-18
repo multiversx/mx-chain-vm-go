@@ -33,6 +33,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/secp256k1"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
@@ -317,14 +318,16 @@ func v1_4_verifyEd25519(
 	return 0
 }
 
-//export v1_4_verifySecp256k1
-func v1_4_verifySecp256k1(
+
+//export v1_4_verifyCustomSecp256k1
+func v1_4_verifyCustomSecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
 	messageOffset int32,
 	messageLength int32,
 	sigOffset int32,
+	hashType int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
@@ -365,10 +368,63 @@ func v1_4_verifySecp256k1(
 		return 1
 	}
 
-	invalidSigErr := crypto.VerifySecp256k1(key, message, sig)
+	invalidSigErr := crypto.VerifySecp256k1(key, message, sig, uint8(hashType))
 	if invalidSigErr != nil {
 		return -1
 	}
+
+	return 0
+}
+
+//export v1_4_verifySecp256k1
+func v1_4_verifySecp256k1(
+	context unsafe.Pointer,
+	keyOffset int32,
+	keyLength int32,
+	messageOffset int32,
+	messageLength int32,
+	sigOffset int32,
+) int32 {
+	return v1_4_verifyCustomSecp256k1(
+		context,
+		keyOffset,
+		keyLength,
+		messageOffset,
+		messageLength,
+		sigOffset,
+		int32(secp256k1.ECDSADoubleSha256),
+	)
+}
+
+//export v1_4_encodeSecp256k1DerSignature
+func v1_4_encodeSecp256k1DerSignature(
+	context unsafe.Pointer,
+	rOffset int32,
+	rLength int32,
+	sOffset int32,
+	sLength int32,
+	sigOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
+	metering.UseGas(gasToUse)
+
+	r, err := runtime.MemLoad(rOffset, rLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	s, err := runtime.MemLoad(sOffset, sLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	derSig := crypto.EncodeSecp256k1DERSignature(r, s)
+	err = runtime.MemStore(sigOffset, derSig)
+	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 
 	return 0
 }

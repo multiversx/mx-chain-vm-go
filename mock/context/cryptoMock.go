@@ -32,7 +32,7 @@ func (c *CryptoHookMock) VerifyEd25519(key []byte, msg []byte, sig []byte) error
 }
 
 // VerifySecp256k1 mocked method
-func (c *CryptoHookMock) VerifySecp256k1(key []byte, msg []byte, sig []byte) error {
+func (c *CryptoHookMock) VerifySecp256k1(key []byte, msg []byte, sig []byte, hashType byte) error {
 	return c.Err
 }
 

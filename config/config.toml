@@ -134,6 +134,7 @@
     UnmarshalECC           = 10
     UnmarshalCompressedECC = 10
     GenerateKeyECC         = 10
+    EncodeDERSig           = 10
 
 [ManagedBufferAPICost]
     MBufferNew                   = 10
