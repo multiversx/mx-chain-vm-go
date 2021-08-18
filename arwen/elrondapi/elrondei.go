@@ -564,7 +564,7 @@ func v1_4_getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
 
 	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	return int32(blockchain.GetShardOfAddress(address))
@@ -581,7 +581,7 @@ func v1_4_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 
 	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	isSmartContract := blockchain.IsSmartContract(address)
@@ -694,11 +694,11 @@ func v1_4_getESDTBalance(
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 	err = runtime.MemStore(resultOffset, esdtData.Value.Bytes())
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	return int32(len(esdtData.Value.Bytes()))
@@ -715,7 +715,7 @@ func v1_4_getESDTNFTNameLength(
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
 		return 0
@@ -735,7 +735,7 @@ func v1_4_getESDTNFTAttributeLength(
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
 		return 0
@@ -755,7 +755,7 @@ func v1_4_getESDTNFTURILength(
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
 		return 0
@@ -787,7 +787,7 @@ func v1_4_getESDTTokenData(
 	runtime := arwen.GetRuntimeContext(context)
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	value := managedType.GetBigIntOrCreate(valueHandle)
@@ -795,25 +795,25 @@ func v1_4_getESDTTokenData(
 
 	err = runtime.MemStore(propertiesOffset, esdtData.Properties)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	if esdtData.TokenMetaData != nil {
 		err = runtime.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
 		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-			return 0
+			return -1
 		}
 		err = runtime.MemStore(nameOffset, esdtData.TokenMetaData.Name)
 		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-			return 0
+			return -1
 		}
 		err = runtime.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
 		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-			return 0
+			return -1
 		}
 		err = runtime.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
 		if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-			return 0
+			return -1
 		}
 
 		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
@@ -822,7 +822,7 @@ func v1_4_getESDTTokenData(
 		if len(esdtData.TokenMetaData.URIs) > 0 {
 			err = runtime.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
 			if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-				return 0
+				return -1
 			}
 		}
 	}
@@ -963,6 +963,9 @@ func extractIndirectContractCallArguments(
 		argumentsLengthOffset,
 		dataOffset,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
@@ -1200,6 +1203,10 @@ func v1_4_multiTransferESDTNFTExecute(
 		tokenTransfersArgsLengthOffset,
 		tokenTransferDataOffset,
 	)
+
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
@@ -1914,12 +1921,10 @@ func v1_4_checkNoPayment(context unsafe.Pointer) {
 
 	vmInput := runtime.GetVMInput()
 	if vmInput.CallValue.Sign() > 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrNonPayableFunctionEgld, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	if len(vmInput.ESDTTransfers) > 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrNonPayableFunctionEsdt, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}

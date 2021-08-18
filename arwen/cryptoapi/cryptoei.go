@@ -547,8 +547,7 @@ func v1_4_scalarBaseMultEC(
 	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -652,8 +651,7 @@ func v1_4_marshalEC(
 	}
 
 	x, y, err := managedType.GetTwoBigInt(xPairHandle, yPairHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	if !ec.IsOnCurve(x, y) {
@@ -759,8 +757,7 @@ func v1_4_unmarshalEC(
 	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -813,8 +810,7 @@ func v1_4_unmarshalCompressedEC(
 	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -858,8 +854,7 @@ func v1_4_generateKeyEC(
 	}
 
 	xPubKey, yPubKey, err := managedType.GetTwoBigInt(xPubKeyHandle, yPubKeyHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
@@ -963,18 +958,15 @@ func v1_4_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOr
 		return -1
 	}
 	fieldOrder, basePointOrder, err := managedType.GetTwoBigInt(fieldOrderHandle, basePointOrderHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	eqConstant, err := managedType.GetBigInt(eqConstantHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	xBasePoint, yBasePoint, err := managedType.GetTwoBigInt(xBasePointHandle, yBasePointHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	fieldOrder.Set(ec.P)

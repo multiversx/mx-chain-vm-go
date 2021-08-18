@@ -179,3 +179,6 @@ var ErrNilBlockChainHook = errors.New("nil blockchain hook")
 
 // ErrTooManyESDTTransfers signals that too many ESDT transfers are in sc call
 var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
+
+// ErrLockTimeStampTooSmall signals that the LockTimeStamp is smaller or equal to the CurrentTimeStamp
+var ErrLockTimeStampTooSmall = errors.New("lockTimeStamp must be greater than currentTimeStamp")

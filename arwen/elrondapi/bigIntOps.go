@@ -484,7 +484,7 @@ func v1_4_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) 
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	bytes := twos.ToBytes(value)
@@ -639,8 +639,7 @@ func v1_4_bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
@@ -658,8 +657,7 @@ func v1_4_bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
@@ -677,8 +675,7 @@ func v1_4_bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
@@ -696,13 +693,11 @@ func v1_4_bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -720,13 +715,11 @@ func v1_4_bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -744,13 +737,11 @@ func v1_4_bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -768,13 +759,11 @@ func v1_4_bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -792,13 +781,11 @@ func v1_4_bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) 
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	if a.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -816,8 +803,7 @@ func v1_4_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -828,7 +814,6 @@ func v1_4_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	managedType.ConsumeGasForBigIntCopy(a, b)
 
 	if b.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -851,7 +836,6 @@ func v1_4_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return -1
 	}
@@ -870,8 +854,7 @@ func v1_4_bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
@@ -889,8 +872,7 @@ func v1_4_bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
@@ -924,8 +906,7 @@ func v1_4_bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 	metering.UseGas(gasToUse)
 
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -2
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
@@ -943,13 +924,11 @@ func v1_4_bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	if a.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -967,13 +946,11 @@ func v1_4_bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -991,13 +968,11 @@ func v1_4_bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Hand
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -1015,13 +990,11 @@ func v1_4_bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -1039,13 +1012,11 @@ func v1_4_bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits in
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 || bits < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
@@ -1064,13 +1035,11 @@ func v1_4_bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits in
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.BigIntAPIErrorShouldFailExecution())
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 || bits < 0 {
-		runtime := arwen.GetRuntimeContext(context)
 		arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
