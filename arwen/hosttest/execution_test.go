@@ -2784,7 +2784,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
 // number of i64 locals it instantiates
 func makeBytecodeWithLocals(numLocals uint64) []byte {
-	originalCode := test.GetTestSCCode("answer", "../../")
+	originalCode := test.GetTestSCCode("answer-locals", "../../")
 	firstSlice := originalCode[:0x5B]
 	secondSlice := originalCode[0x5C:]
 

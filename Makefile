@@ -74,8 +74,6 @@ build-test-contracts:
 
 	wat2wasm -o ./test/contracts/init-simple-popcnt/init-simple-popcnt.wasm ./test/contracts/init-simple-popcnt/init-simple-popcnt.wat
 	wat2wasm -o ./test/contracts/memoryless/output/memoryless.wasm ./test/contracts/memoryless/output/memoryless.wat
-	wat2wasm -o ./test/contracts/answer/output/answer2.wasm ./test/contracts/answer/output/answer.wat
-	wat2wasm -o ./test/contracts/answer/output/answer_generated.wasm ./test/contracts/answer/output/answer_generated.wat
 
 build-delegation:
 ifndef SANDBOX
