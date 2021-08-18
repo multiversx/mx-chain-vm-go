@@ -1402,6 +1402,7 @@ gasScheduleV3 = `[BuiltInCost]
     UnmarshalECC           = 20000
     UnmarshalCompressedECC = 270000
     GenerateKeyECC         = 7000000
+    EncodeDERSig           = 1000000
 
 [ManagedBufferAPICost]
     MBufferNew                   = 2000

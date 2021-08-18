@@ -14,7 +14,7 @@ func TestEthereumSig(t *testing.T) {
 	key, _ := hex.DecodeString("04e32df42865e97135acfb65f3bae71bdc86f4d49150ad6a440b6f15878109880a0a2b2667f7e725ceea70c673093bf67663e0312623c8e091b13cf2c0f11ef652")
 
 	verifier := NewSecp256k1()
-	sig := verifier.EncodeSignature(r, s)
+	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 	err := verifier.VerifySecp256k1(key, msg, sig, byte(ECDSAPlainMsg))
 
 	assert.Nil(t, err)
@@ -27,7 +27,7 @@ func TestBitcoinSig(t *testing.T) {
 	s, _ := hex.DecodeString("d47563f52aac6b04b55de236b7c515eb9311757db01e02cff079c3ca6efb063f")
 
 	verifier := NewSecp256k1()
-	sig := verifier.EncodeSignature(r, s)
+	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 	err := verifier.VerifySecp256k1(pubKey, msg, sig, byte(ECDSADoubleSha256))
 
 	assert.Nil(t, err)

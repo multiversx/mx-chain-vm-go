@@ -32,8 +32,13 @@ func (c *CryptoHookMock) VerifyEd25519(key []byte, msg []byte, sig []byte) error
 }
 
 // VerifySecp256k1 mocked method
-func (c *CryptoHookMock) VerifySecp256k1(key []byte, msg []byte, sig []byte, hashType byte) error {
+func (c *CryptoHookMock) VerifySecp256k1(key []byte, msg []byte, sig []byte, hashType uint8) error {
 	return c.Err
+}
+
+// EncodeSecp256k1DERSignature mocked method
+func (c *CryptoHookMock) EncodeSecp256k1DERSignature(r, s []byte) []byte {
+	return make([]byte, 0)
 }
 
 // Ecrecover mocked method
