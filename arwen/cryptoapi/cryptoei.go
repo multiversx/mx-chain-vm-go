@@ -436,7 +436,7 @@ func v1_4_encodeSecp256k1DerSignature(
 
 	derSig := crypto.EncodeSecp256k1DERSignature(r, s)
 	err = runtime.MemStore(sigOffset, derSig)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
