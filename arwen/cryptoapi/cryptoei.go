@@ -12,6 +12,8 @@ package cryptoapi
 // extern int32_t v1_4_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_4_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_4_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_4_verifyCustomSecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t hashType);
+// extern int32_t v1_4_encodeSecp256k1DerSignature(void *context, int32_t rOffset, int32_t rLength, int32_t sOffset, int32_t sLength, int32_t sigOffset);
 // extern void v1_4_addEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
 // extern void v1_4_doubleEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
 // extern int32_t v1_4_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
@@ -76,6 +78,16 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("verifySecp256k1", v1_4_verifySecp256k1, C.v1_4_verifySecp256k1)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("verifyCustomSecp256k1", v1_4_verifyCustomSecp256k1, C.v1_4_verifyCustomSecp256k1)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("encodeSecp256k1DerSignature", v1_4_encodeSecp256k1DerSignature, C.v1_4_encodeSecp256k1DerSignature)
 	if err != nil {
 		return nil, err
 	}
