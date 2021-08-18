@@ -11,4 +11,4 @@ var ErrInvalidPublicKey = errors.New("public key is invalid")
 var ErrInvalidSignature = errors.New("invalid signature")
 
 // ErrHasherNotSupported will be returned when a provided hasher type is not supported by the signature scheme
-var ErrHasherNotSupported = errors.New("invalid signature")
+var ErrHasherNotSupported = errors.New("hasher not supported")
