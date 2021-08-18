@@ -41,9 +41,10 @@
                 "logs": [
                     {
                         "address": "sc:egld-esdt-swap",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:WEGLD-abcdef",
+                            "",
                             "500",
                             "address:user"
                         ],
@@ -51,7 +52,7 @@
                     },
                     {
                         "address": "sc:egld-esdt-swap",
-                        "identifier": "str:wrapEgld",
+                        "endpoint": "str:wrapEgld",
                         "topics": [
                             "str:wrap-egld",
                             "address:user"

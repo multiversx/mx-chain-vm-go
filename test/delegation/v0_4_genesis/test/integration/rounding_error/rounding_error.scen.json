@@ -114,7 +114,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:claimRewards",
+                        "endpoint": "str:claimRewards",
                         "topics": [
                             "0x000000000000000000000000000000000000000000000000000000000000000a",
                             "''node_address__________________s1"

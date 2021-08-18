@@ -77,7 +77,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:callBack",
+                        "endpoint": "str:callBack",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000003"
                         ],
@@ -85,7 +85,7 @@
                     },
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:callBack",
+                        "endpoint": "str:callBack",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000004"
                         ],

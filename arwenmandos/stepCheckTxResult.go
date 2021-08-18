@@ -79,7 +79,7 @@ func (ae *ArwenTestExecutor) checkTxResults(
 				mjwrite.LogToString(testLog),
 				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
-		if !testLog.Identifier.Check(outLog.Identifier) {
+		if !testLog.Endpoint.Check(outLog.Identifier) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),
