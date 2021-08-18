@@ -483,7 +483,6 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 	asyncCallData.Func(contracts.AsyncChildFunction)
 	asyncCallData.Int64(testConfig.TransferToThirdParty)
 	asyncCallData.Str(contracts.AsyncChildData)
-	// behavior param for child
 	asyncCallData.Bytes([]byte{0})
 	asyncChildArgs := asyncCallData.ToBytes()
 
@@ -657,7 +656,7 @@ func TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t *testing.T) {
 	testConfig.GasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
-	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+	expectedGasUsedByChild := uint64(0)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -691,9 +690,7 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
-	// all will be spent in case of failure
 	gasProvidedForBuiltinCall := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasLockCost
-
 	expectedGasUsedByParent := testConfig.GasUsedByParent + gasProvidedForBuiltinCall + testConfig.GasUsedByCallback
 
 	test.BuildMockInstanceCallTest(t).
@@ -761,9 +758,6 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.TransferFromChildToParent = 5
-
-	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// expectedGasUsedByChild := testConfig.GasUsedByChild + gasUsedByBuiltinClaim
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -1262,9 +1256,6 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	testConfig.GasLockCost = 10
 	testConfig.GasProvidedToCallback = 60
 
-	// gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// gasUsedByChild := testConfig.GasUsedByChild
-
 	expectedReturnData := make([][]byte, 0)
 	for _, groupConfig := range contracts.AsyncGroupsConfig {
 		groupName := groupConfig[0]
@@ -1311,7 +1302,6 @@ func TestGasUsed_AsyncCall_CallGraph(t *testing.T) {
 	testConfig.GasProvided = 100_000
 	testConfig.GasProvidedToChild = 30_000
 
-	// callGraph := test.CreateGraphTestSimple1()
 	callGraph := test.CreateGraphTest2()
 
 	runGraphCallTestTemplate(t, testConfig, callGraph)
@@ -1409,13 +1399,11 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 		ProcessBuiltinFunctionCall: func(acntSnd, acntRecv vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 			vmOutput := test.MakeEmptyVMOutput()
 			if acntRecv != nil {
-				// acntSnd and acntRecv are in the same shard
 				test.AddFinishData(vmOutput, []byte("ok"))
 				vmOutput.GasRemaining = vmInput.GasProvided - 120
 				return vmOutput, nil
 			}
 
-			// acntSnd and acntRecv are in different shards
 			account := test.AddNewOutputTransfer(
 				vmOutput,
 				acntSnd.AddressBytes(),
