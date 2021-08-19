@@ -22,41 +22,58 @@ test-short: arwen
 	go test -short -count=1 ./...
 
 build-test-contracts:
-	erdpy contract build ./test/contracts/erc20
+	erdpy contract build --no-optimization ./test/contracts/answer
+	erdpy contract build ./test/contracts/async-call-builtin
+	erdpy contract build ./test/contracts/async-call-child
+	erdpy contract build ./test/contracts/async-call-parent
+	erdpy contract build ./test/contracts/breakpoint
 	erdpy contract build ./test/contracts/counter
+	erdpy contract build ./test/contracts/deployer
+	erdpy contract build ./test/contracts/deployer-child
+	erdpy contract build ./test/contracts/deployer-fromanother-contract
+	erdpy contract build ./test/contracts/deployer-parent
+	erdpy contract build ./test/contracts/elrondei
+	erdpy contract build ./test/contracts/erc20
+	erdpy contract build ./test/contracts/exchange
+
+	erdpy contract build ./test/contracts/exec-dest-ctx-builtin
+	erdpy contract build ./test/contracts/exec-dest-ctx-by-caller/child
+	erdpy contract build ./test/contracts/exec-dest-ctx-by-caller/parent
+	erdpy contract build ./test/contracts/exec-dest-ctx-child
+	erdpy contract build ./test/contracts/exec-dest-ctx-esdt/basic
+	erdpy contract build ./test/contracts/exec-dest-ctx-parent
+	erdpy contract build ./test/contracts/exec-dest-ctx-recursive
+	erdpy contract build ./test/contracts/exec-dest-ctx-recursive-child
+	erdpy contract build ./test/contracts/exec-dest-ctx-recursive-parent
+
+	erdpy contract build ./test/contracts/exec-same-ctx-child
+	erdpy contract build ./test/contracts/exec-same-ctx-parent
+	erdpy contract build ./test/contracts/exec-same-ctx-recursive
+	erdpy contract build ./test/contracts/exec-same-ctx-recursive-child
+	erdpy contract build ./test/contracts/exec-same-ctx-recursive-parent
+	erdpy contract build ./test/contracts/exec-same-ctx-simple-child
+	erdpy contract build ./test/contracts/exec-same-ctx-simple-parent
+
+	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/alpha
+	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/beta
+	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/delta
+	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/gamma
 
 	erdpy contract build ./test/contracts/init-correct
 	erdpy contract build ./test/contracts/init-simple
 	erdpy contract build ./test/contracts/init-wrong
+	erdpy contract build ./test/contracts/managed-buffers
 	erdpy contract build ./test/contracts/misc
-	erdpy contract build ./test/contracts/signatures
-	erdpy contract build ./test/contracts/elrondei
-	erdpy contract build ./test/contracts/breakpoint
 	erdpy contract build --no-optimization ./test/contracts/num-with-fp
-
-	erdpy contract build ./test/contracts/exec-same-ctx-simple-parent
-	erdpy contract build ./test/contracts/exec-same-ctx-simple-child
-	erdpy contract build ./test/contracts/exec-same-ctx-child
-	erdpy contract build ./test/contracts/exec-same-ctx-parent
-	erdpy contract build ./test/contracts/exec-dest-ctx-parent
-	erdpy contract build ./test/contracts/exec-dest-ctx-child
-	erdpy contract build ./test/contracts/exec-same-ctx-recursive
-	erdpy contract build ./test/contracts/exec-same-ctx-recursive-parent
-	erdpy contract build ./test/contracts/exec-same-ctx-recursive-child
-	erdpy contract build ./test/contracts/exec-dest-ctx-recursive
-	erdpy contract build ./test/contracts/exec-dest-ctx-recursive-parent
-	erdpy contract build ./test/contracts/exec-dest-ctx-recursive-child
-	erdpy contract build ./test/contracts/async-call-parent
-	erdpy contract build ./test/contracts/async-call-child
-	erdpy contract build ./test/contracts/exec-same-ctx-builtin
-	erdpy contract build ./test/contracts/deployer
-	erdpy contract build ./test/contracts/exchange
 	erdpy contract build ./test/contracts/promises
 	erdpy contract build ./test/contracts/promises-train
 	erdpy contract build ./test/contracts/promises-tracking
+	erdpy contract build ./test/contracts/signatures
 	erdpy contract build ./test/contracts/timelocks
-	erdpy contract build ./test/contracts/async-call-builtin
+	erdpy contract build ./test/contracts/upgrader-fromanother-contract
 
+	wat2wasm -o ./test/contracts/init-simple-popcnt/init-simple-popcnt.wasm ./test/contracts/init-simple-popcnt/init-simple-popcnt.wat
+	wat2wasm -o ./test/contracts/memoryless/output/memoryless.wasm ./test/contracts/memoryless/output/memoryless.wat
 
 build-delegation:
 ifndef SANDBOX

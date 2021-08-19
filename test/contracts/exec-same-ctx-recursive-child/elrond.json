@@ -1,0 +1,6 @@
+{
+    "language": "clang",
+    "source_files": [
+        "/home/andrei/arwen-wasm-vm/test/contracts/exec-same-ctx-recursive-child/exec-same-ctx-recursive-child.c"
+    ]
+}
