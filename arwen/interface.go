@@ -143,6 +143,7 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
@@ -166,6 +167,10 @@ type ManagedTypesContext interface {
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
+	PutBigFloat(value float64) int32
+	GetBigFloatOrCreate(handle int32) *big.Float
+	GetBigFloat(handle int32) (*big.Float, error)
+	GetTwoBigFloat(handle1 int32, handle2 int32) (*big.Float, *big.Float, error)
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveSizeOfField(ecHandle int32) int32

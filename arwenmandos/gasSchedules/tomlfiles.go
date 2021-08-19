@@ -1,7 +1,7 @@
-package gasschedules 
+package gasschedules
 
 const (
-gasScheduleV1 = `[BuiltInCost]
+	gasScheduleV1 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 5000000
@@ -615,7 +615,7 @@ gasScheduleV1 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV2 = `[BuiltInCost]
+	gasScheduleV2 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -1227,7 +1227,7 @@ gasScheduleV2 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV3 = `[BuiltInCost]
+	gasScheduleV3 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -1384,6 +1384,22 @@ gasScheduleV3 = `[BuiltInCost]
     BigIntGetSignedArgument     = 1000
     BigIntGetCallValue          = 1000
     BigIntGetExternalBalance    = 10000
+
+[BigFloatAPICost]
+    BigFloatNew         = 2000
+    BigFloatAdd         = 2000
+    BigFloatSub         = 2000
+    BigFloatMul         = 2000
+    BigFloatDiv         = 2000
+    BigFloatRoundDiv    = 2000
+    BigFloatMod         = 2000
+    BigFloatNeg         = 2000
+    BigFloatCopy        = 2000
+    BigFloatCmp         = 2000
+    BigFloatAbs         = 2000
+    BigFloatSqrt        = 2000
+    BigFloatIsInt       = 2000
+    BigFloatSetBigInt   = 20000
 
 [CryptoAPICost]
     SHA256                 = 1000000

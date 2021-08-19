@@ -544,6 +544,11 @@ func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
 	return true
 }
 
+// BigFloatAPIErrorShouldFailExecution returns true
+func (context *runtimeContext) BigFloatAPIErrorShouldFailExecution() bool {
+	return true
+}
+
 // CryptoAPIErrorShouldFailExecution returns true
 func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
 	return true
