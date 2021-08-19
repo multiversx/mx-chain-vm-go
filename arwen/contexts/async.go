@@ -35,7 +35,7 @@ type asyncContext struct {
 	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
 
-	gasLocked uint64
+	initiatingAsyncCallId *arwen.AsyncCallIdentifier
 }
 
 type serializableAsyncContext struct {
@@ -47,7 +47,7 @@ type serializableAsyncContext struct {
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
 
-	GasLocked uint64
+	InitiatingAsyncCallId *arwen.AsyncCallIdentifier
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -590,12 +590,13 @@ func (context *asyncContext) Execute() error {
 		}
 		runtime := context.host.Runtime()
 		if runtime.GetVMInput().CallType == vm.AsynchronousCall {
+			// a cross-shard async call that produced no local or cross-shard async calls
 			context.callCallbackOfOriginalCaller(runtime.GetSCAddress(), runtime.GetVMInput().CallerAddr, context.GetEncodedDataForAsyncCallbackTransfer())
 		}
 	} else {
 		logAsync.Trace("async.Execute() save")
-		context.gasLocked = context.host.Runtime().GetVMInput().GasLocked
-		context.returnData = context.GetEncodedDataForAsyncCallbackTransfer()
+		// context.gasLocked = context.host.Runtime().GetVMInput().GasLocked
+		// context.returnData = context.GetEncodedDataForAsyncCallbackTransfer()
 		err := context.Save(context.host.Runtime().GetCurrentTxHash())
 		if err != nil {
 			return err
@@ -712,10 +713,14 @@ func (context *asyncContext) callCallbackOfOriginalCaller(sender []byte, destina
 	// context.executeSyncCallbackAndAccumulateGas(
 	// 	&arwen.AsyncCall{
 	// 		Destination: destination,
-	// 		SuccessCallback: ,
-	// 		GasLocked: ,
+	// 		SuccessCallback: ,			???
+	// 		GasLocked: ,				???
 	// 	},
-	// 	vmOutput,
+	// 	&vmcommon.VMOutput{
+	// 		ReturnData:      ,
+	// 		ReturnCode:      ,
+	// 		ReturnMessage:   ,
+	// 	},
 	// 	err)
 
 	return nil
@@ -777,7 +782,7 @@ func (context *asyncContext) Load(prevPrevTxHash []byte) error {
 	context.returnData = loadedContext.returnData
 	context.asyncCallGroups = loadedContext.asyncCallGroups
 
-	context.gasLocked = loadedContext.gasLocked
+	context.initiatingAsyncCallId = loadedContext.initiatingAsyncCallId
 
 	return nil
 }
@@ -858,8 +863,11 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		return err
 	}
 
+	_ /*initiatinAsyncCall*/ = context.findInitiatingAsyncCall()
+
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(function)
+	callData.Bytes(asyncCall.Identifier.ToBytes())
 	callData.Bytes(runtime.GetCurrentTxHash())
 	for _, argument := range arguments {
 		callData.Bytes(argument)
@@ -878,6 +886,10 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		return err
 	}
 
+	return nil
+}
+
+func (context *asyncContext) findInitiatingAsyncCall() *arwen.AsyncCall {
 	return nil
 }
 
@@ -911,7 +923,7 @@ func (context *asyncContext) sendCallbackToOriginalCaller(sender []byte, destina
 	err := output.Transfer(
 		destination,
 		sender,
-		gasLeft,
+		gasLeft, /// TODO matei-p de discutat cu camil
 		0,
 		currentCall.CallValue,
 		data,
@@ -1009,29 +1021,29 @@ func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
 
 func (context *asyncContext) toSerializable() *serializableAsyncContext {
 	return &serializableAsyncContext{
-		CallerAddr:      context.callerAddr,
-		Callback:        context.callback,
-		CallbackData:    context.callbackData,
-		GasPrice:        context.gasPrice,
-		GasAccumulated:  context.gasAccumulated,
-		ReturnData:      context.returnData,
-		AsyncCallGroups: context.asyncCallGroups,
-		GasLocked:       context.gasLocked,
+		CallerAddr:            context.callerAddr,
+		Callback:              context.callback,
+		CallbackData:          context.callbackData,
+		GasPrice:              context.gasPrice,
+		GasAccumulated:        context.gasAccumulated,
+		ReturnData:            context.returnData,
+		AsyncCallGroups:       context.asyncCallGroups,
+		InitiatingAsyncCallId: context.initiatingAsyncCallId,
 	}
 }
 
 func (context *asyncContext) fromSerializable(serializedContext *serializableAsyncContext) *asyncContext {
 	return &asyncContext{
-		host:            nil,
-		stateStack:      nil,
-		callerAddr:      serializedContext.CallerAddr,
-		callback:        serializedContext.Callback,
-		callbackData:    serializedContext.CallbackData,
-		gasPrice:        serializedContext.GasPrice,
-		gasAccumulated:  serializedContext.GasAccumulated,
-		returnData:      serializedContext.ReturnData,
-		asyncCallGroups: serializedContext.AsyncCallGroups,
-		gasLocked:       serializedContext.GasLocked,
+		host:                  nil,
+		stateStack:            nil,
+		callerAddr:            serializedContext.CallerAddr,
+		callback:              serializedContext.Callback,
+		callbackData:          serializedContext.CallbackData,
+		gasPrice:              serializedContext.GasPrice,
+		gasAccumulated:        serializedContext.GasAccumulated,
+		returnData:            serializedContext.ReturnData,
+		asyncCallGroups:       serializedContext.AsyncCallGroups,
+		initiatingAsyncCallId: serializedContext.InitiatingAsyncCallId,
 	}
 }
 

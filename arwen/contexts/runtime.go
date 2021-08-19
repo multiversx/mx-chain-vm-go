@@ -808,7 +808,7 @@ func (context *runtimeContext) GetPrevTxHashAndUpdateArgumentsForAsyncCall() []b
 	return prevTxHash
 }
 
-func (context *runtimeContext) GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
 	prevPrevTxHash := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]
 	return prevPrevTxHash

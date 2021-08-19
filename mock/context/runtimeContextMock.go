@@ -345,7 +345,7 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 
-// GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack mocked method
-func (r *RuntimeContextMock) GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack() []byte {
+// GetAndEliminateFirstArgumentFromList mocked method
+func (r *RuntimeContextMock) GetAndEliminateFirstArgumentFromList() []byte {
 	return nil
 }

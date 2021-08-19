@@ -77,6 +77,8 @@ type TestCallNode struct {
 
 	// set automaticaly when the test is run
 	CrtTxHash []byte
+
+	ShardID uint32
 }
 
 // LeafLabel - special node label for leafs

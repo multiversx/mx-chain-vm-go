@@ -33,10 +33,17 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		contractAddressAsString := string(node.Call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
 			var shardID uint32
-			if incomingEdge == nil {
-				shardID = 1
-			} else if incomingEdge.Type == AsyncCrossShard {
-				shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
+			if node.ShardID == 0 {
+				if incomingEdge == nil {
+					shardID = 1
+				} else if incomingEdge.Type == Sync || incomingEdge.Type == Async {
+					shardID = parent.ShardID
+				} else if incomingEdge.Type == AsyncCrossShard {
+					shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
+				}
+				node.ShardID = shardID
+			} else {
+				shardID = node.ShardID
 			}
 			newContract := CreateMockContract(node.Call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -581,6 +588,42 @@ func CreateGraphTestOneAsyncCallCrossShard3() *TestCallGraph {
 		SetGasUsedByCallback(6)
 
 	callGraph.AddNode("sc1", "cb1")
+
+	return callGraph
+}
+
+// CreateGraphTestOneAsyncCallCrossShard4 -
+func CreateGraphTestOneAsyncCallCrossShard4() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 1000, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	//callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "").
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
+		SetGasLimit(800).
+		SetGasUsed(50).
+		SetGasUsedByCallback(20)
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddSyncEdge(sc2f2, sc3f3).
+		SetGasLimit(500).
+		SetGasUsed(20)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	callGraph.AddSyncEdge(sc3f3, sc4f4).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc4f4, sc5f5, "cb4", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc4", "cb4")
 
 	return callGraph
 }

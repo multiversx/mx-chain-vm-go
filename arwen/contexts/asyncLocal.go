@@ -237,7 +237,9 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
-	newTxHash := NewTxHashForLocalAsyncCall(host.Crypto(), []byte(asyncCall.Identifier), runtime.GetCurrentTxHash(), runtime.GetPrevTxHash())
+	asyncCallIdentifier := asyncCall.Identifier.ToBytes()
+	newTxHash := NewTxHashForLocalAsyncCall(host.Crypto(), asyncCallIdentifier, runtime.GetCurrentTxHash(), runtime.GetPrevTxHash())
+	arguments = append([][]byte{asyncCallIdentifier}, arguments...)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{

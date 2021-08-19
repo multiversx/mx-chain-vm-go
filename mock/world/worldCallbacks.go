@@ -8,7 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
@@ -210,7 +210,7 @@ func (b *MockWorld) GetUserAccount(address []byte) (vmcommon.UserAccountHandler,
 	}
 
 	account := b.AcctMap.GetAccount(address)
-	if account == nil {
+	if account == nil || b.SelfShardID != account.ShardID {
 		return nil, fmt.Errorf("account not found: %s", hex.EncodeToString(address))
 	}
 
@@ -220,7 +220,7 @@ func (b *MockWorld) GetUserAccount(address []byte) (vmcommon.UserAccountHandler,
 // GetCode retrieves the code from the given account, or nil if not found
 func (b *MockWorld) GetCode(acc vmcommon.UserAccountHandler) []byte {
 	account := b.AcctMap.GetAccount(acc.AddressBytes())
-	if account == nil {
+	if account == nil || b.SelfShardID != account.ShardID {
 		return nil
 	}
 

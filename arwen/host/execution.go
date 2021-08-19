@@ -226,6 +226,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
+		host.EliminateAndReturnFirstAsyncCallArgument(input)
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
@@ -246,6 +247,15 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	return
+}
+
+func (host *vmHost) EliminateAndReturnFirstAsyncCallArgument(input *vmcommon.ContractCallInput) []byte {
+	var firstArgument []byte
+	if input.CallType == vm.AsynchronousCall {
+		firstArgument = input.Arguments[0]
+		input.Arguments = input.Arguments[1:]
+	}
+	return firstArgument
 }
 
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
@@ -859,7 +869,7 @@ func (host *vmHost) callSCMethod() error {
 	var prevPrevTxHash []byte
 
 	if callType == vm.AsynchronousCallBack {
-		prevPrevTxHash = runtime.GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack()
+		prevPrevTxHash = runtime.GetAndEliminateFirstArgumentFromList()
 		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
 		asyncCall, err := contexts.UpdateCurrentAsyncCallStatus(host.Storage(), runtime.GetSCAddress(), vmInput, prevPrevTxHash)
 		if err != nil {
@@ -873,7 +883,7 @@ func (host *vmHost) callSCMethod() error {
 
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 	} else if callType == vm.AsynchronousCall {
-		prevTxHash := runtime.GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack()
+		prevTxHash := runtime.GetAndEliminateFirstArgumentFromList()
 		runtime.GetVMInput().PrevTxHash = prevTxHash
 	}
 

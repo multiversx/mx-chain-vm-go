@@ -54,6 +54,8 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	EliminateAndReturnFirstAsyncCallArgument(input *vmcommon.ContractCallInput) []byte
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -147,7 +149,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-	GetPrevPrevTxHashAndUpdateArgumentsForAsyncCallBack() []byte
+	GetAndEliminateFirstArgumentFromList() []byte
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only

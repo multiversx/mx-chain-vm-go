@@ -1,13 +1,37 @@
 package arwen
 
 import (
+	"encoding/json"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+// AsyncCallIdentifier hold info that can identifiy an AsyncCall within an AsyncContext
+type AsyncCallIdentifier struct {
+	GroupIdentifier string
+	IndexInGroup    int
+}
+
+// ToBytes marshals an AsyncCallIdentifier
+func (asyncCallIdentifier *AsyncCallIdentifier) ToBytes() []byte {
+	data, _ := json.Marshal(asyncCallIdentifier)
+	return data
+}
+
+// ReadAsyncCallIdentifierFromBytes -
+func ReadAsyncCallIdentifierFromBytes(input []byte) (*AsyncCallIdentifier, error) {
+	asyncCallIdentifier := &AsyncCallIdentifier{}
+	err := json.Unmarshal(input, asyncCallIdentifier)
+	if err != nil {
+		return nil, err
+	}
+	return asyncCallIdentifier, nil
+}
+
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
-	Identifier      string // groupIdentifier + call index in group
+	Identifier      *AsyncCallIdentifier
 	Status          AsyncCallStatus
 	ExecutionMode   AsyncCallExecutionMode
 	Destination     []byte
@@ -42,7 +66,7 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 }
 
 // GetIdentifier returns the identifier of an async call
-func (ac *AsyncCall) GetIdentifier() string {
+func (ac *AsyncCall) GetIdentifier() *AsyncCallIdentifier {
 	return ac.Identifier
 }
 

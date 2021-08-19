@@ -83,11 +83,11 @@ func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// func TestGasUsed_AsyncCall_CrossShard_Complex_CallGraph(t *testing.T) {
-// 	arwen.SetLoggingForTests()
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShardComplex()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
 func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	testConfig := makeTestConfig()
@@ -127,10 +127,6 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		crossShardEdges := preprocessLocalCallSubtree(gasGraph, startNode, crossShardCallsQueue)
 
-		// if crossShardCall.CallType == vm.AsynchronousCallBack {
-		// 	crossShardCall.Arguments = append([][]byte{crossShardCall.StartNode.Parent.Parent.CrtTxHash}, crossShardCall.Arguments...)
-		// }
-
 		arguments := [][]byte{}
 		if len(crossShardCall.Data) != 0 {
 			_, parsedArguments, err := parsers.NewCallArgsParser().ParseData(string(crossShardCall.Data))
@@ -156,9 +152,10 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				WithCurrentTxHash(crtTxHash).
 				Build()).
 			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-				for _, crossShardEdge := range crossShardEdges {
-					world.AcctMap.DeleteAccount(crossShardEdge.To.Call.ContractAddress)
-				}
+				// for _, crossShardEdge := range crossShardEdges {
+				// 	world.AcctMap.DeleteAccount(crossShardEdge.To.Call.ContractAddress)
+				// }
+				world.SelfShardID = world.GetShardOfAddress(startNode.Call.ContractAddress)
 				for address, store := range storage {
 					account := world.AcctMap.GetAccount([]byte(address))
 					if account == nil {
@@ -197,15 +194,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue) []*test.TestCallEdge {
 	crossShardEdges := make([]*test.TestCallEdge, 0)
 	gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-		// indexOfAsyncCall := -1
 		for _, edge := range node.AdjacentEdges {
-			// if edge.Type == test.Async {
-			// 	indexOfAsyncCall++
-			// }
-			// assignCrtTxHashToNode(edge, node, indexOfAsyncCall)
-			// if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
-			// 	crossShardNodes = enqueueCrossShardCall(edge, crossShardNodes, crossShardCallsQueue, node)
-			// }
 			if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
 				crossShardEdges = append(crossShardEdges, edge)
 			}
@@ -250,25 +239,6 @@ func assignCrtTxHashToNode(edge *test.TestCallEdge, node *test.TestCallNode, ind
 		)
 	}
 }
-
-// func enqueueCrossShardCall(edge *test.TestCallEdge, crossShardNodes []*test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue, node *test.TestCallNode) []*test.TestCallNode {
-// 	destinationNode := edge.To
-// 	crossShardNodes = append(crossShardNodes, destinationNode)
-
-// 	var args [][]byte
-// 	var callType vm.CallType
-// 	switch edge.Type {
-// 	case test.AsyncCrossShard:
-// 		callType = vm.AsynchronousCall
-// 		args = [][]byte{big.NewInt(int64(test.AsyncCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsed)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
-// 	case test.CallbackCrossShard:
-// 		callType = vm.AsynchronousCallBack
-// 		args = [][]byte{{0}, big.NewInt(int64(test.CallbackCrossShard)).Bytes(), big.NewInt(int64(edge.GasUsedByCallback)).Bytes()}
-// 	}
-
-// 	crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, args)
-// 	return crossShardNodes
-// }
 
 func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {
 	totalGasUsed := uint64(0)
