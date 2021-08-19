@@ -12,6 +12,8 @@ package cryptoapi
 // extern int32_t v1_4_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_4_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_4_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_4_verifyCustomSecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t hashType);
+// extern int32_t v1_4_encodeSecp256k1DerSignature(void *context, int32_t rOffset, int32_t rLength, int32_t sOffset, int32_t sLength, int32_t sigOffset);
 // extern void v1_4_addEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
 // extern void v1_4_doubleEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
 // extern int32_t v1_4_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
@@ -33,6 +35,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/secp256k1"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
@@ -75,6 +78,16 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("verifySecp256k1", v1_4_verifySecp256k1, C.v1_4_verifySecp256k1)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("verifyCustomSecp256k1", v1_4_verifyCustomSecp256k1, C.v1_4_verifyCustomSecp256k1)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("encodeSecp256k1DerSignature", v1_4_encodeSecp256k1DerSignature, C.v1_4_encodeSecp256k1DerSignature)
 	if err != nil {
 		return nil, err
 	}
@@ -317,14 +330,16 @@ func v1_4_verifyEd25519(
 	return 0
 }
 
-//export v1_4_verifySecp256k1
-func v1_4_verifySecp256k1(
+
+//export v1_4_verifyCustomSecp256k1
+func v1_4_verifyCustomSecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
 	messageOffset int32,
 	messageLength int32,
 	sigOffset int32,
+	hashType int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
@@ -365,9 +380,64 @@ func v1_4_verifySecp256k1(
 		return 1
 	}
 
-	invalidSigErr := crypto.VerifySecp256k1(key, message, sig)
+	invalidSigErr := crypto.VerifySecp256k1(key, message, sig, uint8(hashType))
 	if invalidSigErr != nil {
 		return -1
+	}
+
+	return 0
+}
+
+//export v1_4_verifySecp256k1
+func v1_4_verifySecp256k1(
+	context unsafe.Pointer,
+	keyOffset int32,
+	keyLength int32,
+	messageOffset int32,
+	messageLength int32,
+	sigOffset int32,
+) int32 {
+	return v1_4_verifyCustomSecp256k1(
+		context,
+		keyOffset,
+		keyLength,
+		messageOffset,
+		messageLength,
+		sigOffset,
+		int32(secp256k1.ECDSADoubleSha256),
+	)
+}
+
+//export v1_4_encodeSecp256k1DerSignature
+func v1_4_encodeSecp256k1DerSignature(
+	context unsafe.Pointer,
+	rOffset int32,
+	rLength int32,
+	sOffset int32,
+	sLength int32,
+	sigOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
+	metering.UseGas(gasToUse)
+
+	r, err := runtime.MemLoad(rOffset, rLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	s, err := runtime.MemLoad(sOffset, sLength)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	derSig := crypto.EncodeSecp256k1DERSignature(r, s)
+	err = runtime.MemStore(sigOffset, derSig)
+	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+		return 1
 	}
 
 	return 0
