@@ -5,6 +5,7 @@ import "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
 	BigIntAPICost        BigIntAPICost
+	BigFloatAPICost      BigFloatAPICost
 	EthAPICost           EthAPICost
 	ElrondAPICost        ElrondAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
@@ -138,6 +139,23 @@ type BigIntAPICost struct {
 	BigIntGetSignedArgument    uint64
 	BigIntGetCallValue         uint64
 	BigIntGetExternalBalance   uint64
+}
+
+type BigFloatAPICost struct {
+	BigFloatNew       uint64
+	BigFloatAdd       uint64
+	BigFloatSub       uint64
+	BigFloatMul       uint64
+	BigFloatDiv       uint64
+	BigFloatRoundDiv  uint64
+	BigFloatMod       uint64
+	BigFloatNeg       uint64
+	BigFloatCopy      uint64
+	BigFloatCmp       uint64
+	BigFloatAbs       uint64
+	BigFloatSqrt      uint64
+	BigFloatIsInt     uint64
+	BigFloatSetBigInt uint64
 }
 
 type CryptoAPICost struct {

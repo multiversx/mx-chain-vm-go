@@ -121,6 +121,22 @@
 	BigIntGetCallValue         = 10
 	BigIntGetExternalBalance   = 10
 
+[BigFloatAPICost]
+    BigFloatNew         = 10
+    BigFloatAdd         = 10
+    BigFloatSub         = 10
+    BigFloatMul         = 10    
+    BigFloatDiv         = 10
+    BigFloatRoundDiv    = 10
+    BigFloatMod         = 10
+    BigFloatNeg         = 10
+    BigFloatCopy        = 10
+    BigFloatCmp         = 10
+    BigFloatAbs         = 10
+    BigFloatSqrt        = 10
+    BigFloatIsInt       = 10
+    BigFloatSetBigInt   = 10
+
 [CryptoAPICost]
     SHA256                 = 10
     Keccak256              = 10

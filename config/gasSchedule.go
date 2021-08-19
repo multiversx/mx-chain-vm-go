@@ -43,6 +43,12 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
+	bigFloatOps := &BigFloatAPICost{}
+	err = mapstructure.Decode(gasMap["BigFloatAPICost"], bigFloatOps)
+	if err != nil {
+		return nil, err
+	}
+
 	err = checkForZeroUint64Fields(*bigIntOps)
 	if err != nil {
 		return nil, err
@@ -95,6 +101,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	gasCost := &GasCost{
 		BaseOperationCost:    *baseOps,
 		BigIntAPICost:        *bigIntOps,
+		BigFloatAPICost:      *bigFloatOps,
 		EthAPICost:           *ethOps,
 		ElrondAPICost:        *elrondOps,
 		CryptoAPICost:        *cryptOps,
@@ -133,6 +140,7 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock)
 	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
+	gasMap["BigFloatAPICost"] = FillGasMap_BigFloatAPICosts(value)
 	gasMap["CryptoAPICost"] = FillGasMap_CryptoAPICosts(value)
 	gasMap["ManagedBufferAPICost"] = FillGasMap_ManagedBufferAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMap_WASMOpcodeValues(value)
@@ -298,6 +306,26 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigIntGetSignedArgument"] = value
 	gasMap["BigIntGetCallValue"] = value
 	gasMap["BigIntGetExternalBalance"] = value
+
+	return gasMap
+}
+
+func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
+	gasMap := make(map[string]uint64)
+	gasMap["BigFloatNew"] = value
+	gasMap["BigFloatAdd"] = value
+	gasMap["BigFloatSub"] = value
+	gasMap["BigFloatMul"] = value
+	gasMap["BigFloatDiv"] = value
+	gasMap["BigFloatRoundDiv"] = value
+	gasMap["BigFloatMod"] = value
+	gasMap["BigFloatNeg"] = value
+	gasMap["BigFloatCopy"] = value
+	gasMap["BigFloatCmp"] = value
+	gasMap["BigFloatAbs"] = value
+	gasMap["BigFloatSqrt"] = value
+	gasMap["BigFloatIsInt"] = value
+	gasMap["BigFloatSetBigInt"] = value
 
 	return gasMap
 }
