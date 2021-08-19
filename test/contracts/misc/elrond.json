@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/misc/misc.c"
+        "./misc.c"
     ]
 }

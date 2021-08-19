@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/init-wrong/init-wrong.c"
+        "./init-wrong.c"
     ]
 }

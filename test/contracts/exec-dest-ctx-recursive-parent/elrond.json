@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/exec-dest-ctx-recursive-parent/exec-dest-ctx-recursive-parent.c"
+        "./exec-dest-ctx-recursive-parent.c"
     ]
 }

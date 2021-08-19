@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/timelocks/timelocks.c"
+        "./timelocks.c"
     ]
 }
