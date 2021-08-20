@@ -39,34 +39,49 @@ var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
 func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
-	gasScheduleMap := config.MakeGasMapForTests()
-	err := world.InitBuiltinFunctions(gasScheduleMap)
-	if err != nil {
-		return nil, err
-	}
-
-	blockGasLimit := uint64(10000000)
-	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
-		VMType:                   TestVMType,
-		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasScheduleMap,
-		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
-		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
-		ESDTTransferParser:       esdtTransferParser,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	return &ArwenTestExecutor{
 		World:                   world,
-		vm:                      vm,
+		vm:                      nil,
 		checkGas:                true,
 		mandosGasScheduleLoaded: false,
 		fileResolver:            nil,
 		exprReconstructor:       er.ExprReconstructor{},
 	}, nil
+}
+
+// InitVM will initialize the VM and the builtin function container.
+// Does nothing if the VM is already initialized.
+func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
+	if ae.vm != nil {
+		return nil
+	}
+
+	gasSchedule, err := ae.gasScheduleMapFromMandos(mandosGasSchedule)
+	if err != nil {
+		return err
+	}
+
+	err = ae.World.InitBuiltinFunctions(gasSchedule)
+	if err != nil {
+		return err
+	}
+
+	blockGasLimit := uint64(10000000)
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
+	vm, err := arwenHost.NewArwenVM(ae.World, &arwen.VMHostParameters{
+		VMType:                   TestVMType,
+		BlockGasLimit:            blockGasLimit,
+		GasSchedule:              gasSchedule,
+		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
+		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
+		ESDTTransferParser:       esdtTransferParser,
+	})
+	if err != nil {
+		return err
+	}
+
+	ae.vm = vm
+	return nil
 }
 
 // GetVM yields a reference to the VMExecutionHandler used.
@@ -89,20 +104,4 @@ func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSc
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
-}
-
-// SetMandosGasSchedule updates the gas costs based on the mandos scenario config
-// only changes the gas schedule once,
-// this prevents subsequent gasSchedule declarations in externalSteps to overwrite
-func (ae *ArwenTestExecutor) SetMandosGasSchedule(newGasSchedule mj.GasSchedule) error {
-	if ae.mandosGasScheduleLoaded {
-		return nil
-	}
-	gasSchedule, err := ae.gasScheduleMapFromMandos(newGasSchedule)
-	if err != nil {
-		return err
-	}
-	ae.mandosGasScheduleLoaded = true
-	ae.vm.GasScheduleChange(gasSchedule)
-	return nil
 }
