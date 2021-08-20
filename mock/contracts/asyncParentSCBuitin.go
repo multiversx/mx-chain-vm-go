@@ -3,38 +3,37 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
 // ForwardAsyncCallParentBuiltinMock is an exposed mock contract method
-func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallBaseTestConfig)
+func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
+
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
+
 		arguments := host.Runtime().Arguments()
 		destination := arguments[0]
-		function := string(arguments[1])
+		function := arguments[1]
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
-
-		callData := txDataBuilder.NewBuilder()
-		callData.Func(function)
-
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
-		require.Nil(t, err)
+		err = host.Async().RegisterLegacyAsyncCall(destination, function, value)
+		require.Nil(instance.T, err)
 
 		return instance
 	})
 }
 
 // CallBackParentBuiltinMock is an exposed mock contract method
-func CallBackParentBuiltinMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallBaseTestConfig)
+func CallBackParentBuiltinMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

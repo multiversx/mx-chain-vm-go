@@ -19,19 +19,23 @@ type VMHostStub struct {
 	ClearStateStackCalled func()
 	GetVersionCalled      func() string
 
-	CryptoCalled                func() crypto.VMCrypto
-	BlockchainCalled            func() arwen.BlockchainContext
-	RuntimeCalled               func() arwen.RuntimeContext
-	ManagedTypesCalled          func() arwen.ManagedTypesContext
-	OutputCalled                func() arwen.OutputContext
-	MeteringCalled              func() arwen.MeteringContext
-	StorageCalled               func() arwen.StorageContext
+	CryptoCalled       func() crypto.VMCrypto
+	BlockchainCalled   func() arwen.BlockchainContext
+	RuntimeCalled      func() arwen.RuntimeContext
+	OutputCalled       func() arwen.OutputContext
+	MeteringCalled     func() arwen.MeteringContext
+	AsyncCalled        func() arwen.AsyncContext
+	StorageCalled      func() arwen.StorageContext
+	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
+	ManagedTypesCalled func() arwen.ManagedTypesContext
+
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
-	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
+	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethodsCalled         func() *wasmer.Imports
 	IsBuiltinFunctionNameCalled func(functionName string) bool
+	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
 
 	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -41,7 +45,6 @@ type VMHostStub struct {
 	IsInterfaceNilCalled         func() bool
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
-	GetContextsCalled       func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
 }
@@ -181,19 +184,19 @@ func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 }
 
 // ExecuteOnSameContext mocked method
-func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
-	return nil, nil
+	return nil
 }
 
 // ExecuteOnDestContext mocked method
-func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
-	return nil, nil, nil
+	return nil, nil
 }
 
 // AreInSameShard mocked method
@@ -216,6 +219,14 @@ func (vhs *VMHostStub) GetAPIMethods() *wasmer.Imports {
 func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	if vhs.IsBuiltinFunctionNameCalled != nil {
 		return vhs.IsBuiltinFunctionNameCalled(functionName)
+	}
+	return false
+}
+
+// IsBuiltinFunctionName mocked method
+func (vhs *VMHostStub) IsBuiltinFunctionCall(data []byte) bool {
+	if vhs.IsBuiltinFunctionCallCalled != nil {
+		return vhs.IsBuiltinFunctionCallCalled(data)
 	}
 	return false
 }
@@ -273,12 +284,13 @@ func (vhs *VMHostStub) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
 	if vhs.GetContextsCalled != nil {
 		return vhs.GetContextsCalled()
 	}
-	return nil, nil, nil, nil, nil, nil
+	return nil, nil, nil, nil, nil, nil, nil
 }
 
 // SetRuntimeContext mocked method
@@ -286,4 +298,12 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
 	}
+}
+
+// Async mocked method
+func (vhs *VMHostStub) Async() arwen.AsyncContext {
+	if vhs.AsyncCalled != nil {
+		return vhs.AsyncCalled()
+	}
+	return nil
 }

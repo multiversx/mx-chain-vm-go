@@ -16,7 +16,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
@@ -66,7 +66,6 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
@@ -82,7 +81,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.scAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
 
 	runtimeContext.InitState()
 
@@ -90,7 +88,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
@@ -292,6 +289,74 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.ClearStateStack()
 	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
+	alpha := []byte("alpha")
+	beta := []byte("beta")
+	gamma := []byte("gamma")
+
+	imports := MakeAPIImports()
+	host := &contextmock.VMHostMock{}
+	host.SCAPIMethods = imports
+
+	vmType := []byte("type")
+	runtime, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
+
+	vmInput := vmcommon.VMInput{
+		CallerAddr:  []byte("caller"),
+		GasProvided: 1000,
+		CallValue:   big.NewInt(0),
+	}
+	input := &vmcommon.ContractCallInput{
+		VMInput:  vmInput,
+		Function: "function",
+	}
+
+	input.RecipientAddr = alpha
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = beta
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = gamma
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = alpha
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = gamma
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(2), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PopSetActiveState()
+	runtime.PopSetActiveState()
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PopDiscard()
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {

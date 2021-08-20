@@ -6,8 +6,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var logMock = logger.GetOrCreate("arwen/mock")
 
 type testTemplateConfig struct {
 	t        *testing.T
@@ -81,8 +84,31 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func() *mock.InstanceMock {
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
-		host.Metering().UseGas(gas)
 		instance := mock.GetMockInstance(host)
+
+		err := host.Metering().UseGasBounded(gas)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		}
+
+		return instance
+	}
+}
+
+// WasteGasWithReturnDataMockMethod is a simple waste gas mock method
+func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint64, returnData []byte) func() *mock.InstanceMock {
+	return func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetSCAddress()), "func", host.Runtime().Function(), "gas", gas)
+		err := host.Metering().UseGasBounded(gas)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
+
+		host.Output().Finish(returnData)
 		return instance
 	}
 }

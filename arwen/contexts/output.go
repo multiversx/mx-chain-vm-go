@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -25,6 +26,10 @@ type outputContext struct {
 
 // NewOutputContext creates a new outputContext
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	context := &outputContext{
 		host:       host,
 		stateStack: make([]*vmcommon.VMOutput, 0),
@@ -507,6 +512,12 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		return vmcommon.FunctionWrongSignature
 	}
 	if errors.Is(err, arwen.ErrInvalidFunction) {
+		return vmcommon.UserError
+	}
+	if errors.Is(err, arwen.ErrInitFuncCalledInRun) {
+		return vmcommon.UserError
+	}
+	if errors.Is(err, arwen.ErrCallBackFuncCalledInRun) {
 		return vmcommon.UserError
 	}
 	if errors.Is(err, arwen.ErrNotEnoughGas) {

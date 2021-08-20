@@ -11,14 +11,17 @@ import (
 )
 
 // TransferToThirdPartyAsyncChildMock is an exposed mock contract method
-func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		outputContext := host.Output()
@@ -32,7 +35,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		if len(arguments[2]) != 0 {
 			behavior = arguments[2][0]
 		}
-		err := handleChildBehaviorArgument(host, behavior)
+		err = handleChildBehaviorArgument(host, behavior)
 		if err != nil {
 			return instance
 		}

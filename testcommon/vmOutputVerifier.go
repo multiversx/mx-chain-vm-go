@@ -1,6 +1,7 @@
 package testcommon
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 	"testing"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -44,6 +46,36 @@ func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput,
 // Ok verifies if return code is vmcommon.Ok
 func (v *VMOutputVerifier) Ok() *VMOutputVerifier {
 	return v.ReturnCode(vmcommon.Ok)
+}
+
+// ExecutionFailed verifies if return code is vmcommon.ExecutionFailed
+func (v *VMOutputVerifier) ExecutionFailed() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ExecutionFailed)
+}
+
+// OutOfGas verifies if return code is vmcommon.OutOfGas
+func (v *VMOutputVerifier) OutOfGas() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.OutOfGas)
+}
+
+// ContractInvalid verifies if return code is vmcommon.ContractInvalid
+func (v *VMOutputVerifier) ContractInvalid() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ContractInvalid)
+}
+
+// ContractNotFound verifies if return code is vmcommon.ContractNotFound
+func (v *VMOutputVerifier) ContractNotFound() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ContractNotFound)
+}
+
+// UserError verifies if return code is vmcommon.UserError
+func (v *VMOutputVerifier) UserError() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.UserError)
+}
+
+// FunctionNotFound verifies if return code is vmcommon.FunctionNotFound
+func (v *VMOutputVerifier) FunctionNotFound() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.FunctionNotFound)
 }
 
 // ReturnCode verifies if ReturnCode of output is the same as the provided one
@@ -152,11 +184,33 @@ func (v *VMOutputVerifier) CodeDeployerAddress(address []byte, codeDeployerAddre
 
 // ReturnData verifies if ReturnData is the same as the provided one
 func (v *VMOutputVerifier) ReturnData(returnData ...[]byte) *VMOutputVerifier {
-	require.Equal(v.T, len(returnData), len(v.VmOutput.ReturnData), "ReturnData")
+	require.Equal(v.T, len(returnData), len(v.VmOutput.ReturnData), "ReturnData length")
 	for idx := range v.VmOutput.ReturnData {
 		require.Equal(v.T, returnData[idx], v.VmOutput.ReturnData[idx], "ReturnData")
 	}
 	return v
+}
+
+// ReturnDataContains verifies that ReturnData contains the provided element
+func (v *VMOutputVerifier) ReturnDataContains(element []byte) *VMOutputVerifier {
+	require.True(v.T, v.isInReturnData(element), fmt.Sprintf("ReturnData does not contain '%s'", element))
+	return v
+}
+
+// ReturnDataDoesNotContain verifies that ReturnData does not contain the provided element
+func (v *VMOutputVerifier) ReturnDataDoesNotContain(element []byte) *VMOutputVerifier {
+	require.False(v.T, v.isInReturnData(element), fmt.Sprintf("ReturnData contains '%s'", element))
+	return v
+}
+
+func (v *VMOutputVerifier) isInReturnData(element []byte) bool {
+	for _, e := range v.VmOutput.ReturnData {
+		if bytes.Equal(e, element) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // StoreEntry holds the data for a storage assertion
@@ -281,6 +335,30 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 	}
 	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
 
+	return v
+}
+
+// Print writes the contents of the VMOutput with log.Trace()
+func (v *VMOutputVerifier) Print() *VMOutputVerifier {
+	vmOutput := v.VmOutput
+	log := logger.GetOrCreate("VMOutputVerifier")
+	log.Trace("VMOutput", "ReturnCode", vmOutput.ReturnCode)
+	log.Trace("VMOutput", "ReturnMessage", vmOutput.ReturnMessage)
+	log.Trace("VMOutput", "GasRemaining", vmOutput.GasRemaining)
+	for i, data := range vmOutput.ReturnData {
+		log.Trace("VMOutput", fmt.Sprintf("ReturnData[%d]", i), string(data))
+	}
+
+	for address, account := range vmOutput.OutputAccounts {
+		log.Trace("VMOutput", "OutputAccount["+address+"].Nonce", account.Nonce)
+		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.Balance.String())
+		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.BalanceDelta.String())
+		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GasUsed)
+		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
+		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.StorageUpdates))
+		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.Code))
+		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.CodeMetadata)
+	}
 	return v
 }
 

@@ -6,7 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -20,6 +20,7 @@ type VMHostMock struct {
 
 	BlockchainContext   arwen.BlockchainContext
 	RuntimeContext      arwen.RuntimeContext
+	AsyncContext        arwen.AsyncContext
 	OutputContext       arwen.OutputContext
 	MeteringContext     arwen.MeteringContext
 	StorageContext      arwen.StorageContext
@@ -27,6 +28,12 @@ type VMHostMock struct {
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
+
+	StoredInputs []*vmcommon.ContractCallInput
+
+	VMOutputQueue    []*vmcommon.VMOutput
+	VMOutputToReturn int
+	Err              error
 }
 
 // GetVersion mocked method
@@ -95,8 +102,10 @@ func (host *VMHostMock) IsESDTFunctionsEnabled() bool {
 }
 
 // AreInSameShard mocked method
-func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
-	return true
+func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
+	leftShard := host.BlockchainContext.GetShardOfAddress(left)
+	rightShard := host.BlockchainContext.GetShardOfAddress(right)
+	return leftShard == rightShard
 }
 
 // ExecuteESDTTransfer mocked method
@@ -110,13 +119,17 @@ func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]by
 }
 
 // ExecuteOnSameContext mocked method
-func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
-	return nil, nil
+func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) error {
+	return nil
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
-	return nil, nil, nil
+func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	if host.Err != nil {
+		return nil, host.Err
+	}
+	host.StoreInput(input)
+	return host.GetNextVMOutput(), nil
 }
 
 // InitState mocked method
@@ -142,6 +155,11 @@ func (host *VMHostMock) GetAPIMethods() *wasmer.Imports {
 
 // IsBuiltinFunctionName mocked method
 func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
+	return host.IsBuiltinFunc
+}
+
+// IsBuiltinFunctionName mocked method
+func (host *VMHostMock) IsBuiltinFunctionCall(_ []byte) bool {
 	return host.IsBuiltinFunc
 }
 
@@ -180,12 +198,49 @@ func (host *VMHostMock) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
-	return host.ManagedTypesContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.StorageContext
+	return host.ManagedTypesContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.AsyncContext, host.StorageContext
 }
 
 // SetRuntimeContext mocked method
 func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.RuntimeContext = runtime
+}
+
+// Async mocked method
+func (host *VMHostMock) Async() arwen.AsyncContext {
+	return host.AsyncContext
+}
+
+// StoreInput enqueues the given ContractCallInput
+func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
+	if host.StoredInputs == nil {
+		host.StoredInputs = make([]*vmcommon.ContractCallInput, 0)
+	}
+	host.StoredInputs = append(host.StoredInputs, input)
+}
+
+// EnqueueVMOutput enqueues the given VMOutput
+func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
+	if host.VMOutputQueue == nil {
+		host.VMOutputQueue = make([]*vmcommon.VMOutput, 1)
+		host.VMOutputQueue[0] = vmOutput
+		host.VMOutputToReturn = 0
+		return
+	}
+
+	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
+}
+
+// GetNextVMOutput returns the next VMOutput in the queue
+func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
+	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
+		return nil
+	}
+
+	vmOutput := host.VMOutputQueue[host.VMOutputToReturn]
+	host.VMOutputToReturn += 1
+	return vmOutput
 }

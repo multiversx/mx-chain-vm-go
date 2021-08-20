@@ -7,18 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGuardedMakeByteSlice2D(t *testing.T) {
-	t.Parallel()
-
-	byteSlice, err := GuardedMakeByteSlice2D(-1)
-	require.Error(t, err)
-	require.Nil(t, byteSlice)
-
-	byteSlice, err = GuardedMakeByteSlice2D(0)
-	require.Nil(t, err)
-	require.NotNil(t, byteSlice)
-}
-
 func TestGuardedGetBytesSlice(t *testing.T) {
 	t.Parallel()
 

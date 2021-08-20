@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+// ErrNilVMHost signals that the provided VMHost is nil
+var ErrNilVMHost = errors.New("nil VMHost")
+
 // ErrReturnCodeNotOk signals that the returned code is different than vmcommon.Ok
 var ErrReturnCodeNotOk = errors.New("return code is not ok")
 
@@ -113,8 +116,59 @@ var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive
 // ErrShiftNegative signals that an attempt to apply a bitwise shift operation on negative numbers has been made
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
 
+// ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback signals that the current contract instance cannot modify the AsyncContext
+var ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback = errors.New("AsyncContext can only be modified by the first contract instance with same address or first callback")
+
+// ErrAsyncCallGroupExistsAlready signals that an AsyncCallGroup with the same name already exists
+var ErrAsyncCallGroupExistsAlready = errors.New("async call group exists already")
+
+// ErrAsyncCallGroupDoesNotExist signals that the requested AsyncCallGroup does not exist
+var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist")
+
+// ErrAsyncCallGroupAlreadyComplete signals that no further operations are possible on the AsyncCallGroup because it is complete
+var ErrAsyncCallGroupAlreadyComplete = errors.New("async call group already complete")
+
+// ErrOnlyOneAsyncCallAllowedToAddress signals that there was an attempt to add an AsyncCall to an address already called asynchronously
+var ErrOnlyOneAsyncCallAllowedToAddress = errors.New("only one async call allowed to an address")
+
+// ErrNilCallbackVMOutput signals that the callback execution returned a nil VMOutput
+var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
+
+// ErrAsyncCallNotFound signals that the requested AsyncCall was not found
+var ErrAsyncCallNotFound = errors.New("async call not found")
+
+// ErrUnknownCallType signals that the call type is not recognized
+var ErrUnknownCallType = errors.New("unknown call type")
+
+// ErrCannotUseBuiltinAsCallback signals that the specified callback was set to a built-in function, which is forbidden
+var ErrCannotUseBuiltinAsCallback = errors.New("cannot use built-in function as callback")
+
+// ErrInvalidAsyncCallGroupID signals that the AsyncCallGroup identifier is invalid
+var ErrInvalidAsyncCallGroupID = errors.New("invalid async call group identifier")
+
+// ErrOnlyOneLegacyAsyncCallAllowed signals that there was an attempt to create more than one legacy async calls, which is forbidden
+var ErrOnlyOneLegacyAsyncCallAllowed = errors.New("only one legacy async call allowed")
+
+// ErrLegacyAsyncCallNotFound signals that a legacy async call was expected, but is missing
+var ErrLegacyAsyncCallNotFound = errors.New("legacy async call not found")
+
+// ErrLegacyAsyncCallInvalid signals that the legacy async call is invalid
+var ErrLegacyAsyncCallInvalid = errors.New("legacy async call invalid")
+
+// ErrNoStoredAsyncContextFound signals that no persisted data was found for the AsyncContext to load
+var ErrNoStoredAsyncContextFound = errors.New("no async context found in storage")
+
+// ErrCannotInterpretCallbackArgs signals that the cross-shard callback arguments are invalid
+var ErrCannotInterpretCallbackArgs = errors.New("cannot interpret callback args")
+
 // ErrAsyncContextDoesNotExist signals that the async context does not exist
 var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
+
+// ErrGroupCallbacksDisabled signals that group callbacks cannot be set nor executed
+var ErrGroupCallbacksDisabled = errors.New("group callbacks disabled")
+
+// ErrContextCallbackDisabled signals that group callbacks cannot be set nor executed
+var ErrContextCallbackDisabled = errors.New("context callback disabled")
 
 // ErrInvalidAccount signals that a certain account does not exist
 var ErrInvalidAccount = errors.New("account does not exist")
@@ -170,6 +224,9 @@ var ErrNilHostParameters = errors.New("nil host parameters")
 
 // ErrNilESDTTransferParser signals that nil esdt transfer parser was provided
 var ErrNilESDTTransferParser = errors.New("nil esdt transfer parser")
+
+// ErrNilCallArgsParser signals that nil call arguments parser was provided
+var ErrNilCallArgsParser = errors.New("nil call args parser")
 
 // ErrNilBuiltInFunctionsContainer signals that nil built in functions container was provided
 var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions container")

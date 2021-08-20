@@ -2,7 +2,8 @@ package arwen
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ArwenVersion returns the current arwen version
@@ -10,6 +11,8 @@ const ArwenVersion = "v1.4"
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
+
+var log = logger.GetOrCreate("arwen/general")
 
 const (
 	// BreakpointNone signifies the lack of a breakpoint
@@ -28,13 +31,51 @@ const (
 	BreakpointOutOfGas
 )
 
+const (
+	// BreakpointNoneString is the human-readable name of BreakpointNone
+	BreakpointNoneString = "BreakpointNone"
+
+	// BreakpointExecutionFailedString is the human-readable name of BreakpointExecutionFailed
+	BreakpointExecutionFailedString = "BreakpointExecutionFailed"
+
+	// BreakpointAsyncCallString is the human-readable name of BreakpointAsyncCall
+	BreakpointAsyncCallString = "BreakpointAsyncCall"
+
+	// BreakpointSignalErrorString is the human-readable name of BreakpointSignalError
+	BreakpointSignalErrorString = "BreakpointSignalError"
+
+	// BreakpointOutOfGasString is the human-readable name of BreakpointOutOfGas
+	BreakpointOutOfGasString = "BreakpointOutOfGas"
+
+	// UnknownBreakpointString is the human-readable label for an unknown breakpoint value
+	UnknownBreakpointString = "unknown breakpoint"
+)
+
+// String returns the human-readable name of a BreakpointValue
+func (b BreakpointValue) String() string {
+	switch b {
+	case BreakpointNone:
+		return BreakpointNoneString
+	case BreakpointExecutionFailed:
+		return BreakpointExecutionFailedString
+	case BreakpointAsyncCall:
+		return BreakpointAsyncCallString
+	case BreakpointSignalError:
+		return BreakpointSignalErrorString
+	case BreakpointOutOfGas:
+		return BreakpointOutOfGasString
+	default:
+		return UnknownBreakpointString
+	}
+}
+
 // AsyncCallExecutionMode encodes the execution modes of an AsyncCall
 type AsyncCallExecutionMode uint
 
 const (
-	// SyncCall indicates that the async call can be executed synchronously,
+	// SyncExecution indicates that the async call can be executed synchronously,
 	// with its corresponding callback
-	SyncCall AsyncCallExecutionMode = iota
+	SyncExecution AsyncCallExecutionMode = iota
 
 	// AsyncBuiltinFuncIntraShard indicates that the async call is an intra-shard built in function call
 	AsyncBuiltinFuncIntraShard
@@ -68,6 +109,10 @@ const AsyncDataPrefix = ProtectedStoragePrefix + "ASYNC"
 
 // AsyncCallStatus represents the different status an async call can have
 type AsyncCallStatus uint8
+
+// LegacyAsyncCallGroupID is the AsyncCallGroup identifier reserved for the
+// implementation of the legacy asyncCall() EEI function
+const LegacyAsyncCallGroupID = "LegacyAsync"
 
 const (
 	// AsyncCallPending is the status of an async call that awaits complete execution
@@ -165,19 +210,11 @@ type AsyncGeneratedCall struct {
 	ProvidedGas     uint64
 }
 
-// AsyncContext is a structure containing a group of async calls and a callback
+// OldAsyncContext is a structure containing a group of async calls and a callback
 //  that should be called when all these async calls are resolved
-type AsyncContext struct {
+type OldAsyncContext struct {
 	Callback   string
 	AsyncCalls []*AsyncGeneratedCall
-}
-
-// AsyncContextInfo is the structure resulting after a smart contract call that has initiated
-// one or more async calls. It will
-type AsyncContextInfo struct {
-	CallerAddr      []byte
-	ReturnData      []byte
-	AsyncContextMap map[string]*AsyncContext
 }
 
 // GetDestination returns the destination of an async call

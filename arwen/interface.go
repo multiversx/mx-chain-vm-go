@@ -33,6 +33,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
+	Async() AsyncContext
 	ManagedTypes() ManagedTypesContext
 	Output() OutputContext
 	Metering() MeteringContext
@@ -40,14 +41,15 @@ type VMHost interface {
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
+	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
-	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, AsyncContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
@@ -78,7 +80,7 @@ type BlockchainContext interface {
 	GetCodeHash(addr []byte) []byte
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
-	BlockHash(number int64) []byte
+	BlockHash(number uint64) []byte
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
@@ -115,13 +117,8 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	IsContractOnTheStack(address []byte) bool
-	GetAsyncCallInfo() *AsyncCallInfo
-	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
-	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
-	GetAsyncContextInfo() *AsyncContextInfo
-	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
 	RunningInstancesCount() uint64
+	CountSameContractInstancesOnStack(address []byte) uint64
 	IsFunctionImported(name string) bool
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
@@ -143,10 +140,13 @@ type RuntimeContext interface {
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
-	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
+
+	ValidateCallbackName(callbackName string) error
+	HasFunction(functionName string) bool
+	GetPrevTxHash() []byte
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
@@ -287,4 +287,31 @@ type AsyncCallInfoHandler interface {
 type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+}
+
+// AsyncContext defines the functionality needed for interacting with the asynchronous execution context
+type AsyncContext interface {
+	StateStack
+
+	InitStateFromInput(input *vmcommon.ContractCallInput)
+	HasPendingCallGroups() bool
+	IsComplete() bool
+	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
+	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
+	SetContextCallback(callbackName string, data []byte, gas uint64) error
+	HasCallback() bool
+	PostprocessCrossShardCallback() error
+	GetCallerAddress() []byte
+	GetReturnData() []byte
+	SetReturnData(data []byte)
+	GetGasPrice() uint64
+
+	Execute() error
+	RegisterAsyncCall(groupID string, call *AsyncCall) error
+	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
+	UpdateCurrentCallStatus() (*AsyncCall, error)
+
+	Load() error
+	Save() error
+	Delete() error
 }

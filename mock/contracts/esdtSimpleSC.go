@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
@@ -12,12 +13,15 @@ import (
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
-func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(DirectCallGasTestConfig)
+func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -46,12 +50,15 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 }
 
 // ExecESDTTransferWithAPICall is an exposed mock contract method
-func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(DirectCallGasTestConfig)
+func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("execESDTTransferWithAPICall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -92,12 +99,15 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 }
 
 // ExecESDTTransferAndAsyncCallChild is an exposed mock contract method
-func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("execESDTTransferAndAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -105,10 +115,9 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 			return instance
 		}
 
-		functionToCallOnChild := arguments[2]
-
 		receiver := arguments[0]
 		builtInFunction := arguments[1]
+		functionToCallOnChild := arguments[2]
 
 		callData := txDataBuilder.NewBuilder()
 		// function to be called on child
@@ -119,8 +128,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 
 		value := big.NewInt(0).Bytes()
 
-		err := host.Runtime().ExecuteAsyncCall(receiver, callData.ToBytes(), value)
-
+		err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
 		if err != nil {
 			host.Runtime().FailExecution(err)
 		}

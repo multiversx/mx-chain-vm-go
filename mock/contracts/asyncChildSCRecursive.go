@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -10,18 +11,31 @@ import (
 )
 
 // RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method
-func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallBaseTestConfig)
+func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
 		arguments := host.Runtime().Arguments()
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
-		recursiveChildCalls := big.NewInt(0).SetBytes(arguments[0]).Uint64()
+		var recursiveChildCalls uint64
+		if len(arguments) > 0 {
+			recursiveChildCalls = big.NewInt(0).SetBytes(arguments[0]).Uint64()
+		} else {
+			recursiveChildCalls = 1
+		}
 		recursiveChildCalls = recursiveChildCalls - 1
+		returnValue := big.NewInt(int64(recursiveChildCalls)).Bytes()
+		if len(arguments) == 2 {
+			returnValue = arguments[1]
+		}
+		host.Output().Finish(returnValue)
 		if recursiveChildCalls == 0 {
 			return instance
 		}
@@ -34,7 +48,8 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 		callData.Func(function)
 		callData.BigInt(big.NewInt(int64(recursiveChildCalls)))
 
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+		async := host.Async()
+		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance
@@ -42,7 +57,6 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 }
 
 // CallBackRecursiveChildMock is an exposed mock contract method
-func CallBackRecursiveChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallBaseTestConfig)
+func CallBackRecursiveChildMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }
