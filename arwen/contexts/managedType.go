@@ -191,6 +191,15 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	metering.UseGas(gasToUse)
 }
 
+// ConsumeGasForBigFloatCopy
+func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
+	for _, val := range values {
+		buffer, _ := val.GobEncode()
+		byteLen := len(buffer)
+		context.ConsumeGasForThisIntNumberOfBytes(byteLen)
+	}
+}
+
 // BIGINT
 
 // GetBigIntOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0

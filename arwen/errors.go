@@ -185,3 +185,9 @@ var ErrNilBlockChainHook = errors.New("nil blockchain hook")
 
 // ErrTooManyESDTTransfers signals that too many ESDT transfers are in sc call
 var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
+
+// ErrInfinityFloatOperation signals that operations with infinity are not allowed
+var ErrInfinityFloatOperation = errors.New("infinity operations are not allowed")
+
+// ErrAllOperandsAreEqualToZero signals that all operands are equal to 0
+var ErrAllOperandsAreEqualToZero = errors.New("all operands are equal to 0")

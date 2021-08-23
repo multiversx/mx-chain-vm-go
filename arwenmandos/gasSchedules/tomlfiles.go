@@ -1398,8 +1398,13 @@ const (
     BigFloatCmp         = 2000
     BigFloatAbs         = 2000
     BigFloatSqrt        = 2000
+    BigFloatLog2        = 2000
+    BigFloatFloor       = 2000
+    BigFloatCeil        = 2000
+    BigFloatSetBytes    = 2000
+    BigFloatGetBytes    = 2000
     BigFloatIsInt       = 2000
-    BigFloatSetBigInt   = 20000
+    BigFloatSetBigInt   = 2000
 
 [CryptoAPICost]
     SHA256                 = 1000000

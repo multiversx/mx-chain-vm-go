@@ -134,6 +134,11 @@
     BigFloatCmp         = 10
     BigFloatAbs         = 10
     BigFloatSqrt        = 10
+    BigFloatLog2        = 10
+    BigFloatFloor       = 10
+    BigFloatCeil        = 10
+    BigFloatSetBytes    = 10
+    BigFloatGetBytes    = 10
     BigFloatIsInt       = 10
     BigFloatSetBigInt   = 10
 

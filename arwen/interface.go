@@ -163,6 +163,7 @@ type ManagedTypesContext interface {
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
+	ConsumeGasForBigFloatCopy(values ...*big.Float)
 	PutBigInt(value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
