@@ -1,7 +1,14 @@
 package gasschedules 
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// Please do not edit manually!
+// Call `go generate` in `arwen-wasm-vm/arwenmandos/gasSchedules` to update it.
+
 const (
-gasScheduleV1 = `[BuiltInCost]
+	gasScheduleV1 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 5000000
@@ -615,7 +622,7 @@ gasScheduleV1 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV2 = `[BuiltInCost]
+	gasScheduleV2 = `[BuiltInCost]
     ChangeOwnerAddress    = 5000000
     ClaimDeveloperRewards = 5000000
     SaveUserName          = 1000000
@@ -1227,13 +1234,23 @@ gasScheduleV2 = `[BuiltInCost]
     LocalAllocate = 2
     LocalsUnmetered = 100
 `
-gasScheduleV3 = `[BuiltInCost]
-    ChangeOwnerAddress    = 5000000
-    ClaimDeveloperRewards = 5000000
-    SaveUserName          = 1000000
-    SaveKeyValue          = 250000
-    ESDTTransfer          = 250000
-    ESDTBurn              = 250000
+	gasScheduleV3 = `[BuiltInCost]
+    ChangeOwnerAddress       = 5000000
+    ClaimDeveloperRewards    = 5000000
+    SaveUserName             = 1000000
+    SaveKeyValue             = 250000
+    ESDTTransfer             = 250000
+    ESDTBurn                 = 250000
+    ESDTLocalMint            = 250000
+    ESDTLocalBurn            = 250000
+    ESDTNFTCreate            = 500000
+    ESDTNFTAddQuantity       = 500000
+    ESDTNFTBurn              = 500000
+    ESDTNFTTransfer          = 500000
+    ESDTNFTChangeCreateOwner = 1000000
+    ESDTNFTAddUri            = 500000
+    ESDTNFTUpdateAttributes  = 500000
+    ESDTNFTMultiTransfer     = 1000000
 
 [MetaChainSystemSCsCost]
     Stake               = 5000000
@@ -1402,6 +1419,7 @@ gasScheduleV3 = `[BuiltInCost]
     UnmarshalECC           = 20000
     UnmarshalCompressedECC = 270000
     GenerateKeyECC         = 7000000
+    EncodeDERSig           = 1000000
 
 [ManagedBufferAPICost]
     MBufferNew                   = 2000

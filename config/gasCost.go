@@ -157,6 +157,7 @@ type CryptoAPICost struct {
 	UnmarshalECC           uint64
 	UnmarshalCompressedECC uint64
 	GenerateKeyECC         uint64
+	EncodeDERSig           uint64
 }
 
 type ManagedBufferAPICost struct {
