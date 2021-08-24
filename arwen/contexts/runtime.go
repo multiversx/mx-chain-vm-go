@@ -12,6 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -38,6 +39,9 @@ type runtimeContext struct {
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
 	errors          arwen.WrappableError
+
+	callsCounter uint64
+	callID       []byte
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -227,6 +231,13 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 // InitStateFromContractCallInput initializes the state of the runtime context
 // (and the async context) from the provided ContractCallInput.
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
+	if len(context.stateStack) == 0 && input.CallType != vm.AsynchronousCall && input.CallType != vm.AsynchronousCallBack {
+		context.callID = input.CurrentTxHash
+	} else {
+		context.callID = context.host.EliminateAndReturnFirstArgument(input)
+	}
+	fmt.Println("function ", input.Function, "callID", context.callID)
+
 	context.SetVMInput(&input.VMInput)
 	context.scAddress = input.RecipientAddr
 	context.callFunction = input.Function
@@ -253,6 +264,8 @@ func (context *runtimeContext) PushState() {
 		scAddress:    context.scAddress,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
+		callID:       context.callID,
+		callsCounter: context.callsCounter,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -279,6 +292,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.scAddress = prevState.scAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
+	context.callID = prevState.callID
 	context.popInstance()
 }
 
@@ -801,15 +815,49 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	return ok
 }
 
-func (context *runtimeContext) GetPrevTxHashAndUpdateArgumentsForAsyncCall() []byte {
-	prevTxHash := context.vmInput.Arguments[0]
-	context.vmInput.PrevTxHash = prevTxHash
+func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
+	firstArg := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]
-	return prevTxHash
+	return firstArg
 }
 
-func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
-	prevPrevTxHash := context.vmInput.Arguments[0]
-	context.vmInput.Arguments = context.vmInput.Arguments[1:]
-	return prevPrevTxHash
+func (context *runtimeContext) GenerateNewCallID() []byte {
+	context.callsCounter++
+	newCallID := append(context.callID, big.NewInt(int64(context.callsCounter)).Bytes()...)
+	newCallID, _ = context.host.Crypto().Sha256(newCallID)
+	return newCallID
+}
+
+func (context *runtimeContext) GetCallID() []byte {
+	return context.callID
+}
+
+func (context *runtimeContext) isAsyncOrCallBackCall() bool {
+	return context.GetVMInput().CallType == vm.AsynchronousCall || context.GetVMInput().CallType == vm.AsynchronousCallBack
+}
+
+func (context *runtimeContext) GetFirstAsyncOrCallbackOnStack() []*arwen.AddressAndCallID {
+	result := make([]*arwen.AddressAndCallID, 0)
+	result = append(result, &arwen.AddressAndCallID{
+		Address:      context.scAddress,
+		CallID:       context.callID,
+		IndexOnStack: -1,
+	})
+
+	if context.isAsyncOrCallBackCall() {
+		return result
+	}
+
+	for index := len(context.stateStack) - 1; index >= 0; index-- {
+		contextOnStack := context.stateStack[index]
+		result = append(result, &arwen.AddressAndCallID{
+			Address:      contextOnStack.scAddress,
+			CallID:       contextOnStack.callID,
+			IndexOnStack: index,
+		})
+		if contextOnStack.isAsyncOrCallBackCall() {
+			break
+		}
+	}
+	return result
 }

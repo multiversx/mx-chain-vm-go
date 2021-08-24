@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -67,7 +66,13 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	txHashOfNewCall := destinationCallInput.CurrentTxHash
+	_, err = context.incrementChildrenNumberForPrevAsyncContext()
+	if err != nil {
+		return err
+	}
+
+	newCallID := destinationCallInput.Arguments[0]
+	recipientOfNewCall := destinationCallInput.RecipientAddr
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
@@ -77,10 +82,12 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	receiverAddr := destinationCallInput.RecipientAddr
-	deserializedAsyncCtx, _ := NewSerializedAsyncContextFromStore(context.host.Storage(), receiverAddr, txHashOfNewCall)
+	areAllChildrenComplete, err := context.areAllChildrenCompleteForStoredContext(recipientOfNewCall, newCallID)
+	if err != nil {
+		return err
+	}
 
-	if asyncCall.HasCallback() && (deserializedAsyncCtx == nil || !deserializedAsyncCtx.HasPendingCallGroups()) {
+	if asyncCall.HasCallback() && areAllChildrenComplete {
 		context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
 	} else {
 		context.gasAccumulated = 0
@@ -237,9 +244,10 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
-	asyncCallIdentifier := asyncCall.Identifier.ToBytes()
-	newTxHash := NewTxHashForLocalAsyncCall(host.Crypto(), asyncCallIdentifier, runtime.GetCurrentTxHash(), runtime.GetPrevTxHash())
-	arguments = append([][]byte{asyncCallIdentifier}, arguments...)
+	// send the callID to a local async call
+	arguments = append([][]byte{asyncCall.Identifier.ToBytes()}, arguments...)
+	arguments = append([][]byte{runtime.GetCallID()}, arguments...)
+	arguments = append([][]byte{runtime.GenerateNewCallID()}, arguments...)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -250,22 +258,15 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    gasLimit,
 			GasLocked:      asyncCall.GetGasLocked(),
-			CurrentTxHash:  newTxHash,
+			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
-			PrevTxHash:     runtime.GetCurrentTxHash(),
+			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
 		RecipientAddr: asyncCall.GetDestination(),
 		Function:      function,
 	}
 
 	return contractCallInput, nil
-}
-
-func NewTxHashForLocalAsyncCall(crypto crypto.VMCrypto, asyncCallIdentifier []byte, currentTxHash []byte, prevTxHash []byte) []byte {
-	newTxHash := append(asyncCallIdentifier, currentTxHash...)
-	newTxHash = append(newTxHash, prevTxHash...)
-	newTxHash, _ = crypto.Sha256(newTxHash)
-	return newTxHash
 }
 
 // TODO function too large; refactor needed
@@ -277,10 +278,7 @@ func (context *asyncContext) createCallbackInput(
 	metering := context.host.Metering()
 	runtime := context.host.Runtime()
 
-	// always provide return code as the first argument to callback function
-	arguments := [][]byte{
-		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
-	}
+	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
 
 	esdtFunction := ""
 	isESDTOnCallBack := false
@@ -293,11 +291,7 @@ func (context *asyncContext) createCallbackInput(
 			asyncCall.Destination,
 			runtime.GetSCAddress(),
 			vmOutput)
-		arguments = append(arguments, vmOutput.ReturnData...)
 	} else {
-		// when execution returned error, callBack arguments are:
-		// [error code, error message]
-		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 		returnWithError = true
 	}
 
@@ -347,6 +341,30 @@ func (context *asyncContext) createCallbackInput(
 	}
 
 	return contractCallInput, nil
+}
+
+func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput, err error) [][]byte {
+	// always provide return code as the first argument to callback function
+	arguments := [][]byte{
+		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
+	}
+	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
+		// when execution went Ok, callBack arguments are:
+		// [0, result1, result2, ....]
+		arguments = append(arguments, vmOutput.ReturnData...)
+	} else {
+		// when execution returned error, callBack arguments are:
+		// [error code, error message]
+		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
+	}
+
+	// TODO matei-p in the end move these in the begining of the function
+	// send the callID
+	arguments = append([][]byte{context.rootAsyncInfo.PrevAsyncCallID}, arguments...)
+	arguments = append([][]byte{context.rootAsyncInfo.PrevAsyncCallAddress}, arguments...)
+	arguments = append([][]byte{context.host.Runtime().GenerateNewCallID()}, arguments...)
+
+	return arguments
 }
 
 func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGroup) *vmcommon.ContractCallInput {

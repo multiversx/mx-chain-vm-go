@@ -250,7 +250,7 @@ func (host *VMHostMock) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, 
 	return nil, nil
 }
 
-// EliminateAndReturnFirstAsyncCallArgument mock method
-func (host *VMHostMock) EliminateAndReturnFirstAsyncCallArgument(input *vmcommon.ContractCallInput) []byte {
+// EliminateAndReturnFirstArgument mock method
+func (host *VMHostMock) EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte {
 	return nil
 }

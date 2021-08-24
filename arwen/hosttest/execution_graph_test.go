@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -17,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO matei-p error test cases
+// TODO matei-p add error test cases
 
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 	// arwen.SetLoggingForTests()
@@ -152,19 +150,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				WithCurrentTxHash(crtTxHash).
 				Build()).
 			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-				// for _, crossShardEdge := range crossShardEdges {
-				// 	world.AcctMap.DeleteAccount(crossShardEdge.To.Call.ContractAddress)
-				// }
 				world.SelfShardID = world.GetShardOfAddress(startNode.Call.ContractAddress)
-				for address, store := range storage {
-					account := world.AcctMap.GetAccount([]byte(address))
-					if account == nil {
-						continue
-					}
-					for key, value := range store {
-						account.SaveKeyValue([]byte(key), value)
-					}
-				}
+				persistStorageUpdatesToWorld(storage, world)
 				setZeroCodeCosts(host)
 				setAsyncCosts(host, testConfig.GasLockCost)
 			}).
@@ -189,6 +176,18 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	//fmt.Println("-> expectedGasUsagePerContract ", expectedGasUsagePerContract)
 	CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
 	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
+}
+
+func persistStorageUpdatesToWorld(storage map[string]map[string][]byte, world *worldmock.MockWorld) {
+	for address, store := range storage {
+		account := world.AcctMap.GetAccount([]byte(address))
+		if account == nil {
+			continue
+		}
+		for key, value := range store {
+			account.SaveKeyValue([]byte(key), value)
+		}
+	}
 }
 
 func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue) []*test.TestCallEdge {
@@ -217,27 +216,6 @@ func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.Te
 	}
 
 	return crossShardEdges
-}
-
-func assignCrtTxHashToNode(edge *test.TestCallEdge, node *test.TestCallNode, indexOfAsyncCall int) {
-	if edge.Type == test.Sync || edge.Type == test.Callback {
-		edge.To.CrtTxHash = node.CrtTxHash
-	}
-	if edge.Type == test.Async {
-		var prevTxHash []byte
-		if node.Parent != nil {
-			prevTxHash = node.Parent.CrtTxHash
-		}
-
-		// TODO matei-p reuse / factor out to match async call id assignement logic
-		asyncCallIdentifier := fmt.Sprint(indexOfAsyncCall)
-		edge.To.CrtTxHash = contexts.NewTxHashForLocalAsyncCall(
-			factory.NewVMCrypto(),
-			[]byte(asyncCallIdentifier),
-			node.CrtTxHash,
-			prevTxHash,
-		)
-	}
 }
 
 func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {
@@ -313,7 +291,7 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 						"to", string(outputAccount.Address),
 						"gas limit", outputTransfer.GasLimit,
 						"callType", callType,
-						"data", string(outputTransfer.Data))
+						/*"data", string(outputTransfer.Data)*/)
 					if callType == vm.AsynchronousCall {
 						encodedArgs = outputTransfer.Data
 					} else if callType == vm.AsynchronousCallBack {
@@ -323,10 +301,12 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 
 						callData := txDataBuilder.NewBuilder()
 						callData.Func(function)
-						// prev tx hash - will be removed by arwen
+						// will be read and removed by arwen
 						callData.Bytes(parsedArgs[0])
-						// return code
 						callData.Bytes(parsedArgs[1])
+						callData.Bytes(parsedArgs[2])
+						// return code
+						callData.Bytes(parsedArgs[3])
 						// testing framework info
 						callData.Bytes(big.NewInt(int64(crossShardEdge.Type)).Bytes())
 						callData.Int64(int64(crossShardEdge.GasUsedByCallback))

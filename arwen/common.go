@@ -107,6 +107,9 @@ const TimeLockKeyPrefix = ProtectedStoragePrefix + "TIMELOCK"
 // AsyncDataPrefix is the storage key prefix used for AsyncContext-related storage.
 const AsyncDataPrefix = ProtectedStoragePrefix + "ASYNC"
 
+// AsyncRootDataPrefix is the storage key prefix used for rootAsyncContextInfo-related storage.
+const AsyncRootDataPrefix = ProtectedStoragePrefix + "ASYNCROOT"
+
 // AsyncCallStatus represents the different status an async call can have
 type AsyncCallStatus uint8
 

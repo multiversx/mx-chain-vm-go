@@ -152,6 +152,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	_, _, metering, output, runtime, async, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
+
 	async.InitStateFromInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
@@ -226,7 +227,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
-		host.EliminateAndReturnFirstAsyncCallArgument(input)
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
@@ -249,12 +249,10 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
-func (host *vmHost) EliminateAndReturnFirstAsyncCallArgument(input *vmcommon.ContractCallInput) []byte {
+func (host *vmHost) EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte {
 	var firstArgument []byte
-	if input.CallType == vm.AsynchronousCall {
-		firstArgument = input.Arguments[0]
-		input.Arguments = input.Arguments[1:]
-	}
+	firstArgument = input.Arguments[0]
+	input.Arguments = input.Arguments[1:]
 	return firstArgument
 }
 
@@ -866,30 +864,39 @@ func (host *vmHost) callSCMethod() error {
 	async := host.Async()
 	callType := vmInput.CallType
 
-	var prevPrevTxHash []byte
+	var err error
+	var originalCallID []byte
+	var asyncCallIdentifier *arwen.AsyncCallIdentifier
 
 	if callType == vm.AsynchronousCallBack {
-		prevPrevTxHash = runtime.GetAndEliminateFirstArgumentFromList()
-		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
-		asyncCall, err := contexts.UpdateCurrentAsyncCallStatus(host.Storage(), runtime.GetSCAddress(), vmInput, prevPrevTxHash)
+		originalCallID = runtime.GetAndEliminateFirstArgumentFromList()
+		asyncCallAsBytes := runtime.GetAndEliminateFirstArgumentFromList()
+		asyncCallIdentifier, err = arwen.ReadAsyncCallIdentifierFromBytes(asyncCallAsBytes)
 		if err != nil {
-			log.Trace("UpdateCurrentCallStatus failed", "error", err)
-			err = async.PostprocessCrossShardCallback()
-			if err != nil {
-				log.Trace("call SC method failed", "error", err)
-			}
 			return err
 		}
 
+		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
+		asyncCall, _ := contexts.UpdateCurrentAsyncCallStatus(host.Storage(),
+			runtime.GetSCAddress(),
+			originalCallID,
+			asyncCallIdentifier,
+			vmInput)
+		// TODO matei-p re-enable this (and replace _ with err above)
+		// if err != nil {
+		// 	log.Trace("UpdateCurrentCallStatus failed", "error", err)
+		// 	err = async.PostprocessCrossShardCallback(asyncCallIdentifier)
+		// 	if err != nil {
+		// 		log.Trace("call SC method failed", "error", err)
+		// 	}
+		// 	return err
+		// }
+
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
-	} else if callType == vm.AsynchronousCall {
-		prevTxHash := runtime.GetAndEliminateFirstArgumentFromList()
-		runtime.GetVMInput().PrevTxHash = prevTxHash
 	}
 
 	// TODO refactor this, and apply this condition in other places where a
 	// function is called
-	var err error
 	if runtime.Function() != "" {
 		err = host.verifyAllowedFunctionCall()
 		if err != nil {
@@ -929,8 +936,12 @@ func (host *vmHost) callSCMethod() error {
 		// 	err = host.sendAsyncCallbackToCaller()
 		break
 	case vm.AsynchronousCallBack:
-		async.Load(prevPrevTxHash)
-		err = async.PostprocessCrossShardCallback()
+		originalAsync, errRead := contexts.NewSerializedAsyncContextFromStore(host.Storage(),
+			runtime.GetSCAddress(),
+			originalCallID)
+		if errRead == nil || runtime.Function() != arwen.CallbackFunctionName {
+			err = originalAsync.PostprocessCrossShardCallback(host, originalCallID, asyncCallIdentifier)
+		}
 	default:
 		err = arwen.ErrUnknownCallType
 	}

@@ -641,7 +641,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 
 			contracts.RegisterAsyncCallToChild(host, testConfig, arguments)
-			host.Async().Save(crtTxHash)
+			host.Async().Save()
 
 			for _, account := range host.Output().GetVMOutput().OutputAccounts {
 				for _, storageUpdate := range account.StorageUpdates {

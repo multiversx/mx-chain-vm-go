@@ -19,6 +19,23 @@ func (asyncCallIdentifier *AsyncCallIdentifier) ToBytes() []byte {
 	return data
 }
 
+// CallbackInfo -
+// type CallbackInfo struct {
+// 	CallbackDestination []byte
+// 	SuccessCallback     string
+// 	ErrorCallback       string
+// 	GasLocked           uint64
+// }
+
+// ToBytes -
+// func (callbackInfo *CallbackInfo) ToBytes() []byte {
+// 	data, err := json.Marshal(callbackInfo)
+// 	if err != nil {
+// 		return nil
+// 	}
+// 	return data
+// }
+
 // ReadAsyncCallIdentifierFromBytes -
 func ReadAsyncCallIdentifierFromBytes(input []byte) (*AsyncCallIdentifier, error) {
 	asyncCallIdentifier := &AsyncCallIdentifier{}

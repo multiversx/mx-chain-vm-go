@@ -327,6 +327,9 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
+	// initial callID
+	input.Arguments = append(input.Arguments, input.CurrentTxHash)
+
 	tryUpgrade := func() {
 		vmOutput = host.doRunSmartContractUpgrade(input)
 	}

@@ -90,6 +90,11 @@ func (context *storageContext) SetAddress(address []byte) {
 	logStorage.Trace("storage under address set", "address", address)
 }
 
+// GetAddress gets the given address for the current context.
+func (context *storageContext) GetAddress() []byte {
+	return context.address
+}
+
 // GetStorageUpdates returns the storage updates for the account mapped to the given address.
 func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
 	account, _ := context.host.Output().GetOutputAccount(address)
@@ -206,12 +211,22 @@ func (context *storageContext) isElrondReservedKey(key []byte) bool {
 func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	context.disableStorageProtection()
 	defer context.enableStorageProtection()
-
 	return context.SetStorage(key, value)
 }
 
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	return context.setStorageToAddress(context.address, key, value)
+}
+
+// SetProtectedStorageToAddress sets the given value at the given key, for the specified address. This is only used internaly by arwen!
+func (context *storageContext) SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
+	context.disableStorageProtection()
+	defer context.enableStorageProtection()
+	return context.setStorageToAddress(address, key, value)
+}
+
+func (context *storageContext) setStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.host.Runtime().ReadOnly() {
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
@@ -238,7 +253,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	length := len(value)
 
 	var oldValue []byte
-	storageUpdates := context.GetStorageUpdates(context.address)
+	storageUpdates := context.GetStorageUpdates(address)
 	if update, ok := storageUpdates[strKey]; !ok {
 		oldValue = context.GetStorageUnmetered(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{

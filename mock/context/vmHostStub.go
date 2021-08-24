@@ -50,7 +50,7 @@ type VMHostStub struct {
 
 	UpdateCurrentAsyncCallStatusCalled func(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error)
 
-	EliminateAndReturnFirstAsyncCallArgumentCalled func(input *vmcommon.ContractCallInput) []byte
+	EliminateAndReturnFirstArgumentCalled func(input *vmcommon.ContractCallInput) []byte
 }
 
 // GetVersion mocked method
@@ -320,10 +320,10 @@ func (vhs *VMHostStub) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, p
 	return nil, nil
 }
 
-// EliminateAndReturnFirstAsyncCallArgument mock method
-func (vhs *VMHostStub) EliminateAndReturnFirstAsyncCallArgument(input *vmcommon.ContractCallInput) []byte {
-	if vhs.EliminateAndReturnFirstAsyncCallArgumentCalled != nil {
-		return vhs.EliminateAndReturnFirstAsyncCallArgumentCalled(input)
+// EliminateAndReturnFirstArgument mock method
+func (vhs *VMHostStub) EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte {
+	if vhs.EliminateAndReturnFirstArgumentCalled != nil {
+		return vhs.EliminateAndReturnFirstArgumentCalled(input)
 	}
 	return nil
 }

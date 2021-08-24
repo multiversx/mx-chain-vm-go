@@ -1,7 +1,6 @@
 package testcommon
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -147,11 +146,12 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	returnData.Int64(int64(host.Metering().GasLeft()))
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
-	fmt.Println(
-		"tx\t", host.Runtime().GetCurrentTxHash(),
-		"for contract ", string(host.Runtime().GetSCAddress()), "/ "+crtFunctionCalled+"\t",
-		"gas provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided),
-		"gas remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
+	// TODO matei-p replace with tx / gas logging
+	// fmt.Println(
+	// 	"tx\t", host.Runtime().GetCurrentTxHash(),
+	// 	"for contract ", string(host.Runtime().GetSCAddress()), "/ "+crtFunctionCalled+"\t",
+	// 	"gas provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided),
+	// 	"gas remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
 }
 
 func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {

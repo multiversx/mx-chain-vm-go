@@ -55,7 +55,7 @@ type VMHost interface {
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
 
-	EliminateAndReturnFirstAsyncCallArgument(input *vmcommon.ContractCallInput) []byte
+	EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -154,6 +154,17 @@ type RuntimeContext interface {
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
+
+	GenerateNewCallID() []byte
+	GetCallID() []byte
+	GetFirstAsyncOrCallbackOnStack() []*AddressAndCallID
+}
+
+// AddressAndCallID holds info from a runtime stack
+type AddressAndCallID struct {
+	Address      []byte
+	CallID       []byte
+	IndexOnStack int
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
@@ -269,6 +280,7 @@ type StorageContext interface {
 	StateStack
 
 	SetAddress(address []byte)
+	GetAddress() []byte
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) []byte
 	GetStorageFromAddressNoChecks(address []byte, key []byte) []byte
@@ -276,6 +288,7 @@ type StorageContext interface {
 	GetStorageUnmetered(key []byte) []byte
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
@@ -304,7 +317,6 @@ type AsyncContext interface {
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
-	PostprocessCrossShardCallback() error
 	GetCallerAddress() []byte
 	GetReturnData() []byte
 	SetReturnData(data []byte)
@@ -314,7 +326,7 @@ type AsyncContext interface {
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 
-	Load(prevPrevTxHash []byte) error
-	Save(currentTxHash []byte) error
+	Load(callID []byte) error
+	Save() error
 	Delete() error
 }
