@@ -91,6 +91,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 	})
 
 	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
