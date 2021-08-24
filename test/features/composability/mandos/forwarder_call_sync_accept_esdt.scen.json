@@ -56,9 +56,10 @@
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:TEST-TOKEN",
+                            "",
                             "1000",
                             "sc:vault"
                         ],
@@ -66,19 +67,19 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds_echo_payment",
+                        "endpoint": "str:accept_funds_echo_payment",
                         "topics": [
                             "str:accept_funds",
                             "str:TEST-TOKEN",
                             "str:FungibleESDT",
-                                                "1000",
-                                                "0"
-                                            ],
-                                            "data": ""
-                                        },
+                            "1000",
+                            "0"
+                        ],
+                        "data": ""
+                    },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:forward_sync_accept_funds",
+                        "endpoint": "str:forward_sync_accept_funds",
                         "topics": [
                             "str:accept_funds_sync_result",
                             "str:TEST-TOKEN",

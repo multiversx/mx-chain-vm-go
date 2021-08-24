@@ -28,8 +28,8 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) 
 				if err != nil {
 					return nil, fmt.Errorf("invalid log address: %w", err)
 				}
-			case "identifier":
-				logEntry.Identifier, err = p.parseCheckBytes(kvp.Value)
+			case "endpoint":
+				logEntry.Endpoint, err = p.parseCheckBytes(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}

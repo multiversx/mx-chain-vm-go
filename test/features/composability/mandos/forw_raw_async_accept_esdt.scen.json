@@ -52,9 +52,10 @@
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:TEST-TOKEN",
+                            "",
                             "1000",
                             "sc:vault"
                         ],
@@ -62,7 +63,7 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:TEST-TOKEN",
@@ -74,7 +75,7 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:callBack",
+                        "endpoint": "str:callBack",
                         "topics": [
                             "str:callback_raw",
                             "str:EGLD",

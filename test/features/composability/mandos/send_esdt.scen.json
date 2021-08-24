@@ -67,9 +67,10 @@
                 "logs": [
                     {
                         "address": "sc:basic-features",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:BASIC-FEATURES-TOKEN",
+                            "",
                             "100",
                             "address:an_account"
                         ],
@@ -101,9 +102,10 @@
                 "logs": [
                     {
                         "address": "sc:basic-features",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:BASIC-FEATURES-TOKEN",
+                            "",
                             "100",
                             "address:an_account"
                         ],

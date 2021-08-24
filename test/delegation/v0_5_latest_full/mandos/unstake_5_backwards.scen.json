@@ -61,7 +61,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:stake",
+                        "endpoint": "str:stake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "address:delegator3"
@@ -98,7 +98,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:stake",
+                        "endpoint": "str:stake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "address:delegator3"

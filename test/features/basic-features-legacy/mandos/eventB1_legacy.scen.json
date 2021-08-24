@@ -41,7 +41,7 @@
                 "logs": [
                     {
                         "address": "sc:basic-features",
-                        "identifier": "str:logEventB",
+                        "endpoint": "str:logEventB",
                         "topics": [
                             "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000b",
                             "0x00000000000000000000000000000000000000000000000000000000000000a1",

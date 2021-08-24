@@ -155,7 +155,7 @@ func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry
 			outputLog.Address,
 			ae.exprReconstructor.Reconstruct(outputLog.Address,
 				er.AddressHint)),
-		Identifier: mj.JSONCheckBytesReconstructed(
+		Endpoint: mj.JSONCheckBytesReconstructed(
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),

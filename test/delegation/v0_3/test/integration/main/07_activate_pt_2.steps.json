@@ -41,7 +41,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:withdrawInactiveStake",
+                        "endpoint": "str:withdrawInactiveStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
                             "''delegator_2___________________s1"
@@ -72,7 +72,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:stakeAndTryActivate",
+                        "endpoint": "str:stakeAndTryActivate",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "''delegator_2___________________s1"
@@ -81,7 +81,7 @@
                     },
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:callBack",
+                        "endpoint": "str:callBack",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000003"
                         ],

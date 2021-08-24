@@ -49,9 +49,10 @@
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:FWD-TOKEN",
+                            "",
                             "1",
                             "sc:vault"
                         ],
@@ -59,7 +60,7 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:FWD-TOKEN",
@@ -71,9 +72,10 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:FWD-TOKEN",
+                            "",
                             "1",
                             "sc:vault"
                         ],
@@ -81,7 +83,7 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:FWD-TOKEN",

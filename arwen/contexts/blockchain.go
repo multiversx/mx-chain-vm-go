@@ -10,7 +10,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-var log = logger.GetOrCreate("arwen/blockchainContext")
+var logBlockchain = logger.GetOrCreate("arwen/blockchainContext")
 
 type blockchainContext struct {
 	host           arwen.VMHost
@@ -316,12 +316,11 @@ func (context *blockchainContext) PopSetActiveState() {
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
-	log.LogIfError(
-		err,
-		"PopSetActiveState RevertToSnapshot error",
-		err,
-		"snapshot",
-		prevSnapshot)
+	if arwen.WithFaultAndHost(context.host, err, true) {
+		context.host.Runtime().AddError(err, "RevertToSnapshot")
+		logBlockchain.Error("PopSetActiveState RevertToSnapshot", "error", err)
+		return
+	}
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
