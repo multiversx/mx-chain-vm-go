@@ -838,7 +838,7 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		return err
 	}
 
-	log.Trace(
+	logAsync.Trace(
 		"sendContextCallbackToOriginalCaller",
 		"caller", context.callerAddr,
 		"data", context.returnData,
