@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/promises-tracking/trackingSystem.c"
+        "./trackingSystem.c"
     ]
 }

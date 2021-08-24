@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/exec-same-ctx-child/exec-same-ctx-child.c"
+        "./exec-same-ctx-child.c"
     ]
 }

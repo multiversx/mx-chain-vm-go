@@ -37,8 +37,13 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	bigIntOps := &BigIntAPICost{}
-	err = mapstructure.Decode(gasMap["BigIntAPICost"], bigIntOps)
+	ethOps := &EthAPICost{}
+	err = mapstructure.Decode(gasMap["EthAPICost"], ethOps)
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkForZeroUint64Fields(*ethOps)
 	if err != nil {
 		return nil, err
 	}
@@ -49,18 +54,18 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
+	err = checkForZeroUint64Fields(*bigFloatOps)
+	if err != nil {
+		return nil, err
+	}
+
+	bigIntOps := &BigIntAPICost{}
+	err = mapstructure.Decode(gasMap["BigIntAPICost"], bigIntOps)
+	if err != nil {
+		return nil, err
+	}
+
 	err = checkForZeroUint64Fields(*bigIntOps)
-	if err != nil {
-		return nil, err
-	}
-
-	ethOps := &EthAPICost{}
-	err = mapstructure.Decode(gasMap["EthAPICost"], ethOps)
-	if err != nil {
-		return nil, err
-	}
-
-	err = checkForZeroUint64Fields(*ethOps)
 	if err != nil {
 		return nil, err
 	}
@@ -353,6 +358,7 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap["UnmarshalECC"] = value
 	gasMap["UnmarshalCompressedECC"] = value
 	gasMap["GenerateKeyECC"] = value
+	gasMap["EncodeDERSig"] = value
 
 	return gasMap
 }

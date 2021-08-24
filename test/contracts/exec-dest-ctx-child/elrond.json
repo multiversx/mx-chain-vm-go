@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/andrei/arwen-wasm-vm/test/contracts/exec-dest-ctx-child/exec-dest-ctx-child.c"
+        "./exec-dest-ctx-child.c"
     ]
 }
