@@ -264,8 +264,8 @@ func (context *runtimeContext) PushState() {
 		scAddress:    context.scAddress,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
-		callID:       context.callID,
-		callsCounter: context.callsCounter,
+		callID:       nil,
+		callsCounter: 0,
 	}
 	newState.SetVMInput(context.vmInput)
 
