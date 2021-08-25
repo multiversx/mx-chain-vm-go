@@ -1422,6 +1422,8 @@ const (
     BigFloatGetBytes    = 2000
     BigFloatIsInt       = 2000
     BigFloatSetBigInt   = 2000
+    BigFloatFinish      = 2000
+    BigFloatGetArgument = 2000
 
 [CryptoAPICost]
     SHA256                 = 1000000

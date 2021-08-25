@@ -141,6 +141,8 @@
     BigFloatGetBytes    = 10
     BigFloatIsInt       = 10
     BigFloatSetBigInt   = 10
+    BigFloatFinish      = 10
+    BigFloatGetArgument = 10
 
 [CryptoAPICost]
     SHA256                 = 10

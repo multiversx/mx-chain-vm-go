@@ -37,6 +37,8 @@ package elrondapi
 //
 // extern void		v1_4_bigFloatSetBytes(void* context, int32_t destinationHandle, int32_t dataOffset, int32_t dataLength);
 // extern void		v1_4_bigFloatGetBytes(void* context, int32_t destinationHandle, int32_t dataOffset);
+// extern void		v1_4_bigFloatFinish(void* context, int32_t referenceHandle);
+// extern void		v1_4_bigFloatGetArgument(void* context, int32_t id, int32_t destinationHandle);
 import "C"
 import (
 	"math"
@@ -172,6 +174,16 @@ func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigFloatGetBytes", v1_4_bigFloatGetBytes, C.v1_4_bigFloatGetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigFloatFinish", v1_4_bigFloatFinish, C.v1_4_bigFloatFinish)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigFloatGetArgument", v1_4_bigFloatGetArgument, C.v1_4_bigFloatGetArgument)
 	if err != nil {
 		return nil, err
 	}
@@ -750,4 +762,49 @@ func v1_4_bigFloatGetBytes(context unsafe.Pointer, destinationHandle, dataOffset
 	}
 	gasToUse = arwenMath.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseGas(gasToUse)
+}
+
+//export v1_4_bigFloatFinish
+func v1_4_bigFloatFinish(context unsafe.Pointer, referenceHandle int32) {
+	managedType := arwen.GetManagedTypesContext(context)
+	output := arwen.GetOutputContext(context)
+	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatFinish
+	metering.UseGas(gasToUse)
+
+	value, err := managedType.GetBigFloat(referenceHandle)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+	bytes, err := value.GobEncode()
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+	output.Finish(bytes)
+
+	gasToUse = arwenMath.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bytes)))
+	metering.UseGas(gasToUse)
+}
+
+//export v1_4_bigFloatGetArgument
+func v1_4_bigFloatGetArgument(context unsafe.Pointer, id, destinationHandle int32) {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetArgument
+	metering.UseGas(gasToUse)
+
+	args := runtime.Arguments()
+	if int32(len(args)) <= id {
+		return
+	}
+
+	dest := managedType.GetBigFloatOrCreate(destinationHandle)
+	err := dest.GobDecode(args[id])
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 }
