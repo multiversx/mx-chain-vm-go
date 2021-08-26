@@ -67,7 +67,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
 	newCallID := destinationCallInput.Arguments[0]
-	recipientOfNewCall := destinationCallInput.RecipientAddr
+	newCallAddress := destinationCallInput.RecipientAddr
 	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
@@ -77,14 +77,13 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	areAllChildrenComplete, err := context.areAllChildrenCompleteForStoredContext(recipientOfNewCall, newCallID)
+	areAllChildrenComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
 	if err != nil {
 		return err
 	}
 
 	if asyncCall.HasCallback() && areAllChildrenComplete {
-		context.DecrementCallsCounter()
-		context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+		context.NotifyOfChildCompletion(asyncCall.Identifier.ToBytes(), vmOutput, err)
 	} else {
 		context.gasAccumulated = 0
 		if vmOutput != nil {
@@ -95,14 +94,41 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) {
-	callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
+	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	// TODO matei-p would the below be ok for error vmOutput? the other use of executeSyncCallback()
 	context.gasAccumulated = 0
 	if callbackVMOutput != nil {
 		context.accumulateGas(callbackVMOutput.GasRemaining)
 	}
+	return isComplete
+}
+
+func (context *asyncContext) executeSyncCallback(
+	asyncCall *arwen.AsyncCall,
+	destinationVMOutput *vmcommon.VMOutput,
+	destinationErr error,
+) (*vmcommon.VMOutput, bool, error) {
+
+	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
+	if err != nil {
+		return nil, true, err
+	}
+
+	// Restore gas locked while still on the caller instance; otherwise, the
+	// locked gas will appear to have been used twice by the caller instance.
+	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
+	newCallID := callbackInput.Arguments[0]
+	newCallAddress := callbackInput.RecipientAddr
+	callbackVMOutput, callBackErr, _ := context.host.ExecuteOnDestContext(callbackInput)
+
+	isComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
+	if err != nil {
+		return nil, true, err
+	}
+
+	return callbackVMOutput, isComplete, callBackErr
 }
 
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
@@ -118,25 +144,6 @@ func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.Asyn
 	context.host.Metering().RestoreGas(asyncCall.GasLimit)
 	context.host.Metering().RestoreGas(asyncCall.GasLocked)
 	asyncCall.UpdateStatus(vmcommon.Ok)
-}
-
-func (context *asyncContext) executeSyncCallback(
-	asyncCall *arwen.AsyncCall,
-	destinationVMOutput *vmcommon.VMOutput,
-	destinationErr error,
-) (*vmcommon.VMOutput, error) {
-
-	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
-	if err != nil {
-		return nil, err
-	}
-
-	// Restore gas locked while still on the caller instance; otherwise, the
-	// locked gas will appear to have been used twice by the caller instance.
-	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
-	callbackVMOutput, callBackErr, _ := context.host.ExecuteOnDestContext(callbackInput)
-
-	return callbackVMOutput, callBackErr
 }
 
 // executeCallGroupCallback synchronously executes the designated callback of
@@ -190,7 +197,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
-		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	}
 
