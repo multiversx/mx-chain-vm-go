@@ -222,7 +222,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 		[]byte("validateGetters"),
 	}
 
-	vmOutput, err := host.ExecuteOnDestContext(input)
+	vmOutput, err, _ := host.ExecuteOnDestContext(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
 	verify.Ok()

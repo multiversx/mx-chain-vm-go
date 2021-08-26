@@ -218,10 +218,12 @@ func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.Contr
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error, isComplete bool) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
 	scExecutionInput := input
+
+	host.Async().Save()
 
 	blockchain := host.Blockchain()
 	blockchain.PushState()
@@ -237,7 +239,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	if scExecutionInput != nil {
-		vmOutput, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		vmOutput, err, isComplete = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 	}
 
 	if err != nil {
@@ -269,7 +271,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	return postBuiltinInput, builtinOutput, nil
 }
 
-func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error, isComplete bool) {
 	bigInt, _, metering, output, runtime, async, storage := host.GetContexts()
 	bigInt.PushState()
 	bigInt.InitState()
@@ -306,18 +308,19 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
-			return vmOutput, err
+			return vmOutput, err, true
 		}
 	}
 
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
-		return vmOutput, err
+		return vmOutput, err, true
 	}
 
 	err = async.Execute()
-	return vmOutput, err
+
+	return vmOutput, err, async.IsComplete()
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
@@ -513,7 +516,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, err = host.ExecuteOnDestContext(initCallInput)
+	_, err, _ = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
 	}
@@ -869,9 +872,8 @@ func (host *vmHost) callSCMethod() error {
 	var asyncCallIdentifier *arwen.AsyncCallIdentifier
 
 	if callType == vm.AsynchronousCallBack {
-		originalCallID = runtime.GetAndEliminateFirstArgumentFromList()
-		asyncCallAsBytes := runtime.GetAndEliminateFirstArgumentFromList()
-		asyncCallIdentifier, err = arwen.ReadAsyncCallIdentifierFromBytes(asyncCallAsBytes)
+		originalCallID = async.GetCallerCallID()
+		asyncCallIdentifier, err = async.GetCallerAsyncCallIdentifier()
 		if err != nil {
 			return err
 		}
@@ -927,6 +929,10 @@ func (host *vmHost) callSCMethod() error {
 			log.Trace("call SC method failed", "error", err)
 			return err
 		}
+	}
+
+	if !async.IsComplete() {
+		return nil
 	}
 
 	switch callType {

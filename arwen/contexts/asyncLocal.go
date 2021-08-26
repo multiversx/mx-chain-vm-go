@@ -66,14 +66,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	_, err = context.incrementChildrenNumberForPrevAsyncContext()
-	if err != nil {
-		return err
-	}
-
 	newCallID := destinationCallInput.Arguments[0]
 	recipientOfNewCall := destinationCallInput.RecipientAddr
-	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
 	}
@@ -88,6 +83,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	}
 
 	if asyncCall.HasCallback() && areAllChildrenComplete {
+		context.DecrementCallsCounter()
 		context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
 	} else {
 		context.gasAccumulated = 0
@@ -138,7 +134,7 @@ func (context *asyncContext) executeSyncCallback(
 	// Restore gas locked while still on the caller instance; otherwise, the
 	// locked gas will appear to have been used twice by the caller instance.
 	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
-	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
+	callbackVMOutput, callBackErr, _ := context.host.ExecuteOnDestContext(callbackInput)
 
 	return callbackVMOutput, callBackErr
 }
@@ -156,7 +152,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 
 	input := context.createGroupCallbackInput(group)
 	context.gasAccumulated = 0
-	vmOutput, err := context.host.ExecuteOnDestContext(input)
+	vmOutput, err, _ := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
 	context.accumulateGas(vmOutput.GasRemaining)
@@ -185,7 +181,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
 		return err
 	}
@@ -246,8 +242,8 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 
 	// send the callID to a local async call
 	arguments = append([][]byte{asyncCall.Identifier.ToBytes()}, arguments...)
-	arguments = append([][]byte{runtime.GetCallID()}, arguments...)
-	arguments = append([][]byte{runtime.GenerateNewCallID()}, arguments...)
+	arguments = append([][]byte{context.GetCallID()}, arguments...)
+	arguments = append([][]byte{context.GenerateNewCallID()}, arguments...)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -360,9 +356,9 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 
 	// TODO matei-p in the end move these in the begining of the function
 	// send the callID
-	arguments = append([][]byte{context.rootAsyncInfo.PrevAsyncCallID}, arguments...)
-	arguments = append([][]byte{context.rootAsyncInfo.PrevAsyncCallAddress}, arguments...)
-	arguments = append([][]byte{context.host.Runtime().GenerateNewCallID()}, arguments...)
+	arguments = append([][]byte{context.callerCallID}, arguments...)
+	arguments = append([][]byte{context.callerAddr}, arguments...)
+	arguments = append([][]byte{context.GenerateNewCallID()}, arguments...)
 
 	return arguments
 }

@@ -17,6 +17,11 @@ import (
 
 // TODO matei-p add error test cases
 
+func TestGasUsed_SyncCalls_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncCalls()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCall()

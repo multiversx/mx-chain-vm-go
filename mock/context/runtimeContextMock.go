@@ -349,18 +349,3 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 func (r *RuntimeContextMock) GetAndEliminateFirstArgumentFromList() []byte {
 	return nil
 }
-
-// GenerateNewCallID mocked method
-func (r *RuntimeContextMock) GenerateNewCallID() []byte {
-	return nil
-}
-
-// GetCallID mocked method
-func (r *RuntimeContextMock) GetCallID() []byte {
-	return nil
-}
-
-// GetFirstAsyncOrCallbackOnStack mocked method
-func (r *RuntimeContextMock) GetFirstAsyncOrCallbackOnStack() []*arwen.AddressAndCallID {
-	return nil
-}

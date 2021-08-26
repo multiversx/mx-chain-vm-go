@@ -185,7 +185,6 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 
 	async := makeAsyncContext(t, host)
 
-	require.True(t, async.IsComplete())
 	require.False(t, async.HasPendingCallGroups())
 
 	group, exists := async.GetCallGroup("testGroup")
@@ -197,7 +196,6 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 		Data:        []byte("something"),
 	})
 	require.Nil(t, err)
-	require.False(t, async.IsComplete())
 	require.True(t, async.HasPendingCallGroups())
 	require.Equal(t, 1, len(async.asyncCallGroups))
 
@@ -205,7 +203,6 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 	require.NotNil(t, group)
 	require.True(t, exists)
 	require.True(t, group.HasPendingCalls())
-	require.False(t, group.IsComplete())
 	require.False(t, group.HasCallback())
 
 	async.deleteCallGroupByID("testGroup")
@@ -223,7 +220,7 @@ func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
 	err := async.AddCallGroup(arwen.NewAsyncCallGroup("testGroup"))
 	require.Nil(t, err)
 	require.Equal(t, 1, len(async.asyncCallGroups))
-	require.False(t, async.IsComplete())
+	require.True(t, async.HasPendingCallGroups())
 
 	group, exists := async.GetCallGroup("testGroup")
 	require.NotNil(t, group)
@@ -235,7 +232,7 @@ func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
 	})
 	require.Nil(t, err)
 	require.Equal(t, 1, len(async.asyncCallGroups))
-	require.False(t, async.IsComplete())
+	require.True(t, async.HasPendingCallGroups())
 }
 
 func TestAsyncContext_RegisterAsyncCall_ValidationAndFields(t *testing.T) {

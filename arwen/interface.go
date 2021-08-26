@@ -42,7 +42,7 @@ type VMHost interface {
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error, bool)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
@@ -55,6 +55,7 @@ type VMHost interface {
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
 
+	// TODO matei-p is this used?
 	EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte
 }
 
@@ -154,10 +155,6 @@ type RuntimeContext interface {
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
-
-	GenerateNewCallID() []byte
-	GetCallID() []byte
-	GetFirstAsyncOrCallbackOnStack() []*AddressAndCallID
 }
 
 // AddressAndCallID holds info from a runtime stack
@@ -318,6 +315,8 @@ type AsyncContext interface {
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
 	GetCallerAddress() []byte
+	GetCallerCallID() []byte
+	GetCallerAsyncCallIdentifier() (*AsyncCallIdentifier, error)
 	GetReturnData() []byte
 	SetReturnData(data []byte)
 	GetGasPrice() uint64
@@ -329,4 +328,10 @@ type AsyncContext interface {
 	Load(callID []byte) error
 	Save() error
 	Delete() error
+
+	GetCallID() []byte
+	GenerateNewCallID() []byte
+	Clone() AsyncContext
+	// RunCompletionListenerIfNecessary(parentAsync AsyncContext)
+	DecrementCallsCounter()
 }
