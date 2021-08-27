@@ -123,6 +123,7 @@ long long getBlockTimestamp();
 int getBlockHash(long long nonce, byte *hash);
 
 // Argument-related functions
+long long smallIntGetUnsignedArgument(int argumentIndex);
 int getNumArguments();
 int getArgument(int argumentIndex, byte *argument);
 long long int64getArgument(int argumentIndex);
