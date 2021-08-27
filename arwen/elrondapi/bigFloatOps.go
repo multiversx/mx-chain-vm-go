@@ -50,6 +50,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
+// BigFloatImports creates a new wasmer.Imports populated with the BigFloat API methods
 func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
@@ -524,6 +525,15 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 func pow(base *big.Float, exp *big.Float) *big.Float {
 	result := new(big.Float).Copy(base)
 	counter := big.NewFloat(1)
+	basePrecision := base.Prec()
+	expPrecision := exp.Prec()
+	if basePrecision > expPrecision {
+		counter.SetPrec(basePrecision)
+		result.SetPrec(basePrecision)
+	} else {
+		counter.SetPrec(expPrecision)
+		result.SetPrec(expPrecision)
+	}
 	for counter.Cmp(exp) < 0 {
 		result.Mul(result, base)
 		counter.Add(counter, big.NewFloat(1))
@@ -735,7 +745,7 @@ func v1_4_bigFloatSetBytes(context unsafe.Pointer, destinationHandle, dataOffset
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-
+	dest.SetPrec(0)
 	dest.Set(floatToBeSet)
 }
 
@@ -803,6 +813,7 @@ func v1_4_bigFloatGetArgument(context unsafe.Pointer, id, destinationHandle int3
 	}
 
 	dest := managedType.GetBigFloatOrCreate(destinationHandle)
+	dest.SetPrec(0)
 	err := dest.GobDecode(args[id])
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return

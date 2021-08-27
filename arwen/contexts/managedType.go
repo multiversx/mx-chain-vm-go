@@ -255,6 +255,7 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) *big.Float
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
 	if !ok {
 		value = big.NewFloat(0)
+		value.SetPrec(0)
 		context.managedTypesValues.bigFloatValues[handle] = value
 	}
 	return value
