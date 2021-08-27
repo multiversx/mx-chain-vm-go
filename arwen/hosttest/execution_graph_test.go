@@ -268,8 +268,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 			expectedNodeRetData.Int64(int64(parent.GasLimit))
 			expectedNodeRetData.Int64(int64(parent.GasRemaining))
 			expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
-			fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
-
+			// fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
 			return node
 		}, false)
 	}

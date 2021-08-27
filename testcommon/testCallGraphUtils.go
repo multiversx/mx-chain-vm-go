@@ -1,6 +1,7 @@
 package testcommon
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -62,7 +63,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							gasUsed := readGasUsedFromArguments(crtNode, host)
 
 							// burn gas for function
-							LogGraph.Trace("Burning", "gas", gasUsed, "function", crtFunctionCalled)
+							fmt.Println("Burning", "gas", gasUsed, "function", crtFunctionCalled)
+							// LogGraph.Trace("Burning", "gas", gasUsed, "function", crtFunctionCalled)
 							host.Metering().UseGasBounded(uint64(gasUsed))
 
 							for _, edge := range crtNode.AdjacentEdges {
@@ -98,6 +100,10 @@ func makeSyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Tes
 	value := big.NewInt(testConfig.TransferFromParentToChild)
 	destFunctionName := edge.To.Call.FunctionName
 	destAddress := edge.To.Call.ContractAddress
+	arguments := [][]byte{
+		big.NewInt(int64(Sync)).Bytes(),
+		big.NewInt(int64(edge.GasUsed)).Bytes()}
+
 	LogGraph.Trace("Sync call to ", string(destAddress), " func ", destFunctionName, " gas ", edge.GasLimit)
 	elrondapi.ExecuteOnDestContextWithTypedArgs(
 		host,
@@ -105,9 +111,7 @@ func makeSyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Tes
 		value,
 		[]byte(destFunctionName),
 		destAddress,
-		[][]byte{
-			big.NewInt(int64(Sync)).Bytes(),
-			big.NewInt(int64(edge.GasUsed)).Bytes()}) // args
+		arguments)
 }
 
 func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *TestConfig) error {
@@ -148,7 +152,7 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
 	// TODO matei-p replace with tx / gas logging
 	// fmt.Println(
-	// 	"tx\t", host.Runtime().GetCurrentTxHash(),
+	// 	"callID\t", host.Async().GetCallID(),
 	// 	"for contract ", string(host.Runtime().GetSCAddress()), "/ "+crtFunctionCalled+"\t",
 	// 	"gas provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided),
 	// 	"gas remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
@@ -176,11 +180,11 @@ func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
 				}
 				edgeType := big.NewInt(0).SetBytes(arguments[edgeTypeArgIndex]).Int64()
 				if edgeType == Async {
-					host.Output().Finish(big.NewInt(int64(Callback)).Bytes())
-					host.Output().Finish(arguments[2]) // gas used by callback
+					host.Output().Finish(big.NewInt(int64(Callback)).Bytes()) // edge type
+					host.Output().Finish(arguments[2])                        // gas used by callback
 				}
 
-				gasUsed = big.NewInt(0).SetBytes(arguments[gasUsedArgIndex]).Int64()
+				gasUsed = big.NewInt(0).SetBytes(arguments[gasUsedArgIndex]).Int64() // gas used for call
 			}
 		}
 	}

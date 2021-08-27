@@ -88,13 +88,17 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// // by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
+	// context.childResults = append(context.childResults, vmOutput)
+
 	areAllChildrenComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
 	if err != nil {
 		return err
 	}
 
 	if asyncCall.HasCallback() && areAllChildrenComplete {
-		context.NotifyOfChildCompletion(asyncCall.Identifier.ToBytes(), vmOutput, err)
+		context.NotifyOfChildCompletion(asyncCall.Identifier.ToBytes(),
+			context.childResults[0], nil)
+		//vmOutput, err)
 	} else {
 		context.gasAccumulated = 0
 		if vmOutput != nil {
@@ -339,7 +343,8 @@ func (context *asyncContext) createCallbackInput(
 			PrevTxHash:           runtime.GetPrevTxHash(),
 			ReturnCallAfterError: returnWithError,
 		},
-		RecipientAddr: runtime.GetSCAddress(),
+		//RecipientAddr: runtime.GetSCAddress(),
+		RecipientAddr: context.callerAddr,
 		Function:      callbackFunction,
 	}
 
@@ -374,8 +379,8 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 
 	// TODO matei-p in the end move these in the begining of the function
 	// send the callID
+	arguments = append([][]byte{context.callAsyncIdentifierAsBytes}, arguments...)
 	arguments = append([][]byte{context.callerCallID}, arguments...)
-	arguments = append([][]byte{context.callerAddr}, arguments...)
 	arguments = append([][]byte{context.GenerateNewCallID()}, arguments...)
 
 	return arguments

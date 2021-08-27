@@ -43,8 +43,9 @@ type asyncContext struct {
 	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
 
-	callsCounter uint64
-	childResults []*vmcommon.VMOutput
+	callsCounter      uint64 // incremented and decremented during run
+	totalCallsCounter uint64 // used for callid generation
+	childResults      []*vmcommon.VMOutput
 }
 
 type serializableAsyncContext struct {
@@ -63,8 +64,9 @@ type serializableAsyncContext struct {
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
 
-	CallsCounter uint64
-	ChildResults []*vmcommon.VMOutput
+	CallsCounter      uint64
+	TotalCallsCounter uint64
+	ChildResults      []*vmcommon.VMOutput
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -131,17 +133,19 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		context.callID = runtime.GetAndEliminateFirstArgumentFromList()
 		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
 	}
-	fmt.Println("function ", input.Function, "callID", context.callID)
+	fmt.Println("function ", input.Function, "address", string(context.address))
+	fmt.Println("\tcallID", context.callID)
 	context.callType = input.CallType
 	context.callsCounter = 0
+	context.totalCallsCounter = 0
 
 	if input.CallType == vm.AsynchronousCall || input.CallType == vm.AsynchronousCallBack {
 		context.callAsyncIdentifierAsBytes = runtime.GetAndEliminateFirstArgumentFromList()
-
 		// TODO matei-p remove for logging
 		asynCallIdentifier, _ := arwen.ReadAsyncCallIdentifierFromBytes(context.callAsyncIdentifierAsBytes)
 		asynCallIdentifierAsString, _ := json.Marshal(asynCallIdentifier)
-		fmt.Println("from async input -> callerCallID", context.callerCallID, "callerCallAsyncIdentifier", string(asynCallIdentifierAsString))
+		fmt.Println("\tcallerCallID", context.callerCallID)
+		fmt.Println("\tcallerCallAsyncIdentifier", string(asynCallIdentifierAsString))
 		// fmt.Println()
 	}
 }
@@ -163,6 +167,7 @@ func (context *asyncContext) PushState() {
 		asyncCallGroups:            context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
 		callID:                     context.callID,
 		callsCounter:               context.callsCounter,
+		totalCallsCounter:          context.totalCallsCounter,
 		childResults:               context.childResults,
 	}
 
@@ -225,6 +230,7 @@ func (context *asyncContext) Clone() arwen.AsyncContext {
 		asyncCallGroups:            context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
 		callID:                     context.callID,
 		callsCounter:               context.callsCounter,
+		totalCallsCounter:          context.totalCallsCounter,
 		childResults:               context.childResults,
 	}
 }
@@ -601,6 +607,21 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // AsyncContext and work with a clean state before calling Execute(), making
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
+	// TODO matei-p debug
+	fmt.Println("result produced by function", context.host.Runtime().Function(), " call id", context.callID)
+	retData := context.host.Output().GetVMOutput().ReturnData
+	for d := 0; d < len(retData); d++ {
+		data := retData[d]
+		if d != len(retData)-1 {
+			fmt.Println("\t", data)
+		} else {
+			fmt.Println("\t" + string(data))
+		}
+	}
+	// end debug
+	context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
+	context.Save()
+
 	if context.HasPendingCallGroups() {
 		metering := context.host.Metering()
 		gasLeft := metering.GasLeft()
@@ -656,15 +677,19 @@ func (context *asyncContext) Execute() error {
 		return err
 	}
 
+	// context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
+
 	if !context.HasPendingCallGroups() && areAllChildrenComplete {
 		if context.contextCallbackEnabled {
 			logAsync.Trace("async.Execute() execute context callback")
 			context.executeContextCallback()
 		}
-		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes, context.host.Output().GetVMOutput(), nil)
+		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes,
+			context.childResults[0], nil)
+		//context.host.Output().GetVMOutput(), nil)
 	} else {
+		// TODO matei-p eliminate else and save anyway?
 		logAsync.Trace("async.Execute() save")
-		context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
 		err := context.Save()
 		if err != nil {
 			return err
@@ -675,22 +700,40 @@ func (context *asyncContext) Execute() error {
 }
 
 func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes []byte, vmOutput *vmcommon.VMOutput, childErr error) error {
+	// TODO matei-p debug
+	fmt.Println("NotifyOfChildCompletion")
+	fmt.Println("\taddress", string(context.address))
+	fmt.Println("\tcallID", context.callID)
+	fmt.Println("\tcallerAddr", string(context.callerAddr))
+	fmt.Println("\tcallerCallID", context.callerCallID)
+
+	if context.callType == vm.AsynchronousCallBack {
+		return nil
+	}
+
 	asyncCallIdentifier, _ := arwen.ReadAsyncCallIdentifierFromBytes(asyncCallIdentifierAsBytes)
-	if context.callType == vm.AsynchronousCall {
-		parentContext, err := NewSerializedAsyncContextFromStore(context.host.Storage(), context.callerAddr, context.callerCallID)
+	if context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack {
+		parentContext, err := NewSerializedAsyncContextFromStore(context.host.Storage(),
+			context.callerAddr,
+			context.callerCallID)
 		if err != nil {
 			return err
 		}
 
-		asyncCall, err := parentContext.getCallByAsyncIdentifier(asyncCallIdentifier)
-		if err != nil {
-			return err
+		if context.callType == vm.AsynchronousCall {
+			asyncCall, err := parentContext.getCallByAsyncIdentifier(asyncCallIdentifier)
+			if err != nil {
+				return err
+			}
+			isCallBackComplete, _ := context.callCallback(asyncCall, vmOutput, childErr)
+			if !isCallBackComplete {
+				return nil
+			}
+		} else {
+			vmOutput = parentContext.ChildResults[0]
 		}
-		isCallBackComplete, _ := context.callCallback(asyncCall, vmOutput, childErr)
-		if !isCallBackComplete {
-			return nil
-		}
-		vmOutput = context.childResults[0]
+
+		// vmOutput = context.childResults[0]
 		childErr = nil
 	}
 
@@ -726,7 +769,9 @@ func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes 
 	context.Save()
 
 	if context.callsCounter == 0 {
-		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes, vmOutput, childErr)
+		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes,
+			context.childResults[0], childErr)
+		//vmOutput, childErr)
 	}
 
 	return nil
@@ -947,6 +992,7 @@ func (context *asyncContext) Load(address []byte, callID []byte) error {
 	context.returnData = loadedContext.returnData
 	context.asyncCallGroups = loadedContext.asyncCallGroups
 	context.callsCounter = loadedContext.callsCounter
+	context.totalCallsCounter = loadedContext.callsCounter
 	context.childResults = loadedContext.childResults
 
 	return nil
@@ -1187,6 +1233,7 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 		ReturnData:                       context.returnData,
 		AsyncCallGroups:                  context.asyncCallGroups,
 		CallsCounter:                     context.callsCounter,
+		TotalCallsCounter:                context.totalCallsCounter,
 		ChildResults:                     context.childResults,
 	}
 }
@@ -1198,6 +1245,7 @@ func fromSerializable(serializedContext *serializableAsyncContext) *asyncContext
 		address:                    serializedContext.Address,
 		callID:                     serializedContext.CallID,
 		callsCounter:               serializedContext.CallsCounter,
+		totalCallsCounter:          serializedContext.TotalCallsCounter,
 		callerAddr:                 serializedContext.CallerAddr,
 		callerCallID:               serializedContext.CallerCallID,
 		callType:                   serializedContext.CallType,
@@ -1282,7 +1330,8 @@ func (context *asyncContext) GetCallID() []byte {
 
 func (context *asyncContext) GenerateNewCallID() []byte {
 	context.callsCounter++
-	newCallID := append(context.callID, big.NewInt(int64(context.callsCounter)).Bytes()...)
+	context.totalCallsCounter++
+	newCallID := append(context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes()...)
 	newCallID, _ = context.host.Crypto().Sha256(newCallID)
 	return newCallID
 }
