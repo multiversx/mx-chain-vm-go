@@ -5,25 +5,36 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	for {
-		call := context.getNextLocalAsyncCall()
-		if check.IfNil(call) {
-			break
-		}
 
-		err := context.executeAsyncLocalCall(call)
-		if err != nil {
-			return err
+	for _, group := range context.asyncCallGroups {
+		for _, call := range group.AsyncCalls {
+			if call.IsLocal() {
+				err := context.executeAsyncLocalCall(call)
+				if err != nil {
+					return err
+				}
+			}
 		}
-
-		context.closeCompletedAsyncCalls()
 	}
+
+	// for {
+	// 	call := context.getNextLocalAsyncCall()
+	// 	if check.IfNil(call) {
+	// 		break
+	// 	}
+
+	// 	err := context.executeAsyncLocalCall(call)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	context.closeCompletedAsyncCalls()
+	// }
 
 	return nil
 }
@@ -73,8 +84,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 		return arwen.ErrNilDestinationCallVMOutput
 	}
 
-	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
-	// by design. Using it without checking for err is safe here.
+	// // The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
+	// // by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
 	areAllChildrenComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)

@@ -942,12 +942,8 @@ func (host *vmHost) callSCMethod() error {
 		// 	err = host.sendAsyncCallbackToCaller()
 		break
 	case vm.AsynchronousCallBack:
-		originalAsync, errRead := contexts.NewSerializedAsyncContextFromStore(host.Storage(),
-			runtime.GetSCAddress(),
-			originalCallID)
-		if errRead == nil || runtime.Function() != arwen.CallbackFunctionName {
-			err = originalAsync.PostprocessCrossShardCallback(host, originalCallID, asyncCallIdentifier)
-		}
+		async.Load(runtime.GetSCAddress(), originalCallID)
+		async.PostprocessCrossShardCallback(originalCallID, asyncCallIdentifier)
 	default:
 		err = arwen.ErrUnknownCallType
 	}

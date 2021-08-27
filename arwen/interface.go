@@ -333,6 +333,8 @@ type AsyncContext interface {
 	GenerateNewCallID() []byte
 	Clone() AsyncContext
 
+	PostprocessCrossShardCallback(callID []byte, asyncCallIdentifier *AsyncCallIdentifier) error
+
 	AreAllChildrenComplete() (bool, error)
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()

@@ -110,6 +110,7 @@ func (context *asyncContext) InitState() {
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 	context.callback = ""
+	context.callAsyncIdentifierAsBytes = nil
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
@@ -125,14 +126,14 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 
 	if len(context.stateStack) == 0 && input.CallType != vm.AsynchronousCall && input.CallType != vm.AsynchronousCallBack {
 		context.callID = input.CurrentTxHash
+		context.callerCallID = nil
 	} else {
 		context.callID = runtime.GetAndEliminateFirstArgumentFromList()
+		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
 	}
 	fmt.Println("function ", input.Function, "callID", context.callID)
 	context.callType = input.CallType
 	context.callsCounter = 0
-
-	context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
 
 	if input.CallType == vm.AsynchronousCall || input.CallType == vm.AsynchronousCallBack {
 		context.callAsyncIdentifierAsBytes = runtime.GetAndEliminateFirstArgumentFromList()
@@ -151,8 +152,8 @@ func (context *asyncContext) PushState() {
 	newState := &asyncContext{
 		address:                    context.address,
 		callerAddr:                 context.callerAddr,
-		callType:                   context.callType,
 		callerCallID:               context.callerCallID,
+		callType:                   context.callType,
 		callAsyncIdentifierAsBytes: context.callAsyncIdentifierAsBytes,
 		callback:                   context.callback,
 		callbackData:               context.callbackData,
@@ -197,8 +198,8 @@ func (context *asyncContext) PopSetActiveState() {
 	context.address = prevState.address
 	context.callID = prevState.callID
 	context.callerAddr = prevState.callerAddr
-	context.callType = prevState.callType
 	context.callerCallID = prevState.callerCallID
+	context.callType = prevState.callType
 	context.callAsyncIdentifierAsBytes = prevState.callAsyncIdentifierAsBytes
 	context.callback = prevState.callback
 	context.callbackData = prevState.callbackData
@@ -213,8 +214,8 @@ func (context *asyncContext) Clone() arwen.AsyncContext {
 	return &asyncContext{
 		address:                    context.address,
 		callerAddr:                 context.callerAddr,
-		callType:                   context.callType,
 		callerCallID:               context.callerCallID,
+		callType:                   context.callType,
 		callAsyncIdentifierAsBytes: context.callAsyncIdentifierAsBytes,
 		callback:                   context.callback,
 		callbackData:               context.callbackData,
@@ -389,29 +390,6 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 
 	return true
 }
-
-// func (context *asyncContext) callExists(destination []byte) bool {
-// 	_, _, err := context.findCall(destination)
-// 	if err != nil {
-// 		return false
-// 	}
-// 	return true
-// }
-
-// func (context *asyncContext) findCall(destination []byte) (string, int, error) {
-// 	return findCallInAsyncCallGroups(context.asyncCallGroups, destination)
-// }
-
-// func findCallInAsyncCallGroups(asyncCallGroups []*arwen.AsyncCallGroup, destination []byte) (string, int, error) {
-// 	for _, group := range asyncCallGroups {
-// 		callIndex, ok := group.FindByDestination(destination)
-// 		if ok {
-// 			return group.Identifier, callIndex, nil
-// 		}
-// 	}
-
-// 	return "", -1, arwen.ErrAsyncCallNotFound
-// }
 
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
 // extracts the ReturnCode from data provided by the destination call, and updates
@@ -643,11 +621,11 @@ func (context *asyncContext) Execute() error {
 		// AsyncCall that has been just before async.Execute() was called, within
 		// host.callSCMethod(). This happens when a cross-shard callback returns and
 		// finalizes an AsyncCall.
-		context.closeCompletedAsyncCalls()
-		if context.groupCallbacksEnabled {
-			context.executeCompletedGroupCallbacks()
-		}
-		context.deleteCompletedGroups()
+		// context.closeCompletedAsyncCalls()
+		// if context.groupCallbacksEnabled {
+		// 	context.executeCompletedGroupCallbacks()
+		// }
+		// context.deleteCompletedGroups()
 
 		logAsync.Trace("async.Execute() execute remote")
 		// Step 2: in one combined step, do the following:
@@ -658,6 +636,9 @@ func (context *asyncContext) Execute() error {
 		// Note that all async calls below this point are pending by definition.
 		for _, group := range context.asyncCallGroups {
 			for _, call := range group.AsyncCalls {
+				if call.Status != arwen.AsyncCallPending {
+					continue
+				}
 				err = context.executeAsyncCall(call)
 				if err != nil {
 					return err
@@ -709,7 +690,7 @@ func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes 
 		if !isCallBackComplete {
 			return nil
 		}
-		vmOutput = nil
+		vmOutput = context.childResults[0]
 		childErr = nil
 	}
 
@@ -717,11 +698,32 @@ func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes 
 	if context.callType == vm.AsynchronousCallBack {
 		context.Load(context.address, context.callerCallID)
 	} else {
+		if context.callerCallID == nil {
+			return nil
+		}
 		context.Load(context.callerAddr, context.callerCallID)
+	}
+
+	if asyncCallIdentifier != nil {
+		asyncCall, err := context.getCallByAsyncIdentifier(asyncCallIdentifier)
+		if err != nil {
+			return err
+		}
+		// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
+		// by design. Using it without checking for err is safe here.
+		asyncCall.UpdateStatus(vmOutput.ReturnCode)
+
+		context.closeCompletedAsyncCalls()
+		if context.groupCallbacksEnabled {
+			context.executeCompletedGroupCallbacks()
+		}
+		context.deleteCompletedGroups()
 	}
 
 	// if callback from above is not complete we return before this
 	context.DecrementCallsCounter()
+
+	context.Save()
 
 	if context.callsCounter == 0 {
 		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes, vmOutput, childErr)
@@ -785,19 +787,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 // which means that the AsyncContext corresponding to the original transaction
 // must be loaded from storage, and then the corresponding AsyncCall must be
 // deleted from the current AsyncContext.
-func (serializableContext *serializableAsyncContext) PostprocessCrossShardCallback(host arwen.VMHost, callID []byte, asyncCallIdentifier *arwen.AsyncCallIdentifier) error {
-
-	context := fromSerializable(serializableContext)
-	context.host = host
-
-	context.DecrementCallsCounter()
-	if context.IsComplete() {
-		// decrement calls counter of parent (callerAddr, callerCallID)
-	}
-
-	// if prevAsyncContext.areAllChildrenComplete() {
-	// 	prevAsyncContext.callCallbackOfOriginalCaller(host, context)
-	// }
+func (context *asyncContext) PostprocessCrossShardCallback(callID []byte, asyncCallIdentifier *arwen.AsyncCallIdentifier) error {
 
 	currentGroupID := asyncCallIdentifier.GroupIdentifier
 	asyncCallIndex := asyncCallIdentifier.IndexInGroup
@@ -951,9 +941,12 @@ func (context *asyncContext) Load(address []byte, callID []byte) error {
 	context.address = loadedContext.address
 	context.callID = loadedContext.callID
 	context.callerAddr = loadedContext.callerAddr
+	context.callerCallID = loadedContext.callerCallID
+	context.callAsyncIdentifierAsBytes = loadedContext.callAsyncIdentifierAsBytes
 	context.callType = loadedContext.callType
 	context.returnData = loadedContext.returnData
 	context.asyncCallGroups = loadedContext.asyncCallGroups
+	context.callsCounter = loadedContext.callsCounter
 	context.childResults = loadedContext.childResults
 
 	return nil
@@ -1028,8 +1021,6 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	runtime := host.Runtime()
 	output := host.Output()
 
-	context.Save()
-
 	function, arguments, err := context.callArgsParser.ParseData(string(asyncCall.GetData()))
 	if err != nil {
 		return err
@@ -1044,6 +1035,9 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	for _, argument := range arguments {
 		callData.Bytes(argument)
 	}
+
+	// calls counter was incremented
+	context.Save()
 
 	err = output.Transfer(
 		asyncCall.GetDestination(),
@@ -1183,8 +1177,8 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 		Address:                          context.address,
 		CallID:                           context.callID,
 		CallerAddr:                       context.callerAddr,
-		CallType:                         context.callType,
 		CallerCallID:                     context.callerCallID,
+		CallType:                         context.callType,
 		CallerCallAsyncIdentifierAsBytes: context.callAsyncIdentifierAsBytes,
 		Callback:                         context.callback,
 		CallbackData:                     context.callbackData,
@@ -1205,8 +1199,8 @@ func fromSerializable(serializedContext *serializableAsyncContext) *asyncContext
 		callID:                     serializedContext.CallID,
 		callsCounter:               serializedContext.CallsCounter,
 		callerAddr:                 serializedContext.CallerAddr,
-		callType:                   serializedContext.CallType,
 		callerCallID:               serializedContext.CallerCallID,
+		callType:                   serializedContext.CallType,
 		callAsyncIdentifierAsBytes: serializedContext.CallerCallAsyncIdentifierAsBytes,
 		callback:                   serializedContext.Callback,
 		callbackData:               serializedContext.CallbackData,
