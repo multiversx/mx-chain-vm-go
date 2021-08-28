@@ -8,24 +8,31 @@ package elrondapi
 //
 // extern int32_t	v1_4_mBufferNew(void* context);
 // extern int32_t 	v1_4_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
+//
 // extern int32_t 	v1_4_mBufferGetLength(void* context, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
 // extern int32_t	v1_4_mBufferGetByteSlice(void* context, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t resultOffset);
 // extern int32_t	v1_4_mBufferCopyByteSlice(void* context, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t destinationHandle);
+// extern int32_t	v1_4_mBufferEq(void* context, int32_t mBufferHandle1, int32_t mBufferHandle2);
+//
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
 // extern int32_t	v1_4_mBufferAppend(void* context, int32_t accumulatorHandle, int32_t dataHandle);
 // extern int32_t	v1_4_mBufferAppendBytes(void* context, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
+//
 // extern int32_t	v1_4_mBufferToBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t 	v1_4_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+//
 // extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferFinish(void* context, int32_t mBufferHandle);
+//
 // extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
 import "C"
 import (
+	"bytes"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -69,6 +76,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferCopyByteSlice", v1_4_mBufferCopyByteSlice, C.v1_4_mBufferCopyByteSlice)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferEq", v1_4_mBufferEq, C.v1_4_mBufferEq)
 	if err != nil {
 		return nil, err
 	}
@@ -265,6 +277,34 @@ func v1_4_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, start
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(slice)))
 	metering.UseGas(gasToUse)
+
+	return 0
+}
+
+//export v1_4_mBufferEq
+func v1_4_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2 int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferCopyByteSlice
+	metering.UseGas(gasToUse)
+
+	bytes1, err := managedType.GetBytes(mBufferHandle1)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForThisIntNumberOfBytes(len(bytes1))
+
+	bytes2, err := managedType.GetBytes(mBufferHandle2)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForThisIntNumberOfBytes(len(bytes2))
+
+	if bytes.Equal(bytes1, bytes2) {
+		return 1
+	}
 
 	return 0
 }
