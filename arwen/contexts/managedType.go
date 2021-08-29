@@ -214,8 +214,8 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	return value1, value2, nil
 }
 
-// PutBigInt adds the given value to the current values map and returns the handle
-func (context *managedTypesContext) PutBigInt(value int64) int32 {
+// NewBigInt adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigInt(value *big.Int) int32 {
 	newHandle := int32(len(context.managedTypesValues.bigIntValues))
 	for {
 		if _, ok := context.managedTypesValues.bigIntValues[newHandle]; !ok {
@@ -223,8 +223,13 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 		}
 		newHandle++
 	}
-	context.managedTypesValues.bigIntValues[newHandle] = big.NewInt(value)
+	context.managedTypesValues.bigIntValues[newHandle] = value
 	return newHandle
+}
+
+// NewBigIntFromInt64 adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigIntFromInt64(int64Value int64) int32 {
+	return context.NewBigInt(big.NewInt(int64Value))
 }
 
 // ELLIPTIC CURVES
