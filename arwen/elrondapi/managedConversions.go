@@ -5,15 +5,14 @@ import (
 	"errors"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func readManagedVecOfManagedBuffers(
-	host arwen.VMHost,
+	managedType arwen.ManagedTypesContext,
 	managedVecHandle int32,
 ) ([][]byte, uint64, error) {
-	managedType := host.ManagedTypes()
-
 	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
 	if err != nil {
 		return nil, 0, err
@@ -44,12 +43,10 @@ func readManagedVecOfManagedBuffers(
 }
 
 func writeManagedVecOfManagedBuffers(
-	host arwen.VMHost,
+	managedType arwen.ManagedTypesContext,
 	data [][]byte,
 	destinationHandle int32,
-) (uint64, error) {
-	managedType := host.ManagedTypes()
-
+) uint64 {
 	sumOfItemByteLengths := uint64(0)
 	destinationBytes := make([]byte, 4*len(data))
 	dataIndex := 0
@@ -62,7 +59,7 @@ func writeManagedVecOfManagedBuffers(
 
 	managedType.SetBytes(destinationHandle, destinationBytes)
 
-	return sumOfItemByteLengths, nil
+	return sumOfItemByteLengths
 }
 
 func readESDTTransfer(
@@ -87,9 +84,14 @@ func readESDTTransfer(
 		return nil, err
 	}
 
+	tokenType := core.Fungible
+	if nonce > 0 {
+		tokenType = core.NonFungible
+	}
+
 	return &vmcommon.ESDTTransfer{
 		ESDTTokenName:  tokenIdentifier,
-		ESDTTokenType:  0, // TODO
+		ESDTTokenType:  uint32(tokenType),
 		ESDTTokenNonce: nonce,
 		ESDTValue:      value,
 	}, nil

@@ -270,59 +270,6 @@ func v1_4_managedWriteLog(
 	output.WriteLog(runtime.GetSCAddress(), topics, dataBytes)
 }
 
-func readManagedVecOfManagedBuffers(
-	managedType arwen.ManagedTypesContext,
-	managedVecHandle int32,
-) ([][]byte, uint64, error) {
-	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
-	if err != nil {
-		return nil, 0, err
-	}
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(managedVecBytes))
-
-	if len(managedVecBytes)%4 != 0 {
-		return nil, 0, errors.New("invalid managed vector of managed buffers")
-	}
-
-	numBuffers := len(managedVecBytes) / 4
-	result := make([][]byte, 0, numBuffers)
-	sumOfItemByteLengths := uint64(0)
-	for i := 0; i < len(managedVecBytes); i += 4 {
-		itemHandle := int32(binary.BigEndian.Uint32(managedVecBytes[i : i+4]))
-
-		itemBytes, err := managedType.GetBytes(itemHandle)
-		if err != nil {
-			return nil, 0, err
-		}
-		managedType.ConsumeGasForThisIntNumberOfBytes(len(itemBytes))
-
-		sumOfItemByteLengths += uint64(len(itemBytes))
-		result = append(result, itemBytes)
-	}
-
-	return result, sumOfItemByteLengths, nil
-}
-
-func writeManagedVecOfManagedBuffers(
-	managedType arwen.ManagedTypesContext,
-	data [][]byte,
-	destinationHandle int32,
-) uint64 {
-	sumOfItemByteLengths := uint64(0)
-	destinationBytes := make([]byte, 4*len(data))
-	dataIndex := 0
-	for _, itemBytes := range data {
-		sumOfItemByteLengths += uint64(len(itemBytes))
-		itemHandle := managedType.NewManagedBufferFromBytes(itemBytes)
-		binary.BigEndian.PutUint32(destinationBytes[dataIndex:dataIndex+4], uint32(itemHandle))
-		dataIndex += 4
-	}
-
-	managedType.SetBytes(destinationHandle, destinationBytes)
-
-	return sumOfItemByteLengths
-}
-
 //export v1_4_managedGetOriginalTxHash
 func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
