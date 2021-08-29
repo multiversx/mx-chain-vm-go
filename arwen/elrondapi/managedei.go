@@ -19,8 +19,8 @@ package elrondapi
 // extern int32_t	v1_4_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedDelegateExecution(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddress, int32_t resultHandle);
+// extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddress, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t dataHandle);
@@ -37,7 +37,6 @@ package elrondapi
 import "C"
 
 import (
-	"encoding/binary"
 	"errors"
 	"math/big"
 	"unsafe"
@@ -474,7 +473,6 @@ func readDestinationValueFunctionArguments(
 	argumentsHandle int32,
 ) (*vmInputData, error) {
 	managedType := vmHost.ManagedTypes()
-	runtime := vmHost.Runtime()
 
 	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
 	if err != nil {
@@ -483,7 +481,6 @@ func readDestinationValueFunctionArguments(
 
 	function, err := managedType.GetBytes(functionHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return nil, err
 	}
 	vmInput.function = string(function)
@@ -498,7 +495,6 @@ func readDestinationValueArguments(
 	argumentsHandle int32,
 ) (*vmInputData, error) {
 	managedType := vmHost.ManagedTypes()
-	runtime := vmHost.Runtime()
 	metering := vmHost.Metering()
 
 	var err error
@@ -506,19 +502,16 @@ func readDestinationValueArguments(
 
 	vmInput.destination, err = managedType.GetBytes(destHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return nil, err
 	}
 
 	vmInput.value, err = managedType.GetBigInt(valueHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return nil, err
 	}
 
 	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return nil, err
 	}
 	vmInput.arguments = data
@@ -538,7 +531,7 @@ func v1_4_managedUpgradeFromSourceContract(
 	addressHandle int32,
 	codeMetadataHandle int32,
 	argumentsHandle int32,
-	resultsHandle int32,
+	resultHandle int32,
 ) {
 	vmHost := arwen.GetVMHost(context)
 	runtime := vmHost.Runtime()
@@ -549,19 +542,17 @@ func v1_4_managedUpgradeFromSourceContract(
 	metering.UseGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
-	if err != nil {
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	sourceContractAddress, err := managedType.GetBytes(addressHandle)
-	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -576,16 +567,10 @@ func v1_4_managedUpgradeFromSourceContract(
 		gas,
 		codeMetadata,
 	)
-
-	returnData := vmHost.Output().ReturnData()
-	if len(returnData) > lenReturnData {
-		_ = writeManagedVecOfManagedBuffers(managedType, returnData[lenReturnData:], resultsHandle)
-	} else {
-		managedType.SetBytes(resultsHandle, make([]byte, 0))
-	}
+	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
 }
 
-//export v1_4_upgradeContract
+//export v1_4_managedUpgradeContract
 func v1_4_managedUpgradeContract(
 	context unsafe.Pointer,
 	destHandle int32,
@@ -594,7 +579,7 @@ func v1_4_managedUpgradeContract(
 	valueHandle int32,
 	codeMetadataHandle int32,
 	argumentsHandle int32,
-	resultsHandle int32,
+	resultHandle int32,
 ) {
 	vmHost := arwen.GetVMHost(context)
 	runtime := vmHost.Runtime()
@@ -605,19 +590,17 @@ func v1_4_managedUpgradeContract(
 	metering.UseGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
-	if err != nil {
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if err != nil {
-		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -628,11 +611,126 @@ func v1_4_managedUpgradeContract(
 	lenReturnData := len(vmHost.Output().ReturnData())
 
 	upgradeContract(vmHost, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
+	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+}
 
+//export v1_4_managedDeployFromSourceContract
+func v1_4_managedDeployFromSourceContract(
+	context unsafe.Pointer,
+	gas int64,
+	valueHandle int32,
+	addressHandle int32,
+	codeMetadataHandle int32,
+	argumentsHandle int32,
+	resultAddress int32,
+	resultHandle int32,
+) int32 {
+	vmHost := arwen.GetVMHost(context)
+	runtime := vmHost.Runtime()
+	metering := vmHost.Metering()
+	managedType := vmHost.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	vmInput, err := readDestinationValueArguments(vmHost, addressHandle, valueHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(vmHost.Output().ReturnData())
+
+	newAddress, err := DeployFromSourceContractWithTypedArgs(
+		vmHost,
+		vmInput.destination,
+		codeMetadata,
+		vmInput.value,
+		vmInput.arguments,
+		gas,
+	)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	managedType.SetBytes(resultAddress, newAddress)
+	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+
+	return 0
+}
+
+//export v1_4_managedCreateContract
+func v1_4_managedCreateContract(
+	context unsafe.Pointer,
+	gas int64,
+	valueHandle int32,
+	codeHandle int32,
+	codeMetadataHandle int32,
+	argumentsHandle int32,
+	resultAddress int32,
+	resultHandle int32,
+) int32 {
+	vmHost := arwen.GetVMHost(context)
+	runtime := vmHost.Runtime()
+	metering := vmHost.Metering()
+	managedType := vmHost.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	sender := runtime.GetSCAddress()
+	value, err := managedType.GetBigInt(valueHandle)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
+	metering.UseGas(gasToUse)
+
+	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	code, err := managedType.GetBytes(codeHandle)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(vmHost.Output().ReturnData())
+	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, vmHost, runtime)
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	managedType.SetBytes(resultAddress, newAddress)
+	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+
+	return 0
+}
+
+func setReturnDataIfExists(
+	vmHost arwen.VMHost,
+	oldLen int,
+	resultHandle int32,
+) {
 	returnData := vmHost.Output().ReturnData()
-	if len(returnData) > lenReturnData {
-		_ = writeManagedVecOfManagedBuffers(managedType, returnData[lenReturnData:], resultsHandle)
+	if len(returnData) > oldLen {
+		_ = writeManagedVecOfManagedBuffers(vmHost.ManagedTypes(), returnData[oldLen:], resultHandle)
 	} else {
-		managedType.SetBytes(resultsHandle, make([]byte, 0))
+		vmHost.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	}
 }
