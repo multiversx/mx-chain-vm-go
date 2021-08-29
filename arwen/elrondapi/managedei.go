@@ -17,8 +17,8 @@ package elrondapi
 // extern int32_t	v1_4_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteOnDestContextByCaller(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedDelegateExecution(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t	v1_4_managedDelegateExecution(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddress, int32_t resultHandle);
 // extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddress, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
@@ -44,6 +44,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
@@ -495,6 +496,48 @@ func readDestinationValueArguments(
 	argumentsHandle int32,
 ) (*vmInputData, error) {
 	managedType := vmHost.ManagedTypes()
+
+	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	vmInput.value, err = managedType.GetBigInt(valueHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	return vmInput, err
+}
+
+func readDestinationFunctionArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+
+	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	function, err := managedType.GetBytes(functionHandle)
+	if err != nil {
+		return nil, err
+	}
+	vmInput.function = string(function)
+
+	return vmInput, err
+}
+
+func readDestinationArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
 	metering := vmHost.Metering()
 
 	var err error
@@ -505,11 +548,7 @@ func readDestinationValueArguments(
 		return nil, err
 	}
 
-	vmInput.value, err = managedType.GetBigInt(valueHandle)
-	if err != nil {
-		return nil, err
-	}
-
+	vmInput.value = big.NewInt(0)
 	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
 	if err != nil {
 		return nil, err
@@ -733,4 +772,233 @@ func setReturnDataIfExists(
 	} else {
 		vmHost.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	}
+}
+
+//export v1_4_managedExecuteReadOnly
+func v1_4_managedExecuteReadOnly(
+	context unsafe.Pointer,
+	gas int64,
+	addressHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+
+	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := ExecuteReadOnlyWithTypedArguments(
+		host,
+		gas,
+		[]byte(vmInput.function),
+		vmInput.destination,
+		vmInput.arguments,
+	)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	return returnVal
+}
+
+//export v1_4_managedDelegateExecution
+func v1_4_managedDelegateExecution(
+	context unsafe.Pointer,
+	gas int64,
+	addressHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+
+	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := DelegateExecutionWithTypedArgs(
+		host,
+		gas,
+		[]byte(vmInput.function),
+		vmInput.destination,
+		vmInput.arguments,
+	)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	return returnVal
+}
+
+//export v1_4_managedExecuteOnSameContext
+func v1_4_managedExecuteOnSameContext(
+	context unsafe.Pointer,
+	gas int64,
+	addressHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+
+	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := ExecuteOnSameContextWithTypedArgs(
+		host,
+		gas,
+		vmInput.value,
+		[]byte(vmInput.function),
+		vmInput.destination,
+		vmInput.arguments,
+	)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	return returnVal
+}
+
+//export v1_4_managedExecuteOnDestContextByCaller
+func v1_4_managedExecuteOnDestContextByCaller(
+	context unsafe.Pointer,
+	gas int64,
+	addressHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+
+	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
+		host,
+		gas,
+		vmInput.value,
+		[]byte(vmInput.function),
+		vmInput.destination,
+		vmInput.arguments,
+	)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	return returnVal
+}
+
+//export v1_4_managedExecuteOnDestContext
+func v1_4_managedExecuteOnDestContext(
+	context unsafe.Pointer,
+	gas int64,
+	addressHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	resultHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+
+	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	lenReturnData := len(host.Output().ReturnData())
+	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
+		host,
+		gas,
+		vmInput.value,
+		[]byte(vmInput.function),
+		vmInput.destination,
+		vmInput.arguments,
+	)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	return returnVal
+}
+
+func readESDTTransfers(
+	host arwen.VMHost,
+	tokenTransfersHandle int32,
+) ([]*vmcommon.ESDTTransfer, error) {
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, tokenTransfersHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
+	metering.UseGas(gasToUse)
+
+	esdtTransfers := make([]*vmcommon.ESDTTransfer, len(data))
+	for i, oneTransferData := range data {
+		esdtTransfers[i], err = readESDTTransfer(host, oneTransferData)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return esdtTransfers, nil
+}
+
+//export v1_4_managedMultiTransferESDTNFTExecute
+func v1_4_managedMultiTransferESDTNFTExecute(
+	context unsafe.Pointer,
+	dstHandle int32,
+	tokenTransfersHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+
+	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	transfers, err := readESDTTransfers(host, tokenTransfersHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return TransferESDTNFTExecuteWithTypedArgs(
+		host,
+		vmInput.destination,
+		transfers,
+		gasLimit,
+		[]byte(vmInput.function),
+		vmInput.arguments,
+	)
+}
+
+//export v1_4_managedTransferValueExecute
+func v1_4_managedTransferValueExecute(
+	context unsafe.Pointer,
+	dstHandle int32,
+	valueHandle int32,
+	gasLimit int64,
+	functionHandle int32,
+	argumentsHandle int32,
+) int32 {
+	host := arwen.GetVMHost(context)
+
+	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return TransferValueExecuteWithTypedArgs(
+		host,
+		vmInput.destination,
+		vmInput.value,
+		gasLimit,
+		vmInput.destination,
+		vmInput.arguments,
+	)
 }
