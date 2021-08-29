@@ -249,8 +249,3 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 func (host *VMHostMock) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
 	return nil, nil
 }
-
-// EliminateAndReturnFirstArgument mock method
-func (host *VMHostMock) EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte {
-	return nil
-}

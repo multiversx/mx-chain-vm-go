@@ -251,13 +251,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
-func (host *vmHost) EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte {
-	var firstArgument []byte
-	firstArgument = input.Arguments[0]
-	input.Arguments = input.Arguments[1:]
-	return firstArgument
-}
-
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	output := host.Output()
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)

@@ -150,7 +150,7 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	returnData.Int64(int64(host.Metering().GasLeft()))
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
-	// TODO matei-p replace with tx / gas logging
+	// TODO matei-p remove for logging
 	// fmt.Println(
 	// 	"callID\t", host.Async().GetCallID(),
 	// 	"for contract ", string(host.Runtime().GetSCAddress()), "/ "+crtFunctionCalled+"\t",

@@ -54,9 +54,6 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
-
-	// TODO matei-p is this used?
-	EliminateAndReturnFirstArgument(input *vmcommon.ContractCallInput) []byte
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context

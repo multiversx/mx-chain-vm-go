@@ -133,6 +133,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		context.callID = runtime.GetAndEliminateFirstArgumentFromList()
 		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
 	}
+	// TODO matei-p remove for logging
 	fmt.Println("function ", input.Function, "address", string(context.address))
 	fmt.Println("\tcallID", context.callID)
 	context.callType = input.CallType
@@ -607,7 +608,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // AsyncContext and work with a clean state before calling Execute(), making
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
-	// TODO matei-p debug
+	// TODO matei-p remove for logging
 	// fmt.Println("result produced by function", context.host.Runtime().Function(), " call id", context.callID)
 	// retData := context.host.Output().GetVMOutput().ReturnData
 	// for d := 0; d < len(retData); d++ {
@@ -692,7 +693,7 @@ func (context *asyncContext) checkContextCompletion() {
 }
 
 func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
-	// TODO matei-p debug
+	// TODO matei-p remove for logging
 	fmt.Println("NotifyOfChildCompletion")
 	fmt.Println("\taddress", string(context.address))
 	fmt.Println("\tcallID", context.callID)
@@ -706,6 +707,7 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 	var asyncCallIdentifier *arwen.AsyncCallIdentifier
 	var err error
 
+	// this is nil if the completed child was a sync call
 	if context.callAsyncIdentifierAsBytes != nil {
 		asyncCallIdentifier, err = arwen.ReadAsyncCallIdentifierFromBytes(context.callAsyncIdentifierAsBytes)
 		if err != nil {
@@ -839,37 +841,39 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 // deleted from the current AsyncContext.
 func (context *asyncContext) PostprocessCrossShardCallback(callID []byte, asyncCallIdentifier *arwen.AsyncCallIdentifier) error {
 
-	currentGroupID := asyncCallIdentifier.GroupIdentifier
-	asyncCallIndex := asyncCallIdentifier.IndexInGroup
+	// TODO matei-p uncomment or delete if function is no longer used
 
-	currentCallGroup, ok := context.GetCallGroup(currentGroupID)
-	if !ok {
-		return arwen.ErrCallBackFuncNotExpected
-	}
+	// currentGroupID := asyncCallIdentifier.GroupIdentifier
+	// asyncCallIndex := asyncCallIdentifier.IndexInGroup
 
-	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
-	if currentCallGroup.HasPendingCalls() {
-		return nil
-	}
+	// currentCallGroup, ok := context.GetCallGroup(currentGroupID)
+	// if !ok {
+	// 	return arwen.ErrCallBackFuncNotExpected
+	// }
 
-	if context.groupCallbacksEnabled {
-		// The current group expects no more callbacks, so its own callback can be
-		// executed now.
-		context.executeCallGroupCallback(currentCallGroup)
-	}
+	// currentCallGroup.DeleteAsyncCall(asyncCallIndex)
+	// if currentCallGroup.HasPendingCalls() {
+	// 	return nil
+	// }
 
-	context.deleteCallGroupByID(currentGroupID)
-	// Are we still waiting for callbacks to return?
-	if context.HasPendingCallGroups() {
-		return nil
-	}
+	// if context.groupCallbacksEnabled {
+	// 	// The current group expects no more callbacks, so its own callback can be
+	// 	// executed now.
+	// 	context.executeCallGroupCallback(currentCallGroup)
+	// }
 
-	// There are no more callbacks to return from other shards. The context can
-	// be deleted from storage.
-	err := context.Delete()
-	if err != nil {
-		return err
-	}
+	// context.deleteCallGroupByID(currentGroupID)
+	// // Are we still waiting for callbacks to return?
+	// if context.HasPendingCallGroups() {
+	// 	return nil
+	// }
+
+	// // There are no more callbacks to return from other shards. The context can
+	// // be deleted from storage.
+	// err := context.Delete()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
