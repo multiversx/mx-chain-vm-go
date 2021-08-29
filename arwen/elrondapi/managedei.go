@@ -7,14 +7,17 @@ package elrondapi
 // typedef int int32_t;
 //
 // extern void	v1_4_managedSignalError(void* context, int32_t errHandle1);
-//
+// extern void	v1_4_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
 //
 import "C"
 
 import (
+	"encoding/binary"
+	"errors"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
@@ -23,6 +26,11 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("managedSignalError", v1_4_managedSignalError, C.v1_4_managedSignalError)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedWriteLog", v1_4_managedWriteLog, C.v1_4_managedWriteLog)
 	if err != nil {
 		return nil, err
 	}
@@ -46,4 +54,74 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	managedType.ConsumeGasForThisIntNumberOfBytes(len(errBytes))
 
 	runtime.SignalUserError(string(errBytes))
+}
+
+//export v1_4_managedWriteLog
+func v1_4_managedWriteLog(
+	context unsafe.Pointer,
+	topicsHandle int32,
+	dataHandle int32,
+) {
+
+	host := arwen.GetVMHost(context)
+	runtime := arwen.GetRuntimeContext(context)
+	output := arwen.GetOutputContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	topics, sumOfTopicByteLengths, err := readManagedVecOfManagedBuffers(host, topicsHandle)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	dataBytes, err := managedType.GetBytes(dataHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
+	managedType.ConsumeGasForThisIntNumberOfBytes(len(dataBytes))
+	dataByteLen := uint64(len(dataBytes))
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.Log
+	gasForData := math.MulUint64(
+		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
+		uint64(sumOfTopicByteLengths+dataByteLen))
+	gasToUse = math.AddUint64(gasToUse, gasForData)
+	metering.UseGas(gasToUse)
+
+	output.WriteLog(runtime.GetSCAddress(), topics, dataBytes)
+}
+
+func readManagedVecOfManagedBuffers(
+	host arwen.VMHost,
+	managedVecHandle int32,
+) ([][]byte, uint64, error) {
+	managedType := host.ManagedTypes()
+
+	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
+	if err != nil {
+		return nil, 0, err
+	}
+	managedType.ConsumeGasForThisIntNumberOfBytes(len(managedVecBytes))
+
+	if len(managedVecBytes)%4 != 0 {
+		return nil, 0, errors.New("invalid managed vector of managed buffers")
+	}
+
+	numBuffers := len(managedVecBytes) / 4
+	result := make([][]byte, 0, numBuffers)
+	sumOfItemByteLengths := uint64(0)
+	for i := 0; i < len(managedVecBytes); i += 4 {
+		itemHandle := int32(binary.BigEndian.Uint32(managedVecBytes[i : i+4]))
+
+		itemBytes, err := managedType.GetBytes(itemHandle)
+		if err != nil {
+			return nil, 0, err
+		}
+		managedType.ConsumeGasForThisIntNumberOfBytes(len(itemBytes))
+
+		sumOfItemByteLengths += uint64(len(itemBytes))
+		result = append(result, itemBytes)
+	}
+
+	return result, sumOfItemByteLengths, nil
 }
