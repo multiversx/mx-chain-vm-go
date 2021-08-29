@@ -39,6 +39,7 @@ import "C"
 import (
 	"encoding/binary"
 	"errors"
+	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -242,14 +243,12 @@ func v1_4_managedWriteLog(
 	topicsHandle int32,
 	dataHandle int32,
 ) {
-
-	host := arwen.GetVMHost(context)
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 
-	topics, sumOfTopicByteLengths, err := readManagedVecOfManagedBuffers(host, topicsHandle)
+	topics, sumOfTopicByteLengths, err := readManagedVecOfManagedBuffers(managedType, topicsHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -264,7 +263,7 @@ func v1_4_managedWriteLog(
 	gasToUse := metering.GasSchedule().ElrondAPICost.Log
 	gasForData := math.MulUint64(
 		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
-		uint64(sumOfTopicByteLengths+dataByteLen))
+		sumOfTopicByteLengths+dataByteLen)
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseGas(gasToUse)
 
@@ -272,11 +271,9 @@ func v1_4_managedWriteLog(
 }
 
 func readManagedVecOfManagedBuffers(
-	host arwen.VMHost,
+	managedType arwen.ManagedTypesContext,
 	managedVecHandle int32,
 ) ([][]byte, uint64, error) {
-	managedType := host.ManagedTypes()
-
 	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
 	if err != nil {
 		return nil, 0, err
@@ -307,12 +304,10 @@ func readManagedVecOfManagedBuffers(
 }
 
 func writeManagedVecOfManagedBuffers(
-	host arwen.VMHost,
+	managedType arwen.ManagedTypesContext,
 	data [][]byte,
 	destinationHandle int32,
-) (uint64, error) {
-	managedType := host.ManagedTypes()
-
+) uint64 {
 	sumOfItemByteLengths := uint64(0)
 	destinationBytes := make([]byte, 4*len(data))
 	dataIndex := 0
@@ -325,7 +320,7 @@ func writeManagedVecOfManagedBuffers(
 
 	managedType.SetBytes(destinationHandle, destinationBytes)
 
-	return sumOfItemByteLengths, nil
+	return sumOfItemByteLengths
 }
 
 //export v1_4_managedGetOriginalTxHash
@@ -460,11 +455,237 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 	managedType.SetBytes(propertiesHandle, esdtToken.Properties)
 	if esdtToken.TokenMetaData != nil {
 		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
+		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Hash))
 		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
+		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Name))
 		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
+		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Attributes))
 		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
+		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Creator))
 		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
 		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
 
+		totalBytes := writeManagedVecOfManagedBuffers(managedType, esdtToken.TokenMetaData.URIs, urisHandle)
+		managedType.ConsumeGasForThisIntNumberOfBytes(int(totalBytes))
+	}
+}
+
+//export v1_4_managedAsyncCall
+func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, dataHandle int32) {
+	vmHost := arwen.GetVMHost(context)
+	runtime := vmHost.Runtime()
+	metering := vmHost.Metering()
+	managedType := vmHost.ManagedTypes()
+
+	gasSchedule := metering.GasSchedule()
+	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
+	metering.UseGas(gasToUse)
+
+	address, err := managedType.GetBytes(destHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	data, err := managedType.GetBytes(dataHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	value, err := managedType.GetBigInt(valueHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(len(data)))
+	metering.UseGas(gasToUse)
+
+	err = runtime.ExecuteAsyncCall(address, data, value.Bytes())
+	if errors.Is(err, arwen.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+}
+
+type vmInputData struct {
+	destination []byte
+	function    string
+	value       *big.Int
+	arguments   [][]byte
+}
+
+func readDestinationValueFunctionArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+	runtime := vmHost.Runtime()
+
+	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	function, err := managedType.GetBytes(functionHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return nil, err
+	}
+	vmInput.function = string(function)
+
+	return vmInput, err
+}
+
+func readDestinationValueArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	valueHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+	runtime := vmHost.Runtime()
+	metering := vmHost.Metering()
+
+	var err error
+	vmInput := &vmInputData{}
+
+	vmInput.destination, err = managedType.GetBytes(destHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return nil, err
+	}
+
+	vmInput.value, err = managedType.GetBigInt(valueHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return nil, err
+	}
+
+	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return nil, err
+	}
+	vmInput.arguments = data
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
+	metering.UseGas(gasToUse)
+
+	return vmInput, err
+}
+
+//export v1_4_managedUpgradeFromSourceContract
+func v1_4_managedUpgradeFromSourceContract(
+	context unsafe.Pointer,
+	destHandle int32,
+	gas int64,
+	valueHandle int32,
+	addressHandle int32,
+	codeMetadataHandle int32,
+	argumentsHandle int32,
+	resultsHandle int32,
+) {
+	vmHost := arwen.GetVMHost(context)
+	runtime := vmHost.Runtime()
+	metering := vmHost.Metering()
+	managedType := vmHost.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
+	if err != nil {
+		return
+	}
+
+	sourceContractAddress, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	lenReturnData := len(vmHost.Output().ReturnData())
+
+	UpgradeFromSourceContractWithTypedArgs(
+		vmHost,
+		sourceContractAddress,
+		vmInput.destination,
+		vmInput.value.Bytes(),
+		vmInput.arguments,
+		gas,
+		codeMetadata,
+	)
+
+	returnData := vmHost.Output().ReturnData()
+	if len(returnData) > lenReturnData {
+		_ = writeManagedVecOfManagedBuffers(managedType, returnData[lenReturnData:], resultsHandle)
+	} else {
+		managedType.SetBytes(resultsHandle, make([]byte, 0))
+	}
+}
+
+//export v1_4_upgradeContract
+func v1_4_managedUpgradeContract(
+	context unsafe.Pointer,
+	destHandle int32,
+	gas int64,
+	codeHandle int32,
+	valueHandle int32,
+	codeMetadataHandle int32,
+	argumentsHandle int32,
+	resultsHandle int32,
+) {
+	vmHost := arwen.GetVMHost(context)
+	runtime := vmHost.Runtime()
+	metering := vmHost.Metering()
+	managedType := vmHost.ManagedTypes()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseGas(gasToUse)
+
+	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
+	if err != nil {
+		return
+	}
+
+	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	code, err := managedType.GetBytes(codeHandle)
+	if err != nil {
+		_ = arwen.WithFaultAndHost(vmHost, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	lenReturnData := len(vmHost.Output().ReturnData())
+
+	upgradeContract(vmHost, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
+
+	returnData := vmHost.Output().ReturnData()
+	if len(returnData) > lenReturnData {
+		_ = writeManagedVecOfManagedBuffers(managedType, returnData[lenReturnData:], resultsHandle)
+	} else {
+		managedType.SetBytes(resultsHandle, make([]byte, 0))
 	}
 }
