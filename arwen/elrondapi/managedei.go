@@ -188,3 +188,25 @@ func readManagedVecOfManagedBuffers(
 
 	return result, sumOfItemByteLengths, nil
 }
+
+func writeManagedVecOfManagedBuffers(
+	host arwen.VMHost,
+	data [][]byte,
+	destinationHandle int32,
+) (uint64, error) {
+	managedType := host.ManagedTypes()
+
+	sumOfItemByteLengths := uint64(0)
+	destinationBytes := make([]byte, 4*len(data))
+	dataIndex := 0
+	for _, itemBytes := range data {
+		sumOfItemByteLengths += uint64(len(itemBytes))
+		itemHandle := managedType.NewManagedBufferFromBytes(itemBytes)
+		binary.BigEndian.PutUint32(destinationBytes[dataIndex:dataIndex+4], uint32(itemHandle))
+		dataIndex += 4
+	}
+
+	managedType.SetBytes(destinationHandle, destinationBytes)
+
+	return sumOfItemByteLengths, nil
+}
