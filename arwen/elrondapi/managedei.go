@@ -6,6 +6,9 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
+// extern void	v1_4_managedSCAddress(void *context, int32_t addressHandle);
+// extern void	v1_4_managedOwnerAddress(void *context, int32_t addressHandle);
+// extern void	v1_4_managedCaller(void *context, int32_t addressHandle);
 // extern void	v1_4_managedSignalError(void* context, int32_t errHandle1);
 // extern void	v1_4_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
 //
@@ -25,7 +28,22 @@ import (
 func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("managedSignalError", v1_4_managedSignalError, C.v1_4_managedSignalError)
+	imports, err := imports.Append("managedSCAddress", v1_4_managedSCAddress, C.v1_4_managedSCAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedOwnerAddress", v1_4_managedOwnerAddress, C.v1_4_managedOwnerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedCaller", v1_4_managedCaller, C.v1_4_managedCaller)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedSignalError", v1_4_managedSignalError, C.v1_4_managedSignalError)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +54,51 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	return imports, nil
+}
+
+//export v1_4_managedSCAddress
+func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
+	metering.UseGas(gasToUse)
+
+	scAddress := runtime.GetSCAddress()
+
+	managedType.SetBytes(destinationHandle, scAddress)
+}
+
+//export v1_4_managedOwnerAddress
+func v1_4_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
+	managedType := arwen.GetManagedTypesContext(context)
+	blockchain := arwen.GetBlockchainContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwnerAddress
+	metering.UseGas(gasToUse)
+
+	owner, err := blockchain.GetOwnerAddress()
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	managedType.SetBytes(destinationHandle, owner)
+}
+
+//export v1_4_managedCaller
+func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCaller
+	metering.UseGas(gasToUse)
+
+	caller := runtime.GetVMInput().CallerAddr
+	managedType.SetBytes(destinationHandle, caller)
 }
 
 //export v1_4_managedSignalError
