@@ -78,8 +78,8 @@ func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	managedTypesContext, _ := NewManagedTypesContext(host)
 	managedTypesContext.InitState()
 
-	index1 := managedTypesContext.PutBigInt(value1)
-	index2 := managedTypesContext.PutBigInt(value2)
+	index1 := managedTypesContext.NewBigIntFromInt64(value1)
+	index2 := managedTypesContext.NewBigIntFromInt64(value2)
 	ecIndex1 := managedTypesContext.PutEllipticCurve(p224ec)
 	ecIndex2 := managedTypesContext.PutEllipticCurve(p256ec)
 
@@ -126,9 +126,9 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	managedTypesContext.InitState()
 
 	// Create 2 bigInt,2 EC, 2 managedBuffers on the active state
-	index1 := managedTypesContext.PutBigInt(value1)
+	index1 := managedTypesContext.NewBigIntFromInt64(value1)
 	require.Equal(t, int32(0), index1)
-	index2 := managedTypesContext.PutBigInt(value2)
+	index2 := managedTypesContext.NewBigIntFromInt64(value2)
 	require.Equal(t, int32(1), index2)
 
 	bigValue1, err := managedTypesContext.GetBigInt(index1)
@@ -208,7 +208,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, int32(-1), p256UCompressedGasCostMultiplier)
 
 	// Add a value on the current active state
-	index3 := managedTypesContext.PutBigInt(value3)
+	index3 := managedTypesContext.NewBigIntFromInt64(value3)
 	require.Equal(t, int32(0), index3)
 	bigValue3, err := managedTypesContext.GetBigInt(index3)
 	require.Equal(t, big.NewInt(value3), bigValue3)
@@ -254,7 +254,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
 
 	value4 := int64(84)
-	index4 := managedTypesContext.PutBigInt(value4)
+	index4 := managedTypesContext.NewBigIntFromInt64(value4)
 	require.Equal(t, int32(0), index4)
 	bigValue4, err := managedTypesContext.GetBigInt(index4)
 	require.Equal(t, big.NewInt(value4), bigValue4)
@@ -320,11 +320,11 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	value1, value2, value3, value4 := int64(100), int64(200), int64(-42), int64(-80)
 	managedTypesContext, _ := NewManagedTypesContext(host)
 
-	index1 := managedTypesContext.PutBigInt(value1)
+	index1 := managedTypesContext.NewBigIntFromInt64(value1)
 	require.Equal(t, int32(0), index1)
-	index2 := managedTypesContext.PutBigInt(value2)
+	index2 := managedTypesContext.NewBigIntFromInt64(value2)
 	require.Equal(t, int32(1), index2)
-	index3 := managedTypesContext.PutBigInt(value3)
+	index3 := managedTypesContext.NewBigIntFromInt64(value3)
 	require.Equal(t, int32(2), index3)
 
 	bigValue1, err := managedTypesContext.GetBigInt(index1)
@@ -339,7 +339,7 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	bigValue4 = managedTypesContext.GetBigIntOrCreate(3)
 	require.Equal(t, big.NewInt(0), bigValue4)
 
-	index4 := managedTypesContext.PutBigInt(value4)
+	index4 := managedTypesContext.NewBigIntFromInt64(value4)
 	require.Equal(t, int32(4), index4)
 	bigValue4 = managedTypesContext.GetBigIntOrCreate(4)
 	require.Equal(t, big.NewInt(value4), bigValue4)

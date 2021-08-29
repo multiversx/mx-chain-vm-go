@@ -22,6 +22,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
@@ -209,4 +210,51 @@ func writeManagedVecOfManagedBuffers(
 	managedType.SetBytes(destinationHandle, destinationBytes)
 
 	return sumOfItemByteLengths, nil
+}
+
+func readESDTTransfer(
+	host arwen.VMHost,
+	data []byte,
+) (*vmcommon.ESDTTransfer, error) {
+	managedType := host.ManagedTypes()
+
+	if len(data) != 16 {
+		return nil, errors.New("invalid ESDT transfer object encoding")
+	}
+
+	tokenIdentifierHandle := int32(binary.BigEndian.Uint32(data[0:4]))
+	tokenIdentifier, err := managedType.GetBytes(tokenIdentifierHandle)
+	if err != nil {
+		return nil, err
+	}
+	nonce := binary.BigEndian.Uint64(data[4:12])
+	valueHandle := int32(binary.BigEndian.Uint32(data[12:16]))
+	value, err := managedType.GetBigInt(valueHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	return &vmcommon.ESDTTransfer{
+		ESDTTokenName:  tokenIdentifier,
+		ESDTTokenType:  0, // TODO
+		ESDTTokenNonce: nonce,
+		ESDTValue:      value,
+	}, nil
+}
+
+func writeESDTTransfer(
+	host arwen.VMHost,
+	object *vmcommon.ESDTTransfer,
+) ([]byte, error) {
+	managedType := host.ManagedTypes()
+
+	tokenIdentifierHandle := managedType.NewManagedBufferFromBytes(object.ESDTTokenName)
+	valueHandle := managedType.NewBigInt(object.ESDTValue)
+
+	destinationBytes := make([]byte, 16)
+	binary.BigEndian.PutUint32(destinationBytes[0:4], uint32(tokenIdentifierHandle))
+	binary.BigEndian.PutUint64(destinationBytes[4:12], object.ESDTTokenNonce)
+	binary.BigEndian.PutUint32(destinationBytes[12:16], uint32(valueHandle))
+
+	return destinationBytes, nil
 }
