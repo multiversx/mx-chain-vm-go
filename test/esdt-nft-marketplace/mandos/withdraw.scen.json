@@ -52,7 +52,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:bidCutPerecentage": "1000",
+                        "str:bidCutPercentage": "1000",
                         "str:auctionForToken|nested:str:NFT-123456|u64:1": ""
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"

@@ -72,7 +72,7 @@
                         }
                     },
                     "storage": {
-                        "str:bidCutPerecentage": "1000",
+                        "str:bidCutPercentage": "1000",
                         "str:auctionForToken|nested:str:NFT-123456|u64:1": {
                             "0-payment_token": "nested:str:EGLD|u64:0",
                             "1-min_bid": "biguint:100",
