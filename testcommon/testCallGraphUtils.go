@@ -283,8 +283,33 @@ func CreateGraphTestAsyncCallsAsync() *TestCallGraph {
 
 	callGraph.AddNode("sc1", "cb1")
 
-	sc2f3 := callGraph.AddNode("sc2", "f3")
-	callGraph.AddAsyncEdge(sc2f2, sc2f3, "cb2", "gr2").
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddAsyncEdge(sc2f2, sc3f3, "cb2", "gr2").
+		SetGasLimit(100).
+		SetGasUsed(6).
+		SetGasUsedByCallback(3)
+
+	callGraph.AddNode("sc2", "cb2")
+
+	return callGraph
+}
+
+// CreateGraphTestAsyncCallsAsyncCrossShard -
+func CreateGraphTestAsyncCallsAsyncCrossShard() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 1000, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(500).
+		SetGasUsed(7).
+		SetGasUsedByCallback(5)
+
+	callGraph.AddNode("sc1", "cb1")
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddAsyncCrossShardEdge(sc2f2, sc3f3, "cb2", "gr2").
 		SetGasLimit(100).
 		SetGasUsed(6).
 		SetGasUsedByCallback(3)
@@ -310,6 +335,31 @@ func CreateGraphTestCallbackCallsAsync() *TestCallGraph {
 
 	sc2f3 := callGraph.AddNode("sc2", "f3")
 	callGraph.AddAsyncEdge(sc1cb1, sc2f3, "cb2", "gr2").
+		SetGasLimit(200).
+		SetGasUsed(60).
+		SetGasUsedByCallback(30)
+
+	callGraph.AddNode("sc1", "cb2")
+
+	return callGraph
+}
+
+// CreateGraphTestCallbackCallsAsyncCrossShard -
+func CreateGraphTestCallbackCallsAsyncCrossShard() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 2000, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(1000).
+		SetGasUsed(70).
+		SetGasUsedByCallback(500)
+
+	sc1cb1 := callGraph.AddNode("sc1", "cb1")
+
+	sc2f3 := callGraph.AddNode("sc2", "f3")
+	callGraph.AddAsyncCrossShardEdge(sc1cb1, sc2f3, "cb2", "gr2").
 		SetGasLimit(200).
 		SetGasUsed(60).
 		SetGasUsedByCallback(30)
