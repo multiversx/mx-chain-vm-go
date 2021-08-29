@@ -935,18 +935,18 @@ func (host *vmHost) callSCMethod() error {
 		return nil
 	}
 
-	switch callType {
-	case vm.DirectCall:
-		break
-	case vm.AsynchronousCall:
-		// 	err = host.sendAsyncCallbackToCaller()
-		break
-	case vm.AsynchronousCallBack:
-		async.Load(runtime.GetSCAddress(), originalCallID)
-		async.PostprocessCrossShardCallback(originalCallID, asyncCallIdentifier)
-	default:
-		err = arwen.ErrUnknownCallType
-	}
+	// switch callType {
+	// case vm.DirectCall:
+	// 	break
+	// case vm.AsynchronousCall:
+	// 	// 	err = host.sendAsyncCallbackToCaller()
+	// 	break
+	// case vm.AsynchronousCallBack:
+	// 	async.LoadSpecifiedContext(runtime.GetSCAddress(), originalCallID)
+	// 	async.PostprocessCrossShardCallback(originalCallID, asyncCallIdentifier)
+	// default:
+	// 	err = arwen.ErrUnknownCallType
+	// }
 
 	if err != nil {
 		log.Trace("call SC method failed", "error", err)

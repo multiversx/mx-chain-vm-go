@@ -620,7 +620,7 @@ func (context *asyncContext) Execute() error {
 	// }
 	// end debug
 
-	//context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
+	context.Load()
 	context.childResults = []*vmcommon.VMOutput{context.host.Output().GetVMOutput()}
 	context.Save()
 
@@ -638,8 +638,8 @@ func (context *asyncContext) Execute() error {
 			return err
 		}
 
-		logAsync.Trace("async.Execute() complete locals")
-
+		// logAsync.Trace("async.Execute() complete locals")
+		//
 		// This call to closeCompletedAsyncCall() is necessary to remove the
 		// AsyncCall that has been just before async.Execute() was called, within
 		// host.callSCMethod(). This happens when a cross-shard callback returns and
@@ -674,17 +674,12 @@ func (context *asyncContext) Execute() error {
 		logAsync.Trace("no async calls")
 	}
 
-	// TODO matei-p add Load()
-	context.Load(context.address, context.callID)
-	err := context.checkContextCompletion()
-	if err != nil {
-		return err
-	}
+	context.checkContextCompletion()
 
 	return nil
 }
 
-func (context *asyncContext) checkContextCompletion() error {
+func (context *asyncContext) checkContextCompletion() {
 	areAllChildrenComplete := context.callsCounter == 0
 	if areAllChildrenComplete {
 		if context.contextCallbackEnabled {
@@ -693,15 +688,7 @@ func (context *asyncContext) checkContextCompletion() error {
 		}
 		// TODO matei-p send childErr here
 		context.NotifyOfChildCompletion(nil)
-	} else {
-		// TODO matei-p eliminate else and save anyway?
-		logAsync.Trace("async.Execute() save")
-		err := context.Save()
-		if err != nil {
-			return err
-		}
 	}
-	return nil
 }
 
 func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
@@ -711,6 +698,8 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 	fmt.Println("\tcallID", context.callID)
 	fmt.Println("\tcallerAddr", string(context.callerAddr))
 	fmt.Println("\tcallerCallID", context.callerCallID)
+
+	context.Load()
 
 	vmOutput := context.childResults[0]
 
@@ -737,14 +726,16 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 			return err
 		}
 
-		context.callCallback(asyncCall, vmOutput, childErr)
+		if context.callsCounter == 0 {
+			context.callCallback(asyncCall, vmOutput, childErr)
+		}
 		return nil
 	}
 
 	// load parent async
 	if context.callType == vm.AsynchronousCallBack {
 		fmt.Println("load context address", string(context.address), "callID", context.callerCallID)
-		context.Load(context.address, context.callerCallID)
+		context.LoadSpecifiedContext(context.address, context.callerCallID)
 		err = context.removeAsyncCallIfCompleted(asyncCallIdentifier, vmOutput.ReturnCode)
 		if err != nil {
 			return err
@@ -755,7 +746,7 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 			return nil
 		}
 		fmt.Println("load context address", string(context.callerAddr), "callID", context.callerCallID)
-		context.Load(context.callerAddr, context.callerCallID)
+		context.LoadSpecifiedContext(context.callerAddr, context.callerCallID)
 	}
 
 	// if callback from above is not complete we return before this
@@ -764,10 +755,10 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 
 	// check if cross-shard callback
 	if context.host.Runtime().IsFirstCallACallback() {
-		err = context.checkContextCompletion()
-		if err != nil {
-			return err
-		}
+		context.checkContextCompletion()
+		// if err != nil {
+		// 	return err
+		// }
 	}
 
 	return nil
@@ -851,10 +842,6 @@ func (context *asyncContext) PostprocessCrossShardCallback(callID []byte, asyncC
 	currentGroupID := asyncCallIdentifier.GroupIdentifier
 	asyncCallIndex := asyncCallIdentifier.IndexInGroup
 
-	defer func() {
-		context.Save()
-	}()
-
 	currentCallGroup, ok := context.GetCallGroup(currentGroupID)
 	if !ok {
 		return arwen.ErrCallBackFuncNotExpected
@@ -896,6 +883,7 @@ func (context *asyncContext) callCallback(asyncCall *arwen.AsyncCall, vmOutput *
 		data := GetEncodedDataForAsyncCallbackTransfer(context.host,
 			context.callerCallID,
 			context.callAsyncIdentifierAsBytes,
+			asyncCall.SuccessCallback,
 			vmOutput)
 		return false, sendCrossShardCallback(context.host, sender, destination, data)
 	}
@@ -978,8 +966,12 @@ func (context *serializableAsyncContext) HasPendingCallGroups() bool {
 	return len(context.AsyncCallGroups) > 0
 }
 
+func (context *asyncContext) Load() error {
+	return context.LoadSpecifiedContext(context.address, context.callID)
+}
+
 // Load restores the internal state of the AsyncContext from the storage of the contract.
-func (context *asyncContext) Load(address []byte, callID []byte) error {
+func (context *asyncContext) LoadSpecifiedContext(address []byte, callID []byte) error {
 	storage := context.host.Storage()
 	deserializedContext, err := NewSerializedAsyncContextFromStore(storage, address, callID)
 	if err != nil {
@@ -1188,9 +1180,13 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 }
 
 // GetEncodedDataForAsyncCallbackTransfer -
-func GetEncodedDataForAsyncCallbackTransfer(host arwen.VMHost, callerCallID []byte, callerCallAsyncIdentifierAsBytes []byte, vmOutput *vmcommon.VMOutput) []byte {
+func GetEncodedDataForAsyncCallbackTransfer(host arwen.VMHost, callerCallID []byte, callerCallAsyncIdentifierAsBytes []byte, callbackFunction string, vmOutput *vmcommon.VMOutput) []byte {
 	transferData := txDataBuilder.NewBuilder()
-	transferData.Func("<calback>")
+	/*
+		callbackFunction is not used by arwen, used by testing frameworks
+		arwen uses callerCallAsyncIdentifierAsBytes to get the AsyncCall with function name, gas provided etc.
+	*/
+	transferData.Func(callbackFunction)
 	transferData.Bytes(host.Async().GenerateNewCallbackID())
 	transferData.Bytes(callerCallID)
 	transferData.Bytes(callerCallAsyncIdentifierAsBytes)

@@ -693,19 +693,19 @@ func CreateGraphTestOneAsyncCallCrossShard5() *TestCallGraph {
 	callGraph.AddNode("sc1", "cb1")
 	callGraph.AddNode("sc4", "cb4")
 
-	sc3f5 := callGraph.AddNode("sc3", "f5")
-	callGraph.AddSyncEdge(sc2f2, sc3f5).
+	sc3f6 := callGraph.AddNode("sc3", "f6")
+	callGraph.AddSyncEdge(sc2f2, sc3f6).
 		SetGasLimit(500).
 		SetGasUsed(20)
 
-	sc4f6 := callGraph.AddNode("sc4", "f6")
-	callGraph.AddSyncEdge(sc3f5, sc4f6).
+	sc4f7 := callGraph.AddNode("sc4", "f7")
+	callGraph.AddSyncEdge(sc3f6, sc4f7).
 		SetGasLimit(300).
 		SetGasUsed(15)
 
 	sc5f8 := callGraph.AddNode("sc5", "f8")
 	callGraph.AddNode("sc2", "cb2")
-	callGraph.AddAsyncCrossShardEdge(sc4f6, sc5f8, "cb5", "").
+	callGraph.AddAsyncCrossShardEdge(sc4f7, sc5f8, "cb5", "").
 		SetGasLimit(100).
 		SetGasUsed(50).
 		SetGasUsedByCallback(10)
