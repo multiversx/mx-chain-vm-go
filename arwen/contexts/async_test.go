@@ -453,7 +453,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	async := makeAsyncContext(t, host)
 
 	storage := host.Storage()
-	(&serializableAsyncContext{}).writeToStorage(storage, []byte{})
+	(&asyncContext{}).Save()
 
 	address := host.Runtime().GetSCAddress()
 
@@ -511,8 +511,8 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	serializedAsyncCtx := &serializableAsyncContext{
-		AsyncCallGroups: []*arwen.AsyncCallGroup{
+	asyncCtx := &asyncContext{
+		asyncCallGroups: []*arwen.AsyncCallGroup{
 			{
 				Identifier: "",
 				AsyncCalls: []*arwen.AsyncCall{
@@ -523,7 +523,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 			},
 		},
 	}
-	serializedAsyncCtx.writeToStorage(storage, []byte{})
+	asyncCtx.Save()
 
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}

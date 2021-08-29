@@ -77,8 +77,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	newCallID := destinationCallInput.Arguments[0]
-	newCallAddress := destinationCallInput.RecipientAddr
+	// newCallID := destinationCallInput.Arguments[0]
+	// newCallAddress := destinationCallInput.RecipientAddr
 	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
@@ -88,23 +88,20 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// // by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	// context.childResults = append(context.childResults, vmOutput)
-
-	areAllChildrenComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
-	if err != nil {
-		return err
+	// areAllChildrenComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// if areAllChildrenComplete {
+	// 	context.NotifyOfChildCompletion(asyncCall.Identifier.ToBytes(),
+	// 		context.childResults[0], nil)
+	// } else {
+	context.gasAccumulated = 0
+	if vmOutput != nil {
+		context.accumulateGas(vmOutput.GasRemaining)
 	}
-
-	if asyncCall.HasCallback() && areAllChildrenComplete {
-		context.NotifyOfChildCompletion(asyncCall.Identifier.ToBytes(),
-			context.childResults[0], nil)
-		//vmOutput, err)
-	} else {
-		context.gasAccumulated = 0
-		if vmOutput != nil {
-			context.accumulateGas(vmOutput.GasRemaining)
-		}
-	}
+	// }
 
 	return nil
 }
@@ -381,7 +378,7 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 	// send the callID
 	arguments = append([][]byte{context.callAsyncIdentifierAsBytes}, arguments...)
 	arguments = append([][]byte{context.callerCallID}, arguments...)
-	arguments = append([][]byte{context.GenerateNewCallID()}, arguments...)
+	arguments = append([][]byte{context.GenerateNewCallbackID()}, arguments...)
 
 	return arguments
 }

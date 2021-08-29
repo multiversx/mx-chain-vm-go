@@ -349,3 +349,8 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 func (r *RuntimeContextMock) GetAndEliminateFirstArgumentFromList() []byte {
 	return nil
 }
+
+// IsFirstCallACallback mocked method
+func (r *RuntimeContextMock) IsFirstCallACallback() bool {
+	return false
+}

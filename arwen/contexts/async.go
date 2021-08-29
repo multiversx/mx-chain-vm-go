@@ -608,18 +608,20 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
 	// TODO matei-p debug
-	fmt.Println("result produced by function", context.host.Runtime().Function(), " call id", context.callID)
-	retData := context.host.Output().GetVMOutput().ReturnData
-	for d := 0; d < len(retData); d++ {
-		data := retData[d]
-		if d != len(retData)-1 {
-			fmt.Println("\t", data)
-		} else {
-			fmt.Println("\t" + string(data))
-		}
-	}
+	// fmt.Println("result produced by function", context.host.Runtime().Function(), " call id", context.callID)
+	// retData := context.host.Output().GetVMOutput().ReturnData
+	// for d := 0; d < len(retData); d++ {
+	// 	data := retData[d]
+	// 	if d != len(retData)-1 {
+	// 		fmt.Println("\t", data)
+	// 	} else {
+	// 		fmt.Println("\t" + string(data))
+	// 	}
+	// }
 	// end debug
-	context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
+
+	//context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
+	context.childResults = []*vmcommon.VMOutput{context.host.Output().GetVMOutput()}
 	context.Save()
 
 	if context.HasPendingCallGroups() {
@@ -672,21 +674,25 @@ func (context *asyncContext) Execute() error {
 		logAsync.Trace("no async calls")
 	}
 
-	areAllChildrenComplete, err := context.AreAllChildrenComplete()
+	// TODO matei-p add Load()
+	context.Load(context.address, context.callID)
+	err := context.checkContextCompletion()
 	if err != nil {
 		return err
 	}
 
-	// context.childResults = append(context.childResults, context.host.Output().GetVMOutput())
+	return nil
+}
 
-	if !context.HasPendingCallGroups() && areAllChildrenComplete {
+func (context *asyncContext) checkContextCompletion() error {
+	areAllChildrenComplete := context.callsCounter == 0
+	if areAllChildrenComplete {
 		if context.contextCallbackEnabled {
 			logAsync.Trace("async.Execute() execute context callback")
 			context.executeContextCallback()
 		}
-		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes,
-			context.childResults[0], nil)
-		//context.host.Output().GetVMOutput(), nil)
+		// TODO matei-p send childErr here
+		context.NotifyOfChildCompletion(nil)
 	} else {
 		// TODO matei-p eliminate else and save anyway?
 		logAsync.Trace("async.Execute() save")
@@ -695,11 +701,10 @@ func (context *asyncContext) Execute() error {
 			return err
 		}
 	}
-
 	return nil
 }
 
-func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes []byte, vmOutput *vmcommon.VMOutput, childErr error) error {
+func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 	// TODO matei-p debug
 	fmt.Println("NotifyOfChildCompletion")
 	fmt.Println("\taddress", string(context.address))
@@ -707,12 +712,19 @@ func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes 
 	fmt.Println("\tcallerAddr", string(context.callerAddr))
 	fmt.Println("\tcallerCallID", context.callerCallID)
 
-	if context.callType == vm.AsynchronousCallBack {
-		return nil
+	vmOutput := context.childResults[0]
+
+	var asyncCallIdentifier *arwen.AsyncCallIdentifier
+	var err error
+
+	if context.callAsyncIdentifierAsBytes != nil {
+		asyncCallIdentifier, err = arwen.ReadAsyncCallIdentifierFromBytes(context.callAsyncIdentifierAsBytes)
+		if err != nil {
+			return err
+		}
 	}
 
-	asyncCallIdentifier, _ := arwen.ReadAsyncCallIdentifierFromBytes(asyncCallIdentifierAsBytes)
-	if context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack {
+	if context.callType == vm.AsynchronousCall {
 		parentContext, err := NewSerializedAsyncContextFromStore(context.host.Storage(),
 			context.callerAddr,
 			context.callerCallID)
@@ -720,59 +732,61 @@ func (context *asyncContext) NotifyOfChildCompletion(asyncCallIdentifierAsBytes 
 			return err
 		}
 
-		if context.callType == vm.AsynchronousCall {
-			asyncCall, err := parentContext.getCallByAsyncIdentifier(asyncCallIdentifier)
-			if err != nil {
-				return err
-			}
-			isCallBackComplete, _ := context.callCallback(asyncCall, vmOutput, childErr)
-			if !isCallBackComplete {
-				return nil
-			}
-		} else {
-			vmOutput = parentContext.ChildResults[0]
+		asyncCall, err := parentContext.getCallByAsyncIdentifier(asyncCallIdentifier)
+		if err != nil {
+			return err
 		}
 
-		// vmOutput = context.childResults[0]
-		childErr = nil
+		context.callCallback(asyncCall, vmOutput, childErr)
+		return nil
 	}
 
 	// load parent async
 	if context.callType == vm.AsynchronousCallBack {
+		fmt.Println("load context address", string(context.address), "callID", context.callerCallID)
 		context.Load(context.address, context.callerCallID)
-	} else {
-		if context.callerCallID == nil {
-			return nil
-		}
-		context.Load(context.callerAddr, context.callerCallID)
-	}
-
-	if asyncCallIdentifier != nil {
-		asyncCall, err := context.getCallByAsyncIdentifier(asyncCallIdentifier)
+		err = context.removeAsyncCallIfCompleted(asyncCallIdentifier, vmOutput.ReturnCode)
 		if err != nil {
 			return err
 		}
-		// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
-		// by design. Using it without checking for err is safe here.
-		asyncCall.UpdateStatus(vmOutput.ReturnCode)
-
-		context.closeCompletedAsyncCalls()
-		if context.groupCallbacksEnabled {
-			context.executeCompletedGroupCallbacks()
+	} else {
+		if context.callerCallID == nil {
+			// first call, it does not have any parent
+			return nil
 		}
-		context.deleteCompletedGroups()
+		fmt.Println("load context address", string(context.callerAddr), "callID", context.callerCallID)
+		context.Load(context.callerAddr, context.callerCallID)
 	}
 
 	// if callback from above is not complete we return before this
 	context.DecrementCallsCounter()
-
 	context.Save()
 
-	if context.callsCounter == 0 {
-		context.NotifyOfChildCompletion(context.callAsyncIdentifierAsBytes,
-			context.childResults[0], childErr)
-		//vmOutput, childErr)
+	// check if cross-shard callback
+	if context.host.Runtime().IsFirstCallACallback() {
+		err = context.checkContextCompletion()
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier *arwen.AsyncCallIdentifier, returnCode vmcommon.ReturnCode) error {
+	asyncCall, err := context.getCallByAsyncIdentifier(asyncCallIdentifier)
+	if err != nil {
+		return err
+	}
+	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
+	// by design. Using it without checking for err is safe here.
+	asyncCall.UpdateStatus(returnCode)
+
+	context.closeCompletedAsyncCalls()
+	if context.groupCallbacksEnabled {
+		context.executeCompletedGroupCallbacks()
+	}
+	context.deleteCompletedGroups()
 
 	return nil
 }
@@ -941,23 +955,13 @@ func (context *asyncContext) IsComplete() bool {
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
 func (context *asyncContext) Save() error {
-	// areAllChildrenComplete, err := context.areAllChildrenComplete()
-	// if err != nil {
-	// 	return err
-	// }
-	// if areAllChildrenComplete {
-	// 	return nil
-	// }
-	return context.toSerializable().writeToStorage(context.host.Storage(), context.callID)
-}
+	storage := context.host.Storage()
+	address := context.address
+	callID := context.callID
+	// fmt.Println("save address", string(address), "callID", callID, "callsCounter", context.callsCounter)
 
-func (context *serializableAsyncContext) writeToStorage(storage arwen.StorageContext, callID []byte) error {
-	return context.writeToStorageWithAddress(storage, storage.GetAddress(), callID)
-}
-
-func (context *serializableAsyncContext) writeToStorageWithAddress(storage arwen.StorageContext, address []byte, callID []byte) error {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
-	data, err := json.Marshal(context)
+	data, err := json.Marshal(context.toSerializable())
 	if err != nil {
 		return err
 	}
@@ -982,6 +986,7 @@ func (context *asyncContext) Load(address []byte, callID []byte) error {
 		return err
 	}
 	loadedContext := fromSerializable(deserializedContext)
+	// fmt.Println("loaded address", string(address), "callID", callID, "callsCounter", context.callsCounter)
 
 	context.address = loadedContext.address
 	context.callID = loadedContext.callID
@@ -1186,7 +1191,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 func GetEncodedDataForAsyncCallbackTransfer(host arwen.VMHost, callerCallID []byte, callerCallAsyncIdentifierAsBytes []byte, vmOutput *vmcommon.VMOutput) []byte {
 	transferData := txDataBuilder.NewBuilder()
 	transferData.Func("<calback>")
-	transferData.Bytes(host.Async().GenerateNewCallID())
+	transferData.Bytes(host.Async().GenerateNewCallbackID())
 	transferData.Bytes(callerCallID)
 	transferData.Bytes(callerCallAsyncIdentifierAsBytes)
 
@@ -1329,7 +1334,17 @@ func (context *asyncContext) GetCallID() []byte {
 }
 
 func (context *asyncContext) GenerateNewCallID() []byte {
-	context.callsCounter++
+	return context.generateNewCallID(false)
+}
+
+func (context *asyncContext) GenerateNewCallbackID() []byte {
+	return context.generateNewCallID(true)
+}
+
+func (context *asyncContext) generateNewCallID(isCallback bool) []byte {
+	if !isCallback {
+		context.callsCounter++
+	}
 	context.totalCallsCounter++
 	newCallID := append(context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes()...)
 	newCallID, _ = context.host.Crypto().Sha256(newCallID)

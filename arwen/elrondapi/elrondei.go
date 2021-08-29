@@ -2618,16 +2618,9 @@ func ExecuteOnDestContextWithTypedArgs(
 	contractCallInput.Arguments = append([][]byte{host.Async().GetCallID()}, contractCallInput.Arguments...)
 	contractCallInput.Arguments = append([][]byte{host.Async().GenerateNewCallID()}, contractCallInput.Arguments...)
 
-	newCallID := contractCallInput.Arguments[0]
-	newCallAddress := contractCallInput.RecipientAddr
 	_, err, _ = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
-	}
-
-	async := host.Async()
-	if isComplete, _ := async.IsStoredContextComplete(newCallAddress, newCallID); isComplete {
-		async.NotifyOfChildCompletion(nil, nil, err)
 	}
 
 	return 0

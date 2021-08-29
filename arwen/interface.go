@@ -155,6 +155,8 @@ type RuntimeContext interface {
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
+
+	IsFirstCallACallback() bool
 }
 
 // AddressAndCallID holds info from a runtime stack
@@ -331,6 +333,7 @@ type AsyncContext interface {
 
 	GetCallID() []byte
 	GenerateNewCallID() []byte
+	GenerateNewCallbackID() []byte
 	Clone() AsyncContext
 
 	PostprocessCrossShardCallback(callID []byte, asyncCallIdentifier *AsyncCallIdentifier) error
@@ -338,5 +341,5 @@ type AsyncContext interface {
 	AreAllChildrenComplete() (bool, error)
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
-	NotifyOfChildCompletion(asyncCallIdentifierAsBytes []byte, vmOutput *vmcommon.VMOutput, childErr error) error
+	NotifyOfChildCompletion(childErr error) error
 }

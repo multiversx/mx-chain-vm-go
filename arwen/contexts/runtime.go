@@ -808,6 +808,12 @@ func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
 	return firstArg
 }
 
-func (context *runtimeContext) isAsyncOrCallBackCall() bool {
-	return context.GetVMInput().CallType == vm.AsynchronousCall || context.GetVMInput().CallType == vm.AsynchronousCallBack
+func (context *runtimeContext) IsFirstCallACallback() bool {
+	var firstVMInput *vmcommon.VMInput
+	if len(context.stateStack) == 0 {
+		firstVMInput = context.vmInput
+	} else {
+		firstVMInput = context.stateStack[0].vmInput
+	}
+	return firstVMInput.CallType == vm.AsynchronousCallBack
 }
