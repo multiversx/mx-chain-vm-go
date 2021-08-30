@@ -39,6 +39,9 @@ package elrondapi
 // extern void		v1_4_bigFloatGetBytes(void* context, int32_t destinationHandle, int32_t dataOffset);
 // extern void		v1_4_bigFloatFinish(void* context, int32_t referenceHandle);
 // extern void		v1_4_bigFloatGetArgument(void* context, int32_t id, int32_t destinationHandle);
+//
+// extern int32_t	v1_4_bigFloatStorageStore(void* context, int32_t keyOffset, int32_t keyLength, int32_t sourceHandle);
+// extern int32_t	v1_4_bigFloatStorageLoad(void* context, int32_t keyOffset, int32_t keyLength, int32_t destinationHandle);
 import "C"
 import (
 	"math"
@@ -185,6 +188,16 @@ func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigFloatGetArgument", v1_4_bigFloatGetArgument, C.v1_4_bigFloatGetArgument)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigFloatStorageStore", v1_4_bigFloatStorageStore, C.v1_4_bigFloatStorageStore)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigFloatStorageLoad", v1_4_bigFloatStorageLoad, C.v1_4_bigFloatStorageLoad)
 	if err != nil {
 		return nil, err
 	}
@@ -818,4 +831,63 @@ func v1_4_bigFloatGetArgument(context unsafe.Pointer, id, destinationHandle int3
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
+}
+
+//export v1_4_bigFloatStorageStore
+func v1_4_bigFloatStorageStore(context unsafe.Pointer, keyOffset, keyLength, sourceHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatStorageStore
+	metering.UseGas(gasToUse)
+
+	key, err := runtime.MemLoad(keyOffset, keyLength)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	value := managedType.GetBigFloatOrCreate(sourceHandle)
+	if oneIsInfinity(value) {
+		arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return -1
+	}
+	encodedValue, err := value.GobEncode()
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	storageStatus, err := storage.SetStorage(key, encodedValue)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return int32(storageStatus)
+}
+
+//export v1_4_bigFloatStorageLoad
+func v1_4_bigFloatStorageLoad(context unsafe.Pointer, keyOffset, keyLength, destinationHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatStorageLoad
+	metering.UseGas(gasToUse)
+
+	key, err := runtime.MemLoad(keyOffset, keyLength)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	encodedFloat := storage.GetStorage(key)
+
+	value := managedType.GetBigFloatOrCreate(destinationHandle)
+	err = value.GobDecode(encodedFloat)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return int32(len(encodedFloat))
 }

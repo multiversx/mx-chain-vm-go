@@ -143,6 +143,8 @@
     BigFloatSetBigInt   = 10
     BigFloatFinish      = 10
     BigFloatGetArgument = 10
+    BigFloatStorageStore = 10
+    BigFloatStorageLoad = 10
 
 [CryptoAPICost]
     SHA256                 = 10
