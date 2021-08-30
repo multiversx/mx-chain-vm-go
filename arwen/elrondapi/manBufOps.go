@@ -28,6 +28,7 @@ package elrondapi
 // extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
 import "C"
 import (
+	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -446,11 +447,17 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	}
 
 	value := managedType.GetBigFloatOrCreate(bigFloatHandle)
-	err = value.GobDecode(managedBuffer)
+
+	bigFloat := new(big.Float)
+	err = bigFloat.GobDecode(managedBuffer)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
+	if oneIsInfinity(bigFloat) {
+		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+	}
 
+	value.Set(bigFloat)
 	return 0
 }
 
