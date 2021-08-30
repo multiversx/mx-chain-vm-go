@@ -19,8 +19,8 @@ package elrondapi
 // extern int32_t	v1_4_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedDelegateExecution(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddress, int32_t resultHandle);
-// extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddress, int32_t resultHandle);
+// extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
+// extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t dataHandle);
@@ -579,7 +579,7 @@ func v1_4_managedDeployFromSourceContract(
 	addressHandle int32,
 	codeMetadataHandle int32,
 	argumentsHandle int32,
-	resultAddress int32,
+	resultAddressHandle int32,
 	resultHandle int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
@@ -614,7 +614,7 @@ func v1_4_managedDeployFromSourceContract(
 		return 1
 	}
 
-	managedType.SetBytes(resultAddress, newAddress)
+	managedType.SetBytes(resultAddressHandle, newAddress)
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 
 	return 0
@@ -628,7 +628,7 @@ func v1_4_managedCreateContract(
 	codeHandle int32,
 	codeMetadataHandle int32,
 	argumentsHandle int32,
-	resultAddress int32,
+	resultAddressHandle int32,
 	resultHandle int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
@@ -673,7 +673,7 @@ func v1_4_managedCreateContract(
 		return 1
 	}
 
-	managedType.SetBytes(resultAddress, newAddress)
+	managedType.SetBytes(resultAddressHandle, newAddress)
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 
 	return 0
@@ -705,7 +705,7 @@ func v1_4_managedExecuteReadOnly(
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
@@ -733,7 +733,7 @@ func v1_4_managedDelegateExecution(
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
@@ -762,7 +762,7 @@ func v1_4_managedExecuteOnSameContext(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
@@ -792,7 +792,7 @@ func v1_4_managedExecuteOnDestContextByCaller(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
@@ -822,7 +822,7 @@ func v1_4_managedExecuteOnDestContext(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
@@ -853,12 +853,12 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return TransferESDTNFTExecuteWithTypedArgs(
@@ -884,7 +884,7 @@ func v1_4_managedTransferValueExecute(
 
 	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return TransferValueExecuteWithTypedArgs(

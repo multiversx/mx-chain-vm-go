@@ -2432,7 +2432,7 @@ func ExecuteOnSameContextWithTypedArgs(
 		true,
 	)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
@@ -2441,7 +2441,7 @@ func ExecuteOnSameContextWithTypedArgs(
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return 0
@@ -2626,7 +2626,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		true,
 	)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
@@ -2635,7 +2635,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return 0
@@ -2681,7 +2681,7 @@ func DelegateExecutionWithHost(
 	callArgs, err := extractIndirectContractCallArgumentsWithoutValue(
 		host, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return DelegateExecutionWithTypedArgs(
@@ -2721,7 +2721,7 @@ func DelegateExecutionWithTypedArgs(
 		true,
 	)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
@@ -2730,7 +2730,7 @@ func DelegateExecutionWithTypedArgs(
 
 	_, err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return 0
@@ -2776,7 +2776,7 @@ func ExecuteReadOnlyWithHost(
 	callArgs, err := extractIndirectContractCallArgumentsWithoutValue(
 		host, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return ExecuteReadOnlyWithTypedArguments(
@@ -2816,7 +2816,7 @@ func ExecuteReadOnlyWithTypedArguments(
 		true,
 	)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
@@ -2827,7 +2827,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	_, err = host.ExecuteOnSameContext(contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 
 	return 0
@@ -2886,7 +2886,7 @@ func v1_4_createContract(
 	valueAsInt := big.NewInt(0).SetBytes(value)
 	newAddress, err := createContract(sender, data, valueAsInt, metering, gasLimit, code, codeMetadata, host, runtime)
 
-	if err != nil {
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
