@@ -25,7 +25,7 @@ package elrondapi
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t dataHandle);
 //
-// extern void		v1_4_managedESDTTransfers(void *context, int32_t multiCallValueHandle);
+// extern void		v1_4_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
 // extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void		v1_4_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 //
@@ -45,7 +45,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
@@ -137,7 +136,7 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("managedESDTTransfers", v1_4_managedESDTTransfers, C.v1_4_managedESDTTransfers)
+	imports, err = imports.Append("managedGetMultiESDTCallValue", v1_4_managedGetMultiESDTCallValue, C.v1_4_managedGetMultiESDTCallValue)
 	if err != nil {
 		return nil, err
 	}
@@ -343,9 +342,8 @@ func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 	managedType.SetBytes(resultHandle, returnData[resultID])
 }
 
-//export v1_4_managedESDTTransfers
-func v1_4_managedESDTTransfers(context unsafe.Pointer, multiCallValueHandle int32) {
-	host := arwen.GetVMHost(context)
+//export v1_4_managedGetMultiESDTCallValue
+func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
@@ -354,18 +352,10 @@ func v1_4_managedESDTTransfers(context unsafe.Pointer, multiCallValueHandle int3
 	metering.UseGas(gasToUse)
 
 	esdtTransfers := runtime.GetVMInput().ESDTTransfers
-	var esdtTransfersBytes [][]byte
-	for _, esdtTransfer := range esdtTransfers {
-		esdtBytes, err := writeESDTTransfer(host, esdtTransfer)
-		if err != nil {
-			_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
-			return
-		}
-		esdtTransfersBytes = append(esdtTransfersBytes, esdtBytes)
-	}
+	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
+	managedType.ConsumeGasForThisIntNumberOfBytes(len(multiCallBytes))
 
-	totalBytes := writeManagedVecOfManagedBuffers(managedType, esdtTransfersBytes, multiCallValueHandle)
-	managedType.ConsumeGasForThisIntNumberOfBytes(int(totalBytes))
+	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
 
 //export v1_4_managedGetESDTBalance
@@ -951,31 +941,6 @@ func v1_4_managedExecuteOnDestContext(
 	return returnVal
 }
 
-func readESDTTransfers(
-	host arwen.VMHost,
-	tokenTransfersHandle int32,
-) ([]*vmcommon.ESDTTransfer, error) {
-	metering := host.Metering()
-	managedType := host.ManagedTypes()
-	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, tokenTransfersHandle)
-	if err != nil {
-		return nil, err
-	}
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
-	metering.UseGas(gasToUse)
-
-	esdtTransfers := make([]*vmcommon.ESDTTransfer, len(data))
-	for i, oneTransferData := range data {
-		esdtTransfers[i], err = readESDTTransfer(host, oneTransferData)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return esdtTransfers, nil
-}
-
 //export v1_4_managedMultiTransferESDTNFTExecute
 func v1_4_managedMultiTransferESDTNFTExecute(
 	context unsafe.Pointer,
@@ -986,6 +951,7 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 	argumentsHandle int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
+	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
@@ -993,7 +959,7 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 		return 1
 	}
 
-	transfers, err := readESDTTransfers(host, tokenTransfersHandle)
+	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
