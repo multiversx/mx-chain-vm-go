@@ -150,7 +150,7 @@ type BigFloatAPICost struct {
 	BigFloatRoundDiv  uint64
 	BigFloatMod       uint64
 	BigFloatNeg       uint64
-	BigFloatCopy      uint64
+	BigFloatClone     uint64
 	BigFloatCmp       uint64
 	BigFloatAbs       uint64
 	BigFloatSqrt      uint64
@@ -159,6 +159,7 @@ type BigFloatAPICost struct {
 	BigFloatCeil      uint64
 	BigFloatIsInt     uint64
 	BigFloatSetBigInt uint64
+	BigFloatSetInt64  uint64
 }
 
 type CryptoAPICost struct {

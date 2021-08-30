@@ -130,7 +130,7 @@
     BigFloatRoundDiv    = 10
     BigFloatMod         = 10
     BigFloatNeg         = 10
-    BigFloatCopy        = 10
+    BigFloatClone        = 10
     BigFloatCmp         = 10
     BigFloatAbs         = 10
     BigFloatSqrt        = 10
@@ -139,6 +139,7 @@
     BigFloatCeil        = 10
     BigFloatIsInt       = 10
     BigFloatSetBigInt   = 10
+    BigFloatSetInt64    = 10
 
 [CryptoAPICost]
     SHA256                 = 10

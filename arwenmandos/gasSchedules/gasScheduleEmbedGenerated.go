@@ -1411,7 +1411,7 @@ const (
     BigFloatRoundDiv    = 2000
     BigFloatMod         = 2000
     BigFloatNeg         = 2000
-    BigFloatCopy        = 2000
+    BigFloatClone        = 2000
     BigFloatCmp         = 2000
     BigFloatAbs         = 2000
     BigFloatSqrt        = 2000
@@ -1420,6 +1420,7 @@ const (
     BigFloatCeil        = 2000
     BigFloatIsInt       = 2000
     BigFloatSetBigInt   = 2000
+    BigFloatSetInt64    = 2000
 
 [CryptoAPICost]
     SHA256                 = 1000000
