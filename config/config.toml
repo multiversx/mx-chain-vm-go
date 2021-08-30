@@ -130,7 +130,7 @@
     BigFloatTruncate    = 10
     BigFloatMod         = 10
     BigFloatNeg         = 10
-    BigFloatClone        = 10
+    BigFloatClone       = 10
     BigFloatCmp         = 10
     BigFloatAbs         = 10
     BigFloatSqrt        = 10

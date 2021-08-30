@@ -1411,7 +1411,7 @@ const (
     BigFloatTruncate    = 2000
     BigFloatMod         = 2000
     BigFloatNeg         = 2000
-    BigFloatClone        = 2000
+    BigFloatClone       = 2000
     BigFloatCmp         = 2000
     BigFloatAbs         = 2000
     BigFloatSqrt        = 2000
