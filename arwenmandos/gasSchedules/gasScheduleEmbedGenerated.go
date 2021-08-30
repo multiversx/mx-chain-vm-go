@@ -1290,6 +1290,7 @@ const (
     GetShardOfAddress  = 5000
     GetExternalBalance = 7000
     GetBlockHash       = 10000
+    GetOriginalTxHash  = 10000
     TransferValue      = 150000
     GetArgument        = 100
     GetFunction        = 100

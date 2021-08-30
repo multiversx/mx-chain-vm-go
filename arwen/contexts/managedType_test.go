@@ -365,6 +365,21 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestManagedTypesContext_NewBigIntCopied(t *testing.T) {
+	t.Parallel()
+	host := &contextmock.VMHostStub{}
+	managedTypesContext, _ := NewManagedTypesContext(host)
+
+	originalBigInt := big.NewInt(3)
+	index1 := managedTypesContext.NewBigInt(originalBigInt)
+
+	retrievedValue, err := managedTypesContext.GetBigInt(index1)
+	require.Nil(t, err)
+	retrievedValue.Add(retrievedValue, big.NewInt(100)) // simulate a change of the value in the contract
+
+	require.Equal(t, big.NewInt(3), originalBigInt)
+}
+
 func TestManagedTypesContext_PutGetEllipticCurves(t *testing.T) {
 	t.Parallel()
 	host := &contextmock.VMHostStub{}

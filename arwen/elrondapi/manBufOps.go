@@ -292,13 +292,13 @@ func v1_4_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2
 
 	bytes1, err := managedType.GetBytes(mBufferHandle1)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 	managedType.ConsumeGasForThisIntNumberOfBytes(len(bytes1))
 
 	bytes2, err := managedType.GetBytes(mBufferHandle2)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
-		return 1
+		return -1
 	}
 	managedType.ConsumeGasForThisIntNumberOfBytes(len(bytes2))
 
@@ -559,7 +559,7 @@ func v1_4_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, leng
 
 	if length < 1 {
 		_ = arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
-		return 1
+		return -1
 	}
 
 	baseGasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetRandom

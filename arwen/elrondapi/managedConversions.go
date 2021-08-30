@@ -24,7 +24,7 @@ func readManagedVecOfManagedBuffers(
 	managedType.ConsumeGasForThisIntNumberOfBytes(len(managedVecBytes))
 
 	if len(managedVecBytes)%handleLen != 0 {
-		return nil, 0, errors.New("invalid managed vector of managed buffers")
+		return nil, 0, errors.New("invalid managed vector of managed buffer handles")
 	}
 
 	numBuffers := len(managedVecBytes) / handleLen

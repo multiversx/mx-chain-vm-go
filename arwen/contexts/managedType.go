@@ -214,8 +214,7 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	return value1, value2, nil
 }
 
-// NewBigInt adds the given value to the current values map and returns the handle
-func (context *managedTypesContext) NewBigInt(value *big.Int) int32 {
+func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
 	newHandle := int32(len(context.managedTypesValues.bigIntValues))
 	for {
 		if _, ok := context.managedTypesValues.bigIntValues[newHandle]; !ok {
@@ -227,9 +226,14 @@ func (context *managedTypesContext) NewBigInt(value *big.Int) int32 {
 	return newHandle
 }
 
+// NewBigInt adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigInt(value *big.Int) int32 {
+	return context.newBigIntNoCopy(big.NewInt(0).Set(value))
+}
+
 // NewBigIntFromInt64 adds the given value to the current values map and returns the handle
 func (context *managedTypesContext) NewBigIntFromInt64(int64Value int64) int32 {
-	return context.NewBigInt(big.NewInt(int64Value))
+	return context.newBigIntNoCopy(big.NewInt(int64Value))
 }
 
 // ELLIPTIC CURVES
