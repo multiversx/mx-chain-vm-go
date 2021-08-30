@@ -25,10 +25,10 @@ package elrondapi
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t dataHandle);
 //
-// extern int32_t	v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
-// extern int32_t	v1_4_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
+// extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
+// extern void		v1_4_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 //
-// extern int32_t	v1_4_managedGetReturnData(void *context, int32_t resultID, int32_t resultHandle);
+// extern void		v1_4_managedGetReturnData(void *context, int32_t resultID, int32_t resultHandle);
 // extern void		v1_4_managedGetPrevBlockRandomSeed(void *context, int32_t resultHandle);
 // extern void		v1_4_managedGetBlockRandomSeed(void *context, int32_t resultHandle);
 // extern void		v1_4_managedGetStateRootHash(void *context, int32_t resultHandle);
@@ -76,97 +76,97 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedMultiTransferESDTNFTExecute", v1_4_managedMultiTransferESDTNFTExecute, C.v1_4_managedMultiTransferESDTNFTExecute)
+	imports, err = imports.Append("managedMultiTransferESDTNFTExecute", v1_4_managedMultiTransferESDTNFTExecute, C.v1_4_managedMultiTransferESDTNFTExecute)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedTransferValueExecute", v1_4_managedTransferValueExecute, C.v1_4_managedTransferValueExecute)
+	imports, err = imports.Append("managedTransferValueExecute", v1_4_managedTransferValueExecute, C.v1_4_managedTransferValueExecute)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedExecuteOnDestContext", v1_4_managedExecuteOnDestContext, C.v1_4_managedExecuteOnDestContext)
+	imports, err = imports.Append("managedExecuteOnDestContext", v1_4_managedExecuteOnDestContext, C.v1_4_managedExecuteOnDestContext)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedExecuteOnDestContextByCaller", v1_4_managedExecuteOnDestContextByCaller, C.v1_4_managedExecuteOnDestContextByCaller)
+	imports, err = imports.Append("managedExecuteOnDestContextByCaller", v1_4_managedExecuteOnDestContextByCaller, C.v1_4_managedExecuteOnDestContextByCaller)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedExecuteOnSameContext", v1_4_managedExecuteOnSameContext, C.v1_4_managedExecuteOnSameContext)
+	imports, err = imports.Append("managedExecuteOnSameContext", v1_4_managedExecuteOnSameContext, C.v1_4_managedExecuteOnSameContext)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedDelegateExecution", v1_4_managedDelegateExecution, C.v1_4_managedDelegateExecution)
+	imports, err = imports.Append("managedDelegateExecution", v1_4_managedDelegateExecution, C.v1_4_managedDelegateExecution)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedExecuteReadOnly", v1_4_managedExecuteReadOnly, C.v1_4_managedExecuteReadOnly)
+	imports, err = imports.Append("managedExecuteReadOnly", v1_4_managedExecuteReadOnly, C.v1_4_managedExecuteReadOnly)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedCreateContract", v1_4_managedCreateContract, C.v1_4_managedCreateContract)
+	imports, err = imports.Append("managedCreateContract", v1_4_managedCreateContract, C.v1_4_managedCreateContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedDeployFromSourceContract", v1_4_managedDeployFromSourceContract, C.v1_4_managedDeployFromSourceContract)
+	imports, err = imports.Append("managedDeployFromSourceContract", v1_4_managedDeployFromSourceContract, C.v1_4_managedDeployFromSourceContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedUpgradeContract", v1_4_managedUpgradeContract, C.v1_4_managedUpgradeContract)
+	imports, err = imports.Append("managedUpgradeContract", v1_4_managedUpgradeContract, C.v1_4_managedUpgradeContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedUpgradeFromSourceContract", v1_4_managedUpgradeFromSourceContract, C.v1_4_managedUpgradeFromSourceContract)
+	imports, err = imports.Append("managedUpgradeFromSourceContract", v1_4_managedUpgradeFromSourceContract, C.v1_4_managedUpgradeFromSourceContract)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedAsyncCall", v1_4_managedAsyncCall, C.v1_4_managedAsyncCall)
+	imports, err = imports.Append("managedAsyncCall", v1_4_managedAsyncCall, C.v1_4_managedAsyncCall)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetESDTBalance", v1_4_managedGetESDTBalance, C.v1_4_managedGetESDTBalance)
+	imports, err = imports.Append("managedGetESDTBalance", v1_4_managedGetESDTBalance, C.v1_4_managedGetESDTBalance)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetESDTTokenData", v1_4_managedGetESDTTokenData, C.v1_4_managedGetESDTTokenData)
+	imports, err = imports.Append("managedGetESDTTokenData", v1_4_managedGetESDTTokenData, C.v1_4_managedGetESDTTokenData)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetReturnData", v1_4_managedGetReturnData, C.v1_4_managedGetReturnData)
+	imports, err = imports.Append("managedGetReturnData", v1_4_managedGetReturnData, C.v1_4_managedGetReturnData)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetPrevBlockRandomSeed", v1_4_managedGetPrevBlockRandomSeed, C.v1_4_managedGetPrevBlockRandomSeed)
+	imports, err = imports.Append("managedGetPrevBlockRandomSeed", v1_4_managedGetPrevBlockRandomSeed, C.v1_4_managedGetPrevBlockRandomSeed)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetBlockRandomSeed", v1_4_managedGetBlockRandomSeed, C.v1_4_managedGetBlockRandomSeed)
+	imports, err = imports.Append("managedGetBlockRandomSeed", v1_4_managedGetBlockRandomSeed, C.v1_4_managedGetBlockRandomSeed)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetStateRootHash", v1_4_managedGetStateRootHash, C.v1_4_managedGetStateRootHash)
+	imports, err = imports.Append("managedGetStateRootHash", v1_4_managedGetStateRootHash, C.v1_4_managedGetStateRootHash)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("v1_4_managedGetOriginalTxHash", v1_4_managedGetOriginalTxHash, C.v1_4_managedGetOriginalTxHash)
+	imports, err = imports.Append("managedGetOriginalTxHash", v1_4_managedGetOriginalTxHash, C.v1_4_managedGetOriginalTxHash)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +318,7 @@ func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int
 	managedType.SetBytes(resultHandle, blockchain.LastRandomSeed())
 }
 
-//export v1_4_managedGetPrevBlockRandomSeed
+//export v1_4_managedGetReturnData
 func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
@@ -368,7 +368,7 @@ func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 	value.Set(esdtToken.Value)
 }
 
-//export v1_4_managedGetESDTBalance
+//export v1_4_managedGetESDTTokenData
 func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64,
 	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
