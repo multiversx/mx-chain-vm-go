@@ -25,6 +25,7 @@ package elrondapi
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t dataHandle);
 //
+// extern void		v1_4_managedESDTTransfers(void *context, int32_t multiCallValueHandle);
 // extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
 // extern void		v1_4_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 //
@@ -132,6 +133,11 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedAsyncCall", v1_4_managedAsyncCall, C.v1_4_managedAsyncCall)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedESDTTransfers", v1_4_managedESDTTransfers, C.v1_4_managedESDTTransfers)
 	if err != nil {
 		return nil, err
 	}
@@ -335,6 +341,31 @@ func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 	}
 
 	managedType.SetBytes(resultHandle, returnData[resultID])
+}
+
+//export v1_4_managedESDTTransfers
+func v1_4_managedESDTTransfers(context unsafe.Pointer, multiCallValueHandle int32) {
+	host := arwen.GetVMHost(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	metering.UseGas(gasToUse)
+
+	esdtTransfers := runtime.GetVMInput().ESDTTransfers
+	var esdtTransfersBytes [][]byte
+	for _, esdtTransfer := range esdtTransfers {
+		esdtBytes, err := writeESDTTransfer(host, esdtTransfer)
+		if err != nil {
+			_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+			return
+		}
+		esdtTransfersBytes = append(esdtTransfersBytes, esdtBytes)
+	}
+
+	totalBytes := writeManagedVecOfManagedBuffers(managedType, esdtTransfersBytes, multiCallValueHandle)
+	managedType.ConsumeGasForThisIntNumberOfBytes(int(totalBytes))
 }
 
 //export v1_4_managedGetESDTBalance

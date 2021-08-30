@@ -9,6 +9,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+// Converts a managed buffer of managed buffers to a slice of byte slices.
 func readManagedVecOfManagedBuffers(
 	managedType arwen.ManagedTypesContext,
 	managedVecHandle int32,
@@ -42,6 +43,7 @@ func readManagedVecOfManagedBuffers(
 	return result, sumOfItemByteLengths, nil
 }
 
+// Converts a slice of byte slices to a managed buffer of managed buffers.
 func writeManagedVecOfManagedBuffers(
 	managedType arwen.ManagedTypesContext,
 	data [][]byte,
@@ -62,6 +64,7 @@ func writeManagedVecOfManagedBuffers(
 	return sumOfItemByteLengths
 }
 
+// Deserializes a vmcommon.ESDTTransfer object.
 func readESDTTransfer(
 	host arwen.VMHost,
 	data []byte,
@@ -97,6 +100,7 @@ func readESDTTransfer(
 	}, nil
 }
 
+// Serializes a vmcommon.ESDTTransfer object.
 func writeESDTTransfer(
 	host arwen.VMHost,
 	object *vmcommon.ESDTTransfer,
