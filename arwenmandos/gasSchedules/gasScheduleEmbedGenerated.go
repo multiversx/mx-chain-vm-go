@@ -1408,7 +1408,7 @@ const (
     BigFloatSub         = 2000
     BigFloatMul         = 2000
     BigFloatDiv         = 2000
-    BigFloatRoundDiv    = 2000
+    BigFloatTruncate    = 2000
     BigFloatMod         = 2000
     BigFloatNeg         = 2000
     BigFloatClone        = 2000

@@ -322,7 +322,7 @@ func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigFloatSub"] = value
 	gasMap["BigFloatMul"] = value
 	gasMap["BigFloatDiv"] = value
-	gasMap["BigFloatRoundDiv"] = value
+	gasMap["BigFloatTruncate"] = value
 	gasMap["BigFloatMod"] = value
 	gasMap["BigFloatNeg"] = value
 	gasMap["BigFloatClone"] = value

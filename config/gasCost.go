@@ -147,7 +147,7 @@ type BigFloatAPICost struct {
 	BigFloatSub       uint64
 	BigFloatMul       uint64
 	BigFloatDiv       uint64
-	BigFloatRoundDiv  uint64
+	BigFloatTruncate  uint64
 	BigFloatMod       uint64
 	BigFloatNeg       uint64
 	BigFloatClone     uint64

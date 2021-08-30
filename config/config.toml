@@ -127,7 +127,7 @@
     BigFloatSub         = 10
     BigFloatMul         = 10    
     BigFloatDiv         = 10
-    BigFloatRoundDiv    = 10
+    BigFloatTruncate    = 10
     BigFloatMod         = 10
     BigFloatNeg         = 10
     BigFloatClone        = 10
