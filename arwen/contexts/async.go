@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"strconv"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
@@ -134,8 +135,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
 	}
 	// TODO matei-p remove for logging
-	fmt.Println("function ", input.Function, "address", string(context.address))
-	fmt.Println("\tcallID", context.callID)
+	fmt.Println("Calling function ", input.Function, "address", string(context.address))
+	fmt.Println("\tcallID", DebugCallIDAsString(context.callID))
 	context.callType = input.CallType
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
@@ -145,7 +146,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		// TODO matei-p remove for logging
 		asynCallIdentifier, _ := arwen.ReadAsyncCallIdentifierFromBytes(context.callAsyncIdentifierAsBytes)
 		asynCallIdentifierAsString, _ := json.Marshal(asynCallIdentifier)
-		fmt.Println("\tcallerCallID", context.callerCallID)
+		fmt.Println("\tcallerCallID", DebugCallIDAsString(context.callerCallID))
 		fmt.Println("\tcallerCallAsyncIdentifier", string(asynCallIdentifierAsString))
 		// fmt.Println()
 	}
@@ -441,10 +442,13 @@ func getCallByAsyncIdentifier(groups []*arwen.AsyncCallGroup, asyncCallIdentifie
 		return nil, arwen.ErrAsyncCallNotFound
 	}
 	callsInGroup := groups[groupIndex].AsyncCalls
-	if asyncCallIdentifier.IndexInGroup >= len(callsInGroup) {
-		return nil, arwen.ErrAsyncCallNotFound
+	// we can't directly use the IndexInGroup, some calls will be deleted
+	for _, callInGroup := range callsInGroup {
+		if callInGroup.Identifier.IndexInGroup == asyncCallIdentifier.IndexInGroup {
+			return callInGroup, nil
+		}
 	}
-	return callsInGroup[asyncCallIdentifier.IndexInGroup], nil
+	return nil, arwen.ErrAsyncCallNotFound
 }
 
 // RegisterAsyncCall validates the provided AsyncCall adds it to the specified
@@ -696,9 +700,9 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 	// TODO matei-p remove for logging
 	fmt.Println("NotifyOfChildCompletion")
 	fmt.Println("\taddress", string(context.address))
-	fmt.Println("\tcallID", context.callID)
+	fmt.Println("\tcallID", DebugCallIDAsString(context.callID))
 	fmt.Println("\tcallerAddr", string(context.callerAddr))
-	fmt.Println("\tcallerCallID", context.callerCallID)
+	fmt.Println("\tcallerCallID", DebugCallIDAsString(context.callerCallID))
 
 	context.Load()
 
@@ -736,7 +740,7 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 
 	// load parent async
 	if context.callType == vm.AsynchronousCallBack {
-		fmt.Println("load context address", string(context.address), "callID", context.callerCallID)
+		fmt.Println("Load context address", string(context.address), "callID", DebugCallIDAsString(context.callerCallID))
 		context.LoadSpecifiedContext(context.address, context.callerCallID)
 		err = context.removeAsyncCallIfCompleted(asyncCallIdentifier, vmOutput.ReturnCode)
 		if err != nil {
@@ -747,7 +751,7 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 			// first call, it does not have any parent
 			return nil
 		}
-		fmt.Println("load context address", string(context.callerAddr), "callID", context.callerCallID)
+		fmt.Println("Load context address", string(context.callerAddr), "callID", DebugCallIDAsString(context.callerCallID))
 		context.LoadSpecifiedContext(context.callerAddr, context.callerCallID)
 	}
 
@@ -789,7 +793,7 @@ func (context *asyncContext) AreAllChildrenComplete() (bool, error) {
 }
 
 func (context *asyncContext) IsStoredContextComplete(address []byte, callID []byte) (bool, error) {
-	// fmt.Println("check completed childdren for address", string(address), "callID", callID)
+	// fmt.Println("check completed childdren for address", string(address), "callID", DebugPartialArrayToString(callID))
 	serializedAsync, err := NewSerializedAsyncContextFromStore(context.host.Storage(), address, callID)
 	if err != nil && err != arwen.ErrNoStoredAsyncContextFound {
 		return false, err
@@ -950,7 +954,7 @@ func (context *asyncContext) Save() error {
 	storage := context.host.Storage()
 	address := context.address
 	callID := context.callID
-	// fmt.Println("save address", string(address), "callID", callID, "callsCounter", context.callsCounter)
+	// fmt.Println("save address", string(address), "callID", DebugPartialArrayToString(callID), "callsCounter", context.callsCounter)
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data, err := json.Marshal(context.toSerializable())
@@ -982,7 +986,7 @@ func (context *asyncContext) LoadSpecifiedContext(address []byte, callID []byte)
 		return err
 	}
 	loadedContext := fromSerializable(deserializedContext)
-	// fmt.Println("loaded address", string(address), "callID", callID, "callsCounter", context.callsCounter)
+	// fmt.Println("loaded address", string(address), "callID", DebugPartialArrayToString(callID), "callsCounter", context.callsCounter)
 
 	context.address = loadedContext.address
 	context.callID = loadedContext.callID
@@ -1348,9 +1352,21 @@ func (context *asyncContext) generateNewCallID(isCallback bool) []byte {
 	context.totalCallsCounter++
 	newCallID := append(context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes()...)
 	newCallID, _ = context.host.Crypto().Sha256(newCallID)
+	// TODO matei-p only for debug purposes
+	newCallID = append([]byte("_"), newCallID...)
+	newCallID = append([]byte(strconv.Itoa(int(context.totalCallsCounter))), newCallID...)
+	newCallID = append([]byte("_"), newCallID...)
+	newCallID = append([]byte(context.host.Runtime().Function()), newCallID...)
 	return newCallID
 }
 
 func (context *asyncContext) DecrementCallsCounter() {
 	context.callsCounter--
+}
+
+func DebugCallIDAsString(arr []byte) string {
+	if len(arr) > 3 {
+		return "[" + string(arr)[:5] + "...]"
+	}
+	return fmt.Sprint(arr)
 }

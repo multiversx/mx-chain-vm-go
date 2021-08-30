@@ -2516,8 +2516,11 @@ func ExecuteOnSameContextWithTypedArgs(
 	}
 
 	// send the callID to a sync call
-	contractCallInput.Arguments = append([][]byte{host.Async().GetCallID()}, contractCallInput.Arguments...)
-	contractCallInput.Arguments = append([][]byte{host.Async().GetCallID()}, contractCallInput.Arguments...)
+	contractCallInput.Arguments = arwen.PrependToArguments(
+		contractCallInput.Arguments,
+		host.Async().GetCallID(),
+		host.Async().GetCallID(),
+	)
 
 	err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2615,8 +2618,11 @@ func ExecuteOnDestContextWithTypedArgs(
 	}
 
 	// send the callID to a sync call
-	contractCallInput.Arguments = append([][]byte{host.Async().GetCallID()}, contractCallInput.Arguments...)
-	contractCallInput.Arguments = append([][]byte{host.Async().GenerateNewCallID()}, contractCallInput.Arguments...)
+	contractCallInput.Arguments = arwen.PrependToArguments(
+		contractCallInput.Arguments,
+		host.Async().GenerateNewCallID(),
+		host.Async().GetCallID(),
+	)
 
 	_, err, _ = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {

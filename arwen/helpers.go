@@ -268,3 +268,8 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 
 	return true
 }
+
+// PrependToArguments -
+func PrependToArguments(arguments [][]byte, toPrepend ...[]byte) [][]byte {
+	return append(toPrepend, arguments...)
+}

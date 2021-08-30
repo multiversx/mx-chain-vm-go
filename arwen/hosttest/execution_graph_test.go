@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -30,6 +31,11 @@ func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -317,7 +323,7 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 						"to", string(outputAccount.Address),
 						"gas limit", outputTransfer.GasLimit,
 						"callType", callType,
-						/*"data", string(outputTransfer.Data)*/)
+						"data", contexts.DebugCallIDAsString(outputTransfer.Data))
 					if callType == vm.AsynchronousCall {
 						encodedArgs = outputTransfer.Data
 					} else if callType == vm.AsynchronousCallBack {
