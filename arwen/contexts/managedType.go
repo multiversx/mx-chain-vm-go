@@ -360,7 +360,13 @@ func (context *managedTypesContext) SetBytes(mBufferHandle int32, bytes []byte) 
 	if !ok {
 		context.managedTypesValues.mBufferValues[mBufferHandle] = make([]byte, 0)
 	}
-	context.managedTypesValues.mBufferValues[mBufferHandle] = bytes
+
+	// always performing a copy,
+	// so that changes to the byte buffer in the contract can never leak back into the blockchain
+	bytesCopy := make([]byte, len(bytes))
+	copy(bytesCopy, bytes)
+
+	context.managedTypesValues.mBufferValues[mBufferHandle] = bytesCopy
 }
 
 // GetBytes returns the bytes for the managed buffer. Returns nil as value and error if buffer is non-existent
