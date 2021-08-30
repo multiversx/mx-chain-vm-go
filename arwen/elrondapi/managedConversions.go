@@ -3,8 +3,10 @@ package elrondapi
 import (
 	"encoding/binary"
 	"errors"
+	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -168,4 +170,106 @@ func writeESDTTransfersToBytes(
 	}
 
 	return destinationBytes
+}
+
+type vmInputData struct {
+	destination []byte
+	function    string
+	value       *big.Int
+	arguments   [][]byte
+}
+
+func readDestinationValueFunctionArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+
+	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	function, err := managedType.GetBytes(functionHandle)
+	if err != nil {
+		return nil, err
+	}
+	vmInput.function = string(function)
+
+	return vmInput, err
+}
+
+func readDestinationValueArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	valueHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+
+	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	vmInput.value, err = managedType.GetBigInt(valueHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	return vmInput, err
+}
+
+func readDestinationFunctionArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+
+	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	function, err := managedType.GetBytes(functionHandle)
+	if err != nil {
+		return nil, err
+	}
+	vmInput.function = string(function)
+
+	return vmInput, err
+}
+
+func readDestinationArguments(
+	vmHost arwen.VMHost,
+	destHandle int32,
+	argumentsHandle int32,
+) (*vmInputData, error) {
+	managedType := vmHost.ManagedTypes()
+	metering := vmHost.Metering()
+
+	var err error
+	vmInput := &vmInputData{}
+
+	vmInput.destination, err = managedType.GetBytes(destHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	vmInput.value = big.NewInt(0)
+	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
+	if err != nil {
+		return nil, err
+	}
+	vmInput.arguments = data
+
+	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
+	metering.UseGas(gasToUse)
+
+	return vmInput, err
 }

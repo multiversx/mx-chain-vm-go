@@ -39,7 +39,6 @@ import "C"
 
 import (
 	"errors"
-	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -440,10 +439,10 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 //export v1_4_managedAsyncCall
 func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, dataHandle int32) {
-	vmHost := arwen.GetVMHost(context)
-	runtime := vmHost.Runtime()
-	metering := vmHost.Metering()
-	managedType := vmHost.ManagedTypes()
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasSchedule := metering.GasSchedule()
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
@@ -480,108 +479,6 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	}
 }
 
-type vmInputData struct {
-	destination []byte
-	function    string
-	value       *big.Int
-	arguments   [][]byte
-}
-
-func readDestinationValueFunctionArguments(
-	vmHost arwen.VMHost,
-	destHandle int32,
-	valueHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
-
-	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
-	if err != nil {
-		return nil, err
-	}
-
-	function, err := managedType.GetBytes(functionHandle)
-	if err != nil {
-		return nil, err
-	}
-	vmInput.function = string(function)
-
-	return vmInput, err
-}
-
-func readDestinationValueArguments(
-	vmHost arwen.VMHost,
-	destHandle int32,
-	valueHandle int32,
-	argumentsHandle int32,
-) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
-
-	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
-	if err != nil {
-		return nil, err
-	}
-
-	vmInput.value, err = managedType.GetBigInt(valueHandle)
-	if err != nil {
-		return nil, err
-	}
-
-	return vmInput, err
-}
-
-func readDestinationFunctionArguments(
-	vmHost arwen.VMHost,
-	destHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
-
-	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
-	if err != nil {
-		return nil, err
-	}
-
-	function, err := managedType.GetBytes(functionHandle)
-	if err != nil {
-		return nil, err
-	}
-	vmInput.function = string(function)
-
-	return vmInput, err
-}
-
-func readDestinationArguments(
-	vmHost arwen.VMHost,
-	destHandle int32,
-	argumentsHandle int32,
-) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
-	metering := vmHost.Metering()
-
-	var err error
-	vmInput := &vmInputData{}
-
-	vmInput.destination, err = managedType.GetBytes(destHandle)
-	if err != nil {
-		return nil, err
-	}
-
-	vmInput.value = big.NewInt(0)
-	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
-	if err != nil {
-		return nil, err
-	}
-	vmInput.arguments = data
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
-	metering.UseGas(gasToUse)
-
-	return vmInput, err
-}
-
 //export v1_4_managedUpgradeFromSourceContract
 func v1_4_managedUpgradeFromSourceContract(
 	context unsafe.Pointer,
@@ -593,33 +490,33 @@ func v1_4_managedUpgradeFromSourceContract(
 	argumentsHandle int32,
 	resultHandle int32,
 ) {
-	vmHost := arwen.GetVMHost(context)
-	runtime := vmHost.Runtime()
-	metering := vmHost.Metering()
-	managedType := vmHost.ManagedTypes()
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
 
-	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	sourceContractAddress, err := managedType.GetBytes(addressHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	lenReturnData := len(vmHost.Output().ReturnData())
+	lenReturnData := len(host.Output().ReturnData())
 
 	UpgradeFromSourceContractWithTypedArgs(
-		vmHost,
+		host,
 		sourceContractAddress,
 		vmInput.destination,
 		vmInput.value.Bytes(),
@@ -627,7 +524,7 @@ func v1_4_managedUpgradeFromSourceContract(
 		gas,
 		codeMetadata,
 	)
-	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
 //export v1_4_managedUpgradeContract
@@ -641,37 +538,37 @@ func v1_4_managedUpgradeContract(
 	argumentsHandle int32,
 	resultHandle int32,
 ) {
-	vmHost := arwen.GetVMHost(context)
-	runtime := vmHost.Runtime()
-	metering := vmHost.Metering()
-	managedType := vmHost.ManagedTypes()
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
 
-	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	lenReturnData := len(vmHost.Output().ReturnData())
+	lenReturnData := len(host.Output().ReturnData())
 
-	upgradeContract(vmHost, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
-	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+	upgradeContract(host, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
 //export v1_4_managedDeployFromSourceContract
@@ -685,40 +582,40 @@ func v1_4_managedDeployFromSourceContract(
 	resultAddress int32,
 	resultHandle int32,
 ) int32 {
-	vmHost := arwen.GetVMHost(context)
-	runtime := vmHost.Runtime()
-	metering := vmHost.Metering()
-	managedType := vmHost.ManagedTypes()
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
 
-	vmInput, err := readDestinationValueArguments(vmHost, addressHandle, valueHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	vmInput, err := readDestinationValueArguments(host, addressHandle, valueHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	lenReturnData := len(vmHost.Output().ReturnData())
+	lenReturnData := len(host.Output().ReturnData())
 
 	newAddress, err := DeployFromSourceContractWithTypedArgs(
-		vmHost,
+		host,
 		vmInput.destination,
 		codeMetadata,
 		vmInput.value,
 		vmInput.arguments,
 		gas,
 	)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	managedType.SetBytes(resultAddress, newAddress)
-	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
 
 	return 0
 }
@@ -734,22 +631,22 @@ func v1_4_managedCreateContract(
 	resultAddress int32,
 	resultHandle int32,
 ) int32 {
-	vmHost := arwen.GetVMHost(context)
-	runtime := vmHost.Runtime()
-	metering := vmHost.Metering()
-	managedType := vmHost.ManagedTypes()
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
 
 	sender := runtime.GetSCAddress()
 	value, err := managedType.GetBigInt(valueHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -757,41 +654,41 @@ func v1_4_managedCreateContract(
 	metering.UseGas(gasToUse)
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	lenReturnData := len(vmHost.Output().ReturnData())
-	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, vmHost, runtime)
-	if arwen.WithFaultAndHost(vmHost, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	lenReturnData := len(host.Output().ReturnData())
+	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, host, runtime)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	managedType.SetBytes(resultAddress, newAddress)
-	setReturnDataIfExists(vmHost, lenReturnData, resultHandle)
+	setReturnDataIfExists(host, lenReturnData, resultHandle)
 
 	return 0
 }
 
 func setReturnDataIfExists(
-	vmHost arwen.VMHost,
+	host arwen.VMHost,
 	oldLen int,
 	resultHandle int32,
 ) {
-	returnData := vmHost.Output().ReturnData()
+	returnData := host.Output().ReturnData()
 	if len(returnData) > oldLen {
-		_ = writeManagedVecOfManagedBuffers(vmHost.ManagedTypes(), returnData[oldLen:], resultHandle)
+		_ = writeManagedVecOfManagedBuffers(host.ManagedTypes(), returnData[oldLen:], resultHandle)
 	} else {
-		vmHost.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
+		host.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	}
 }
 
