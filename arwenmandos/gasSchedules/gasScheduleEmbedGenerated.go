@@ -1418,14 +1418,8 @@ const (
     BigFloatLog2        = 2000
     BigFloatFloor       = 2000
     BigFloatCeil        = 2000
-    BigFloatSetBytes    = 2000
-    BigFloatGetBytes    = 2000
     BigFloatIsInt       = 2000
     BigFloatSetBigInt   = 2000
-    BigFloatFinish      = 2000
-    BigFloatGetArgument = 2000
-    BigFloatStorageStore = 2000
-    BigFloatStorageLoad = 2000
 
 [CryptoAPICost]
     SHA256                 = 1000000
@@ -1460,6 +1454,8 @@ const (
     MBufferToBigIntSigned        = 10000
     MBufferFromBigIntUnsigned    = 4000
     MBufferFromBigIntSigned      = 10000
+    MBufferToBigFloat            = 4000
+    MBufferFromBigFloat          = 4000
     MBufferStorageStore          = 250000
     MBufferStorageLoad           = 100000
     MBufferGetArgument           = 1000
