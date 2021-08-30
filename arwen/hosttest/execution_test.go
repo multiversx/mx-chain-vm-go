@@ -2641,7 +2641,6 @@ func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
 
 func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
-	l := len(childCode)
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -2668,10 +2667,8 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 2885).
-				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("fail")).
-				Storage(test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+				ReturnCode(10).
+				ReturnMessage("error signalled by smartcontract")
 		})
 }
 
