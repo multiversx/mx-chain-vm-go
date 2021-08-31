@@ -5,13 +5,13 @@ BigFloatAddTest
 BigFloatSubTest
 BigFloatMulTest
 BigFloatDivTest
-BigFloatRoundDivTest
+BigFloatTruncateTest
 BigFloatModTest
 BigFloatAbsTest
 BigFloatNegTest
 BigFloatCmpTest
 BigFloatSignTest
-BigFloatCopyTest
+BigFloatCloneTest
 BigFloatSqrtTest
 BigFloatLog2Test
 BigFloatPowTest
@@ -22,5 +22,3 @@ BigFloatSetInt64Test
 BigFloatSetBigIntTest
 BigFloatGetConstPiTest
 BigFloatGetConstETest
-BigFloatSetBytesTest
-BigFloatGetBytesTest

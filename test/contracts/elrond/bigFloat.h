@@ -11,17 +11,17 @@ void bigFloatAdd(int destinationHandle, int op1Handle, int op2Handle);
 void bigFloatSub(int destinationHandle, int op1Handle, int op2Handle);
 void bigFloatMul(int destinationHandle, int op1Handle, int op2Handle);
 void bigFloatDiv(int destinationHandle, int op1Handle, int op2Handle);
-void bigFloatRoundDiv(int destinationHandle, int op1Handle, int op2Handle);
+void bigFloatTruncate(int opHandle);
 void bigFloatMod(int destinationHandle, int op1Handle, int op2Handle);
 
 void bigFloatAbs(int destinationHandle, int opHandle);
 void bigFloatNeg(int destinationHandle, int opHandle);
 int	bigFloatCmp(int op1Handle, int op2Handle);
 int	bigFloatSign(int opHandle);
-void bigFloatCopy(int destinationHandle, int opHandle);
+void bigFloatClone(int destinationHandle, int opHandle);
 void bigFloatSqrt(int destinationHandle, int opHandle);
 int	bigFloatLog2(int opHandle);
-void bigFloatPow(int destinationHandle, int op1Handle, int op2Handle);
+void bigFloatPow(int destinationHandle, int op1Handle, int smallValue);
 
 void bigFloatFloor(int opHandle, int bigIntHandle);
 void bigFloatCeil(int opHandle, int bigIntHandle);
@@ -32,11 +32,5 @@ void bigFloatSetBigInt(int destinationHandle, int bigIntHandle);
 
 void bigFloatGetConstPi(int destinationHandle);
 void bigFloatGetConstE(int destinationHandle);
-
-void bigFloatSetBytes(int destinationHandle, byte* dataOffset, int dataLength);
-void bigFloatGetBytes(int destinationHandle, byte* dataOffset);
-
-void bigFloatFinish(int referenceHandle);
-void bigFloatGetArgument(int id, int destinationHandle);
 
 #endif
