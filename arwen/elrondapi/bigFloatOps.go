@@ -505,7 +505,8 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, op1Handle, smal
 }
 
 func pow(base *big.Float, exp int32) *big.Float {
-	result := new(big.Float).Copy(base)
+	result := big.NewFloat(1)
+	result.SetPrec(base.Prec())
 	for i := 0; i < int(exp); i++ {
 		result.Mul(result, base)
 	}
