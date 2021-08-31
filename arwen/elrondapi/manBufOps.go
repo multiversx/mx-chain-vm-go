@@ -116,6 +116,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("mBufferFromBigFloat", v1_4_mBufferFromBigFloat, C.v1_4_mBufferFromBigFloat)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("mBufferStorageStore", v1_4_mBufferStorageStore, C.v1_4_mBufferStorageStore)
 	if err != nil {
 		return nil, err
