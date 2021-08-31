@@ -10,11 +10,12 @@ type CrossShardCall struct {
 	StartNode     *TestCallNode
 	CallType      vm.CallType
 	Data          []byte
+	ParentsPath   []*TestCallNode
 }
 
 // CrossShardCallsQueue -
 type CrossShardCallsQueue struct {
-	data []*CrossShardCall
+	Data []*CrossShardCall
 }
 
 // NewCrossShardCallQueue -
@@ -24,20 +25,32 @@ func NewCrossShardCallQueue() *CrossShardCallsQueue {
 
 // Enqueue -
 func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
-	queue.data = append(queue.data, &CrossShardCall{
+	parentsPath := make([]*TestCallNode, 0)
+	crtNode := startNode
+	for crtNode.Parent != nil {
+		parentsPath = append(parentsPath, crtNode.Parent)
+		crtNode = crtNode.Parent
+	}
+	queue.Data = append(queue.Data, &CrossShardCall{
 		CallerAddress: callerAddress,
 		StartNode:     startNode,
 		CallType:      callType,
 		Data:          data,
+		ParentsPath:   parentsPath,
 	})
+}
+
+// Requeue -
+func (queue *CrossShardCallsQueue) Requeue(crossShardCall *CrossShardCall) {
+	queue.Enqueue(crossShardCall.CallerAddress, crossShardCall.StartNode, crossShardCall.CallType, crossShardCall.Data)
 }
 
 // Top -
 func (queue *CrossShardCallsQueue) Top() *CrossShardCall {
-	if len(queue.data) == 0 {
+	if len(queue.Data) == 0 {
 		return nil
 	}
-	return queue.data[0]
+	return queue.Data[0]
 }
 
 // Dequeue -
@@ -46,11 +59,23 @@ func (queue *CrossShardCallsQueue) Dequeue() *CrossShardCall {
 	if top == nil {
 		return nil
 	}
-	queue.data = queue.data[1:]
+	queue.Data = queue.Data[1:]
 	return top
 }
 
 // IsEmpty -
 func (queue *CrossShardCallsQueue) IsEmpty() bool {
-	return len(queue.data) == 0
+	return len(queue.Data) == 0
+}
+
+// CanExecuteLocalCallback - in case of async local calls, search queue for pending children of the start of this edge
+func (queue *CrossShardCallsQueue) CanExecuteLocalCallback(callbackNode *TestCallNode) bool {
+	for _, callInQueue := range queue.Data {
+		for _, parentInPath := range callInQueue.ParentsPath {
+			if parentInPath == callbackNode.Parent {
+				return false
+			}
+		}
+	}
+	return true
 }

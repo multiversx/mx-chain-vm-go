@@ -12,13 +12,15 @@ import (
 )
 
 func main() {
-	// callGraph := test.CreateGraphTestCallbackCallsAsync()
-	// callGraph := test.CreateGraphTestAsyncCallsAsync()
-	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
+	callGraph := test.CreateGraphTestCallbackCallsAsync()
+	// callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossShard()
+	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
-	callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
+	// callGraph := test.CreateGraphTestTwoAsyncCalls()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 

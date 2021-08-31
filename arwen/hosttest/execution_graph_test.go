@@ -259,6 +259,11 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 		crossShardCall = crossShardCallsQueue.Dequeue()
 		startNode := crossShardCall.StartNode
 
+		if !crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
+			crossShardCallsQueue.Requeue(crossShardCall)
+			continue
+		}
+
 		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
 			for _, edge := range node.AdjacentEdges {
 				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
@@ -271,6 +276,14 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 						callType = vm.AsynchronousCallBack
 					}
 					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, nil)
+				}
+			}
+
+			if incomingEdge != nil && incomingEdge.Type == test.Callback {
+				if !crossShardCallsQueue.CanExecuteLocalCallback(node) {
+					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, incomingEdge.To, vm.AsynchronousCallBack, nil)
+					// stop DFS for this branch
+					return nil
 				}
 			}
 

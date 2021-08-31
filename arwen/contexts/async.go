@@ -202,6 +202,7 @@ func (context *asyncContext) PopSetActiveState() {
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
+	// TODO matei-p copy counter values also
 	context.address = prevState.address
 	context.callID = prevState.callID
 	context.callerAddr = prevState.callerAddr
@@ -1364,6 +1365,7 @@ func (context *asyncContext) DecrementCallsCounter() {
 	context.callsCounter--
 }
 
+// DebugCallIDAsString - just for debug purposes
 func DebugCallIDAsString(arr []byte) string {
 	if len(arr) > 3 {
 		return "[" + string(arr)[:5] + "...]"

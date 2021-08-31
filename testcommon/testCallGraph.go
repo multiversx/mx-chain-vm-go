@@ -388,6 +388,10 @@ func (graph *TestCallGraph) dfsFromNode(parent *TestCallNode, node *TestCallNode
 
 	path = append(path, node)
 	processedParent := processNode(path, parent, node, incomingEdge)
+	// a signal to stop DFS for this branch
+	if processedParent == nil {
+		return node
+	}
 	node.Visited = true
 
 	for _, edge := range node.AdjacentEdges {
