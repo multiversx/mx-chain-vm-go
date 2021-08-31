@@ -452,6 +452,7 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	}
 
 	value := managedType.GetBigFloatOrCreate(bigFloatHandle)
+	value.SetPrec(0)
 
 	bigFloat := new(big.Float)
 	err = bigFloat.GobDecode(managedBuffer)
