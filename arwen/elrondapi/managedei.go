@@ -663,10 +663,6 @@ func v1_4_managedCreateContract(
 		return 1
 	}
 
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
 	lenReturnData := len(host.Output().ReturnData())
 	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, host, runtime)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
