@@ -180,15 +180,15 @@ type vmInputData struct {
 }
 
 func readDestinationValueFunctionArguments(
-	vmHost arwen.VMHost,
+	host arwen.VMHost,
 	destHandle int32,
 	valueHandle int32,
 	functionHandle int32,
 	argumentsHandle int32,
 ) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
+	managedType := host.ManagedTypes()
 
-	vmInput, err := readDestinationValueArguments(vmHost, destHandle, valueHandle, argumentsHandle)
+	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
 	if err != nil {
 		return nil, err
 	}
@@ -203,14 +203,14 @@ func readDestinationValueFunctionArguments(
 }
 
 func readDestinationValueArguments(
-	vmHost arwen.VMHost,
+	host arwen.VMHost,
 	destHandle int32,
 	valueHandle int32,
 	argumentsHandle int32,
 ) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
+	managedType := host.ManagedTypes()
 
-	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
+	vmInput, err := readDestinationArguments(host, destHandle, argumentsHandle)
 	if err != nil {
 		return nil, err
 	}
@@ -224,14 +224,14 @@ func readDestinationValueArguments(
 }
 
 func readDestinationFunctionArguments(
-	vmHost arwen.VMHost,
+	host arwen.VMHost,
 	destHandle int32,
 	functionHandle int32,
 	argumentsHandle int32,
 ) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
+	managedType := host.ManagedTypes()
 
-	vmInput, err := readDestinationArguments(vmHost, destHandle, argumentsHandle)
+	vmInput, err := readDestinationArguments(host, destHandle, argumentsHandle)
 	if err != nil {
 		return nil, err
 	}
@@ -246,12 +246,12 @@ func readDestinationFunctionArguments(
 }
 
 func readDestinationArguments(
-	vmHost arwen.VMHost,
+	host arwen.VMHost,
 	destHandle int32,
 	argumentsHandle int32,
 ) (*vmInputData, error) {
-	managedType := vmHost.ManagedTypes()
-	metering := vmHost.Metering()
+	managedType := host.ManagedTypes()
+	metering := host.Metering()
 
 	var err error
 	vmInput := &vmInputData{}
