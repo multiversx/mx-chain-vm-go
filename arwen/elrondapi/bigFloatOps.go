@@ -501,7 +501,13 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, op1Handle, smal
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(op1BigInt.BitLen()))), big.NewInt(8))
 	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 
-	dest.Set(pow(op1, smallValue))
+	powResult := new(big.Float).Set(pow(op1, smallValue))
+	if oneIsInfinity(powResult) {
+		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
+
+	dest.Set(powResult)
 }
 
 func pow(base *big.Float, exp int32) *big.Float {
