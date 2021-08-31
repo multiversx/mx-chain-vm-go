@@ -324,7 +324,7 @@ type AsyncContext interface {
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 
-	Load() error
+	// Load() error
 	LoadSpecifiedContext(address []byte, callID []byte) error
 	Save() error
 	Delete() error
@@ -340,4 +340,6 @@ type AsyncContext interface {
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
 	NotifyOfChildCompletion(childErr error) error
+
+	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
 }

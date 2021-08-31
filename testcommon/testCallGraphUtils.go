@@ -86,6 +86,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 		}
 		functionName := node.Call.FunctionName
 		contract := contracts[contractAddressAsString]
+		node.ShardID = contract.shardID
 		addFunctionToTempList(contract, functionName, true)
 		return node
 	}, true)
@@ -315,6 +316,30 @@ func CreateGraphTestAsyncCallsAsyncCrossShard() *TestCallGraph {
 		SetGasUsedByCallback(3)
 
 	callGraph.AddNode("sc2", "cb2")
+
+	return callGraph
+}
+
+// CreateGraphTestCallbackCallsSync -
+func CreateGraphTestCallbackCallsSync() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 2000, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(1000).
+		SetGasUsed(70).
+		SetGasUsedByCallback(500)
+
+	sc1cb1 := callGraph.AddNode("sc1", "cb1")
+
+	sc2f3 := callGraph.AddNode("sc2", "f3")
+	callGraph.AddSyncEdge(sc1cb1, sc2f3).
+		SetGasLimit(200).
+		SetGasUsed(60)
+
+	callGraph.AddNode("sc1", "cb2")
 
 	return callGraph
 }

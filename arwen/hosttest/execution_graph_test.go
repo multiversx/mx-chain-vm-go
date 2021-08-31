@@ -45,12 +45,18 @@ func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
+	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_CallbackCallsSync_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestCallbackCallsSync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -259,7 +265,8 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 		crossShardCall = crossShardCallsQueue.Dequeue()
 		startNode := crossShardCall.StartNode
 
-		if !crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
+		if (startNode.IncomingEdgeType == test.Callback || startNode.IncomingEdgeType == test.CallbackCrossShard) &&
+			!crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
 			crossShardCallsQueue.Requeue(crossShardCall)
 			continue
 		}

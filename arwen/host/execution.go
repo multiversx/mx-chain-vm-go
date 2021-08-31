@@ -8,7 +8,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -222,8 +221,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
 	scExecutionInput := input
-
-	host.Async().Save()
 
 	blockchain := host.Blockchain()
 	blockchain.PushState()
@@ -872,7 +869,7 @@ func (host *vmHost) callSCMethod() error {
 		}
 
 		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
-		asyncCall, _ := contexts.UpdateCurrentAsyncCallStatus(host.Storage(),
+		asyncCall, _ := async.UpdateCurrentAsyncCallStatus(
 			runtime.GetSCAddress(),
 			originalCallID,
 			asyncCallIdentifier,

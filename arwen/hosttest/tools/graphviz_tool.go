@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
-	callGraph := test.CreateGraphTestCallbackCallsAsync()
+	// callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestCallbackCallsAsync()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossShard()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
@@ -35,7 +35,8 @@ func main() {
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2() // not allowed to run!
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
-	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
+	// callGraph := test.CreateGraphTestCallbackCallsSync()
+	callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest1()
 	// callGraph := test.CreateGraphTest2()
