@@ -53,7 +53,8 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 			ecValues:      make(ellipticCurveMap),
 			mBufferValues: make(managedBufferMap),
 		},
-		managedTypesStack: make([]managedTypesState, 0),
+		managedTypesStack:   make([]managedTypesState, 0),
+		randomnessGenerator: nil,
 	}
 
 	return context, nil
@@ -126,6 +127,7 @@ func (context *managedTypesContext) PopDiscard() {
 // ClearStateStack initializes the state stack
 func (context *managedTypesContext) ClearStateStack() {
 	context.managedTypesStack = make([]managedTypesState, 0)
+	context.randomnessGenerator = nil
 }
 
 func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, managedBufferMap) {
