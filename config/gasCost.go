@@ -142,29 +142,24 @@ type BigIntAPICost struct {
 }
 
 type BigFloatAPICost struct {
-	BigFloatNew          uint64
-	BigFloatAdd          uint64
-	BigFloatSub          uint64
-	BigFloatMul          uint64
-	BigFloatDiv          uint64
-	BigFloatRoundDiv     uint64
-	BigFloatMod          uint64
-	BigFloatNeg          uint64
-	BigFloatCopy         uint64
-	BigFloatCmp          uint64
-	BigFloatAbs          uint64
-	BigFloatSqrt         uint64
-	BigFloatLog2         uint64
-	BigFloatFloor        uint64
-	BigFloatCeil         uint64
-	BigFloatSetBytes     uint64
-	BigFloatGetBytes     uint64
-	BigFloatIsInt        uint64
-	BigFloatSetBigInt    uint64
-	BigFloatFinish       uint64
-	BigFloatGetArgument  uint64
-	BigFloatStorageStore uint64
-	BigFloatStorageLoad  uint64
+	BigFloatNew       uint64
+	BigFloatAdd       uint64
+	BigFloatSub       uint64
+	BigFloatMul       uint64
+	BigFloatDiv       uint64
+	BigFloatTruncate  uint64
+	BigFloatMod       uint64
+	BigFloatNeg       uint64
+	BigFloatClone     uint64
+	BigFloatCmp       uint64
+	BigFloatAbs       uint64
+	BigFloatSqrt      uint64
+	BigFloatLog2      uint64
+	BigFloatFloor     uint64
+	BigFloatCeil      uint64
+	BigFloatIsInt     uint64
+	BigFloatSetBigInt uint64
+	BigFloatSetInt64  uint64
 }
 
 type CryptoAPICost struct {
@@ -201,6 +196,8 @@ type ManagedBufferAPICost struct {
 	MBufferToBigIntSigned     uint64
 	MBufferFromBigIntUnsigned uint64
 	MBufferFromBigIntSigned   uint64
+	MBufferToBigFloat         uint64
+	MBufferFromBigFloat       uint64
 	MBufferStorageStore       uint64
 	MBufferStorageLoad        uint64
 	MBufferGetArgument        uint64

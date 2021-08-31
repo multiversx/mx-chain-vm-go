@@ -322,24 +322,19 @@ func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigFloatSub"] = value
 	gasMap["BigFloatMul"] = value
 	gasMap["BigFloatDiv"] = value
-	gasMap["BigFloatRoundDiv"] = value
+	gasMap["BigFloatTruncate"] = value
 	gasMap["BigFloatMod"] = value
 	gasMap["BigFloatNeg"] = value
-	gasMap["BigFloatCopy"] = value
+	gasMap["BigFloatClone"] = value
 	gasMap["BigFloatCmp"] = value
 	gasMap["BigFloatAbs"] = value
 	gasMap["BigFloatSqrt"] = value
 	gasMap["BigFloatLog2"] = value
 	gasMap["BigFloatFloor"] = value
 	gasMap["BigFloatCeil"] = value
-	gasMap["BigFloatSetBytes"] = value
-	gasMap["BigFloatGetBytes"] = value
 	gasMap["BigFloatIsInt"] = value
 	gasMap["BigFloatSetBigInt"] = value
-	gasMap["BigFloatFinish"] = value
-	gasMap["BigFloatGetArgument"] = value
-	gasMap["BigFloatStorageStore"] = value
-	gasMap["BigFloatStorageLoad"] = value
+	gasMap["BigFloatSetInt64"] = value
 
 	return gasMap
 }
@@ -382,6 +377,8 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferToBigIntSigned"] = value
 	gasMap["MBufferFromBigIntUnsigned"] = value
 	gasMap["MBufferFromBigIntSigned"] = value
+	gasMap["MBufferToBigFloat"] = value
+	gasMap["MBufferFromBigFloat"] = value
 	gasMap["MBufferStorageStore"] = value
 	gasMap["MBufferStorageLoad"] = value
 	gasMap["MBufferGetArgument"] = value

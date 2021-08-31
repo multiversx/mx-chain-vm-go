@@ -127,24 +127,19 @@
     BigFloatSub         = 10
     BigFloatMul         = 10    
     BigFloatDiv         = 10
-    BigFloatRoundDiv    = 10
+    BigFloatTruncate    = 10
     BigFloatMod         = 10
     BigFloatNeg         = 10
-    BigFloatCopy        = 10
+    BigFloatClone       = 10
     BigFloatCmp         = 10
     BigFloatAbs         = 10
     BigFloatSqrt        = 10
     BigFloatLog2        = 10
     BigFloatFloor       = 10
     BigFloatCeil        = 10
-    BigFloatSetBytes    = 10
-    BigFloatGetBytes    = 10
     BigFloatIsInt       = 10
     BigFloatSetBigInt   = 10
-    BigFloatFinish      = 10
-    BigFloatGetArgument = 10
-    BigFloatStorageStore = 10
-    BigFloatStorageLoad = 10
+    BigFloatSetInt64    = 10
 
 [CryptoAPICost]
     SHA256                 = 10
@@ -175,6 +170,8 @@
     MBufferToBigIntSigned        = 10
     MBufferFromBigIntUnsigned    = 10
     MBufferFromBigIntSigned      = 10
+    MBufferToBigFloat            = 10
+    MBufferFromBigFloat          = 10
     MBufferStorageStore          = 10
     MBufferStorageLoad           = 10
     MBufferGetArgument           = 10
