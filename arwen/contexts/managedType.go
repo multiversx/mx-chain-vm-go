@@ -53,7 +53,8 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 			ecValues:      make(ellipticCurveMap),
 			mBufferValues: make(managedBufferMap),
 		},
-		managedTypesStack: make([]managedTypesState, 0),
+		managedTypesStack:   make([]managedTypesState, 0),
+		randomnessGenerator: nil,
 	}
 
 	return context, nil
@@ -126,6 +127,7 @@ func (context *managedTypesContext) PopDiscard() {
 // ClearStateStack initializes the state stack
 func (context *managedTypesContext) ClearStateStack() {
 	context.managedTypesStack = make([]managedTypesState, 0)
+	context.randomnessGenerator = nil
 }
 
 func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, managedBufferMap) {
@@ -355,7 +357,13 @@ func (context *managedTypesContext) SetBytes(mBufferHandle int32, bytes []byte) 
 	if !ok {
 		context.managedTypesValues.mBufferValues[mBufferHandle] = make([]byte, 0)
 	}
-	context.managedTypesValues.mBufferValues[mBufferHandle] = bytes
+
+	// always performing a copy,
+	// so that changes to the byte buffer in the contract can never leak back into the blockchain
+	bytesCopy := make([]byte, len(bytes))
+	copy(bytesCopy, bytes)
+
+	context.managedTypesValues.mBufferValues[mBufferHandle] = bytesCopy
 }
 
 // GetBytes returns the bytes for the managed buffer. Returns nil as value and error if buffer is non-existent
