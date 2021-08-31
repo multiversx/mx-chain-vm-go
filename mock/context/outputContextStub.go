@@ -37,6 +37,7 @@ type OutputContextStub struct {
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
 	PrependFinishCalled               func(data []byte)
+	DeleteFirstReturnDataCalled       func()
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
@@ -243,6 +244,13 @@ func (o *OutputContextStub) Finish(data []byte) {
 func (o *OutputContextStub) PrependFinish(data []byte) {
 	if o.PrependFinishCalled != nil {
 		o.PrependFinishCalled(data)
+	}
+}
+
+// DeleteFirstReturnData mocked method
+func (o *OutputContextStub) DeleteFirstReturnData() {
+	if o.DeleteFirstReturnDataCalled != nil {
+		o.DeleteFirstReturnDataCalled()
 	}
 }
 
