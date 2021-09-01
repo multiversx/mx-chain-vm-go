@@ -167,6 +167,12 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	}
 }
 
+// ConsumeGasForBytes uses gas for the given bytes
+func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
+	metering := context.host.Metering()
+	metering.UseGas(math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+}
+
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
 func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
@@ -216,8 +222,7 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	return value1, value2, nil
 }
 
-// PutBigInt adds the given value to the current values map and returns the handle
-func (context *managedTypesContext) PutBigInt(value int64) int32 {
+func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
 	newHandle := int32(len(context.managedTypesValues.bigIntValues))
 	for {
 		if _, ok := context.managedTypesValues.bigIntValues[newHandle]; !ok {
@@ -225,8 +230,18 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 		}
 		newHandle++
 	}
-	context.managedTypesValues.bigIntValues[newHandle] = big.NewInt(value)
+	context.managedTypesValues.bigIntValues[newHandle] = value
 	return newHandle
+}
+
+// NewBigInt adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigInt(value *big.Int) int32 {
+	return context.newBigIntNoCopy(big.NewInt(0).Set(value))
+}
+
+// NewBigIntFromInt64 adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigIntFromInt64(int64Value int64) int32 {
+	return context.newBigIntNoCopy(big.NewInt(int64Value))
 }
 
 // ELLIPTIC CURVES

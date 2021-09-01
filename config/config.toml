@@ -13,6 +13,7 @@
     GetShardOfAddress  = 10
     GetExternalBalance = 10
     GetBlockHash       = 10
+    GetOriginalTxHash  = 10
     TransferValue      = 10
     GetArgument        = 10
     GetFunction        = 10
