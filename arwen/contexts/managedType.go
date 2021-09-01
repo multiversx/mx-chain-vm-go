@@ -195,10 +195,9 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 
 // ConsumeGasForBigFloatCopy
 func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
-	for _, _ := range values {
-		byteLen := (bigFloatPrecision + 7) / 8
-		context.ConsumeGasForThisIntNumberOfBytes(int(byteLen))
-	}
+	// THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
+	byteLen := (bigFloatPrecision + 7) / 8
+	context.ConsumeGasForThisIntNumberOfBytes(int(byteLen) * len(values))
 }
 
 // BIGINT
