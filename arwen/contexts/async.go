@@ -156,7 +156,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 // PushState creates a deep clone of the internal state and pushes it onto the
 // internal state stack.
 func (context *asyncContext) PushState() {
-	fmt.Println("---> PUSH " + string(context.address) + " " + DebugCallIDAsString(context.callID))
+	// fmt.Println("---> PUSH " + string(context.address) + " " + DebugCallIDAsString(context.callID))
 	newState := &asyncContext{
 		address:                    context.address,
 		callerAddr:                 context.callerAddr,
@@ -202,7 +202,7 @@ func (context *asyncContext) PopSetActiveState() {
 	}
 
 	prevState := context.stateStack[stateStackLen-1]
-	fmt.Println("---> POP " + string(prevState.address) + " " + DebugCallIDAsString(prevState.callID))
+	// fmt.Println("---> POP " + string(prevState.address) + " " + DebugCallIDAsString(prevState.callID))
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevState.address
@@ -720,8 +720,6 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 	fmt.Println("\tcallerAddr", string(context.callerAddr))
 	fmt.Println("\tcallerCallID", DebugCallIDAsString(context.callerCallID))
 
-	// context.Load()
-
 	vmOutput := context.childResults
 
 	var asyncCallIdentifier *arwen.AsyncCallIdentifier
@@ -754,46 +752,45 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 		return nil
 	}
 
+	var loadedFromStore bool
+
 	// load parent async
 	if context.callType == vm.AsynchronousCallBack {
 		fmt.Println("Load context address", string(context.address), "callID", DebugCallIDAsString(context.callerCallID))
-		stackContext := context.getContextFromStack(context.address, context.callerCallID)
-		if stackContext != nil {
-			context = stackContext
-		} else {
-			context.LoadSpecifiedContext(context.address, context.callerCallID)
-		}
+		context, loadedFromStore = context.LoadFromStackOrStore(context.address, context.callerCallID)
 		err = context.removeAsyncCallIfCompleted(asyncCallIdentifier, vmOutput.ReturnCode)
 		if err != nil {
 			return err
 		}
 	} else {
 		if context.callerCallID == nil {
-			// first call, it does not have any parent
+			// stop notification chain, this is the first call, it does not have any parent
 			return nil
 		}
-		fmt.Println("Load context address", string(context.callerAddr), "callID", DebugCallIDAsString(context.callerCallID))
-		stackContext := context.getContextFromStack(context.callerAddr, context.callerCallID)
-		if stackContext != nil {
-			context = stackContext
-		} else {
-			context.LoadSpecifiedContext(context.callerAddr, context.callerCallID)
-		}
+		context, loadedFromStore = context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
 	}
 
 	context.DecrementCallsCounter()
-	// TODO matei-p should save only if the context was NOT loaded above from the stack
-	context.Save()
+	// save on store only if the context was NOT loaded from the stack
+	if loadedFromStore {
+		context.Save()
+	}
 
 	// check if cross-shard callback
 	if context.host.Runtime().IsFirstCallACallback() {
 		context.checkContextCompletion()
-		// if err != nil {
-		// 	return err
-		// }
 	}
 
 	return nil
+}
+
+func (context *asyncContext) LoadFromStackOrStore(address []byte, callID []byte) (*asyncContext, bool) {
+	stackContext := context.getContextFromStack(address, callID)
+	if stackContext != nil {
+		return stackContext, false
+	}
+	context.LoadSpecifiedContext(address, callID)
+	return context, true
 }
 
 func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier *arwen.AsyncCallIdentifier, returnCode vmcommon.ReturnCode) error {
@@ -1375,7 +1372,7 @@ func (context *asyncContext) generateNewCallID(isCallback bool) []byte {
 }
 
 func (context *asyncContext) DecrementCallsCounter() {
-	fmt.Println("---> decrement " + string(context.address) + " " + DebugCallIDAsString(context.callID))
+	// fmt.Println("---> decrement " + string(context.address) + " " + DebugCallIDAsString(context.callID))
 	context.callsCounter--
 }
 

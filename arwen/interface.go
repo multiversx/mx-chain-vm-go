@@ -325,7 +325,6 @@ type AsyncContext interface {
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 
 	// Load() error
-	LoadSpecifiedContext(address []byte, callID []byte) error
 	Save() error
 	Delete() error
 
