@@ -251,13 +251,16 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 // BIG FLOAT
 
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
-func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) *big.Float {
+func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Float, error) {
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
 	if !ok {
 		value = big.NewFloat(0)
 		context.managedTypesValues.bigFloatValues[handle] = value
 	}
-	return value
+	if value.IsInf() {
+		return nil, arwen.ErrInfinityFloatOperation
+	}
+	return value, nil
 }
 
 // GetBigFloat returns the value at the given handle. If there is no value under that handle, it will return error
@@ -265,6 +268,9 @@ func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
 	if !ok {
 		return nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	if value.IsInf() {
+		return nil, arwen.ErrInfinityFloatOperation
 	}
 	return value, nil
 }
@@ -279,6 +285,9 @@ func (context *managedTypesContext) GetTwoBigFloat(handle1 int32, handle2 int32)
 	value2, ok := bigFloatValues[handle2]
 	if !ok {
 		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	if value1.IsInf() || value2.IsInf() {
+		return nil, nil, arwen.ErrInfinityFloatOperation
 	}
 	return value1, value2, nil
 }
