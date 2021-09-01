@@ -451,8 +451,10 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 		return 1
 	}
 
-	value := managedType.GetBigFloatOrCreate(bigFloatHandle)
-	value.SetPrec(0)
+	value, err := managedType.GetBigFloatOrCreate(bigFloatHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	bigFloat := new(big.Float)
 	err = bigFloat.GobDecode(managedBuffer)
@@ -463,7 +465,7 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
 	}
-	if oneIsInfinity(bigFloat) {
+	if bigFloat.IsInf() {
 		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
 	}
