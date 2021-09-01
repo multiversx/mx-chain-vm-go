@@ -134,7 +134,6 @@
     BigFloatCmp         = 10
     BigFloatAbs         = 10
     BigFloatSqrt        = 10
-    BigFloatLog2        = 10
     BigFloatFloor       = 10
     BigFloatCeil        = 10
     BigFloatIsInt       = 10

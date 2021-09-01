@@ -11,6 +11,8 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
+const bigFloatPrecision = 53
+
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
 const p256CurveMultiplier = 135
@@ -193,11 +195,9 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 
 // ConsumeGasForBigFloatCopy
 func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
-	for _, val := range values {
-		prec := val.Prec()
-		byteLen := (prec + 7) / 8
-		context.ConsumeGasForThisIntNumberOfBytes(int(byteLen))
-	}
+	// THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
+	byteLen := (bigFloatPrecision + 7) / 8
+	context.ConsumeGasForThisIntNumberOfBytes(int(byteLen) * len(values))
 }
 
 // BIGINT
@@ -255,7 +255,6 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) *big.Float
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
 	if !ok {
 		value = big.NewFloat(0)
-		value.SetPrec(0)
 		context.managedTypesValues.bigFloatValues[handle] = value
 	}
 	return value

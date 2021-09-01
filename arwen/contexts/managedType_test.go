@@ -471,7 +471,7 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 	require.Nil(t, bigFloat4)
 	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat4 = managedTypesContext.GetBigFloatOrCreate(3)
-	require.Equal(t, big.NewFloat(0).SetPrec(0), bigFloat4)
+	require.Equal(t, big.NewFloat(0), bigFloat4)
 
 	bigFloatHandle4 := managedTypesContext.PutBigFloat(floatValue4)
 	require.Equal(t, int32(4), bigFloatHandle4)

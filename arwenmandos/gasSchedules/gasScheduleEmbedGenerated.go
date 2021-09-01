@@ -1415,7 +1415,6 @@ const (
     BigFloatCmp         = 2000
     BigFloatAbs         = 2000
     BigFloatSqrt        = 2000
-    BigFloatLog2        = 2000
     BigFloatFloor       = 2000
     BigFloatCeil        = 2000
     BigFloatIsInt       = 2000
