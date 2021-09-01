@@ -813,11 +813,11 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 				if node.IsLeaf() && (node.Parent.IncomingEdgeType == Callback || node.Parent.IncomingEdgeType == CallbackCrossShard) {
 					callBackNode := parent
 					asyncNode := callBackNode.Parent
-					asyncInitiator := asyncNode.Parent
+					// asyncInitiator := asyncNode.Parent
 
-					asyncInitiatorGasRemaining := getGasRemaining(asyncInitiator)
+					// asyncInitiatorGasRemaining := getGasRemaining(asyncInitiator)
 					asyncNodeGasRemaining := getGasRemaining(asyncNode)
-					callBackNode.GasLimit = asyncInitiatorGasRemaining + asyncNodeGasRemaining + asyncNode.GasLocked
+					callBackNode.GasLimit = /*asyncInitiatorGasRemaining +*/ asyncNodeGasRemaining + asyncNode.GasLocked
 
 					callBackNodeGasRemaining := int64(callBackNode.GasLimit)
 					for _, edge := range callBackNode.GetEdges() {

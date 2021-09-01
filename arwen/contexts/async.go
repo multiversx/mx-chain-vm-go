@@ -127,10 +127,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetSCAddress()
 
-	// TODO matei-p remove for logging
+	// TODO matei-p change to debug logging
 	fmt.Println("Calling function ", input.Function, "address", string(context.address))
-	fmt.Println("\tcallID", DebugCallIDAsString(context.callID))
-
 	if len(context.stateStack) == 0 && input.CallType != vm.AsynchronousCall && input.CallType != vm.AsynchronousCallBack {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
@@ -142,14 +140,20 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 
+	// TODO matei-p change to debug logging
+	fmt.Println("\tcallID", DebugCallIDAsString(context.callID))
 	if input.CallType == vm.AsynchronousCall || input.CallType == vm.AsynchronousCallBack {
 		context.callAsyncIdentifierAsBytes = runtime.GetAndEliminateFirstArgumentFromList()
-		// TODO matei-p remove for logging
+		// TODO matei-p change to debug logging
 		asynCallIdentifier, _ := arwen.ReadAsyncCallIdentifierFromBytes(context.callAsyncIdentifierAsBytes)
 		asynCallIdentifierAsString, _ := json.Marshal(asynCallIdentifier)
 		fmt.Println("\tcallerCallID", DebugCallIDAsString(context.callerCallID))
 		fmt.Println("\tcallerCallAsyncIdentifier", string(asynCallIdentifierAsString))
-		// fmt.Println()
+	}
+	// TODO matei-p change to debug logging
+	fmt.Println("\tinput.GasProvided", input.GasProvided)
+	if input.GasLocked != 0 {
+		fmt.Println("\tinput.GasLocked", input.GasLocked)
 	}
 }
 
@@ -696,6 +700,8 @@ func (context *asyncContext) Execute() error {
 		}
 	}
 
+	fmt.Println("GasLeft ->", context.host.Metering().GasLeft())
+
 	context.checkContextCompletion()
 
 	return nil
@@ -747,7 +753,7 @@ func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
 		}
 
 		if context.IsComplete() {
-			context.callCallback(asyncCall, &vmOutput, childErr)
+			context.callCallback(parentContext, asyncCall, &vmOutput, childErr)
 		}
 		return nil
 	}
@@ -905,7 +911,7 @@ func (context *asyncContext) PostprocessCrossShardCallback(callID []byte, asyncC
 	return nil
 }
 
-func (context *asyncContext) callCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
+func (context *asyncContext) callCallback(parentContext *asyncContext, asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
 	sender := context.address
 	destination := context.callerAddr
 
@@ -919,7 +925,7 @@ func (context *asyncContext) callCallback(asyncCall *arwen.AsyncCall, vmOutput *
 		return false, sendCrossShardCallback(context.host, sender, destination, data)
 	}
 
-	isComplete := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+	isComplete := context.executeSyncCallbackAndAccumulateGas(parentContext, asyncCall, vmOutput, err)
 	return isComplete, nil
 }
 
@@ -1003,6 +1009,11 @@ func (context *asyncContext) readSerializedAsyncContextFromStackOrStore(address 
 		loadedContext = fromSerializable(deserializedContext)
 
 	}
+
+	loadedContext.host = context.host
+	loadedContext.callArgsParser = context.callArgsParser
+	loadedContext.esdtTransferParser = context.esdtTransferParser
+
 	return loadedContext, nil
 }
 

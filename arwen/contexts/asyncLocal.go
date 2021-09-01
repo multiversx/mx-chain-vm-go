@@ -22,20 +22,6 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 		}
 	}
 
-	// for {
-	// 	call := context.getNextLocalAsyncCall()
-	// 	if check.IfNil(call) {
-	// 		break
-	// 	}
-
-	// 	err := context.executeAsyncLocalCall(call)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	context.closeCompletedAsyncCalls()
-	// }
-
 	return nil
 }
 
@@ -77,42 +63,30 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	// newCallID := destinationCallInput.Arguments[0]
-	// newCallAddress := destinationCallInput.RecipientAddr
 	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
 	}
 
-	// // The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
-	// // by design. Using it without checking for err is safe here.
+	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
+	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	// areAllChildrenComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// if areAllChildrenComplete {
-	// 	context.NotifyOfChildCompletion(asyncCall.Identifier.ToBytes(),
-	// 		context.childResults[0], nil)
-	// } else {
 	context.gasAccumulated = 0
 	if vmOutput != nil {
 		context.accumulateGas(vmOutput.GasRemaining)
 	}
-	// }
 
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
+func (context *asyncContext) executeSyncCallbackAndAccumulateGas(parentContext *asyncContext, asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	// TODO matei-p would the below be ok for error vmOutput? the other use of executeSyncCallback()
 	context.gasAccumulated = 0
 	if callbackVMOutput != nil {
-		context.accumulateGas(callbackVMOutput.GasRemaining)
+		parentContext.accumulateGas(callbackVMOutput.GasRemaining)
 	}
 	return isComplete
 }

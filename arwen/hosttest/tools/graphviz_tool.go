@@ -25,7 +25,7 @@ func main() {
 	/////////////////////////////////////////////////////////////////////////////////////////
 
 	// callGraph := test.CreateGraphTestSyncCalls()
-	// callGraph := test.CreateGraphTestOneAsyncCall()
+	callGraph := test.CreateGraphTestOneAsyncCall()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard3()
@@ -36,7 +36,7 @@ func main() {
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
-	callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
+	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest1()
 	// callGraph := test.CreateGraphTest2()

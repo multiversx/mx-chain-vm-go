@@ -137,7 +137,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	// compute execution order (return data) assertions and compute gas assertions
 	//totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
-	_, _, expectedReturnData := computeExpectedValues(gasGraph)
+	_, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
 
 	// account -> (key -> value)
 	storage := make(map[string]map[string][]byte)
@@ -200,7 +200,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		extractStores(vmOutput, storage)
 		extractGasUsedPerContract(vmOutput, gasUsedPerContract)
-		// fmt.Println("-> gas remaining ", vmOutput.GasRemaining)
+		fmt.Println("-> gas remaining ", vmOutput.GasRemaining)
 		globalReturnData = append(globalReturnData, vmOutput.ReturnData...)
 
 		extractOuptutTransferCalls(vmOutput, crossShardEdges, crossShardCallsQueue)
@@ -208,8 +208,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	//fmt.Println("-> expectedGasUsagePerContract ", expectedGasUsagePerContract)
 	CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
-	// TODO matei-p re-enable gas assertions
-	// CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
+	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
 }
 
 func persistStorageUpdatesToWorld(storage map[string]map[string][]byte, world *worldmock.MockWorld) {
