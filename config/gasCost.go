@@ -154,7 +154,6 @@ type BigFloatAPICost struct {
 	BigFloatCmp       uint64
 	BigFloatAbs       uint64
 	BigFloatSqrt      uint64
-	BigFloatLog2      uint64
 	BigFloatFloor     uint64
 	BigFloatCeil      uint64
 	BigFloatIsInt     uint64
