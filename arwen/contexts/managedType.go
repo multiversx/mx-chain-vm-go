@@ -167,6 +167,12 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	}
 }
 
+// ConsumeGasForBytes uses gas for the given bytes
+func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
+	metering := context.host.Metering()
+	metering.UseGas(math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+}
+
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
 func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()

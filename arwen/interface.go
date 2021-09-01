@@ -161,6 +161,7 @@ type ManagedTypesContext interface {
 	GetRandReader() io.Reader
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
+	ConsumeGasForBytes(bytes []byte)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
 	NewBigInt(value *big.Int) int32
 	NewBigIntFromInt64(int64Value int64) int32

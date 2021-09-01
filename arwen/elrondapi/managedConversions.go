@@ -23,7 +23,7 @@ func readManagedVecOfManagedBuffers(
 	if err != nil {
 		return nil, 0, err
 	}
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(managedVecBytes))
+	managedType.ConsumeGasForBytes(managedVecBytes)
 
 	if len(managedVecBytes)%handleLen != 0 {
 		return nil, 0, errors.New("invalid managed vector of managed buffer handles")
@@ -39,7 +39,7 @@ func readManagedVecOfManagedBuffers(
 		if err != nil {
 			return nil, 0, err
 		}
-		managedType.ConsumeGasForThisIntNumberOfBytes(len(itemBytes))
+		managedType.ConsumeGasForBytes(itemBytes)
 
 		sumOfItemByteLengths += uint64(len(itemBytes))
 		result = append(result, itemBytes)
@@ -50,10 +50,11 @@ func readManagedVecOfManagedBuffers(
 
 // Converts a slice of byte slices to a managed buffer of managed buffers.
 func writeManagedVecOfManagedBuffers(
+	metering arwen.MeteringContext,
 	managedType arwen.ManagedTypesContext,
 	data [][]byte,
 	destinationHandle int32,
-) uint64 {
+) {
 	sumOfItemByteLengths := uint64(0)
 	destinationBytes := make([]byte, handleLen*len(data))
 	dataIndex := 0
@@ -65,8 +66,7 @@ func writeManagedVecOfManagedBuffers(
 	}
 
 	managedType.SetBytes(destinationHandle, destinationBytes)
-
-	return sumOfItemByteLengths
+	metering.UseGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
 }
 
 // Deserializes a vmcommon.ESDTTransfer object.
@@ -83,7 +83,7 @@ func readESDTTransfer(
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(tokenIdentifier))
+	managedType.ConsumeGasForBytes(tokenIdentifier)
 	nonce := binary.BigEndian.Uint64(data[4:12])
 	valueHandle := int32(binary.BigEndian.Uint32(data[12:16]))
 	value, err := managedType.GetBigInt(valueHandle)
@@ -119,7 +119,7 @@ func readESDTTransfers(
 	if err != nil {
 		return nil, err
 	}
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(managedVecBytes))
+	managedType.ConsumeGasForBytes(managedVecBytes)
 
 	if len(managedVecBytes)%esdtTransferLen != 0 {
 		return nil, errors.New("invalid managed vector of ESDT transfers")

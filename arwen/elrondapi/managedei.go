@@ -236,7 +236,7 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(errBytes))
+	managedType.ConsumeGasForBytes(errBytes)
 
 	runtime.SignalUserError(string(errBytes))
 }
@@ -261,7 +261,7 @@ func v1_4_managedWriteLog(
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(dataBytes))
+	managedType.ConsumeGasForBytes(dataBytes)
 	dataByteLen := uint64(len(dataBytes))
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Log
@@ -352,7 +352,7 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 
 	esdtTransfers := runtime.GetVMInput().ESDTTransfers
 	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
-	managedType.ConsumeGasForThisIntNumberOfBytes(len(multiCallBytes))
+	managedType.ConsumeGasForBytes(multiCallBytes)
 
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
@@ -422,18 +422,17 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 	managedType.SetBytes(propertiesHandle, esdtToken.Properties)
 	if esdtToken.TokenMetaData != nil {
 		managedType.SetBytes(hashHandle, esdtToken.TokenMetaData.Hash)
-		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Hash))
+		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Hash)
 		managedType.SetBytes(nameHandle, esdtToken.TokenMetaData.Name)
-		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Name))
+		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Name)
 		managedType.SetBytes(attributesHandle, esdtToken.TokenMetaData.Attributes)
-		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Attributes))
+		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Attributes)
 		managedType.SetBytes(creatorHandle, esdtToken.TokenMetaData.Creator)
-		managedType.ConsumeGasForThisIntNumberOfBytes(len(esdtToken.TokenMetaData.Creator))
+		managedType.ConsumeGasForBytes(esdtToken.TokenMetaData.Creator)
 		royalties := managedType.GetBigIntOrCreate(royaltiesHandle)
 		royalties.SetUint64(uint64(esdtToken.TokenMetaData.Royalties))
 
-		totalBytes := writeManagedVecOfManagedBuffers(managedType, esdtToken.TokenMetaData.URIs, urisHandle)
-		managedType.ConsumeGasForThisIntNumberOfBytes(int(totalBytes))
+		writeManagedVecOfManagedBuffers(metering, managedType, esdtToken.TokenMetaData.URIs, urisHandle)
 	}
 }
 
@@ -682,7 +681,7 @@ func setReturnDataIfExists(
 ) {
 	returnData := host.Output().ReturnData()
 	if len(returnData) > oldLen {
-		_ = writeManagedVecOfManagedBuffers(host.ManagedTypes(), returnData[oldLen:], resultHandle)
+		writeManagedVecOfManagedBuffers(host.Metering(), host.ManagedTypes(), returnData[oldLen:], resultHandle)
 	} else {
 		host.ManagedTypes().SetBytes(resultHandle, make([]byte, 0))
 	}
