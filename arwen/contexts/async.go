@@ -714,13 +714,13 @@ func (context *asyncContext) checkContextCompletion() {
 			context.executeContextCallback()
 		}
 		// TODO matei-p send childErr here
-		context.NotifyOfChildCompletion(nil)
+		context.NotifyCompletion(nil)
 	}
 }
 
-func (context *asyncContext) NotifyOfChildCompletion(childErr error) error {
+func (context *asyncContext) NotifyCompletion(childErr error) error {
 	// TODO matei-p remove for logging
-	fmt.Println("NotifyOfChildCompletion")
+	fmt.Println("NotifyCompletion")
 	fmt.Println("\taddress", string(context.address))
 	fmt.Println("\tcallID", DebugCallIDAsString(context.callID))
 	fmt.Println("\tcallerAddr", string(context.callerAddr))

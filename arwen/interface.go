@@ -338,7 +338,5 @@ type AsyncContext interface {
 	AreAllChildrenComplete() (bool, error)
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
-	NotifyOfChildCompletion(childErr error) error
-
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
 }
