@@ -21,7 +21,6 @@ package elrondapi
 // extern int32_t	v1_4_bigFloatSign(void* context, int32_t opHandle);
 // extern void 		v1_4_bigFloatClone(void* context, int32_t destinationHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern int32_t	v1_4_bigFloatLog2(void* context, int32_t opHandle);
 // extern void		v1_4_bigFloatPow(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t smallValue);
 //
 // extern void		v1_4_bigFloatFloor(void* context, int32_t opHandle, int32_t bigIntHandle);
@@ -119,11 +118,6 @@ func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigFloatPow", v1_4_bigFloatPow, C.v1_4_bigFloatPow)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("bigFloatLog2", v1_4_bigFloatLog2, C.v1_4_bigFloatLog2)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +233,14 @@ func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
-	dest.Add(op1, op2)
+
+	resultAdd := new(big.Float).Add(op1, op2)
+	if oneIsInfinity(resultAdd) {
+		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
+	managedType.ConsumeGasForBigFloatCopy(resultAdd)
+	dest.Set(resultAdd)
 }
 
 //export v1_4_bigFloatSub
@@ -261,7 +262,14 @@ func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
-	dest.Sub(op1, op2)
+
+	resultSub := new(big.Float).Mul(op1, op2)
+	if oneIsInfinity(resultSub) {
+		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
+	managedType.ConsumeGasForBigFloatCopy(resultSub)
+	dest.Set(resultSub)
 }
 
 //export v1_4_bigFloatMul
@@ -283,6 +291,7 @@ func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
+
 	resultMul := new(big.Float).Mul(op1, op2)
 	if oneIsInfinity(resultMul) {
 		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -315,13 +324,14 @@ func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
-	resultMul := new(big.Float).Quo(op1, op2)
-	if oneIsInfinity(resultMul) {
+
+	resultDiv := new(big.Float).Quo(op1, op2)
+	if oneIsInfinity(resultDiv) {
 		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(resultMul)
-	dest.Set(resultMul)
+	managedType.ConsumeGasForBigFloatCopy(resultDiv)
+	dest.Set(resultDiv)
 }
 
 //export v1_4_bigFloatNeg
@@ -440,34 +450,6 @@ func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32
 	}
 	managedType.ConsumeGasForBigFloatCopy(dest, op)
 	dest.Sqrt(op)
-}
-
-//export v1_4_bigFloatLog2
-func v1_4_bigFloatLog2(context unsafe.Pointer, opHandle int32) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatLog2
-	metering.UseGas(gasToUse)
-
-	op, err := managedType.GetBigFloat(opHandle)
-	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
-		return -1
-	}
-	if op.Sign() < 0 {
-		_ = arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return -1
-	}
-	if oneIsInfinity(op) {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return -1
-	}
-	bigIntOp := new(big.Int)
-	op.Int(bigIntOp)
-	managedType.ConsumeGasForBigFloatCopy(op)
-	managedType.ConsumeGasForBigIntCopy(bigIntOp)
-	return int32(bigIntOp.BitLen() - 1)
 }
 
 //export v1_4_bigFloatPow
@@ -667,8 +649,18 @@ func v1_4_bigFloatMod(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		_ = arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
+	if allAreEqualToZero(op1, op2) {
+		_ = arwen.WithFault(arwen.ErrAllOperandsAreEqualToZero, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
 	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
-	dest.Quo(op1, op2)
+	resultDiv := new(big.Float).Quo(op1, op2)
+	if oneIsInfinity(resultDiv) {
+		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
+	managedType.ConsumeGasForBigFloatCopy(resultDiv)
+	dest.Set(resultDiv)
 	rDiv := big.NewInt(0)
 	dest.Int(rDiv)
 	dest.Sub(dest, new(big.Float).SetInt(rDiv))
