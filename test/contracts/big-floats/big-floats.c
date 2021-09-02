@@ -9,11 +9,11 @@
 
 void init() {}
 
-void BigFloatNewTest() {
+void BigFloatNewFromPartsTest() {
     int bigFloatHandle;
     int reps = int64getArgument(0);
     for (int i = 0; i < reps; i++) {
-        bigFloatHandle = bigFloatNew(i,i,-i-1);
+        bigFloatHandle = bigFloatNewFromParts(i,i,-i-1);
     }
     int64finish(bigFloatHandle);
 }
@@ -26,6 +26,17 @@ void BigFloatNewFromFracTest() {
         bigFloatHandle = bigFloatNewFromFrac(reps+i,i+1);
     }
     int64finish(bigFloatHandle);
+}
+
+void BigFloatNewFromSciTest() {
+    int reps, bigFloatHandle;
+    reps = int64getArgument(0);
+    int exponent = int64getArgument(1);
+    for (int i = 0; i < reps; i++)
+    {
+        bigFloatHandle = bigFloatNewFromSci(-reps-i, exponent);
+    }
+    bigFloatFinish(bigFloatHandle);
 }
 
 void BigFloatAddTest() {
@@ -87,27 +98,11 @@ void BigFloatTruncateTest() {
     bigFloatGetArgument(2,bigFloatHandleOp2);
     for (int i = 0; i < reps; i++)
     {
-        bigFloatTruncate(bigFloatHandleOp1);
+        bigFloatTruncate(bigFloatHandleOp1, 0);
         bigFloatSub(bigFloatHandleOp1, bigFloatHandleOp1, bigFloatHandleOp2);
     }
     bigFloatFinish(bigFloatHandleOp1);
 }
-
-void BigFloatModTest() {
-    int reps, bigFloatHandleOp1, bigFloatHandleOp2;
-    reps = int64getArgument(0);
-    bigFloatHandleOp1 = bigFloatNewFromFrac(0,1);
-    bigFloatHandleOp2 = bigFloatNewFromFrac(0,1);
-    bigFloatGetArgument(1,bigFloatHandleOp1);
-    bigFloatGetArgument(2,bigFloatHandleOp2);
-    for (int i = 0; i < reps; i++)
-    {
-        bigFloatMod(2,bigFloatHandleOp1,bigFloatHandleOp2);
-        bigFloatSub(bigFloatHandleOp1,bigFloatHandleOp1,bigFloatHandleOp2);
-    }
-    bigFloatFinish(2);
-}
-
 
 void BigFloatAbsTest() {
     int reps, bigFloatHandle, absbigFloatHandle;
@@ -187,18 +182,6 @@ void BigFloatSqrtTest() {
         bigFloatSqrt(resultbigFloatHandle,bigFloatHandle);
     }
     bigFloatFinish(resultbigFloatHandle);
-}
-
-void BigFloatLog2Test() {
-    int reps, bigFloatHandle, result;
-    reps = int64getArgument(0);
-    bigFloatHandle = bigFloatNewFromFrac(0,1);
-    for (int i = 0; i < reps; i++)
-    {
-        bigFloatGetArgument(i+1,bigFloatHandle);
-        result = bigFloatLog2(bigFloatHandle);
-    }
-    int64finish(result);
 }
 
 void BigFloatPowTest() {
