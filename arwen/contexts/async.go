@@ -46,7 +46,7 @@ type asyncContext struct {
 
 	callsCounter      uint64 // incremented and decremented during run
 	totalCallsCounter uint64 // used for callid generation
-	childResults      vmcommon.VMOutput
+	childResults      *vmcommon.VMOutput
 }
 
 type serializableAsyncContext struct {
@@ -65,7 +65,7 @@ type serializableAsyncContext struct {
 	ReturnData      []byte
 	AsyncCallGroups []*arwen.AsyncCallGroup
 
-	ChildResults      vmcommon.VMOutput
+	ChildResults      *vmcommon.VMOutput
 	CallsCounter      uint64 // incremented and decremented during run
 	TotalCallsCounter uint64 // used for callid generation
 }
@@ -639,7 +639,7 @@ func (context *asyncContext) Execute() error {
 	// }
 	// end debug
 
-	context.childResults = *context.host.Output().GetVMOutput()
+	context.childResults = context.host.Output().GetVMOutput()
 
 	if context.HasPendingCallGroups() {
 		metering := context.host.Metering()
@@ -955,29 +955,37 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 		}
 
 		currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
+		vmOutput := context.childResults
 		parentContext, _ := context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
-		parentContext.NotifyChildIsComplete(currentAsyncCallIdentifier)
+		asyncCallInParent, _ := parentContext.getCallByAsyncIdentifier(currentAsyncCallIdentifier)
+		isComplete, _ := parentContext.CallCallback(asyncCallInParent, vmOutput, nil)
+		if isComplete {
+			// this will be called only after local async completions, because it's the only place that can make this call
+			// for cross-shard callbacks, isComplete will return false, and notification will be made in "post process" section of host.callSCMethod()
+			asyncCallIdentifier, _ := parentContext.GetCallerAsyncCallIdentifier()
+			parentContext.NotifyChildIsComplete(asyncCallIdentifier)
+		}
 	}
 
 	return nil
 }
 
-func (context *asyncContext) SendCrossShardCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
+func (context *asyncContext) CallCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
 	sender := context.address
 	destination := context.callerAddr
 
-	// sameShard := context.host.AreInSameShard(sender, destination)
-	// if !sameShard {
-	data := GetEncodedDataForAsyncCallbackTransfer(context.host,
-		context.callerCallID,
-		context.callAsyncIdentifierAsBytes,
-		asyncCall.SuccessCallback,
-		vmOutput)
-	return false, sendCrossShardCallback(context.host, sender, destination, data)
-	// }
+	sameShard := context.host.AreInSameShard(sender, destination)
+	if !sameShard {
+		data := GetEncodedDataForAsyncCallbackTransfer(context.host,
+			context.callerCallID,
+			context.callAsyncIdentifierAsBytes,
+			asyncCall.SuccessCallback,
+			vmOutput)
+		return false, sendCrossShardCallback(context.host, sender, destination, data)
+	}
 
-	// isComplete := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
-	// return isComplete, nil
+	isComplete := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+	return isComplete, nil
 }
 
 func (context *asyncContext) HasCallback() bool {

@@ -340,6 +340,7 @@ type AsyncContext interface {
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
-	SendCrossShardCallback(asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
+	//SendCrossShardCallback(asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
+	CallCallback(asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
 	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier) error
 }
