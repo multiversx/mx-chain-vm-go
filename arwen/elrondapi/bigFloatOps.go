@@ -206,7 +206,12 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 		fractional = float64(fractionalPart) * math.Pow10(int(exponent))
 	}
 
-	value := float64(integralPart) + fractional
+	var value float64
+	if integralPart >= 0 {
+		value = float64(integralPart) + fractional
+	} else {
+		value = float64(integralPart) - fractional
+	}
 	return managedType.PutBigFloat(value)
 }
 
