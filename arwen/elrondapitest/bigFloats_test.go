@@ -10,21 +10,20 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/go-playground/assert.v1"
 )
 
 var repsArgument = []byte{0, 0, 0, byte(numberOfReps)}
-var floatArgument1 = []byte{1, 10, 0, 0, 0, 100, 0, 0, 0, 108, 136, 217, 65, 19, 144, 71, 160, 0} // equal to 1.73476272346174595037472187482e+32
+var floatArgument1 = []byte{1, 10, 0, 0, 0, 53, 0, 0, 0, 108, 136, 217, 65, 19, 144, 71, 160, 0} // equal to 1.73476272346174595037472187482e+32
 var floatArgument2 = []byte{1, 10, 0, 0, 0, 53, 0, 0, 0, 11, 190, 100, 79, 147, 188, 10, 8, 0}
 
-func TestBigFloats_New(t *testing.T) {
+func TestBigFloats_NewFromParts(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("big-floats", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("BigFloatNewTest").
+			WithFunction("BigFloatNewFromPartsTest").
 			WithArguments(repsArgument).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -50,6 +49,44 @@ func TestBigFloats_NewFromFrac(t *testing.T) {
 				Ok().
 				ReturnData(
 					[]byte{byte(numberOfReps - 1)})
+		})
+}
+
+func TestBigFloats_NewFromSci_Fail(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("big-floats", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("BigFloatNewFromSciTest").
+			WithArguments(repsArgument,
+				[]byte{0, 0, 1, 100}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				ReturnCode(10)
+		})
+}
+
+func TestBigFloats_NewFromSci_Success(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("big-floats", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("BigFloatNewFromSciTest").
+			WithArguments(repsArgument,
+				[]byte{255, 255, 255, 254}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			value := float64(-199) * math.Pow10(-2)
+			encodedValue, _ := big.NewFloat(value).GobEncode()
+			fmt.Println(encodedValue)
+			verify.
+				Ok().
+				ReturnData(encodedValue)
 		})
 }
 
@@ -86,13 +123,13 @@ func TestBigFloats_Sub(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
 			WithFunction("BigFloatSubTest").
-			WithArguments(repsArgument,
+			WithArguments([]byte{0, 0, 0, byte(10)},
 				floatArgument1).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			bigFloatValue := new(big.Float)
+			bigFloatValue := big.NewFloat(0)
 			_ = bigFloatValue.GobDecode(floatArgument1)
-			for i := 0; i < numberOfReps; i++ {
+			for i := 0; i < 10; i++ {
 				bigFloatValue.Sub(bigFloatValue, bigFloatValue)
 			}
 			floatBuffer, _ := bigFloatValue.GobEncode()
@@ -168,15 +205,12 @@ func TestBigFloats_Div(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			numerator := new(big.Float)
 			_ = numerator.GobDecode(floatArgument1)
-			assert.Equal(t, uint(100), numerator.Prec())
 			denominator := new(big.Float)
 			_ = denominator.GobDecode(floatArgument2)
-			assert.Equal(t, uint(53), denominator.Prec())
 			for i := 0; i < numberOfReps; i++ {
 				resultMul := new(big.Float).Quo(numerator, denominator)
 				numerator.Set(resultMul)
 			}
-			assert.Equal(t, uint(100), numerator.Prec())
 			floatBuffer, _ := numerator.GobEncode()
 			verify.
 				Ok().
@@ -198,60 +232,17 @@ func TestBigFloats_Truncate(t *testing.T) {
 				floatArgument2).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			numerator := new(big.Float)
-			_ = numerator.GobDecode(floatArgument1)
-			assert.Equal(t, uint(100), numerator.Prec())
-			denominator := new(big.Float)
-			_ = denominator.GobDecode(floatArgument2)
-			assert.Equal(t, uint(53), denominator.Prec())
+			value1 := big.NewFloat(0)
+			_ = value1.GobDecode(floatArgument1)
+			value2 := big.NewFloat(0)
+			_ = value2.GobDecode(floatArgument2)
 			for i := 0; i < numberOfReps; i++ {
 				rDiv := big.NewInt(0)
-				numerator.Int(rDiv)
-				numerator.SetInt(rDiv)
-				numerator.Sub(numerator, denominator)
+				value1.Int(rDiv)
+				result := big.NewFloat(0).Sub(value1, value2)
+				value1.Set(result)
 			}
-			assert.Equal(t, uint(100), numerator.Prec())
-			floatBuffer, _ := numerator.GobEncode()
-			verify.
-				Ok().
-				ReturnData(
-					floatBuffer)
-		})
-}
-
-func TestBigFloats_Mod(t *testing.T) {
-	test.BuildInstanceCallTest(t).
-		WithContracts(
-			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCode("big-floats", "../../"))).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(100000).
-			WithFunction("BigFloatModTest").
-			WithArguments(repsArgument,
-				floatArgument1,
-				floatArgument2).
-			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			numerator := big.NewFloat(0)
-			denominator := big.NewFloat(0)
-			numerator.SetPrec(0)
-			_ = numerator.GobDecode(floatArgument1)
-			assert.Equal(t, uint(100), numerator.Prec())
-			denominator.SetPrec(0)
-			_ = denominator.GobDecode(floatArgument2)
-			assert.Equal(t, uint(53), denominator.Prec())
-			result := big.NewFloat(0)
-			result.SetPrec(0)
-			for i := 0; i < numberOfReps; i++ {
-				result.Quo(numerator, denominator)
-				rdiv := big.NewInt(0)
-				result.Int(rdiv)
-				result.Sub(result, new(big.Float).SetInt(rdiv))
-				numerator.Sub(numerator, denominator)
-			}
-			assert.Equal(t, uint(100), numerator.Prec())
-			assert.Equal(t, uint(100), result.Prec())
-			floatBuffer, _ := result.GobEncode()
+			floatBuffer, _ := value1.GobEncode()
 			verify.
 				Ok().
 				ReturnData(
@@ -288,7 +279,6 @@ func TestBigFloats_Abs(t *testing.T) {
 			absLastFloat.Abs(lastFloat)
 			encodedAbsFloat, _ := absLastFloat.GobEncode()
 			verify.
-				ReturnMessage("").
 				Ok().
 				ReturnData(encodedAbsFloat)
 
@@ -461,39 +451,6 @@ func TestBigFloats_Sqrt(t *testing.T) {
 			verify.
 				Ok().
 				ReturnData(encodedSqrtFloat)
-		})
-}
-
-func TestBigFloats_Log2(t *testing.T) {
-	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
-	bigFloatArguments[0] = repsArgument
-	for i := 0; i < numberOfReps; i++ {
-		floatValue := big.NewFloat(float64(i) + 1)
-		encodedFloat, _ := floatValue.GobEncode()
-		bigFloatArguments[i+1] = encodedFloat
-	}
-
-	test.BuildInstanceCallTest(t).
-		WithContracts(
-			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCode("big-floats", "../../"))).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(100000).
-			WithFunction("BigFloatLog2Test").
-			WithArguments(bigFloatArguments...).
-			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			encodedLastFloat := bigFloatArguments[numberOfReps]
-			lastFloat := new(big.Float)
-			_ = lastFloat.GobDecode(encodedLastFloat)
-			bigIntOp := new(big.Int)
-			lastFloat.Int(bigIntOp)
-			verify.
-				Ok().
-				ReturnData([]byte{byte(bigIntOp.BitLen() - 1)})
 		})
 }
 
