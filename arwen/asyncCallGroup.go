@@ -81,20 +81,24 @@ func (acg *AsyncCallGroup) FindByDestination(destination []byte) (int, bool) {
 }
 
 // DeleteAsyncCall removes an AsyncCall from this AsyncCallGroup, given its index
-func (acg *AsyncCallGroup) DeleteAsyncCall(index int) {
+func (acg *AsyncCallGroup) DeleteAsyncCall(index int) *AsyncCall {
 	asyncCalls := acg.AsyncCalls
 	if len(asyncCalls) == 0 {
-		return
+		return nil
 	}
 
 	last := len(asyncCalls) - 1
 	if index < 0 || index > last {
-		return
+		return nil
 	}
+
+	deletedAsyncCall := asyncCalls[index]
 
 	asyncCalls[index] = asyncCalls[last]
 	asyncCalls = asyncCalls[:last]
 	acg.AsyncCalls = asyncCalls
+
+	return deletedAsyncCall
 }
 
 // DeleteCompletedAsyncCalls removes all completed AsyncCalls, keeping only

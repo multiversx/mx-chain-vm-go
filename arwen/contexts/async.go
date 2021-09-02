@@ -800,6 +800,16 @@ func (context *asyncContext) LoadFromStackOrStore(address []byte, callID []byte)
 	return context, true
 }
 
+func (context *asyncContext) ReadSerializedFromStackOrStore(address []byte, callID []byte) (*serializableAsyncContext, bool) {
+	stackContext := context.getContextFromStack(address, callID)
+	if stackContext != nil {
+		return stackContext.toSerializable(), false
+	}
+
+	serializedContext, _ := NewSerializedAsyncContextFromStore(context.host.Storage(), address, callID)
+	return serializedContext, true
+}
+
 func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier *arwen.AsyncCallIdentifier, returnCode vmcommon.ReturnCode) error {
 	asyncCall, err := context.getCallByAsyncIdentifier(asyncCallIdentifier)
 	if err != nil {
@@ -927,7 +937,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
-	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
+	deletedAsyncCall := currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 
 	context.DecrementCallsCounter()
 
@@ -954,16 +964,22 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 			return nil
 		}
 
-		currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
-		vmOutput := context.childResults
-		parentContext, _ := context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
-		asyncCallInParent, _ := parentContext.getCallByAsyncIdentifier(currentAsyncCallIdentifier)
-		isComplete, _ := parentContext.CallCallback(asyncCallInParent, vmOutput, nil)
-		if isComplete {
-			// this will be called only after local async completions, because it's the only place that can make this call
-			// for cross-shard callbacks, isComplete will return false, and notification will be made in "post process" section of host.callSCMethod()
-			asyncCallIdentifier, _ := parentContext.GetCallerAsyncCallIdentifier()
-			parentContext.NotifyChildIsComplete(asyncCallIdentifier)
+		if deletedAsyncCall.ExecutionMode == arwen.AsyncUnknown {
+			currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
+			vmOutput := context.childResults
+			parentContextSerialized, _ := context.ReadSerializedFromStackOrStore(context.callerAddr, context.callerCallID)
+			asyncCallInParent, _ := parentContextSerialized.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
+			isComplete, _ := context.CallCallback(asyncCallInParent, vmOutput, nil)
+			if isComplete {
+				// this will be called only after local async completions, because it's the only place
+				// that can make this call for local asyncs
+				// for cross-shard callbacks, isComplete will return false, and notification will be made in "post process" section of host.callSCMethod()
+				parentContext, _ := context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
+				// check if we reached the first call and need to end the notification chain
+				if asyncCallIdentifier != nil {
+					parentContext.NotifyChildIsComplete(currentAsyncCallIdentifier)
+				}
+			}
 		}
 	}
 
