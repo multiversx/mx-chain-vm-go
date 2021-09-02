@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -853,6 +854,8 @@ func (host *vmHost) callSCMethod() error {
 	log.Trace("callSCMethod")
 
 	runtime := host.Runtime()
+	output := host.Output()
+
 	vmInput := runtime.GetVMInput()
 	async := host.Async()
 	callType := vmInput.CallType
@@ -860,6 +863,7 @@ func (host *vmHost) callSCMethod() error {
 	var err error
 	var originalCallID []byte
 	var asyncCallIdentifier *arwen.AsyncCallIdentifier
+	var asyncCall *arwen.AsyncCall
 
 	if callType == vm.AsynchronousCallBack {
 		originalCallID = async.GetCallerCallID()
@@ -869,7 +873,7 @@ func (host *vmHost) callSCMethod() error {
 		}
 
 		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
-		asyncCall, _ := async.UpdateCurrentAsyncCallStatus(
+		asyncCall, _ = async.UpdateCurrentAsyncCallStatus(
 			runtime.GetSCAddress(),
 			originalCallID,
 			asyncCallIdentifier,
@@ -925,18 +929,22 @@ func (host *vmHost) callSCMethod() error {
 		return nil
 	}
 
-	// switch callType {
-	// case vm.DirectCall:
-	// 	break
-	// case vm.AsynchronousCall:
-	// 	// 	err = host.sendAsyncCallbackToCaller()
-	// 	break
-	// case vm.AsynchronousCallBack:
-	// 	async.LoadSpecifiedContext(runtime.GetSCAddress(), originalCallID)
-	// 	async.PostprocessCrossShardCallback(originalCallID, asyncCallIdentifier)
-	// default:
-	// 	err = arwen.ErrUnknownCallType
-	// }
+	switch callType {
+	case vm.DirectCall:
+		break
+	case vm.AsynchronousCall:
+		parentContext, _ := contexts.NewSerializedAsyncContextFromStore(host.Storage(), async.GetCallerAddress(), async.GetCallerCallID())
+		asyncCallIdentifier, _ = async.GetCallerAsyncCallIdentifier()
+		asyncCall, _ := parentContext.GetCallByAsyncIdentifier(asyncCallIdentifier)
+		_, err = async.SendCrossShardCallback(asyncCall, output.GetVMOutput(), err)
+		break
+	case vm.AsynchronousCallBack:
+		async.LoadSpecifiedContext(runtime.GetSCAddress(), originalCallID)
+		async.NotifyChildIsComplete(asyncCallIdentifier)
+		// 	async.PostprocessCrossShardCallback(originalCallID, asyncCallIdentifier)
+	default:
+		err = arwen.ErrUnknownCallType
+	}
 
 	if err != nil {
 		log.Trace("call SC method failed", "error", err)

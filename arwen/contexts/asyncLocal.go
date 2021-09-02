@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -63,6 +64,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
+	newCallID := destinationCallInput.Arguments[0]
+	newCallAddress := destinationCallInput.RecipientAddr
+	// TODO matei-p is this ExecuteOnDestContext() return signature necessary ?
 	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
@@ -72,21 +76,34 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	context.gasAccumulated = 0
-	if vmOutput != nil {
-		context.accumulateGas(vmOutput.GasRemaining)
+	// if context is not found in store, it's considerd complete
+	isComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
+	if err != nil {
+		return err
+	}
+
+	if isComplete {
+		context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+		// TODO matei-p change to debug logging
+		fmt.Println("gasAccumulated ->", context.gasAccumulated)
+		context.NotifyChildIsComplete(asyncCall.Identifier)
+	} else {
+		context.gasAccumulated = 0
+		if vmOutput != nil {
+			context.accumulateGas(vmOutput.GasRemaining)
+		}
 	}
 
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndAccumulateGas(parentContext *asyncContext, asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
+func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
-	// TODO matei-p would the below be ok for error vmOutput? the other use of executeSyncCallback()
-	context.gasAccumulated = 0
+	// TODO matei-p is this correct?
+	// context.gasAccumulated = 0
 	if callbackVMOutput != nil {
-		parentContext.accumulateGas(callbackVMOutput.GasRemaining)
+		context.accumulateGas(callbackVMOutput.GasRemaining)
 	}
 	return isComplete
 }
@@ -290,7 +307,8 @@ func (context *asyncContext) createCallbackInput(
 	callbackFunction := asyncCall.GetCallbackName()
 
 	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
-	gasLimit = math.AddUint64(gasLimit, context.gasAccumulated)
+	// TODO matei-p remove line - don't use accumulted gas
+	// gasLimit = math.AddUint64(gasLimit, context.gasAccumulated)
 	dataLength := computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
@@ -317,8 +335,7 @@ func (context *asyncContext) createCallbackInput(
 			PrevTxHash:           runtime.GetPrevTxHash(),
 			ReturnCallAfterError: returnWithError,
 		},
-		//RecipientAddr: runtime.GetSCAddress(),
-		RecipientAddr: context.callerAddr,
+		RecipientAddr: context.address,
 		Function:      callbackFunction,
 	}
 
@@ -353,8 +370,8 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 
 	arguments = arwen.PrependToArguments(
 		arguments,
-		context.GenerateNewCallID(),
-		context.callerCallID,
+		context.GenerateNewCallbackID(),
+		context.callID,
 		context.callAsyncIdentifierAsBytes,
 	)
 

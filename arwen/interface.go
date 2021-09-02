@@ -325,6 +325,7 @@ type AsyncContext interface {
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 
 	// Load() error
+	LoadSpecifiedContext(address []byte, callID []byte) error
 	Save() error
 	Delete() error
 
@@ -339,4 +340,6 @@ type AsyncContext interface {
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
+	SendCrossShardCallback(asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
+	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier) error
 }
