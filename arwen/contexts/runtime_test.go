@@ -16,7 +16,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
@@ -27,6 +27,8 @@ const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
+	imports, _ = elrondapi.BigFloatImports(imports)
+	imports, _ = elrondapi.ManagedBufferImports(imports)
 	imports, _ = elrondapi.SmallIntImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports

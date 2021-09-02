@@ -11,6 +11,9 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
+const bigFloatPrecision = 53
+const encodedBigFloatMaxByteLen = 18
+
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
 const p256CurveMultiplier = 135
@@ -191,6 +194,12 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	metering.UseGas(gasToUse)
 }
 
+// ConsumeGasForBigFloatCopy
+func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
+	// TODO THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
+	context.ConsumeGasForThisIntNumberOfBytes(int(encodedBigFloatMaxByteLen) * len(values))
+}
+
 // BIGINT
 
 // GetBigIntOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
@@ -241,14 +250,21 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 
 // BIG FLOAT
 
+func (context *managedTypesContext) GetBigFloatPrecision() uint {
+	return bigFloatPrecision
+}
+
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
-func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) *big.Float {
+func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Float, error) {
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
 	if !ok {
 		value = big.NewFloat(0)
 		context.managedTypesValues.bigFloatValues[handle] = value
 	}
-	return value
+	if value.IsInf() {
+		return nil, arwen.ErrInfinityFloatOperation
+	}
+	return value, nil
 }
 
 // GetBigFloat returns the value at the given handle. If there is no value under that handle, it will return error
@@ -257,11 +273,14 @@ func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error
 	if !ok {
 		return nil, arwen.ErrNoBigFloatUnderThisHandle
 	}
+	if value.IsInf() {
+		return nil, arwen.ErrInfinityFloatOperation
+	}
 	return value, nil
 }
 
-// GetTwoBigFloat returns the values at the two given handles. If there is at least one missing value, it will return error
-func (context *managedTypesContext) GetTwoBigFloat(handle1 int32, handle2 int32) (*big.Float, *big.Float, error) {
+// GetTwoBigFloats returns the values at the two given handles. If there is at least one missing value, it will return error
+func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32) (*big.Float, *big.Float, error) {
 	bigFloatValues := context.managedTypesValues.bigFloatValues
 	value1, ok := bigFloatValues[handle1]
 	if !ok {
@@ -270,6 +289,9 @@ func (context *managedTypesContext) GetTwoBigFloat(handle1 int32, handle2 int32)
 	value2, ok := bigFloatValues[handle2]
 	if !ok {
 		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	if value1.IsInf() || value2.IsInf() {
+		return nil, nil, arwen.ErrInfinityFloatOperation
 	}
 	return value1, value2, nil
 }
