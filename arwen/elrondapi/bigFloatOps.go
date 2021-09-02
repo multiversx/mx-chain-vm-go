@@ -6,14 +6,14 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t	v1_4_bigFloatNew(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
+// extern int32_t	v1_4_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
 // extern int32_t	v1_4_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
+// extern int32_t	v1_4_bigFloatNewFromSci(void* context, long long significand, long long exponent);
 //
 // extern void		v1_4_bigFloatAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
 // extern void		v1_4_bigFloatSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
 // extern void		v1_4_bigFloatMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
 // extern void		v1_4_bigFloatDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void		v1_4_bigFloatMod(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
 //
 // extern void		v1_4_bigFloatAbs(void* context, int32_t destinationHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatNeg(void* context, int32_t destinationHandle, int32_t opHandle);
@@ -21,11 +21,11 @@ package elrondapi
 // extern int32_t	v1_4_bigFloatSign(void* context, int32_t opHandle);
 // extern void 		v1_4_bigFloatClone(void* context, int32_t destinationHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void		v1_4_bigFloatPow(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t smallValue);
+// extern void		v1_4_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
 //
-// extern void		v1_4_bigFloatFloor(void* context, int32_t opHandle, int32_t bigIntHandle);
-// extern void		v1_4_bigFloatCeil(void* context, int32_t opHandle, int32_t bigIntHandle);
-// extern void		v1_4_bigFloatTruncate(void* context, int32_t opHandle, int32_t bigIntHandle);
+// extern void		v1_4_bigFloatFloor(void* context, int32_t opHandle, int32_t destBigIntHandle);
+// extern void		v1_4_bigFloatCeil(void* context, int32_t opHandle, int32_t destBigIntHandle);
+// extern void		v1_4_bigFloatTruncate(void* context, int32_t opHandle, int32_t destBigIntHandle);
 //
 // extern int32_t	v1_4_bigFloatIsInt(void* context, int32_t opHandle);
 // extern void		v1_4_bigFloatSetInt64(void* context, int32_t destinationHandle, long long value);
@@ -47,12 +47,17 @@ import (
 func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 
-	imports, err := imports.Append("bigFloatNew", v1_4_bigFloatNew, C.v1_4_bigFloatNew)
+	imports, err := imports.Append("bigFloatNewFromParts", v1_4_bigFloatNewFromParts, C.v1_4_bigFloatNewFromParts)
 	if err != nil {
 		return nil, err
 	}
 
 	imports, err = imports.Append("bigFloatNewFromFrac", v1_4_bigFloatNewFromFrac, C.v1_4_bigFloatNewFromFrac)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigFloatNewFromSci", v1_4_bigFloatNewFromSci, C.v1_4_bigFloatNewFromSci)
 	if err != nil {
 		return nil, err
 	}
@@ -78,11 +83,6 @@ func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigFloatTruncate", v1_4_bigFloatTruncate, C.v1_4_bigFloatTruncate)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("bigFloatMod", v1_4_bigFloatMod, C.v1_4_bigFloatMod)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	return imports, err
 }
 
-func allAreEqualToZero(values ...*big.Float) bool {
+func areAllZero(values ...*big.Float) bool {
 	for _, val := range values {
 		if val.Sign() != 0 {
 			return false
@@ -169,21 +169,44 @@ func allAreEqualToZero(values ...*big.Float) bool {
 	return true
 }
 
-//export v1_4_bigFloatNew
-func v1_4_bigFloatNew(context unsafe.Pointer, integralPart, fractionalPart, exponent int32) int32 {
+func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHandle int32) {
+	managedType := host.ManagedTypes()
+	runtime := host.Runtime()
+	if result.IsInf() {
+		_ = arwen.WithFaultAndHost(host, arwen.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
+
+	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	managedType.ConsumeGasForBigFloatCopy(result)
+	dest.Set(result)
+}
+
+//export v1_4_bigFloatNewFromParts
+func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalPart, exponent int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNew
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	metering.UseGas(gasToUse)
 
-	if exponent >= 0 {
+	if exponent > 0 {
 		_ = arwen.WithFault(arwen.ErrPositiveExponent, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return -1
 	}
+	var fractional float64
+	if exponent < -322 {
+		fractional = float64(0)
+	} else {
+		fractional = float64(fractionalPart) * math.Pow10(int(exponent))
+	}
 
-	value := float64(integralPart) + float64(fractionalPart)*math.Pow10(int(exponent))
+	value := float64(integralPart) + fractional
 	return managedType.PutBigFloat(value)
 }
 
@@ -193,7 +216,7 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNew
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	metering.UseGas(gasToUse)
 
 	if denominator == 0 {
@@ -202,6 +225,27 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 	}
 
 	value := float64(numerator) / float64(denominator)
+	return managedType.PutBigFloat(value)
+}
+
+//export v1_4_bigFloatNewFromSci
+func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
+	metering.UseGas(gasToUse)
+
+	if exponent > 0 {
+		_ = arwen.WithFault(arwen.ErrPositiveExponent, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return -1
+	}
+	if exponent < -322 {
+		return managedType.PutBigFloat(float64(0))
+	}
+
+	value := float64(significand) * math.Pow10(int(exponent))
 	return managedType.PutBigFloat(value)
 }
 
@@ -214,20 +258,14 @@ func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAdd
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op1, op2, err2 := managedType.GetTwoBigFloat(op1Handle, op2Handle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
+	managedType.ConsumeGasForBigFloatCopy(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
 
 	resultAdd := new(big.Float).Add(op1, op2)
-	if resultAdd.IsInf() {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(resultAdd)
-	dest.Set(resultAdd)
+	setResultIfNotInfinity(arwen.GetVMHost(context), resultAdd, destinationHandle)
 }
 
 //export v1_4_bigFloatSub
@@ -239,20 +277,14 @@ func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSub
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op1, op2, err2 := managedType.GetTwoBigFloat(op1Handle, op2Handle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
+	managedType.ConsumeGasForBigFloatCopy(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
 
 	resultSub := new(big.Float).Sub(op1, op2)
-	if resultSub.IsInf() {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(resultSub)
-	dest.Set(resultSub)
+	setResultIfNotInfinity(arwen.GetVMHost(context), resultSub, destinationHandle)
 }
 
 //export v1_4_bigFloatMul
@@ -264,20 +296,14 @@ func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatMul
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op1, op2, err2 := managedType.GetTwoBigFloat(op1Handle, op2Handle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
+	managedType.ConsumeGasForBigFloatCopy(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
 
 	resultMul := new(big.Float).Mul(op1, op2)
-	if resultMul.IsInf() {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(resultMul)
-	dest.Set(resultMul)
+	setResultIfNotInfinity(arwen.GetVMHost(context), resultMul, destinationHandle)
 }
 
 //export v1_4_bigFloatDiv
@@ -289,24 +315,18 @@ func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatDiv
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op1, op2, err2 := managedType.GetTwoBigFloat(op1Handle, op2Handle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
+	managedType.ConsumeGasForBigFloatCopy(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	if allAreEqualToZero(op1, op2) {
+	if areAllZero(op1, op2) {
 		_ = arwen.WithFault(arwen.ErrAllOperandsAreEqualToZero, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
 
 	resultDiv := new(big.Float).Quo(op1, op2)
-	if resultDiv.IsInf() {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(resultDiv)
-	dest.Set(resultDiv)
+	setResultIfNotInfinity(arwen.GetVMHost(context), resultDiv, destinationHandle)
 }
 
 //export v1_4_bigFloatNeg
@@ -318,12 +338,15 @@ func v1_4_bigFloatNeg(context unsafe.Pointer, destinationHandle, opHandle int32)
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNeg
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op, err2 := managedType.GetBigFloat(opHandle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
+	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(dest, op)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	dest.Neg(op)
 }
 
@@ -336,12 +359,15 @@ func v1_4_bigFloatClone(context unsafe.Pointer, destinationHandle, opHandle int3
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatClone
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op, err2 := managedType.GetBigFloat(opHandle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
+	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(dest, op)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	dest.Copy(op)
 }
 
@@ -354,11 +380,11 @@ func v1_4_bigFloatCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCmp
 	metering.UseGas(gasToUse)
 
-	op1, op2, err := managedType.GetTwoBigFloat(op1Handle, op2Handle)
+	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
+	managedType.ConsumeGasForBigFloatCopy(op1, op2)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -2
 	}
-	managedType.ConsumeGasForBigFloatCopy(op1, op2)
 	return int32(op1.Cmp(op2))
 }
 
@@ -371,12 +397,15 @@ func v1_4_bigFloatAbs(context unsafe.Pointer, destinationHandle, opHandle int32)
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op, err2 := managedType.GetBigFloat(opHandle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
+	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(dest, op)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	dest.Abs(op)
 }
 
@@ -393,7 +422,6 @@ func v1_4_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -2
 	}
-	managedType.ConsumeGasForBigFloatCopy(op)
 	return int32(op.Sign())
 }
 
@@ -406,21 +434,24 @@ func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSqrt
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op, err2 := managedType.GetBigFloat(opHandle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+	op, err := managedType.GetBigFloat(opHandle)
+	managedType.ConsumeGasForBigFloatCopy(dest, op)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
 	if op.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(dest, op)
 	dest.Sqrt(op)
 }
 
 //export v1_4_bigFloatPow
-func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, op1Handle, smallValue int32) {
+func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, exponent int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -428,16 +459,15 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, op1Handle, smal
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op, err2 := managedType.GetBigFloat(op1Handle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	op, err := managedType.GetBigFloat(opHandle)
+	managedType.ConsumeGasForBigFloatCopy(op)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(op, dest)
 
 	opBigInt := big.NewInt(0)
 	op.Int(opBigInt)
-	op2BigInt := big.NewInt(int64(smallValue))
+	op2BigInt := big.NewInt(int64(exponent))
 	if opBigInt.Sign() > 0 {
 		opBigInt.Add(opBigInt, big.NewInt(1))
 	}
@@ -446,13 +476,8 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, op1Handle, smal
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
 	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 
-	powResult := new(big.Float).Set(pow(op, smallValue))
-	if powResult.IsInf() {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-
-	dest.Set(powResult)
+	powResult := new(big.Float).Set(pow(op, exponent))
+	setResultIfNotInfinity(arwen.GetVMHost(context), powResult, destinationHandle)
 }
 
 func pow(base *big.Float, exp int32) *big.Float {
@@ -464,7 +489,7 @@ func pow(base *big.Float, exp int32) *big.Float {
 }
 
 //export v1_4_bigFloatFloor
-func v1_4_bigFloatFloor(context unsafe.Pointer, opHandle, bigIntHandle int32) {
+func v1_4_bigFloatFloor(context unsafe.Pointer, opHandle, destBigIntHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -473,11 +498,12 @@ func v1_4_bigFloatFloor(context unsafe.Pointer, opHandle, bigIntHandle int32) {
 	metering.UseGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
-	bigIntOp := managedType.GetBigIntOrCreate(bigIntHandle)
+	managedType.ConsumeGasForBigFloatCopy(op)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(op)
+	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
+
 	op.Int(bigIntOp)
 	managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if op.IsInt() {
@@ -489,7 +515,7 @@ func v1_4_bigFloatFloor(context unsafe.Pointer, opHandle, bigIntHandle int32) {
 }
 
 //export v1_4_bigFloatCeil
-func v1_4_bigFloatCeil(context unsafe.Pointer, opHandle, bigIntHandle int32) {
+func v1_4_bigFloatCeil(context unsafe.Pointer, opHandle, destBigIntHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -498,11 +524,12 @@ func v1_4_bigFloatCeil(context unsafe.Pointer, opHandle, bigIntHandle int32) {
 	metering.UseGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
-	bigIntOp := managedType.GetBigIntOrCreate(bigIntHandle)
+	managedType.ConsumeGasForBigFloatCopy(op)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	managedType.ConsumeGasForBigFloatCopy(op)
+	bigIntOp := managedType.GetBigIntOrCreate(destBigIntHandle)
+
 	op.Int(bigIntOp)
 	managedType.ConsumeGasForBigIntCopy(bigIntOp)
 	if op.IsInt() {
@@ -514,7 +541,7 @@ func v1_4_bigFloatCeil(context unsafe.Pointer, opHandle, bigIntHandle int32) {
 }
 
 //export v1_4_bigFloatTruncate
-func v1_4_bigFloatTruncate(context unsafe.Pointer, opHandle, bigIntHandle int32) {
+func v1_4_bigFloatTruncate(context unsafe.Pointer, opHandle, destBigIntHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -523,13 +550,14 @@ func v1_4_bigFloatTruncate(context unsafe.Pointer, opHandle, bigIntHandle int32)
 	metering.UseGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
+	managedType.ConsumeGasForBigFloatCopy(op)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
-	bigIntValue := managedType.GetBigIntOrCreate(bigIntHandle)
+	bigIntValue := managedType.GetBigIntOrCreate(destBigIntHandle)
 
-	managedType.ConsumeGasForBigFloatCopy(op)
 	op.Int(bigIntValue)
+	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 }
 
 //export v1_4_bigFloatSetInt64
@@ -557,10 +585,10 @@ func v1_4_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatIsInt
 	metering.UseGas(gasToUse)
 	op, err := managedType.GetBigFloat(opHandle)
+	managedType.ConsumeGasForBigFloatCopy(op)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	managedType.ConsumeGasForBigFloatCopy(op)
 	if op.IsInt() {
 		return 1
 	}
@@ -576,45 +604,13 @@ func v1_4_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle, bigIntHan
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetBigInt
 	metering.UseGas(gasToUse)
 
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	bigIntValue, err2 := managedType.GetBigInt(bigIntHandle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(dest)
+	bigIntValue, err := managedType.GetBigInt(bigIntHandle)
 	managedType.ConsumeGasForBigIntCopy(bigIntValue)
-	dest.SetInt(bigIntValue)
-}
-
-//export v1_4_bigFloatMod
-func v1_4_bigFloatMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatMod
-	metering.UseGas(gasToUse)
-
-	dest, err1 := managedType.GetBigFloatOrCreate(destinationHandle)
-	op1, op2, err2 := managedType.GetTwoBigFloat(op1Handle, op2Handle)
-	if arwen.WithMultipleFaults([]error{err1, err2}, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
-	if allAreEqualToZero(op1, op2) {
-		_ = arwen.WithFault(arwen.ErrAllOperandsAreEqualToZero, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(dest, op1, op2)
-	resultDiv := new(big.Float).Quo(op1, op2)
-	if resultDiv.IsInf() {
-		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
-		return
-	}
-	managedType.ConsumeGasForBigFloatCopy(resultDiv)
-	dest.Set(resultDiv)
-	rDiv := big.NewInt(0)
-	dest.Int(rDiv)
-	dest.Sub(dest, new(big.Float).SetInt(rDiv))
+	resultSetInt := big.NewFloat(0).SetInt(bigIntValue)
+	setResultIfNotInfinity(arwen.GetVMHost(context), resultSetInt, destinationHandle)
 }
 
 //export v1_4_bigFloatGetConstPi
@@ -623,7 +619,7 @@ func v1_4_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNew
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	metering.UseGas(gasToUse)
 
 	pi, err := managedType.GetBigFloatOrCreate(destinationHandle)
@@ -639,7 +635,7 @@ func v1_4_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNew
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
 	metering.UseGas(gasToUse)
 
 	e, err := managedType.GetBigFloatOrCreate(destinationHandle)

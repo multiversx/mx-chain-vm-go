@@ -317,13 +317,12 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 
 func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
-	gasMap["BigFloatNew"] = value
+	gasMap["BigFloatNewFromParts"] = value
 	gasMap["BigFloatAdd"] = value
 	gasMap["BigFloatSub"] = value
 	gasMap["BigFloatMul"] = value
 	gasMap["BigFloatDiv"] = value
 	gasMap["BigFloatTruncate"] = value
-	gasMap["BigFloatMod"] = value
 	gasMap["BigFloatNeg"] = value
 	gasMap["BigFloatClone"] = value
 	gasMap["BigFloatCmp"] = value

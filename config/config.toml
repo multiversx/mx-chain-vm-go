@@ -122,13 +122,12 @@
 	BigIntGetExternalBalance   = 10
 
 [BigFloatAPICost]
-    BigFloatNew         = 10
+    BigFloatNewFromParts         = 10
     BigFloatAdd         = 10
     BigFloatSub         = 10
     BigFloatMul         = 10    
     BigFloatDiv         = 10
     BigFloatTruncate    = 10
-    BigFloatMod         = 10
     BigFloatNeg         = 10
     BigFloatClone       = 10
     BigFloatCmp         = 10

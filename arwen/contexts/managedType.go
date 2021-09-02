@@ -12,6 +12,7 @@ import (
 )
 
 const bigFloatPrecision = 53
+const encodedBigFloatMaxByteLen = 18
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -195,9 +196,8 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 
 // ConsumeGasForBigFloatCopy
 func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
-	// THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
-	byteLen := (bigFloatPrecision + 7) / 8
-	context.ConsumeGasForThisIntNumberOfBytes(int(byteLen) * len(values))
+	// TODO THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
+	context.ConsumeGasForThisIntNumberOfBytes(int(encodedBigFloatMaxByteLen) * len(values))
 }
 
 // BIGINT
@@ -250,6 +250,10 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 
 // BIG FLOAT
 
+func (context *managedTypesContext) GetBigFloatPrecision() uint {
+	return bigFloatPrecision
+}
+
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
 func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Float, error) {
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
@@ -275,8 +279,8 @@ func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error
 	return value, nil
 }
 
-// GetTwoBigFloat returns the values at the two given handles. If there is at least one missing value, it will return error
-func (context *managedTypesContext) GetTwoBigFloat(handle1 int32, handle2 int32) (*big.Float, *big.Float, error) {
+// GetTwoBigFloats returns the values at the two given handles. If there is at least one missing value, it will return error
+func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32) (*big.Float, *big.Float, error) {
 	bigFloatValues := context.managedTypesValues.bigFloatValues
 	value1, ok := bigFloatValues[handle1]
 	if !ok {
