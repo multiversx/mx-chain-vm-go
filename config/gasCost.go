@@ -142,23 +142,22 @@ type BigIntAPICost struct {
 }
 
 type BigFloatAPICost struct {
-	BigFloatNew       uint64
-	BigFloatAdd       uint64
-	BigFloatSub       uint64
-	BigFloatMul       uint64
-	BigFloatDiv       uint64
-	BigFloatTruncate  uint64
-	BigFloatMod       uint64
-	BigFloatNeg       uint64
-	BigFloatClone     uint64
-	BigFloatCmp       uint64
-	BigFloatAbs       uint64
-	BigFloatSqrt      uint64
-	BigFloatFloor     uint64
-	BigFloatCeil      uint64
-	BigFloatIsInt     uint64
-	BigFloatSetBigInt uint64
-	BigFloatSetInt64  uint64
+	BigFloatNewFromParts uint64
+	BigFloatAdd          uint64
+	BigFloatSub          uint64
+	BigFloatMul          uint64
+	BigFloatDiv          uint64
+	BigFloatTruncate     uint64
+	BigFloatNeg          uint64
+	BigFloatClone        uint64
+	BigFloatCmp          uint64
+	BigFloatAbs          uint64
+	BigFloatSqrt         uint64
+	BigFloatFloor        uint64
+	BigFloatCeil         uint64
+	BigFloatIsInt        uint64
+	BigFloatSetBigInt    uint64
+	BigFloatSetInt64     uint64
 }
 
 type CryptoAPICost struct {

@@ -220,7 +220,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	bigFloat2, err = managedTypesContext.GetBigFloat(bigFloatHandle2)
 	require.Nil(t, bigFloat2)
 	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
-	bigFloat1, bigFloat2, err = managedTypesContext.GetTwoBigFloat(bigFloatHandle1, bigFloatHandle2)
+	bigFloat1, bigFloat2, err = managedTypesContext.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle2)
 	require.Nil(t, bigFloat1, bigFloat2)
 	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
 
@@ -327,7 +327,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	bigFloat4, err := managedTypesContext.GetBigFloat(bigFloatHandle4)
 	require.Equal(t, big.NewFloat(floatValue4), bigFloat4)
 	require.Nil(t, err)
-	bigFloat4, bigFloat3, err = managedTypesContext.GetTwoBigFloat(bigFloatHandle4, int32(1))
+	bigFloat4, bigFloat3, err = managedTypesContext.GetTwoBigFloats(bigFloatHandle4, int32(1))
 	require.Nil(t, bigFloat3)
 	require.Nil(t, bigFloat4)
 	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
@@ -382,7 +382,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	bigFloat2, err = managedTypesContext.GetBigFloat(bigFloatHandle2)
 	require.Equal(t, big.NewFloat(floatValue2), bigFloat2)
 	require.Nil(t, err)
-	bigFloat1, bigFloat2, err = managedTypesContext.GetTwoBigFloat(bigFloatHandle1, bigFloatHandle2)
+	bigFloat1, bigFloat2, err = managedTypesContext.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle2)
 	require.Equal(t, big.NewFloat(floatValue1), bigFloat1)
 	require.Equal(t, big.NewFloat(floatValue2), bigFloat2)
 	require.Nil(t, err)
@@ -502,23 +502,29 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 
 	bigFloat1.SetInf(true)
 	bigFloat2.SetInf(false)
+
 	infFloat1, err := managedTypesContext.GetBigFloat(bigFloatHandle1)
 	require.Nil(t, infFloat1)
 	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+
 	infFloat2, err := managedTypesContext.GetBigFloat(bigFloatHandle2)
 	require.Nil(t, infFloat2)
 	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+
 	infFloat1, err = managedTypesContext.GetBigFloatOrCreate(bigFloatHandle1)
 	require.Nil(t, infFloat1)
 	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+
 	infFloat2, err = managedTypesContext.GetBigFloatOrCreate(bigFloatHandle2)
 	require.Nil(t, infFloat2)
 	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
-	infFloat1, infFloat2, err = managedTypesContext.GetTwoBigFloat(bigFloatHandle1, bigFloatHandle2)
+
+	infFloat1, infFloat2, err = managedTypesContext.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle2)
 	require.Nil(t, infFloat1)
 	require.Nil(t, infFloat2)
 	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
-	infFloat1, nonInfFloat, err := managedTypesContext.GetTwoBigFloat(bigFloatHandle1, bigFloatHandle3)
+
+	infFloat1, nonInfFloat, err := managedTypesContext.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle3)
 	require.Nil(t, infFloat1)
 	require.Nil(t, nonInfFloat)
 	require.Equal(t, arwen.ErrInfinityFloatOperation, err)

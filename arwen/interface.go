@@ -169,9 +169,10 @@ type ManagedTypesContext interface {
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
 	PutBigFloat(value float64) int32
+	GetBigFloatPrecision() uint
 	GetBigFloatOrCreate(handle int32) (*big.Float, error)
 	GetBigFloat(handle int32) (*big.Float, error)
-	GetTwoBigFloat(handle1 int32, handle2 int32) (*big.Float, *big.Float, error)
+	GetTwoBigFloats(handle1 int32, handle2 int32) (*big.Float, *big.Float, error)
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveSizeOfField(ecHandle int32) int32

@@ -461,7 +461,7 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	if bigFloat.Prec() != 53 {
+	if bigFloat.Prec() != managedType.GetBigFloatPrecision() {
 		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
 	}
