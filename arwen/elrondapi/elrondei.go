@@ -1409,6 +1409,7 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 
 	asyncCall := &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,
+		Source:          runtime.GetSCAddress(),
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,

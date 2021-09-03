@@ -313,6 +313,7 @@ type AsyncContext interface {
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
+	GetAddress() []byte
 	GetCallerAddress() []byte
 	GetCallerCallID() []byte
 	GetCallerAsyncCallIdentifier() (*AsyncCallIdentifier, error)
@@ -340,7 +341,8 @@ type AsyncContext interface {
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
-	//SendCrossShardCallback(asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
+	//CallCallback(sender []byte, destination []byte, asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
 	CallCallback(asyncCall *AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error)
 	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier) error
+	GetCallByAsyncIdentifier(asyncCallIdentifier *AsyncCallIdentifier) (*AsyncCall, error)
 }

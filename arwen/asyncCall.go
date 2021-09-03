@@ -19,23 +19,6 @@ func (asyncCallIdentifier *AsyncCallIdentifier) ToBytes() []byte {
 	return data
 }
 
-// CallbackInfo -
-// type CallbackInfo struct {
-// 	CallbackDestination []byte
-// 	SuccessCallback     string
-// 	ErrorCallback       string
-// 	GasLocked           uint64
-// }
-
-// ToBytes -
-// func (callbackInfo *CallbackInfo) ToBytes() []byte {
-// 	data, err := json.Marshal(callbackInfo)
-// 	if err != nil {
-// 		return nil
-// 	}
-// 	return data
-// }
-
 // ReadAsyncCallIdentifierFromBytes -
 func ReadAsyncCallIdentifierFromBytes(input []byte) (*AsyncCallIdentifier, error) {
 	asyncCallIdentifier := &AsyncCallIdentifier{}
@@ -51,6 +34,7 @@ type AsyncCall struct {
 	Identifier      *AsyncCallIdentifier
 	Status          AsyncCallStatus
 	ExecutionMode   AsyncCallExecutionMode
+	Source          []byte
 	Destination     []byte
 	Data            []byte
 	GasLimit        uint64
@@ -66,6 +50,7 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		Identifier:      ac.Identifier,
 		Status:          ac.Status,
 		ExecutionMode:   ac.ExecutionMode,
+		Source:          make([]byte, len(ac.Source)),
 		Destination:     make([]byte, len(ac.Destination)),
 		Data:            make([]byte, len(ac.Data)),
 		GasLimit:        ac.GasLimit,
@@ -75,6 +60,7 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		ErrorCallback:   ac.ErrorCallback,
 	}
 
+	copy(clone.Source, ac.Source)
 	copy(clone.Destination, ac.Destination)
 	copy(clone.Data, ac.Data)
 	copy(clone.ValueBytes, ac.ValueBytes)
@@ -85,6 +71,11 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 // GetIdentifier returns the identifier of an async call
 func (ac *AsyncCall) GetIdentifier() *AsyncCallIdentifier {
 	return ac.Identifier
+}
+
+// GetSource returns the destination of an async call
+func (ac *AsyncCall) GetSource() []byte {
+	return ac.Source
 }
 
 // GetDestination returns the destination of an async call

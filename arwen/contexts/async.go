@@ -128,25 +128,30 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.address = runtime.GetSCAddress()
 
 	// TODO matei-p change to debug logging
-	fmt.Println("Calling function ", input.Function, "address", string(context.address))
+	fmt.Println("Calling function ", input.Function)
 	if len(context.stateStack) == 0 && input.CallType != vm.AsynchronousCall && input.CallType != vm.AsynchronousCallBack {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
 		context.callID = runtime.GetAndEliminateFirstArgumentFromList()
 		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
+		// if input.CallType == vm.AsynchronousCallBack {
+		// 	context.callerAddr = context.host.Runtime().GetSCAddress()
+		// }
 	}
 	context.callType = input.CallType
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 
 	// TODO matei-p change to debug logging
+	fmt.Println("\taddress", string(context.address))
 	fmt.Println("\tcallID", DebugCallIDAsString(context.callID))
 	if input.CallType == vm.AsynchronousCall || input.CallType == vm.AsynchronousCallBack {
 		context.callAsyncIdentifierAsBytes = runtime.GetAndEliminateFirstArgumentFromList()
 		// TODO matei-p change to debug logging
 		asynCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
 		asynCallIdentifierAsString, _ := json.Marshal(asynCallIdentifier)
+		fmt.Println("\tcallerAddr", string(context.callerAddr))
 		fmt.Println("\tcallerCallID", DebugCallIDAsString(context.callerCallID))
 		fmt.Println("\tcallerCallAsyncIdentifier", string(asynCallIdentifierAsString))
 	}
@@ -258,6 +263,11 @@ func (context *asyncContext) PopMergeActiveState() {
 // ClearStateStack deletes all the states stored on the internal state stack.
 func (context *asyncContext) ClearStateStack() {
 	context.stateStack = make([]*asyncContext, 0)
+}
+
+// GetAddress returns the address of the context.
+func (context *asyncContext) GetAddress() []byte {
+	return context.address
 }
 
 // GetCallerAddress returns the address of the original caller.
@@ -430,7 +440,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 		return nil, arwen.ErrCannotInterpretCallbackArgs
 	}
 
-	call, err := deserializedContext.getCallByAsyncIdentifier(asyncCallIdentifier)
+	call, err := deserializedContext.GetCallByAsyncIdentifier(asyncCallIdentifier)
 	if err != nil {
 		return nil, err
 	}
@@ -442,7 +452,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 	return call, nil
 }
 
-func (context *asyncContext) getCallByAsyncIdentifier(asyncCallIdentifier *arwen.AsyncCallIdentifier) (*arwen.AsyncCall, error) {
+func (context *asyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier *arwen.AsyncCallIdentifier) (*arwen.AsyncCall, error) {
 	return getCallByAsyncIdentifier(context.asyncCallGroups, asyncCallIdentifier)
 }
 
@@ -560,6 +570,8 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
 	runtime := context.host.Runtime()
 	metering := context.host.Metering()
+
+	call.Source = context.host.Runtime().GetSCAddress()
 
 	// TODO discuss
 	// TODO add exception for the first callback instance of the same address,
@@ -811,7 +823,7 @@ func (context *asyncContext) ReadSerializedFromStackOrStore(address []byte, call
 }
 
 func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier *arwen.AsyncCallIdentifier, returnCode vmcommon.ReturnCode) error {
-	asyncCall, err := context.getCallByAsyncIdentifier(asyncCallIdentifier)
+	asyncCall, err := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
 	if err != nil {
 		return err
 	}
@@ -937,7 +949,8 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
-	deletedAsyncCall := currentCallGroup.DeleteAsyncCall(asyncCallIndex)
+	/*deletedAsyncCall := */
+	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 
 	context.DecrementCallsCounter()
 
@@ -964,22 +977,26 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 			return nil
 		}
 
-		if deletedAsyncCall.ExecutionMode == arwen.AsyncUnknown {
-			currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
+		currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
+		if context.callType == vm.AsynchronousCall {
 			vmOutput := context.childResults
-			parentContextSerialized, _ := context.ReadSerializedFromStackOrStore(context.callerAddr, context.callerCallID)
-			asyncCallInParent, _ := parentContextSerialized.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
+			// parentContextSerialized, _ := context.ReadSerializedFromStackOrStore(context.callerAddr, context.callerCallID)
+			// asyncCallInParent, _ := parentContextSerialized.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
+			// isComplete, _ := context.CallCallback(asyncCallInParent, vmOutput, nil)
+			context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
+			asyncCallInParent, _ := context.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
 			isComplete, _ := context.CallCallback(asyncCallInParent, vmOutput, nil)
 			if isComplete {
-				// this will be called only after local async completions, because it's the only place
-				// that can make this call for local asyncs
-				// for cross-shard callbacks, isComplete will return false, and notification will be made in "post process" section of host.callSCMethod()
-				parentContext, _ := context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
 				// check if we reached the first call and need to end the notification chain
 				if asyncCallIdentifier != nil {
-					parentContext.NotifyChildIsComplete(currentAsyncCallIdentifier)
+					context.NotifyChildIsComplete(currentAsyncCallIdentifier)
 				}
 			}
+		}
+
+		if context.callType == vm.AsynchronousCallBack {
+			context.LoadSpecifiedContext(context.address, context.callerCallID)
+			context.NotifyChildIsComplete(currentAsyncCallIdentifier)
 		}
 	}
 
@@ -987,16 +1004,17 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 }
 
 func (context *asyncContext) CallCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
-	sender := context.address
-	destination := context.callerAddr
+	sender := asyncCall.Destination //context.address
+	destination := asyncCall.Source //context.callerAddr
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		data := GetEncodedDataForAsyncCallbackTransfer(context.host,
-			context.callerCallID,
-			context.callAsyncIdentifierAsBytes,
-			asyncCall.SuccessCallback,
-			vmOutput)
+		// data := GetEncodedDataForAsyncCallbackTransfer(context.host,
+		// 	context.callerCallID,
+		// 	context.callAsyncIdentifierAsBytes,
+		// 	asyncCall.SuccessCallback,
+		// 	vmOutput)
+		data := context.GetEncodedDataForAsyncCallbackTransfer(asyncCall, vmOutput)
 		return false, sendCrossShardCallback(context.host, sender, destination, data)
 	}
 
@@ -1286,16 +1304,21 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 }
 
 // GetEncodedDataForAsyncCallbackTransfer -
-func GetEncodedDataForAsyncCallbackTransfer(host arwen.VMHost, callerCallID []byte, callerCallAsyncIdentifierAsBytes []byte, callbackFunction string, vmOutput *vmcommon.VMOutput) []byte {
+func (context *asyncContext) GetEncodedDataForAsyncCallbackTransfer(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput) []byte {
 	transferData := txDataBuilder.NewBuilder()
 	/*
 		callbackFunction is not used by arwen, used by testing frameworks
 		arwen uses callerCallAsyncIdentifierAsBytes to get the AsyncCall with function name, gas provided etc.
 	*/
-	transferData.Func(callbackFunction)
-	transferData.Bytes(host.Async().GenerateNewCallbackID())
-	transferData.Bytes(callerCallID)
-	transferData.Bytes(callerCallAsyncIdentifierAsBytes)
+	// async := host.Async()
+	// transferData.Func(callbackFunction)
+	// transferData.Bytes(async.GenerateNewCallbackID())
+	// transferData.Bytes(callerCallID)
+	// transferData.Bytes(callerCallAsyncIdentifierAsBytes)
+	transferData.Func(asyncCall.SuccessCallback)
+	transferData.Bytes(context.GenerateNewCallbackID())
+	transferData.Bytes(context.callID)
+	transferData.Bytes(asyncCall.Identifier.ToBytes())
 
 	retCode := vmOutput.ReturnCode
 

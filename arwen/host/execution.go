@@ -8,7 +8,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -933,15 +932,17 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		parentContext, _ := contexts.NewSerializedAsyncContextFromStore(host.Storage(), async.GetCallerAddress(), async.GetCallerCallID())
 		asyncCallIdentifier, _ = async.GetCallerAsyncCallIdentifier()
-		asyncCall, _ := parentContext.GetCallByAsyncIdentifier(asyncCallIdentifier)
+		// parentContext, _ := contexts.NewSerializedAsyncContextFromStore(host.Storage(), async.GetCallerAddress(), async.GetCallerCallID())
+		// asyncCall, _ := parentContext.GetCallByAsyncIdentifier(asyncCallIdentifier)
+		async.LoadSpecifiedContext(async.GetCallerAddress(), async.GetCallerCallID())
+		asyncCall, _ := async.GetCallByAsyncIdentifier(asyncCallIdentifier)
 		_, err = async.CallCallback(asyncCall, output.GetVMOutput(), err)
 		break
 	case vm.AsynchronousCallBack:
-		async.LoadSpecifiedContext(runtime.GetSCAddress(), originalCallID)
+		// did callback we just execute ended?
+		async.LoadSpecifiedContext(async.GetAddress(), async.GetCallerCallID())
 		async.NotifyChildIsComplete(asyncCallIdentifier)
-		// 	async.PostprocessCrossShardCallback(originalCallID, asyncCallIdentifier)
 	default:
 		err = arwen.ErrUnknownCallType
 	}

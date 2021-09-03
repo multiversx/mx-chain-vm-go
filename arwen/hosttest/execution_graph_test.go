@@ -40,6 +40,11 @@ func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_TwoAsyncCalls_LocalCross_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
