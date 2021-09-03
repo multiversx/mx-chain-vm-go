@@ -2630,6 +2630,8 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
+	host.Async().DecrementCallsCounter()
+
 	return 0
 }
 

@@ -15,7 +15,7 @@ func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
-	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
+	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
@@ -25,7 +25,7 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
-	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 

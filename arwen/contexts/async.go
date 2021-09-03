@@ -938,6 +938,22 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 	fmt.Println("\tcallerAddr", string(context.callerAddr))
 	fmt.Println("\tcallerCallID", DebugCallIDAsString(context.callerCallID))
 
+	// check if we received a notification form a sync call that finished (a sync call that did cross shard async calls)
+	if asyncCallIdentifier == nil {
+		context.DecrementCallsCounter()
+		if context.IsComplete() {
+			currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
+			if currentAsyncCallIdentifier == nil {
+				context, _ = context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
+			}
+			context.NotifyChildIsComplete(currentAsyncCallIdentifier)
+			return nil
+			// }
+		} else {
+			return nil
+		}
+	}
+
 	currentGroupID := asyncCallIdentifier.GroupIdentifier
 	asyncCallIndex := asyncCallIdentifier.IndexInGroup
 
@@ -997,6 +1013,9 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 			if asyncCallInParent != nil && asyncCallInParent.ExecutionMode == arwen.AsyncUnknown {
 				context.NotifyChildIsComplete(currentAsyncCallIdentifier)
 			}
+		} else if context.callType == vm.DirectCall {
+			context, _ = context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
+			context.NotifyChildIsComplete(currentAsyncCallIdentifier)
 		}
 	}
 
