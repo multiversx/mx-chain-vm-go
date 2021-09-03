@@ -28,6 +28,10 @@ func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *Test
 	parentsPath := make([]*TestCallNode, 0)
 	crtNode := startNode
 	for crtNode.Parent != nil {
+		// we add parents for the enqueued node until we reach a callback edge
+		if crtNode.Parent.IncomingEdgeType == Callback || crtNode.Parent.IncomingEdgeType == CallbackCrossShard {
+			break
+		}
 		parentsPath = append(parentsPath, crtNode.Parent)
 		crtNode = crtNode.Parent
 	}

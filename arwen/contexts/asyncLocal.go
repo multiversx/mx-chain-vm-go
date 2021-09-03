@@ -102,8 +102,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
-	// TODO matei-p is this correct?
-	// context.gasAccumulated = 0
+	context.gasAccumulated = 0
 	if callbackVMOutput != nil {
 		context.accumulateGas(callbackVMOutput.GasRemaining)
 	}
@@ -289,7 +288,7 @@ func (context *asyncContext) createCallbackInput(
 	metering := context.host.Metering()
 	runtime := context.host.Runtime()
 
-	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
+	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, destinationErr)
 
 	esdtFunction := ""
 	isESDTOnCallBack := false
@@ -355,7 +354,7 @@ func (context *asyncContext) createCallbackInput(
 	return contractCallInput, nil
 }
 
-func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput, err error) [][]byte {
+func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) [][]byte {
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
@@ -374,7 +373,7 @@ func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput
 		arguments,
 		context.GenerateNewCallbackID(),
 		context.callID,
-		context.callAsyncIdentifierAsBytes,
+		asyncCall.Identifier.ToBytes(),
 	)
 
 	return arguments

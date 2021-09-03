@@ -814,7 +814,6 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 					callBackNode := parent
 					asyncNode := callBackNode.Parent
 					// asyncInitiator := asyncNode.Parent
-
 					// asyncInitiatorGasRemaining := getGasRemaining(asyncInitiator)
 					asyncNodeGasRemaining := getGasRemaining(asyncNode)
 					callBackNode.GasLimit = /*asyncInitiatorGasRemaining +*/ asyncNodeGasRemaining + asyncNode.GasLocked

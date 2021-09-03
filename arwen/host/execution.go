@@ -933,11 +933,8 @@ func (host *vmHost) callSCMethod() error {
 		break
 	case vm.AsynchronousCall:
 		asyncCallIdentifier, _ = async.GetCallerAsyncCallIdentifier()
-		// parentContext, _ := contexts.NewSerializedAsyncContextFromStore(host.Storage(), async.GetCallerAddress(), async.GetCallerCallID())
-		// asyncCall, _ := parentContext.GetCallByAsyncIdentifier(asyncCallIdentifier)
 		async.LoadSpecifiedContext(async.GetCallerAddress(), async.GetCallerCallID())
-		asyncCall, _ := async.GetCallByAsyncIdentifier(asyncCallIdentifier)
-		_, err = async.CallCallback(asyncCall, output.GetVMOutput(), err)
+		_, err = async.CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier, output.GetVMOutput())
 		break
 	case vm.AsynchronousCallBack:
 		// did callback we just execute ended?

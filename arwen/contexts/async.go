@@ -135,9 +135,6 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	} else {
 		context.callID = runtime.GetAndEliminateFirstArgumentFromList()
 		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
-		// if input.CallType == vm.AsynchronousCallBack {
-		// 	context.callerAddr = context.host.Runtime().GetSCAddress()
-		// }
 	}
 	context.callType = input.CallType
 	context.callsCounter = 0
@@ -949,8 +946,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 		return arwen.ErrCallBackFuncNotExpected
 	}
 
-	/*deletedAsyncCall := */
-	currentCallGroup.DeleteAsyncCall(asyncCallIndex)
+	deletedAsyncCall := currentCallGroup.DeleteAsyncCall(asyncCallIndex)
 
 	context.DecrementCallsCounter()
 
@@ -978,42 +974,46 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier *arwen.As
 		}
 
 		currentAsyncCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
-		if context.callType == vm.AsynchronousCall {
+		// if this parent context is the result of a cross shard async call, then call its callback
+		// (check the async part)
+		if context.callType == vm.AsynchronousCall && deletedAsyncCall.ExecutionMode == arwen.AsyncUnknown {
 			vmOutput := context.childResults
-			// parentContextSerialized, _ := context.ReadSerializedFromStackOrStore(context.callerAddr, context.callerCallID)
-			// asyncCallInParent, _ := parentContextSerialized.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
-			// isComplete, _ := context.CallCallback(asyncCallInParent, vmOutput, nil)
-			context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
-			asyncCallInParent, _ := context.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
-			isComplete, _ := context.CallCallback(asyncCallInParent, vmOutput, nil)
+			context, _ = context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
+			// asyncCallInParent, _ := context.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
+			// (check the cross shard part)
+			// if asyncCallInParent != nil && asyncCallInParent.ExecutionMode == arwen.AsyncUnknown {
+			isComplete, _ := context.CallCallbackForCompleteAsyncCrossShardCall(currentAsyncCallIdentifier, vmOutput)
 			if isComplete {
 				// check if we reached the first call and need to end the notification chain
 				if asyncCallIdentifier != nil {
 					context.NotifyChildIsComplete(currentAsyncCallIdentifier)
 				}
 			}
-		}
-
-		if context.callType == vm.AsynchronousCallBack {
-			context.LoadSpecifiedContext(context.address, context.callerCallID)
-			context.NotifyChildIsComplete(currentAsyncCallIdentifier)
+			// }
+		} else if context.callType == vm.AsynchronousCallBack {
+			context, _ = context.LoadFromStackOrStore(context.address, context.callerCallID)
+			asyncCallInParent, _ := context.GetCallByAsyncIdentifier(currentAsyncCallIdentifier)
+			// (check the cross shard part)
+			if asyncCallInParent != nil && asyncCallInParent.ExecutionMode == arwen.AsyncUnknown {
+				context.NotifyChildIsComplete(currentAsyncCallIdentifier)
+			}
 		}
 	}
 
 	return nil
 }
 
-func (context *asyncContext) CallCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
-	sender := asyncCall.Destination //context.address
-	destination := asyncCall.Source //context.callerAddr
+func (context *asyncContext) CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier *arwen.AsyncCallIdentifier, vmOutput *vmcommon.VMOutput) (bool, error) {
+	asyncCallInParent, _ := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
+	return context.callCallback(asyncCallInParent, vmOutput, nil)
+}
+
+func (context *asyncContext) callCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
+	sender := asyncCall.Destination
+	destination := asyncCall.Source
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		// data := GetEncodedDataForAsyncCallbackTransfer(context.host,
-		// 	context.callerCallID,
-		// 	context.callAsyncIdentifierAsBytes,
-		// 	asyncCall.SuccessCallback,
-		// 	vmOutput)
 		data := context.GetEncodedDataForAsyncCallbackTransfer(asyncCall, vmOutput)
 		return false, sendCrossShardCallback(context.host, sender, destination, data)
 	}
