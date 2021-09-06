@@ -531,8 +531,8 @@ func v1_4_managedUpgradeContract(
 	context unsafe.Pointer,
 	destHandle int32,
 	gas int64,
-	codeHandle int32,
 	valueHandle int32,
+	codeHandle int32,
 	codeMetadataHandle int32,
 	argumentsHandle int32,
 	resultHandle int32,
@@ -821,7 +821,7 @@ func v1_4_managedExecuteOnDestContext(
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
+	returnVal := ExecuteOnDestContextWithTypedArgs(
 		host,
 		gas,
 		vmInput.value,
@@ -887,7 +887,7 @@ func v1_4_managedTransferValueExecute(
 		vmInput.destination,
 		vmInput.value,
 		gasLimit,
-		vmInput.destination,
+		[]byte(vmInput.function),
 		vmInput.arguments,
 	)
 }

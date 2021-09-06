@@ -127,8 +127,8 @@ func readESDTTransfers(
 
 	numTransfers := len(managedVecBytes) / esdtTransferLen
 	result := make([]*vmcommon.ESDTTransfer, 0, numTransfers)
-	for i := 0; i < len(managedVecBytes); i += handleLen {
-		esdtTransfer, err := readESDTTransfer(managedType, managedVecBytes[i:i+handleLen])
+	for i := 0; i < len(managedVecBytes); i += esdtTransferLen {
+		esdtTransfer, err := readESDTTransfer(managedType, managedVecBytes[i:i+esdtTransferLen])
 		if err != nil {
 			return nil, err
 		}
