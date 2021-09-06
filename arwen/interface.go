@@ -343,5 +343,5 @@ type AsyncContext interface {
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
 
 	CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier *AsyncCallIdentifier, vmOutput *vmcommon.VMOutput) (bool, error)
-	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier) error
+	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier, isCrossShardCallChain bool) error
 }

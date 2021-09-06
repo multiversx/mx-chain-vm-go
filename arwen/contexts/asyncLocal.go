@@ -87,7 +87,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 		// TODO matei-p change to debug logging
 		fmt.Println("gasAccumulated ->", context.gasAccumulated)
 		if isCallbackComplete {
-			context.NotifyChildIsComplete(asyncCall.Identifier)
+			context.NotifyChildIsComplete(asyncCall.Identifier, false)
 		}
 	} else {
 		context.gasAccumulated = 0

@@ -939,7 +939,7 @@ func (host *vmHost) callSCMethod() error {
 	case vm.AsynchronousCallBack:
 		// did callback we just execute ended?
 		async.LoadSpecifiedContext(async.GetAddress(), async.GetCallerCallID())
-		async.NotifyChildIsComplete(asyncCallIdentifier)
+		async.NotifyChildIsComplete(asyncCallIdentifier, true)
 	default:
 		err = arwen.ErrUnknownCallType
 	}

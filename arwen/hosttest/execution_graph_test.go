@@ -24,6 +24,11 @@ func TestGasUsed_SyncCalls_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_SyncCalls2_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncCalls2()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCall()
 	runGraphCallTestTemplate(t, callGraph)
@@ -104,13 +109,18 @@ func TestGasUsed_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SimpleSyncAndAsync1_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
+func TestGasUsed_SyncAndAsync1_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync1()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SimpleSyncAndAsync2_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
+func TestGasUsed_SyncAndAsync2_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync2()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_SyncAndAsync3_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -125,19 +135,16 @@ func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
-	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
-	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
-	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
 	runGraphCallTestTemplate(t, callGraph)
 }

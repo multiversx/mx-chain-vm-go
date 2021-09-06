@@ -70,7 +70,7 @@ func TestExecutionGraph_AsyncCallsAsync(t *testing.T) {
 }
 
 func TestExecutionGraph_SimpleSyncAndAsync1(t *testing.T) {
-	callGraph := CreateGraphTestSimpleSyncAndAsync1()
+	callGraph := CreateGraphTestSyncAndAsync1()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc2", "f2"),
 		*buildTestCall("sc3", "f3"),
@@ -85,7 +85,7 @@ func TestExecutionGraph_SimpleSyncAndAsync1(t *testing.T) {
 }
 
 func TestExecutionGraph_SimpleSyncAndAsync2(t *testing.T) {
-	callGraph := CreateGraphTestSimpleSyncAndAsync2()
+	callGraph := CreateGraphTestSyncAndAsync2()
 	expectedOrder := []TestCall{
 		*buildTestCall("sc1", "f1"),
 		*buildTestCall("sc5", "f5"),

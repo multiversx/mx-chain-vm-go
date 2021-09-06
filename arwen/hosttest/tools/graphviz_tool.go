@@ -25,7 +25,7 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
-	callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
+	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard4()
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +39,8 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestAsyncCallsAsync2() // not allowed to run!
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+
+	callGraph := test.CreateGraphTestSyncAndAsync1()
 
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
