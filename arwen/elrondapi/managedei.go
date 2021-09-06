@@ -23,7 +23,7 @@ package elrondapi
 // extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t dataHandle);
+// extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
 //
 // extern void		v1_4_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
 // extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
@@ -437,7 +437,7 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 }
 
 //export v1_4_managedAsyncCall
-func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, dataHandle int32) {
+func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -447,17 +447,12 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
 	metering.UseGas(gasToUse)
 
-	address, err := managedType.GetBytes(destHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	data, err := managedType.GetBytes(dataHandle)
-	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return
-	}
+	data := makeCrossShardCallFromInput(vmInput.function, vmInput.arguments)
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
@@ -468,7 +463,7 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseGas(gasToUse)
 
-	err = runtime.ExecuteAsyncCall(address, data, value.Bytes())
+	err = runtime.ExecuteAsyncCall(vmInput.destination, []byte(data), value.Bytes())
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return

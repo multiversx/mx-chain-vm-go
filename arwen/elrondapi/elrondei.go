@@ -1094,7 +1094,11 @@ func TransferValueExecuteWithTypedArgs(
 		return 0
 	}
 
-	data := makeCrossShardCallFromInput(contractCallInput)
+	data := ""
+	if contractCallInput != nil {
+		data = makeCrossShardCallFromInput(contractCallInput.Function, contractCallInput.Arguments)
+	}
+
 	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vm.DirectCall)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
@@ -1103,13 +1107,9 @@ func TransferValueExecuteWithTypedArgs(
 	return 0
 }
 
-func makeCrossShardCallFromInput(vmInput *vmcommon.ContractCallInput) string {
-	if vmInput == nil {
-		return ""
-	}
-
-	txData := vmInput.Function
-	for _, arg := range vmInput.Arguments {
+func makeCrossShardCallFromInput(function string, arguments [][]byte) string {
+	txData := function
+	for _, arg := range arguments {
 		txData += "@" + hex.EncodeToString(arg)
 	}
 
