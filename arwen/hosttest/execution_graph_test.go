@@ -124,6 +124,11 @@ func TestGasUsed_SyncAndAsync3_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_SyncAndAsync4_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync4()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_GraphTest1_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTest1()
 	runGraphCallTestTemplate(t, callGraph)
@@ -150,7 +155,6 @@ func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
 }
 
 // func TestGasUsed_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
-// 	// arwen.SetLoggingForTests()
 // 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
 // 	runGraphCallTestTemplate(t, callGraph)
 // }

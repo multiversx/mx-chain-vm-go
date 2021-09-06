@@ -76,7 +76,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	// if context is not found in store, it's considerd complete
+	// if context is not found in store, it's considered complete
 	isComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
 	if err != nil {
 		return err
