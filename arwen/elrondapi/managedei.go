@@ -17,7 +17,6 @@ package elrondapi
 // extern int32_t	v1_4_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteOnDestContextByCaller(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedDelegateExecution(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
 // extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
@@ -96,11 +95,6 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedExecuteOnSameContext", v1_4_managedExecuteOnSameContext, C.v1_4_managedExecuteOnSameContext)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedDelegateExecution", v1_4_managedDelegateExecution, C.v1_4_managedDelegateExecution)
 	if err != nil {
 		return nil, err
 	}
@@ -700,34 +694,6 @@ func v1_4_managedExecuteReadOnly(
 
 	lenReturnData := len(host.Output().ReturnData())
 	returnVal := ExecuteReadOnlyWithTypedArguments(
-		host,
-		gas,
-		[]byte(vmInput.function),
-		vmInput.destination,
-		vmInput.arguments,
-	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
-	return returnVal
-}
-
-//export v1_4_managedDelegateExecution
-func v1_4_managedDelegateExecution(
-	context unsafe.Pointer,
-	gas int64,
-	addressHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-	resultHandle int32,
-) int32 {
-	host := arwen.GetVMHost(context)
-
-	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	lenReturnData := len(host.Output().ReturnData())
-	returnVal := DelegateExecutionWithTypedArgs(
 		host,
 		gas,
 		[]byte(vmInput.function),
