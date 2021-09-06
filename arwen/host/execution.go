@@ -356,6 +356,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
 	bigInt.PushState()
+	bigInt.InitState()
 	output.PushState()
 
 	copyTxHashesFromContext(runtime, input)
@@ -396,8 +397,8 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 		bigInt.PopSetActiveState()
 		metering.PopSetActiveState()
 		output.PopSetActiveState()
-		runtime.PopSetActiveState()
 		blockchain.PopSetActiveState()
+		runtime.PopSetActiveState()
 		return
 	}
 
@@ -408,10 +409,9 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	metering.PopMergeActiveState()
 	output.PopDiscard()
-	bigInt.PopDiscard()
 	blockchain.PopDiscard()
+	bigInt.PopSetActiveState()
 	runtime.PopSetActiveState()
-
 	// Restore remaining gas to the caller (parent) Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 }
