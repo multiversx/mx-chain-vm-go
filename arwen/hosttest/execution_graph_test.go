@@ -154,10 +154,10 @@ func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// func TestGasUsed_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
-// 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
+func TestGasUsed_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
+	runGraphCallTestTemplate(t, callGraph)
+}
 
 func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	testConfig := makeTestConfig()
