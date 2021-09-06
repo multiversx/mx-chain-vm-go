@@ -46,6 +46,15 @@ func TestRustComposability(t *testing.T) {
 	})
 }
 
+func TestRustLegacyComposability(t *testing.T) {
+	// TODO fix excluded tests and include them back
+	runTestsInFolder(t, "features/composability/mandos-legacy", []string{
+		"features/composability/mandos-legacy/l_recursive_caller_egld_2.scen.json",
+		"features/composability/mandos-legacy/l_recursive_caller_esdt_2.scen.json",
+		"features/composability/mandos-legacy/l_recursive_caller_esdt_x.scen.json",
+	})
+}
+
 func TestTimelocks(t *testing.T) {
 	runAllTestsInFolder(t, "timelocks")
 }
