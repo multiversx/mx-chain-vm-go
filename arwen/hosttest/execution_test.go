@@ -1017,7 +1017,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				GasUsed(test.ParentAddress, 3405).
+				GasUsed(test.ParentAddress, 3404).
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
@@ -1190,7 +1190,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, parentAccountBalance).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 3612).
+				GasUsed(test.ParentAddress, 3611).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 3).
@@ -1227,7 +1227,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
 
-	childExecutionCost := uint64(108)
+	childExecutionCost := uint64(102)
 	parentGasBeforeExecuteAPI := uint64(114)
 	executeAPICost := uint64(13)
 	finalCost := uint64(67)
@@ -1251,7 +1251,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-				GasUsed(test.ParentAddress, 3461).
+				GasUsed(test.ParentAddress, 3460).
 				// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 99).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
@@ -1301,7 +1301,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	}
 
 	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationCounterKey).WithValue([]byte{byte(recursiveCalls + 1)}))
-	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
+	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -1323,7 +1323,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
+			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1393,7 +1393,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	var storeEntries []test.StoreEntry
 
 	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationCounterKey).WithValue([]byte{byte(recursiveCalls + 1)}))
-	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
+	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 
 	returnData = append(returnData, []byte("start recursive mutual calls"))
 
@@ -1441,7 +1441,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
+			require.Equal(t, int64(0), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1498,7 +1498,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	}
 
 	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationCounterKey).WithValue([]byte{byte(recursiveCalls + 1)}))
-	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
+	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -1529,7 +1529,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
+			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
 		})
 }
 
