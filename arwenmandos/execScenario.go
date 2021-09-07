@@ -17,7 +17,7 @@ func (ae *ArwenTestExecutor) Reset() {
 func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
-	err := ae.SetMandosGasSchedule(scenario.GasSchedule)
+	err := ae.InitVM(scenario.GasSchedule)
 	if err != nil {
 		return err
 	}

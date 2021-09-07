@@ -1,12 +1,16 @@
 package contexts
 
 import (
+	"bytes"
 	"crypto/elliptic"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,10 +65,10 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 
 	prg := managedTypesContext.GetRandReader()
 	a := make([]byte, 100)
-	prg.Read(a)
+	_, _ = prg.Read(a)
 	b := make([]byte, 100)
 	for i := 0; i < 1000; i++ {
-		prg.Read(b)
+		_, _ = prg.Read(b)
 		require.NotEqual(t, a, b)
 		copy(a, b)
 	}
@@ -72,21 +76,31 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 
 func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	t.Parallel()
-	host := &contextmock.VMHostStub{}
+	host := &contextmock.VMHostStub{
+		BlockchainCalled: func() arwen.BlockchainContext {
+			return &mock.BlockchainContextMock{}
+		},
+		RuntimeCalled: func() arwen.RuntimeContext {
+			return &contextmock.RuntimeContextMock{CurrentTxHash: bytes.Repeat([]byte{1}, 32)}
+		},
+	}
 	value1, value2 := int64(100), int64(200)
 	p224ec, p256ec := elliptic.P224().Params(), elliptic.P256().Params()
 	managedTypesContext, _ := NewManagedTypesContext(host)
 	managedTypesContext.InitState()
 
-	index1 := managedTypesContext.PutBigInt(value1)
-	index2 := managedTypesContext.PutBigInt(value2)
+	index1 := managedTypesContext.NewBigIntFromInt64(value1)
+	index2 := managedTypesContext.NewBigIntFromInt64(value2)
 	ecIndex1 := managedTypesContext.PutEllipticCurve(p224ec)
 	ecIndex2 := managedTypesContext.PutEllipticCurve(p256ec)
 
+	_ = managedTypesContext.GetRandReader()
+	assert.False(t, check.IfNil(managedTypesContext.randomnessGenerator))
 	managedTypesContext.PushState()
 	require.Equal(t, 1, len(managedTypesContext.managedTypesStack))
 	managedTypesContext.ClearStateStack()
 	require.Equal(t, 0, len(managedTypesContext.managedTypesStack))
+	assert.True(t, check.IfNil(managedTypesContext.randomnessGenerator))
 
 	bigValue1, err := managedTypesContext.GetBigInt(index1)
 	require.Equal(t, big.NewInt(value1), bigValue1)
@@ -121,14 +135,14 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	host := &contextmock.VMHostStub{}
 	value1, value2, value3 := int64(100), int64(200), int64(-42)
 	p224ec, p256ec, p384ec, p521ec := elliptic.P224().Params(), elliptic.P256().Params(), elliptic.P384().Params(), elliptic.P521().Params()
-	bytes := []byte{2, 234, 64, 255}
+	mBytes := []byte{2, 234, 64, 255}
 	managedTypesContext, _ := NewManagedTypesContext(host)
 	managedTypesContext.InitState()
 
 	// Create 2 bigInt,2 EC, 2 managedBuffers on the active state
-	index1 := managedTypesContext.PutBigInt(value1)
+	index1 := managedTypesContext.NewBigIntFromInt64(value1)
 	require.Equal(t, int32(0), index1)
-	index2 := managedTypesContext.PutBigInt(value2)
+	index2 := managedTypesContext.NewBigIntFromInt64(value2)
 	require.Equal(t, int32(1), index2)
 
 	bigValue1, err := managedTypesContext.GetBigInt(index1)
@@ -150,9 +164,9 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, p256ec, ec2)
 
-	mBufferHandle1 := managedTypesContext.NewManagedBufferFromBytes(bytes)
+	mBufferHandle1 := managedTypesContext.NewManagedBufferFromBytes(mBytes)
 	mBuffer, _ := managedTypesContext.GetBytes(mBufferHandle1)
-	require.Equal(t, bytes, mBuffer)
+	require.Equal(t, mBytes, mBuffer)
 
 	p224NormalGasCostMultiplier := managedTypesContext.Get100xCurveGasCostMultiplier(ecIndex1)
 	require.Equal(t, int32(100), p224NormalGasCostMultiplier)
@@ -208,7 +222,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, int32(-1), p256UCompressedGasCostMultiplier)
 
 	// Add a value on the current active state
-	index3 := managedTypesContext.PutBigInt(value3)
+	index3 := managedTypesContext.NewBigIntFromInt64(value3)
 	require.Equal(t, int32(0), index3)
 	bigValue3, err := managedTypesContext.GetBigInt(index3)
 	require.Equal(t, big.NewInt(value3), bigValue3)
@@ -254,7 +268,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
 
 	value4 := int64(84)
-	index4 := managedTypesContext.PutBigInt(value4)
+	index4 := managedTypesContext.NewBigIntFromInt64(value4)
 	require.Equal(t, int32(0), index4)
 	bigValue4, err := managedTypesContext.GetBigInt(index4)
 	require.Equal(t, big.NewInt(value4), bigValue4)
@@ -320,11 +334,11 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	value1, value2, value3, value4 := int64(100), int64(200), int64(-42), int64(-80)
 	managedTypesContext, _ := NewManagedTypesContext(host)
 
-	index1 := managedTypesContext.PutBigInt(value1)
+	index1 := managedTypesContext.NewBigIntFromInt64(value1)
 	require.Equal(t, int32(0), index1)
-	index2 := managedTypesContext.PutBigInt(value2)
+	index2 := managedTypesContext.NewBigIntFromInt64(value2)
 	require.Equal(t, int32(1), index2)
-	index3 := managedTypesContext.PutBigInt(value3)
+	index3 := managedTypesContext.NewBigIntFromInt64(value3)
 	require.Equal(t, int32(2), index3)
 
 	bigValue1, err := managedTypesContext.GetBigInt(index1)
@@ -339,7 +353,7 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	bigValue4 = managedTypesContext.GetBigIntOrCreate(3)
 	require.Equal(t, big.NewInt(0), bigValue4)
 
-	index4 := managedTypesContext.PutBigInt(value4)
+	index4 := managedTypesContext.NewBigIntFromInt64(value4)
 	require.Equal(t, int32(4), index4)
 	bigValue4 = managedTypesContext.GetBigIntOrCreate(4)
 	require.Equal(t, big.NewInt(value4), bigValue4)
@@ -363,6 +377,21 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	bigValue3, err := managedTypesContext.GetBigInt(index3)
 	require.Equal(t, big.NewInt(value3), bigValue3)
 	require.Nil(t, err)
+}
+
+func TestManagedTypesContext_NewBigIntCopied(t *testing.T) {
+	t.Parallel()
+	host := &contextmock.VMHostStub{}
+	managedTypesContext, _ := NewManagedTypesContext(host)
+
+	originalBigInt := big.NewInt(3)
+	index1 := managedTypesContext.NewBigInt(originalBigInt)
+
+	retrievedValue, err := managedTypesContext.GetBigInt(index1)
+	require.Nil(t, err)
+	retrievedValue.Add(retrievedValue, big.NewInt(100)) // simulate a change of the value in the contract
+
+	require.Equal(t, big.NewInt(3), originalBigInt)
 }
 
 func TestManagedTypesContext_PutGetEllipticCurves(t *testing.T) {
@@ -409,7 +438,7 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	t.Parallel()
 	host := &contextmock.VMHostStub{}
 	managedTypesContext, _ := NewManagedTypesContext(host)
-	bytes := []byte{2, 234, 64, 255}
+	mBytes := []byte{2, 234, 64, 255}
 	emptyBuffer := make([]byte, 0)
 
 	// Calls for non-existent buffers
@@ -425,9 +454,9 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
 	lengthOfmBuffer := managedTypesContext.GetLength(noBufHandle)
 	require.Equal(t, int32(-1), lengthOfmBuffer)
-	isSuccess := managedTypesContext.AppendBytes(noBufHandle, bytes)
+	isSuccess := managedTypesContext.AppendBytes(noBufHandle, mBytes)
 	require.False(t, isSuccess)
-	newBuf, err = managedTypesContext.InsertSlice(noBufHandle, 0, bytes)
+	newBuf, err = managedTypesContext.InsertSlice(noBufHandle, 0, mBytes)
 	require.Nil(t, newBuf)
 	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
 
@@ -437,13 +466,13 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	byteArray, err = managedTypesContext.GetBytes(mBufferHandle1)
 	require.Nil(t, err)
 	require.Equal(t, emptyBuffer, byteArray)
-	managedTypesContext.SetBytes(mBufferHandle1, bytes)
+	managedTypesContext.SetBytes(mBufferHandle1, mBytes)
 	mBufferBytes, _ := managedTypesContext.GetBytes(mBufferHandle1)
-	require.Equal(t, bytes, mBufferBytes)
-	mBufferHandle2 := managedTypesContext.NewManagedBufferFromBytes(bytes)
+	require.Equal(t, mBytes, mBufferBytes)
+	mBufferHandle2 := managedTypesContext.NewManagedBufferFromBytes(mBytes)
 	require.Equal(t, int32(1), mBufferHandle2)
 	mBufferBytes, _ = managedTypesContext.GetBytes(mBufferHandle2)
-	require.Equal(t, bytes, mBufferBytes)
+	require.Equal(t, mBytes, mBufferBytes)
 
 	// Get Slice
 	bufSlice, err := managedTypesContext.GetSlice(noBufHandle, int32(3), int32(0))
@@ -462,10 +491,10 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	// Delete Slice
 	newBuf, err = managedTypesContext.DeleteSlice(mBufferHandle1, 3, 1)
 	require.Nil(t, err)
-	require.Equal(t, bytes[:3], newBuf)
+	require.Equal(t, mBytes[:3], newBuf)
 	newBuf, err = managedTypesContext.DeleteSlice(mBufferHandle1, 3, 0)
 	require.Nil(t, err)
-	require.Equal(t, bytes[:3], newBuf)
+	require.Equal(t, mBytes[:3], newBuf)
 	newBuf, err = managedTypesContext.DeleteSlice(mBufferHandle1, -1, 0)
 	require.Nil(t, newBuf)
 	require.Equal(t, arwen.ErrBadBounds, err)
@@ -477,36 +506,36 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	require.Equal(t, emptyBuffer, newBuf)
 
 	// Append, GetLength
-	isSuccess = managedTypesContext.AppendBytes(mBufferHandle1, bytes)
+	isSuccess = managedTypesContext.AppendBytes(mBufferHandle1, mBytes)
 	require.True(t, isSuccess)
 	lengthOfmBuffer = managedTypesContext.GetLength(mBufferHandle1)
 	require.Equal(t, int32(4), lengthOfmBuffer)
-	isSuccess = managedTypesContext.AppendBytes(mBufferHandle1, bytes)
+	isSuccess = managedTypesContext.AppendBytes(mBufferHandle1, mBytes)
 	require.True(t, isSuccess)
 	mBufferBytes, _ = managedTypesContext.GetBytes(mBufferHandle1)
-	require.Equal(t, append(bytes, bytes...), mBufferBytes)
+	require.Equal(t, append(mBytes, mBytes...), mBufferBytes)
 	isSuccess = managedTypesContext.AppendBytes(mBufferHandle1, emptyBuffer)
 	require.True(t, isSuccess)
 	mBufferBytes, _ = managedTypesContext.GetBytes(mBufferHandle1)
-	require.Equal(t, append(bytes, bytes...), mBufferBytes)
+	require.Equal(t, append(mBytes, mBytes...), mBufferBytes)
 
-	managedTypesContext.SetBytes(mBufferHandle1, bytes)
+	managedTypesContext.SetBytes(mBufferHandle1, mBytes)
 	mBufferBytes, _ = managedTypesContext.GetBytes(mBufferHandle1)
-	require.Equal(t, bytes, mBufferBytes)
+	require.Equal(t, mBytes, mBufferBytes)
 
 	// Insert Slice
-	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, -1, bytes)
+	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, -1, mBytes)
 	require.Nil(t, newBuf)
 	require.Equal(t, arwen.ErrBadBounds, err)
-	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, 4, bytes)
+	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, 4, mBytes)
 	require.Nil(t, newBuf)
 	require.Equal(t, arwen.ErrBadBounds, err)
 	bytesWithNewSlice := []byte{2, 234, 64, 2, 234, 64, 255, 255}
-	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, 3, bytes)
+	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, 3, mBytes)
 	require.Nil(t, err)
 	require.Equal(t, bytesWithNewSlice, newBuf)
 	bytesWithNewSlice = []byte{2, 234, 64, 255, 2, 234, 64, 2, 234, 64, 255, 255}
-	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, 0, bytes)
+	newBuf, err = managedTypesContext.InsertSlice(mBufferHandle1, 0, mBytes)
 	require.Nil(t, err)
 	require.Equal(t, bytesWithNewSlice, newBuf)
 

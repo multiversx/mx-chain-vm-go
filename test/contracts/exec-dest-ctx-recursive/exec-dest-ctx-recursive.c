@@ -23,7 +23,7 @@ void callRecursive() {
 
 	byte iteration = (byte) int64getArgument(0);
 
-    bigIntGetOrCreateInt64(bigIntCounterID);
+    bigIntGetInt64(bigIntCounterID);
     finishIterationNumber(iteration, 'R');
     storeIterationNumber(iteration, 'R');
     incrementIterCounter(smallCounterKey);
@@ -88,7 +88,7 @@ void callRecursiveMutualMethods() {
 void recursiveMethodA() {
 	byte iteration = (byte) int64getArgument(0);
 
-    bigIntGetOrCreateInt64(bigIntCounterID);
+    bigIntGetInt64(bigIntCounterID);
     finishIterationNumber(iteration, 'A');
     storeIterationNumber(iteration, 'A');
     incrementIterCounter(smallCounterKey);
@@ -116,7 +116,7 @@ void recursiveMethodA() {
 void recursiveMethodB() {
 	byte iteration = (byte) int64getArgument(0);
 
-    bigIntGetOrCreateInt64(bigIntCounterID);
+    bigIntGetInt64(bigIntCounterID);
     finishIterationNumber(iteration, 'B');
     storeIterationNumber(iteration, 'B');
     incrementIterCounter(smallCounterKey);
