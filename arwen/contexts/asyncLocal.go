@@ -251,13 +251,14 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
+	newCallID := context.GenerateNewCallID()
 	// send the callID to a local async call
 	arguments = arwen.PrependToArguments(
 		arguments,
-		context.GenerateNewCallID(),
+		newCallID,
 		context.GetCallID(),
-		asyncCall.Identifier.ToBytes(),
 	)
+	asyncCall.Identifier = newCallID
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -373,7 +374,7 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 		arguments,
 		context.GenerateNewCallbackID(),
 		context.callID,
-		asyncCall.Identifier.ToBytes(),
+		context.callerCallID,
 	)
 
 	return arguments

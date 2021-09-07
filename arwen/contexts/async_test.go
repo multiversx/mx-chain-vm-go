@@ -458,14 +458,14 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err := async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err := async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
 	vmInput.CallType = vm.AsynchronousCall
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
@@ -474,7 +474,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrCannotInterpretCallbackArgs))
 
@@ -483,7 +483,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
@@ -498,7 +498,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
@@ -527,7 +527,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
@@ -538,7 +538,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, &arwen.AsyncCallIdentifier{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(address, []byte{}, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallRejected, asyncCall.Status)

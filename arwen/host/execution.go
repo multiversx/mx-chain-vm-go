@@ -860,21 +860,19 @@ func (host *vmHost) callSCMethod() error {
 	callType := vmInput.CallType
 
 	var err error
-	var asyncCallIdentifier *arwen.AsyncCallIdentifier
+	callID := async.GetCallID()
+	callerCallCallID := async.GetCallerCallID()
 
 	// in case of a callback, updates the status of the async call and gets the callback name
 	if callType == vm.AsynchronousCallBack {
-		callerCallCallID := async.GetCallerCallID()
-		asyncCallIdentifier, err = async.GetCallerAsyncCallIdentifier()
 		if err != nil {
 			return err
 		}
 
-		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
 		asyncCall, _ := async.UpdateCurrentAsyncCallStatus(
 			runtime.GetSCAddress(),
 			callerCallCallID,
-			asyncCallIdentifier,
+			async.GetCallerCallID(),
 			vmInput)
 		// TODO matei-p re-enable this (and replace _ with err above)
 		// if err != nil {
@@ -931,13 +929,11 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		asyncCallIdentifier, _ = async.GetCallerAsyncCallIdentifier()
-		async.LoadParentContext()
-		_, err = async.CallCallback(asyncCallIdentifier, output.GetVMOutput(), nil)
+		_, err = async.CallCallback(callID, output.GetVMOutput(), nil)
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()
-		async.NotifyChildIsComplete(asyncCallIdentifier, true)
+		async.NotifyChildIsComplete(callerCallCallID, true)
 	default:
 		err = arwen.ErrUnknownCallType
 	}

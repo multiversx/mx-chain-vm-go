@@ -46,10 +46,10 @@ func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 
 // AddAsyncCall adds a given AsyncCall to the AsyncCallGroup
 func (acg *AsyncCallGroup) AddAsyncCall(call *AsyncCall) {
-	call.Identifier = &AsyncCallIdentifier{
-		GroupIdentifier: acg.Identifier,
-		IndexInGroup:    len(acg.AsyncCalls),
-	}
+	// call.Identifier = &AsyncCallIdentifier{
+	// 	GroupIdentifier: acg.Identifier,
+	// 	IndexInGroup:    len(acg.AsyncCalls),
+	// }
 	acg.AsyncCalls = append(acg.AsyncCalls, call)
 }
 

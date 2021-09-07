@@ -316,7 +316,6 @@ type AsyncContext interface {
 	GetAddress() []byte
 	GetCallerAddress() []byte
 	GetCallerCallID() []byte
-	GetCallerAsyncCallIdentifier() (*AsyncCallIdentifier, error)
 	GetReturnData() []byte
 	SetReturnData(data []byte)
 	GetGasPrice() uint64
@@ -334,12 +333,7 @@ type AsyncContext interface {
 	GenerateNewCallbackID() []byte
 	Clone() AsyncContext
 
-	AreAllChildrenComplete() (bool, error)
-	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
-	DecrementCallsCounter()
-	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
-
-	// CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier *AsyncCallIdentifier, vmOutput *vmcommon.VMOutput) (bool, error)
-	CallCallback(asyncCallIdentifier *AsyncCallIdentifier, vmOutput *vmcommon.VMOutput, err error) (bool, error)
-	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier, isCrossShardCallChain bool) error
+	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*AsyncCall, error)
+	CallCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, error)
+	NotifyChildIsComplete(asyncCallIdentifier []byte, isCrossShardCallChain bool) error
 }

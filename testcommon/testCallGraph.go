@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
@@ -16,6 +18,7 @@ var logTestGraph = logger.GetOrCreate("arwen/testgraph")
 type TestCall struct {
 	ContractAddress []byte
 	FunctionName    string
+	CallID          []byte
 }
 
 // ToString - string representatin of a TestCall
@@ -27,6 +30,7 @@ func (call *TestCall) copy() *TestCall {
 	return &TestCall{
 		ContractAddress: call.ContractAddress,
 		FunctionName:    call.FunctionName,
+		CallID:          call.CallID,
 	}
 }
 
@@ -34,6 +38,7 @@ func buildTestCall(contractID string, functionName string) *TestCall {
 	return &TestCall{
 		ContractAddress: MakeTestSCAddress(contractID),
 		FunctionName:    functionName,
+		CallID:          []byte{1}, // initial callID, should be updated when an edge is added
 	}
 }
 
@@ -47,6 +52,8 @@ type TestCallNode struct {
 	Call *TestCall
 	// connected nodes
 	AdjacentEdges []*TestCallEdge
+
+	NonGasEdgeCounter int64
 
 	// group callbacks
 	// GroupCallbacks map[string]*TestCallNode
@@ -211,12 +218,15 @@ func (edge *TestCallEdge) copyAttributesFrom(sourceEdge *TestCallEdge) {
 type TestCallGraph struct {
 	Nodes     []*TestCallNode
 	StartNode *TestCallNode
+
+	Crypto crypto.VMCrypto
 }
 
 // CreateTestCallGraph is the initial build metohd for the call graph
 func CreateTestCallGraph() *TestCallGraph {
 	return &TestCallGraph{
-		Nodes: make([]*TestCallNode, 0),
+		Nodes:  make([]*TestCallNode, 0),
+		Crypto: factory.NewVMCrypto(),
 	}
 }
 
