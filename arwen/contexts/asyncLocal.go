@@ -66,7 +66,6 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	newCallID := destinationCallInput.Arguments[0]
 	newCallAddress := destinationCallInput.RecipientAddr
-	// TODO matei-p is this ExecuteOnDestContext() return signature necessary ?
 	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
@@ -76,7 +75,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	// if context is not found in store, it's considered complete
+	// if context is not found in store, it's also considered complete
 	isComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
 	if err != nil {
 		return err
@@ -102,6 +101,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+	// TODO matei-p is this correct?
 	context.gasAccumulated = 0
 	if callbackVMOutput != nil {
 		context.accumulateGas(callbackVMOutput.GasRemaining)

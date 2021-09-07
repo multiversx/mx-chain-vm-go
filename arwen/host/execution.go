@@ -860,21 +860,20 @@ func (host *vmHost) callSCMethod() error {
 	callType := vmInput.CallType
 
 	var err error
-	var originalCallID []byte
 	var asyncCallIdentifier *arwen.AsyncCallIdentifier
-	var asyncCall *arwen.AsyncCall
 
+	// in case of a callback, updates the status of the async call and gets the callback name
 	if callType == vm.AsynchronousCallBack {
-		originalCallID = async.GetCallerCallID()
+		callerCallCallID := async.GetCallerCallID()
 		asyncCallIdentifier, err = async.GetCallerAsyncCallIdentifier()
 		if err != nil {
 			return err
 		}
 
 		// can't factor it out to host, because async_test.go tests will fail - they are mocking the host
-		asyncCall, _ = async.UpdateCurrentAsyncCallStatus(
+		asyncCall, _ := async.UpdateCurrentAsyncCallStatus(
 			runtime.GetSCAddress(),
-			originalCallID,
+			callerCallCallID,
 			asyncCallIdentifier,
 			vmInput)
 		// TODO matei-p re-enable this (and replace _ with err above)
@@ -933,12 +932,11 @@ func (host *vmHost) callSCMethod() error {
 		break
 	case vm.AsynchronousCall:
 		asyncCallIdentifier, _ = async.GetCallerAsyncCallIdentifier()
-		async.LoadSpecifiedContext(async.GetCallerAddress(), async.GetCallerCallID())
-		_, err = async.CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier, output.GetVMOutput())
+		async.LoadParentContext()
+		_, err = async.CallCallback(asyncCallIdentifier, output.GetVMOutput(), nil)
 		break
 	case vm.AsynchronousCallBack:
-		// did callback we just execute ended?
-		async.LoadSpecifiedContext(async.GetAddress(), async.GetCallerCallID())
+		async.LoadParentContext()
 		async.NotifyChildIsComplete(asyncCallIdentifier, true)
 	default:
 		err = arwen.ErrUnknownCallType

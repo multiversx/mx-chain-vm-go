@@ -325,8 +325,7 @@ type AsyncContext interface {
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
 
-	// Load() error
-	LoadSpecifiedContext(address []byte, callID []byte) error
+	LoadParentContext() error
 	Save() error
 	Delete() error
 
@@ -335,13 +334,12 @@ type AsyncContext interface {
 	GenerateNewCallbackID() []byte
 	Clone() AsyncContext
 
-	PostprocessCrossShardCallback(callID []byte, asyncCallIdentifier *AsyncCallIdentifier) error
-
 	AreAllChildrenComplete() (bool, error)
 	IsStoredContextComplete(address []byte, callID []byte) (bool, error)
 	DecrementCallsCounter()
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier *AsyncCallIdentifier, vmInput *vmcommon.VMInput) (*AsyncCall, error)
 
-	CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier *AsyncCallIdentifier, vmOutput *vmcommon.VMOutput) (bool, error)
+	// CallCallbackForCompleteAsyncCrossShardCall(asyncCallIdentifier *AsyncCallIdentifier, vmOutput *vmcommon.VMOutput) (bool, error)
+	CallCallback(asyncCallIdentifier *AsyncCallIdentifier, vmOutput *vmcommon.VMOutput, err error) (bool, error)
 	NotifyChildIsComplete(asyncCallIdentifier *AsyncCallIdentifier, isCrossShardCallChain bool) error
 }
