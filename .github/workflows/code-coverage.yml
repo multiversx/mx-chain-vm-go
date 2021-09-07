@@ -35,7 +35,8 @@ jobs:
       - name: Run unit tests
         run: |
           export ARWEN_PATH=${GITHUB_WORKSPACE}/arwen
-          go test -short -cover -coverprofile=coverage.txt -covermode=atomic -v ./... 
+          TESTS_TO_RUN := $(shell go list ./... | grep -v /integrationTests/ | grep -v /fuzz/ | grep -v /mandos-go/json/integrationTests | grep -v /mandos-go/expression/integrationTests)
+          go test -short -cover -coverprofile=coverage.txt -covermode=atomic -v ${TESTS_TO_RUN}
 
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash) -f coverage.txt -y codecov.yml
