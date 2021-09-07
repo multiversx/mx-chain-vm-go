@@ -1,12 +1,12 @@
 {
-    "comment": "not the main test, just warmup",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0",
+                    "balance": "2000",
                     "storage": {},
                     "code": ""
                 },
@@ -16,38 +16,37 @@
                     "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:recursive-caller": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:REC-TOKEN": "1000"
-                    },
                     "storage": {},
-                    "code": "file:../recursive-caller/output/recursive-caller.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "txId": "call_execute_on_dest_context_readonly",
             "tx": {
                 "from": "address:a_user",
-                "to": "sc:recursive-caller",
+                "to": "sc:forwarder",
                 "value": "0",
-                "function": "recursive_send_funds",
+                "function": "call_execute_on_dest_context_readonly",
                 "arguments": [
                     "sc:vault",
-                    "str:REC-TOKEN",
+                    "str:echo_arguments",
                     "1",
                     "2"
                 ],
-                "gasLimit": "1,000,000,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "0",
-                "logs": "*",
+                "out": [
+                    "1",
+                    "2"
+                ],
+                "status": "",
                 "gas": "*",
                 "refund": "*"
             }
@@ -57,29 +56,21 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "*",
-                    "balance": "0",
+                    "balance": "2000",
                     "storage": {},
                     "code": ""
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:REC-TOKEN": "5"
-                    },
-                    "storage": {
-                        "str:call_counts|nested:str:accept_funds": "*"
-                    },
+                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:recursive-caller": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:REC-TOKEN": "995"
-                    },
                     "storage": {},
-                    "code": "file:../recursive-caller/output/recursive-caller.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         }
