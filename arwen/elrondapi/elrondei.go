@@ -2090,7 +2090,7 @@ func v1_4_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset i
 	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
 
 	if esdtTransfer != nil {
-		tokenName = make([]byte, 0, len(esdtTransfer.ESDTTokenName))
+		tokenName = make([]byte, len(esdtTransfer.ESDTTokenName))
 		copy(tokenName, esdtTransfer.ESDTTokenName)
 		callValue = esdtTransfer.ESDTValue.Bytes()
 	}
