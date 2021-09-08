@@ -924,6 +924,9 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return nil, nil
 	}
+	if vmInput.ReturnCallAfterError && vmInput.CallType != vm.AsynchronousCallBack {
+		return nil, nil
+	}
 
 	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(vmInput.CallerAddr, vmInput.RecipientAddr, vmInput.Function, vmInput.Arguments)
 	if err != nil {
