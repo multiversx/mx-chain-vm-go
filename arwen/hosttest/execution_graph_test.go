@@ -292,141 +292,107 @@ func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.Te
 	return crossShardEdges
 }
 
+func executionOrderTraversal(gasGraph *test.TestCallGraph, nodeProcessing func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode) {
+	crossShardCallsQueue := test.NewCrossShardCallQueue()
+	crossShardCallsQueue.Enqueue(test.UserAddress, gasGraph.StartNode, vm.DirectCall, []byte{})
+	var crossShardCall *test.CrossShardCall
+	for !crossShardCallsQueue.IsEmpty() {
+		crossShardCall = crossShardCallsQueue.Dequeue()
+		startNode := crossShardCall.StartNode
+
+		if (startNode.IncomingEdgeType == test.Callback || startNode.IncomingEdgeType == test.CallbackCrossShard) &&
+			!crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
+			crossShardCallsQueue.Requeue(crossShardCall)
+			continue
+		}
+
+		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+			for _, edge := range node.AdjacentEdges {
+				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
+					destinationNode := edge.To
+					var callType vm.CallType
+					switch edge.Type {
+					case test.AsyncCrossShard:
+						callType = vm.AsynchronousCall
+					case test.CallbackCrossShard:
+						callType = vm.AsynchronousCallBack
+					}
+					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, nil)
+				}
+			}
+
+			if incomingEdge != nil && incomingEdge.Type == test.Callback {
+				if !crossShardCallsQueue.CanExecuteLocalCallback(node) {
+					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, incomingEdge.To, vm.AsynchronousCallBack, nil)
+					// stop DFS for this branch
+					return nil
+				}
+			}
+
+			return nodeProcessing(parent, node)
+		}, false)
+	}
+}
+
+func computeCallIDs(gasGraph *test.TestCallGraph) {
+	executionOrderTraversal(gasGraph, func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode {
+		if node.IsLeaf() || node.Parent == nil {
+			return node
+		}
+
+		if node.IncomingEdgeType == test.Callback {
+			parent = node.Parent.Parent
+		} else {
+			parent = node.Parent
+		}
+		// fmt.Println("compute callID for", string(node.Call.ContractAddress)+"_"+node.Call.FunctionName, "gasLimit", parent.GasLimit)
+
+		if parent != nil {
+			parent.NonGasEdgeCounter++
+			newCallID := append(parent.Call.CallID, big.NewInt(parent.NonGasEdgeCounter).Bytes()...)
+			newCallID, _ = gasGraph.Crypto.Sha256(newCallID)
+			// TODO matei-p only for debug purposes
+			// newCallID = append([]byte("_"), newCallID...)
+			// newCallID = append([]byte(strconv.Itoa(int(parentParent.NonGasEdgeCounter))), newCallID...)
+			// newCallID = append([]byte("_"), newCallID...)
+			// newCallID = append([]byte(parentParent.Call.FunctionName), newCallID...)
+
+			node.Call.CallID = newCallID
+			fmt.Println("label", node.Label, "CallID", newCallID)
+		}
+
+		return node
+	})
+}
+
 func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {
 	totalGasUsed := uint64(0)
 	expectedGasUsagePerContract := make(map[string]uint64)
 	expectedReturnData := make([][]byte, 0)
 
-	crossShardCallsQueue := test.NewCrossShardCallQueue()
-	crossShardCallsQueue.Enqueue(test.UserAddress, gasGraph.StartNode, vm.DirectCall, []byte{})
-	var crossShardCall *test.CrossShardCall
-	for !crossShardCallsQueue.IsEmpty() {
-		crossShardCall = crossShardCallsQueue.Dequeue()
-		startNode := crossShardCall.StartNode
-
-		if (startNode.IncomingEdgeType == test.Callback || startNode.IncomingEdgeType == test.CallbackCrossShard) &&
-			!crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
-			crossShardCallsQueue.Requeue(crossShardCall)
-			continue
+	executionOrderTraversal(gasGraph, func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode {
+		if !node.IsLeaf() {
+			return node
 		}
 
-		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-			for _, edge := range node.AdjacentEdges {
-				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
-					destinationNode := edge.To
-					var callType vm.CallType
-					switch edge.Type {
-					case test.AsyncCrossShard:
-						callType = vm.AsynchronousCall
-					case test.CallbackCrossShard:
-						callType = vm.AsynchronousCallBack
-					}
-					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, nil)
-				}
-			}
-
-			if incomingEdge != nil && incomingEdge.Type == test.Callback {
-				if !crossShardCallsQueue.CanExecuteLocalCallback(node) {
-					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, incomingEdge.To, vm.AsynchronousCallBack, nil)
-					// stop DFS for this branch
-					return nil
-				}
-			}
-
-			if !node.IsLeaf() {
-				return node
-			}
-
-			contractAddr := string(parent.Call.ContractAddress)
-			if _, ok := expectedGasUsagePerContract[contractAddr]; !ok {
-				expectedGasUsagePerContract[contractAddr] = 0
-			}
-			expectedGasUsagePerContract[contractAddr] += node.GasUsed
-			totalGasUsed += node.GasUsed
-
-			expectedNodeRetData := txDataBuilder.NewBuilder()
-			expectedNodeRetData.Func(parent.Call.FunctionName)
-			expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
-			expectedNodeRetData.Int64(int64(parent.GasLimit))
-			expectedNodeRetData.Int64(int64(parent.GasRemaining))
-			expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
-			// fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
-
-			return node
-		}, false)
-	}
-	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
-}
-
-func computeCallIDs(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {
-	totalGasUsed := uint64(0)
-	expectedGasUsagePerContract := make(map[string]uint64)
-	expectedReturnData := make([][]byte, 0)
-
-	crossShardCallsQueue := test.NewCrossShardCallQueue()
-	crossShardCallsQueue.Enqueue(test.UserAddress, gasGraph.StartNode, vm.DirectCall, []byte{})
-	var crossShardCall *test.CrossShardCall
-	for !crossShardCallsQueue.IsEmpty() {
-		crossShardCall = crossShardCallsQueue.Dequeue()
-		startNode := crossShardCall.StartNode
-
-		if (startNode.IncomingEdgeType == test.Callback || startNode.IncomingEdgeType == test.CallbackCrossShard) &&
-			!crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
-			crossShardCallsQueue.Requeue(crossShardCall)
-			continue
+		contractAddr := string(parent.Call.ContractAddress)
+		if _, ok := expectedGasUsagePerContract[contractAddr]; !ok {
+			expectedGasUsagePerContract[contractAddr] = 0
 		}
+		expectedGasUsagePerContract[contractAddr] += node.GasUsed
+		totalGasUsed += node.GasUsed
 
-		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-			for _, edge := range node.AdjacentEdges {
-				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
-					destinationNode := edge.To
-					var callType vm.CallType
-					switch edge.Type {
-					case test.AsyncCrossShard:
-						callType = vm.AsynchronousCall
-					case test.CallbackCrossShard:
-						callType = vm.AsynchronousCallBack
-					}
-					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, nil)
-				}
-			}
+		expectedNodeRetData := txDataBuilder.NewBuilder()
+		expectedNodeRetData.Func(parent.Call.FunctionName)
+		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
+		expectedNodeRetData.Int64(int64(parent.GasLimit))
+		expectedNodeRetData.Int64(int64(parent.GasRemaining))
+		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
+		// fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
 
-			if incomingEdge != nil && incomingEdge.Type == test.Callback {
-				if !crossShardCallsQueue.CanExecuteLocalCallback(node) {
-					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, incomingEdge.To, vm.AsynchronousCallBack, nil)
-					// stop DFS for this branch
-					return nil
-				}
-			}
+		return node
+	})
 
-			if node.IsLeaf() || node.Parent == nil {
-				return node
-			}
-
-			if node.IncomingEdgeType == test.Callback /*|| parent.IncomingEdgeType == test.CallbackCrossShard*/ {
-				parent = node.Parent.Parent
-			} else {
-				parent = node.Parent
-			}
-			// fmt.Println("compute callID for", string(node.Call.ContractAddress)+"_"+node.Call.FunctionName, "gasLimit", parent.GasLimit)
-
-			if parent != nil {
-				parent.NonGasEdgeCounter++
-				newCallID := append(parent.Call.CallID, big.NewInt(parent.NonGasEdgeCounter).Bytes()...)
-				newCallID, _ = gasGraph.Crypto.Sha256(newCallID)
-				// TODO matei-p only for debug purposes
-				// newCallID = append([]byte("_"), newCallID...)
-				// newCallID = append([]byte(strconv.Itoa(int(parentParent.NonGasEdgeCounter))), newCallID...)
-				// newCallID = append([]byte("_"), newCallID...)
-				// newCallID = append([]byte(parentParent.Call.FunctionName), newCallID...)
-
-				node.Call.CallID = newCallID
-				fmt.Println("label", node.Label, "CallID", newCallID)
-			}
-
-			return node
-		}, false)
-	}
 	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
 }
 

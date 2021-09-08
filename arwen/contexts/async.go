@@ -27,9 +27,9 @@ type asyncContext struct {
 	callID   []byte
 	callType vm.CallType
 
-	callerAddr          []byte
-	callerCallID        []byte
-	callAsyncIdentifier []byte
+	callerAddr                   []byte
+	callerCallID                 []byte
+	callbackAsyncInitiatorCallID []byte
 
 	callback           string
 	callbackData       []byte
@@ -53,9 +53,9 @@ type serializableAsyncContext struct {
 	CallID   []byte
 	CallType vm.CallType
 
-	CallerAddr                []byte
-	CallerCallID              []byte
-	CallerCallAsyncIdentifier []byte
+	CallerAddr                   []byte
+	CallerCallID                 []byte
+	CallbackAsyncInitiatorCallID []byte
 
 	Callback        string
 	CallbackData    []byte
@@ -112,7 +112,7 @@ func (context *asyncContext) InitState() {
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 	context.callback = ""
-	context.callAsyncIdentifier = nil
+	context.callbackAsyncInitiatorCallID = nil
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
@@ -142,14 +142,12 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	// TODO matei-p change to debug logging
 	fmt.Println("\taddress", string(context.address))
 	fmt.Println("\tcallID", context.callID) // DebugCallIDAsString(
-	if /*input.CallType == vm.AsynchronousCall ||*/ input.CallType == vm.AsynchronousCallBack {
-		context.callAsyncIdentifier = runtime.GetAndEliminateFirstArgumentFromList()
+	if input.CallType == vm.AsynchronousCallBack {
+		context.callbackAsyncInitiatorCallID = runtime.GetAndEliminateFirstArgumentFromList()
 		// TODO matei-p change to debug logging
-		// asynCallIdentifier, _ := context.GetCallerAsyncCallIdentifier()
-		// asynCallIdentifierAsString, _ := json.Marshal(asynCallIdentifier)
 		fmt.Println("\tcallerAddr", string(context.callerAddr))
 		fmt.Println("\tcallerCallID", context.callerCallID)
-		fmt.Println("\tcallerCallAsyncIdentifier", context.callAsyncIdentifier)
+		fmt.Println("\tcallbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
 	}
 	// TODO matei-p change to debug logging
 	fmt.Println("\tinput.GasProvided", input.GasProvided)
@@ -161,23 +159,22 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 // PushState creates a deep clone of the internal state and pushes it onto the
 // internal state stack.
 func (context *asyncContext) PushState() {
-	// fmt.Println("---> PUSH " + string(context.address) + " " + DebugCallIDAsString(context.callID))
 	newState := &asyncContext{
-		address:             context.address,
-		callerAddr:          context.callerAddr,
-		callerCallID:        context.callerCallID,
-		callType:            context.callType,
-		callAsyncIdentifier: context.callAsyncIdentifier,
-		callback:            context.callback,
-		callbackData:        context.callbackData,
-		gasPrice:            context.gasPrice,
-		gasAccumulated:      context.gasAccumulated,
-		returnData:          context.returnData,
-		asyncCallGroups:     context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
-		callID:              context.callID,
-		callsCounter:        context.callsCounter,
-		totalCallsCounter:   context.totalCallsCounter,
-		childResults:        context.childResults,
+		address:                      context.address,
+		callerAddr:                   context.callerAddr,
+		callerCallID:                 context.callerCallID,
+		callType:                     context.callType,
+		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
+		callback:                     context.callback,
+		callbackData:                 context.callbackData,
+		gasPrice:                     context.gasPrice,
+		gasAccumulated:               context.gasAccumulated,
+		returnData:                   context.returnData,
+		asyncCallGroups:              context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
+		callID:                       context.callID,
+		callsCounter:                 context.callsCounter,
+		totalCallsCounter:            context.totalCallsCounter,
+		childResults:                 context.childResults,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -207,20 +204,15 @@ func (context *asyncContext) PopSetActiveState() {
 	}
 
 	prevState := context.stateStack[stateStackLen-1]
-	// fmt.Println("---> POP " + string(prevState.address) + " " + DebugCallIDAsString(prevState.callID))
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevState.address
 	context.callID = prevState.callID
 
-	// if context.Load() != arwen.ErrNoStoredAsyncContextFound {
-	// 	return
-	// }
-
 	context.callerAddr = prevState.callerAddr
 	context.callerCallID = prevState.callerCallID
 	context.callType = prevState.callType
-	context.callAsyncIdentifier = prevState.callAsyncIdentifier
+	context.callbackAsyncInitiatorCallID = prevState.callbackAsyncInitiatorCallID
 	context.callback = prevState.callback
 	context.callbackData = prevState.callbackData
 	context.gasPrice = prevState.gasPrice
@@ -234,21 +226,21 @@ func (context *asyncContext) PopSetActiveState() {
 
 func (context *asyncContext) Clone() arwen.AsyncContext {
 	return &asyncContext{
-		address:             context.address,
-		callerAddr:          context.callerAddr,
-		callerCallID:        context.callerCallID,
-		callType:            context.callType,
-		callAsyncIdentifier: context.callAsyncIdentifier,
-		callback:            context.callback,
-		callbackData:        context.callbackData,
-		gasPrice:            context.gasPrice,
-		gasAccumulated:      context.gasAccumulated,
-		returnData:          context.returnData,
-		asyncCallGroups:     context.cloneCallGroups(),
-		callID:              context.callID,
-		callsCounter:        context.callsCounter,
-		totalCallsCounter:   context.totalCallsCounter,
-		childResults:        context.childResults,
+		address:                      context.address,
+		callerAddr:                   context.callerAddr,
+		callerCallID:                 context.callerCallID,
+		callType:                     context.callType,
+		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
+		callback:                     context.callback,
+		callbackData:                 context.callbackData,
+		gasPrice:                     context.gasPrice,
+		gasAccumulated:               context.gasAccumulated,
+		returnData:                   context.returnData,
+		asyncCallGroups:              context.cloneCallGroups(),
+		callID:                       context.callID,
+		callsCounter:                 context.callsCounter,
+		totalCallsCounter:            context.totalCallsCounter,
+		childResults:                 context.childResults,
 	}
 }
 
@@ -275,14 +267,6 @@ func (context *asyncContext) GetCallerAddress() []byte {
 func (context *asyncContext) GetCallerCallID() []byte {
 	return context.callerCallID
 }
-
-// func (context *asyncContext) GetCallerAsyncCallIdentifier() (*arwen.AsyncCallIdentifier, error) {
-// 	asyncCallIdentifier, err := arwen.ReadAsyncCallIdentifierFromBytes(context.callAsyncIdentifierAsBytes)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return asyncCallIdentifier, nil
-// }
 
 // GetGasPrice retrieves the gas price set by the original caller.
 func (context *asyncContext) GetGasPrice() uint64 {
@@ -423,7 +407,7 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 // extracts the ReturnCode from data provided by the destination call, and updates
 // the status of the AsyncCall with its value.
 func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*arwen.AsyncCall, error) {
-	deserializedContext, err := NewSerializedAsyncContextFromStore(context.host.Storage(), address, context.callAsyncIdentifier)
+	deserializedContext, err := NewSerializedAsyncContextFromStore(context.host.Storage(), address, context.callbackAsyncInitiatorCallID)
 	if err != nil {
 		return nil, err
 	}
@@ -662,18 +646,6 @@ func (context *asyncContext) Execute() error {
 			return err
 		}
 
-		// logAsync.Trace("async.Execute() complete locals")
-		//
-		// This call to closeCompletedAsyncCall() is necessary to remove the
-		// AsyncCall that has been just before async.Execute() was called, within
-		// host.callSCMethod(). This happens when a cross-shard callback returns and
-		// finalizes an AsyncCall.
-		// context.closeCompletedAsyncCalls()
-		// if context.groupCallbacksEnabled {
-		// 	context.executeCompletedGroupCallbacks()
-		// }
-		// context.deleteCompletedGroups()
-
 		logAsync.Trace("async.Execute() execute remote")
 		// Step 2: in one combined step, do the following:
 		// * locally execute built-in functions with cross-shard
@@ -726,16 +698,6 @@ func (context *asyncContext) LoadFromStackOrStore(address []byte, callID []byte)
 	context.LoadSpecifiedContext(address, callID)
 	return context, true
 }
-
-// func (context *asyncContext) ReadSerializedFromStackOrStore(address []byte, callID []byte) (*serializableAsyncContext, bool) {
-// 	stackContext := context.getContextFromStack(address, callID)
-// 	if stackContext != nil {
-// 		return stackContext.toSerializable(), false
-// 	}
-
-// 	serializedContext, _ := NewSerializedAsyncContextFromStore(context.host.Storage(), address, callID)
-// 	return serializedContext, true
-// }
 
 func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier []byte, returnCode vmcommon.ReturnCode) error {
 	asyncCall, _, _, err := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
@@ -883,14 +845,6 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, i
 }
 
 func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
-	// asyncCall, _, _, err := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
-	// if err != nil {
-	// 	return false, err
-	// }
-
-	// sender := asyncCall.Destination
-	// destination := asyncCall.Source
-
 	sender := context.address
 	destination := context.callerAddr
 
@@ -900,10 +854,6 @@ func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *
 		return false, sendCrossShardCallback(context.host, sender, destination, data)
 	}
 
-	// serializedContext, errLoad := NewSerializedAsyncContextFromStore(context.host.Storage(), context.callerAddr, context.callerCallID)
-	// if errLoad != nil {
-	// 	return false, errLoad
-	// }
 	context.LoadParentContext()
 	asyncCall, _, _, errLoad := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
 	if errLoad != nil {
@@ -965,7 +915,7 @@ func (context *asyncContext) LoadParentContext() error {
 	if context.callType != vm.AsynchronousCallBack {
 		return context.LoadSpecifiedContext(context.callerAddr, context.callerCallID)
 	}
-	return context.LoadSpecifiedContext(context.address, context.callAsyncIdentifier)
+	return context.LoadSpecifiedContext(context.address, context.callbackAsyncInitiatorCallID)
 }
 
 // Load restores the internal state of the AsyncContext from the storage of the contract.
@@ -980,7 +930,7 @@ func (context *asyncContext) LoadSpecifiedContext(address []byte, callID []byte)
 	context.callID = loadedContext.CallID
 	context.callerAddr = loadedContext.CallerAddr
 	context.callerCallID = loadedContext.CallerCallID
-	context.callAsyncIdentifier = loadedContext.CallerCallAsyncIdentifier
+	context.callbackAsyncInitiatorCallID = loadedContext.CallbackAsyncInitiatorCallID
 	context.callType = loadedContext.CallType
 	context.returnData = loadedContext.ReturnData
 	context.asyncCallGroups = loadedContext.AsyncCallGroups
@@ -990,25 +940,6 @@ func (context *asyncContext) LoadSpecifiedContext(address []byte, callID []byte)
 
 	return nil
 }
-
-// func (context *asyncContext) readSerializedAsyncContextFromStackOrStore(address []byte, callID []byte) (*asyncContext, error) {
-// 	loadedContext := context.getContextFromStack(address, callID)
-// 	if loadedContext == nil {
-// 		storage := context.host.Storage()
-// 		deserializedContext, err := NewSerializedAsyncContextFromStore(storage, address, callID)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		loadedContext = fromSerializable(deserializedContext)
-
-// 	}
-
-// 	loadedContext.host = context.host
-// 	loadedContext.callArgsParser = context.callArgsParser
-// 	loadedContext.esdtTransferParser = context.esdtTransferParser
-
-// 	return loadedContext, nil
-// }
 
 func (context *asyncContext) getContextFromStack(address []byte, callID []byte) *asyncContext {
 	var loadedContext *asyncContext
@@ -1172,46 +1103,12 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 		"gas", gasLeft)
 
 	return nil
-
-	/*
-		host := context.host
-		runtime := host.Runtime()
-		output := host.Output()
-		metering := host.Metering()
-		currentCall := runtime.GetVMInput()
-
-		err := output.Transfer(
-			context.callerAddr,
-			runtime.GetSCAddress(),
-			context.gasAccumulated,
-			0,
-			currentCall.CallValue,
-			context.returnData,
-			vm.AsynchronousCallBack,
-		)
-		if err != nil {
-			metering.UseGas(metering.GasLeft())
-			runtime.FailExecution(err)
-			return err
-		}
-
-		log.Trace(
-			"sendContextCallbackToOriginalCaller",
-			"caller", context.callerAddr,
-			"data", context.returnData,
-			"gas", context.gasAccumulated)
-
-		return nil
-	*/
 }
 
 // GetEncodedDataForAsyncCallbackTransfer -
 func (context *asyncContext) GetEncodedDataForAsyncCallbackTransfer(vmOutput *vmcommon.VMOutput) []byte {
 	transferData := txDataBuilder.NewBuilder()
-	/*
-		callbackFunction is not used by arwen, used by testing frameworks
-		arwen uses callerCallAsyncIdentifier to get the AsyncCall with function name, gas provided etc.
-	*/
+
 	transferData.Func("<callback>")
 	transferData.Bytes(context.GenerateNewCallbackID())
 	transferData.Bytes(context.callID)
@@ -1246,43 +1143,43 @@ func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
 
 func (context *asyncContext) toSerializable() *serializableAsyncContext {
 	return &serializableAsyncContext{
-		Address:                   context.address,
-		CallID:                    context.callID,
-		CallerAddr:                context.callerAddr,
-		CallerCallID:              context.callerCallID,
-		CallType:                  context.callType,
-		CallerCallAsyncIdentifier: context.callAsyncIdentifier,
-		Callback:                  context.callback,
-		CallbackData:              context.callbackData,
-		GasPrice:                  context.gasPrice,
-		GasAccumulated:            context.gasAccumulated,
-		ReturnData:                context.returnData,
-		AsyncCallGroups:           context.asyncCallGroups,
-		CallsCounter:              context.callsCounter,
-		TotalCallsCounter:         context.totalCallsCounter,
-		ChildResults:              context.childResults,
+		Address:                      context.address,
+		CallID:                       context.callID,
+		CallerAddr:                   context.callerAddr,
+		CallerCallID:                 context.callerCallID,
+		CallType:                     context.callType,
+		CallbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
+		Callback:                     context.callback,
+		CallbackData:                 context.callbackData,
+		GasPrice:                     context.gasPrice,
+		GasAccumulated:               context.gasAccumulated,
+		ReturnData:                   context.returnData,
+		AsyncCallGroups:              context.asyncCallGroups,
+		CallsCounter:                 context.callsCounter,
+		TotalCallsCounter:            context.totalCallsCounter,
+		ChildResults:                 context.childResults,
 	}
 }
 
 func fromSerializable(serializedContext *serializableAsyncContext) *asyncContext {
 	return &asyncContext{
-		host:                nil,
-		stateStack:          nil,
-		address:             serializedContext.Address,
-		callID:              serializedContext.CallID,
-		callsCounter:        serializedContext.CallsCounter,
-		totalCallsCounter:   serializedContext.TotalCallsCounter,
-		callerAddr:          serializedContext.CallerAddr,
-		callerCallID:        serializedContext.CallerCallID,
-		callType:            serializedContext.CallType,
-		callAsyncIdentifier: serializedContext.CallerCallAsyncIdentifier,
-		callback:            serializedContext.Callback,
-		callbackData:        serializedContext.CallbackData,
-		gasPrice:            serializedContext.GasPrice,
-		gasAccumulated:      serializedContext.GasAccumulated,
-		returnData:          serializedContext.ReturnData,
-		asyncCallGroups:     serializedContext.AsyncCallGroups,
-		childResults:        serializedContext.ChildResults,
+		host:                         nil,
+		stateStack:                   nil,
+		address:                      serializedContext.Address,
+		callID:                       serializedContext.CallID,
+		callsCounter:                 serializedContext.CallsCounter,
+		totalCallsCounter:            serializedContext.TotalCallsCounter,
+		callerAddr:                   serializedContext.CallerAddr,
+		callerCallID:                 serializedContext.CallerCallID,
+		callType:                     serializedContext.CallType,
+		callbackAsyncInitiatorCallID: serializedContext.CallbackAsyncInitiatorCallID,
+		callback:                     serializedContext.Callback,
+		callbackData:                 serializedContext.CallbackData,
+		gasPrice:                     serializedContext.GasPrice,
+		gasAccumulated:               serializedContext.GasAccumulated,
+		returnData:                   serializedContext.ReturnData,
+		asyncCallGroups:              serializedContext.AsyncCallGroups,
+		childResults:                 serializedContext.ChildResults,
 	}
 }
 
@@ -1378,7 +1275,6 @@ func (context *asyncContext) generateNewCallID(isCallback bool) []byte {
 }
 
 func (context *asyncContext) DecrementCallsCounter() {
-	// fmt.Println("---> decrement " + string(context.address) + " " + DebugCallIDAsString(context.callID))
 	context.callsCounter--
 }
 
