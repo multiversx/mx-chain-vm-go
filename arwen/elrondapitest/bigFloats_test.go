@@ -27,10 +27,8 @@ func TestBigFloats_NewFromParts(t *testing.T) {
 			WithArguments(repsArgument).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnData(
-					[]byte{byte(numberOfReps - 1)})
+			verify.Ok().
+				ReturnData([]byte{byte(numberOfReps - 1)})
 		})
 }
 
@@ -45,10 +43,8 @@ func TestBigFloats_NewFromFrac(t *testing.T) {
 			WithArguments(repsArgument).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnData(
-					[]byte{byte(numberOfReps - 1)})
+			verify.Ok().
+				ReturnData([]byte{byte(numberOfReps - 1)})
 		})
 }
 
@@ -64,8 +60,7 @@ func TestBigFloats_NewFromSci_Fail(t *testing.T) {
 				[]byte{0, 0, 1, 100}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(10)
+			verify.ReturnCode(10)
 		})
 }
 
@@ -84,8 +79,7 @@ func TestBigFloats_NewFromSci_Success(t *testing.T) {
 			value := float64(-199) * math.Pow10(-2)
 			encodedValue, _ := big.NewFloat(value).GobEncode()
 			fmt.Println(encodedValue)
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedValue)
 		})
 }
@@ -108,10 +102,8 @@ func TestBigFloats_Add(t *testing.T) {
 				bigFloatValue.Add(bigFloatValue, bigFloatValue)
 			}
 			floatBuffer, _ := bigFloatValue.GobEncode()
-			verify.
-				Ok().
-				ReturnData(
-					floatBuffer)
+			verify.Ok().
+				ReturnData(floatBuffer)
 		})
 }
 
@@ -133,10 +125,8 @@ func TestBigFloats_Sub(t *testing.T) {
 				bigFloatValue.Sub(bigFloatValue, bigFloatValue)
 			}
 			floatBuffer, _ := bigFloatValue.GobEncode()
-			verify.
-				Ok().
-				ReturnData(
-					floatBuffer)
+			verify.Ok().
+				ReturnData(floatBuffer)
 		})
 }
 
@@ -163,10 +153,8 @@ func TestBigFloats_Success_Mul(t *testing.T) {
 			}
 			floatBuffer, _ := bigFloatValue.GobEncode()
 			fmt.Println(floatBuffer)
-			verify.
-				Ok().
-				ReturnData(
-					floatBuffer)
+			verify.Ok().
+				ReturnData(floatBuffer)
 		})
 }
 
@@ -185,8 +173,7 @@ func TestBigFloats_FailExecution_Mul(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
-				ReturnCode(10).
-				ReturnData()
+				ReturnCode(10)
 		})
 }
 
@@ -212,10 +199,8 @@ func TestBigFloats_Div(t *testing.T) {
 				numerator.Set(resultMul)
 			}
 			floatBuffer, _ := numerator.GobEncode()
-			verify.
-				Ok().
-				ReturnData(
-					floatBuffer)
+			verify.Ok().
+				ReturnData(floatBuffer)
 		})
 }
 
@@ -243,24 +228,16 @@ func TestBigFloats_Truncate(t *testing.T) {
 				value1.Set(result)
 			}
 			floatBuffer, _ := value1.GobEncode()
-			verify.
-				Ok().
-				ReturnData(
-					floatBuffer)
+			verify.Ok().
+				ReturnData(floatBuffer)
 		})
 }
 
 func TestBigFloats_Abs(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
-	bigFloatArguments[0] = repsArgument
-	for i := 0; i < numberOfReps; i++ {
-		floatValue := big.NewFloat(-float64(i) - 1)
-		encodedFloat, _ := floatValue.GobEncode()
-		bigFloatArguments[i+1] = encodedFloat
-	}
+	bigFloatArguments[0] = []byte{0, 0, 0, 1}
+	encodedFloat, _ := big.NewFloat(-1623).GobEncode()
+	bigFloatArguments[1] = encodedFloat
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -272,30 +249,17 @@ func TestBigFloats_Abs(t *testing.T) {
 			WithArguments(bigFloatArguments...).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			encodedLastFloat := bigFloatArguments[numberOfReps]
-			lastFloat := new(big.Float)
-			_ = lastFloat.GobDecode(encodedLastFloat)
-			absLastFloat := new(big.Float)
-			absLastFloat.Abs(lastFloat)
-			encodedAbsFloat, _ := absLastFloat.GobEncode()
-			verify.
-				Ok().
+			encodedAbsFloat, _ := big.NewFloat(1623).GobEncode()
+			verify.Ok().
 				ReturnData(encodedAbsFloat)
-
 		})
 }
 
 func TestBigFloats_Neg(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
-	bigFloatArguments[0] = repsArgument
-	for i := 0; i < numberOfReps; i++ {
-		floatValue := big.NewFloat(-float64(i) - 1)
-		encodedFloat, _ := floatValue.GobEncode()
-		bigFloatArguments[i+1] = encodedFloat
-	}
+	bigFloatArguments[0] = []byte{0, 0, 0, 1}
+	encodedFloat, _ := big.NewFloat(-1623).GobEncode()
+	bigFloatArguments[1] = encodedFloat
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -307,23 +271,18 @@ func TestBigFloats_Neg(t *testing.T) {
 			WithArguments(bigFloatArguments...).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			encodedLastFloat := bigFloatArguments[numberOfReps]
-			lastFloat := new(big.Float)
-			_ = lastFloat.GobDecode(encodedLastFloat)
-			negLastFloat := new(big.Float)
-			negLastFloat.Neg(lastFloat)
-			encodedNegFloat, _ := negLastFloat.GobEncode()
-			verify.
-				Ok().
+			encodedFloatValue, _ := big.NewFloat(-1623).GobEncode()
+			floatValue := new(big.Float)
+			floatValue.GobDecode(encodedFloatValue)
+			floatValue.Neg(floatValue)
+			encodedNegFloat, _ := floatValue.GobEncode()
+			verify.Ok().
 				ReturnData(encodedNegFloat)
 		})
 }
 
 func TestBigFloats_Cmp(t *testing.T) {
 	bigFloatArguments := make([][]byte, 2*numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	argsCounter := 1
 	for i := 0; i < numberOfReps; i++ {
@@ -353,23 +312,16 @@ func TestBigFloats_Cmp(t *testing.T) {
 			previousLastFloat := new(big.Float)
 			_ = previousLastFloat.GobDecode(encodedPreviousLastFloat)
 			cmpResult := previousLastFloat.Cmp(lastFloat)
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData([]byte{byte(cmpResult)})
 		})
 }
 
 func TestBigFloats_Sign(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
-	bigFloatArguments[0] = repsArgument
-	for i := 0; i < numberOfReps; i++ {
-		floatValue := big.NewFloat(-float64(i) - 1)
-		encodedFloat, _ := floatValue.GobEncode()
-		bigFloatArguments[i+1] = encodedFloat
-	}
+	bigFloatArguments[0] = []byte{0, 0, 0, 1}
+	encodedFloat, _ := big.NewFloat(-1623).GobEncode()
+	bigFloatArguments[1] = encodedFloat
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -381,20 +333,14 @@ func TestBigFloats_Sign(t *testing.T) {
 			WithArguments(bigFloatArguments...).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			encodedLastFloat := bigFloatArguments[numberOfReps]
-			lastFloat := new(big.Float)
-			_ = lastFloat.GobDecode(encodedLastFloat)
-			verify.
-				Ok().
-				ReturnData([]byte{byte(lastFloat.Sign())})
+			negativeSignFloat := big.NewFloat(-1)
+			verify.Ok().
+				ReturnData([]byte{byte(negativeSignFloat.Sign())})
 		})
 }
 
 func TestBigFloats_Clone(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		floatValue := big.NewFloat(-float64(i) - 1)
@@ -415,17 +361,13 @@ func TestBigFloats_Clone(t *testing.T) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedLastFloat)
 		})
 }
 
 func TestBigFloats_Sqrt(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		floatValue := big.NewFloat(float64(i) + 1)
@@ -448,17 +390,13 @@ func TestBigFloats_Sqrt(t *testing.T) {
 			_ = lastFloat.GobDecode(encodedLastFloat)
 			sqrtFloat := new(big.Float).Sqrt(lastFloat)
 			encodedSqrtFloat, _ := sqrtFloat.GobEncode()
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedSqrtFloat)
 		})
 }
 
 func TestBigFloats_Pow(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = []byte{0, 0, 0, byte(3)}
 	for i := 0; i < numberOfReps; i++ {
 		floatValue := big.NewFloat(1.6)
@@ -480,17 +418,13 @@ func TestBigFloats_Pow(t *testing.T) {
 			intermediaryFloat := new(big.Float).Mul(resultFloat, resultFloat)
 			resultFloat.Set(intermediaryFloat)
 			encodedResult, _ := resultFloat.GobEncode()
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedResult)
 		})
 }
 
 func TestBigFloats_Floor(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		floatValue := big.NewFloat((float64(i) + 2) / (float64(i) + 1))
@@ -513,17 +447,13 @@ func TestBigFloats_Floor(t *testing.T) {
 			_ = lastFloat.GobDecode(encodedLastFloat)
 			bigIntOp := new(big.Int)
 			lastFloat.Int(bigIntOp)
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(bigIntOp.Bytes())
 		})
 }
 
 func TestBigFloats_Ceil(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		floatValue := big.NewFloat((float64(i) + 2) / (float64(i) + 1))
@@ -547,17 +477,13 @@ func TestBigFloats_Ceil(t *testing.T) {
 			bigIntOp := new(big.Int)
 			lastFloat.Int(bigIntOp)
 			bigIntOp.Add(bigIntOp, big.NewInt(1))
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(bigIntOp.Bytes())
 		})
 }
 
 func TestBigFloats_IsInt(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		floatValue := big.NewFloat((float64(i) + 2))
@@ -584,17 +510,13 @@ func TestBigFloats_IsInt(t *testing.T) {
 			} else {
 				isInt = 0
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData([]byte{byte(isInt)})
 		})
 }
 
 func TestBigFloats_SetInt64(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		bigFloatArguments[i+1] = []byte{0, 0, 0, byte(i)}
@@ -613,17 +535,13 @@ func TestBigFloats_SetInt64(t *testing.T) {
 			floatValue := big.NewFloat(0)
 			floatValue.SetInt64(int64(numberOfReps - 1))
 			encodedFloatValue, _ := floatValue.GobEncode()
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedFloatValue)
 		})
 }
 
 func TestBigFloats_SetBigInt(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
-	for i := range bigFloatArguments {
-		bigFloatArguments[i] = make([]byte, 0)
-	}
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
 		bigIntValue := big.NewInt(int64(i))
@@ -643,8 +561,7 @@ func TestBigFloats_SetBigInt(t *testing.T) {
 			floatValue := big.NewFloat(0)
 			floatValue.SetInt(big.NewInt(int64(numberOfReps) - 1))
 			encodedFloatValue, _ := floatValue.GobEncode()
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedFloatValue)
 		})
 }
@@ -663,8 +580,7 @@ func TestBigFloats_GetConstPi(t *testing.T) {
 			piValue := math.Pi
 			bigFloatValue := big.NewFloat(0).SetFloat64(piValue)
 			encodedFloat, _ := bigFloatValue.GobEncode()
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedFloat)
 		})
 }
@@ -683,8 +599,7 @@ func TestBigFloats_GetConstE(t *testing.T) {
 			piValue := math.E
 			bigFloatValue := big.NewFloat(0).SetFloat64(piValue)
 			encodedFloat, _ := bigFloatValue.GobEncode()
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(encodedFloat)
 		})
 }

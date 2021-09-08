@@ -48,14 +48,10 @@ func TestManBuffers_MixedFunctions(t *testing.T) {
 			WithFunction("mBufferMethod").
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnData(
-					managedBuffer,
-					[]byte("succ")).
-				Storage(
-					test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer),
-				)
+			expectedStorageEntry := test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer)
+			verify.Ok().
+				ReturnData(managedBuffer, []byte("succ")).
+				Storage(expectedStorageEntry)
 		})
 }
 
@@ -70,10 +66,8 @@ func TestManBuffers_New(t *testing.T) {
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnData(
-					[]byte{byte(numberOfReps - 1)})
+			verify.Ok().
+				ReturnData([]byte{byte(numberOfReps - 1)})
 		})
 }
 
@@ -88,10 +82,8 @@ func TestManBuffers_NewFromBytes(t *testing.T) {
 			WithArguments([]byte{byte(numberOfReps)}, []byte{byte(lengthOfBuffer)}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnData(
-					managedBuffer)
+			verify.Ok().
+				ReturnData(managedBuffer)
 		})
 }
 
@@ -112,8 +104,7 @@ func TestManBuffers_SetRandom(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				randReader.Read(randomBuffer)
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(randomBuffer)
 		})
 }
@@ -129,10 +120,8 @@ func TestManBuffers_GetLength(t *testing.T) {
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnData(
-					[]byte{byte(numberOfReps)})
+			verify.Ok().
+				ReturnData([]byte{byte(numberOfReps)})
 		})
 }
 
@@ -153,8 +142,7 @@ func TestManBuffers_GetBytes(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				randReader.Read(randomBuffer)
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(randomBuffer, randomBuffer[:numberOfReps])
 		})
 }
@@ -178,8 +166,7 @@ func TestManBuffers_AppendBytes(t *testing.T) {
 				randReader.Read(randomBuffer)
 				finalBuffer = append(finalBuffer, randomBuffer...)
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(finalBuffer)
 		})
 }
@@ -201,8 +188,7 @@ func TestManBuffers_mBufferToBigIntUnsigned(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				randReader.Read(randomBuffer)
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(randomBuffer, randomBuffer)
 		})
 }
@@ -224,9 +210,9 @@ func TestManBuffers_mBufferToBigIntSigned(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				randReader.Read(randomBuffer)
 			}
-			verify.
-				Ok().
-				ReturnData(randomBuffer, twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:])
+			expectedBuffer := twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:]
+			verify.Ok().
+				ReturnData(randomBuffer, expectedBuffer)
 		})
 }
 
@@ -247,8 +233,7 @@ func TestManBuffers_mBufferFromBigIntUnsigned(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				randReader.Read(randomBuffer)
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(randomBuffer, randomBuffer)
 		})
 }
@@ -270,9 +255,9 @@ func TestManBuffers_mBufferFromBigIntSigned(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				randReader.Read(randomBuffer)
 			}
-			verify.
-				Ok().
-				ReturnData(randomBuffer, twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:])
+			expectedBuffer := twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:]
+			verify.Ok().
+				ReturnData(randomBuffer, expectedBuffer)
 		})
 }
 
@@ -304,12 +289,9 @@ func TestManBuffers_StorageStore(t *testing.T) {
 					lastRandomKey = keyBuffer
 				}
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(lastRandomBuffer, lastRandomKey).
-				Storage(
-					storage...,
-				)
+				Storage(storage...)
 		})
 }
 
@@ -341,11 +323,8 @@ func TestManBuffers_StorageLoad(t *testing.T) {
 					lastRandomKey = keyBuffer
 				}
 			}
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData(lastRandomBuffer, lastRandomKey).
-				Storage(
-					storage...,
-				)
+				Storage(storage...)
 		})
 }
