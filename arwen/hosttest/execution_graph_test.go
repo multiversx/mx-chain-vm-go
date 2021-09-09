@@ -243,7 +243,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		extractOuptutTransferCalls(lastVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
+	CheckReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, globalReturnData)
 	test.NewVMOutputVerifier(t, lastVMOutput, lastErr).
 		Ok().
 		GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
@@ -470,8 +470,8 @@ func extractGasUsedPerContract(vmOutput *vmcommon.VMOutput, gasUsedPerContract m
 	}
 }
 
-// CheckReturnDataForGraphTesting verifies if ReturnData is the same as the provided one
-func CheckReturnDataForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
+// CheckReturnDataWithGasValuesForGraphTesting verifies if ReturnData is the same as the provided one
+func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
 	processedReturnData := make([][]byte, 0)
 	argParser := parsers.NewCallArgsParser()
 
@@ -489,9 +489,15 @@ func CheckReturnDataForGraphTesting(t testing.TB, expectedReturnData [][]byte, r
 	for idx := range expectedReturnData {
 		_, expRetData, _ := argParser.ParseData(string(expectedReturnData[idx]))
 		_, actualRetData, _ := argParser.ParseData(string(processedReturnData[idx]))
-		require.Equal(t, string(expRetData[0]), string(actualRetData[0]), "ReturnData - Call")
-		require.Equal(t, big.NewInt(0).SetBytes(expRetData[1]), big.NewInt(0).SetBytes(actualRetData[1]), fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
-		require.Equal(t, big.NewInt(0).SetBytes(expRetData[2]), big.NewInt(0).SetBytes(actualRetData[2]), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+		expectedContractAndFunction := string(expRetData[0])
+		actualContractAndFunction := string(actualRetData[0])
+		require.Equal(t, expectedContractAndFunction, actualContractAndFunction, "ReturnData - Call")
+		expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1])
+		actualGasLimitForCall := big.NewInt(0).SetBytes(actualRetData[1])
+		require.Equal(t, expectedGasLimitForCall, actualGasLimitForCall, fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
+		expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2])
+		actualGasRemainingForCall := big.NewInt(0).SetBytes(actualRetData[2])
+		require.Equal(t, expectedGasRemainingForCall, actualGasRemainingForCall, fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
 }
 
