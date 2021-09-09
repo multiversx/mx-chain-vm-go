@@ -176,8 +176,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	crossShardCallsQueue.Enqueue(test.UserAddress, startNode, vm.DirectCall, []byte{})
 
 	// compute execution order (return data) assertions and compute gas assertions
-	//totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
-	_, _, expectedReturnData := computeExpectedValues(gasGraph)
+	totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
+	// totalGasUsed, _, expectedReturnData := computeExpectedValues(gasGraph)
 	computeCallIDs(gasGraph)
 
 	// account -> (key -> value)
@@ -186,6 +186,9 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	globalReturnData := make([][]byte, 0)
 	crtTxNumber := 0
+
+	var lastVMOutput *vmcommon.VMOutput
+	var lastErr error
 
 	var crossShardCall *test.CrossShardCall
 	for !crossShardCallsQueue.IsEmpty() {
@@ -208,7 +211,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 			arguments = parsedArguments
 		}
 
-		vmOutput := test.BuildMockInstanceCallTest(t).
+		lastVMOutput, lastErr = test.BuildMockInstanceCallTest(t).
 			WithContracts(
 				test.CreateMockContractsFromAsyncTestCallGraph(callGraph, testConfig)...,
 			).
@@ -230,26 +233,21 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				setAsyncCosts(host, testConfig.GasLockCost)
 			}).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-				/*verifier := */ verify.
-					Ok()
-				// ReturnDataForGraphTesting(expectedReturnData...)
-				// GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
-				// for _, gasPerContract := range expectedGasUsagePerContract {
-				// 	verifier.GasUsed(gasPerContract.contractAddress, gasPerContract.gasUsed)
-				// }
+				verify.Ok()
 			})
 
-		extractStores(vmOutput, storage)
-		extractGasUsedPerContract(vmOutput, gasUsedPerContract)
-		fmt.Println("-> gas remaining ", vmOutput.GasRemaining)
-		globalReturnData = append(globalReturnData, vmOutput.ReturnData...)
+		extractStores(lastVMOutput, storage)
+		extractGasUsedPerContract(lastVMOutput, gasUsedPerContract)
+		globalReturnData = append(globalReturnData, lastVMOutput.ReturnData...)
 
-		extractOuptutTransferCalls(vmOutput, crossShardEdges, crossShardCallsQueue)
+		extractOuptutTransferCalls(lastVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	//fmt.Println("-> expectedGasUsagePerContract ", expectedGasUsagePerContract)
 	CheckReturnDataForGraphTesting(t, expectedReturnData, globalReturnData)
-	// CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
+	test.NewVMOutputVerifier(t, lastVMOutput, lastErr).
+		Ok().
+		GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
+	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
 }
 
 func persistStorageUpdatesToWorld(storage map[string]map[string][]byte, world *worldmock.MockWorld) {
@@ -492,14 +490,13 @@ func CheckReturnDataForGraphTesting(t testing.TB, expectedReturnData [][]byte, r
 		_, expRetData, _ := argParser.ParseData(string(expectedReturnData[idx]))
 		_, actualRetData, _ := argParser.ParseData(string(processedReturnData[idx]))
 		require.Equal(t, string(expRetData[0]), string(actualRetData[0]), "ReturnData - Call")
-		// TODO matei-p re-enable gas asserions
-		// require.Equal(t, big.NewInt(0).SetBytes(expRetData[1]), big.NewInt(0).SetBytes(actualRetData[1]), "ReturnData - Gas Limit")
-		// require.Equal(t, big.NewInt(0).SetBytes(expRetData[2]), big.NewInt(0).SetBytes(actualRetData[2]), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+		require.Equal(t, big.NewInt(0).SetBytes(expRetData[1]), big.NewInt(0).SetBytes(actualRetData[1]), fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
+		require.Equal(t, big.NewInt(0).SetBytes(expRetData[2]), big.NewInt(0).SetBytes(actualRetData[2]), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
 }
 
 func CheckUsedGasPerContract(t testing.TB, expectedGasUsagePerContract map[string]uint64, gasUsedPerContract map[string]uint64) {
 	for expectedContract, expectedGas := range expectedGasUsagePerContract {
-		require.Equal(t, expectedGas, gasUsedPerContract[expectedContract])
+		require.Equal(t, int(expectedGas), int(gasUsedPerContract[expectedContract]), string(expectedContract))
 	}
 }

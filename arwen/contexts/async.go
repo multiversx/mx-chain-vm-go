@@ -48,7 +48,7 @@ type asyncContext struct {
 	childResults      *vmcommon.VMOutput
 }
 
-type serializableAsyncContext struct {
+type SerializableAsyncContext struct {
 	Address  []byte
 	CallID   []byte
 	CallType vm.CallType
@@ -436,7 +436,7 @@ func (context *asyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte
 	return getCallByAsyncIdentifier(context.asyncCallGroups, asyncCallIdentifier)
 }
 
-func (context *serializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
+func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	return getCallByAsyncIdentifier(context.AsyncCallGroups, asyncCallIdentifier)
 }
 
@@ -733,7 +733,7 @@ func (context *asyncContext) IsStoredContextComplete(address []byte, callID []by
 	return serializedAsync.IsComplete(), nil
 }
 
-func (context *serializableAsyncContext) IsComplete() bool {
+func (context *SerializableAsyncContext) IsComplete() bool {
 	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
 }
 
@@ -883,14 +883,11 @@ func (context *asyncContext) IsComplete() bool {
 	return context.callsCounter == 0 && len(context.asyncCallGroups) == 0
 }
 
-func (context *asyncContext) Save() error {
-	return context.saveUsingStorage(context.host.Storage())
-}
-
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
-func (context *asyncContext) saveUsingStorage(storage arwen.StorageContext) error {
+func (context *asyncContext) Save() error {
 	address := context.address
 	callID := context.callID
+	storage := context.host.Storage()
 	// fmt.Println("save address", string(address), "callID", DebugPartialArrayToString(callID), "callsCounter", context.callsCounter)
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
@@ -907,7 +904,7 @@ func (context *asyncContext) saveUsingStorage(storage arwen.StorageContext) erro
 	return nil
 }
 
-func (context *serializableAsyncContext) HasPendingCallGroups() bool {
+func (context *SerializableAsyncContext) HasPendingCallGroups() bool {
 	return len(context.AsyncCallGroups) > 0
 }
 
@@ -954,14 +951,14 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 }
 
 // NewSerializedAsyncContextFromStore -
-func NewSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, callID []byte) (*serializableAsyncContext, error) {
+func NewSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, callID []byte) (*SerializableAsyncContext, error) {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}
 
-	deserializedContext, err := deserializeAsyncContext(data)
+	deserializedContext, err := DeserializeAsyncContext(data)
 	if err != nil {
 		return nil, err
 	}
@@ -1132,8 +1129,8 @@ func (context *asyncContext) Serialize() ([]byte, error) {
 	return json.Marshal(serializableContext)
 }
 
-func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
-	deserializedContext := &serializableAsyncContext{}
+func DeserializeAsyncContext(data []byte) (*SerializableAsyncContext, error) {
+	deserializedContext := &SerializableAsyncContext{}
 	err := json.Unmarshal(data, deserializedContext)
 	if err != nil {
 		return nil, err
@@ -1141,8 +1138,8 @@ func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
 	return deserializedContext, nil
 }
 
-func (context *asyncContext) toSerializable() *serializableAsyncContext {
-	return &serializableAsyncContext{
+func (context *asyncContext) toSerializable() *SerializableAsyncContext {
+	return &SerializableAsyncContext{
 		Address:                      context.address,
 		CallID:                       context.callID,
 		CallerAddr:                   context.callerAddr,
@@ -1161,7 +1158,7 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 	}
 }
 
-func fromSerializable(serializedContext *serializableAsyncContext) *asyncContext {
+func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext {
 	return &asyncContext{
 		host:                         nil,
 		stateStack:                   nil,

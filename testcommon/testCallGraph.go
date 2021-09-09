@@ -823,8 +823,6 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 				if node.IsLeaf() && (node.Parent.IncomingEdgeType == Callback || node.Parent.IncomingEdgeType == CallbackCrossShard) {
 					callBackNode := parent
 					asyncNode := callBackNode.Parent
-					// asyncInitiator := asyncNode.Parent
-					// asyncInitiatorGasRemaining := getGasRemaining(asyncInitiator)
 					asyncNodeGasRemaining := getGasRemaining(asyncNode)
 					callBackNode.GasLimit = /*asyncInitiatorGasRemaining +*/ asyncNodeGasRemaining + asyncNode.GasLocked
 
@@ -841,7 +839,8 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 						callBackNode.GasRemaining = uint64(callBackNodeGasRemaining)
 					}
 				} else if !node.IsLeaf() && (node.IncomingEdgeType == Callback || node.IncomingEdgeType == CallbackCrossShard) {
-					node.Parent.Parent.GasAccumulatedAfterCallback = getGasRemaining(node)
+					node.Parent.Parent.GasAccumulatedAfterCallback += node.Parent.GasAccumulatedAfterCallback
+					node.Parent.Parent.GasAccumulatedAfterCallback += getGasRemaining(node)
 				} else if !node.IsLeaf() && node.IncomingEdgeType == Sync {
 					parent.GasRemaining += getGasRemaining(node)
 				}
@@ -854,8 +853,8 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 }
 
 func getGasRemaining(node *TestCallNode) uint64 {
-	if node.GasAccumulatedAfterCallback == 0 {
-		return node.GasRemaining
-	}
-	return node.GasAccumulatedAfterCallback
+	// if node.GasAccumulatedAfterCallback == 0 {
+	return node.GasRemaining
+	// }
+	// return node.GasAccumulatedAfterCallback
 }
