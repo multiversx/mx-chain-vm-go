@@ -1,7 +1,6 @@
 package contexts
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -83,8 +82,6 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	if isComplete {
 		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, err)
-		// TODO matei-p change to debug logging
-		fmt.Println("gasAccumulated ->", context.gasAccumulated)
 		if isCallbackComplete {
 			context.NotifyChildIsComplete(asyncCall.Identifier, callbackVMOutput.GasRemaining, false)
 		}
