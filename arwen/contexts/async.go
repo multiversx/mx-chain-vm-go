@@ -631,10 +631,10 @@ func (context *asyncContext) Execute() error {
 	// end debug
 
 	context.childResults = context.host.Output().GetVMOutput()
+	metering := context.host.Metering()
+	gasLeft := metering.GasLeft()
 
 	if context.HasPendingCallGroups() {
-		metering := context.host.Metering()
-		gasLeft := metering.GasLeft()
 		context.accumulateGas(gasLeft)
 		logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
 		logAsync.Trace("async.Execute() execute locals")
@@ -835,9 +835,10 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 					context.NotifyChildIsComplete(currentAsyncCallIdentifier, callbackVMOutput.GasRemaining, isCrossShardCallChain)
 				}
 			} else if context.callType == vm.AsynchronousCallBack {
+				gasAccumulatedInNotifingContext := context.gasAccumulated
 				context.LoadParentContext()
 				// TODO matei-p the parent is a callback
-				context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, isCrossShardCallChain)
+				context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext, isCrossShardCallChain)
 			} else if context.callType == vm.DirectCall {
 				context.LoadParentContext()
 				context.NotifyChildIsComplete(nil, 0, isCrossShardCallChain)
@@ -939,6 +940,7 @@ func (context *asyncContext) LoadSpecifiedContext(address []byte, callID []byte)
 	context.callsCounter = loadedContext.CallsCounter
 	context.totalCallsCounter = loadedContext.TotalCallsCounter
 	context.childResults = loadedContext.ChildResults
+	context.gasAccumulated = loadedContext.GasAccumulated
 
 	return nil
 }
