@@ -929,11 +929,11 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		_, err = async.CallCallback(callID, output.GetVMOutput(), nil)
+		_, _, err = async.CallCallback(callID, output.GetVMOutput(), nil)
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()
-		async.NotifyChildIsComplete(callerCallCallID, true)
+		async.NotifyChildIsComplete(callerCallCallID, output.GetVMOutput().GasRemaining, true)
 	default:
 		err = arwen.ErrUnknownCallType
 	}

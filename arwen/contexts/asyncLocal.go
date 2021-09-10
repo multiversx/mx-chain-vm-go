@@ -82,31 +82,30 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	}
 
 	if isComplete {
-		isCallbackComplete := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
 		// TODO matei-p change to debug logging
 		fmt.Println("gasAccumulated ->", context.gasAccumulated)
 		if isCallbackComplete {
-			context.NotifyChildIsComplete(asyncCall.Identifier, false)
+			context.NotifyChildIsComplete(asyncCall.Identifier, callbackVMOutput.GasRemaining, false)
 		}
-	} else {
+	} /*else {
 		context.gasAccumulated = 0
 		if vmOutput != nil {
 			context.accumulateGas(vmOutput.GasRemaining)
 		}
-	}
+	}*/
 
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) bool {
+func (context *asyncContext) executeSyncCallbackAndAccumulateGas(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, *vmcommon.VMOutput) {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
-	// TODO matei-p is this correct?
-	context.gasAccumulated = 0
-	if callbackVMOutput != nil {
-		context.accumulateGas(callbackVMOutput.GasRemaining)
-	}
-	return isComplete
+	// context.gasAccumulated = 0
+	// if callbackVMOutput != nil {
+	// 	context.accumulateGas(callbackVMOutput.GasRemaining)
+	// }
+	return isComplete, callbackVMOutput
 }
 
 func (context *asyncContext) executeSyncCallback(

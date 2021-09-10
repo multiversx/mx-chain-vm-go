@@ -670,7 +670,7 @@ func (context *asyncContext) Execute() error {
 		logAsync.Trace("no async calls")
 		if context.IsComplete() && context.callType == vm.DirectCall {
 			context, _ = context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
-			context.NotifyChildIsComplete(nil, false)
+			context.NotifyChildIsComplete(nil, 0, false)
 		}
 	}
 
@@ -767,7 +767,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	return gasToLock, nil
 }
 
-func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, isCrossShardCallChain bool) error {
+func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64, isCrossShardCallChain bool) error {
 	// TODO matei-p remove for logging
 	fmt.Println("NofityChildIsComplete")
 	fmt.Println("\taddress", string(context.address))
@@ -779,6 +779,8 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, i
 	context.DecrementCallsCounter()
 
 	if asyncCallIdentifier != nil {
+
+		context.accumulateGas(gasToAccumulate)
 
 		_, groupIndex, callIndex, err := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
 		if err != nil {
@@ -819,24 +821,25 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, i
 			if err != nil {
 				return err
 			}
-			// callback for an completed async call is called here only if notifications
-			// started with a cross shard call, otherwise it will be called in regular
-			// async call code, after the local async call is completed
 			if context.callType == vm.AsynchronousCall {
+				// callback for an completed async call is called here only if notifications
+				// started with a cross shard call, otherwise it will be called in regular
+				// async call code, after the local async call is completed
 				vmOutput := context.childResults
-				// context.LoadParentContext()
-				isComplete, _ := context.CallCallback(currentAsyncCallIdentifier, vmOutput, nil)
+				isComplete, callbackVMOutput, err := context.CallCallback(currentAsyncCallIdentifier, vmOutput, nil)
+				if err != nil {
+					return err
+				}
 				if isComplete {
-					if !context.IsFirstCall() {
-						context.NotifyChildIsComplete(currentAsyncCallIdentifier, isCrossShardCallChain)
-					}
+					context.NotifyChildIsComplete(currentAsyncCallIdentifier, callbackVMOutput.GasRemaining, isCrossShardCallChain)
 				}
 			} else if context.callType == vm.AsynchronousCallBack {
 				context.LoadParentContext()
-				context.NotifyChildIsComplete(currentAsyncCallIdentifier, isCrossShardCallChain)
+				// TODO matei-p the parent is a callback
+				context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, isCrossShardCallChain)
 			} else if context.callType == vm.DirectCall {
 				context.LoadParentContext()
-				context.NotifyChildIsComplete(nil, isCrossShardCallChain)
+				context.NotifyChildIsComplete(nil, 0, isCrossShardCallChain)
 			}
 		}
 	}
@@ -844,23 +847,24 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, i
 	return nil
 }
 
-func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, error) {
+func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, *vmcommon.VMOutput, error) {
 	sender := context.address
 	destination := context.callerAddr
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
 		data := context.GetEncodedDataForAsyncCallbackTransfer(vmOutput)
-		return false, sendCrossShardCallback(context.host, sender, destination, data)
+		err = sendCrossShardCallback(context.host, sender, destination, data)
+		return false, nil, err
 	}
 
 	context.LoadParentContext()
 	asyncCall, _, _, errLoad := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
 	if errLoad != nil {
-		return false, errLoad
+		return false, nil, errLoad
 	}
-	isComplete := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
-	return isComplete, nil
+	isComplete, callbackVMOutput := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+	return isComplete, callbackVMOutput, nil
 }
 
 func (context *asyncContext) IsFirstCall() bool {
