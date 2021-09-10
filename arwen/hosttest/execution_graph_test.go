@@ -356,7 +356,7 @@ func computeCallIDs(gasGraph *test.TestCallGraph) {
 			// newCallID = append([]byte(parentParent.Call.FunctionName), newCallID...)
 
 			node.Call.CallID = newCallID
-			fmt.Println("label", node.Label, "CallID", newCallID)
+			// fmt.Println("label", node.Label, "CallID", newCallID)
 		}
 
 		return node

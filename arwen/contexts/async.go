@@ -775,6 +775,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 	fmt.Println("\tcallerAddr", string(context.callerAddr))
 	fmt.Println("\tcallerCallID", context.callerCallID)
 	fmt.Println("\tasyncCallIdentifier", asyncCallIdentifier)
+	fmt.Println("\tgasToAccumulate", gasToAccumulate)
 
 	context.DecrementCallsCounter()
 
@@ -863,7 +864,7 @@ func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *
 	if errLoad != nil {
 		return false, nil, errLoad
 	}
-	isComplete, callbackVMOutput := context.executeSyncCallbackAndAccumulateGas(asyncCall, vmOutput, err)
+	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, err)
 	return isComplete, callbackVMOutput, nil
 }
 
