@@ -837,7 +837,6 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 			} else if context.callType == vm.AsynchronousCallBack {
 				gasAccumulatedInNotifingContext := context.gasAccumulated
 				context.LoadParentContext()
-				// TODO matei-p the parent is a callback
 				context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext, isCrossShardCallChain)
 			} else if context.callType == vm.DirectCall {
 				context.LoadParentContext()
