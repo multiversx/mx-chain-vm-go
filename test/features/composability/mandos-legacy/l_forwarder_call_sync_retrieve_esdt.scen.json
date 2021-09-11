@@ -1,5 +1,5 @@
 {
-    "comment": "not the main test, just warmup",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
@@ -13,17 +13,17 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
+                    "esdt": {
+                        "str:TEST-TOKEN": "1000"
+                    },
                     "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:recursive-caller": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:REC-TOKEN": "1000"
-                    },
                     "storage": {},
-                    "code": "file:../recursive-caller/output/recursive-caller.wasm"
+                    "code": "file:../forwarder/output/forwarder-unmanaged.wasm"
                 }
             }
         },
@@ -32,22 +32,45 @@
             "txId": "1",
             "tx": {
                 "from": "address:a_user",
-                "to": "sc:recursive-caller",
+                "to": "sc:forwarder",
                 "value": "0",
-                "function": "recursive_send_funds",
+                "function": "forward_sync_retrieve_funds",
                 "arguments": [
                     "sc:vault",
-                    "str:REC-TOKEN",
-                    "1",
-                    "2"
+                    "str:TEST-TOKEN",
+                    "0",
+                    "1000"
                 ],
-                "gasLimit": "1,000,000,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "0",
-                "logs": "*",
+                "logs": [
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:retrieve_funds",
+                        "topics": [
+                            "str:retrieve_funds",
+                            "str:TEST-TOKEN",
+                            "0",
+                            "1000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:ESDTTransfer",
+                        "topics": [
+                            "str:TEST-TOKEN",
+                            "",
+                            "1000",
+                            "sc:forwarder"
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -64,22 +87,17 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:REC-TOKEN": "5"
-                    },
-                    "storage": {
-                        "str:call_counts|nested:str:accept_funds": "*"
-                    },
+                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:recursive-caller": {
+                "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:REC-TOKEN": "995"
+                        "str:TEST-TOKEN": "1000"
                     },
-                    "storage": {},
-                    "code": "file:../recursive-caller/output/recursive-caller.wasm"
+                    "storage": "*",
+                    "code": "file:../forwarder/output/forwarder-unmanaged.wasm"
                 }
             }
         }

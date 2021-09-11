@@ -452,7 +452,7 @@ func v1_4_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
 	metering.UseGas(gasToUse)
 
-	return managedType.PutBigInt(smallValue)
+	return managedType.NewBigIntFromInt64(smallValue)
 }
 
 //export v1_4_bigIntUnsignedByteLength

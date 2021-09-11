@@ -1,5 +1,6 @@
 {
     "comment": "not the main test, just warmup",
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
@@ -23,7 +24,7 @@
                         "str:REC-TOKEN": "1000"
                     },
                     "storage": {},
-                    "code": "file:../recursive-caller/output/recursive-caller.wasm"
+                    "code": "file:../recursive-caller/output/recursive-caller-unmanaged.wasm"
                 }
             }
         },
@@ -39,9 +40,9 @@
                     "sc:vault",
                     "str:REC-TOKEN",
                     "1",
-                    "2"
+                    "1"
                 ],
-                "gasLimit": "1,000,000,000,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -52,37 +53,7 @@
                         "address": "sc:recursive-caller",
                         "endpoint": "str:recursive_send_funds",
                         "topics": [
-                            "sc:vault",
-                            "str:REC-TOKEN",
-                            "1"
-                        ],
-                        "data": "2"
-                    },
-                    {
-                        "address": "sc:vault",
-                        "endpoint": "str:accept_funds",
-                        "topics": [
-                            "str:REC-TOKEN",
-                            "str:FungibleESDT",
-                            "1",
-                            "0"
-                        ],
-                        "data": ""
-                    },
-                    {
-                        "address": "sc:recursive-caller",
-                        "endpoint": "str:recursive_send_funds_callback",
-                        "topics": [
-                            "sc:vault",
-                            "str:REC-TOKEN",
-                            "1"
-                        ],
-                        "data": "2"
-                    },
-                    {
-                        "address": "sc:recursive-caller",
-                        "endpoint": "str:recursive_send_funds",
-                        "topics": [
+                            "str:recursive_send_funds",
                             "sc:vault",
                             "str:REC-TOKEN",
                             "1"
@@ -90,9 +61,21 @@
                         "data": "1"
                     },
                     {
+                        "address": "sc:recursive-caller",
+                        "endpoint": "str:ESDTTransfer",
+                        "topics": [
+                            "str:REC-TOKEN",
+                            "",
+                            "1",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
                         "address": "sc:vault",
                         "endpoint": "str:accept_funds",
                         "topics": [
+                            "str:accept_funds",
                             "str:REC-TOKEN",
                             "str:FungibleESDT",
                             "1",
@@ -102,8 +85,9 @@
                     },
                     {
                         "address": "sc:recursive-caller",
-                        "endpoint": "str:recursive_send_funds_callback",
+                        "endpoint": "str:callBack",
                         "topics": [
+                            "str:recursive_send_funds_callback",
                             "sc:vault",
                             "str:REC-TOKEN",
                             "1"
@@ -131,7 +115,7 @@
                         "str:REC-TOKEN": "1"
                     },
                     "storage": {
-                        "str:call_counts|nested:str:accept_funds": "*"
+                        "str:call_counts|nested:str:accept_funds": "1"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },
@@ -142,7 +126,7 @@
                         "str:REC-TOKEN": "999"
                     },
                     "storage": {},
-                    "code": "file:../recursive-caller/output/recursive-caller.wasm"
+                    "code": "file:../recursive-caller/output/recursive-caller-unmanaged.wasm"
                 }
             }
         }

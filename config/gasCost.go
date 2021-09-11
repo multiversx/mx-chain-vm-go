@@ -29,6 +29,7 @@ type ElrondAPICost struct {
 	GetShardOfAddress    uint64
 	GetExternalBalance   uint64
 	GetBlockHash         uint64
+	GetOriginalTxHash    uint64
 	TransferValue        uint64
 	GetArgument          uint64
 	GetFunction          uint64

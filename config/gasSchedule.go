@@ -183,6 +183,7 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetShardOfAddress"] = value
 	gasMap["GetExternalBalance"] = value
 	gasMap["GetBlockHash"] = value
+	gasMap["GetOriginalTxHash"] = value
 	gasMap["TransferValue"] = value
 	gasMap["GetArgument"] = value
 	gasMap["GetFunction"] = value
