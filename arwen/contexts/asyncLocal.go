@@ -10,15 +10,20 @@ import (
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
+	localCalls := make([]*arwen.AsyncCall, 0)
 
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if call.IsLocal() {
-				err := context.executeAsyncLocalCall(call)
-				if err != nil {
-					return err
-				}
+				localCalls = append(localCalls, call)
 			}
+		}
+	}
+
+	for _, call := range localCalls {
+		err := context.executeAsyncLocalCall(call)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -63,9 +68,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	newCallID := destinationCallInput.Arguments[0]
-	newCallAddress := destinationCallInput.RecipientAddr
-	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, err, isComplete := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
 	}
@@ -74,29 +77,18 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	// if context is not found in store, it's also considered complete
-	isComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
-	if err != nil {
-		return err
-	}
-
 	if isComplete {
-		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, err)
+		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, err)
 		if isCallbackComplete {
-			context.NotifyChildIsComplete(asyncCall.Identifier, callbackVMOutput.GasRemaining, false)
+			context.CompleteChild(asyncCall.Identifier, callbackVMOutput.GasRemaining)
 		}
-	} /*else {
-		context.gasAccumulated = 0
-		if vmOutput != nil {
-			context.accumulateGas(vmOutput.GasRemaining)
-		}
-	}*/
+	}
 
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) (bool, *vmcommon.VMOutput) {
-	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
+	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	return isComplete, callbackVMOutput
 }
@@ -104,10 +96,11 @@ func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen
 func (context *asyncContext) executeSyncCallback(
 	asyncCall *arwen.AsyncCall,
 	destinationVMOutput *vmcommon.VMOutput,
+	gasAccumulated uint64,
 	destinationErr error,
 ) (*vmcommon.VMOutput, bool, error) {
 
-	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
+	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, gasAccumulated, destinationErr)
 	if err != nil {
 		return nil, true, err
 	}
@@ -115,14 +108,7 @@ func (context *asyncContext) executeSyncCallback(
 	// Restore gas locked while still on the caller instance; otherwise, the
 	// locked gas will appear to have been used twice by the caller instance.
 	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
-	newCallID := callbackInput.Arguments[0]
-	newCallAddress := callbackInput.RecipientAddr
-	callbackVMOutput, callBackErr, _ := context.host.ExecuteOnDestContext(callbackInput)
-
-	isComplete, err := context.IsStoredContextComplete(newCallAddress, newCallID)
-	if err != nil {
-		return nil, true, err
-	}
+	callbackVMOutput, callBackErr, isComplete := context.host.ExecuteOnDestContext(callbackInput)
 
 	return callbackVMOutput, isComplete, callBackErr
 }
@@ -158,7 +144,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	vmOutput, err, _ := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
-	context.accumulateGas(vmOutput.GasRemaining)
+	// context.accumulateGas(vmOutput.GasRemaining)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -193,7 +179,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
-		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
+		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
 		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	}
 
@@ -276,12 +262,13 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 func (context *asyncContext) createCallbackInput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
+	gasAccumulated uint64,
 	destinationErr error,
 ) (*vmcommon.ContractCallInput, error) {
 	metering := context.host.Metering()
 	runtime := context.host.Runtime()
 
-	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, destinationErr)
+	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, gasAccumulated, destinationErr)
 
 	esdtFunction := ""
 	isESDTOnCallBack := false
@@ -301,8 +288,6 @@ func (context *asyncContext) createCallbackInput(
 	callbackFunction := asyncCall.GetCallbackName()
 
 	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
-	// TODO matei-p remove line - don't use accumulted gas
-	// gasLimit = math.AddUint64(gasLimit, context.gasAccumulated)
 	dataLength := computeDataLengthFromArguments(callbackFunction, arguments)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
@@ -347,7 +332,7 @@ func (context *asyncContext) createCallbackInput(
 	return contractCallInput, nil
 }
 
-func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, err error) [][]byte {
+func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) [][]byte {
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
@@ -367,6 +352,7 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 		context.GenerateNewCallbackID(),
 		asyncCall.Identifier,
 		context.callID,
+		big.NewInt(int64(gasAccumulated)).Bytes(),
 	)
 
 	return arguments

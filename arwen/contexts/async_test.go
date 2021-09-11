@@ -779,7 +779,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 	vmOutput.GasRemaining = 12
 
 	destinationErr := error(nil)
-	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
@@ -802,7 +802,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 
 	vmOutput := defaultDestOutput_UserError()
 	destinationErr := arwen.ErrSignalError
-	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
@@ -836,7 +836,7 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	}
 
 	destinationErr := arwen.ErrSignalError
-	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, callbackInput)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }

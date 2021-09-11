@@ -2625,9 +2625,15 @@ func ExecuteOnDestContextWithTypedArgs(
 		host.Async().GetCallID(),
 	)
 
-	_, err, _ = host.ExecuteOnDestContext(contractCallInput)
+	_, err, isComplete := host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
+	}
+
+	if isComplete {
+		// completion of a sync child
+		// accumulated gas si merged during pop
+		host.Async().CompleteChild(nil, 0)
 	}
 
 	return 0

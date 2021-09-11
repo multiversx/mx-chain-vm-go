@@ -933,7 +933,7 @@ func (host *vmHost) callSCMethod() error {
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()
-		async.NotifyChildIsComplete(callerCallCallID, output.GetVMOutput().GasRemaining, true)
+		async.NotifyChildIsComplete(callerCallCallID, output.GetVMOutput().GasRemaining)
 	default:
 		err = arwen.ErrUnknownCallType
 	}
