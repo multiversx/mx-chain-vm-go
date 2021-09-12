@@ -1085,7 +1085,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, err, _ = host.ExecuteOnDestContext(contractCallInput)
+		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
@@ -1335,7 +1335,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, executeErr, _ = host.ExecuteOnDestContext(contractCallInput)
+		_, _, executeErr = host.ExecuteOnDestContext(contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
@@ -2625,7 +2625,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		host.Async().GetCallID(),
 	)
 
-	_, err, isComplete := host.ExecuteOnDestContext(contractCallInput)
+	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2730,7 +2730,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		return 1
 	}
 
-	_, err, _ = host.ExecuteOnDestContext(contractCallInput)
+	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}

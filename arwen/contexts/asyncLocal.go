@@ -68,7 +68,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	vmOutput, err, isComplete := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, isComplete, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
 	}
@@ -108,7 +108,7 @@ func (context *asyncContext) executeSyncCallback(
 	// Restore gas locked while still on the caller instance; otherwise, the
 	// locked gas will appear to have been used twice by the caller instance.
 	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
-	callbackVMOutput, callBackErr, isComplete := context.host.ExecuteOnDestContext(callbackInput)
+	callbackVMOutput, isComplete, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
 
 	return callbackVMOutput, isComplete, callBackErr
 }
@@ -141,7 +141,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 
 	input := context.createGroupCallbackInput(group)
 	context.gasAccumulated = 0
-	vmOutput, err, _ := context.host.ExecuteOnDestContext(input)
+	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
 	// context.accumulateGas(vmOutput.GasRemaining)
@@ -170,7 +170,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	vmOutput, err, _ := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, _, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
 		return err
 	}

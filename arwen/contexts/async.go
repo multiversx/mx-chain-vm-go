@@ -765,16 +765,14 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 		currentAsyncCallIdentifier := context.GetCallID()
 		gasAccumulatedInNotifingContext := context.gasAccumulated
 		if context.callType == vm.AsynchronousCall {
-			// callback for a completed async call is called here only if notifications
-			// started with a cross shard call, otherwise it will be called in regular
-			// async call code, after the local async call is completed
 			vmOutput := context.childResults
 			isComplete, callbackVMOutput, err := context.CallCallback(currentAsyncCallIdentifier, vmOutput, nil)
 			if err != nil {
 				return err
 			}
 			if isComplete {
-				context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext+callbackVMOutput.GasRemaining)
+				context.NotifyChildIsComplete(currentAsyncCallIdentifier,
+					gasAccumulatedInNotifingContext+callbackVMOutput.GasRemaining)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
 			context.LoadParentContext()
@@ -938,27 +936,6 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 	return loadedContext
 }
 
-func (context *asyncContext) loadContextFromStack(address []byte, callID []byte) error {
-	for _, stackContext := range context.stateStack {
-		if bytes.Equal(stackContext.address, address) && bytes.Equal(stackContext.callID, callID) {
-			context.address = stackContext.address
-			context.callID = stackContext.callID
-			context.callerAddr = stackContext.callerAddr
-			context.callerCallID = stackContext.callerCallID
-			context.callbackAsyncInitiatorCallID = stackContext.callbackAsyncInitiatorCallID
-			context.callType = stackContext.callType
-			context.returnData = stackContext.returnData
-			context.asyncCallGroups = stackContext.asyncCallGroups
-			context.callsCounter = stackContext.callsCounter
-			context.totalCallsCounter = stackContext.totalCallsCounter
-			context.childResults = stackContext.childResults
-			context.gasAccumulated = stackContext.gasAccumulated
-			return nil
-		}
-	}
-	return arwen.ErrNoStoredAsyncContextFound
-}
-
 // NewSerializedAsyncContextFromStore -
 func NewSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, callID []byte) (*serializableAsyncContext, error) {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
@@ -1072,7 +1049,7 @@ func (context *asyncContext) executeContextCallback() error {
 	}
 
 	callbackCallInput := context.createContextCallbackInput()
-	callbackVMOutput, callBackErr, _ := context.host.ExecuteOnDestContext(callbackCallInput)
+	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
 	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr)
 
 	return nil
