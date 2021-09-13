@@ -80,6 +80,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	if isComplete {
 		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, err)
 		if isCallbackComplete {
+			callbackVMOutput.GasRemaining = 0
 			context.CompleteChild(asyncCall.Identifier, callbackVMOutput.GasRemaining)
 		}
 	}
@@ -229,7 +230,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
-	newCallID := context.GenerateNewCallID()
+	newCallID := context.GenerateNewCallIDAndIncrementCounter()
 	// send the callID to a local async call
 	arguments = arwen.PrependToArguments(
 		arguments,

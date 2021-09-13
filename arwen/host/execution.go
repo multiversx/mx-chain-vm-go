@@ -346,6 +346,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	// Return to the caller context completely
 	runtime.PopSetActiveState()
+
+	async.AccumulateGasFromPreviousState()
 	async.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance

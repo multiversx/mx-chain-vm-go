@@ -182,7 +182,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	// compute execution order (return data) assertions and compute gas assertions
 	// totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
-	_, _, expectedReturnData := computeExpectedValues(gasGraph)
+	_, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
 	computeCallIDs(gasGraph)
 
 	// account -> (key -> value)
@@ -252,7 +252,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	test.NewVMOutputVerifier(t, lastVMOutput, lastErr).
 		Ok() //.
 	// GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
-	// CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
+	CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
 }
 
 func persistStorageUpdatesToWorld(storage map[string]map[string][]byte, world *worldmock.MockWorld) {
@@ -504,6 +504,6 @@ func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnDat
 
 func CheckUsedGasPerContract(t testing.TB, expectedGasUsagePerContract map[string]uint64, gasUsedPerContract map[string]uint64) {
 	for expectedContract, expectedGas := range expectedGasUsagePerContract {
-		require.Equal(t, int(expectedGas), int(gasUsedPerContract[expectedContract]), string(expectedContract))
+		require.Equal(t, int(expectedGas), int(gasUsedPerContract[expectedContract]), fmt.Sprintf("Used gas for contract %s", expectedContract))
 	}
 }

@@ -329,7 +329,7 @@ type AsyncContext interface {
 	Delete() error
 
 	GetCallID() []byte
-	GenerateNewCallID() []byte
+	GenerateNewCallIDAndIncrementCounter() []byte
 	GenerateNewCallbackID() []byte
 	Clone() AsyncContext
 
@@ -338,4 +338,6 @@ type AsyncContext interface {
 
 	CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error
 	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) error
+
+	AccumulateGasFromPreviousState()
 }

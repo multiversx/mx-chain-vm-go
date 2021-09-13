@@ -201,12 +201,10 @@ func (context *asyncContext) PopDiscard() {
 // PopSetActiveState pops the state found at the top of the internal state
 // stack and sets it as the 'active' state of the AsyncContext.
 func (context *asyncContext) PopSetActiveState() {
-	stateStackLen := len(context.stateStack)
-	if stateStackLen == 0 {
+	prevState, stateStackLen := context.getPrevAsyncState()
+	if prevState == nil {
 		return
 	}
-
-	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.address = prevState.address
@@ -224,7 +222,18 @@ func (context *asyncContext) PopSetActiveState() {
 	context.childResults = prevState.childResults
 	context.callsCounter = prevState.callsCounter
 	context.totalCallsCounter = prevState.totalCallsCounter
+}
 
+func (context *asyncContext) getPrevAsyncState() (*asyncContext, int) {
+	stateStackLen := len(context.stateStack)
+	if stateStackLen == 0 {
+		return nil, 0
+	}
+	return context.stateStack[stateStackLen-1], stateStackLen
+}
+
+func (context *asyncContext) AccumulateGasFromPreviousState() {
+	prevState, _ := context.getPrevAsyncState()
 	context.gasAccumulated += prevState.gasAccumulated
 }
 
@@ -826,6 +835,7 @@ func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
+		// TODO matei-p factor out
 		data := context.GetArgumentsForCrossShardCallback(vmOutput)
 		err = sendCrossShardCallback(context.host, sender, destination, data)
 		return false, nil, err
@@ -838,6 +848,7 @@ func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *
 		return false, nil, errLoad
 	}
 	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, err)
+	callbackVMOutput.GasRemaining = 0
 	return isComplete, callbackVMOutput, nil
 }
 
@@ -1010,7 +1021,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		return err
 	}
 
-	newCallID := context.GenerateNewCallID()
+	newCallID := context.GenerateNewCallIDAndIncrementCounter()
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(function)
 	callData.Bytes(newCallID)
@@ -1235,7 +1246,7 @@ func (context *asyncContext) GetCallID() []byte {
 	return context.callID
 }
 
-func (context *asyncContext) GenerateNewCallID() []byte {
+func (context *asyncContext) GenerateNewCallIDAndIncrementCounter() []byte {
 	return context.generateNewCallID(false)
 }
 

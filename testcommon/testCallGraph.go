@@ -856,8 +856,5 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 }
 
 func getGasRemaining(node *TestCallNode) uint64 {
-	// if node.GasAccumulatedAfterCallback == 0 {
 	return node.GasRemaining
-	// }
-	// return node.GasAccumulatedAfterCallback
 }

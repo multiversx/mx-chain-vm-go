@@ -2621,7 +2621,7 @@ func ExecuteOnDestContextWithTypedArgs(
 	// send the callID to a sync call
 	contractCallInput.Arguments = arwen.PrependToArguments(
 		contractCallInput.Arguments,
-		host.Async().GenerateNewCallID(),
+		host.Async().GenerateNewCallIDAndIncrementCounter(),
 		host.Async().GetCallID(),
 	)
 
