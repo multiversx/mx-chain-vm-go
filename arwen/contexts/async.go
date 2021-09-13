@@ -780,8 +780,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 				return err
 			}
 			if isComplete {
-				context.NotifyChildIsComplete(currentAsyncCallIdentifier,
-					gasAccumulatedInNotifingContext+callbackVMOutput.GasRemaining)
+				context.NotifyChildIsComplete(currentAsyncCallIdentifier, callbackVMOutput.GasRemaining)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
 			context.LoadParentContext()
