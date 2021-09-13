@@ -839,9 +839,11 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 					}
 				} else {
 					node.Parent.GasAccumulatedAfterCallback += node.GasAccumulatedAfterCallback
-					if node.IncomingEdgeType == Callback || node.IncomingEdgeType == CallbackCrossShard {
+					if node.IncomingEdgeType == CallbackCrossShard {
 						node.Parent.Parent.GasAccumulatedAfterCallback += node.GasAccumulatedAfterCallback
 						node.Parent.Parent.GasAccumulatedAfterCallback += getGasRemaining(node)
+					} else if node.IncomingEdgeType == Callback {
+						node.Parent.Parent.GasRemaining += getGasRemaining(node)
 					} else if !node.IsLeaf() && node.IncomingEdgeType == Sync {
 						parent.GasRemaining += getGasRemaining(node)
 					}

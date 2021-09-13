@@ -334,7 +334,7 @@ type AsyncContext interface {
 	Clone() AsyncContext
 
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*AsyncCall, error)
-	CallCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, *vmcommon.VMOutput, error)
+	ExecuteCrossShardCallback(vmOutput *vmcommon.VMOutput) error
 
 	CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error
 	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) error

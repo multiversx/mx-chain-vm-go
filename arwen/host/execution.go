@@ -862,7 +862,6 @@ func (host *vmHost) callSCMethod() error {
 	callType := vmInput.CallType
 
 	var err error
-	callID := async.GetCallID()
 	callerCallCallID := async.GetCallerCallID()
 
 	// in case of a callback, updates the status of the async call and gets the callback name
@@ -931,7 +930,7 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		_, _, err = async.CallCallback(callID, output.GetVMOutput(), nil)
+		err = async.ExecuteCrossShardCallback(output.GetVMOutput())
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()

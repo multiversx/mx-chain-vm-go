@@ -775,7 +775,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 		gasAccumulatedInNotifingContext := context.gasAccumulated
 		if context.callType == vm.AsynchronousCall {
 			vmOutput := context.childResults
-			isComplete, callbackVMOutput, err := context.CallCallback(currentAsyncCallIdentifier, vmOutput, nil)
+			isComplete, callbackVMOutput, err := context.callCallback(currentAsyncCallIdentifier, vmOutput, nil)
 			if err != nil {
 				return err
 			}
@@ -828,15 +828,13 @@ func (context *asyncContext) DeleteAsyncCallAndCleanGroup(asyncCallIdentifier []
 	return nil
 }
 
-func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, *vmcommon.VMOutput, error) {
+func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *vmcommon.VMOutput, err error) (bool, *vmcommon.VMOutput, error) {
 	sender := context.address
 	destination := context.callerAddr
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		// TODO matei-p factor out
-		data := context.GetArgumentsForCrossShardCallback(vmOutput)
-		err = sendCrossShardCallback(context.host, sender, destination, data)
+		err = context.ExecuteCrossShardCallback(vmOutput)
 		return false, nil, err
 	}
 
@@ -849,6 +847,14 @@ func (context *asyncContext) CallCallback(asyncCallIdentifier []byte, vmOutput *
 	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, err)
 	callbackVMOutput.GasRemaining = 0
 	return isComplete, callbackVMOutput, nil
+}
+
+func (context *asyncContext) ExecuteCrossShardCallback(vmOutput *vmcommon.VMOutput) error {
+	sender := context.address
+	destination := context.callerAddr
+	data := context.GetArgumentsForCrossShardCallback(vmOutput)
+	err := sendCrossShardCallback(context.host, sender, destination, data)
+	return err
 }
 
 func (context *asyncContext) IsFirstCall() bool {
