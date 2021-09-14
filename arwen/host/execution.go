@@ -350,8 +350,10 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	async.AccumulateGasFromPreviousState()
 	async.PopSetActiveState()
 
-	// Restore remaining gas to the caller Wasmer instance
-	metering.RestoreGas(vmOutput.GasRemaining)
+	if host.gasFlag {
+		// Restore remaining gas to the caller Wasmer instance
+		metering.RestoreGas(vmOutput.GasRemaining)
+	}
 
 	return vmOutput
 }
@@ -610,9 +612,11 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		return arwen.ErrInitFuncCalledInRun
 	}
 
-	// Use all gas initially, on the Wasmer instance of the caller. In case of
-	// successful execution, the unused gas will be restored.
-	metering.UseGas(input.GasProvided)
+	if host.gasFlag {
+		// Use all gas initially, on the Wasmer instance of the caller. In case of
+		// successful execution, the unused gas will be restored.
+		metering.UseGas(input.GasProvided)
+	}
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
@@ -855,7 +859,6 @@ func (host *vmHost) callSCMethod() error {
 	log.Trace("callSCMethod")
 
 	runtime := host.Runtime()
-	output := host.Output()
 
 	vmInput := runtime.GetVMInput()
 	async := host.Async()
@@ -930,11 +933,12 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		err = async.ExecuteCrossShardCallback(output.GetVMOutput())
+		err = async.ExecuteCrossShardCallback()
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()
-		async.NotifyChildIsComplete(callerCallCallID, output.GetVMOutput().GasRemaining)
+		//rootAsyncContext, err :=
+		async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
 	default:
 		err = arwen.ErrUnknownCallType
 	}

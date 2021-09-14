@@ -54,6 +54,8 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	SetGasFlag(flag bool)
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -334,10 +336,10 @@ type AsyncContext interface {
 	Clone() AsyncContext
 
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*AsyncCall, error)
-	ExecuteCrossShardCallback(vmOutput *vmcommon.VMOutput) error
+	ExecuteCrossShardCallback() error
 
 	CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error
-	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) error
+	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (AsyncContext, error)
 
 	AccumulateGasFromPreviousState()
 }

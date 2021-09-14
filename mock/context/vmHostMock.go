@@ -249,3 +249,6 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 func (host *VMHostMock) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
 	return nil, nil
 }
+
+func (host *VMHostMock) SetGasFlag(flag bool) {
+}

@@ -629,6 +629,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // AsyncContext and work with a clean state before calling Execute(), making
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
+	// TODO matei-p this could be called twice! FIX!
 	context.childResults = context.host.Output().GetVMOutput()
 	metering := context.host.Metering()
 	gasLeft := metering.GasLeft()
@@ -743,7 +744,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	return gasToLock, nil
 }
 
-func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) error {
+func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (arwen.AsyncContext, error) {
 	// TODO matei-p remove for logging
 	fmt.Println("NofityChildIsComplete")
 	fmt.Println("\taddress", string(context.address))
@@ -763,12 +764,12 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 		// be deleted from storage.
 		err := context.Delete()
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// if we reached first call, stop notification chain
 		if context.IsFirstCall() {
-			return nil
+			return context, nil
 		}
 
 		currentAsyncCallIdentifier := context.GetCallID()
@@ -777,21 +778,21 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 			vmOutput := context.childResults
 			isComplete, callbackVMOutput, err := context.callCallback(currentAsyncCallIdentifier, vmOutput, nil)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if isComplete {
-				context.NotifyChildIsComplete(currentAsyncCallIdentifier, callbackVMOutput.GasRemaining)
+				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, callbackVMOutput.GasRemaining)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
 			context.LoadParentContext()
-			context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext)
+			return context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext)
 		} else if context.callType == vm.DirectCall {
 			context.LoadParentContext()
-			context.NotifyChildIsComplete(nil, gasAccumulatedInNotifingContext)
+			return context.NotifyChildIsComplete(nil, gasAccumulatedInNotifingContext)
 		}
 	}
 
-	return nil
+	return context, nil
 }
 
 func (context *asyncContext) CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error {
@@ -834,7 +835,7 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		err = context.ExecuteCrossShardCallback(vmOutput)
+		err = context.ExecuteCrossShardCallback()
 		return false, nil, err
 	}
 
@@ -844,15 +845,14 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 	if errLoad != nil {
 		return false, nil, errLoad
 	}
-	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, err)
-	callbackVMOutput.GasRemaining = 0
+	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, true, err)
 	return isComplete, callbackVMOutput, nil
 }
 
-func (context *asyncContext) ExecuteCrossShardCallback(vmOutput *vmcommon.VMOutput) error {
+func (context *asyncContext) ExecuteCrossShardCallback() error {
 	sender := context.address
 	destination := context.callerAddr
-	data := context.GetArgumentsForCrossShardCallback(vmOutput)
+	data := context.GetArgumentsForCrossShardCallback()
 	err := sendCrossShardCallback(context.host, sender, destination, data)
 	return err
 }
@@ -1105,7 +1105,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 }
 
 // GetArgumentsForCrossShardCallback -
-func (context *asyncContext) GetArgumentsForCrossShardCallback(vmOutput *vmcommon.VMOutput) []byte {
+func (context *asyncContext) GetArgumentsForCrossShardCallback() []byte {
 	transferData := txDataBuilder.NewBuilder()
 
 	transferData.Func("<callback>") // this is just a placeholder, necessary not to break decoding, it's not used anywhere
@@ -1114,15 +1114,17 @@ func (context *asyncContext) GetArgumentsForCrossShardCallback(vmOutput *vmcommo
 	transferData.Bytes(context.callerCallID)
 	transferData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())
 
-	retCode := vmOutput.ReturnCode
+	output := context.host.Output()
+
+	retCode := output.ReturnCode()
 
 	transferData.Int64(int64(retCode))
 	if retCode == vmcommon.Ok {
-		for _, data := range vmOutput.ReturnData {
+		for _, data := range output.ReturnData() {
 			transferData.Bytes(data)
 		}
 	} else {
-		transferData.Str(vmOutput.ReturnMessage)
+		transferData.Str(output.ReturnMessage())
 	}
 	return transferData.ToBytes()
 }
