@@ -327,6 +327,9 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		vmOutput = output.GetVMOutput()
 	}
 
+	async.SetResults(vmOutput)
+	async.SaveAsyncContextsFromStack()
+
 	gasSpentByChildContract := metering.GasSpentByContract()
 
 	// Restore the previous context states
@@ -344,15 +347,20 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetSCAddress()), "function", runtime.Function())
 	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract, "gas remaining", vmOutput.GasRemaining)
 
+	isAsyncCall := runtime.GetVMInput().CallType == vm.AsynchronousCall
+	isAsyncComplete := async.IsComplete()
+
 	// Return to the caller context completely
 	runtime.PopSetActiveState()
 
 	async.AccumulateGasFromPreviousState()
 	async.PopSetActiveState()
 
+	// Restore remaining gas to the caller Wasmer instance
 	if host.gasFlag {
-		// Restore remaining gas to the caller Wasmer instance
-		metering.RestoreGas(vmOutput.GasRemaining)
+		if !isAsyncCall || (isAsyncCall && isAsyncComplete) {
+			metering.RestoreGas(vmOutput.GasRemaining)
+		}
 	}
 
 	return vmOutput
@@ -937,8 +945,12 @@ func (host *vmHost) callSCMethod() error {
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()
-		//rootAsyncContext, err :=
-		async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
+		rootAsyncContext, _ :=
+			async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft(), 0)
+		fmt.Println(
+			"rootAsyncContext", string(rootAsyncContext.GetAddress()),
+			"CallID", rootAsyncContext.GetCallID(),
+			"gas accumulated", rootAsyncContext.GetGasAccumulated())
 	default:
 		err = arwen.ErrUnknownCallType
 	}

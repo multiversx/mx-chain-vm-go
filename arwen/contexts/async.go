@@ -629,8 +629,6 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 // AsyncContext and work with a clean state before calling Execute(), making
 // Execute() and host.ExecuteOnDestContext() mutually reentrant.
 func (context *asyncContext) Execute() error {
-	// TODO matei-p this could be called twice! FIX!
-	context.childResults = context.host.Output().GetVMOutput()
 	metering := context.host.Metering()
 	gasLeft := metering.GasLeft()
 
@@ -668,18 +666,27 @@ func (context *asyncContext) Execute() error {
 		context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
 	}
 
-	// save context and all it's stack parents to store
-	// (if exists on stack are either sync or local async calls)
-	if !context.IsComplete() {
-		context.Save()
-		for _, stackContext := range context.stateStack {
-			stackContext.host = context.host
-			stackContext.Save()
-		}
-	}
-
 	// TODO matei-p change to debug logging
 	fmt.Println("GasLeft ->", metering.GasLeft(), "after run of", context.host.Runtime().Function(), "contract", string(context.address))
+	return nil
+}
+
+// SaveAsyncContextsFromStack - save context and all it's stack parents to store
+// (if exists on stack are either sync or local async calls)
+func (context *asyncContext) SaveAsyncContextsFromStack() error {
+	if !context.IsComplete() {
+		err := context.Save()
+		if err != nil {
+			return err
+		}
+		for _, stackContext := range context.stateStack {
+			stackContext.host = context.host
+			err = stackContext.Save()
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -744,7 +751,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	return gasToLock, nil
 }
 
-func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (arwen.AsyncContext, error) {
+func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64, gasToRestore uint64) (arwen.AsyncContext, error) {
 	// TODO matei-p remove for logging
 	fmt.Println("NofityChildIsComplete")
 	fmt.Println("\taddress", string(context.address))
@@ -753,6 +760,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 	fmt.Println("\tcallerCallID", context.callerCallID)
 	fmt.Println("\tasyncCallIdentifier", asyncCallIdentifier)
 	fmt.Println("\tgasToAccumulate", gasToAccumulate)
+	fmt.Println("\tgasToRestore", gasToRestore)
 
 	context.CompleteChild(asyncCallIdentifier, gasToAccumulate)
 
@@ -769,6 +777,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 
 		// if we reached first call, stop notification chain
 		if context.IsFirstCall() {
+			context.accumulateGas(gasToRestore)
 			return context, nil
 		}
 
@@ -776,19 +785,21 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 		gasAccumulatedInNotifingContext := context.gasAccumulated
 		if context.callType == vm.AsynchronousCall {
 			vmOutput := context.childResults
+			vmOutput.GasRemaining += gasToRestore
+			fmt.Println("###get vm output for contract ->", string(context.address), "callID", context.callID, "gas remaining", context.childResults.GasRemaining)
 			isComplete, callbackVMOutput, err := context.callCallback(currentAsyncCallIdentifier, vmOutput, nil)
 			if err != nil {
 				return nil, err
 			}
 			if isComplete {
-				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, callbackVMOutput.GasRemaining)
+				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, callbackVMOutput.GasRemaining)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
 			context.LoadParentContext()
-			return context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext)
+			return context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext, 0)
 		} else if context.callType == vm.DirectCall {
 			context.LoadParentContext()
-			return context.NotifyChildIsComplete(nil, gasAccumulatedInNotifingContext)
+			return context.NotifyChildIsComplete(nil, gasAccumulatedInNotifingContext, gasToRestore)
 		}
 	}
 
@@ -1273,6 +1284,17 @@ func (context *asyncContext) generateNewCallID(isCallback bool) []byte {
 
 func (context *asyncContext) DecrementCallsCounter() {
 	context.callsCounter--
+}
+
+func (context *asyncContext) SetResults(vmOutput *vmcommon.VMOutput) {
+	if context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall {
+		context.childResults = vmOutput
+		// fmt.Println("***set vm output for contract ->", string(context.address), "callID", context.callID, "gas remaining", context.childResults.GasRemaining)
+	}
+}
+
+func (context *asyncContext) GetGasAccumulated() uint64 {
+	return context.gasAccumulated
 }
 
 // DebugCallIDAsString - just for debug purposes
