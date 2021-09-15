@@ -934,6 +934,8 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	if !async.IsComplete() {
+		async.SetResults(host.Output().GetVMOutput())
+		async.SaveAsyncContextsFromStack()
 		return nil
 	}
 
