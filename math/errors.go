@@ -12,3 +12,6 @@ var ErrSubtractionUnderflow = errors.New("subtraction underflow")
 
 // ErrMultiplicationOverflow is raised when there is an overflow because of the multiplication of two numbers
 var ErrMultiplicationOverflow = errors.New("multiplication overflow")
+
+// ErrOperationCausingPanic signals that the operation tried would cause panic and so is not permitted
+var ErrOperationCausingPanic = errors.New("this big Float operation is not permitted")
