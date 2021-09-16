@@ -328,6 +328,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	}
 
 	async.SetResults(vmOutput)
+	// TODO matei-p is this save really necessary here?!
 	async.SaveAsyncContextsFromStack()
 
 	gasSpentByChildContract := metering.GasSpentByContract()

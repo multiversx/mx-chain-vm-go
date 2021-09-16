@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -135,6 +136,11 @@ func TestGasUsed_SyncAndAsync5_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_SyncAndAsync6_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync6()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_GraphTest1_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTest1()
 	runGraphCallTestTemplate(t, callGraph)
@@ -185,10 +191,11 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	crossShardCallsQueue := test.NewCrossShardCallQueue()
 	crossShardCallsQueue.Enqueue(test.UserAddress, startNode, vm.DirectCall, []byte{})
 
+	computeCallIDs(gasGraph)
+
 	// compute execution order (return data) assertions and compute gas assertions
 	// totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
 	_, _, expectedReturnData := computeExpectedValues(gasGraph)
-	computeCallIDs(gasGraph)
 
 	// account -> (key -> value)
 	storage := make(map[string]map[string][]byte)
@@ -388,7 +395,35 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 		expectedNodeRetData.Func(parent.Call.FunctionName)
 		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
 		expectedNodeRetData.Int64(int64(parent.GasLimit))
-		expectedNodeRetData.Int64(int64(parent.GasRemaining))
+
+		// compute return data is done at the end of the sc function execution
+		// (so before the async calls + callbacks execution and gas return)
+		gasRemaining := parent.GasRemaining
+		for _, edge := range parent.AdjacentEdges {
+			if !edge.To.IsGasLeaf() {
+				if edge.Type == testcommon.Async {
+					for _, childEdge := range edge.To.AdjacentEdges {
+						if childEdge.Type == test.Callback {
+							gasRemaining -= childEdge.To.GasRemaining
+							break
+						}
+					}
+				} else if edge.Type == testcommon.Sync {
+					var crossShardCalls int
+					gasGraph.DfsGraphFromNode(parent, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+						if incomingEdge.Type == test.AsyncCrossShard {
+							crossShardCalls++
+						}
+						return nil
+					}, false)
+					if crossShardCalls != 0 {
+						gasRemaining -= edge.To.GasRemaining
+					}
+				}
+			}
+		}
+		expectedNodeRetData.Int64(int64(gasRemaining))
+
 		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
 		// fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
 
@@ -498,12 +533,12 @@ func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnDat
 		actualContractAndFunction := string(actualRetData[0])
 		require.Equal(t, expectedContractAndFunction, actualContractAndFunction, "ReturnData - Call")
 		// TODO matei-p re-enable gas assertions
-		// expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1])
-		// actualGasLimitForCall := big.NewInt(0).SetBytes(actualRetData[1])
-		// require.Equal(t, expectedGasLimitForCall, actualGasLimitForCall, fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
-		// expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2])
-		// actualGasRemainingForCall := big.NewInt(0).SetBytes(actualRetData[2])
-		// require.Equal(t, expectedGasRemainingForCall, actualGasRemainingForCall, fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+		expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1])
+		actualGasLimitForCall := big.NewInt(0).SetBytes(actualRetData[1])
+		require.Equal(t, expectedGasLimitForCall, actualGasLimitForCall, fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
+		expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2])
+		actualGasRemainingForCall := big.NewInt(0).SetBytes(actualRetData[2])
+		require.Equal(t, expectedGasRemainingForCall, actualGasRemainingForCall, fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
 }
 
