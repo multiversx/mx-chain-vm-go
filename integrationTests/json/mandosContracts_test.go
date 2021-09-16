@@ -17,7 +17,7 @@ func TestCErc20(t *testing.T) {
 }
 
 func TestMultisig(t *testing.T) {
-	runAllTestsInFolder(t, "multisig/mandos")
+	runAllTestsInFolder(t, "dex/elrond_dex_pair/mandos")
 }
 
 func TestDnsContract(t *testing.T) {
