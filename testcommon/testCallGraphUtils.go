@@ -149,6 +149,8 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	returnData.Str(string(host.Runtime().GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix)
 	returnData.Int64(int64(host.Runtime().GetVMInput().GasProvided))
 	returnData.Int64(int64(host.Metering().GasLeft()))
+	returnData.Bytes(host.Async().GetCallID())
+	returnData.Bytes(host.Async().GetCallbackAsyncInitiatorCallID())
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
 	// TODO matei-p remove for logging
@@ -203,15 +205,17 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 func CreateRunOrderFromExecutionGraph(executionGraph *TestCallGraph) []TestCall {
 	executionOrder := make([]TestCall, 0)
 	pathsTree := pathsTreeFromDag(executionGraph)
+	visits := make(map[uint]bool)
 	pathsTree.DfsGraphFromNode(pathsTree.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() {
 			executionOrder = append(executionOrder, TestCall{
 				ContractAddress: parent.Call.ContractAddress,
 				FunctionName:    parent.Call.FunctionName,
+				CallID:          []byte{1},
 			})
 		}
 		return node
-	}, true)
+	}, visits, true)
 	return executionOrder
 }
 

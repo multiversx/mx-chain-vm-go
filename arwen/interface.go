@@ -332,6 +332,7 @@ type AsyncContext interface {
 	Delete() error
 
 	GetCallID() []byte
+	GetCallbackAsyncInitiatorCallID() []byte
 	GenerateNewCallIDAndIncrementCounter() []byte
 	GenerateNewCallbackID() []byte
 	Clone() AsyncContext

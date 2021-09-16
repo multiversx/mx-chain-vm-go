@@ -48,13 +48,13 @@ func main() {
 	// callGraph := test.CreateGraphTestSyncAndAsync3()
 	// callGraph := test.CreateGraphTestSyncAndAsync4()
 	// callGraph := test.CreateGraphTestSyncAndAsync5()
-	callGraph := test.CreateGraphTestSyncAndAsync6()
+	// callGraph := test.CreateGraphTestSyncAndAsync6()
 
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
 	// callGraph := test.CreateGraphTest1()
-	// callGraph := test.CreateGraphTest2()
+	callGraph := test.CreateGraphTest2()
 
 	///////////////////
 
@@ -135,9 +135,9 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 	if node.IsStartNode {
 		attrs["shape"] = "box"
 	}
-	if node.Visited {
-		attrs["penwidth"] = "4"
-	}
+	// if node.Visited {
+	// 	attrs["penwidth"] = "4"
+	// }
 	setGasLabelForNode(node, attrs)
 	if !node.IsGasLeaf() {
 		attrs["bgcolor"] = "grey"

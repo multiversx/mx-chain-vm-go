@@ -44,6 +44,7 @@ func buildTestCall(contractID string, functionName string) *TestCall {
 
 // TestCallNode is a node in the call graph
 type TestCallNode struct {
+	ID uint
 
 	// entry point in call graph
 	IsStartNode bool
@@ -61,7 +62,7 @@ type TestCallNode struct {
 	// ContextCallback *TestCallNode
 
 	// will be reseted after each dfs traversal
-	Visited bool
+	// Visited bool
 
 	// labels used only for visualization & debugging
 	VisualLabel string
@@ -113,7 +114,7 @@ func (node *TestCallNode) copy() *TestCallNode {
 		AdjacentEdges: make([]*TestCallEdge, 0),
 		// GroupCallbacks:   make(map[string]*TestCallNode, 0),
 		// ContextCallback:  nil,
-		Visited:          false,
+		// Visited:          false,
 		IsStartNode:      node.IsStartNode,
 		Label:            node.Label,
 		GasLimit:         node.GasLimit,
@@ -219,7 +220,8 @@ type TestCallGraph struct {
 	Nodes     []*TestCallNode
 	StartNode *TestCallNode
 
-	Crypto crypto.VMCrypto
+	Crypto   crypto.VMCrypto
+	sequence uint
 }
 
 // CreateTestCallGraph is the initial build metohd for the call graph
@@ -244,19 +246,23 @@ func (graph *TestCallGraph) AddStartNode(contractID string, functionName string,
 // AddNodeCopy adds a copy of a node to the node list
 func (graph *TestCallGraph) AddNodeCopy(node *TestCallNode) *TestCallNode {
 	nodeCopy := node.copy()
+	graph.sequence++
+	nodeCopy.ID = graph.sequence
 	graph.Nodes = append(graph.Nodes, nodeCopy)
 	return nodeCopy
 }
 
 // AddNode adds a node to the call graph
 func (graph *TestCallGraph) AddNode(contractID string, functionName string) *TestCallNode {
+	graph.sequence++
 	testCall := buildTestCall(contractID, functionName)
 	testNode := &TestCallNode{
+		ID:            graph.sequence,
 		Call:          testCall,
 		AdjacentEdges: make([]*TestCallEdge, 0),
 		// GroupCallbacks:  make(map[string]*TestCallNode, 0),
 		// ContextCallback: nil,
-		Visited:     false,
+		// Visited:     false,
 		IsStartNode: false,
 		Label:       strconv.Quote(contractID + "." + functionName),
 	}
@@ -364,35 +370,54 @@ func (graph *TestCallGraph) FindNode(contractAddress []byte, functionName string
 	return nil
 }
 
+type processNodeFunc func([]*TestCallNode, *TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode
+
+func isVisited(node *TestCallNode, visits map[uint]bool) bool {
+	value, exists := visits[node.ID]
+	if !exists {
+		return false
+	} else {
+		return value
+	}
+}
+
+func setVisited(node *TestCallNode, visits map[uint]bool) {
+	visits[node.ID] = true
+}
+
 // DfsGraph a standard DFS traversal for the call graph
-func (graph *TestCallGraph) DfsGraph(processNode func([]*TestCallNode, *TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode,
+func (graph *TestCallGraph) DfsGraph(
+	processNode processNodeFunc,
 	followCrossShardEdges bool) {
+	visits := make(map[uint]bool)
 	for _, node := range graph.Nodes {
-		if node.Visited {
+		if isVisited(node, visits) {
 			continue
 		}
-		graph.dfsFromNode(nil, node, nil, make([]*TestCallNode, 0), processNode, followCrossShardEdges)
+		graph.dfsFromNode(nil, node, nil, make([]*TestCallNode, 0), processNode, visits, followCrossShardEdges)
 	}
-	graph.clearVisitedNodesFlag()
+	// graph.clearVisitedNodesFlag()
 }
 
 // DfsGraphFromNode standard DFS starting from a node
-func (graph *TestCallGraph) DfsGraphFromNode(startNode *TestCallNode, processNode func([]*TestCallNode, *TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode,
+func (graph *TestCallGraph) DfsGraphFromNode(startNode *TestCallNode, processNode processNodeFunc,
+	visits map[uint]bool,
 	followCrossShardEdges bool) {
-	graph.dfsFromNode(nil, startNode, nil, make([]*TestCallNode, 0), processNode, followCrossShardEdges)
-	graph.clearVisitedNodesFlag()
+	graph.dfsFromNode(startNode.Parent, startNode, nil, make([]*TestCallNode, 0), processNode, visits, followCrossShardEdges)
+	// graph.clearVisitedNodesFlag()
 }
 
-func (graph *TestCallGraph) clearVisitedNodesFlag() {
-	for _, node := range graph.Nodes {
-		node.Visited = false
-	}
-}
+// func (graph *TestCallGraph) clearVisitedNodesFlag() {
+// 	for _, node := range graph.Nodes {
+// 		node.Visited = false
+// 	}
+// }
 
 func (graph *TestCallGraph) dfsFromNode(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, path []*TestCallNode,
-	processNode func([]*TestCallNode, *TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode,
+	processNode processNodeFunc,
+	visits map[uint]bool,
 	followCrossShardEdges bool) *TestCallNode {
-	if node.Visited {
+	if isVisited(node, visits) {
 		return node
 	}
 
@@ -402,60 +427,61 @@ func (graph *TestCallGraph) dfsFromNode(parent *TestCallNode, node *TestCallNode
 	if processedParent == nil {
 		return node
 	}
-	node.Visited = true
+	setVisited(node, visits)
 
 	for _, edge := range node.AdjacentEdges {
 		if !followCrossShardEdges && (edge.Type == AsyncCrossShard || edge.Type == CallbackCrossShard) {
 			continue
 		}
-		graph.dfsFromNode(processedParent, edge.To, edge, path, processNode, followCrossShardEdges)
+		graph.dfsFromNode(processedParent, edge.To, edge, path, processNode, visits, followCrossShardEdges)
 	}
 	return processedParent
 }
 
 // DfsGraphFromNodePostOrder - standard post order DFS
 func (graph *TestCallGraph) DfsGraphFromNodePostOrder(startNode *TestCallNode, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) {
-	graph.dfsFromNodePostOrder(nil, startNode, nil, processNode)
-	graph.clearVisitedNodesFlag()
+	visits := make(map[uint]bool)
+	graph.dfsFromNodePostOrder(nil, startNode, nil, processNode, visits)
+	// graph.clearVisitedNodesFlag()
 }
 
-func (graph *TestCallGraph) dfsFromNodePostOrder(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) *TestCallNode {
+func (graph *TestCallGraph) dfsFromNodePostOrder(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode, visits map[uint]bool) *TestCallNode {
 	for _, edge := range node.AdjacentEdges {
-		graph.dfsFromNodePostOrder(node, edge.To, edge, processNode)
+		graph.dfsFromNodePostOrder(node, edge.To, edge, processNode, visits)
 	}
 
-	if node.Visited {
+	if isVisited(node, visits) {
 		return node
 	}
 
 	processedParent := processNode(parent, node, incomingEdge)
-	node.Visited = true
+	setVisited(node, visits)
 
 	return processedParent
 }
 
 // OneStepDfsFromNodePostOrder - post order DFS that stops after visiting a node (visited nodes are of course, not cleared between runs)
-func (graph *TestCallGraph) OneStepDfsFromNodePostOrder(processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) bool {
-	if graph.StartNode.Visited {
+func (graph *TestCallGraph) OneStepDfsFromNodePostOrder(processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode, visits map[uint]bool) bool {
+	if isVisited(graph.StartNode, visits) {
 		return true
 	}
-	graph.oneStepDfsFromNodePostOrder(nil, graph.StartNode, nil, processNode)
+	graph.oneStepDfsFromNodePostOrder(nil, graph.StartNode, nil, processNode, visits)
 	return false
 }
 
-func (graph *TestCallGraph) oneStepDfsFromNodePostOrder(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode) bool {
+func (graph *TestCallGraph) oneStepDfsFromNodePostOrder(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode, visits map[uint]bool) bool {
 	for _, edge := range node.AdjacentEdges {
-		if graph.oneStepDfsFromNodePostOrder(node, edge.To, edge, processNode) {
+		if graph.oneStepDfsFromNodePostOrder(node, edge.To, edge, processNode, visits) {
 			return true
 		}
 	}
 
-	if node.Visited {
+	if isVisited(node, visits) {
 		return false
 	}
 
 	processNode(parent, node, incomingEdge)
-	node.Visited = true
+	setVisited(node, visits)
 
 	return true
 }
@@ -493,7 +519,6 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 		graph.StartNode.Call.FunctionName)
 
 	graph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-
 		newSource := executionGraph.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
 		if node.IsLeaf() {
 			addFinishNodeAsFirstEdge(executionGraph, newSource)
@@ -791,6 +816,7 @@ func isGroupPresent(group string, groups []string) bool {
 // ComputeRemainingGasBeforeCallbacks - adjusts the gas graph / tree remaining gas info using the gas provided to children
 // this will not take into consideration callback nodes that don't have provided gas info computed yet (see ComputeGasStepByStep)
 func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
+	visits := make(map[uint]bool)
 	graph.DfsGraphFromNode(graph.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() ||
 			(!node.IsStartNode && (incomingEdge.Type == Callback || incomingEdge.Type == CallbackCrossShard /*|| incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback*/)) {
@@ -809,14 +835,15 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 		}
 		node.GasRemaining = uint64(nodeGasRemaining)
 		return node
-	}, true)
+	}, visits, true)
 }
 
 // ComputeGasStepByStep - Uses step by step DFS postorder traversal of the executiongas graph / tree to compute
-// provided gas values fro callback nodes and remaining gas values after callback execution
+// provided gas values for callback nodes and remaining gas values after callback execution
 func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph *TestCallGraph, step int)) {
 	step := 1
 	finishedOneStepDfs := false
+	visits := make(map[uint]bool)
 	for ; !finishedOneStepDfs; step++ {
 		finishedOneStepDfs = graph.OneStepDfsFromNodePostOrder(func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 			if parent != nil {
@@ -851,10 +878,10 @@ func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph
 
 			}
 			return node
-		})
+		}, visits)
 		executeAfterEachStep(graph, step)
 	}
-	graph.clearVisitedNodesFlag()
+	// graph.clearVisitedNodesFlag()
 }
 
 func getGasRemaining(node *TestCallNode) uint64 {

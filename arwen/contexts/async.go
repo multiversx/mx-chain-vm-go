@@ -281,6 +281,11 @@ func (context *asyncContext) GetCallerCallID() []byte {
 	return context.callerCallID
 }
 
+// GetCallbackAsyncInitiatorCallID returns the callID of the original caller.
+func (context *asyncContext) GetCallbackAsyncInitiatorCallID() []byte {
+	return context.callbackAsyncInitiatorCallID
+}
+
 // GetGasPrice retrieves the gas price set by the original caller.
 func (context *asyncContext) GetGasPrice() uint64 {
 	return context.gasPrice
