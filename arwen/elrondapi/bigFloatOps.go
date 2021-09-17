@@ -40,6 +40,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
@@ -199,18 +200,30 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 		_ = arwen.WithFault(arwen.ErrPositiveExponent, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return -1
 	}
-	var fractional float64
+	var err error
+	var bigFractional *big.Float
 	if exponent < -322 {
-		fractional = float64(0)
+		bigFractional = big.NewFloat(0)
 	} else {
-		fractional = float64(fractionalPart) * math.Pow10(int(exponent))
+		bigFractionalPart := big.NewFloat(float64(fractionalPart))
+		bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
+		bigFractional, err = arwenMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
+		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+			return -1
+		}
 	}
 
-	var value float64
+	var value *big.Float
 	if integralPart >= 0 {
-		value = float64(integralPart) + fractional
+		value, err = arwenMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
+		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+			return -1
+		}
 	} else {
-		value = float64(integralPart) - fractional
+		value, err = arwenMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
+		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+			return -1
+		}
 	}
 	return managedType.PutBigFloat(value)
 }
@@ -229,7 +242,12 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 		return -1
 	}
 
-	value := float64(numerator) / float64(denominator)
+	bigNumerator := big.NewFloat(float64(numerator))
+	bigDenominator := big.NewFloat(float64(denominator))
+	value, err := arwenMath.QuoBigFloat(bigNumerator, bigDenominator)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
 	return managedType.PutBigFloat(value)
 }
 
@@ -247,10 +265,15 @@ func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64
 		return -1
 	}
 	if exponent < -322 {
-		return managedType.PutBigFloat(float64(0))
+		return managedType.PutBigFloat(big.NewFloat(0))
 	}
 
-	value := float64(significand) * math.Pow10(int(exponent))
+	bigSignificand := big.NewFloat(float64(significand))
+	bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
+	value, err := arwenMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
 	return managedType.PutBigFloat(value)
 }
 
@@ -269,7 +292,11 @@ func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultAdd := new(big.Float).Add(op1, op2)
+	resultAdd, err := arwenMath.AddBigFloat(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultAdd, destinationHandle)
 }
 
@@ -288,7 +315,10 @@ func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultSub := new(big.Float).Sub(op1, op2)
+	resultSub, err := arwenMath.SubBigFloat(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultSub, destinationHandle)
 }
 
@@ -307,7 +337,10 @@ func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultMul := new(big.Float).Mul(op1, op2)
+	resultMul, err := arwenMath.MulBigFloat(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultMul, destinationHandle)
 }
 
@@ -330,7 +363,10 @@ func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultDiv := new(big.Float).Quo(op1, op2)
+	resultDiv, err := arwenMath.QuoBigFloat(op1, op2)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultDiv, destinationHandle)
 }
 
@@ -452,7 +488,11 @@ func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32
 		_ = arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	dest.Sqrt(op)
+	resultSqrt, err := arwenMath.SqrtBigFloat(op)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
+	dest.Set(resultSqrt)
 }
 
 //export v1_4_bigFloatPow
@@ -481,17 +521,25 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
 	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 
-	powResult := new(big.Float).Set(pow(op, exponent))
+	powResult, err := pow(context, op, exponent)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return
+	}
 	setResultIfNotInfinity(arwen.GetVMHost(context), powResult, destinationHandle)
 }
 
-func pow(base *big.Float, exp int32) *big.Float {
+func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error) {
 	result := big.NewFloat(1)
 	result.SetPrec(base.Prec())
+	runtime := arwen.GetRuntimeContext(context)
 	for i := 0; i < int(exp); i++ {
-		result.Mul(result, base)
+		resultMul, err := arwenMath.MulBigFloat(result, base)
+		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+			return nil, err
+		}
+		result.Set(resultMul)
 	}
-	return result
+	return result, nil
 }
 
 //export v1_4_bigFloatFloor
