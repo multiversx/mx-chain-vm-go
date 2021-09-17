@@ -297,7 +297,7 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 }
 
 // PutBigFloat adds the given value to the current values map and returns the handle
-func (context *managedTypesContext) PutBigFloat(value float64) int32 {
+func (context *managedTypesContext) PutBigFloat(value *big.Float) int32 {
 	newHandle := int32(len(context.managedTypesValues.bigFloatValues))
 	for {
 		if _, ok := context.managedTypesValues.bigFloatValues[newHandle]; !ok {
@@ -305,7 +305,7 @@ func (context *managedTypesContext) PutBigFloat(value float64) int32 {
 		}
 		newHandle++
 	}
-	context.managedTypesValues.bigFloatValues[newHandle] = big.NewFloat(value)
+	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)
 	return newHandle
 }
 
