@@ -672,7 +672,7 @@ func (context *asyncContext) Execute() error {
 	}
 
 	// TODO matei-p change to debug logging
-	fmt.Println("GasLeft ->", metering.GasLeft(), "after run of", context.host.Runtime().Function(), "contract", string(context.address))
+	// fmt.Println("GasLeft ->", metering.GasLeft(), "after run of", context.host.Runtime().Function(), "contract", string(context.address))
 	return nil
 }
 
@@ -1300,6 +1300,10 @@ func (context *asyncContext) SetResults(vmOutput *vmcommon.VMOutput) {
 
 func (context *asyncContext) GetGasAccumulated() uint64 {
 	return context.gasAccumulated
+}
+
+func (context *asyncContext) IsCrossShard() bool {
+	return len(context.stateStack) == 0 && (context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack)
 }
 
 // DebugCallIDAsString - just for debug purposes

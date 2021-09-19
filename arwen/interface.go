@@ -333,8 +333,10 @@ type AsyncContext interface {
 
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte
+	IsCrossShard() bool
 	GenerateNewCallIDAndIncrementCounter() []byte
 	GenerateNewCallbackID() []byte
+
 	Clone() AsyncContext
 
 	UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*AsyncCall, error)

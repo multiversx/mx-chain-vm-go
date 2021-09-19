@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
+	"strconv"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -398,15 +399,8 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 		expectedNodeRetData.Func(parent.Call.FunctionName)
 		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
 		expectedNodeRetData.Int64(int64(parent.GasLimit))
-
-		// compute return data is done at the end of the sc function execution
-		// (so before the async calls + callbacks execution and gas return)
-		// computeGasRemainingForNode(parent)
-
 		expectedNodeRetData.Int64(int64(parent.GasRemaining))
-
 		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
-		// fmt.Println("add expected call to ", string(parent.Call.ContractAddress)+"_"+parent.Call.FunctionName, "gasLimit", parent.GasLimit)
 
 		return node
 	})
@@ -466,7 +460,7 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 						callData.Bytes(parsedArgs[2])
 						callData.Bytes(parsedArgs[3])
 						// return code
-						callData.Bytes(parsedArgs[3])
+						callData.Bytes(parsedArgs[4])
 						// testing framework info
 						callData.Bytes(big.NewInt(int64(crossShardEdge.Type)).Bytes())
 						callData.Int64(int64(crossShardEdge.GasUsedByCallback))
@@ -504,9 +498,18 @@ func extractGasUsedPerContract(vmOutput *vmcommon.VMOutput, gasUsedPerContract m
 	}
 }
 
+type ReturnDataItem struct {
+	contractAndFunction          string
+	gasProvided                  uint64
+	gasRemaining                 uint64
+	callID                       []byte
+	callbackAsyncInitiatorCallID []byte
+	isCrossShard                 bool
+}
+
 // CheckReturnDataWithGasValuesForGraphTesting verifies if ReturnData is the same as the provided one
 func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
-	processedReturnData := make([][]byte, 0)
+	processedReturnData := make([]*ReturnDataItem, 0)
 	argParser := parsers.NewCallArgsParser()
 
 	// eliminte from the final return data the gas used for callback arguments
@@ -517,21 +520,29 @@ func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnDat
 			i++ // jump over next item
 			continue
 		}
-		processedReturnData = append(processedReturnData, retDataItem)
+
+		_, parsedRetData, _ := argParser.ParseData(string(retDataItem))
+		isCrossShard, _ := strconv.ParseBool(string(parsedRetData[5]))
+		processedReturnData = append(processedReturnData, &ReturnDataItem{
+			contractAndFunction:          string(parsedRetData[0]),
+			gasProvided:                  big.NewInt(0).SetBytes(parsedRetData[1]).Uint64(),
+			gasRemaining:                 big.NewInt(0).SetBytes(parsedRetData[2]).Uint64(),
+			callID:                       parsedRetData[3],
+			callbackAsyncInitiatorCallID: parsedRetData[4],
+			isCrossShard:                 isCrossShard,
+		})
 	}
+
 	require.Equal(t, len(expectedReturnData), len(processedReturnData), "ReturnData length")
 	for idx := range expectedReturnData {
 		_, expRetData, _ := argParser.ParseData(string(expectedReturnData[idx]))
-		_, actualRetData, _ := argParser.ParseData(string(processedReturnData[idx]))
+		actualReturnData := processedReturnData[idx]
 		expectedContractAndFunction := string(expRetData[0])
-		actualContractAndFunction := string(actualRetData[0])
-		require.Equal(t, expectedContractAndFunction, actualContractAndFunction, "ReturnData - Call")
-		// expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1])
-		// actualGasLimitForCall := big.NewInt(0).SetBytes(actualRetData[1])
-		// require.Equal(t, expectedGasLimitForCall, actualGasLimitForCall, fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
-		// expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2])
-		// actualGasRemainingForCall := big.NewInt(0).SetBytes(actualRetData[2])
-		// require.Equal(t, expectedGasRemainingForCall, actualGasRemainingForCall, fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+		require.Equal(t, expectedContractAndFunction, actualReturnData.contractAndFunction, "ReturnData - Call")
+		// expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1]).Uint64()
+		// require.Equal(t, expectedGasLimitForCall, actualReturnData.gasProvided, fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
+		// expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2]).Uint64()
+		// require.Equal(t, expectedGasRemainingForCall, actualReturnData.gasRemaining, fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
 }
 

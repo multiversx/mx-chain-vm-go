@@ -144,21 +144,28 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 // return data is encoded using standard txDataBuilder
 // format is function@nodeLabel@providedGas@remainingGas
 func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	async := host.Async()
+
 	returnData := txDataBuilder.NewBuilder()
 	returnData.Func(crtFunctionCalled)
-	returnData.Str(string(host.Runtime().GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix)
-	returnData.Int64(int64(host.Runtime().GetVMInput().GasProvided))
-	returnData.Int64(int64(host.Metering().GasLeft()))
-	returnData.Bytes(host.Async().GetCallID())
-	returnData.Bytes(host.Async().GetCallbackAsyncInitiatorCallID())
+	returnData.Str(string(runtime.GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix)
+	returnData.Int64(int64(runtime.GetVMInput().GasProvided))
+	returnData.Int64(int64(metering.GasLeft()))
+	returnData.Bytes(async.GetCallID())
+	returnData.Bytes(async.GetCallbackAsyncInitiatorCallID())
+	returnData.Bool(async.IsCrossShard())
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
 	// TODO matei-p remove for logging
-	// fmt.Println(
-	// 	"callID\t", host.Async().GetCallID(),
-	// 	"for contract ", string(host.Runtime().GetSCAddress()), "/ "+crtFunctionCalled+"\t",
-	// 	"gas provided\t", fmt.Sprintf("%d\t", host.Runtime().GetVMInput().GasProvided),
-	// 	"gas remaining\t", fmt.Sprintf("%d\t", host.Metering().GasLeft()))
+	fmt.Println(
+		"Return Data -> callID", async.GetCallID(),
+		"CallbackAsyncInitiatorCallID", async.GetCallbackAsyncInitiatorCallID(),
+		"IsCrossShard", async.IsCrossShard(),
+		"For contract ", string(runtime.GetSCAddress()), "/ "+crtFunctionCalled+"\t",
+		"Gas provided", fmt.Sprintf("%d\t", runtime.GetVMInput().GasProvided),
+		"Gas remaining", fmt.Sprintf("%d\t", metering.GasLeft()))
 }
 
 func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) int64 {
