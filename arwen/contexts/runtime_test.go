@@ -16,7 +16,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
@@ -66,7 +66,40 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
+	require.False(t, false, runtimeContext.traceGasEnabled)
+	require.Equal(t, 0, len(runtimeContext.gasTrace))
 	require.Nil(t, runtimeContext.asyncCallInfo)
+}
+
+func TestTraceGas(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	vmType := []byte("type")
+
+	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
+	require.False(t, runtimeContext.traceGasEnabled)
+	require.Equal(t, len(runtimeContext.gasTrace), 0)
+
+	runtimeContext.TraceGasUsed("calledFunctionName", 48000)
+	require.Equal(t, len(runtimeContext.gasTrace), 0)
+
+	runtimeContext.EnableTraceGas()
+	runtimeContext.TraceGasUsed("calledFunctionName", 48000)
+	require.Equal(t, 1, len(runtimeContext.gasTrace))
+	require.Equal(t, 1, len(runtimeContext.gasTrace["calledFunctionName"]))
+	require.Equal(t, uint64(48000), runtimeContext.gasTrace["calledFunctionName"][0])
+
+	runtimeContext.TraceGasUsed("secondFunctionName", 3000)
+	require.Equal(t, 2, len(runtimeContext.gasTrace))
+	require.Equal(t, 1, len(runtimeContext.gasTrace["secondFunctionName"]))
+
+	runtimeContext.TraceGasUsed("calledFunctionName", 50000)
+	require.Equal(t, 2, len(runtimeContext.gasTrace))
+	require.Equal(t, 2, len(runtimeContext.gasTrace["calledFunctionName"]))
+	require.Equal(t, uint64(50000), runtimeContext.gasTrace["calledFunctionName"][1])
+
+	expectedGasTraceMap := map[string][]uint64{"calledFunctionName": []uint64{48000, 50000}, "secondFunctionName": []uint64{3000}}
+	gasTraceMap := runtimeContext.GetTracedGas()
+	require.Equal(t, expectedGasTraceMap, gasTraceMap)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {

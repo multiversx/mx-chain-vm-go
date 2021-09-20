@@ -31,6 +31,9 @@ type runtimeContext struct {
 	verifyCode         bool
 	maxWasmerInstances uint64
 
+	traceGasEnabled bool
+	gasTrace        map[string][]uint64
+
 	stateStack    []*runtimeContext
 	instanceStack []wasmer.InstanceHandler
 
@@ -51,12 +54,14 @@ func NewRuntimeContext(
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
-		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:        nil,
+		host:            host,
+		vmType:          vmType,
+		traceGasEnabled: false,
+		gasTrace:        make(map[string][]uint64),
+		stateStack:      make([]*runtimeContext, 0),
+		instanceStack:   make([]wasmer.InstanceHandler, 0),
+		validator:       newWASMValidator(scAPINames, builtInFuncContainer),
+		errors:          nil,
 	}
 
 	context.instanceBuilder = &wasmerInstanceBuilder{}
@@ -831,6 +836,31 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
+}
+
+// EnableTraceGas sets true to the flag variable that traces gas consumption
+func (context *runtimeContext) EnableTraceGas() {
+	context.traceGasEnabled = true
+}
+
+// DisableTraceGas sets true to the flag variable that traces gas consumption
+func (context *runtimeContext) DisableTraceGas() {
+	context.traceGasEnabled = false
+}
+
+// TraceGasUsed adds the usedGas passed to the traced gas map with the key as the passed functionName
+func (context *runtimeContext) TraceGasUsed(functionName string, usedGas uint64) {
+	if context.traceGasEnabled {
+		if context.gasTrace[functionName] == nil {
+			context.gasTrace[functionName] = make([]uint64, 0)
+		}
+		context.gasTrace[functionName] = append(context.gasTrace[functionName], usedGas)
+	}
+}
+
+// GetTracedGas returns the gasTrace map
+func (context *runtimeContext) GetTracedGas() map[string][]uint64 {
+	return context.gasTrace
 }
 
 // SetWarmInstance overwrites the warm Wasmer instance with the provided one.
