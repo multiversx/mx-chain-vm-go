@@ -1,5 +1,6 @@
 {
     "ERC20_IELE": {
+        "traceGas": false,
         "pre": {
             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                 "nonce": "0x00",

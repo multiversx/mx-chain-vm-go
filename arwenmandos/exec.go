@@ -27,6 +27,7 @@ type ArwenTestExecutor struct {
 	World                   *worldhook.MockWorld
 	vm                      vmi.VMExecutionHandler
 	checkGas                bool
+	traceGas                bool
 	mandosGasScheduleLoaded bool
 	fileResolver            fr.FileResolver
 	exprReconstructor       er.ExprReconstructor
@@ -43,6 +44,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 		World:                   world,
 		vm:                      nil,
 		checkGas:                true,
+		traceGas:                false,
 		mandosGasScheduleLoaded: false,
 		fileResolver:            nil,
 		exprReconstructor:       er.ExprReconstructor{},
@@ -51,19 +53,19 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 
 // InitVM will initialize the VM and the builtin function container.
 // Does nothing if the VM is already initialized.
-func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
+func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) (arwen.VMHost, error) {
 	if ae.vm != nil {
-		return nil
+		return nil, nil
 	}
 
 	gasSchedule, err := ae.gasScheduleMapFromMandos(mandosGasSchedule)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = ae.World.InitBuiltinFunctions(gasSchedule)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	blockGasLimit := uint64(10000000)
@@ -77,11 +79,11 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		ESDTTransferParser:       esdtTransferParser,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	ae.vm = vm
-	return nil
+	return vm, nil
 }
 
 // GetVM yields a reference to the VMExecutionHandler used.

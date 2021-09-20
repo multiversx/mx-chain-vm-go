@@ -72,7 +72,7 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	}
 
 	mandosGasSchedule := mj.GasScheduleV3
-	err = arwenTestExecutor.InitVM(mandosGasSchedule)
+	_, err = arwenTestExecutor.InitVM(mandosGasSchedule)
 	if err != nil {
 		return nil, err
 	}

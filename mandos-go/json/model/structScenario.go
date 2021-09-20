@@ -5,6 +5,7 @@ type Scenario struct {
 	Name        string
 	Comment     string
 	CheckGas    bool
+	TraceGas    bool
 	GasSchedule GasSchedule
 	Steps       []Step
 }

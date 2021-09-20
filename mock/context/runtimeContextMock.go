@@ -34,6 +34,8 @@ type RuntimeContextMock struct {
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
+	TraceGasEnabled        bool
+	GasTrace               map[string][]uint64
 }
 
 // InitState mocked method
@@ -347,4 +349,25 @@ func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
+}
+
+func (r *RuntimeContextMock) EnableTraceGas() {
+	r.TraceGasEnabled = true
+}
+
+func (r *RuntimeContextMock) DisableTraceGas() {
+	r.TraceGasEnabled = false
+}
+
+func (r *RuntimeContextMock) TraceGasUsed(functionName string, usedGas uint64) {
+	if r.TraceGasEnabled {
+		if r.GasTrace[functionName] == nil {
+			r.GasTrace[functionName] = make([]uint64, 0)
+		}
+		r.GasTrace[functionName] = append(r.GasTrace[functionName], usedGas)
+	}
+}
+
+func (r *RuntimeContextMock) GetTracedGas() map[string][]uint64 {
+	return r.GasTrace
 }

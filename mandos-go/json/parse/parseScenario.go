@@ -22,6 +22,7 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 
 	scenario := &mj.Scenario{
 		CheckGas:    true,
+		TraceGas:    false,
 		GasSchedule: mj.GasScheduleDefault,
 	}
 
@@ -43,6 +44,12 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 				return nil, errors.New("scenario checkGas flag is not boolean")
 			}
 			scenario.CheckGas = bool(*checkGasOJ)
+		case "traceGas":
+			traceGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
+			if !isBool {
+				return nil, errors.New("scenario traceGas flag is not boolean")
+			}
+			scenario.TraceGas = bool(*traceGasOJ)
 		case "gasSchedule":
 			scenario.GasSchedule, err = p.parseGasSchedule(kvp.Value)
 			if err != nil {

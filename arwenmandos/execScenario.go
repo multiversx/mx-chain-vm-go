@@ -17,7 +17,8 @@ func (ae *ArwenTestExecutor) Reset() {
 func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
-	err := ae.InitVM(scenario.GasSchedule)
+	ae.traceGas = scenario.TraceGas
+	host, err := ae.InitVM(scenario.GasSchedule)
 	if err != nil {
 		return err
 	}
@@ -30,6 +31,18 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 		}
 
 		txIndex++
+	}
+
+	if scenario.TraceGas {
+		runtime := host.Runtime()
+		gasUsed := runtime.GetTracedGas()
+		for key, value := range gasUsed {
+			totalGasUsed := uint64(0)
+			for _, gasUsed := range value {
+				totalGasUsed += gasUsed
+			}
+			log.Trace("GasTrace", "functionName:", key, "totalGasUsed:", totalGasUsed)
+		}
 	}
 
 	return nil
