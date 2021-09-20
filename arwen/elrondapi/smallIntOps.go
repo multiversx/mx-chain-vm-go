@@ -106,6 +106,10 @@ func SmallIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntGetUnsignedArgument", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
 	metering.UseGas(gasToUse)
@@ -129,6 +133,10 @@ func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntGetSignedArgument", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
 	metering.UseGas(gasToUse)
@@ -152,6 +160,11 @@ func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntFinishUnsigned", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
 	metering.UseGas(gasToUse)
@@ -164,6 +177,11 @@ func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 func v1_4_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntFinishSigned", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
 	metering.UseGas(gasToUse)
@@ -177,6 +195,10 @@ func v1_4_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, 
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntStorageStoreUnsigned", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGas(gasToUse)
@@ -200,6 +222,10 @@ func v1_4_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, ke
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntStorageStoreSigned", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGas(gasToUse)
@@ -223,6 +249,10 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntStorageLoadUnsigned", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
 	metering.UseGas(gasToUse)
@@ -247,6 +277,10 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	initialGasLeft := metering.GasLeft()
+	defer func() {
+		runtime.TraceGasUsed("smallIntStorageLoadSigned", metering.GasLeft()-initialGasLeft)
+	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
 	metering.UseGas(gasToUse)
