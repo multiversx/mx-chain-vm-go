@@ -89,6 +89,10 @@ func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	ecHandle1 := managedTypesContext.PutEllipticCurve(p224ec)
 	ecHandle2 := managedTypesContext.PutEllipticCurve(p256ec)
 
+	bigFloatHandle3 := managedTypesContext.PutBigFloat(nil)
+	bigFloat3, _ := managedTypesContext.GetBigFloat(bigFloatHandle3)
+	require.Equal(t, big.NewFloat(0), bigFloat3)
+
 	managedTypesContext.PushState()
 	require.Equal(t, 1, len(managedTypesContext.managedTypesStack))
 	managedTypesContext.ClearStateStack()

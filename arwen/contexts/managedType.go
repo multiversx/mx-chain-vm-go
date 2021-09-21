@@ -305,6 +305,9 @@ func (context *managedTypesContext) PutBigFloat(value *big.Float) int32 {
 		}
 		newHandle++
 	}
+	if value == nil {
+		value = big.NewFloat(0)
+	}
 	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)
 	return newHandle
 }
