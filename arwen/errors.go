@@ -194,3 +194,6 @@ var ErrBigFloatWrongPrecision = errors.New("precision of the big float must be 5
 
 // ErrAllOperandsAreEqualToZero signals that all operands are equal to 0
 var ErrAllOperandsAreEqualToZero = errors.New("all operands are equal to 0")
+
+// ErrExponentTooBigOrTooSmall signals that the exponent is too big or too small
+var ErrExponentTooBigOrTooSmall = errors.New("exponent is either too small or too big")

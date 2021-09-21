@@ -93,6 +93,18 @@ func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	bigFloat3, _ := managedTypesContext.GetBigFloat(bigFloatHandle3)
 	require.Equal(t, big.NewFloat(0), bigFloat3)
 
+	floatValue4 := big.NewFloat(1234.1734514316)
+	mantissa := new(big.Float)
+	_ = floatValue4.MantExp(mantissa)
+	floatValue4.SetMantExp(mantissa, 65026)
+	bigFloatHandle4 := managedTypesContext.PutBigFloat(floatValue4)
+	bigFloat4, _ := managedTypesContext.GetBigFloat(bigFloatHandle4)
+	require.Equal(t, big.NewFloat(0), bigFloat4)
+	floatValue4.SetMantExp(mantissa, -65026)
+	bigFloatHandle4 = managedTypesContext.PutBigFloat(floatValue4)
+	bigFloat4, _ = managedTypesContext.GetBigFloat(bigFloatHandle4)
+	require.Equal(t, big.NewFloat(0), bigFloat4)
+
 	managedTypesContext.PushState()
 	require.Equal(t, 1, len(managedTypesContext.managedTypesStack))
 	managedTypesContext.ClearStateStack()

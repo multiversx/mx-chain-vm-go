@@ -1,7 +1,6 @@
 package elrondapitest
 
 import (
-	"fmt"
 	"math"
 	"math/big"
 	"testing"
@@ -78,7 +77,6 @@ func TestBigFloats_NewFromSci_Success(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			value := float64(-199) * math.Pow10(-2)
 			encodedValue, _ := big.NewFloat(value).GobEncode()
-			fmt.Println(encodedValue)
 			verify.Ok().
 				ReturnData(encodedValue)
 		})
@@ -179,7 +177,7 @@ func TestBigFloats_Panic_FailExecution_Sub(t *testing.T) {
 }
 
 func TestBigFloats_Success_Mul(t *testing.T) {
-	numberOfReps := 10
+	numberOfReps := 9
 	repsArgument := []byte{0, 0, 0, byte(numberOfReps)}
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -200,9 +198,34 @@ func TestBigFloats_Success_Mul(t *testing.T) {
 				bigFloatValue.Set(resultMul)
 			}
 			floatBuffer, _ := bigFloatValue.GobEncode()
-			fmt.Println(floatBuffer)
 			verify.Ok().
 				ReturnData(floatBuffer)
+		})
+}
+
+func TestBigFloats_FailExponentTooBig_Mul(t *testing.T) {
+	numberOfReps := 10
+	repsArgument := []byte{0, 0, 0, byte(numberOfReps)}
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("big-floats", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("BigFloatMulTest").
+			WithArguments(repsArgument,
+				floatArgument1).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			bigFloatValue := new(big.Float)
+			err := bigFloatValue.GobDecode(floatArgument1)
+			require.Nil(t, err)
+			for i := 0; i < numberOfReps; i++ {
+				resultMul := new(big.Float).Mul(bigFloatValue, bigFloatValue)
+				bigFloatValue.Set(resultMul)
+			}
+			verify.ReturnCode(10).
+				ReturnMessage("exponent is either too small or too big")
 		})
 }
 

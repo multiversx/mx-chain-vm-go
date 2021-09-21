@@ -13,6 +13,8 @@ import (
 
 const bigFloatPrecision = 53
 const encodedBigFloatMaxByteLen = 18
+const bigFloatMaxExponent = 65025
+const bigFloatMinExponent = -65025
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -254,6 +256,10 @@ func (context *managedTypesContext) GetBigFloatPrecision() uint {
 	return bigFloatPrecision
 }
 
+func (context *managedTypesContext) GetMinAndMaxExponent() (int, int) {
+	return bigFloatMinExponent, bigFloatMaxExponent
+}
+
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
 func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Float, error) {
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
@@ -263,6 +269,11 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Floa
 	}
 	if value.IsInf() {
 		return nil, arwen.ErrInfinityFloatOperation
+	} else {
+		exponent := value.MantExp(nil)
+		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+			return nil, arwen.ErrExponentTooBigOrTooSmall
+		}
 	}
 	return value, nil
 }
@@ -275,6 +286,11 @@ func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error
 	}
 	if value.IsInf() {
 		return nil, arwen.ErrInfinityFloatOperation
+	} else {
+		exponent := value.MantExp(nil)
+		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+			return nil, arwen.ErrExponentTooBigOrTooSmall
+		}
 	}
 	return value, nil
 }
@@ -292,6 +308,12 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 	}
 	if value1.IsInf() || value2.IsInf() {
 		return nil, nil, arwen.ErrInfinityFloatOperation
+	} else {
+		exponent1 := value1.MantExp(nil)
+		exponent2 := value2.MantExp(nil)
+		if exponent1 > bigFloatMaxExponent || exponent2 > bigFloatMaxExponent || exponent1 < bigFloatMinExponent || exponent2 < bigFloatMinExponent {
+			return nil, nil, arwen.ErrExponentTooBigOrTooSmall
+		}
 	}
 	return value1, value2, nil
 }
@@ -306,6 +328,10 @@ func (context *managedTypesContext) PutBigFloat(value *big.Float) int32 {
 		newHandle++
 	}
 	if value == nil {
+		value = big.NewFloat(0)
+	}
+	exponent := value.MantExp(nil)
+	if exponent > 65025 || exponent < -65025 {
 		value = big.NewFloat(0)
 	}
 	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)

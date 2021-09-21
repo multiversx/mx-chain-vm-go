@@ -177,6 +177,12 @@ func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHan
 		_ = arwen.WithFaultAndHost(host, arwen.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
+	minExponent, maxExponent := managedType.GetMinAndMaxExponent()
+	exponent := result.MantExp(nil)
+	if exponent > maxExponent || exponent < minExponent {
+		_ = arwen.WithFaultAndHost(host, arwen.ErrExponentTooBigOrTooSmall, runtime.BigFloatAPIErrorShouldFailExecution())
+		return
+	}
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -519,7 +525,7 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 
 	//this calculates the length of the result in bytes
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
-	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
+	managedType.ConsumeGasForThisBigIntNumberOfBytes(new(big.Int).Abs(lengthOfResult))
 
 	powResult, err := pow(context, op, exponent)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -532,8 +538,15 @@ func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error)
 	result := big.NewFloat(1)
 	result.SetPrec(base.Prec())
 	runtime := arwen.GetRuntimeContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+	minExponent, maxExponent := managedType.GetMinAndMaxExponent()
+
 	for i := 0; i < int(exp); i++ {
 		resultMul, err := arwenMath.MulBigFloat(result, base)
+		exponent := resultMul.MantExp(nil)
+		if exponent > maxExponent && exponent < minExponent {
+			return nil, arwen.ErrExponentTooBigOrTooSmall
+		}
 		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return nil, err
 		}
