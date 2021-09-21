@@ -53,8 +53,8 @@ func main() {
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
-	// callGraph := test.CreateGraphTest1()
-	callGraph := test.CreateGraphTest2()
+	callGraph := test.CreateGraphTest1()
+	// callGraph := test.CreateGraphTest2()
 
 	///////////////////
 
