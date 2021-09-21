@@ -9,7 +9,7 @@ func SubBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%w while doing float.Sub", ErrOperationCausingPanic)
-			result.SetFloat64(0)
+			result = big.NewFloat(0)
 		}
 	}()
 	result = new(big.Float)
@@ -21,7 +21,7 @@ func AddBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%w while doing float.Add", ErrOperationCausingPanic)
-			result.SetFloat64(0)
+			result = big.NewFloat(0)
 		}
 	}()
 	result = new(big.Float)
@@ -33,7 +33,7 @@ func QuoBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%w while doing float.Quo", ErrOperationCausingPanic)
-			result.SetFloat64(0)
+			result = big.NewFloat(0)
 		}
 	}()
 	result = new(big.Float)
@@ -45,7 +45,7 @@ func MulBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%w while doing float.Mul", ErrOperationCausingPanic)
-			result.SetFloat64(0)
+			result = big.NewFloat(0)
 		}
 	}()
 	result = new(big.Float)
@@ -57,7 +57,7 @@ func SqrtBigFloat(op *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%w while doing float.Sqrt", ErrOperationCausingPanic)
-			result.SetFloat64(0)
+			result = big.NewFloat(0)
 		}
 	}()
 	result = new(big.Float)

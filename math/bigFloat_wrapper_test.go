@@ -15,7 +15,7 @@ func TestBigFloatSub_Panic(t *testing.T) {
 	_ = value2.GobDecode([]byte{1, 10, 0, 0, 0, 53, 0, 0, 0, 52, 222, 212, 49, 108, 64, 122, 107, 100})
 	result, err := SubBigFloat(value1, value2)
 
-	require.Equal(t, big.NewFloat(0).String(), result.String())
+	require.Equal(t, big.NewFloat(0), result)
 	require.Equal(t, fmt.Errorf("%w while doing float.Sub", ErrOperationCausingPanic), err)
 }
 
@@ -40,7 +40,7 @@ func TestBigFloatAdd_Panic(t *testing.T) {
 	_ = value2.GobDecode([]byte{1, 11, 0, 0, 0, 53, 0, 0, 0, 52, 222, 212, 49, 108, 64, 122, 107, 100})
 	result, err := AddBigFloat(value1, value2)
 
-	require.Equal(t, big.NewFloat(0).String(), result.String())
+	require.Equal(t, big.NewFloat(0), result)
 	require.Equal(t, fmt.Errorf("%w while doing float.Add", ErrOperationCausingPanic), err)
 }
 
@@ -62,7 +62,7 @@ func TestBigFloatQuo_Panic(t *testing.T) {
 	value1, value2 := big.NewFloat(0), big.NewFloat(0)
 	result, err := QuoBigFloat(value1, value2)
 
-	require.Equal(t, big.NewFloat(0).String(), result.String())
+	require.Equal(t, big.NewFloat(0), result)
 	require.Equal(t, fmt.Errorf("%w while doing float.Quo", ErrOperationCausingPanic), err)
 }
 
@@ -79,7 +79,7 @@ func TestBigFloatMul_Panic(t *testing.T) {
 	result, err := MulBigFloat(value1, value2)
 
 	require.Equal(t, fmt.Errorf("%w while doing float.Mul", ErrOperationCausingPanic), err)
-	require.Equal(t, big.NewFloat(0).String(), result.String())
+	require.Equal(t, big.NewFloat(0), result)
 }
 
 func TestBigFloatMul_Success(t *testing.T) {
@@ -98,7 +98,7 @@ func TestBigFloatSqrt_Panic(t *testing.T) {
 	value := big.NewFloat(-1)
 	result, err := SqrtBigFloat(value)
 
-	require.Equal(t, big.NewFloat(0).String(), result.String())
+	require.Equal(t, big.NewFloat(0), result)
 	require.Equal(t, fmt.Errorf("%w while doing float.Sqrt", ErrOperationCausingPanic), err)
 }
 
