@@ -38,7 +38,7 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*mj.Test, error) {
 	if !isTestMap {
 		return nil, errors.New("unmarshalled test object is not a map")
 	}
-	test := mj.Test{CheckGas: true, TraceGas: false}
+	test := mj.Test{CheckGas: true}
 
 	var err error
 	for _, kvp := range testMap.OrderedKV {
@@ -49,12 +49,6 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*mj.Test, error) {
 				return nil, errors.New("unmarshalled test checkGas flag is not boolean")
 			}
 			test.CheckGas = bool(*checkGasOJ)
-		case "traceGas":
-			traceGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
-			if !isBool {
-				return nil, errors.New("unmarshalled test traceGas flag is not boolean")
-			}
-			test.TraceGas = bool(*traceGasOJ)
 		case "pre":
 			test.Pre, err = p.processAccountMap(kvp.Value)
 			if err != nil {

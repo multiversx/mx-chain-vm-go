@@ -4,7 +4,6 @@ package mandosjsonmodel
 type Test struct {
 	TestName    string
 	CheckGas    bool
-	TraceGas    bool
 	Pre         []*Account
 	Blocks      []*Block
 	Network     string

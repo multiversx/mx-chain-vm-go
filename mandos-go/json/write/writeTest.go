@@ -29,11 +29,6 @@ func testToOJ(test *mj.Test) oj.OJsonObject {
 		testOJ.Put("checkGas", &ojFalse)
 	}
 
-	if !test.TraceGas {
-		ojFalse := oj.OJsonBool(false)
-		testOJ.Put("traceGas", &ojFalse)
-	}
-
 	testOJ.Put("pre", AccountsToOJ(test.Pre))
 
 	var blockList []oj.OJsonObject

@@ -15,7 +15,6 @@ func ConvertTestToScenario(top []*Test) (*Scenario, error) {
 
 	scenario := &Scenario{
 		CheckGas: test.CheckGas,
-		TraceGas: test.TraceGas,
 	}
 
 	if len(test.Blocks) != 1 {

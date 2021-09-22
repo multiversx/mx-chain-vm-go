@@ -2,7 +2,6 @@
     "name": "example scenario file",
     "comment": "comments are nice",
     "checkGas": false,
-    "traceGas": false,
     "gasSchedule": "v3",
     "steps": [
         {
