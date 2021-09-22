@@ -578,9 +578,8 @@ func v1_4_signalError(context unsafe.Pointer, messageOffset int32, messageLength
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	gasToUse += metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(messageLength)
-	metering.UseGas(gasToUse)
 
-	err := metering.NotEnoughGas()
+	err := metering.UseGasBounded(gasToUse)
 	if err != nil {
 		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
@@ -2328,7 +2327,11 @@ func v1_4_returnData(context unsafe.Pointer, pointer int32, length int32) {
 	gasToUse := metering.GasSchedule().ElrondAPICost.Finish
 	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
 	gasToUse = math.AddUint64(gasToUse, gas)
-	metering.UseGas(gasToUse)
+	err := metering.UseGasBounded(gasToUse)
+	if err != nil {
+		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
 
 	data, err := runtime.MemLoad(pointer, length)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {

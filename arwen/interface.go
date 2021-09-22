@@ -230,7 +230,6 @@ type MeteringContext interface {
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
-	NotEnoughGas() error
 	GasUsedForExecution() uint64
 	GasSpentByContract() uint64
 	GetGasForExecution() uint64

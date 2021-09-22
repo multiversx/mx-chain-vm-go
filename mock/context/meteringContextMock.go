@@ -70,11 +70,6 @@ func (m *MeteringContextMock) GasLeft() uint64 {
 	return m.GasLeftMock
 }
 
-// NotEnoughGas mocked method
-func (m *MeteringContextMock) NotEnoughGas() error {
-	return nil
-}
-
 // UpdateGasStateOnSuccess mocked method
 func (m *MeteringContextMock) UpdateGasStateOnSuccess(_ *vmcommon.VMOutput) error {
 	return nil

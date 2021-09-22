@@ -540,10 +540,15 @@ func v1_4_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	output.Finish(sourceBytes)
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(sourceBytes)))
-	metering.UseGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
+	if err != nil {
+		_ = arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	output.Finish(sourceBytes)
 	return 0
 }
 
