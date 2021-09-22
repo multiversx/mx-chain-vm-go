@@ -339,6 +339,17 @@ func (context *meteringContext) GasLeft() uint64 {
 	return gasProvided - gasUsed
 }
 
+// NotEnoughGas returns not enough gas if too much was used
+func (context *meteringContext) NotEnoughGas() error {
+	gasProvided := context.gasForExecution
+	gasUsed := context.host.Runtime().GetPointsUsed()
+	if gasProvided < gasUsed {
+		return arwen.ErrNotEnoughGas
+	}
+
+	return nil
+}
+
 // GasSpentByContract calculates the entire gas consumption of the contract,
 // without any gas forwarding.
 func (context *meteringContext) GasSpentByContract() uint64 {

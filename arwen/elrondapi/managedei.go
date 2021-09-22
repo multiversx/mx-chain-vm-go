@@ -232,6 +232,12 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	}
 	managedType.ConsumeGasForBytes(errBytes)
 
+	err = metering.NotEnoughGas()
+	if err != nil {
+		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
 	runtime.SignalUserError(string(errBytes))
 }
 
