@@ -97,7 +97,7 @@ func TestTraceGas(t *testing.T) {
 	require.Equal(t, 2, len(runtimeContext.gasTrace["calledFunctionName"]))
 	require.Equal(t, uint64(50000), runtimeContext.gasTrace["calledFunctionName"][1])
 
-	expectedGasTraceMap := map[string][]uint64{"calledFunctionName": []uint64{48000, 50000}, "secondFunctionName": []uint64{3000}}
+	expectedGasTraceMap := map[string][]uint64{"calledFunctionName": {48000, 50000}, "secondFunctionName": {3000}}
 	gasTraceMap := runtimeContext.GetTracedGas()
 	require.Equal(t, expectedGasTraceMap, gasTraceMap)
 }
