@@ -62,5 +62,6 @@ func runSingleTestReturnError(folder string, filename string) error {
 	fullPath := path.Join(getTestRoot(), folder)
 	fullPath = path.Join(fullPath, filename)
 
-	return runner.RunSingleJSONScenario(fullPath)
+	traceGas := false
+	return runner.RunSingleJSONScenario(fullPath, traceGas)
 }

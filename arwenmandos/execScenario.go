@@ -1,6 +1,8 @@
 package arwenmandos
 
 import (
+	"fmt"
+
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
@@ -39,6 +41,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 	}
 
 	if scenario.TraceGas {
+		fmt.Println("\nTest name:", scenario.Name)
 		logGasTrace(ae)
 	}
 
@@ -77,7 +80,7 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 	externalStepsRunner := mc.NewScenarioRunner(ae, clonedFileResolver)
 
 	extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
-	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth)
+	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth, step.TraceGas)
 	if err != nil {
 		return err
 	}

@@ -64,7 +64,8 @@ func main() {
 			executor,
 			mc.NewDefaultFileResolver(),
 		)
-		err = runner.RunSingleJSONScenario(jsonFilePath)
+		traceGas := false
+		err = runner.RunSingleJSONScenario(jsonFilePath, traceGas)
 	default:
 		runner := mc.NewTestRunner(
 			executor,
