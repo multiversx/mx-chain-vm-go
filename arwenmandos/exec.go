@@ -26,6 +26,7 @@ var TestVMType = []byte{0, 0}
 type ArwenTestExecutor struct {
 	World                   *worldhook.MockWorld
 	vm                      vmi.VMExecutionHandler
+	vmHost                  arwen.VMHost
 	checkGas                bool
 	traceGas                bool
 	mandosGasScheduleLoaded bool
@@ -53,19 +54,19 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 
 // InitVM will initialize the VM and the builtin function container.
 // Does nothing if the VM is already initialized.
-func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) (arwen.VMHost, error) {
+func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 	if ae.vm != nil {
-		return nil, nil
+		return nil
 	}
 
 	gasSchedule, err := ae.gasScheduleMapFromMandos(mandosGasSchedule)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = ae.World.InitBuiltinFunctions(gasSchedule)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	blockGasLimit := uint64(10000000)
@@ -79,16 +80,21 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) (arwen.VMH
 		ESDTTransferParser:       esdtTransferParser,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	ae.vm = vm
-	return vm, nil
+	ae.vmHost = vm
+	return nil
 }
 
 // GetVM yields a reference to the VMExecutionHandler used.
 func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
+}
+
+func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
+	return ae.vmHost
 }
 
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {

@@ -28,9 +28,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 		scenarioOJ.Put("checkGas", &ojFalse)
 	}
 
-	if !scenario.TraceGas {
-		ojFalse := oj.OJsonBool(false)
-		scenarioOJ.Put("traceGas", &ojFalse)
+	if scenario.TraceGas {
+		ojTrue := oj.OJsonBool(true)
+		scenarioOJ.Put("traceGas", &ojTrue)
 	}
 
 	scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))

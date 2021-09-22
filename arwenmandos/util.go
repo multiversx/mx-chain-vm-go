@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
@@ -197,4 +198,23 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 			}
 		}
 	}
+}
+
+func logGasTrace(ae *ArwenTestExecutor) {
+	runtime := ae.GetVMHost().Runtime()
+	gasUsed := runtime.GetTracedGas()
+	fmt.Println()
+	arwen.SetLoggingForTests()
+	for key, value := range gasUsed {
+		totalGasUsed := uint64(0)
+		for _, gasUsed := range value {
+			totalGasUsed += gasUsed
+		}
+		log.Trace("GasTrace", "functionName:", key, ",  totalGasUsed:", totalGasUsed)
+	}
+}
+
+func enableGasTraceInRuntime(ae *ArwenTestExecutor) {
+	runtime := ae.GetVMHost().Runtime()
+	runtime.EnableTraceGas()
 }

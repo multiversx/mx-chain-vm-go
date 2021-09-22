@@ -155,7 +155,7 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 	}
 
 	mandosGasSchedule := mj.GasScheduleDummy
-	_, err = arwenTestExecutor.InitVM(mandosGasSchedule)
+	err = arwenTestExecutor.InitVM(mandosGasSchedule)
 	if err != nil {
 		return nil, err
 	}

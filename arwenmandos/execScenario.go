@@ -18,9 +18,14 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 	ae.traceGas = scenario.TraceGas
-	host, err := ae.InitVM(scenario.GasSchedule)
+
+	err := ae.InitVM(scenario.GasSchedule)
 	if err != nil {
 		return err
+	}
+
+	if scenario.TraceGas {
+		enableGasTraceInRuntime(ae)
 	}
 
 	txIndex := 0
@@ -34,15 +39,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 	}
 
 	if scenario.TraceGas {
-		runtime := host.Runtime()
-		gasUsed := runtime.GetTracedGas()
-		for key, value := range gasUsed {
-			totalGasUsed := uint64(0)
-			for _, gasUsed := range value {
-				totalGasUsed += gasUsed
-			}
-			log.Trace("GasTrace", "functionName:", key, "totalGasUsed:", totalGasUsed)
-		}
+		logGasTrace(ae)
 	}
 
 	return nil
