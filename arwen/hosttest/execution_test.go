@@ -264,7 +264,7 @@ func TestExecution_DeployWASM_Init_InfiniteLoop_Errors(t *testing.T) {
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
-				ReturnCode(vmcommon.OutOfGas)
+				ReturnCode(vmcommon.ExecutionFailed)
 		})
 }
 
@@ -1669,7 +1669,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	// Scenario:
 	// Parent sets data into the storage, finishes data and creates a bigint
 	// Parent calls executeOnDestContext, sending some value as well
-	// Parent provides insufficient gas to executeOnDestContext (enoguh to start the SC though)
+	// Parent provides insufficient gas to executeOnDestContext (enough to start the SC though)
 	// Child SC starts executing: sets data into the storage, finishes data and changes the bigint
 	// Child starts an infinite loop, which must surely end with OutOfGas
 	// Execution returns to parent, which finishes with the result of executeOnDestContext
@@ -1721,7 +1721,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 			} else {
 				verify.
 					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					ReturnMessage(arwen.ErrExecutionFailed.Error()).
 					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
