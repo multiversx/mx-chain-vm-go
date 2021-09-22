@@ -849,13 +849,19 @@ func (context *runtimeContext) DisableTraceGas() {
 }
 
 // TraceGasUsed adds the usedGas passed to the traced gas map with the key as the passed functionName
-func (context *runtimeContext) TraceGasUsed(functionName string, usedGas uint64) {
+func (context *runtimeContext) TraceGasUsed(functionName string, initialGasLeft uint64) {
 	if context.traceGasEnabled {
 		if context.gasTrace[functionName] == nil {
 			context.gasTrace[functionName] = make([]uint64, 0)
 		}
+		usedGas := context.computeUsedGas(initialGasLeft)
 		context.gasTrace[functionName] = append(context.gasTrace[functionName], usedGas)
 	}
+}
+
+func (context *runtimeContext) computeUsedGas(initialGasLeft uint64) uint64 {
+	gasLeft := context.host.Metering().GasLeft()
+	return initialGasLeft - gasLeft
 }
 
 // GetTracedGas returns the gasTrace map

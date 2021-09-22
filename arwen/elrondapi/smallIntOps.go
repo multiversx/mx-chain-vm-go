@@ -108,7 +108,7 @@ func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntGetUnsignedArgument", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntGetUnsignedArgument", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
@@ -135,7 +135,7 @@ func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntGetSignedArgument", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntGetSignedArgument", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
@@ -163,7 +163,7 @@ func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntFinishUnsigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntFinishUnsigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
@@ -180,7 +180,7 @@ func v1_4_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntFinishSigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntFinishSigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
@@ -197,7 +197,7 @@ func v1_4_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, 
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntStorageStoreUnsigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntStorageStoreUnsigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
@@ -224,7 +224,7 @@ func v1_4_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, ke
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntStorageStoreSigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntStorageStoreSigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
@@ -251,7 +251,7 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntStorageLoadUnsigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntStorageLoadUnsigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
@@ -279,7 +279,7 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("smallIntStorageLoadSigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("smallIntStorageLoadSigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad

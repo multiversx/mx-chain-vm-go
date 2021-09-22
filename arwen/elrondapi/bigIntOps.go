@@ -285,7 +285,7 @@ func v1_4_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinatio
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetUnsignedArgument", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetUnsignedArgument", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedArgument
@@ -308,7 +308,7 @@ func v1_4_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationH
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetSignedArgument", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetSignedArgument", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedArgument
@@ -332,7 +332,7 @@ func v1_4_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, ke
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntStorageStoreUnsigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntStorageStoreUnsigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
@@ -362,7 +362,7 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntStorageLoadUnsigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntStorageLoadUnsigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned
@@ -388,7 +388,7 @@ func v1_4_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetCallValue", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetCallValue", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
@@ -411,7 +411,7 @@ func v1_4_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandl
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetESDTCallValueByIndex", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetESDTCallValueByIndex", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
@@ -434,7 +434,7 @@ func v1_4_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, 
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetExternalBalance", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetExternalBalance", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
@@ -458,7 +458,7 @@ func v1_4_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetESDTExternalBalance", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetESDTExternalBalance", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
@@ -483,7 +483,7 @@ func v1_4_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntNew", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntNew", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
@@ -499,7 +499,7 @@ func v1_4_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntUnsignedByteLength", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntUnsignedByteLength", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
@@ -521,7 +521,7 @@ func v1_4_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) 
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSignedByteLength", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSignedByteLength", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSignedByteLength
@@ -543,7 +543,7 @@ func v1_4_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, 
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetUnsignedBytes", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetUnsignedBytes", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedBytes
@@ -573,7 +573,7 @@ func v1_4_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, by
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetSignedBytes", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetSignedBytes", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedBytes
@@ -603,7 +603,7 @@ func v1_4_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSetUnsignedBytes", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSetUnsignedBytes", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetUnsignedBytes
@@ -628,7 +628,7 @@ func v1_4_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, 
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSetSignedBytes", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSetSignedBytes", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetSignedBytes
@@ -653,7 +653,7 @@ func v1_4_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntIsInt64", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntIsInt64", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntIsInt64
@@ -676,7 +676,7 @@ func v1_4_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntGetInt64", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntGetInt64", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
@@ -693,7 +693,7 @@ func v1_4_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value 
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSetInt64", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSetInt64", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -710,7 +710,7 @@ func v1_4_bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext((context))
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntAdd", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntAdd", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -732,7 +732,7 @@ func v1_4_bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSub", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSub", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -754,7 +754,7 @@ func v1_4_bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntMul", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntMul", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul
@@ -776,7 +776,7 @@ func v1_4_bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntTDiv", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntTDiv", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
@@ -802,7 +802,7 @@ func v1_4_bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntTMod", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntTMod", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -828,7 +828,7 @@ func v1_4_bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntEDiv", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntEDiv", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -854,7 +854,7 @@ func v1_4_bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntEMod", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntEMod", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -880,7 +880,7 @@ func v1_4_bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) 
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSqrt", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSqrt", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSqrt
@@ -906,7 +906,7 @@ func v1_4_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntPow", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntPow", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
@@ -939,7 +939,7 @@ func v1_4_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntLog2", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntLog2", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntLog
@@ -965,7 +965,7 @@ func v1_4_bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntAbs", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntAbs", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -987,7 +987,7 @@ func v1_4_bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntNeg", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntNeg", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1009,7 +1009,7 @@ func v1_4_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntSign", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntSign", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSign
@@ -1030,7 +1030,7 @@ func v1_4_bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntCmp", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntCmp", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntCmp
@@ -1051,7 +1051,7 @@ func v1_4_bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntNot", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntNot", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1077,7 +1077,7 @@ func v1_4_bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntAnd", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntAnd", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1103,7 +1103,7 @@ func v1_4_bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Hand
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntOr", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntOr", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1129,7 +1129,7 @@ func v1_4_bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntXor", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntXor", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1155,7 +1155,7 @@ func v1_4_bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntShr", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntShr", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1182,7 +1182,7 @@ func v1_4_bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntShl", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntShl", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
@@ -1210,7 +1210,7 @@ func v1_4_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntFinishUnsigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntFinishUnsigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishUnsigned
@@ -1235,7 +1235,7 @@ func v1_4_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
 	defer func() {
-		runtime.TraceGasUsed("bigIntFinishSigned", metering.GasLeft()-initialGasLeft)
+		runtime.TraceGasUsed("bigIntFinishSigned", initialGasLeft)
 	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
