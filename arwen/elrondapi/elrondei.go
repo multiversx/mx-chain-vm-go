@@ -1441,11 +1441,6 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 ) {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("createAsyncCall", initialGasLeft)
-	}()
 
 	// TODO consume gas
 
@@ -1545,10 +1540,6 @@ func v1_4_upgradeContract(
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("upgradeContract", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
@@ -1609,10 +1600,6 @@ func v1_4_upgradeFromSourceContract(
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("upgradeFromSourceContract", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
@@ -1724,10 +1711,6 @@ func v1_4_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32,
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("asyncCall", initialGasLeft)
-	}()
 
 	gasSchedule := metering.GasSchedule()
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
@@ -2607,12 +2590,6 @@ func v1_4_executeOnSameContext(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("executeOnSameContext", initialGasLeft)
-	}()
 
 	return ExecuteOnSameContextWithHost(
 		host,
@@ -2713,12 +2690,6 @@ func v1_4_executeOnDestContext(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("executeOnDestContext", initialGasLeft)
-	}()
 
 	return ExecuteOnDestContextWithHost(
 		host,

@@ -491,10 +491,6 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedAsyncCall", initialGasLeft)
-	}()
 
 	gasSchedule := metering.GasSchedule()
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
@@ -541,10 +537,6 @@ func v1_4_managedUpgradeFromSourceContract(
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedUpgradeFromSourceContract", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
@@ -593,10 +585,6 @@ func v1_4_managedUpgradeContract(
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedUpgradeContract", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
@@ -796,12 +784,6 @@ func v1_4_managedExecuteOnSameContext(
 	resultHandle int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedExecuteOnSameContext", initialGasLeft)
-	}()
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
@@ -832,12 +814,6 @@ func v1_4_managedExecuteOnDestContextByCaller(
 	resultHandle int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedExecuteOnDestContextByCaller", initialGasLeft)
-	}()
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
@@ -868,12 +844,6 @@ func v1_4_managedExecuteOnDestContext(
 	resultHandle int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedExecuteOnDestContext", initialGasLeft)
-	}()
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
