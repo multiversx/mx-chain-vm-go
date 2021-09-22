@@ -145,10 +145,10 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
-	EnableTraceGas()
-	DisableTraceGas()
+	EnableGasTrace()
+	DisableGasTrace()
 	TraceGasUsed(functionName string, initialGasLeft uint64)
-	GetTracedGas() map[string][]uint64
+	GetGasTrace() map[string][]uint64
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error

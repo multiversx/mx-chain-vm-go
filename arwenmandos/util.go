@@ -202,18 +202,21 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 
 func logGasTrace(ae *ArwenTestExecutor) {
 	runtime := ae.GetVMHost().Runtime()
-	gasUsed := runtime.GetTracedGas()
+	gasTrace := runtime.GetGasTrace()
 	arwen.SetLoggingForTests()
-	for key, value := range gasUsed {
+	totalGasUsedInScenario := 0
+	for key, value := range gasTrace {
 		totalGasUsed := uint64(0)
-		for _, gasUsed := range value {
-			totalGasUsed += gasUsed
+		for _, gasTrace := range value {
+			totalGasUsed += gasTrace
 		}
-		log.Trace("GasTrace", "functionName:", key, ",  totalGasUsed:", totalGasUsed)
+		log.Trace("GasTrace", "functionName:", key, ",  totalGasUsed:", totalGasUsed, ", numberOfCalls:", len(value))
+		totalGasUsedInScenario += int(totalGasUsed)
 	}
+	log.Trace("TotalGasUsedInScenario", "", totalGasUsedInScenario)
 }
 
 func enableGasTraceInRuntime(ae *ArwenTestExecutor) {
 	runtime := ae.GetVMHost().Runtime()
-	runtime.EnableTraceGas()
+	runtime.EnableGasTrace()
 }

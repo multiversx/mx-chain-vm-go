@@ -838,13 +838,13 @@ func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
 
-// EnableTraceGas sets true to the flag variable that traces gas consumption
-func (context *runtimeContext) EnableTraceGas() {
+// EnableGasTrace sets true to the flag variable that traces gas consumption
+func (context *runtimeContext) EnableGasTrace() {
 	context.traceGasEnabled = true
 }
 
-// DisableTraceGas sets true to the flag variable that traces gas consumption
-func (context *runtimeContext) DisableTraceGas() {
+// DisableGasTrace sets true to the flag variable that traces gas consumption
+func (context *runtimeContext) DisableGasTrace() {
 	context.traceGasEnabled = false
 }
 
@@ -864,8 +864,8 @@ func (context *runtimeContext) computeUsedGas(initialGasLeft uint64) uint64 {
 	return initialGasLeft - gasLeft
 }
 
-// GetTracedGas returns the gasTrace map
-func (context *runtimeContext) GetTracedGas() map[string][]uint64 {
+// GetGasTrace returns the gasTrace map
+func (context *runtimeContext) GetGasTrace() map[string][]uint64 {
 	return context.gasTrace
 }
 

@@ -351,11 +351,11 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
 
-func (r *RuntimeContextMock) EnableTraceGas() {
+func (r *RuntimeContextMock) EnableGasTrace() {
 	r.TraceGasEnabled = true
 }
 
-func (r *RuntimeContextMock) DisableTraceGas() {
+func (r *RuntimeContextMock) DisableGasTrace() {
 	r.TraceGasEnabled = false
 }
 
@@ -368,6 +368,6 @@ func (r *RuntimeContextMock) TraceGasUsed(functionName string, usedGas uint64) {
 	}
 }
 
-func (r *RuntimeContextMock) GetTracedGas() map[string][]uint64 {
+func (r *RuntimeContextMock) GetGasTrace() map[string][]uint64 {
 	return r.GasTrace
 }

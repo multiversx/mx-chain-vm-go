@@ -116,13 +116,13 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetAllErrorsFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	EnableTraceGasFunc func()
+	EnableGasTraceFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	DisableTraceGasFunc func()
+	DisableGasTraceFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	TraceGasUsedFunc func(functionName string, usedGas uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetTracedGasFunc func() map[string][]uint64
+	GetGasTraceFunc func() map[string][]uint64
 
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	InitStateFunc func()
@@ -349,20 +349,20 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.GetAllErrors()
 	}
 
-	runtimeWrapper.EnableTraceGasFunc = func() {
-		runtimeWrapper.runtimeContext.EnableTraceGas()
+	runtimeWrapper.EnableGasTraceFunc = func() {
+		runtimeWrapper.runtimeContext.EnableGasTrace()
 	}
 
-	runtimeWrapper.DisableTraceGasFunc = func() {
-		runtimeWrapper.runtimeContext.DisableTraceGas()
+	runtimeWrapper.DisableGasTraceFunc = func() {
+		runtimeWrapper.runtimeContext.DisableGasTrace()
 	}
 
 	runtimeWrapper.TraceGasUsedFunc = func(functionName string, usedGas uint64) {
 		runtimeWrapper.runtimeContext.TraceGasUsed(functionName, usedGas)
 	}
 
-	runtimeWrapper.GetTracedGasFunc = func() map[string][]uint64 {
-		return runtimeWrapper.runtimeContext.GetTracedGas()
+	runtimeWrapper.GetGasTraceFunc = func() map[string][]uint64 {
+		return runtimeWrapper.runtimeContext.GetGasTrace()
 	}
 
 	runtimeWrapper.InitStateFunc = func() {
@@ -648,14 +648,14 @@ func (contextWrapper *RuntimeContextWrapper) GetAllErrors() error {
 	return contextWrapper.GetAllErrorsFunc()
 }
 
-// EnableTraceGas calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) EnableTraceGas() {
-	contextWrapper.EnableTraceGasFunc()
+// EnableGasTrace calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) EnableGasTrace() {
+	contextWrapper.EnableGasTraceFunc()
 }
 
-// DisableTraceGas calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) DisableTraceGas() {
-	contextWrapper.DisableTraceGasFunc()
+// DisableGasTrace calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) DisableGasTrace() {
+	contextWrapper.DisableGasTraceFunc()
 }
 
 // TraceGasUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -663,9 +663,9 @@ func (contextWrapper *RuntimeContextWrapper) TraceGasUsed(functionName string, u
 	contextWrapper.TraceGasUsedFunc(functionName, usedGas)
 }
 
-// GetTracedGas calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetTracedGas() map[string][]uint64 {
-	return contextWrapper.GetTracedGasFunc()
+// GetGasTrace calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetGasTrace() map[string][]uint64 {
+	return contextWrapper.GetGasTraceFunc()
 }
 
 // InitState calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
