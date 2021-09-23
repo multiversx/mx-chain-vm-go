@@ -80,8 +80,10 @@ type TestCallNode struct {
 	GasLocked uint64
 
 	// computed info
-	GasRemaining                uint64
-	GasAccumulatedAfterCallback uint64
+	ExecutionRound           int
+	MaxSubtreeExecutionRound int
+	GasRemaining             uint64
+	GasAccumulated           uint64
 
 	// set automaticaly when the test is run
 	CrtTxHash []byte
@@ -238,7 +240,7 @@ func (graph *TestCallGraph) AddStartNode(contractID string, functionName string,
 	graph.StartNode = node
 	node.IsStartNode = true
 	node.GasLimit = gasLimit
-	node.GasRemaining = gasLimit
+	node.GasRemaining = 0
 	node.GasUsed = gasUsed
 	return node
 }
@@ -396,7 +398,6 @@ func (graph *TestCallGraph) DfsGraph(
 		}
 		graph.dfsFromNode(nil, node, nil, make([]*TestCallNode, 0), processNode, visits, followCrossShardEdges)
 	}
-	// graph.clearVisitedNodesFlag()
 }
 
 // DfsGraphFromNode standard DFS starting from a node
@@ -404,17 +405,22 @@ func (graph *TestCallGraph) DfsGraphFromNode(startNode *TestCallNode, processNod
 	visits map[uint]bool,
 	followCrossShardEdges bool) {
 	graph.dfsFromNode(startNode.Parent, startNode, nil, make([]*TestCallNode, 0), processNode, visits, followCrossShardEdges)
-	// graph.clearVisitedNodesFlag()
 }
-
-// func (graph *TestCallGraph) clearVisitedNodesFlag() {
-// 	for _, node := range graph.Nodes {
-// 		node.Visited = false
-// 	}
-// }
 
 func (graph *TestCallGraph) dfsFromNode(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, path []*TestCallNode,
 	processNode processNodeFunc,
+	visits map[uint]bool,
+	followCrossShardEdges bool) *TestCallNode {
+	return graph.dfsFromNodeWithPostProcess(parent, node, incomingEdge, path, processNode,
+		func(path []*TestCallNode, parent, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+			return node
+		},
+		visits, followCrossShardEdges)
+}
+
+func (graph *TestCallGraph) dfsFromNodeWithPostProcess(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, path []*TestCallNode,
+	processNode processNodeFunc,
+	postProcessNode processNodeFunc,
 	visits map[uint]bool,
 	followCrossShardEdges bool) *TestCallNode {
 	if isVisited(node, visits) {
@@ -433,7 +439,8 @@ func (graph *TestCallGraph) dfsFromNode(parent *TestCallNode, node *TestCallNode
 		if !followCrossShardEdges && (edge.Type == AsyncCrossShard || edge.Type == CallbackCrossShard) {
 			continue
 		}
-		graph.dfsFromNode(processedParent, edge.To, edge, path, processNode, visits, followCrossShardEdges)
+		processedNode := graph.dfsFromNodeWithPostProcess(processedParent, edge.To, edge, path, processNode, postProcessNode, visits, followCrossShardEdges)
+		postProcessNode(path, processedParent, processedNode, edge)
 	}
 	return processedParent
 }
@@ -458,32 +465,6 @@ func (graph *TestCallGraph) dfsFromNodePostOrder(parent *TestCallNode, node *Tes
 	setVisited(node, visits)
 
 	return processedParent
-}
-
-// OneStepDfsFromNodePostOrder - post order DFS that stops after visiting a node (visited nodes are of course, not cleared between runs)
-func (graph *TestCallGraph) OneStepDfsFromNodePostOrder(processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode, visits map[uint]bool) bool {
-	if isVisited(graph.StartNode, visits) {
-		return true
-	}
-	graph.oneStepDfsFromNodePostOrder(nil, graph.StartNode, nil, processNode, visits)
-	return false
-}
-
-func (graph *TestCallGraph) oneStepDfsFromNodePostOrder(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, processNode func(*TestCallNode, *TestCallNode, *TestCallEdge) *TestCallNode, visits map[uint]bool) bool {
-	for _, edge := range node.AdjacentEdges {
-		if graph.oneStepDfsFromNodePostOrder(node, edge.To, edge, processNode, visits) {
-			return true
-		}
-	}
-
-	if isVisited(node, visits) {
-		return false
-	}
-
-	processNode(parent, node, incomingEdge)
-	setVisited(node, visits)
-
-	return true
 }
 
 func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
@@ -608,6 +589,9 @@ func addAsyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallG
 
 		if edge.Callback != "" {
 			callbackDestination := executionGraph.FindNode(node.Call.ContractAddress, edge.Callback)
+			if callbackDestination == nil {
+				panic(fmt.Sprintf("Cant find node %s %s", node.Call.ContractAddress, edge.Callback))
+			}
 			execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination)
 			if edge.Type == Async {
 				execEdge.Type = Callback
@@ -728,7 +712,7 @@ func (graph *TestCallGraph) getPathsRecursive(path *TestCallPath, addPathToResul
 		}
 
 		edge.To.GasLimit = edge.GasLimit
-		edge.To.GasRemaining = edge.GasLimit
+		edge.To.GasRemaining = 0
 		edge.To.GasLocked = edge.GasLocked
 		if lastEdgeInPath != nil &&
 			((lastEdgeInPath.Type == Async && edge.Type == Callback) ||
@@ -813,15 +797,52 @@ func isGroupPresent(group string, groups []string) bool {
 	return false
 }
 
+// AssignExecutionRounds -
+func (graph *TestCallGraph) AssignExecutionRounds() {
+	visits := make(map[uint]bool)
+	graph.dfsFromNodeWithPostProcess(graph.StartNode.Parent, graph.StartNode, nil, make([]*TestCallNode, 0),
+		func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+			if incomingEdge == nil {
+				return node
+			}
+
+			switch incomingEdge.Type {
+			case Sync:
+			case Async:
+				node.ExecutionRound = parent.ExecutionRound
+				break
+			case AsyncCrossShard:
+				node.ExecutionRound = parent.ExecutionRound + 1
+				break
+			case Callback:
+				node.ExecutionRound = parent.MaxSubtreeExecutionRound
+				break
+			case CallbackCrossShard:
+				node.ExecutionRound = parent.MaxSubtreeExecutionRound + 1
+				break
+			}
+
+			node.MaxSubtreeExecutionRound = node.ExecutionRound
+
+			return node
+		},
+		func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+			if parent.MaxSubtreeExecutionRound < node.MaxSubtreeExecutionRound {
+				parent.MaxSubtreeExecutionRound = node.MaxSubtreeExecutionRound
+			}
+			return node
+		}, visits, true)
+}
+
 // ComputeRemainingGasBeforeCallbacks - adjusts the gas graph / tree remaining gas info using the gas provided to children
 // this will not take into consideration callback nodes that don't have provided gas info computed yet (see ComputeGasStepByStep)
 func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
-	visits := make(map[uint]bool)
-	graph.DfsGraphFromNode(graph.StartNode, func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() ||
 			(!node.IsStartNode && (incomingEdge.Type == Callback || incomingEdge.Type == CallbackCrossShard /*|| incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback*/)) {
 			return node
 		}
+
 		nodeGasRemaining := int64(node.GasLimit)
 		for _, edge := range node.AdjacentEdges {
 			nodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
@@ -833,55 +854,72 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 				panic(fmt.Sprintf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel))
 			}
 		}
-		node.GasRemaining = uint64(nodeGasRemaining)
+		node.GasRemaining += uint64(nodeGasRemaining)
+		if parent != nil && incomingEdge.Type != Async && incomingEdge.Type != AsyncCrossShard {
+			parent.GasRemaining += uint64(node.GasRemaining)
+		}
+		for _, edge := range node.AdjacentEdges {
+			if edge.Type == Callback || edge.Type == CallbackCrossShard {
+				edge.To.GasLimit = node.GasRemaining + node.GasLocked
+			}
+		}
 		return node
-	}, visits, true)
+	})
 }
 
-// ComputeGasStepByStep - Uses step by step DFS postorder traversal of the executiongas graph / tree to compute
-// provided gas values for callback nodes and remaining gas values after callback execution
-func (graph *TestCallGraph) ComputeGasStepByStep(executeAfterEachStep func(graph *TestCallGraph, step int)) {
-	step := 1
-	finishedOneStepDfs := false
-	visits := make(map[uint]bool)
-	for ; !finishedOneStepDfs; step++ {
-		finishedOneStepDfs = graph.OneStepDfsFromNodePostOrder(func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-			if parent != nil {
-				if node.IsLeaf() && (node.Parent.IncomingEdgeType == Callback || node.Parent.IncomingEdgeType == CallbackCrossShard) {
-					callBackNode := parent
-					asyncNode := callBackNode.Parent
-					asyncNodeGasRemaining := getGasRemaining(asyncNode)
-					callBackNode.GasLimit = asyncNodeGasRemaining + asyncNode.GasLocked
-					callBackNodeGasRemaining := int64(callBackNode.GasLimit)
-					for _, edge := range callBackNode.GetEdges() {
-						if edge.Type != Async && edge.Type != AsyncCrossShard {
-							callBackNodeGasRemaining -= int64(edge.To.GasLimit - edge.To.GasRemaining)
-						} else {
-							callBackNodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
-						}
-						if callBackNodeGasRemaining < 0 {
-							panic(fmt.Sprintf("Bad test callback gas configuration %s (%s)", node.Label, callBackNode.Label))
-						}
-						callBackNode.GasRemaining = uint64(callBackNodeGasRemaining)
+// ComputeRemainingGasAfterCallbacks -
+func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
+	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+		if node.IsLeaf() ||
+			node.IsStartNode || (incomingEdge.Type != Callback && incomingEdge.Type != CallbackCrossShard) {
+			return node
+		}
+
+		nodeGasRemaining := int64(node.GasLimit)
+		for _, edge := range node.AdjacentEdges {
+			nodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
+			if nodeGasRemaining < 0 {
+				var incomingEdgeLabel string
+				if incomingEdge != nil {
+					incomingEdgeLabel = incomingEdge.Label
+				}
+				panic(fmt.Sprintf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel))
+			}
+		}
+		node.GasRemaining += uint64(nodeGasRemaining)
+
+		// propagate remaining gas
+		asyncInitiator := node.Parent.Parent
+		if asyncInitiator.ExecutionRound != node.ExecutionRound {
+			node.GasAccumulated += node.GasRemaining
+		} else {
+			if node.IncomingEdgeType == Callback {
+				crtEdgeType := asyncInitiator.IncomingEdgeType
+				for crtParent := asyncInitiator; crtParent != nil; crtParent = crtParent.Parent {
+					if crtParent == asyncInitiator || crtEdgeType != Sync {
+						crtParent.GasAccumulated += node.GasRemaining
+					} else {
+						crtParent.GasRemaining += node.GasRemaining
 					}
-				} else {
-					node.Parent.GasAccumulatedAfterCallback += node.GasAccumulatedAfterCallback
-					if node.IncomingEdgeType == CallbackCrossShard {
-						node.Parent.Parent.GasAccumulatedAfterCallback += node.GasAccumulatedAfterCallback
-						node.Parent.Parent.GasAccumulatedAfterCallback += getGasRemaining(node)
-					} else if node.IncomingEdgeType == Callback {
-						node.Parent.Parent.GasRemaining += getGasRemaining(node)
-					} else if !node.IsLeaf() && node.IncomingEdgeType == Sync {
-						parent.GasRemaining += getGasRemaining(node)
+
+					crtEdgeType = crtParent.IncomingEdgeType
+					if crtEdgeType == Async || crtEdgeType == AsyncCrossShard {
+						for _, edge := range crtParent.AdjacentEdges {
+							if edge.Type == Callback || edge.Type == CallbackCrossShard {
+								edge.To.GasLimit += node.GasRemaining
+							}
+						}
+					}
+					if crtEdgeType == Async || crtEdgeType == AsyncCrossShard ||
+						crtEdgeType == Callback || crtEdgeType == CallbackCrossShard {
+						break
 					}
 				}
-
 			}
-			return node
-		}, visits)
-		executeAfterEachStep(graph, step)
-	}
-	// graph.clearVisitedNodesFlag()
+		}
+
+		return node
+	})
 }
 
 func getGasRemaining(node *TestCallNode) uint64 {

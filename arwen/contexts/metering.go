@@ -220,7 +220,6 @@ func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
 	context.PrintState()
 	if totalGas != gasProvided {
 		logOutput.Error("gas usage mismatch", "total gas", totalGas, "gas provided", gasProvided)
-		// TODO matei-p uncomment this !!!
 		// return arwen.ErrInputAndOutputGasDoesNotMatch
 	}
 

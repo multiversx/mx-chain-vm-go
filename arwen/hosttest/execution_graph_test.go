@@ -22,7 +22,6 @@ import (
 // TODO matei-p add error test cases
 
 func TestGasUsed_SyncCalls_CallGraph(t *testing.T) {
-	// arwen.SetLoggingForTests()
 	callGraph := test.CreateGraphTestSyncCalls()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -63,21 +62,25 @@ func TestGasUsed_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -93,21 +96,25 @@ func TestGasUsed_CallbackCallsSync_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -128,11 +135,13 @@ func TestGasUsed_SyncAndAsync3_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_SyncAndAsync4_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_SyncAndAsync5_CallGraph(t *testing.T) {
+	t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync5()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -142,38 +151,68 @@ func TestGasUsed_SyncAndAsync6_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_SyncAndAsync7_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync7()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGasUsed_GraphTest1_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTest1()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTest2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard5()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsCrossShard8()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_AsyncCall9_CrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -185,8 +224,9 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	executionGraph := callGraph.CreateExecutionGraphFromCallGraph()
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
+	gasGraph.AssignExecutionRounds()
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
-	gasGraph.ComputeGasStepByStep(func(graph *test.TestCallGraph, step int) {})
+	gasGraph.ComputeRemainingGasAfterCallbacks()
 
 	startNode := gasGraph.GetStartNode()
 	crossShardCallsQueue := test.NewCrossShardCallQueue()
@@ -195,20 +235,19 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	computeCallIDs(gasGraph)
 
 	// compute execution order (return data) assertions and compute gas assertions
-	// totalGasUsed, expectedGasUsagePerContract, expectedReturnData := computeExpectedValues(gasGraph)
-	_, _, expectedReturnData := computeExpectedValues(gasGraph)
+	totalGasUsed, totalGasRemaining, expectedReturnData := computeExpectedValues(gasGraph)
+
+	// expected gas sanity check
+	require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
 
 	// account -> (key -> value)
 	storage := make(map[string]map[string][]byte)
-	// gasUsedPerContract := make(map[string]uint64)
 
 	globalReturnData := make([][]byte, 0)
 	crtTxNumber := 0
 
 	var currentVMOutput *vmcommon.VMOutput
 	var lastErr error
-
-	visits := make(map[uint]bool)
 
 	var crossShardCall *test.CrossShardCall
 	for !crossShardCallsQueue.IsEmpty() {
@@ -217,10 +256,9 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		crtTxNumber++
 		crtTxHash := big.NewInt(int64(crtTxNumber)).Bytes()
-		//fmt.Println("set tx hash for " + crossShardCall.StartNode.Label + " to " + fmt.Sprintf("%d", crtTxNumber))
 		crossShardCall.StartNode.CrtTxHash = crtTxHash
 
-		crossShardEdges := preprocessLocalCallSubtree(gasGraph, startNode, visits, crossShardCallsQueue)
+		crossShardEdges := getCrossShardEdgesFromSubtree(gasGraph, startNode, crossShardCallsQueue)
 
 		arguments := [][]byte{}
 		if len(crossShardCall.Data) != 0 {
@@ -257,17 +295,15 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 			})
 
 		extractStores(currentVMOutput, storage)
-		// extractGasUsedPerContract(currentVMOutput, gasUsedPerContract)
 		globalReturnData = append(globalReturnData, currentVMOutput.ReturnData...)
 
 		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	CheckReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, globalReturnData)
+	checkReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, globalReturnData)
 	test.NewVMOutputVerifier(t, currentVMOutput, lastErr).
 		Ok() //.
 	// GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
-	// CheckUsedGasPerContract(t, expectedGasUsagePerContract, gasUsedPerContract)
 }
 
 func persistStorageUpdatesToWorld(storage map[string]map[string][]byte, world *worldmock.MockWorld) {
@@ -282,8 +318,9 @@ func persistStorageUpdatesToWorld(storage map[string]map[string][]byte, world *w
 	}
 }
 
-func preprocessLocalCallSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, visits map[uint]bool, crossShardCallsQueue *test.CrossShardCallsQueue) []*test.TestCallEdge {
+func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue) []*test.TestCallEdge {
 	crossShardEdges := make([]*test.TestCallEdge, 0)
+	visits := make(map[uint]bool)
 	gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
 		for _, edge := range node.AdjacentEdges {
 			if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
@@ -378,21 +415,21 @@ func computeCallIDs(gasGraph *test.TestCallGraph) {
 	})
 }
 
-func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uint64, [][]byte) {
+func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, uint64, [][]byte) {
 	totalGasUsed := uint64(0)
-	expectedGasUsagePerContract := make(map[string]uint64)
+	totalGasRemaining := uint64(0)
 	expectedReturnData := make([][]byte, 0)
 
 	executionOrderTraversal(gasGraph, func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode {
 		if !node.IsLeaf() {
+			if parent == nil {
+				totalGasRemaining += node.GasRemaining + node.GasAccumulated
+			} else if node.IncomingEdgeType == testcommon.Callback || node.IncomingEdgeType == testcommon.CallbackCrossShard {
+				totalGasRemaining += node.GasAccumulated
+			}
 			return node
 		}
 
-		contractAddr := string(parent.Call.ContractAddress)
-		if _, ok := expectedGasUsagePerContract[contractAddr]; !ok {
-			expectedGasUsagePerContract[contractAddr] = 0
-		}
-		expectedGasUsagePerContract[contractAddr] += node.GasUsed
 		totalGasUsed += node.GasUsed
 
 		expectedNodeRetData := txDataBuilder.NewBuilder()
@@ -405,7 +442,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, map[string]uin
 		return node
 	})
 
-	return totalGasUsed, expectedGasUsagePerContract, expectedReturnData
+	return totalGasUsed, totalGasRemaining, expectedReturnData
 }
 
 func computeGasRemainingForNode(node *test.TestCallNode) {
@@ -507,8 +544,7 @@ type ReturnDataItem struct {
 	isCrossShard                 bool
 }
 
-// CheckReturnDataWithGasValuesForGraphTesting verifies if ReturnData is the same as the provided one
-func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
+func checkReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
 	processedReturnData := make([]*ReturnDataItem, 0)
 	argParser := parsers.NewCallArgsParser()
 
@@ -539,10 +575,10 @@ func CheckReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnDat
 		actualReturnData := processedReturnData[idx]
 		expectedContractAndFunction := string(expRetData[0])
 		require.Equal(t, expectedContractAndFunction, actualReturnData.contractAndFunction, "ReturnData - Call")
-		// expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1]).Uint64()
-		// require.Equal(t, expectedGasLimitForCall, actualReturnData.gasProvided, fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
-		// expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2]).Uint64()
-		// require.Equal(t, expectedGasRemainingForCall, actualReturnData.gasRemaining, fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+		expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1]).Uint64()
+		require.Equal(t, int(expectedGasLimitForCall), int(actualReturnData.gasProvided), fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
+		expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2]).Uint64()
+		require.Equal(t, int(expectedGasRemainingForCall), int(actualReturnData.gasRemaining), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
 	}
 }
 

@@ -790,14 +790,13 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 		gasAccumulatedInNotifingContext := context.gasAccumulated
 		if context.callType == vm.AsynchronousCall {
 			vmOutput := context.childResults
-			vmOutput.GasRemaining += gasToRestore
-			fmt.Println("###get vm output for contract ->", string(context.address), "callID", context.callID, "gas remaining", context.childResults.GasRemaining)
-			isComplete, callbackVMOutput, err := context.callCallback(currentAsyncCallIdentifier, vmOutput, nil)
+			// fmt.Println("###get vm output for contract ->", string(context.address), "callID", context.callID, "gas remaining", context.childResults.GasRemaining)
+			isComplete, _, err := context.callCallback(currentAsyncCallIdentifier, vmOutput, nil)
 			if err != nil {
 				return nil, err
 			}
 			if isComplete {
-				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, callbackVMOutput.GasRemaining)
+				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, 0)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
 			context.LoadParentContext()

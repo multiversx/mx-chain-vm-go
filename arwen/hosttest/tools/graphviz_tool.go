@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -12,49 +11,36 @@ import (
 )
 
 func main() {
-	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard5()
-	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
-	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
-	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
-	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
-	// callGraph := test.CreateGraphTestAsyncCallsAsync()
-	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
-	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
-	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
+
+	/*
+		1 lvl of async calls
+	*/
+	// callGraph := test.CreateGraphTestSyncCalls()
+	// callGraph := test.CreateGraphTestSyncCalls2()
+	// callGraph := test.CreateGraphTestOneAsyncCall()
+	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
-	// callGraph := test.CreateGraphTestAsyncCallsCrossShard4()
-	// callGraph := test.CreateGraphTestAsyncCallsCrossShard5()
+	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	// callGraph := test.CreateGraphTestCallbackCallsSync()
+	// callGraph := test.CreateGraphTestSyncAndAsync1()
+	// callGraph := test.CreateGraphTestSyncAndAsync2() //*
+	// callGraph := test.CreateGraphTestSyncAndAsync3()
+	// callGraph := test.CreateGraphTestSyncAndAsync6()
+	// callGraph := test.CreateGraphTestSyncAndAsync7()
+
+	/*
+		multi lvl of async calls
+	*/
+	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
-
-	/////////////////////////////////////////////////////////////////////////////////////////
-
-	// callGraph := test.CreateGraphTestSyncCalls()
-	// callGraph := test.CreateGraphTestOneAsyncCall()
-	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
-	// callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
-	// callGraph := test.CreateGraphTestAsyncCallsCrossShard3()
-	// callGraph := test.CreateGraphTestOneAsyncCallCrossShardComplex()
-
-	// callGraph := test.CreateGraphTestTwoAsyncCalls()
-	// callGraph := test.CreateGraphTestAsyncCallsAsync2() // not allowed to run!
-	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
-
-	// callGraph := test.CreateGraphTestSyncAndAsync1()
-	// callGraph := test.CreateGraphTestSyncAndAsync2()
-	// callGraph := test.CreateGraphTestSyncAndAsync3()
-	// callGraph := test.CreateGraphTestSyncAndAsync4()
-	// callGraph := test.CreateGraphTestSyncAndAsync5()
-	// callGraph := test.CreateGraphTestSyncAndAsync6()
-
-	// callGraph := test.CreateGraphTestCallbackCallsSync()
-	// callGraph := test.CreateGraphTestSimpleSyncAndAsync1()
-	// callGraph := test.CreateGraphTestSimpleSyncAndAsync2()
-	callGraph := test.CreateGraphTest1()
-	// callGraph := test.CreateGraphTest2()
+	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
+	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
+	// callGraph := test.CreateGraphTestAsyncCallsAsync()
+	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 
 	///////////////////
 
@@ -69,14 +55,15 @@ func main() {
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 tree-call-graph", graphviz)
 
+	gasGraph.AssignExecutionRounds()
+
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("4 gas-graph-gasbeforecallbacks", graphviz)
 
-	gasGraph.ComputeGasStepByStep(func(graph *test.TestCallGraph, step int) {
-		graphviz = toGraphviz(gasGraph, false)
-		createSvg(fmt.Sprintf("step %d", step), graphviz)
-	})
+	gasGraph.ComputeRemainingGasAfterCallbacks()
+	graphviz = toGraphviz(gasGraph, false)
+	createSvg("5 gas-graph-gasaftercallbacks-norestore", graphviz)
 }
 
 func createSvg(file string, graphviz *gographviz.Graph) {
@@ -227,7 +214,7 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	gasLimit := strconv.Itoa(int(node.GasLimit))
 	gasUsed := strconv.Itoa(int(node.GasUsed))
 	gasRemaining := strconv.Itoa(int(node.GasRemaining))
-	gasRemainingAfterCallback := strconv.Itoa(int(node.GasAccumulatedAfterCallback))
+	gasAccumulated := strconv.Itoa(int(node.GasAccumulated))
 	gasLocked := strconv.Itoa(int(node.GasLocked))
 	var xlabel string
 	if node.IsGasLeaf() {
@@ -249,8 +236,8 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 		// xlabel += "/U" + strconv.Itoa(int(node.GasUsed))
 
 		xlabel += "<br/>R" + gasRemaining
-		if node.GasAccumulatedAfterCallback != 0 {
-			xlabel += "<br/>A" + gasRemainingAfterCallback
+		if node.GasAccumulated != 0 {
+			xlabel += "<br/>A" + gasAccumulated
 		}
 		xlabel += gasFontEnd
 		attrs["xlabel"] = xlabel
