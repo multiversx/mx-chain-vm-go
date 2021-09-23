@@ -35,7 +35,7 @@ func main() {
 	/*
 		multi lvl of async calls
 	*/
-	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
+	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()

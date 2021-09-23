@@ -1,6 +1,8 @@
 package testcommon
 
 import (
+	"sort"
+
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 )
 
@@ -24,7 +26,19 @@ func NewCrossShardCallQueue() *CrossShardCallsQueue {
 }
 
 // Enqueue -
+// func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
+// 	callToEnqueue := createCrossShardCall(startNode, callerAddress, callType, data)
+// 	queue.Data = append(queue.Data, callToEnqueue)
+// }
+
+// Enqueue -
 func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
+	callToEnqueue := createCrossShardCall(startNode, callerAddress, callType, data)
+	queue.Data = append(queue.Data, callToEnqueue)
+	sort.Stable(queue)
+}
+
+func createCrossShardCall(startNode *TestCallNode, callerAddress []byte, callType vm.CallType, data []byte) *CrossShardCall {
 	parentsPath := make([]*TestCallNode, 0)
 	crtNode := startNode
 	for crtNode.Parent != nil {
@@ -35,13 +49,14 @@ func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *Test
 		parentsPath = append(parentsPath, crtNode.Parent)
 		crtNode = crtNode.Parent
 	}
-	queue.Data = append(queue.Data, &CrossShardCall{
+	callToEnqueue := &CrossShardCall{
 		CallerAddress: callerAddress,
 		StartNode:     startNode,
 		CallType:      callType,
 		Data:          data,
 		ParentsPath:   parentsPath,
-	})
+	}
+	return callToEnqueue
 }
 
 // Requeue -
@@ -82,4 +97,14 @@ func (queue *CrossShardCallsQueue) CanExecuteLocalCallback(callbackNode *TestCal
 		}
 	}
 	return true
+}
+
+func (queue *CrossShardCallsQueue) Len() int { return len(queue.Data) }
+
+func (queue *CrossShardCallsQueue) Less(i, j int) bool {
+	return queue.Data[i].StartNode.ExecutionRound < queue.Data[j].StartNode.ExecutionRound
+}
+
+func (queue *CrossShardCallsQueue) Swap(i, j int) {
+	queue.Data[i], queue.Data[j] = queue.Data[j], queue.Data[i]
 }

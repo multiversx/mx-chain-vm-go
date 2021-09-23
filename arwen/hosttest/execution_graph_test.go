@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
+	"sort"
 	"strconv"
 	"testing"
 
@@ -235,11 +236,11 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	computeCallIDs(gasGraph)
 
 	// compute execution order (return data) assertions and compute gas assertions
-	//totalGasUsed, totalGasRemaining, expectedReturnData := computeExpectedValues(gasGraph)
-	_, _, expectedReturnData := computeExpectedValues(gasGraph)
+	totalGasUsed, totalGasRemaining, expectedReturnData := computeExpectedValues(gasGraph)
+	// _, _, expectedReturnData := computeExpectedValues(gasGraph)
 
 	// expected gas sanity check
-	// require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
+	require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
 
 	// account -> (key -> value)
 	storage := make(map[string]map[string][]byte)
@@ -348,55 +349,31 @@ func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test
 	return crossShardEdges
 }
 
-func executionOrderTraversal(gasGraph *test.TestCallGraph, nodeProcessing func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode) {
-	crossShardCallsQueue := test.NewCrossShardCallQueue()
-	crossShardCallsQueue.Enqueue(test.UserAddress, gasGraph.StartNode, vm.DirectCall, []byte{})
-	var crossShardCall *test.CrossShardCall
-	visits := make(map[uint]bool)
-	for !crossShardCallsQueue.IsEmpty() {
-		crossShardCall = crossShardCallsQueue.Dequeue()
-		startNode := crossShardCall.StartNode
+func executionOrderTraversal(gasGraph *test.TestCallGraph, nodeProcessing func(node *test.TestCallNode)) {
+	sortedNodes := make(NodesList, 0)
+	for _, node := range gasGraph.Nodes {
+		sortedNodes = append(sortedNodes, node)
+	}
+	sort.Stable(sortedNodes)
 
-		if (startNode.IncomingEdgeType == test.Callback || startNode.IncomingEdgeType == test.CallbackCrossShard) &&
-			!crossShardCallsQueue.CanExecuteLocalCallback(startNode) {
-			crossShardCallsQueue.Requeue(crossShardCall)
-			continue
-		}
-
-		gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
-			for _, edge := range node.AdjacentEdges {
-				if edge.Type == test.AsyncCrossShard || edge.Type == test.CallbackCrossShard {
-					destinationNode := edge.To
-					var callType vm.CallType
-					switch edge.Type {
-					case test.AsyncCrossShard:
-						callType = vm.AsynchronousCall
-					case test.CallbackCrossShard:
-						callType = vm.AsynchronousCallBack
-					}
-					crossShardCallsQueue.Enqueue(node.Call.ContractAddress, destinationNode, callType, nil)
-				}
-			}
-
-			if incomingEdge != nil && incomingEdge.Type == test.Callback {
-				if !crossShardCallsQueue.CanExecuteLocalCallback(node) {
-					// crossShardCallsQueue.Enqueue(node.Call.ContractAddress, incomingEdge.To, vm.AsynchronousCallBack, nil)
-					// stop DFS for this branch
-					return nil
-				}
-			}
-
-			return nodeProcessing(parent, node)
-		}, visits, false)
+	for _, node := range sortedNodes {
+		nodeProcessing(node)
 	}
 }
 
+type NodesList []*test.TestCallNode
+
+func (nodes NodesList) Len() int           { return len(nodes) }
+func (nodes NodesList) Less(i, j int) bool { return nodes[i].ExecutionRound < nodes[j].ExecutionRound }
+func (nodes NodesList) Swap(i, j int)      { nodes[i], nodes[j] = nodes[j], nodes[i] }
+
 func computeCallIDs(gasGraph *test.TestCallGraph) {
-	executionOrderTraversal(gasGraph, func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode {
+	executionOrderTraversal(gasGraph, func(node *test.TestCallNode) {
 		if node.IsLeaf() || node.Parent == nil {
-			return node
+			return
 		}
 
+		var parent *test.TestCallNode
 		if node.IncomingEdgeType == test.Callback {
 			parent = node.Parent.Parent
 		} else {
@@ -411,9 +388,8 @@ func computeCallIDs(gasGraph *test.TestCallGraph) {
 			node.Call.CallID = newCallID
 			// fmt.Println("label", node.Label, "CallID", newCallID)
 		}
-
-		return node
 	})
+
 }
 
 func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, uint64, [][]byte) {
@@ -421,14 +397,15 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, uint64, [][]by
 	totalGasRemaining := uint64(0)
 	expectedReturnData := make([][]byte, 0)
 
-	executionOrderTraversal(gasGraph, func(parent *test.TestCallNode, node *test.TestCallNode) *test.TestCallNode {
+	executionOrderTraversal(gasGraph, func(node *test.TestCallNode) {
+		parent := node.Parent
 		if !node.IsLeaf() {
 			if parent == nil {
 				totalGasRemaining += node.GasRemaining + node.GasAccumulated
 			} else if node.IncomingEdgeType == testcommon.Callback || node.IncomingEdgeType == testcommon.CallbackCrossShard {
 				totalGasRemaining += node.GasAccumulated
 			}
-			return node
+			return
 		}
 
 		totalGasUsed += node.GasUsed
@@ -440,7 +417,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, uint64, [][]by
 		expectedNodeRetData.Int64(int64(parent.GasRemaining))
 		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
 
-		return node
+		return
 	})
 
 	return totalGasUsed, totalGasRemaining, expectedReturnData

@@ -86,7 +86,8 @@ type TestCallNode struct {
 	GasAccumulated           uint64
 
 	// set automaticaly when the test is run
-	CrtTxHash []byte
+	CrtTxHash      []byte
+	QueuedChildren int
 
 	ShardID uint32
 }
@@ -802,7 +803,7 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 	visits := make(map[uint]bool)
 	graph.dfsFromNodeWithPostProcess(graph.StartNode.Parent, graph.StartNode, nil, make([]*TestCallNode, 0),
 		func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-			if incomingEdge == nil {
+			if incomingEdge == nil || node.IsGasLeaf() {
 				return node
 			}
 
@@ -823,6 +824,7 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 			}
 
 			node.MaxSubtreeExecutionRound = node.ExecutionRound
+			getGasLeaf(node).ExecutionRound = node.ExecutionRound
 
 			return node
 		},
@@ -832,6 +834,15 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 			}
 			return node
 		}, visits, true)
+}
+
+func getGasLeaf(node *TestCallNode) *TestCallNode {
+	for _, edge := range node.AdjacentEdges {
+		if edge.To.IsGasLeaf() {
+			return edge.To
+		}
+	}
+	return nil
 }
 
 // ComputeRemainingGasBeforeCallbacks - adjusts the gas graph / tree remaining gas info using the gas provided to children
@@ -922,6 +933,17 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 	})
 }
 
-func getGasRemaining(node *TestCallNode) uint64 {
-	return node.GasRemaining
+// FindFirstAsyncParent -
+func (graph *TestCallGraph) FindFirstAsyncParent(node *TestCallNode) *TestCallNode {
+	crtNode := node.Parent
+	if crtNode == nil {
+		return node
+	}
+	for crtNode.Parent != nil {
+		if crtNode.IncomingEdgeType == Async || crtNode.IncomingEdgeType == AsyncCrossShard {
+			break
+		}
+		crtNode = crtNode.Parent
+	}
+	return crtNode
 }
