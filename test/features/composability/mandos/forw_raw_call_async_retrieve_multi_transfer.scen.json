@@ -31,7 +31,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-new.wasm"
                 }
             }
         },
@@ -100,17 +100,18 @@
                         }
                     },
                     "storage": {
+                        "str:callback_len": "1",
                         "str:callback_data.item|u32:1": "u32:0",
                         "str:callback_data.len": "1",
 
-                        "str:callback_payments|u32:1": {
+                        "str:callback_payments.item|u32:1": {
                             "1-token_id": "nested:str:TEST-SFT",
                             "2-nonce": "u64:1",
                             "3-amount": "biguint:500"
                         },
                         "str:callback_payments.len": "1"
                     },
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-new.wasm"
                 }
             }
         }
