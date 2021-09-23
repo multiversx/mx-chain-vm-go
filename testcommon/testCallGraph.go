@@ -812,7 +812,7 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 				node.ExecutionRound = parent.ExecutionRound
 				break
 			case AsyncCrossShard:
-				node.ExecutionRound = parent.ExecutionRound + 1
+				node.ExecutionRound = parent.MaxSubtreeExecutionRound + 1
 				break
 			case Callback:
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound

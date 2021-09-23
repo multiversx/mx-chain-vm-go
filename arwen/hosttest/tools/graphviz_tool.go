@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -52,10 +53,10 @@ func main() {
 	createSvg("2 execution-graph", graphviz)
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
+	gasGraph.AssignExecutionRounds()
+
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 tree-call-graph", graphviz)
-
-	gasGraph.AssignExecutionRounds()
 
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	graphviz = toGraphviz(gasGraph, false)
@@ -196,7 +197,7 @@ func computeUniqueGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[st
 	if counter > 1 {
 		suffix = "_" + strconv.Itoa(counter)
 	}
-	return strconv.Quote(prefix + suffix), strconv.Quote(prefix)
+	return strconv.Quote(prefix + suffix), strconv.Quote(fmt.Sprintf("%s [%d]", prefix, node.ExecutionRound))
 }
 
 const gasFontStart = "<<font color='green'>"

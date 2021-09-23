@@ -799,6 +799,7 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, 0)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
+			currentAsyncCallIdentifier := context.GetCallerCallID()
 			context.LoadParentContext()
 			return context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext, 0)
 		} else if context.callType == vm.DirectCall {
