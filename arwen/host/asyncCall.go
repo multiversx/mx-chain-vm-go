@@ -97,7 +97,13 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
-	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
+
+	receiverInParser := dstAddr
+	if functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+		receiverInParser = sndAddr
+	}
+
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(sndAddr, receiverInParser, functionName, args)
 	if err != nil {
 		return false, functionName, args
 	}
