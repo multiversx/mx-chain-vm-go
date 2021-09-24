@@ -51,6 +51,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &worldhook.EpochNotifierStub{},
 	})
 	if err != nil {
 		return nil, err
