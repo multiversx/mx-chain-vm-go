@@ -86,8 +86,7 @@ type TestCallNode struct {
 	GasAccumulated           uint64
 
 	// set automaticaly when the test is run
-	CrtTxHash      []byte
-	QueuedChildren int
+	CrtTxHash []byte
 
 	ShardID uint32
 }

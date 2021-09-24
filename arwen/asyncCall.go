@@ -5,31 +5,9 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// AsyncCallIdentifier hold info that can identifiy an AsyncCall within an AsyncContext
-// type AsyncCallIdentifier struct {
-// 	GroupIdentifier string
-// 	IndexInGroup    int
-// }
-
-// ToBytes marshals an AsyncCallIdentifier
-// func (asyncCallIdentifier *AsyncCallIdentifier) ToBytes() []byte {
-// 	data, _ := json.Marshal(asyncCallIdentifier)
-// 	return data
-// }
-
-// ReadAsyncCallIdentifierFromBytes -
-// func ReadAsyncCallIdentifierFromBytes(input []byte) (*AsyncCallIdentifier, error) {
-// 	asyncCallIdentifier := &AsyncCallIdentifier{}
-// 	err := json.Unmarshal(input, asyncCallIdentifier)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return asyncCallIdentifier, nil
-// }
-
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
-	Identifier      []byte
+	CallID          []byte
 	Status          AsyncCallStatus
 	ExecutionMode   AsyncCallExecutionMode
 	Source          []byte
@@ -45,7 +23,7 @@ type AsyncCall struct {
 // Clone creates a deep clone of the AsyncCall
 func (ac *AsyncCall) Clone() *AsyncCall {
 	clone := &AsyncCall{
-		Identifier:      ac.Identifier,
+		CallID:          ac.CallID,
 		Status:          ac.Status,
 		ExecutionMode:   ac.ExecutionMode,
 		Source:          make([]byte, len(ac.Source)),
@@ -68,7 +46,7 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 
 // GetIdentifier returns the identifier of an async call
 func (ac *AsyncCall) GetIdentifier() []byte {
-	return ac.Identifier
+	return ac.CallID
 }
 
 // GetSource returns the destination of an async call

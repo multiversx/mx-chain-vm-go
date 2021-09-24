@@ -48,7 +48,7 @@ type asyncContext struct {
 	childResults      *vmcommon.VMOutput
 }
 
-type serializableAsyncContext struct {
+type SerializableAsyncContext struct {
 	Address  []byte
 	CallID   []byte
 	CallType vm.CallType
@@ -454,14 +454,14 @@ func (context *asyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte
 	return getCallByAsyncIdentifier(context.asyncCallGroups, asyncCallIdentifier)
 }
 
-func (context *serializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
+func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	return getCallByAsyncIdentifier(context.AsyncCallGroups, asyncCallIdentifier)
 }
 
 func getCallByAsyncIdentifier(groups []*arwen.AsyncCallGroup, asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	for groupIndex, group := range groups {
 		for call1Index, callInGroup := range group.AsyncCalls {
-			if bytes.Equal(callInGroup.Identifier, asyncCallIdentifier) {
+			if bytes.Equal(callInGroup.CallID, asyncCallIdentifier) {
 				return callInGroup, groupIndex, call1Index, nil
 			}
 		}
@@ -497,6 +497,7 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.Async
 		call.GasLocked = metering.ComputeGasLockedForAsync()
 	}
 
+	call.CallID = nil
 	err := context.addAsyncCall(groupID, call)
 	if err != nil {
 		return err
@@ -722,7 +723,7 @@ func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier []by
 	return nil
 }
 
-func (context *serializableAsyncContext) IsComplete() bool {
+func (context *SerializableAsyncContext) IsComplete() bool {
 	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
 }
 
@@ -868,7 +869,7 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 func (context *asyncContext) ExecuteCrossShardCallback() error {
 	sender := context.address
 	destination := context.callerAddr
-	data := context.GetArgumentsForCrossShardCallback()
+	data := context.createCallbackArgumentForCrossShardCallback()
 	err := sendCrossShardCallback(context.host, sender, destination, data)
 	return err
 }
@@ -914,7 +915,7 @@ func (context *asyncContext) Save() error {
 	return nil
 }
 
-func (context *serializableAsyncContext) HasPendingCallGroups() bool {
+func (context *SerializableAsyncContext) HasPendingCallGroups() bool {
 	return len(context.AsyncCallGroups) > 0
 }
 
@@ -969,7 +970,7 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 }
 
 // NewSerializedAsyncContextFromStore -
-func NewSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, callID []byte) (*serializableAsyncContext, error) {
+func NewSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, callID []byte) (*SerializableAsyncContext, error) {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
@@ -1048,7 +1049,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	callData.Bytes(newCallID)
 	callData.Bytes(context.GetCallID())
 
-	asyncCall.Identifier = newCallID
+	asyncCall.CallID = newCallID
 
 	for _, argument := range arguments {
 		callData.Bytes(argument)
@@ -1120,8 +1121,8 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 	return nil
 }
 
-// GetArgumentsForCrossShardCallback -
-func (context *asyncContext) GetArgumentsForCrossShardCallback() []byte {
+// createCallbackArgumentForCrossShardCallback -
+func (context *asyncContext) createCallbackArgumentForCrossShardCallback() []byte {
 	transferData := txDataBuilder.NewBuilder()
 
 	transferData.Func("<callback>") // this is just a placeholder, necessary not to break decoding, it's not used anywhere
@@ -1150,8 +1151,8 @@ func (context *asyncContext) Serialize() ([]byte, error) {
 	return json.Marshal(serializableContext)
 }
 
-func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
-	deserializedContext := &serializableAsyncContext{}
+func deserializeAsyncContext(data []byte) (*SerializableAsyncContext, error) {
+	deserializedContext := &SerializableAsyncContext{}
 	err := json.Unmarshal(data, deserializedContext)
 	if err != nil {
 		return nil, err
@@ -1159,8 +1160,8 @@ func deserializeAsyncContext(data []byte) (*serializableAsyncContext, error) {
 	return deserializedContext, nil
 }
 
-func (context *asyncContext) toSerializable() *serializableAsyncContext {
-	return &serializableAsyncContext{
+func (context *asyncContext) toSerializable() *SerializableAsyncContext {
+	return &SerializableAsyncContext{
 		Address:                      context.address,
 		CallID:                       context.callID,
 		CallerAddr:                   context.callerAddr,
@@ -1179,7 +1180,7 @@ func (context *asyncContext) toSerializable() *serializableAsyncContext {
 	}
 }
 
-func fromSerializable(serializedContext *serializableAsyncContext) *asyncContext {
+func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext {
 	return &asyncContext{
 		host:                         nil,
 		stateStack:                   nil,
@@ -1267,6 +1268,16 @@ func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arw
 
 func (context *asyncContext) GetCallID() []byte {
 	return context.callID
+}
+
+// SetCallID - used for tests
+func (context *asyncContext) SetCallID(callID []byte) {
+	context.callID = callID
+}
+
+// SetCallIDForCallInGroup - used for tests
+func (context *asyncContext) SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte) {
+	context.asyncCallGroups[groupIndex].AsyncCalls[callIndex].CallID = callID
 }
 
 func (context *asyncContext) GenerateNewCallIDAndIncrementCounter() []byte {

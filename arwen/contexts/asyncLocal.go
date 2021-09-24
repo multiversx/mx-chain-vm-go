@@ -83,7 +83,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, false, err)
 		if isCallbackComplete {
 			callbackVMOutput.GasRemaining = 0
-			context.CompleteChild(asyncCall.Identifier, callbackVMOutput.GasRemaining)
+			context.CompleteChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
 		}
 	}
 
@@ -251,7 +251,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 		newCallID,
 		context.GetCallID(),
 	)
-	asyncCall.Identifier = newCallID
+	asyncCall.CallID = newCallID
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -365,7 +365,7 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 	arguments = arwen.PrependToArguments(
 		arguments,
 		context.GenerateNewCallbackID(),
-		asyncCall.Identifier,
+		asyncCall.CallID,
 		context.callID,
 		big.NewInt(int64(gasAccumulated)).Bytes(),
 	)

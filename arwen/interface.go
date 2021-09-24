@@ -348,4 +348,8 @@ type AsyncContext interface {
 	AccumulateGasFromPreviousState()
 	SetResults(vmOutput *vmcommon.VMOutput)
 	GetGasAccumulated() uint64
+
+	// for tests usage
+	SetCallID(callID []byte)
+	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
 }

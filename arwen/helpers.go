@@ -23,7 +23,7 @@ var One = big.NewInt(1)
 
 // CustomStorageKey generates a storage key of a specific type.
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
-	return append(associatedKey, []byte(keyType)...)
+	return append([]byte(keyType), associatedKey...)
 }
 
 // BooleanToInt returns 1 if the given bool is true, 0 otherwise

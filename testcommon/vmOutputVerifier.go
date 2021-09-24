@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -215,9 +216,10 @@ func (v *VMOutputVerifier) isInReturnData(element []byte) bool {
 
 // StoreEntry holds the data for a storage assertion
 type StoreEntry struct {
-	address []byte
-	key     []byte
-	value   []byte
+	address     []byte
+	key         []byte
+	value       []byte
+	ignoreValue bool
 }
 
 // CreateStoreEntry creates the data for a storage assertion
@@ -237,10 +239,18 @@ func (storeEntry *StoreEntry) WithValue(value []byte) StoreEntry {
 	return *storeEntry
 }
 
+// IgnoreValue ignores the value for a storage assertion
+func (storeEntry *StoreEntry) IgnoreValue() StoreEntry {
+	storeEntry.ignoreValue = true
+	return *storeEntry
+}
+
 // Storage verifies if StorageUpdate(s) for the speficied accounts are the same as the provided ones
 func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerifier {
 
 	storage := make(map[string]map[string]vmcommon.StorageUpdate)
+
+	ignoredValuesForKeys := make(map[string]bool)
 
 	for _, storeEntry := range expectedEntries {
 		account := string(storeEntry.address)
@@ -250,13 +260,18 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 			storage[account] = accountStorageMap
 		}
 		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value}
+		if storeEntry.ignoreValue {
+			ignoredValuesForKeys[string(storeEntry.key)] = true
+		}
 	}
 
 	for _, outputAccount := range v.VmOutput.OutputAccounts {
 		accountStorageMap := storage[string(outputAccount.Address)]
 		require.Equal(v.T, len(accountStorageMap), len(outputAccount.StorageUpdates), "Storage")
 		for key, value := range accountStorageMap {
-			require.Equal(v.T, value, *outputAccount.StorageUpdates[key], "Storage")
+			if ignore := ignoredValuesForKeys[key]; !ignore {
+				require.Equal(v.T, value, *outputAccount.StorageUpdates[key], "Storage")
+			}
 		}
 		delete(storage, string(outputAccount.Address))
 	}
@@ -268,7 +283,8 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 // TransferEntry holds the data for an output transfer assertion
 type TransferEntry struct {
 	vmcommon.OutputTransfer
-	address []byte
+	address              []byte
+	ignoredDataArguments []int
 }
 
 // CreateTransferEntry creates the data for an output transfer assertion
@@ -282,6 +298,12 @@ func CreateTransferEntry(senderAddress []byte, receiverAddress []byte) *Transfer
 // WithData create sets the data for an output transfer assertion
 func (transferEntry *TransferEntry) WithData(data []byte) *TransferEntry {
 	transferEntry.Data = data
+	return transferEntry
+}
+
+// IgnoreDataItems specifies data arguments to be ignored in assertions
+func (transferEntry *TransferEntry) IgnoreDataItems(ignoredDataArguments ...int) *TransferEntry {
+	transferEntry.ignoredDataArguments = ignoredDataArguments
 	return transferEntry
 }
 
@@ -312,6 +334,7 @@ func (transferEntry *TransferEntry) WithValue(value *big.Int) TransferEntry {
 // Transfers verifies if OutputTransfer(s) for the speficied accounts are the same as the provided ones
 func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifier {
 	transfersMap := make(map[string][]vmcommon.OutputTransfer)
+	ignoredDataFieldsForTransfersMap := make(map[string][][]int)
 	for _, transferEntry := range transfers {
 		account := string(transferEntry.address)
 		accountTransfers, exists := transfersMap[account]
@@ -319,23 +342,52 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 			accountTransfers = make([]vmcommon.OutputTransfer, 0)
 		}
 		transfersMap[account] = append(accountTransfers, transferEntry.OutputTransfer)
+		ignoredDataFieldsForTransfersMap[account] =
+			append(ignoredDataFieldsForTransfersMap[account], transferEntry.ignoredDataArguments)
 	}
 
+	callArgsParser := parsers.NewCallArgsParser()
 	for _, outputAccount := range v.VmOutput.OutputAccounts {
 		transfersForAccount := transfersMap[string(outputAccount.Address)]
+		ignoredDataFieldsForAccount := ignoredDataFieldsForTransfersMap[string(outputAccount.Address)]
 		errMsg := formatErrorForAccount("Transfers to ", outputAccount.Address)
 		require.Equal(v.T, len(transfersForAccount), len(outputAccount.OutputTransfers), errMsg)
 		for idx := range transfersForAccount {
 			errMsg = formatErrorForAccount("Transfers from / to ",
 				outputAccount.OutputTransfers[idx].SenderAddress,
 				outputAccount.Address)
+			expectedTransferData := transfersForAccount[idx].Data
+			transfersForAccount[idx].Data = nil
+			actualTransferData := outputAccount.OutputTransfers[idx].Data
+			outputAccount.OutputTransfers[idx].Data = nil
+			// compare transfers without data
 			require.Equal(v.T, transfersForAccount[idx], outputAccount.OutputTransfers[idx], errMsg)
+
+			expectedFunction, expectedArgs, _ := callArgsParser.ParseData(string(expectedTransferData))
+			actualFunction, actualArgs, _ := callArgsParser.ParseData(string(actualTransferData))
+			require.Equal(v.T, expectedFunction, actualFunction, errMsg)
+			ignoredFieldsForTransfer := ignoredDataFieldsForAccount[idx]
+			for a := 0; a < len(expectedArgs); a++ {
+				// a + 1 because we consider func name previously compared
+				if linearIntSearch(ignoredFieldsForTransfer, a+1) == -1 {
+					require.Equal(v.T, expectedArgs[a], actualArgs[a], errMsg)
+				}
+			}
 		}
 		delete(transfersMap, string(outputAccount.Address))
 	}
 	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
 
 	return v
+}
+
+func linearIntSearch(array []int, i int) int {
+	for index, element := range array {
+		if element == i {
+			return index
+		}
+	}
+	return -1
 }
 
 // Print writes the contents of the VMOutput with log.Trace()
