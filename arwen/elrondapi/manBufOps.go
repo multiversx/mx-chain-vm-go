@@ -41,6 +41,28 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
+const (
+	mBufferNewName                = "mBufferNew"
+	mBufferNewFromBytesName       = "mBufferNewFromBytes"
+	mBufferGetLengthName          = "mBufferGetLength"
+	mBufferGetBytesName           = "mBufferGetBytes"
+	mBufferGetByteSliceName       = "mBufferGetByteSlice"
+	mBufferCopyByteSliceName      = "mBufferCopyByteSlice"
+	mBufferEqName                 = "mBufferEq"
+	mBufferSetBytesName           = "mBufferSetBytes"
+	mBufferAppendName             = "mBufferAppend"
+	mBufferAppendBytesName        = "mBufferAppendBytes"
+	mBufferToBigIntUnsignedName   = "mBufferToBigIntUnsigned"
+	mBufferToBigIntSignedName     = "mBufferToBigIntSigned"
+	mBufferFromBigIntUnsignedName = "mBufferFromBigIntUnsigned"
+	mBufferFromBigIntSignedName   = "mBufferFromBigIntSigned"
+	mBufferStorageStoreName       = "mBufferStorageStore"
+	mBufferStorageLoadName        = "mBufferStorageLoad"
+	mBufferGetArgumentName        = "mBufferGetArgument"
+	mBufferFinishName             = "mBufferFinish"
+	mBufferSetRandomName          = "mBufferSetRandom"
+)
+
 // ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
 func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
@@ -154,12 +176,10 @@ func v1_4_mBufferNew(context unsafe.Pointer) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferNew", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferNew
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferNewName, initialGasLeft)
 
 	return managedType.NewManagedBuffer()
 }
@@ -170,12 +190,10 @@ func v1_4_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLeng
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferNewFromBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferNewFromBytes
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferNewFromBytesName, initialGasLeft)
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -191,12 +209,10 @@ func v1_4_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferGetLength", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetLength
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferGetLengthName, initialGasLeft)
 
 	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
@@ -213,26 +229,26 @@ func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOff
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferGetBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetBytes
 	metering.UseGas(gasToUse)
 
 	mBufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferGetBytesName, initialGasLeft)
 		return 1
 	}
 	managedType.ConsumeGasForBytes(mBufferBytes)
 
 	err = runtime.MemStore(resultOffset, mBufferBytes)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferGetBytesName, initialGasLeft)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(mBufferBytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferGetBytesName, initialGasLeft)
 
 	return 0
 }
@@ -243,32 +259,33 @@ func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, starti
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferGetByteSlice", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetByteSlice
 	metering.UseGas(gasToUse)
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferGetByteSliceName, initialGasLeft)
 		return 1
 	}
 	managedType.ConsumeGasForBytes(sourceBytes)
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		// does not fail execution if slice exceeds bounds
+		runtime.TraceGasUsed(mBufferGetByteSliceName, initialGasLeft)
 		return 1
 	}
 
 	slice := sourceBytes[startingPosition : startingPosition+sliceLength]
 	err = runtime.MemStore(resultOffset, slice)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferGetByteSliceName, initialGasLeft)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferGetByteSliceName, initialGasLeft)
 
 	return 0
 }
@@ -279,21 +296,20 @@ func v1_4_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, start
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferCopyByteSlice", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferCopyByteSlice
 	metering.UseGas(gasToUse)
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferCopyByteSliceName, initialGasLeft)
 		return 1
 	}
 	managedType.ConsumeGasForBytes(sourceBytes)
 
 	if startingPosition < 0 || sliceLength < 0 || int(startingPosition+sliceLength) > len(sourceBytes) {
 		// does not fail execution if slice exceeds bounds
+		runtime.TraceGasUsed(mBufferCopyByteSliceName, initialGasLeft)
 		return 1
 	}
 
@@ -302,6 +318,7 @@ func v1_4_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, start
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(slice)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferCopyByteSliceName, initialGasLeft)
 
 	return 0
 }
@@ -312,24 +329,24 @@ func v1_4_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferEq", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferCopyByteSlice
 	metering.UseGas(gasToUse)
 
 	bytes1, err := managedType.GetBytes(mBufferHandle1)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferEqName, initialGasLeft)
 		return -1
 	}
 	managedType.ConsumeGasForBytes(bytes1)
 
 	bytes2, err := managedType.GetBytes(mBufferHandle2)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferEqName, initialGasLeft)
 		return -1
 	}
 	managedType.ConsumeGasForBytes(bytes2)
+	runtime.TraceGasUsed(mBufferEqName, initialGasLeft)
 
 	if bytes.Equal(bytes1, bytes2) {
 		return 1
@@ -344,15 +361,13 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferSetBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferSetBytesName, initialGasLeft)
 		return 1
 	}
 	managedType.ConsumeGasForBytes(data)
@@ -360,6 +375,7 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferSetBytesName, initialGasLeft)
 
 	return 0
 }
@@ -370,27 +386,27 @@ func v1_4_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHan
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferAppend", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferAppend
 	metering.UseGas(gasToUse)
 
 	dataBufferBytes, err := managedType.GetBytes(dataHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferAppendName, initialGasLeft)
 		return 1
 	}
 	managedType.ConsumeGasForBytes(dataBufferBytes)
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, dataBufferBytes)
 	if !isSuccess {
+		runtime.TraceGasUsed(mBufferAppendName, initialGasLeft)
 		_ = arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(dataBufferBytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferAppendName, initialGasLeft)
 
 	return 0
 }
@@ -401,26 +417,26 @@ func v1_4_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, da
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferAppendBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferAppendBytes
 	metering.UseGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferAppendBytesName, initialGasLeft)
 		return 1
 	}
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, data)
 	if !isSuccess {
 		_ = arwen.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(mBufferAppendBytesName, initialGasLeft)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferAppendBytesName, initialGasLeft)
 
 	return 0
 }
@@ -431,12 +447,10 @@ func v1_4_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, b
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferToBigIntUnsigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntUnsigned
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferToBigIntUnsignedName, initialGasLeft)
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -455,12 +469,10 @@ func v1_4_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, big
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferToBigIntSigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigIntSigned
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferToBigIntSignedName, initialGasLeft)
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -479,12 +491,10 @@ func v1_4_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32,
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferFromBigIntUnsigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromBigIntUnsigned
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferFromBigIntUnsignedName, initialGasLeft)
 
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -502,12 +512,10 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferFromBigIntSigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromBigIntSigned
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferFromBigIntSignedName, initialGasLeft)
 
 	value, err := managedType.GetBigInt(bigIntHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -525,12 +533,10 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHan
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferStorageStore", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferStorageStore
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferStorageStoreName, initialGasLeft)
 
 	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -557,12 +563,10 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBUfferStorageLoad", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferStorageLoadName, initialGasLeft)
 
 	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -580,12 +584,10 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferGetArgument", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferGetArgument
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferGetArgumentName, initialGasLeft)
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id {
@@ -602,21 +604,21 @@ func v1_4_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferFinish", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFinish
 	metering.UseGas(gasToUse)
 
 	sourceBytes, err := managedType.GetBytes(sourceHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(mBufferFinishName, initialGasLeft)
 		return 1
 	}
 	output.Finish(sourceBytes)
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(sourceBytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(mBufferFinishName, initialGasLeft)
+
 	return 0
 }
 
@@ -626,9 +628,6 @@ func v1_4_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, leng
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("mBufferSetRandom", initialGasLeft)
-	}()
 
 	if length < 1 {
 		_ = arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
@@ -638,6 +637,7 @@ func v1_4_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, leng
 	baseGasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetRandom
 	lengthDependentGasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	metering.UseGas(math.AddUint64(baseGasToUse, lengthDependentGasToUse))
+	runtime.TraceGasUsed(mBufferSetRandomName, initialGasLeft)
 
 	randomizer := managedType.GetRandReader()
 	buffer := make([]byte, length)

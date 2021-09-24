@@ -45,6 +45,33 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
+const (
+	managedSCAddressName                    = "managedSCAddress"
+	managedOwnerAddressName                 = "managedOwnerAddress"
+	managedCallerName                       = "managedCaller"
+	managedSignalErrorName                  = "managedSignalError"
+	managedWriteLogName                     = "managedWriteLog"
+	managedMultiTransferESDTNFTExecuteName  = "managedMultiTransferESDTNFTExecute"
+	managedTransferValueExecuteName         = "managedTransferValueExecute"
+	managedExecuteOnDestContextName         = "managedExecuteOnDestContext"
+	managedExecuteOnDestContextByCallerName = "managedExecuteOnDestContextByCaller"
+	managedExecuteOnSameContextName         = "managedExecuteOnSameContext"
+	managedExecuteReadOnlyName              = "managedExecuteReadOnly"
+	managedCreateContractName               = "managedCreateContract"
+	managedDeployFromSourceContractName     = "managedDeployFromSourceContract"
+	managedUpgradeContractName              = "managedUpgradeContract"
+	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
+	managedAsyncCallName                    = "managedAsyncCall"
+	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
+	managedGetESDTBalanceName               = "managedGetESDTBalance"
+	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
+	managedGetReturnDataName                = "managedGetReturnData"
+	managedGetPrevBlockRandomSeedName       = "managedGetPrevBlockRandomSeed"
+	managedGetBlockRandomSeedName           = "managedGetBlockRandomSeed"
+	managedGetStateRootHashName             = "managedGetStateRootHash"
+	managedGetOriginalTxHashName            = "managedGetOriginalTxHash"
+)
+
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
 func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
@@ -178,12 +205,10 @@ func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedSCAddress", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedSCAddressName, initialGasLeft)
 
 	scAddress := runtime.GetSCAddress()
 
@@ -197,12 +222,10 @@ func v1_4_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedOwnerAddress", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwnerAddress
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedOwnerAddressName, initialGasLeft)
 
 	owner, err := blockchain.GetOwnerAddress()
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -218,12 +241,10 @@ func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedCaller", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCaller
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedCallerName, initialGasLeft)
 
 	caller := runtime.GetVMInput().CallerAddr
 	managedType.SetBytes(destinationHandle, caller)
@@ -235,12 +256,10 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedSignalError", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedSignalErrorName, initialGasLeft)
 
 	errBytes, err := managedType.GetBytes(errHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -262,17 +281,16 @@ func v1_4_managedWriteLog(
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedWriteLog", initialGasLeft)
-	}()
 
 	topics, sumOfTopicByteLengths, err := readManagedVecOfManagedBuffers(managedType, topicsHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(managedWriteLogName, initialGasLeft)
 		return
 	}
 
 	dataBytes, err := managedType.GetBytes(dataHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(managedWriteLogName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBytes(dataBytes)
@@ -284,6 +302,7 @@ func v1_4_managedWriteLog(
 		sumOfTopicByteLengths+dataByteLen)
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedWriteLogName, initialGasLeft)
 
 	output.WriteLog(runtime.GetSCAddress(), topics, dataBytes)
 }
@@ -294,12 +313,10 @@ func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetOriginalTxHash", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetOriginalTxHash
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetOriginalTxHashName, initialGasLeft)
 
 	managedType.SetBytes(resultHandle, runtime.GetOriginalTxHash())
 }
@@ -311,12 +328,10 @@ func v1_4_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetStateRootHash", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetStateRootHash
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetStateRootHashName, initialGasLeft)
 
 	managedType.SetBytes(resultHandle, blockchain.GetStateRootHash())
 }
@@ -328,12 +343,10 @@ func v1_4_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) 
 	runtime := arwen.GetRuntimeContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetBlockRandomSeed", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetBlockRandomSeedName, initialGasLeft)
 
 	managedType.SetBytes(resultHandle, blockchain.CurrentRandomSeed())
 }
@@ -345,12 +358,10 @@ func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int
 	runtime := arwen.GetRuntimeContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetPrevBlockRandomSeed", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetPrevBlockRandomSeedName, initialGasLeft)
 
 	managedType.SetBytes(resultHandle, blockchain.LastRandomSeed())
 }
@@ -362,12 +373,10 @@ func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetReturnData", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnData
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetReturnDataName, initialGasLeft)
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) {
@@ -384,9 +393,6 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetMultiESDTCallValue", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGas(gasToUse)
@@ -394,6 +400,7 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 	esdtTransfers := runtime.GetVMInput().ESDTTransfers
 	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
 	managedType.ConsumeGasForBytes(multiCallBytes)
+	runtime.TraceGasUsed(managedGetMultiESDTCallValueName, initialGasLeft)
 
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
@@ -405,12 +412,10 @@ func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 	blockchain := arwen.GetBlockchainContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetESDTBalance", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetESDTBalanceName, initialGasLeft)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
@@ -441,12 +446,10 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 	blockchain := arwen.GetBlockchainContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedGetESDTTokenData", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedGetESDTTokenDataName, initialGasLeft)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
@@ -483,6 +486,8 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 		writeManagedVecOfManagedBuffers(metering, managedType, esdtToken.TokenMetaData.URIs, urisHandle)
 	}
+	runtime.TraceGasUsed(managedGetESDTTokenDataName, initialGasLeft)
+
 }
 
 //export v1_4_managedAsyncCall
@@ -630,12 +635,10 @@ func v1_4_managedDeployFromSourceContract(
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedDeployFromSourceContract", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedDeployFromSourceContractName, initialGasLeft)
 
 	vmInput, err := readDestinationValueArguments(host, addressHandle, valueHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -663,6 +666,7 @@ func v1_4_managedDeployFromSourceContract(
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	runtime.TraceGasUsed(managedDeployFromSourceContractName, initialGasLeft)
 
 	return 0
 }
@@ -683,9 +687,6 @@ func v1_4_managedCreateContract(
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedCreateContract", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseGas(gasToUse)
@@ -693,16 +694,19 @@ func v1_4_managedCreateContract(
 	sender := runtime.GetSCAddress()
 	value, err := managedType.GetBigInt(valueHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(managedCreateContractName, initialGasLeft)
 		return 1
 	}
 
 	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(managedCreateContractName, initialGasLeft)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(managedCreateContractName, initialGasLeft)
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -722,6 +726,7 @@ func v1_4_managedCreateContract(
 
 	managedType.SetBytes(resultAddressHandle, newAddress)
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	runtime.TraceGasUsed(managedCreateContractName, initialGasLeft)
 
 	return 0
 }
@@ -752,12 +757,10 @@ func v1_4_managedExecuteReadOnly(
 	runtime := host.Runtime()
 	metering := host.Metering()
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedExecuteReadOnly", initialGasLeft)
-	}()
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(managedExecuteReadOnlyName, initialGasLeft)
 		return -1
 	}
 
@@ -770,6 +773,7 @@ func v1_4_managedExecuteReadOnly(
 		vmInput.arguments,
 	)
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
+	runtime.TraceGasUsed(managedExecuteReadOnlyName, initialGasLeft)
 	return returnVal
 }
 
@@ -875,19 +879,17 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 	host := arwen.GetVMHost(context)
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedMultiTransferESDTNFTExecute", initialGasLeft)
-	}()
+	runtime.SetInitialGasInGasTrace(managedMultiTransferESDTNFTExecuteName)
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		runtime.ComputeAndSetUsedGasInGasTrace()
 		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		runtime.ComputeAndSetUsedGasInGasTrace()
 		return -1
 	}
 
@@ -912,14 +914,11 @@ func v1_4_managedTransferValueExecute(
 ) int32 {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
-	metering := host.Metering()
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("managedTransferValueExecute", initialGasLeft)
-	}()
+	runtime.SetInitialGasInGasTrace(managedTransferValueExecuteName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		runtime.ComputeAndSetUsedGasInGasTrace()
 		return -1
 	}
 

@@ -66,6 +66,50 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
+const (
+	bigIntNewName                     = "bigIntNew"
+	bigIntUnsignedByteLengthName      = "bigIntUnsignedByteLength"
+	bigIntSignedByteLengthName        = "bigIntSignedByteLength"
+	bigIntGetUnsignedBytesName        = "bigIntGetUnsignedBytes"
+	bigIntGetSignedBytesName          = "bigIntGetSignedBytes"
+	bigIntSetUnsignedBytesName        = "bigIntSetUnsignedBytes"
+	bigIntSetSignedBytesName          = "bigIntSetSignedBytes"
+	bigIntIsInt64Name                 = "bigIntIsInt64"
+	bigIntGetInt64Name                = "bigIntGetInt64"
+	bigIntSetInt64Name                = "bigIntSetInt64"
+	bigIntAddName                     = "bigIntAdd"
+	bigIntSubName                     = "bigIntSub"
+	bigIntMulName                     = "bigIntMul"
+	bigIntTDivName                    = "bigIntTDiv"
+	bigIntTModName                    = "bigIntTMod"
+	bigIntEDivName                    = "bigIntEDiv"
+	bigIntEModName                    = "bigIntEMod"
+	bigIntPowName                     = "bigIntPow"
+	bigIntLog2Name                    = "bigIntLog2"
+	bigIntSqrtName                    = "bigIntSqrt"
+	bigIntAbsName                     = "bigIntAbs"
+	bigIntNegName                     = "bigIntNeg"
+	bigIntSignName                    = "bigIntSign"
+	bigIntCmpName                     = "bigIntCmp"
+	bigIntNotName                     = "bigIntNot"
+	bigIntAndName                     = "bigIntAnd"
+	bigIntOrName                      = "bigIntOr"
+	bigIntXorName                     = "bigIntXor"
+	bigIntShrName                     = "bigIntShr"
+	bigIntShlName                     = "bigIntShl"
+	bigIntFinishUnsignedName          = "bigIntFinishUnsigned"
+	bigIntFinishSignedName            = "bigIntFinishSigned"
+	bigIntStorageStoreUnsignedName    = "bigIntStorageStoreUnsigned"
+	bigIntStorageLoadUnsignedName     = "bigIntStorageLoadUnsigned"
+	bigIntGetUnsignedArgumentName     = "bigIntGetUnsignedArgument"
+	bigIntGetSignedArgumentName       = "bigIntGetSignedArgument"
+	bigIntGetCallValueName            = "bigIntGetCallValue"
+	bigIntGetESDTCallValueName        = "bigIntGetESDTCallValue"
+	bigIntGetESDTCallValueByIndexName = "bigIntGetESDTCallValueByIndex"
+	bigIntGetESDTExternalBalanceName  = "bigIntGetESDTExternalBalance"
+	bigIntGetExternalBalanceName      = "bigIntGetExternalBalance"
+)
+
 // BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
 func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
@@ -284,12 +328,10 @@ func v1_4_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinatio
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetUnsignedArgument", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedArgument
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetUnsignedArgumentName, initialGasLeft)
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id {
@@ -307,12 +349,10 @@ func v1_4_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationH
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetSignedArgument", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedArgument
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetSignedArgumentName, initialGasLeft)
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id {
@@ -331,12 +371,10 @@ func v1_4_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, ke
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntStorageStoreUnsigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntStorageStoreUnsignedName, initialGasLeft)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -361,12 +399,10 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntStorageLoadUnsigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntStorageLoadUnsignedName, initialGasLeft)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -387,12 +423,10 @@ func v1_4_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetCallValue", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetCallValueName, initialGasLeft)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.Set(runtime.GetVMInput().CallValue)
@@ -400,7 +434,13 @@ func v1_4_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
 
 //export v1_4_bigIntGetESDTCallValue
 func v1_4_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
-	_ = failIfMoreThanOneESDTTransfer(context)
+	runtime := arwen.GetRuntimeContext(context)
+	runtime.SetInitialGasInGasTrace(bigIntGetESDTCallValueName)
+	isFail := failIfMoreThanOneESDTTransfer(context)
+	if isFail {
+		runtime.ComputeAndSetUsedGasInGasTrace()
+		return
+	}
 	v1_4_bigIntGetESDTCallValueByIndex(context, destination, 0)
 }
 
@@ -409,13 +449,11 @@ func v1_4_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandl
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetESDTCallValueByIndex", initialGasLeft)
-	}()
+	runtime.SetInitialGasInGasTrace(bigIntGetESDTCallValueByIndexName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
 	metering.UseGas(gasToUse)
+	runtime.ComputeAndSetUsedGasInGasTrace()
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
@@ -433,12 +471,10 @@ func v1_4_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, 
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetExternalBalance", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetExternalBalanceName, initialGasLeft)
 
 	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -457,14 +493,12 @@ func v1_4_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetESDTExternalBalance", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
 	metering.UseGas(gasToUse)
 
 	esdtData, err := getESDTDataFromBlockchainHook(context, addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	runtime.TraceGasUsed(bigIntGetESDTExternalBalanceName, initialGasLeft)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -482,12 +516,10 @@ func v1_4_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntNew", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNew
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntNewName, initialGasLeft)
 
 	return managedType.NewBigIntFromInt64(smallValue)
 }
@@ -498,12 +530,10 @@ func v1_4_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntUnsignedByteLength", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntUnsignedByteLength
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntUnsignedByteLengthName, initialGasLeft)
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -520,12 +550,10 @@ func v1_4_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) 
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSignedByteLength", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSignedByteLength
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntSignedByteLengthName, initialGasLeft)
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -542,26 +570,26 @@ func v1_4_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, 
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetUnsignedBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetUnsignedBytes
 	metering.UseGas(gasToUse)
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntGetUnsignedBytesName, initialGasLeft)
 		return -1
 	}
 	bytes := value.Bytes()
 
 	err = runtime.MemStore(byteOffset, bytes)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntGetUnsignedBytesName, initialGasLeft)
 		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetUnsignedBytesName, initialGasLeft)
 
 	return int32(len(bytes))
 }
@@ -572,26 +600,26 @@ func v1_4_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, by
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetSignedBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetSignedBytes
 	metering.UseGas(gasToUse)
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntGetSignedBytesName, initialGasLeft)
 		return -1
 	}
 	bytes := twos.ToBytes(value)
 
 	err = runtime.MemStore(byteOffset, bytes)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntGetSignedBytesName, initialGasLeft)
 		return -1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetSignedBytesName, initialGasLeft)
 
 	return int32(len(bytes))
 }
@@ -602,15 +630,13 @@ func v1_4_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSetUnsignedBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetUnsignedBytes
 	metering.UseGas(gasToUse)
 
 	bytes, err := runtime.MemLoad(byteOffset, byteLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntSetUnsignedBytesName, initialGasLeft)
 		return
 	}
 
@@ -619,6 +645,7 @@ func v1_4_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntSetUnsignedBytesName, initialGasLeft)
 }
 
 //export v1_4_bigIntSetSignedBytes
@@ -627,15 +654,13 @@ func v1_4_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, 
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSetSignedBytes", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetSignedBytes
 	metering.UseGas(gasToUse)
 
 	bytes, err := runtime.MemLoad(byteOffset, byteLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntSetSignedBytesName, initialGasLeft)
 		return
 	}
 
@@ -644,6 +669,7 @@ func v1_4_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, 
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntSetSignedBytesName, initialGasLeft)
 }
 
 //export v1_4_bigIntIsInt64
@@ -652,12 +678,10 @@ func v1_4_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntIsInt64", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntIsInt64
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntIsInt64Name, initialGasLeft)
 
 	value, err := managedType.GetBigInt(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -675,12 +699,10 @@ func v1_4_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntGetInt64", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntGetInt64Name, initialGasLeft)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	return value.Int64()
@@ -692,12 +714,10 @@ func v1_4_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value 
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSetInt64", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntSetInt64Name, initialGasLeft)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	dest.SetInt64(value)
@@ -709,9 +729,6 @@ func v1_4_bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext((context))
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntAdd", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -719,10 +736,12 @@ func v1_4_bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntAddName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	dest.Add(a, b)
+	runtime.TraceGasUsed(bigIntAddName, initialGasLeft)
 }
 
 //export v1_4_bigIntSub
@@ -731,9 +750,6 @@ func v1_4_bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSub", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -741,10 +757,12 @@ func v1_4_bigIntSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntSubName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	dest.Sub(a, b)
+	runtime.TraceGasUsed(bigIntSubName, initialGasLeft)
 }
 
 //export v1_4_bigIntMul
@@ -753,9 +771,6 @@ func v1_4_bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntMul", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntMul
 	metering.UseGas(gasToUse)
@@ -763,10 +778,13 @@ func v1_4_bigIntMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntMulName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
+
 	dest.Mul(a, b)
+	runtime.TraceGasUsed(bigIntMulName, initialGasLeft)
 }
 
 //export v1_4_bigIntTDiv
@@ -775,9 +793,6 @@ func v1_4_bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntTDiv", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTDiv
 	metering.UseGas(gasToUse)
@@ -785,14 +800,17 @@ func v1_4_bigIntTDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntTDivName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
 		_ = arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntTDivName, initialGasLeft)
 		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
+	runtime.TraceGasUsed(bigIntTDivName, initialGasLeft)
 }
 
 //export v1_4_bigIntTMod
@@ -801,9 +819,6 @@ func v1_4_bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntTMod", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -811,14 +826,18 @@ func v1_4_bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntTModName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
 		_ = arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntTModName, initialGasLeft)
 		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
+	runtime.TraceGasUsed(bigIntTModName, initialGasLeft)
+
 }
 
 //export v1_4_bigIntEDiv
@@ -827,9 +846,6 @@ func v1_4_bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntEDiv", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -837,14 +853,17 @@ func v1_4_bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntEDivName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
 		_ = arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntEDivName, initialGasLeft)
 		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
+	runtime.TraceGasUsed(bigIntEDivName, initialGasLeft)
 }
 
 //export v1_4_bigIntEMod
@@ -853,9 +872,6 @@ func v1_4_bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntEMod", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -863,14 +879,17 @@ func v1_4_bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntEModName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
 		_ = arwen.WithFault(arwen.ErrDivZero, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntEModName, initialGasLeft)
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
+	runtime.TraceGasUsed(bigIntEModName, initialGasLeft)
 }
 
 //export v1_4_bigIntSqrt
@@ -879,9 +898,6 @@ func v1_4_bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) 
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSqrt", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSqrt
 	metering.UseGas(gasToUse)
@@ -889,14 +905,17 @@ func v1_4_bigIntSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntSqrtName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	if a.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntSqrtName, initialGasLeft)
 		return
 	}
 	dest.Sqrt(a)
+	runtime.TraceGasUsed(bigIntSqrtName, initialGasLeft)
 }
 
 //export v1_4_bigIntPow
@@ -905,9 +924,6 @@ func v1_4_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntPow", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
 	metering.UseGas(gasToUse)
@@ -915,6 +931,7 @@ func v1_4_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntPowName, initialGasLeft)
 		return
 	}
 
@@ -926,10 +943,12 @@ func v1_4_bigIntPow(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 
 	if b.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntPowName, initialGasLeft)
 		return
 	}
 
 	dest.Exp(a, b, nil)
+	runtime.TraceGasUsed(bigIntPowName, initialGasLeft)
 }
 
 //export v1_4_bigIntLog2
@@ -938,23 +957,23 @@ func v1_4_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntLog2", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntLog
 	metering.UseGas(gasToUse)
 
 	a, err := managedType.GetBigInt(op1Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntLog2Name, initialGasLeft)
 		return -1
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBadLowerBounds, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntLog2Name, initialGasLeft)
 		return -1
 	}
 
+	runtime.TraceGasUsed(bigIntLog2Name, initialGasLeft)
 	return int32(a.BitLen() - 1)
 }
 
@@ -964,9 +983,6 @@ func v1_4_bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntAbs", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -974,10 +990,12 @@ func v1_4_bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntAbsName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	dest.Abs(a)
+	runtime.TraceGasUsed(bigIntAbsName, initialGasLeft)
 }
 
 //export v1_4_bigIntNeg
@@ -986,9 +1004,6 @@ func v1_4_bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntNeg", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -996,10 +1011,12 @@ func v1_4_bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntNegName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	dest.Neg(a)
+	runtime.TraceGasUsed(bigIntNegName, initialGasLeft)
 }
 
 //export v1_4_bigIntSign
@@ -1008,18 +1025,17 @@ func v1_4_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntSign", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSign
 	metering.UseGas(gasToUse)
 
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntSignName, initialGasLeft)
 		return -2
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
+	runtime.TraceGasUsed(bigIntSignName, initialGasLeft)
 	return int32(a.Sign())
 }
 
@@ -1029,18 +1045,17 @@ func v1_4_bigIntCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntCmp", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntCmp
 	metering.UseGas(gasToUse)
 
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntCmpName, initialGasLeft)
 		return -2
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
+	runtime.TraceGasUsed(bigIntCmpName, initialGasLeft)
 	return int32(a.Cmp(b))
 }
 
@@ -1050,9 +1065,6 @@ func v1_4_bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntNot", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -1060,14 +1072,17 @@ func v1_4_bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntNotName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	if a.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntNotName, initialGasLeft)
 		return
 	}
 	dest.Not(a)
+	runtime.TraceGasUsed(bigIntNotName, initialGasLeft)
 }
 
 //export v1_4_bigIntAnd
@@ -1076,9 +1091,6 @@ func v1_4_bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntAnd", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -1086,14 +1098,17 @@ func v1_4_bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntAndName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntAndName, initialGasLeft)
 		return
 	}
 	dest.And(a, b)
+	runtime.TraceGasUsed(bigIntAndName, initialGasLeft)
 }
 
 //export v1_4_bigIntOr
@@ -1102,9 +1117,6 @@ func v1_4_bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Hand
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntOr", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -1112,14 +1124,17 @@ func v1_4_bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Hand
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntOrName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntOrName, initialGasLeft)
 		return
 	}
 	dest.Or(a, b)
+	runtime.TraceGasUsed(bigIntOrName, initialGasLeft)
 }
 
 //export v1_4_bigIntXor
@@ -1128,9 +1143,6 @@ func v1_4_bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntXor", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -1138,14 +1150,17 @@ func v1_4_bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, b, err := managedType.GetTwoBigInt(op1Handle, op2Handle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntXorName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
 		_ = arwen.WithFault(arwen.ErrBitwiseNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntXorName, initialGasLeft)
 		return
 	}
 	dest.Xor(a, b)
+	runtime.TraceGasUsed(bigIntXorName, initialGasLeft)
 }
 
 //export v1_4_bigIntShr
@@ -1154,9 +1169,6 @@ func v1_4_bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntShr", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -1164,15 +1176,18 @@ func v1_4_bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntShrName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 || bits < 0 {
 		_ = arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntShrName, initialGasLeft)
 		return
 	}
 	dest.Rsh(a, uint(bits))
 	managedType.ConsumeGasForBigIntCopy(dest)
+	runtime.TraceGasUsed(bigIntShrName, initialGasLeft)
 }
 
 //export v1_4_bigIntShl
@@ -1181,9 +1196,6 @@ func v1_4_bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntShl", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
 	metering.UseGas(gasToUse)
@@ -1191,15 +1203,18 @@ func v1_4_bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
 	a, err := managedType.GetBigInt(opHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntShlName, initialGasLeft)
 		return
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 || bits < 0 {
 		_ = arwen.WithFault(arwen.ErrShiftNegative, context, runtime.BigIntAPIErrorShouldFailExecution())
+		runtime.TraceGasUsed(bigIntShlName, initialGasLeft)
 		return
 	}
 	dest.Lsh(a, uint(bits))
 	managedType.ConsumeGasForBigIntCopy(dest)
+	runtime.TraceGasUsed(bigIntShlName, initialGasLeft)
 }
 
 //export v1_4_bigIntFinishUnsigned
@@ -1209,15 +1224,13 @@ func v1_4_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntFinishUnsigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishUnsigned
 	metering.UseGas(gasToUse)
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntFinishUnsignedName, initialGasLeft)
 		return
 	}
 	bigIntBytes := value.Bytes()
@@ -1225,6 +1238,7 @@ func v1_4_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(value.Bytes())))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntFinishUnsignedName, initialGasLeft)
 }
 
 //export v1_4_bigIntFinishSigned
@@ -1234,15 +1248,13 @@ func v1_4_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	initialGasLeft := metering.GasLeft()
-	defer func() {
-		runtime.TraceGasUsed("bigIntFinishSigned", initialGasLeft)
-	}()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	metering.UseGas(gasToUse)
 
 	value, err := managedType.GetBigInt(referenceHandle)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		runtime.TraceGasUsed(bigIntFinishSignedName, initialGasLeft)
 		return
 	}
 	bigInt2cBytes := twos.ToBytes(value)
@@ -1250,4 +1262,5 @@ func v1_4_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bigInt2cBytes)))
 	metering.UseGas(gasToUse)
+	runtime.TraceGasUsed(bigIntFinishSignedName, initialGasLeft)
 }
