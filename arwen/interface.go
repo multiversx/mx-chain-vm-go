@@ -148,7 +148,9 @@ type RuntimeContext interface {
 	EnableGasTrace()
 	DisableGasTrace()
 	TraceGasUsed(functionName string, initialGasLeft uint64)
-	GetGasTrace() map[string][]uint64
+	GetGasTrace() map[string]map[string][]uint64
+	SetInitialGasInGasTrace(functionName string)
+	ComputeAndSetUsedGasInGasTrace()
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error

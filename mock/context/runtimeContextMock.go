@@ -35,7 +35,7 @@ type RuntimeContextMock struct {
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
 	TraceGasEnabled        bool
-	GasTrace               map[string][]uint64
+	GasTrace               map[string]map[string][]uint64
 }
 
 // InitState mocked method
@@ -351,23 +351,29 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
 
+// EnableGasTrace sets true to the flag variable that traces gas consumption
 func (r *RuntimeContextMock) EnableGasTrace() {
 	r.TraceGasEnabled = true
 }
 
+// DisableGasTrace sets true to the flag variable that traces gas consumption
 func (r *RuntimeContextMock) DisableGasTrace() {
 	r.TraceGasEnabled = false
 }
 
-func (r *RuntimeContextMock) TraceGasUsed(functionName string, usedGas uint64) {
-	if r.TraceGasEnabled {
-		if r.GasTrace[functionName] == nil {
-			r.GasTrace[functionName] = make([]uint64, 0)
-		}
-		r.GasTrace[functionName] = append(r.GasTrace[functionName], usedGas)
-	}
+// TraceGasUsed adds the usedGas passed to the traced gas map with the key as the passed functionName
+func (r *RuntimeContextMock) TraceGasUsed(functionName string, initialGasLeft uint64) {
 }
 
-func (r *RuntimeContextMock) GetGasTrace() map[string][]uint64 {
+// SetInitialGasInGasTrace sets the initial gas in the gasTrace map
+func (r *RuntimeContextMock) SetInitialGasInGasTrace(functionName string) {
+}
+
+// ComputeAndSetUsedGasInGasTrace computes the used gas in the gasTrace map. This function should be used afte initial gas has been set in the gasTrace map using SetInitialGasInGasTrace.
+func (r *RuntimeContextMock) ComputeAndSetUsedGasInGasTrace() {
+}
+
+// GetGasTrace returns the gasTrace map
+func (r *RuntimeContextMock) GetGasTrace() map[string]map[string][]uint64 {
 	return r.GasTrace
 }
