@@ -613,12 +613,16 @@ func v1_4_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 		runtime.TraceGasUsed(mBufferFinishName, initialGasLeft)
 		return 1
 	}
-	output.Finish(sourceBytes)
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(sourceBytes)))
-	metering.UseGas(gasToUse)
+	err = metering.UseGasBounded(gasToUse)
 	runtime.TraceGasUsed(mBufferFinishName, initialGasLeft)
+	if err != nil {
+		_ = arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		return 1
+	}
 
+	output.Finish(sourceBytes)
 	return 0
 }
 
