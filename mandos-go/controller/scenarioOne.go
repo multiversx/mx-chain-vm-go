@@ -10,7 +10,7 @@ import (
 )
 
 // RunSingleJSONScenario parses and prepares test, then calls testCallback.
-func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string, traceGas ...bool) error {
+func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string) error {
 	var err error
 	contextPath, err = filepath.Abs(contextPath)
 	if err != nil {
@@ -35,9 +35,12 @@ func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string, traceGas ...b
 
 	r.Parser.ExprInterpreter.FileResolver.SetContext(contextPath)
 	scenario, parseErr := r.Parser.ParseScenarioFile(byteValue)
-	if len(traceGas) != 0 {
-		scenario.TraceGas = traceGas[0]
+
+	if r.RunsNewTest {
+		scenario.IsNewTest = true
+		r.RunsNewTest = false
 	}
+
 	if parseErr != nil {
 		return parseErr
 	}

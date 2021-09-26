@@ -24,14 +24,13 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	World                   *worldhook.MockWorld
-	vm                      vmi.VMExecutionHandler
-	vmHost                  arwen.VMHost
-	checkGas                bool
-	traceGas                bool
-	mandosGasScheduleLoaded bool
-	fileResolver            fr.FileResolver
-	exprReconstructor       er.ExprReconstructor
+	World             *worldhook.MockWorld
+	vm                vmi.VMExecutionHandler
+	vmHost            arwen.VMHost
+	checkGas          bool
+	scenarioTraceGas  []bool
+	fileResolver      fr.FileResolver
+	exprReconstructor er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -42,13 +41,12 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
 	return &ArwenTestExecutor{
-		World:                   world,
-		vm:                      nil,
-		checkGas:                true,
-		traceGas:                false,
-		mandosGasScheduleLoaded: false,
-		fileResolver:            nil,
-		exprReconstructor:       er.ExprReconstructor{},
+		World:             world,
+		vm:                nil,
+		checkGas:          true,
+		scenarioTraceGas:  make([]bool, 0),
+		fileResolver:      nil,
+		exprReconstructor: er.ExprReconstructor{},
 	}, nil
 }
 
@@ -93,6 +91,7 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
 }
 
+// GetVMHost returns de vm Context from the vm context map
 func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
 	return ae.vmHost
 }

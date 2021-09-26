@@ -28,6 +28,7 @@ func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 				fmt.Print("  skip\n")
 			} else {
 				r.Executor.Reset()
+				r.RunsNewTest = true
 				testErr := r.RunSingleJSONScenario(testFilePath)
 				if testErr == nil {
 					nrPassed++
