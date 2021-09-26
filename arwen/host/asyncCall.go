@@ -11,7 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -97,6 +97,10 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
+	if !host.flagMultiESDTTransferAsyncCallBack.IsSet() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+		return false, functionName, args
+	}
+
 	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args

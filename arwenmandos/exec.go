@@ -75,6 +75,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &worldhook.EpochNotifierStub{},
 	})
 	if err != nil {
 		return err
