@@ -136,7 +136,8 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 	case "":
 		return nil, errors.New("no step type field provided")
 	case mj.StepNameExternalSteps:
-		step := &mj.ExternalStepsStep{TraceGas: false}
+		traceGasStatus := mj.Undefined
+		step := &mj.ExternalStepsStep{TraceGas: traceGasStatus}
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
@@ -150,7 +151,11 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 				if !isBool {
 					return nil, errors.New("scenario traceGas flag is not boolean")
 				}
-				step.TraceGas = bool(*traceGasOJ)
+				if bool(*traceGasOJ) {
+					step.TraceGas = 1
+				} else {
+					step.TraceGas = 0
+				}
 			case "path":
 				step.Path, err = p.parseString(kvp.Value)
 				if err != nil {

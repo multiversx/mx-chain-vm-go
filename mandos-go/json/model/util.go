@@ -44,3 +44,7 @@ func JSONBytesFromTreeValues(jbs []JSONBytesFromTree) [][]byte {
 	}
 	return result
 }
+
+func (tgs TraceGasStatus) ToInt() int {
+	return int(tgs)
+}

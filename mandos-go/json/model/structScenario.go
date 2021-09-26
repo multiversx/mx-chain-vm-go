@@ -6,6 +6,7 @@ type Scenario struct {
 	Comment     string
 	CheckGas    bool
 	TraceGas    bool
+	IsNewTest   bool
 	GasSchedule GasSchedule
 	Steps       []Step
 }
@@ -31,10 +32,18 @@ type BlockInfo struct {
 	BlockRandomSeed *JSONBytesFromTree
 }
 
+type TraceGasStatus int
+
+const (
+	FalseValue TraceGasStatus = iota
+	TrueValue  TraceGasStatus = iota
+	Undefined  TraceGasStatus = iota
+)
+
 // ExternalStepsStep allows including steps from another file
 type ExternalStepsStep struct {
 	Comment  string
-	TraceGas bool
+	TraceGas TraceGasStatus
 	Path     string
 }
 
