@@ -194,12 +194,10 @@ func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultO
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.SHA256, memLoadGas)
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(sha256Name, initialGasLeft)
+	runtime.UseAndTraceGas(sha256Name, gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -224,12 +222,10 @@ func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resu
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Keccak256, memLoadGas)
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(keccak256Name, initialGasLeft)
+	runtime.UseAndTraceGas(keccak256Name, gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -254,12 +250,10 @@ func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resu
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	memLoadGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Ripemd160, memLoadGas)
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(ripemd160Name, initialGasLeft)
+	runtime.UseAndTraceGas(ripemd160Name, gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -290,20 +284,20 @@ func v1_4_verifyBLS(
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
 	metering.UseGas(gasToUse)
+	usedGas := gasToUse
 
 	key, err := runtime.MemLoad(keyOffset, blsPublicKeyLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		runtime.TraceGasUsed(verifyBLSName, initialGasLeft)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(verifyBLSName, initialGasLeft)
+	usedGas += gasToUse
+	runtime.TraceGasUsed(verifyBLSName, usedGas)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -334,20 +328,20 @@ func v1_4_verifyEd25519(
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
 	metering.UseGas(gasToUse)
+	usedGas := gasToUse
 
 	key, err := runtime.MemLoad(keyOffset, ed25519PublicKeyLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
-		runtime.TraceGasUsed(verifyEd25519Name, initialGasLeft)
 		return 1
 	}
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(verifyEd25519Name, initialGasLeft)
+	usedGas += gasToUse
+	runtime.TraceGasUsed(verifyEd25519Name, usedGas)
 
 	message, err := runtime.MemLoad(messageOffset, messageLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -387,7 +381,6 @@ func v1_4_verifyCustomSecp256k1(
 
 	if keyLength != secp256k1CompressedPublicKeyLength && keyLength != secp256k1UncompressedPublicKeyLength {
 		_ = arwen.WithFault(arwen.ErrInvalidPublicKeySize, context, runtime.ElrondAPIErrorShouldFailExecution())
-		runtime.ComputeAndSetUsedGasInGasTrace()
 		return 1
 	}
 
@@ -462,11 +455,9 @@ func v1_4_encodeSecp256k1DerSignature(
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(encodeSecp256k1DerSignatureName, initialGasLeft)
+	runtime.UseAndTraceGas(encodeSecp256k1DerSignatureName, gasToUse)
 
 	r, err := runtime.MemLoad(rOffset, rLength)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -501,7 +492,6 @@ func v1_4_addEC(
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -510,7 +500,7 @@ func v1_4_addEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.AddECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(addECName, initialGasLeft)
+	usedGas := gasToUse
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err1, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -538,8 +528,8 @@ func v1_4_addEC(
 		return
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
-	runtime.TraceGasUsed(addECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x1, y1, x2, y2)
+	runtime.TraceGasUsed(addECName, usedGas)
 	xResultAdd, yResultAdd := ec.Add(x1, y1, x2, y2)
 	xResult.Set(xResultAdd)
 	yResult.Set(yResultAdd)
@@ -557,7 +547,6 @@ func v1_4_doubleEC(
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -566,7 +555,7 @@ func v1_4_doubleEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.DoubleECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(doubleECName, initialGasLeft)
+	usedGas := gasToUse
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err1, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -584,8 +573,8 @@ func v1_4_doubleEC(
 		return
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	runtime.TraceGasUsed(doubleECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	runtime.TraceGasUsed(doubleECName, usedGas)
 
 	xResultDouble, yResultDouble := ec.Double(x, y)
 	xResult.Set(xResultDouble)
@@ -602,7 +591,6 @@ func v1_4_isOnCurveEC(
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -611,7 +599,7 @@ func v1_4_isOnCurveEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.IsOnCurveECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(isOnCurveECName, initialGasLeft)
+	usedGas := gasToUse
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -624,8 +612,8 @@ func v1_4_isOnCurveEC(
 		return -1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	runtime.TraceGasUsed(isOnCurveECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	runtime.TraceGasUsed(isOnCurveECName, usedGas)
 	if ec.IsOnCurve(x, y) {
 		return 1
 	}
@@ -645,7 +633,6 @@ func v1_4_scalarBaseMultEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	if length < 0 {
 		_ = arwen.WithFault(arwen.ErrNegativeLength, context, runtime.CryptoAPIErrorShouldFailExecution())
@@ -660,7 +647,7 @@ func v1_4_scalarBaseMultEC(
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
 	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(scalarBaseMultECName, initialGasLeft)
+	usedGas := gasToUse
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -677,8 +664,8 @@ func v1_4_scalarBaseMultEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
-	runtime.TraceGasUsed(scalarBaseMultECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	runtime.TraceGasUsed(scalarBaseMultECName, usedGas)
 
 	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
 	if !ec.IsOnCurve(xResultSBM, yResultSBM) {
@@ -705,7 +692,6 @@ func v1_4_scalarMultEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	if length < 0 {
 		_ = arwen.WithFault(arwen.ErrNegativeLength, context, runtime.CryptoAPIErrorShouldFailExecution())
@@ -720,7 +706,7 @@ func v1_4_scalarMultEC(
 	oneByteScalarGasCost := metering.GasSchedule().CryptoAPICost.ScalarMultECC * uint64(curveMultiplier) / 100
 	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(scalarMultECName, initialGasLeft)
+	usedGas := gasToUse
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -743,8 +729,8 @@ func v1_4_scalarMultEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	runtime.TraceGasUsed(scalarMultECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	runtime.TraceGasUsed(scalarMultECName, usedGas)
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
 	if !ec.IsOnCurve(xResultSM, yResultSM) {
 		_ = arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
@@ -767,7 +753,6 @@ func v1_4_marshalEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -776,7 +761,7 @@ func v1_4_marshalEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(marshalECName, initialGasLeft)
+	usedGas := gasToUse
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -796,8 +781,8 @@ func v1_4_marshalEC(
 		return -1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	runtime.TraceGasUsed(marshalECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	runtime.TraceGasUsed(marshalECName, usedGas)
 
 	result := elliptic.Marshal(ec, x, y)
 	err = runtime.MemStore(resultOffset, result)
@@ -818,7 +803,6 @@ func v1_4_marshalCompressedEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -827,7 +811,7 @@ func v1_4_marshalCompressedEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.MarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(marshalCompressedECName, initialGasLeft)
+	usedGas := gasToUse
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -848,8 +832,8 @@ func v1_4_marshalCompressedEC(
 		return -1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
-	runtime.TraceGasUsed(marshalCompressedECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
+	runtime.TraceGasUsed(marshalCompressedECName, usedGas)
 
 	result := elliptic.MarshalCompressed(ec, x, y)
 	err = runtime.MemStore(resultOffset, result)
@@ -871,7 +855,6 @@ func v1_4_unmarshalEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -880,7 +863,7 @@ func v1_4_unmarshalEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(unmarshalECName, initialGasLeft)
+	usedGas := gasToUse
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -902,8 +885,8 @@ func v1_4_unmarshalEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
-	runtime.TraceGasUsed(unmarshalECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	runtime.TraceGasUsed(unmarshalECName, usedGas)
 
 	xResultU, yResultU := elliptic.Unmarshal(ec, data)
 	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
@@ -928,7 +911,6 @@ func v1_4_unmarshalCompressedEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.GetUCompressed100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -937,7 +919,7 @@ func v1_4_unmarshalCompressedEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(unmarshalCompressedECName, initialGasLeft)
+	usedGas := gasToUse
 
 	data, err := runtime.MemLoad(dataOffset, length)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -959,8 +941,8 @@ func v1_4_unmarshalCompressedEC(
 		return 1
 	}
 
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
-	runtime.TraceGasUsed(unmarshalCompressedECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xResult, yResult)
+	runtime.TraceGasUsed(unmarshalCompressedECName, usedGas)
 
 	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
 	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
@@ -983,7 +965,6 @@ func v1_4_generateKeyEC(
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
@@ -995,7 +976,7 @@ func v1_4_generateKeyEC(
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.GenerateKeyECC * uint64(curveMultiplier) / 100
 	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(generateKeyECName, initialGasLeft)
+	usedGas := gasToUse
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
@@ -1006,8 +987,8 @@ func v1_4_generateKeyEC(
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
-	managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
-	runtime.TraceGasUsed(generateKeyECName, initialGasLeft)
+	usedGas += managedType.ConsumeGasForBigIntCopy(ec.P, ec.N, ec.B, ec.Gx, ec.Gy, xPubKey, yPubKey)
+	runtime.TraceGasUsed(generateKeyECName, usedGas)
 
 	ioReader := managedType.GetRandReader()
 	result, xPubKeyGK, yPubKeyGK, err := elliptic.GenerateKey(ec, ioReader)
@@ -1030,11 +1011,9 @@ func v1_4_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) i
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(createECName, initialGasLeft)
+	runtime.UseAndTraceGas(createECName, gasToUse)
 
 	if dataLength != curveNameLength {
 		_ = arwen.WithFault(arwen.ErrBadBounds, context, runtime.CryptoAPIErrorShouldFailExecution())
@@ -1067,11 +1046,9 @@ func v1_4_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(getCurveLengthECName, initialGasLeft)
+	runtime.UseAndTraceGas(getCurveLengthECName, gasToUse)
 
 	ecLength := managedType.GetEllipticCurveSizeOfField(ecHandle)
 	if ecLength == -1 {
@@ -1086,11 +1063,9 @@ func v1_4_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(getPrivKeyByteLengthECName, initialGasLeft)
+	runtime.UseAndTraceGas(getPrivKeyByteLengthECName, gasToUse)
 
 	byteLength := managedType.GetPrivateKeyByteLengthEC(ecHandle)
 	if byteLength == -1 {
@@ -1105,11 +1080,9 @@ func v1_4_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOr
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	initialGasLeft := metering.GasLeft()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetInt64 * 5
-	metering.UseGas(gasToUse)
-	runtime.TraceGasUsed(ellipticCurveGetValuesName, initialGasLeft)
+	runtime.UseAndTraceGas(ellipticCurveGetValuesName, gasToUse)
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {

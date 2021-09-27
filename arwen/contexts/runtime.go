@@ -44,9 +44,11 @@ type runtimeContext struct {
 	errors          arwen.WrappableError
 }
 
+type GasTraceMap map[string]map[string][]uint64
+
 type gasTracer struct {
 	traceGasEnabled           bool
-	gasTrace                  map[string]map[string][]uint64
+	gasTrace                  GasTraceMap
 	currentFunctionNameTraced string
 }
 
@@ -63,7 +65,7 @@ func NewRuntimeContext(
 		vmType: vmType,
 		currentGasTracer: gasTracer{
 			traceGasEnabled: false,
-			gasTrace:        make(map[string]map[string][]uint64),
+			gasTrace:        make(GasTraceMap),
 		},
 		stateStack:    make([]*runtimeContext, 0),
 		instanceStack: make([]wasmer.InstanceHandler, 0),
@@ -89,7 +91,7 @@ func (context *runtimeContext) InitState() {
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 	context.errors = nil
-	context.currentGasTracer.gasTrace = make(map[string]map[string][]uint64)
+	context.currentGasTracer.gasTrace = make(GasTraceMap)
 
 	logRuntime.Trace("init state")
 }
@@ -857,23 +859,28 @@ func (context *runtimeContext) DisableGasTrace() {
 }
 
 // TraceGasUsed adds the usedGas passed to the traced gas map with the key as the passed functionName
-func (context *runtimeContext) TraceGasUsed(functionName string, initialGasLeft uint64) {
-	if context.currentGasTracer.traceGasEnabled {
+func (context *runtimeContext) TraceGasUsed(functionName string, usedGas uint64) {
+	if context.currentGasTracer.traceGasEnabled && context.scAddress != nil {
 		scAddress := string(context.scAddress)
 		context.createGasTraceIfNil(scAddress, functionName)
-		usedGas := context.computeUsedGas(initialGasLeft)
 		context.currentGasTracer.gasTrace[scAddress][functionName] = append(context.currentGasTracer.gasTrace[scAddress][functionName], usedGas)
 	}
 }
 
-func (context *runtimeContext) computeUsedGas(initialGasLeft uint64) uint64 {
-	gasLeft := context.host.Metering().GasLeft()
-	return initialGasLeft - gasLeft
+// UseAndTraceGas uses the passed gasToUse and traces it
+func (context *runtimeContext) UseAndTraceGas(functionName string, gasToUse uint64) {
+	metering := context.host.Metering()
+	metering.UseGas(gasToUse)
+	if context.currentGasTracer.traceGasEnabled && context.scAddress != nil {
+		scAddress := string(context.scAddress)
+		context.createGasTraceIfNil(scAddress, functionName)
+		context.currentGasTracer.gasTrace[scAddress][functionName] = append(context.currentGasTracer.gasTrace[scAddress][functionName], gasToUse)
+	}
 }
 
 // SetInitialGasInGasTrace sets the initial gas in the gasTrace map
 func (context *runtimeContext) SetInitialGasInGasTrace(functionName string) {
-	if context.currentGasTracer.traceGasEnabled && context.currentGasTracer.currentFunctionNameTraced == "" {
+	if context.currentGasTracer.traceGasEnabled && context.currentGasTracer.currentFunctionNameTraced == "" && context.scAddress != nil {
 		context.currentGasTracer.currentFunctionNameTraced = functionName
 		scAddress := string(context.scAddress)
 		context.createGasTraceIfNil(scAddress, functionName)
@@ -892,7 +899,7 @@ func (context *runtimeContext) createGasTraceIfNil(scAddress string, functionNam
 
 // ComputeAndSetUsedGasInGasTrace computes the used gas in the gasTrace map. This function should be used afte initial gas has been set in the gasTrace map using SetInitialGasInGasTrace.
 func (context *runtimeContext) ComputeAndSetUsedGasInGasTrace() {
-	if context.currentGasTracer.traceGasEnabled {
+	if context.currentGasTracer.traceGasEnabled && context.scAddress != nil {
 		functionName := context.currentGasTracer.currentFunctionNameTraced
 		numberOfCalls := len(context.currentGasTracer.gasTrace[string(context.scAddress)][functionName])
 

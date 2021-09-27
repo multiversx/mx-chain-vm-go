@@ -122,6 +122,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	TraceGasUsedFunc func(functionName string, usedGas uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	UseAndTraceGasFunc func(functionName string, gasToUse uint64)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetGasTraceFunc func() map[string]map[string][]uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetInitialGasInGasTraceFunc func(functionName string)
@@ -363,6 +365,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.TraceGasUsedFunc = func(functionName string, usedGas uint64) {
 		runtimeWrapper.runtimeContext.TraceGasUsed(functionName, usedGas)
+	}
+
+	runtimeWrapper.UseAndTraceGasFunc = func(functionName string, gasToUse uint64) {
+		runtimeWrapper.runtimeContext.UseAndTraceGas(functionName, gasToUse)
 	}
 
 	runtimeWrapper.GetGasTraceFunc = func() map[string]map[string][]uint64 {
@@ -673,6 +679,11 @@ func (contextWrapper *RuntimeContextWrapper) DisableGasTrace() {
 // TraceGasUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) TraceGasUsed(functionName string, usedGas uint64) {
 	contextWrapper.TraceGasUsedFunc(functionName, usedGas)
+}
+
+// UseAndTraceGas calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) UseAndTraceGas(functionName string, gasToUse uint64) {
+	contextWrapper.UseAndTraceGasFunc(functionName, gasToUse)
 }
 
 // GetGasTrace calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

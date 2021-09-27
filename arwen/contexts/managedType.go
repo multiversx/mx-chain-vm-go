@@ -152,29 +152,36 @@ func (context *managedTypesContext) IsInterfaceNil() bool {
 }
 
 // ConsumeGasForBigIntCopy uses gas for Copy operations
-func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
+func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) uint64 {
+	usedGas := uint64(0)
 	for _, val := range values {
 		byteLen := val.BitLen() / 8
-		context.ConsumeGasForThisIntNumberOfBytes(byteLen)
+		usedGas += context.ConsumeGasForThisIntNumberOfBytes(byteLen)
 	}
+	return usedGas
 }
 
 // ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given
-func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) uint64 {
+	var gasToUse uint64
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
-		metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+		metering.UseGas(gasToUse)
 	}
+	return gasToUse
 }
 
 // ConsumeGasForBytes uses gas for the given bytes
-func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
+func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) uint64 {
 	metering := context.host.Metering()
-	metering.UseGas(math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	metering.UseGas(gasToUse)
+	return gasToUse
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
-func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
+func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) uint64 {
 	metering := context.host.Metering()
 	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 
@@ -185,6 +192,7 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 		gasToUse = gasToUseBigInt.Uint64()
 	}
 	metering.UseGas(gasToUse)
+	return gasToUse
 }
 
 // BIGINT

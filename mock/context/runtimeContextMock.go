@@ -365,6 +365,10 @@ func (r *RuntimeContextMock) DisableGasTrace() {
 func (r *RuntimeContextMock) TraceGasUsed(functionName string, initialGasLeft uint64) {
 }
 
+// UseAndTraceGas uses the passed gasToUse and traces it
+func (r *RuntimeContextMock) UseAndTraceGas(functionName string, gasToUse uint64) {
+}
+
 // SetInitialGasInGasTrace sets the initial gas in the gasTrace map
 func (r *RuntimeContextMock) SetInitialGasInGasTrace(functionName string) {
 }

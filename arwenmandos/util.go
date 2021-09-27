@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
@@ -205,34 +204,31 @@ func logGasTrace(ae *ArwenTestExecutor) {
 	if ae.scenarioTraceGas[length-1] {
 		runtime := ae.GetVMHost().Runtime()
 		scGasTrace := runtime.GetGasTrace()
-		arwen.SetLoggingForTests()
-		totalGasUsedInSmartContract := 0
+		totalGasUsedByAPIs := 0
 		for scAddress, gasTrace := range scGasTrace {
-			log.Trace("Gas Trace for: ", "SC Address", scAddress)
+			fmt.Println("\nGas Trace for: ", "SC Address", scAddress)
 			for functionName, value := range gasTrace {
 				totalGasUsed := uint64(0)
 				for _, usedGas := range value {
 					totalGasUsed += usedGas
 				}
-				log.Trace("GasTrace", "functionName:", functionName, ",  totalGasUsed:", totalGasUsed, ", numberOfCalls:", len(value))
-				totalGasUsedInSmartContract += int(totalGasUsed)
+				fmt.Println("GasTrace: functionName:", functionName, ",  totalGasUsed:", totalGasUsed, ", numberOfCalls:", len(value))
+				totalGasUsedByAPIs += int(totalGasUsed)
 			}
-			log.Trace("TotalGasUsedInSmartContract", "", totalGasUsedInSmartContract)
+			fmt.Println("TotalGasUsedByAPIs: ", totalGasUsedByAPIs)
 		}
 	}
 }
 
-func enableGasTraceInRuntime(ae *ArwenTestExecutor) {
+func setGasTraceInRuntime(ae *ArwenTestExecutor, enable bool) {
 	length := len(ae.scenarioTraceGas)
-	if ae.scenarioTraceGas[length-1] {
+	if enable && ae.scenarioTraceGas[length-1] {
 		runtime := ae.GetVMHost().Runtime()
 		runtime.EnableGasTrace()
+	} else {
+		runtime := ae.GetVMHost().Runtime()
+		runtime.DisableGasTrace()
 	}
-}
-
-func disableGasTraceInRuntime(ae *ArwenTestExecutor) {
-	runtime := ae.GetVMHost().Runtime()
-	runtime.DisableGasTrace()
 }
 
 func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep) {
