@@ -226,12 +226,21 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
+		var asyncPrefixArgs [][]byte
+		asyncPrefixArgsNumber := 2
+		if input.CallType == vm.AsynchronousCallBack {
+			asyncPrefixArgsNumber = 4
+		}
+		asyncPrefixArgs, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			return
+		}
+		if scExecutionInput != nil {
+			scExecutionInput.Arguments = arwen.PrependToArguments(scExecutionInput.Arguments, asyncPrefixArgs...)
 		}
 	}
 

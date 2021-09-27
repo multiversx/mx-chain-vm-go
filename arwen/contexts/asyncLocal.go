@@ -77,7 +77,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	if isComplete {
+	if isComplete && asyncCall.HasCallback() {
 		// Restore gas locked while still on the caller instance; otherwise, the
 		// locked gas will appear to have been used twice by the caller instance.
 		isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, false, err)
@@ -244,14 +244,8 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
-	newCallID := context.GenerateNewCallIDAndIncrementCounter()
 	// send the callID to a local async call
-	arguments = arwen.PrependToArguments(
-		arguments,
-		newCallID,
-		context.GetCallID(),
-	)
-	asyncCall.CallID = newCallID
+	asyncCall.CallID, arguments = context.PrependArgumentsForAsyncContext(arguments)
 
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -342,6 +336,8 @@ func (context *asyncContext) createCallbackInput(
 		if len(vmOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
 		}
+
+		contractCallInput.Arguments = context.PrependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
 	}
 
 	return contractCallInput, nil
@@ -362,15 +358,7 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 	}
 
-	arguments = arwen.PrependToArguments(
-		arguments,
-		context.GenerateNewCallbackID(),
-		asyncCall.CallID,
-		context.callID,
-		big.NewInt(int64(gasAccumulated)).Bytes(),
-	)
-
-	return arguments
+	return context.PrependCallbackArgumentsForAsyncContext(arguments, asyncCall, gasAccumulated)
 }
 
 func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGroup) *vmcommon.ContractCallInput {

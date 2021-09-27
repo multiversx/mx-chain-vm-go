@@ -1317,6 +1317,25 @@ func (context *asyncContext) IsCrossShard() bool {
 	return len(context.stateStack) == 0 && (context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack)
 }
 
+func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte) {
+	newCallID := context.GenerateNewCallIDAndIncrementCounter()
+	return newCallID, arwen.PrependToArguments(
+		args,
+		newCallID,
+		context.GetCallID(),
+	)
+}
+
+func (context *asyncContext) PrependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {
+	return arwen.PrependToArguments(
+		args,
+		context.GenerateNewCallbackID(), // new callback id
+		asyncCall.CallID,                // caller call id (original async call destination)
+		context.callID,                  // async initiator call id (original async call source)
+		big.NewInt(int64(gasAccumulated)).Bytes(),
+	)
+}
+
 // DebugCallIDAsString - just for debug purposes
 func DebugCallIDAsString(arr []byte) string {
 	if len(arr) > 3 {

@@ -273,3 +273,8 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 func PrependToArguments(arguments [][]byte, toPrepend ...[]byte) [][]byte {
 	return append(toPrepend, arguments...)
 }
+
+// SplitPrefixArguments -
+func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
+	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
+}
