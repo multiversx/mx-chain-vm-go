@@ -145,7 +145,6 @@ void BigFloatSignTest() {
 }
 
 void BigFloatCloneTest() {
-    int result;
     int reps = int64getArgument(0);
     int bigFloatHandle = bigFloatNewFromFrac(0,1);
     int copybigFloatHandle = bigFloatNewFromFrac(0,1);
