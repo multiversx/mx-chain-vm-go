@@ -100,7 +100,6 @@
                         }
                     },
                     "storage": {
-                        "str:callback_len": "1",
                         "str:callback_data.item|u32:1": "u32:0",
                         "str:callback_data.len": "1",
 
