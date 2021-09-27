@@ -70,7 +70,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": ["3", "4"],
                 "status": "0",
                 "message": "",
                 "gas": "*",
