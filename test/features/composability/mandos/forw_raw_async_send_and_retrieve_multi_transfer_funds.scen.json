@@ -1,5 +1,5 @@
 {
-    "name": "forwarder receive multi transfer on callback",
+    "name": "send, burn & create, send back new tokens",
     "steps": [
         {
             "step": "setState",
@@ -14,14 +14,14 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKEN": "1000",
                         "str:TEST-SFT": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1000"
-                                }
-                            ]
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ],
+                            "lastNonce": "2"
                         }
                     },
                     "storage": {},
@@ -30,6 +30,20 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
+                    "esdt": {
+                        "str:TEST-SFT": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1000"
+                                },
+                                {
+                                    "nonce": "2",
+                                    "balance": "1000"
+                                }
+                            ]
+                        }
+                    },
                     "storage": {},
                     "code": "file:../forwarder-raw/output/forwarder-raw-new.wasm"
                 }
@@ -37,23 +51,26 @@
         },
         {
             "step": "scCall",
-            "txId": "multi-transfer-through-callback",
+            "txId": "multi-transfer-through-callback-burn-and-create",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
                 "value": "0",
-                "function": "forward_async_retrieve_multi_transfer_funds",
+                "function": "forwarder_async_send_and_retrieve_multi_transfer_funds",
                 "arguments": [
                     "sc:vault",
                     "str:TEST-SFT",
                     "1",
-                    "500"
+                    "1000",
+                    "str:TEST-SFT",
+                    "2",
+                    "1000"
                 ],
                 "gasLimit": "70,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": ["3", "4"],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -73,14 +90,14 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKEN": "1000",
                         "str:TEST-SFT": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "500"
-                                }
-                            ]
+                            "balance": "0",
+                            "roles": [
+                                "ESDTRoleNFTCreate",
+                                "ESDTRoleNFTAddQuantity",
+                                "ESDTRoleNFTBurn"
+                            ],
+                            "lastNonce": "4"
                         }
                     },
                     "storage": {},
@@ -93,22 +110,37 @@
                         "str:TEST-SFT": {
                             "instances": [
                                 {
-                                    "nonce": "1",
-                                    "balance": "500"
+                                    "nonce": "3",
+                                    "balance": "1000"
+                                },
+                                {
+                                    "nonce": "4",
+                                    "balance": "1000"
                                 }
                             ]
                         }
                     },
                     "storage": {
-                        "str:callback_data.item|u32:1": "u32:0",
+                        "str:callback_data.item|u32:1": {
+                            "1-return_code": "u32:0",
+                            "2-length_arg_1": "u32:1",
+                            "3-arg_1_first_nft_create_nonce": "u8:3",
+                            "4-lenght_arg_2": "u32:1",
+                            "5-arg_2_second_nft_create_nonce": "u8:4"
+                        },
                         "str:callback_data.len": "1",
 
                         "str:callback_payments.item|u32:1": {
                             "1-token_id": "nested:str:TEST-SFT",
-                            "2-nonce": "u64:1",
-                            "3-amount": "biguint:500"
+                            "2-nonce": "u64:3",
+                            "3-amount": "biguint:1000"
                         },
-                        "str:callback_payments.len": "1"
+                        "str:callback_payments.item|u32:2": {
+                            "1-token_id": "nested:str:TEST-SFT",
+                            "2-nonce": "u64:4",
+                            "3-amount": "biguint:1000"
+                        },
+                        "str:callback_payments.len": "2"
                     },
                     "code": "file:../forwarder-raw/output/forwarder-raw-new.wasm"
                 }
