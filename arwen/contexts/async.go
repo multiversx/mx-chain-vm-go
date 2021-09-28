@@ -672,8 +672,6 @@ func (context *asyncContext) Execute() error {
 		context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
 	}
 
-	// TODO matei-p change to debug logging
-	// fmt.Println("GasLeft ->", metering.GasLeft(), "after run of", context.host.Runtime().Function(), "contract", string(context.address))
 	return nil
 }
 
@@ -758,7 +756,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 }
 
 func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64, gasToRestore uint64) (arwen.AsyncContext, error) {
-	// TODO matei-p remove for logging
+	// TODO matei-p change to debug logging
 	fmt.Println("NofityChildIsComplete")
 	fmt.Println("\taddress", string(context.address))
 	fmt.Println("\tcallID", context.callID) // DebugCallIDAsString

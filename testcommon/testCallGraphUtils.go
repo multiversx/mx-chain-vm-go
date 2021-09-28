@@ -158,7 +158,7 @@ func computeReturnData(crtFunctionCalled string, host arwen.VMHost) {
 	returnData.Bool(async.IsCrossShard())
 	host.Output().Finish(returnData.ToBytes())
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
-	// TODO matei-p remove for logging
+	/// TODO matei-p change to debug logging
 	fmt.Println(
 		"Return Data -> callID", async.GetCallID(),
 		"CallbackAsyncInitiatorCallID", async.GetCallbackAsyncInitiatorCallID(),

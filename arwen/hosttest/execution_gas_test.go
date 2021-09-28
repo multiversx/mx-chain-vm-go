@@ -775,8 +775,11 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.TransferFromChildToParent = 5
 
-	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// expectedGasUsedByChild := testConfig.GasUsedByChild + gasUsedByBuiltinClaim
+	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	expectedGasUsedByChild :=
+		testConfig.GasUsedByParent /* due to ForwardAsyncCallParentBuiltinMock */ +
+			gasUsedByBuiltinClaim +
+			testConfig.GasUsedByCallback /* due to CallBackParentBuiltinMock */
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -802,12 +805,10 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 			createMockBuiltinFunctions(t, host, world)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
-			// TODO matei-p add asserts when in-shard builtin works
-			// TODO matei-p enable gas assertions
-			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
-			// GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
-			// GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
+			verify.Ok().
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.ChildAddress, expectedGasUsedByChild).
+				GasRemaining(testConfig.GasProvided - expectedGasUsedByParent - expectedGasUsedByChild)
 		})
 }
 

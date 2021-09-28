@@ -237,6 +237,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
+			isComplete = true
 			return
 		}
 		if scExecutionInput != nil {
@@ -246,6 +247,8 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	if scExecutionInput != nil {
 		vmOutput, err, isComplete = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+	} else {
+		isComplete = true
 	}
 
 	if err != nil {
@@ -337,7 +340,6 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	}
 
 	async.SetResults(vmOutput)
-	// TODO matei-p is this save really necessary here?!
 	async.SaveAsyncContextsFromStack()
 
 	gasSpentByChildContract := metering.GasSpentByContract()
@@ -896,15 +898,10 @@ func (host *vmHost) callSCMethod() error {
 			callerCallCallID,
 			async.GetCallerCallID(),
 			vmInput)
-		// TODO matei-p re-enable this (and replace _ with err above)
-		// if err != nil {
-		// 	log.Trace("UpdateCurrentCallStatus failed", "error", err)
-		// 	err = async.PostprocessCrossShardCallback(asyncCallIdentifier)
-		// 	if err != nil {
-		// 		log.Trace("call SC method failed", "error", err)
-		// 	}
-		// 	return err
-		// }
+		if err != nil {
+			log.Trace("UpdateCurrentCallStatus failed", "error", err)
+			return err
+		}
 
 		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 	}
