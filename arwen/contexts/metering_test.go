@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,6 +21,7 @@ func TestNewMeteringContext(t *testing.T) {
 	meteringContext, err := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
 	require.Nil(t, err)
 	require.NotNil(t, meteringContext)
+	require.Nil(t, meteringContext.gasTracer)
 }
 
 func TestNewMeteringContext_NilGasSchedule(t *testing.T) {
@@ -521,4 +522,52 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 
 	metering.TrackGasUsedByBuiltinFunction(input, vmOutput, postBuiltinInput)
 	require.Equal(t, vmOutput.GasRemaining+postBuiltinInput.GasProvided, metering.GasLeft())
+}
+
+func TestMeteringContext_GasTracer(t *testing.T) {
+	t.Parallel()
+	const BlockGasLimit = uint64(15000)
+
+	mockRuntime := &contextmock.RuntimeContextMock{
+		SCAddress: []byte("scAddress1"),
+	}
+	host := &contextmock.VMHostMock{
+		RuntimeContext: mockRuntime,
+	}
+
+	meteringContext, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
+	meteringContext.InitState()
+
+	gasProvided := uint64(10000)
+	meteringContext.gasForExecution = gasProvided
+	gasUsed1 := uint64(1000)
+	gasUsed2 := uint64(3000)
+	//gasUsed3 := uint64(5000)
+
+	require.NotNil(t, meteringContext.gasTracer)
+
+	meteringContext.StartGasTracing("function1")
+	gasTrace := meteringContext.GetGasTrace()
+	require.Equal(t, 0, len(gasTrace))
+	meteringContext.UseGasAndAddTracedGas("function2", gasUsed2)
+	gasTrace = meteringContext.GetGasTrace()
+	require.Equal(t, 0, len(gasTrace))
+
+	meteringContext.SetGasTracing(true)
+	meteringContext.StartGasTracing("function1")
+	gasTrace = meteringContext.GetGasTrace()
+	require.Equal(t, 1, len(gasTrace))
+	require.Equal(t, 1, len(gasTrace["scAddress1"]))
+	require.Equal(t, 1, len(gasTrace["scAddress1"]["function1"]))
+	require.Equal(t, uint64(0), gasTrace["scAddress1"]["function1"][0])
+	meteringContext.UseAndTraceGas(gasUsed1)
+	gasTrace = meteringContext.GetGasTrace()
+	require.Equal(t, gasUsed1, gasTrace["scAddress1"]["function1"][0])
+
+	host.RuntimeContext.SetSCAddress([]byte("scAddress2"))
+	meteringContext.UseGasAndAddTracedGas("function2", gasUsed2)
+	gasTrace = meteringContext.GetGasTrace()
+	require.Equal(t, 2, len(gasTrace))
+	require.Equal(t, gasUsed2, gasTrace["scAddress2"]["function2"][0])
+
 }

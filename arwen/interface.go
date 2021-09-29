@@ -145,13 +145,6 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
-	EnableGasTrace()
-	DisableGasTrace()
-	TraceGasUsed(functionName string, initialGasLeft uint64)
-	UseAndTraceGas(functionName string, gasToUse uint64)
-	GetGasTrace() map[string]map[string][]uint64
-	SetInitialGasInGasTrace(functionName string)
-	ComputeAndSetUsedGasInGasTrace()
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
@@ -234,6 +227,8 @@ type MeteringContext interface {
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
+	UseAndTraceGas(gas uint64)
+	UseGasAndAddTracedGas(functionName string, gas uint64)
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
@@ -254,6 +249,8 @@ type MeteringContext interface {
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	StartGasTracing(functionName string)
+	SetGasTracing(enableGasTracing bool)
 }
 
 // StorageStatus defines the states the storage can be in
@@ -299,4 +296,15 @@ type AsyncCallInfoHandler interface {
 type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+}
+
+// GasTracing defines the functionality needed for a gas tracing
+type GasTracing interface {
+	BeginTrace(scAddress string, functionName string)
+	AddToCurrentTrace(usedGas uint64)
+	AddTracedGas(scAddress string, functionName string, usedGas uint64)
+	SetTraceGasEnabled(setValue bool)
+	GetGasTrace() map[string]map[string][]uint64
+	IsEnabled() bool
+	IsInterfaceNil() bool
 }

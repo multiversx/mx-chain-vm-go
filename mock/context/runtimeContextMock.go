@@ -350,34 +350,3 @@ func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
 func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
-
-// EnableGasTrace sets true to the flag variable that traces gas consumption
-func (r *RuntimeContextMock) EnableGasTrace() {
-	r.TraceGasEnabled = true
-}
-
-// DisableGasTrace sets true to the flag variable that traces gas consumption
-func (r *RuntimeContextMock) DisableGasTrace() {
-	r.TraceGasEnabled = false
-}
-
-// TraceGasUsed adds the usedGas passed to the traced gas map with the key as the passed functionName
-func (r *RuntimeContextMock) TraceGasUsed(functionName string, initialGasLeft uint64) {
-}
-
-// UseAndTraceGas uses the passed gasToUse and traces it
-func (r *RuntimeContextMock) UseAndTraceGas(functionName string, gasToUse uint64) {
-}
-
-// SetInitialGasInGasTrace sets the initial gas in the gasTrace map
-func (r *RuntimeContextMock) SetInitialGasInGasTrace(functionName string) {
-}
-
-// ComputeAndSetUsedGasInGasTrace computes the used gas in the gasTrace map. This function should be used afte initial gas has been set in the gasTrace map using SetInitialGasInGasTrace.
-func (r *RuntimeContextMock) ComputeAndSetUsedGasInGasTrace() {
-}
-
-// GetGasTrace returns the gasTrace map
-func (r *RuntimeContextMock) GetGasTrace() map[string]map[string][]uint64 {
-	return r.GasTrace
-}

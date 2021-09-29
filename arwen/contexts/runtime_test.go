@@ -66,71 +66,7 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.False(t, false, runtimeContext.currentGasTracer.traceGasEnabled)
-	require.Equal(t, 0, len(runtimeContext.currentGasTracer.gasTrace))
 	require.Nil(t, runtimeContext.asyncCallInfo)
-}
-
-func TestTraceGas(t *testing.T) {
-	host := InitializeArwenAndWasmer()
-	vmType := []byte("type")
-
-	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
-	scAddress := "firstScAddress"
-	runtimeContext.scAddress = []byte(scAddress)
-
-	require.False(t, runtimeContext.currentGasTracer.traceGasEnabled)
-	require.Equal(t, 0, len(runtimeContext.currentGasTracer.gasTrace))
-
-	runtimeContext.TraceGasUsed("calledFunctionName", 48000)
-	require.Equal(t, 0, len(runtimeContext.currentGasTracer.gasTrace))
-
-	runtimeContext.EnableGasTrace()
-	runtimeContext.TraceGasUsed("calledFunctionName", 48000)
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace))
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace[scAddress]["calledFunctionName"]))
-	require.Equal(t, uint64(48000), runtimeContext.currentGasTracer.gasTrace[scAddress]["calledFunctionName"][0])
-
-	runtimeContext.TraceGasUsed("secondFunctionName", 3000)
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace))
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace[scAddress]["secondFunctionName"]))
-
-	runtimeContext.TraceGasUsed("calledFunctionName", 50000)
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace))
-	require.Equal(t, 2, len(runtimeContext.currentGasTracer.gasTrace[scAddress]["calledFunctionName"]))
-	require.Equal(t, uint64(50000), runtimeContext.currentGasTracer.gasTrace[scAddress]["calledFunctionName"][1])
-
-	expectedGasTraceMap := map[string]map[string][]uint64{
-		"firstScAddress": {
-			"calledFunctionName": []uint64{0xbb80, 0xc350},
-			"secondFunctionName": []uint64{0xbb8},
-		},
-	}
-
-	gasTraceMap := runtimeContext.GetGasTrace()
-	require.Equal(t, expectedGasTraceMap, gasTraceMap)
-
-	scAddress = "secondScAddress"
-	runtimeContext.scAddress = []byte(scAddress)
-
-	runtimeContext.DisableGasTrace()
-	runtimeContext.TraceGasUsed("calledFunctionName", 52000)
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace))
-	require.Equal(t, expectedGasTraceMap, gasTraceMap)
-	runtimeContext.EnableGasTrace()
-	runtimeContext.TraceGasUsed("calledFunctionName", 52000)
-	require.Equal(t, 2, len(runtimeContext.currentGasTracer.gasTrace))
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace[scAddress]))
-
-	runtimeContext.SetInitialGasInGasTrace("initialFunction")
-	require.Equal(t, 1, len(runtimeContext.currentGasTracer.gasTrace[scAddress]["initialFunction"]))
-	runtimeContext.ComputeAndSetUsedGasInGasTrace()
-	require.Equal(t, 2, len(runtimeContext.currentGasTracer.gasTrace[scAddress]))
-	require.Equal(t, "", runtimeContext.currentGasTracer.currentFunctionNameTraced)
-
-	runtimeContext.SetInitialGasInGasTrace("initialFunction")
-	runtimeContext.SetInitialGasInGasTrace("shouldNotOverwriteGasTracedFunction")
-	require.Equal(t, "initialFunction", runtimeContext.currentGasTracer.currentFunctionNameTraced)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
