@@ -202,8 +202,8 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 func logGasTrace(ae *ArwenTestExecutor) {
 	length := len(ae.scenarioTraceGas)
 	if ae.scenarioTraceGas[length-1] {
-		runtime := ae.GetVMHost().Runtime()
-		scGasTrace := runtime.GetGasTrace()
+		metering := ae.GetVMHost().Metering()
+		scGasTrace := metering.GetGasTrace()
 		totalGasUsedByAPIs := 0
 		for scAddress, gasTrace := range scGasTrace {
 			fmt.Println("\nGas Trace for: ", "SC Address", scAddress)
@@ -220,14 +220,13 @@ func logGasTrace(ae *ArwenTestExecutor) {
 	}
 }
 
-func setGasTraceInRuntime(ae *ArwenTestExecutor, enable bool) {
+func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
 	length := len(ae.scenarioTraceGas)
+	metering := ae.GetVMHost().Metering()
 	if enable && ae.scenarioTraceGas[length-1] {
-		runtime := ae.GetVMHost().Runtime()
-		runtime.EnableGasTrace()
+		metering.SetGasTracing(true)
 	} else {
-		runtime := ae.GetVMHost().Runtime()
-		runtime.DisableGasTrace()
+		metering.SetGasTracing(false)
 	}
 }
 

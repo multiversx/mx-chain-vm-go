@@ -26,12 +26,12 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 
 	txIndex := 0
 	for _, generalStep := range scenario.Steps {
-		setGasTraceInRuntime(ae, true)
+		setGasTraceInMetering(ae, true)
 		err := ae.ExecuteStep(generalStep)
 		if err != nil {
 			return err
 		}
-		setGasTraceInRuntime(ae, false)
+		setGasTraceInMetering(ae, false)
 		txIndex++
 	}
 
