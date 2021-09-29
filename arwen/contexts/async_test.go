@@ -36,6 +36,8 @@ func makeAsyncContext(t testing.TB, host arwen.VMHost) *asyncContext {
 	require.Nil(t, err)
 	require.NotNil(t, async)
 
+	async.address = Alice
+
 	return async
 }
 
@@ -397,49 +399,6 @@ func TestAsyncContext_IsValidCallbackName(t *testing.T) {
 	require.False(t, async.isValidCallbackName("Ainulindalë"))
 }
 
-// func TestAsyncContext_FindCall(t *testing.T) {
-// 	host, _ := initializeArwenAndWasmer_AsyncContext()
-// 	async := makeAsyncContext(t, host)
-
-// 	groupID, index, err := async.findCall([]byte("somewhere"))
-// 	require.Equal(t, "", groupID)
-// 	require.Equal(t, -1, index)
-// 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
-
-// 	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-// 		Destination: []byte("somewhere"),
-// 		Data:        []byte("something"),
-// 	})
-// 	require.Nil(t, err)
-
-// 	groupID, index, err = async.findCall([]byte("somewhere"))
-// 	require.Nil(t, err)
-// 	require.Equal(t, "testGroup", groupID)
-// 	require.Equal(t, 0, index)
-
-// 	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-// 		Destination: []byte("somewhere_else"),
-// 		Data:        []byte("something"),
-// 	})
-// 	require.Nil(t, err)
-
-// 	groupID, index, err = async.findCall([]byte("somewhere_else"))
-// 	require.Nil(t, err)
-// 	require.Equal(t, "testGroup", groupID)
-// 	require.Equal(t, 1, index)
-
-// 	err = async.RegisterAsyncCall("another_testGroup", &arwen.AsyncCall{
-// 		Destination: []byte("somewhere_else_entirely"),
-// 		Data:        []byte("something"),
-// 	})
-// 	require.Nil(t, err)
-
-// 	groupID, index, err = async.findCall([]byte("somewhere_else_entirely"))
-// 	require.Nil(t, err)
-// 	require.Equal(t, "another_testGroup", groupID)
-// 	require.Equal(t, 0, index)
-// }
-
 func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -452,7 +411,9 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
 	async := makeAsyncContext(t, host)
 
-	(&asyncContext{}).Save()
+	storedAsync := &asyncContext{}
+	storedAsync.host = host
+	storedAsync.Save()
 
 	address := host.Runtime().GetSCAddress()
 
@@ -522,6 +483,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 			},
 		},
 	}
+	asyncCtx.host = host
 	asyncCtx.Save()
 
 	vmInput.CallType = vm.AsynchronousCallBack
@@ -589,7 +551,10 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	require.Equal(t, big.NewInt(88), asyncTransfer.Value)
 	require.Equal(t, uint64(42), asyncTransfer.GasLimit)
 	require.Equal(t, uint64(98), asyncTransfer.GasLocked)
-	require.Equal(t, []byte("some_data"), asyncTransfer.Data)
+
+	callParser := parsers.NewCallArgsParser()
+	function, _, _ := callParser.ParseData(string(asyncTransfer.Data))
+	require.Equal(t, "some_data", function)
 	require.Equal(t, vm.AsynchronousCall, asyncTransfer.CallType)
 }
 
@@ -637,9 +602,10 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 
 	// The ContractCallInput generated to execute the destination call synchronously
 	originalCurrentTxHash := originalVMInput.CurrentTxHash
-	originalVMInput.CurrentTxHash, _ = host.Crypto().Sha256(append(originalVMInput.CurrentTxHash, originalVMInput.PrevTxHash...))
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
 	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
+
+	_, host.StoredInputs[0].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[0].Arguments, 2)
 
 	require.Equal(t, destInput, host.StoredInputs[0])
 
@@ -674,7 +640,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	async := makeAsyncContext(t, host)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
-	asyncCall.GasLimit = 100
+	asyncCall.GasLimit = 200
 	asyncCall.GasLocked = 90
 	gasConsumedByDestination := uint64(23)
 	gasConsumedByCallback := uint64(22)
@@ -683,7 +649,6 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
 	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
 	destInput.GasLocked = asyncCall.GasLocked
-	destInput.CurrentTxHash, _ = host.Crypto().Sha256(append(originalVMInput.CurrentTxHash, originalVMInput.PrevTxHash...))
 
 	// Prepare the output of Bob (the destination call)
 	destOutput := defaultDestOutput_Ok()
@@ -692,7 +657,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Prepare the input to Alice's callback
 	callbackInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.GasLocked
-	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput)
+	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput) + 4*(32+1)
 	callbackInput.GasProvided -= GasForAsyncStep
 	callbackInput.GasLocked = 0
 
@@ -710,7 +675,10 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 
 	// There were two calls to host.ExecuteOnDestContext()
 	require.Len(t, host.StoredInputs, 2)
+
+	_, host.StoredInputs[0].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[0].Arguments, 2)
 	require.Equal(t, destInput, host.StoredInputs[0])
+	_, host.StoredInputs[1].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[1].Arguments, 4)
 	require.Equal(t, callbackInput, host.StoredInputs[1])
 
 	// Verify the final output of the execution; GasRemaining is set to 0 because
@@ -761,8 +729,8 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 	require.NotNil(t, input)
 
 	expectedInput := defaultCallInput_AliceToBob(originalVMInput)
-	expectedInput.CurrentTxHash, _ = host.Crypto().Sha256(append(originalVMInput.CurrentTxHash, originalVMInput.PrevTxHash...))
 	expectedInput.GasProvided = 1
+	_, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, 2)
 	require.Equal(t, expectedInput, input)
 }
 
@@ -773,7 +741,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallResolved
-	asyncCall.GasLocked = 82
+	asyncCall.GasLocked = 300
 
 	vmOutput := defaultDestOutput_Ok()
 	vmOutput.GasRemaining = 12
@@ -783,11 +751,12 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
 	expectedInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
+	_, callbackInput.Arguments = arwen.SplitPrefixArguments(callbackInput.Arguments, 4)
 	require.Equal(t, expectedInput, callbackInput)
 }
 
@@ -798,7 +767,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallRejected
-	asyncCall.GasLocked = 82
+	asyncCall.GasLocked = 200
 
 	vmOutput := defaultDestOutput_UserError()
 	destinationErr := arwen.ErrSignalError
@@ -806,7 +775,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
 	expectedInput := arwen.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
@@ -816,6 +785,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	expectedInput.GasProvided = expectedGasProvided
 	expectedInput.CallType = vm.AsynchronousCallBack
 	expectedInput.ReturnCallAfterError = true
+	_, callbackInput.Arguments = arwen.SplitPrefixArguments(callbackInput.Arguments, 4)
 	require.Equal(t, expectedInput, callbackInput)
 }
 
