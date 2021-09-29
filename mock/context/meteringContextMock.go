@@ -193,3 +193,7 @@ func (m *MeteringContextMock) StartGasTracing(_ string) {
 
 func (m *MeteringContextMock) SetGasTracing(_ bool) {
 }
+
+func (m *MeteringContextMock) GetGasTrace() map[string]map[string][]uint64 {
+	return nil
+}

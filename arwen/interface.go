@@ -251,6 +251,7 @@ type MeteringContext interface {
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
 	StartGasTracing(functionName string)
 	SetGasTracing(enableGasTracing bool)
+	GetGasTrace() map[string]map[string][]uint64
 }
 
 // StorageStatus defines the states the storage can be in

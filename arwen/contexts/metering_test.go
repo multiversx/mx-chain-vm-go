@@ -21,7 +21,7 @@ func TestNewMeteringContext(t *testing.T) {
 	meteringContext, err := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
 	require.Nil(t, err)
 	require.NotNil(t, meteringContext)
-	require.Nil(t, meteringContext.gasTracer)
+	require.NotNil(t, meteringContext.gasTracer)
 }
 
 func TestNewMeteringContext_NilGasSchedule(t *testing.T) {

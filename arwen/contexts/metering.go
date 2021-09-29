@@ -23,7 +23,8 @@ type meteringContext struct {
 	gasForExecution    uint64
 	gasUsedByAccounts  map[string]uint64
 
-	gasTracer arwen.GasTracing
+	gasTracer       arwen.GasTracing
+	traceGasEnabled bool
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -45,6 +46,7 @@ func NewMeteringContext(
 		blockGasLimit:     blockGasLimit,
 		gasUsedByAccounts: make(map[string]uint64),
 		gasTracer:         nil,
+		traceGasEnabled:   false,
 	}
 
 	context.InitState()
@@ -62,6 +64,7 @@ func (context *meteringContext) InitState() {
 
 	newGasTracer := NewGasTracer()
 	context.gasTracer = newGasTracer
+	context.gasTracer.SetTraceGasEnabled(context.traceGasEnabled)
 }
 
 // InitStateFromContractCallInput initializes the internal state of the
@@ -505,6 +508,7 @@ func (context *meteringContext) deductInitialGas(
 // SetGasTracing enables/disables gas tracing
 func (context *meteringContext) SetGasTracing(enableGasTracing bool) {
 	context.gasTracer.SetTraceGasEnabled(enableGasTracing)
+	context.traceGasEnabled = enableGasTracing
 }
 
 // StartGasTracing sets initial trace for the upcoming gas usage.
