@@ -123,7 +123,7 @@ func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
-	runtime.UseAndTraceGas(smallIntGetUnsignedArgumentName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
@@ -146,7 +146,7 @@ func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
-	runtime.UseAndTraceGas(smallIntGetSignedArgumentName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
@@ -167,10 +167,9 @@ func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
-	runtime.UseAndTraceGas(smallIntFinishUnsignedName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
 	output.Finish(valueBytes)
@@ -180,10 +179,9 @@ func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 func v1_4_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
-	runtime.UseAndTraceGas(smallIntFinishSignedName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntFinishSignedName, gasToUse)
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
 	output.Finish(valueBytes)
@@ -196,7 +194,7 @@ func v1_4_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, 
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
-	runtime.UseAndTraceGas(smallIntStorageStoreSignedName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -219,7 +217,7 @@ func v1_4_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, ke
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
-	runtime.UseAndTraceGas(smallIntStorageStoreSignedName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -242,7 +240,7 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
-	runtime.UseAndTraceGas(smallIntStorageLoadUnsignedName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageLoadUnsignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -266,7 +264,7 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
-	runtime.UseAndTraceGas(smallIntStorageLoadSignedName, gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageLoadSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {

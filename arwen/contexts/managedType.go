@@ -44,7 +44,7 @@ type managedTypesState struct {
 	mBufferValues managedBufferMap
 }
 
-// NewBigIntContext creates a new managedTypesContext
+// NewManagedTypesContext creates a new managedTypesContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	context := &managedTypesContext{
 		host: host,
@@ -167,7 +167,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
 		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
-		metering.UseGas(gasToUse)
+		metering.UseAndTraceGas(gasToUse)
 	}
 	return gasToUse
 }
@@ -176,7 +176,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) uint64 {
 	metering := context.host.Metering()
 	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 	return gasToUse
 }
 
@@ -191,7 +191,7 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
 		gasToUse = gasToUseBigInt.Uint64()
 	}
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 	return gasToUse
 }
 
