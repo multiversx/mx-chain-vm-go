@@ -159,10 +159,10 @@ type ManagedTypesContext interface {
 	StateStack
 
 	GetRandReader() io.Reader
-	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) uint64
-	ConsumeGasForThisIntNumberOfBytes(byteLen int) uint64
-	ConsumeGasForBytes(bytes []byte) uint64
-	ConsumeGasForBigIntCopy(values ...*big.Int) uint64
+	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
+	ConsumeGasForThisIntNumberOfBytes(byteLen int)
+	ConsumeGasForBytes(bytes []byte)
+	ConsumeGasForBigIntCopy(values ...*big.Int)
 	NewBigInt(value *big.Int) int32
 	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
@@ -304,8 +304,6 @@ type GasTracing interface {
 	BeginTrace(scAddress string, functionName string)
 	AddToCurrentTrace(usedGas uint64)
 	AddTracedGas(scAddress string, functionName string, usedGas uint64)
-	SetTraceGasEnabled(setValue bool)
 	GetGasTrace() map[string]map[string][]uint64
-	IsEnabled() bool
 	IsInterfaceNil() bool
 }

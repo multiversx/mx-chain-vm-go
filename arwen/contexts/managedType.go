@@ -152,36 +152,32 @@ func (context *managedTypesContext) IsInterfaceNil() bool {
 }
 
 // ConsumeGasForBigIntCopy uses gas for Copy operations
-func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) uint64 {
-	usedGas := uint64(0)
+func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
 	for _, val := range values {
 		byteLen := val.BitLen() / 8
-		usedGas += context.ConsumeGasForThisIntNumberOfBytes(byteLen)
+		context.ConsumeGasForThisIntNumberOfBytes(byteLen)
 	}
-	return usedGas
 }
 
 // ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given
-func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) uint64 {
-	var gasToUse uint64
+func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+	gasToUse := uint64(0)
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
 		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
 		metering.UseAndTraceGas(gasToUse)
 	}
-	return gasToUse
 }
 
 // ConsumeGasForBytes uses gas for the given bytes
-func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) uint64 {
+func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
 	metering := context.host.Metering()
 	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
 	metering.UseAndTraceGas(gasToUse)
-	return gasToUse
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
-func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) uint64 {
+func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
 	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 
@@ -192,7 +188,6 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 		gasToUse = gasToUseBigInt.Uint64()
 	}
 	metering.UseAndTraceGas(gasToUse)
-	return gasToUse
 }
 
 // BIGINT

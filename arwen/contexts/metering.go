@@ -45,8 +45,6 @@ func NewMeteringContext(
 		gasSchedule:       gasSchedule,
 		blockGasLimit:     blockGasLimit,
 		gasUsedByAccounts: make(map[string]uint64),
-		gasTracer:         nil,
-		traceGasEnabled:   false,
 	}
 
 	context.InitState()
@@ -62,9 +60,13 @@ func (context *meteringContext) InitState() {
 	context.gasForExecution = 0
 	context.gasUsedByAccounts = make(map[string]uint64)
 
-	newGasTracer := NewGasTracer()
+	var newGasTracer arwen.GasTracing
+	if context.traceGasEnabled {
+		newGasTracer = NewEnabledGasTracer()
+	} else {
+		newGasTracer = NewDisabledGasTracer()
+	}
 	context.gasTracer = newGasTracer
-	context.gasTracer.SetTraceGasEnabled(context.traceGasEnabled)
 }
 
 // InitStateFromContractCallInput initializes the internal state of the
@@ -507,13 +509,15 @@ func (context *meteringContext) deductInitialGas(
 
 // SetGasTracing enables/disables gas tracing
 func (context *meteringContext) SetGasTracing(enableGasTracing bool) {
-	context.gasTracer.SetTraceGasEnabled(enableGasTracing)
 	context.traceGasEnabled = enableGasTracing
+	if context.traceGasEnabled {
+		context.gasTracer = NewEnabledGasTracer()
+	}
 }
 
 // StartGasTracing sets initial trace for the upcoming gas usage.
 func (context *meteringContext) StartGasTracing(functionName string) {
-	if context.gasTracer.IsEnabled() {
+	if context.traceGasEnabled {
 		scAddress := context.getSCAddress()
 		if len(scAddress) != 0 {
 			context.gasTracer.BeginTrace(scAddress, functionName)
@@ -522,16 +526,12 @@ func (context *meteringContext) StartGasTracing(functionName string) {
 }
 
 func (context *meteringContext) traceGas(usedGas uint64) {
-	if context.gasTracer.IsEnabled() {
-		context.gasTracer.AddToCurrentTrace(usedGas)
-	}
+	context.gasTracer.AddToCurrentTrace(usedGas)
 }
 
 func (context *meteringContext) addToGasTrace(functionName string, usedGas uint64) {
-	if context.gasTracer.IsEnabled() {
-		scAddress := context.getSCAddress()
-		context.gasTracer.AddTracedGas(scAddress, functionName, usedGas)
-	}
+	scAddress := context.getSCAddress()
+	context.gasTracer.AddTracedGas(scAddress, functionName, usedGas)
 }
 
 func (context *meteringContext) getSCAddress() string {

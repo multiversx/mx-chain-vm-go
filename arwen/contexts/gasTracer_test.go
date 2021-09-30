@@ -7,17 +7,11 @@ import (
 )
 
 func TestGasTracer(t *testing.T) {
-	gasTracer := NewGasTracer()
-	require.False(t, gasTracer.traceGasEnabled)
+	gasTracer := NewEnabledGasTracer()
 	require.Equal(t, 0, len(gasTracer.gasTrace))
 	require.Equal(t, "", gasTracer.functionNameTraced)
 	require.Equal(t, "", gasTracer.scAddress)
-	require.False(t, gasTracer.IsEnabled())
 	require.False(t, gasTracer.IsInterfaceNil())
-
-	gasTracer.SetTraceGasEnabled(true)
-	require.True(t, gasTracer.traceGasEnabled)
-	require.True(t, gasTracer.IsEnabled())
 
 	gasTracer.setCurrentFunctionTraced("functionName")
 	require.Equal(t, "functionName", gasTracer.functionNameTraced)
