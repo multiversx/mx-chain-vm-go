@@ -512,6 +512,8 @@ func (context *meteringContext) SetGasTracing(enableGasTracing bool) {
 	context.traceGasEnabled = enableGasTracing
 	if context.traceGasEnabled {
 		context.gasTracer = NewEnabledGasTracer()
+	} else {
+		context.gasTracer = NewDisabledGasTracer()
 	}
 }
 
