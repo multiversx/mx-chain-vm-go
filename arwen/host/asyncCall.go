@@ -11,7 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -97,6 +97,10 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
+	if !host.flagMultiESDTTransferAsyncCallBack.IsSet() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+		return false, functionName, args
+	}
+
 	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args
@@ -106,18 +110,20 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	return isNoCallAfter, functionName, args
 }
 
-func (host *vmHost) determineDestinationForAsyncCall(address []byte, functionName string, args [][]byte) []byte {
-	if !bytes.Equal(host.Runtime().GetSCAddress(), address) {
-		return address
+func (host *vmHost) determineDestinationForAsyncCall(asyncCallInfo arwen.AsyncCallInfoHandler) []byte {
+	if !bytes.Equal(host.Runtime().GetSCAddress(), asyncCallInfo.GetDestination()) {
+		return asyncCallInfo.GetDestination()
 	}
 
+	argsParser := parsers.NewCallArgsParser()
+	functionName, args, err := argsParser.ParseData(string(asyncCallInfo.GetData()))
 	if !host.IsBuiltinFunctionName(functionName) {
-		return address
+		return asyncCallInfo.GetDestination()
 	}
 
-	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(address, address, functionName, args)
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(asyncCallInfo.GetDestination(), asyncCallInfo.GetDestination(), functionName, args)
 	if err != nil {
-		return address
+		return asyncCallInfo.GetDestination()
 	}
 
 	return parsedTransfer.RcvAddr
@@ -135,7 +141,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 		return arwen.AsyncUnknown, err
 	}
 
-	actualDestination := host.determineDestinationForAsyncCall(asyncCallInfo.Destination, functionName, args)
+	actualDestination := host.determineDestinationForAsyncCall(asyncCallInfo)
 
 	sameShard := host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
 	if host.IsBuiltinFunctionName(functionName) {
@@ -189,10 +195,14 @@ func (host *vmHost) executeSyncCallbackCall(
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
+	actualDestination := asyncCallInfo.GetDestination()
+	if host.flagMultiESDTTransferAsyncCallBack.IsSet() {
+		actualDestination = host.determineDestinationForAsyncCall(asyncCallInfo)
+	}
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		asyncCallInfo,
 		destinationVMOutput,
-		asyncCallInfo.GetDestination(),
+		actualDestination,
 		arwen.CallbackFunctionName,
 		destinationErr,
 	)
