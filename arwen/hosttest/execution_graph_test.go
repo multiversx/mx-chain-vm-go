@@ -20,12 +20,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO matei-p add error test cases
-
 func TestGasUsed_SyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncCalls()
 	runGraphCallTestTemplate(t, callGraph)
 }
+
+// func TestGasUsed_SyncCallFail_CallGraph(t *testing.T) {
+// 	callGraph := test.CreateGraphTestOneSyncCallError()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
 
 func TestGasUsed_SyncCalls2_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncCalls2()
@@ -37,13 +40,38 @@ func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_OneAsyncCallFail_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+// func TestGasUsed_OneAsyncCallbackFail_CallGraph(t *testing.T) {
+// 	callGraph := test.CreateGraphTestOneAsyncCallbackFail()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
+
 func TestGasUsed_OneAsyncCallCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+// func TestGasUsed_OneAsyncCallFailCrossShard_CallGraph(t *testing.T) {
+// 	callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
+
+// func TestGasUsed_OneAsyncCallbackFailCrossShard_CallGraph(t *testing.T) {
+// 	callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
+
 func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGasUsed_TwoAsyncCallsOneFail_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestTwoAsyncCallsOneFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -237,7 +265,6 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	// compute execution order (return data) assertions and compute gas assertions
 	totalGasUsed, totalGasRemaining, expectedReturnData := computeExpectedValues(gasGraph)
-	// _, _, expectedReturnData := computeExpectedValues(gasGraph)
 
 	// expected gas sanity check
 	require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
@@ -293,7 +320,9 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 				setAsyncCosts(host, testConfig.GasLockCost)
 			}).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-				verify.Ok()
+				// TODO matei-p adapt depending on run config
+				// verify.Ok()
+				// verify.ReturnCode(vmcommon.ExecutionFailed)
 			})
 
 		extractStores(currentVMOutput, storage)
@@ -305,6 +334,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	checkReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, globalReturnData)
 	test.NewVMOutputVerifier(t, currentVMOutput, lastErr).
 		Ok() //.
+	// ReturnCode(vmcommon.ExecutionFailed)
 	// GasRemaining(callGraph.StartNode.GasLimit - totalGasUsed)
 }
 
@@ -333,11 +363,12 @@ func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test
 	}, visits, false /* don't followCrossShardEdges */)
 
 	// if a parent context async exists, add it's callback edge also
-	if startNode.IncomingEdgeType == test.CallbackCrossShard &&
+	incomingEdgeType := startNode.GetIncomingEdgeType()
+	if incomingEdgeType == test.CallbackCrossShard &&
 		startNode.Parent != nil && startNode.Parent.Parent != nil {
 		prevPrevNode := startNode.Parent.Parent
-		if prevPrevNode.IncomingEdgeType == test.Async ||
-			prevPrevNode.IncomingEdgeType == test.AsyncCrossShard {
+		if prevPrevNode.GetIncomingEdgeType() == test.Async ||
+			prevPrevNode.GetIncomingEdgeType() == test.AsyncCrossShard {
 			for _, edge := range prevPrevNode.AdjacentEdges {
 				if edge.Type == test.Callback || edge.Type == test.CallbackCrossShard {
 					crossShardEdges = append(crossShardEdges, edge)
@@ -352,6 +383,9 @@ func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test
 func executionOrderTraversal(gasGraph *test.TestCallGraph, nodeProcessing func(node *test.TestCallNode)) {
 	sortedNodes := make(NodesList, 0)
 	for _, node := range gasGraph.Nodes {
+		if !node.WillExecute() {
+			continue
+		}
 		sortedNodes = append(sortedNodes, node)
 	}
 	sort.Stable(sortedNodes)
@@ -374,7 +408,7 @@ func computeCallIDs(gasGraph *test.TestCallGraph) {
 		}
 
 		var parent *test.TestCallNode
-		if node.IncomingEdgeType == test.Callback {
+		if node.GetIncomingEdgeType() == test.Callback {
 			parent = node.Parent.Parent
 		} else {
 			parent = node.Parent
@@ -402,9 +436,14 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, uint64, [][]by
 		if !node.IsLeaf() {
 			if parent == nil {
 				totalGasRemaining += node.GasRemaining + node.GasAccumulated
-			} else if node.IncomingEdgeType == testcommon.Callback || node.IncomingEdgeType == testcommon.CallbackCrossShard {
+			} else if node.GetIncomingEdgeType() == testcommon.Callback || node.GetIncomingEdgeType() == testcommon.CallbackCrossShard {
 				totalGasRemaining += node.GasAccumulated
 			}
+			return
+		}
+		if parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail {
+			// all gas is used for failed callss
+			totalGasUsed += parent.GasLimit
 			return
 		}
 
@@ -469,16 +508,24 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 					} else if callType == vm.AsynchronousCallBack {
 						callData := txDataBuilder.NewBuilder()
 						callData.Func(function)
-						// will be read and removed by arwen
-						callData.Bytes(parsedArgs[0])
-						callData.Bytes(parsedArgs[1])
-						callData.Bytes(parsedArgs[2])
-						callData.Bytes(parsedArgs[3])
-						// return code
-						callData.Bytes(parsedArgs[4])
-						// testing framework info
-						callData.Bytes(big.NewInt(int64(crossShardEdge.Type)).Bytes())
-						callData.Int64(int64(crossShardEdge.GasUsedByCallback))
+						for _, arg := range parsedArgs {
+							callData.Bytes(arg)
+						}
+						// // will be read and removed by arwen
+						// callData.Bytes(parsedArgs[0])
+						// callData.Bytes(parsedArgs[1])
+						// callData.Bytes(parsedArgs[2])
+						// callData.Bytes(parsedArgs[3])
+						// // return code
+						// callData.Bytes(parsedArgs[4])
+						// // testing framework info
+						// callData.Bytes(big.NewInt(int64(crossShardEdge.Type)).Bytes())
+						// failVal := 0
+						// if crossShardEdge.Fail {
+						// 	failVal = 1
+						// }
+						// callData.Int64(int64(failVal))
+						// callData.Int64(int64(crossShardEdge.GasUsedByCallback))
 
 						encodedArgs = callData.ToBytes()
 					}
@@ -530,8 +577,13 @@ func checkReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnDat
 	// in order to be able to compare them with the provided return data
 	for i := 0; i < len(returnData); i++ {
 		retDataItem := returnData[i]
-		if len(retDataItem) == 1 && retDataItem[0] == test.Callback {
-			i++ // jump over next item
+		if len(retDataItem) == 1 &&
+			(retDataItem[0] == test.Callback || retDataItem[0] == test.CallbackCrossShard) {
+			i = i + 2 // jump over next 2 items (is_callback_failing and gas_used_by_callback)
+			continue
+		}
+
+		if string(retDataItem) == arwen.ErrExecutionFailed.Error() {
 			continue
 		}
 

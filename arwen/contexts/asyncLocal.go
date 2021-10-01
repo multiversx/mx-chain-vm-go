@@ -228,7 +228,6 @@ func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutp
 
 	output.SetReturnMessage(vmOutput.ReturnMessage)
 	output.Finish([]byte(vmOutput.ReturnCode.String()))
-	output.Finish(runtime.GetCurrentTxHash())
 }
 
 func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {

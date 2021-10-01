@@ -16,15 +16,20 @@ func main() {
 	/*
 		1 lvl of async calls
 	*/
+	// callGraph := test.CreateGraphTestOneAsyncCallFail()
+	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCalls()
 	// callGraph := test.CreateGraphTestSyncCalls2()
 	// callGraph := test.CreateGraphTestOneAsyncCall()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsOneFail()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
-	callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSyncAndAsync2() //*
@@ -35,6 +40,8 @@ func main() {
 	/*
 		multi lvl of async calls
 	*/
+	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
@@ -56,7 +63,7 @@ func main() {
 	gasGraph.AssignExecutionRounds()
 
 	graphviz = toGraphviz(gasGraph, false)
-	createSvg("3 tree-call-graph", graphviz)
+	createSvg("3 initial-gas-graph", graphviz)
 
 	gasGraph.ComputeRemainingGasBeforeCallbacks()
 	graphviz = toGraphviz(gasGraph, false)
@@ -128,7 +135,11 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 	// }
 	setGasLabelForNode(node, attrs)
 	if !node.IsGasLeaf() {
-		attrs["bgcolor"] = "grey"
+		if node.IsIncommingEdgeFail() {
+			attrs["fillcolor"] = "hotpink"
+		} else {
+			attrs["fillcolor"] = "lightgrey"
+		}
 		attrs["style"] = "filled"
 		attrs["label"] = node.VisualLabel
 	}
@@ -197,7 +208,15 @@ func computeUniqueGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[st
 	if counter > 1 {
 		suffix = "_" + strconv.Itoa(counter)
 	}
-	return strconv.Quote(prefix + suffix), strconv.Quote(fmt.Sprintf("%s [%d]", prefix, node.ExecutionRound))
+
+	var visualLabel string
+	if node.WillExecute() {
+		visualLabel = strconv.Quote(fmt.Sprintf("%s [%d]", prefix, node.ExecutionRound))
+	} else {
+		visualLabel = strconv.Quote(prefix)
+	}
+
+	return strconv.Quote(prefix + suffix), visualLabel
 }
 
 const gasFontStart = "<<font color='green'>"
@@ -219,12 +238,14 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	gasLocked := strconv.Itoa(int(node.GasLocked))
 	var xlabel string
 	if node.IsGasLeaf() {
-		attrs["label"] = gasFontStart + gasUsed + gasFontEnd
+		if node.WillExecute() {
+			attrs["label"] = gasFontStart + gasUsed + gasFontEnd
+		} else {
+			attrs["label"] = strconv.Quote("*")
+		}
 	} else {
 		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)
-		if node.GasLimit == 0 {
-			// xlabel += gasFontStart + "L" + gasLocked + gasFontEnd
-			// attrs["xlabel"] = xlabel
+		if node.GasLimit == 0 || !node.WillExecute() {
 			return
 		}
 		xlabel = gasFontStart
@@ -232,9 +253,6 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 		if node.GasLocked != 0 {
 			xlabel += "/L" + gasLocked
 		}
-
-		// only for debug
-		// xlabel += "/U" + strconv.Itoa(int(node.GasUsed))
 
 		xlabel += "<br/>R" + gasRemaining
 		if node.GasAccumulated != 0 {

@@ -950,7 +950,8 @@ func (host *vmHost) callSCMethod() error {
 	case vm.DirectCall:
 		break
 	case vm.AsynchronousCall:
-		err = async.ExecuteCrossShardCallback()
+		output := host.Output()
+		err = async.ExecuteCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()

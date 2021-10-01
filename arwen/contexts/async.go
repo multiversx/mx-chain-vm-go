@@ -721,6 +721,7 @@ func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier []by
 	return nil
 }
 
+// IsComplete -
 func (context *SerializableAsyncContext) IsComplete() bool {
 	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
 }
@@ -850,7 +851,7 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		err = context.ExecuteCrossShardCallback()
+		err = context.ExecuteCrossShardCallback(vmOutput.ReturnCode, vmOutput.ReturnData, vmOutput.ReturnMessage)
 		return false, nil, err
 	}
 
@@ -864,10 +865,14 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 	return isComplete, callbackVMOutput, nil
 }
 
-func (context *asyncContext) ExecuteCrossShardCallback() error {
+func (context *asyncContext) ExecuteCrossShardCallback(
+	returnCode vmcommon.ReturnCode,
+	returnData [][]byte,
+	returnMessage string,
+) error {
 	sender := context.address
 	destination := context.callerAddr
-	data := context.createCallbackArgumentForCrossShardCallback()
+	data := context.createCallbackArgumentForCrossShardCallback(returnCode, returnData, returnMessage)
 	err := sendCrossShardCallback(context.host, sender, destination, data)
 	return err
 }
@@ -911,10 +916,6 @@ func (context *asyncContext) Save() error {
 	}
 
 	return nil
-}
-
-func (context *SerializableAsyncContext) HasPendingCallGroups() bool {
-	return len(context.AsyncCallGroups) > 0
 }
 
 func (context *asyncContext) LoadParentContext() error {
@@ -1119,8 +1120,11 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 	return nil
 }
 
-// createCallbackArgumentForCrossShardCallback -
-func (context *asyncContext) createCallbackArgumentForCrossShardCallback() []byte {
+func (context *asyncContext) createCallbackArgumentForCrossShardCallback(
+	returnCode vmcommon.ReturnCode,
+	returnData [][]byte,
+	returnMessage string,
+) []byte {
 	transferData := txDataBuilder.NewBuilder()
 
 	transferData.Func("<callback>") // this is just a placeholder, necessary not to break decoding, it's not used anywhere
@@ -1129,17 +1133,13 @@ func (context *asyncContext) createCallbackArgumentForCrossShardCallback() []byt
 	transferData.Bytes(context.callerCallID)
 	transferData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())
 
-	output := context.host.Output()
-
-	retCode := output.ReturnCode()
-
-	transferData.Int64(int64(retCode))
-	if retCode == vmcommon.Ok {
-		for _, data := range output.ReturnData() {
+	transferData.Int64(int64(returnCode))
+	if returnCode == vmcommon.Ok {
+		for _, data := range returnData {
 			transferData.Bytes(data)
 		}
 	} else {
-		transferData.Str(output.ReturnMessage())
+		transferData.Str(returnMessage)
 	}
 	return transferData.ToBytes()
 }
