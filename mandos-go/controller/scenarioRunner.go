@@ -19,8 +19,9 @@ type ScenarioExecutor interface {
 
 // ScenarioRunner is a component that can run json scenarios, using a provided executor.
 type ScenarioRunner struct {
-	Executor ScenarioExecutor
-	Parser   mjparse.Parser
+	Executor    ScenarioExecutor
+	RunsNewTest bool
+	Parser      mjparse.Parser
 }
 
 // NewScenarioRunner creates new ScenarioRunner instance.

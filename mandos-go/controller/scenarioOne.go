@@ -35,6 +35,12 @@ func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string) error {
 
 	r.Parser.ExprInterpreter.FileResolver.SetContext(contextPath)
 	scenario, parseErr := r.Parser.ParseScenarioFile(byteValue)
+
+	if r.RunsNewTest {
+		scenario.IsNewTest = true
+		r.RunsNewTest = false
+	}
+
 	if parseErr != nil {
 		return parseErr
 	}

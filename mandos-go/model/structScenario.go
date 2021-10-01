@@ -5,6 +5,8 @@ type Scenario struct {
 	Name        string
 	Comment     string
 	CheckGas    bool
+	TraceGas    bool
+	IsNewTest   bool
 	GasSchedule GasSchedule
 	Steps       []Step
 }
@@ -30,10 +32,19 @@ type BlockInfo struct {
 	BlockRandomSeed *JSONBytesFromTree
 }
 
+type TraceGasStatus int
+
+const (
+	FalseValue TraceGasStatus = iota
+	TrueValue  TraceGasStatus = iota
+	Undefined  TraceGasStatus = iota
+)
+
 // ExternalStepsStep allows including steps from another file
 type ExternalStepsStep struct {
-	Comment string
-	Path    string
+	Comment  string
+	TraceGas TraceGasStatus
+	Path     string
 }
 
 // SetStateStep is a step where data is saved to the blockchain mock.

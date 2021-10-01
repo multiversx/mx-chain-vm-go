@@ -246,7 +246,6 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
-	return
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible

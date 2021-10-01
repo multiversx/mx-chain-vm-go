@@ -66,7 +66,7 @@ func writeManagedVecOfManagedBuffers(
 	}
 
 	managedType.SetBytes(destinationHandle, destinationBytes)
-	metering.UseGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	metering.UseAndTraceGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
 }
 
 // Deserializes a vmcommon.ESDTTransfer object.
@@ -269,7 +269,7 @@ func readDestinationArguments(
 	vmInput.arguments = data
 
 	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, actualLen)
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	return vmInput, err
 }

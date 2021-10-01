@@ -154,3 +154,54 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 		}
 	}
 }
+
+func logGasTrace(ae *ArwenTestExecutor) {
+	length := len(ae.scenarioTraceGas)
+	if ae.scenarioTraceGas[length-1] {
+		metering := ae.GetVMHost().Metering()
+		scGasTrace := metering.GetGasTrace()
+		totalGasUsedByAPIs := 0
+		for scAddress, gasTrace := range scGasTrace {
+			fmt.Println("\nGas Trace for: ", "SC Address", scAddress)
+			for functionName, value := range gasTrace {
+				totalGasUsed := uint64(0)
+				for _, usedGas := range value {
+					totalGasUsed += usedGas
+				}
+				fmt.Println("GasTrace: functionName:", functionName, ",  totalGasUsed:", totalGasUsed, ", numberOfCalls:", len(value))
+				totalGasUsedByAPIs += int(totalGasUsed)
+			}
+			fmt.Println("TotalGasUsedByAPIs: ", totalGasUsedByAPIs)
+		}
+	}
+}
+
+func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
+	length := len(ae.scenarioTraceGas)
+	metering := ae.GetVMHost().Metering()
+	if enable && ae.scenarioTraceGas[length-1] {
+		metering.SetGasTracing(true)
+	} else {
+		metering.SetGasTracing(false)
+	}
+}
+
+func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep) {
+	switch step.TraceGas.ToInt() {
+	case mj.Undefined.ToInt():
+		length := len(ae.scenarioTraceGas)
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, ae.scenarioTraceGas[length-1])
+	case mj.TrueValue.ToInt():
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, true)
+	case mj.FalseValue.ToInt():
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, false)
+	}
+}
+
+func resetGasTracesIfNewTest(ae *ArwenTestExecutor, scenario *mj.Scenario) {
+	if ae.vm == nil || scenario.IsNewTest {
+		ae.scenarioTraceGas = make([]bool, 0)
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, scenario.TraceGas)
+		scenario.IsNewTest = false
+	}
+}

@@ -44,7 +44,7 @@ type managedTypesState struct {
 	mBufferValues managedBufferMap
 }
 
-// NewBigIntContext creates a new managedTypesContext
+// NewManagedTypesContext creates a new managedTypesContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	context := &managedTypesContext{
 		host: host,
@@ -161,16 +161,19 @@ func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) 
 
 // ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given
 func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+	gasToUse := uint64(0)
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
-		metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+		metering.UseAndTraceGas(gasToUse)
 	}
 }
 
 // ConsumeGasForBytes uses gas for the given bytes
 func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
 	metering := context.host.Metering()
-	metering.UseGas(math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	metering.UseAndTraceGas(gasToUse)
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
@@ -184,12 +187,12 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
 		gasToUse = gasToUseBigInt.Uint64()
 	}
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 }
 
 // BIGINT
 
-// GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
+// GetBigIntOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
 func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
