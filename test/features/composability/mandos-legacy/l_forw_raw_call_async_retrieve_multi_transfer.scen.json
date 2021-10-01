@@ -31,7 +31,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         },
@@ -109,7 +109,7 @@
                         },
                         "str:callback_payments.len": "1"
                     },
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         }
