@@ -601,7 +601,6 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	require.Len(t, host.StoredInputs, 1)
 
 	// The ContractCallInput generated to execute the destination call synchronously
-	originalCurrentTxHash := originalVMInput.CurrentTxHash
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
 	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
 
@@ -615,7 +614,6 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	expectedOutput.ReturnMessage = "not enough gas"
 	expectedOutput.GasRemaining = 0
 	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
-	arwen.AddFinishData(expectedOutput, originalCurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -840,7 +838,6 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	expectedOutput.ReturnCode = vmcommon.OutOfGas
 	expectedOutput.ReturnMessage = syncExecErr.Error()
 	arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
-	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -867,7 +864,6 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	expectedOutput.ReturnCode = vmcommon.UserError
 	expectedOutput.ReturnMessage = "user made an error"
 	arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
-	arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in

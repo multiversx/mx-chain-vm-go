@@ -54,10 +54,21 @@ var callbackCallArgIndexes = argIndexesForGraphCall{
 	gasUsedIdx:  3,
 }
 
+type runtimeConfigOfCall struct {
+	gasUsed           uint64
+	gasUsedByCallback uint64
+	edgeType          TestCallEdgeType
+	willFail          bool
+	willCallbackFail  bool
+}
+
+// var runtimeConfigsForCalls map[string]*runtimeConfigOfCall
+
 // CreateMockContractsFromAsyncTestCallGraph creates the contracts
 // with functions that reflect the behavior specified by the call graph
 func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testConfig *TestConfig) []MockTestSmartContract {
 	contracts := make(map[string]*MockTestSmartContract)
+	runtimeConfigsForCalls := make(map[string]*runtimeConfigOfCall)
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		contractAddressAsString := string(node.Call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
@@ -74,6 +85,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 			} else {
 				shardID = node.ShardID
 			}
+
 			newContract := CreateMockContract(node.Call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
@@ -89,21 +101,29 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 							LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
 
 							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
-							edgeType, gasUsed, gasUsedByCallback, willFail, willCallbackFail := readGasUsedFromArguments(crtNode, host)
+							var runtimeConfig *runtimeConfigOfCall
+							if crtNode.IsStartNode {
+								runtimeConfig = &runtimeConfigOfCall{
+									gasUsed: crtNode.GasUsed,
+								}
+							} else {
+								runtimeConfig = readGasUsedFromArguments(host)
+							}
+							runtimeConfigsForCalls[string(host.Async().GetCallID())] = runtimeConfig
 
 							// prepare arguments for callback
-							if edgeType == Async || edgeType == AsyncCrossShard {
+							if runtimeConfig.edgeType == Async || runtimeConfig.edgeType == AsyncCrossShard {
 								arguments := make([][]byte, 3)
 								var callbackEdgeType TestCallEdgeType
-								if edgeType == Async {
+								if runtimeConfig.edgeType == Async {
 									callbackEdgeType = Callback
 								} else {
 									callbackEdgeType = CallbackCrossShard
 								}
 								setGraphCallArg(arguments, syncCallArgIndexes.edgeTypeIdx, int(callbackEdgeType))
-								setGraphCallArg(arguments, syncCallArgIndexes.failureIdx, failAsInt(willCallbackFail))
-								setGraphCallArg(arguments, syncCallArgIndexes.gasUsedIdx, int(gasUsedByCallback))
-								if !willFail {
+								setGraphCallArg(arguments, syncCallArgIndexes.failureIdx, failAsInt(runtimeConfig.willCallbackFail))
+								setGraphCallArg(arguments, syncCallArgIndexes.gasUsedIdx, int(runtimeConfig.gasUsedByCallback))
+								if !runtimeConfig.willFail {
 									createFinishDataFromArguments(host.Output(), arguments)
 								} else {
 									// in order to be used by the testing framework,
@@ -112,15 +132,23 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 									host.Runtime().FailExecution(fmt.Errorf(encodedDataAsString))
 									return instance
 								}
-							} else if (edgeType == Callback || edgeType == CallbackCrossShard) && willFail {
+							} else if runtimeConfig.edgeType == Sync && runtimeConfig.willFail {
+								// TODO matei-p
+								// look for the first runtime async call and coresponding async context up the stack
+								// get it's call id and read it's runtimeConfig config
+								// encode that config in the error message (that will and up as callback args)
+								// ...
+								host.Runtime().FailExecution(fmt.Errorf("callback fail"))
+								return instance
+							} else if runtimeConfig.willFail {
 								host.Runtime().FailExecution(fmt.Errorf("callback fail"))
 								return instance
 							}
 
 							// burn gas for function
 							// TODO matei-p change to debug logging
-							fmt.Println("Burning", "gas", gasUsed, "function", crtFunctionCalled)
-							host.Metering().UseGasBounded(uint64(gasUsed))
+							fmt.Println("Burning", "gas", runtimeConfig.gasUsed, "function", crtFunctionCalled)
+							host.Metering().UseGasBounded(uint64(runtimeConfig.gasUsed))
 
 							for _, edge := range crtNode.AdjacentEdges {
 								if edge.Type == Sync {
@@ -255,46 +283,38 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 		"Gas remaining", fmt.Sprintf("%d\t", metering.GasLeft()))
 }
 
-func readGasUsedFromArguments(crtNode *TestCallNode, host arwen.VMHost) (TestCallEdgeType, uint64, uint64, bool, bool) {
-	var gasUsed uint64
-	var gasUsedByCallback uint64
-	var edgeType TestCallEdgeType
-	var fail bool
-	var callbackFail bool
-	if crtNode.IsStartNode {
-		// for start node we get no arguments to read gas used from
-		gasUsed = crtNode.GasUsed
-	} else {
-		arguments := host.Runtime().Arguments()
-		callType := host.Runtime().GetVMInput().CallType
-		if len(arguments) > 0 {
-			var argIndexes argIndexesForGraphCall
-			if callType == vm.DirectCall {
-				argIndexes = syncCallArgIndexes
-			} else if callType == vm.AsynchronousCall {
-				argIndexes = asyncCallArgIndexes
-				gasUsedByCallback = big.NewInt(0).SetBytes(arguments[argIndexes.gasUsedByCallbackIdx]).Uint64()
-				callbackFail = (big.NewInt(0).SetBytes(arguments[argIndexes.callbackFailureIdx]).Int64() == 1)
-			} else if callType == vm.AsynchronousCallBack {
-				// for callbacks, first argument is return code
-				returnCode := big.NewInt(0).SetBytes(arguments[0]).Int64()
-				argIndexes = callbackCallArgIndexes
-				if returnCode != 0 {
-					// for error responses, second argument is the error message
-					_, parsedArgumentsFromReturnMessage, _ := parsers.NewCallArgsParser().ParseData(string(arguments[1]))
-					edgeType = TestCallEdgeType(big.NewInt(0).SetBytes(parsedArgumentsFromReturnMessage[0]).Int64())
-					fail = big.NewInt(0).SetBytes(parsedArgumentsFromReturnMessage[1]).Int64() == 1
-					gasUsed = big.NewInt(0).SetBytes(parsedArgumentsFromReturnMessage[2]).Uint64()
-					return edgeType, gasUsed, gasUsedByCallback, fail, callbackFail
-				}
-			}
+func readGasUsedFromArguments(host arwen.VMHost) *runtimeConfigOfCall {
+	runtimeConfig := &runtimeConfigOfCall{}
+	var argIndexes argIndexesForGraphCall
 
-			edgeType = TestCallEdgeType(big.NewInt(0).SetBytes(arguments[argIndexes.edgeTypeIdx]).Int64())
-			gasUsed = big.NewInt(0).SetBytes(arguments[argIndexes.gasUsedIdx]).Uint64()
-			fail = (big.NewInt(0).SetBytes(arguments[argIndexes.failureIdx]).Int64() == 1)
+	arguments := host.Runtime().Arguments()
+	callType := host.Runtime().GetVMInput().CallType
+
+	if callType == vm.DirectCall {
+		argIndexes = syncCallArgIndexes
+	} else if callType == vm.AsynchronousCall {
+		argIndexes = asyncCallArgIndexes
+		runtimeConfig.gasUsedByCallback = big.NewInt(0).SetBytes(arguments[argIndexes.gasUsedByCallbackIdx]).Uint64()
+		runtimeConfig.willCallbackFail = (big.NewInt(0).SetBytes(arguments[argIndexes.callbackFailureIdx]).Int64() == 1)
+	} else if callType == vm.AsynchronousCallBack {
+		// for callbacks, first argument is return code
+		returnCode := big.NewInt(0).SetBytes(arguments[0]).Int64()
+		argIndexes = callbackCallArgIndexes
+		if returnCode != 0 {
+			// for error responses, second argument is the error message
+			_, parsedArgumentsFromReturnMessage, _ := parsers.NewCallArgsParser().ParseData(string(arguments[1]))
+			runtimeConfig.edgeType = TestCallEdgeType(big.NewInt(0).SetBytes(parsedArgumentsFromReturnMessage[0]).Int64())
+			runtimeConfig.willFail = (big.NewInt(0).SetBytes(parsedArgumentsFromReturnMessage[1]).Int64() == 1)
+			runtimeConfig.gasUsed = big.NewInt(0).SetBytes(parsedArgumentsFromReturnMessage[2]).Uint64()
+			return runtimeConfig
 		}
 	}
-	return edgeType, gasUsed, gasUsedByCallback, fail, callbackFail
+
+	runtimeConfig.edgeType = TestCallEdgeType(big.NewInt(0).SetBytes(arguments[argIndexes.edgeTypeIdx]).Int64())
+	runtimeConfig.gasUsed = big.NewInt(0).SetBytes(arguments[argIndexes.gasUsedIdx]).Uint64()
+	runtimeConfig.willFail = (big.NewInt(0).SetBytes(arguments[argIndexes.failureIdx]).Int64() == 1)
+
+	return runtimeConfig
 }
 
 func addFunctionToTempList(contract *MockTestSmartContract, functionName string, isCallBack bool) {
@@ -698,6 +718,33 @@ func CreateGraphTestOneAsyncCallFail() *TestCallGraph {
 	callGraph.AddSyncEdge(sc2f2, sc3f3).
 		SetGasLimit(10).
 		SetGasUsed(4)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	callGraph.AddSyncEdge(sc1cb1, sc4f4).
+		SetGasLimit(100).
+		SetGasUsed(40)
+
+	return callGraph
+}
+
+// CreateGraphTestOneAsyncCallIndirectFail -
+func CreateGraphTestOneAsyncCallIndirectFail() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 500, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "gr1").
+		SetGasLimit(35).
+		SetGasUsed(7).
+		SetGasUsedByCallback(6)
+	sc1cb1 := callGraph.AddNode("sc1", "cb1")
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+	callGraph.AddSyncEdge(sc2f2, sc3f3).
+		SetGasLimit(10).
+		SetGasUsed(4).
+		SetFail()
 
 	sc4f4 := callGraph.AddNode("sc4", "f4")
 	callGraph.AddSyncEdge(sc1cb1, sc4f4).

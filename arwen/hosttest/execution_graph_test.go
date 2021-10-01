@@ -45,6 +45,11 @@ func TestGasUsed_OneAsyncCallFail_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGasUsed_OneAsyncCallIndirectFail_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallIndirectFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 // func TestGasUsed_OneAsyncCallbackFail_CallGraph(t *testing.T) {
 // 	callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 // 	runGraphCallTestTemplate(t, callGraph)
