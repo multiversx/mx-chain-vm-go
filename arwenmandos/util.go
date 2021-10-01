@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
@@ -20,6 +19,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
+	esdtconvert.WriteESDTToStorage(testAcct.ESDTData, storage)
 
 	if len(testAcct.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
@@ -46,42 +46,6 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		MockWorld: world,
 	}
 
-	for _, mandosESDTData := range testAcct.ESDTData {
-		tokenName := mandosESDTData.TokenIdentifier.Value
-		isFrozen := mandosESDTData.Frozen.Value > 0
-		for _, instance := range mandosESDTData.Instances {
-			tokenNonce := instance.Nonce.Value
-			tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
-			tokenBalance := instance.Balance.Value
-			tokenData := &esdt.ESDigitalToken{
-				Value:      tokenBalance,
-				Type:       uint32(core.Fungible),
-				Properties: makeESDTUserMetadataBytes(isFrozen),
-				TokenMetaData: &esdt.MetaData{
-					Name:       tokenName,
-					Nonce:      tokenNonce,
-					Creator:    instance.Creator.Value,
-					Royalties:  uint32(instance.Royalties.Value),
-					Hash:       instance.Hash.Value,
-					URIs:       [][]byte{instance.Uri.Value},
-					Attributes: instance.Attributes.Value,
-				},
-			}
-			err := account.SetTokenData(tokenKey, tokenData)
-			if err != nil {
-				return nil, err
-			}
-			err = account.SetLastNonce(tokenName, mandosESDTData.LastNonce.Value)
-			if err != nil {
-				return nil, err
-			}
-		}
-		err := account.SetTokenRolesAsStrings(tokenName, mandosESDTData.Roles)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return account, nil
 }
 
@@ -94,14 +58,6 @@ func validateSetStateAccount(mandosAccount *mj.Account, converted *worldmock.Acc
 			err)
 	}
 	return nil
-}
-
-func makeESDTUserMetadataBytes(frozen bool) []byte {
-	metadata := &builtInFunctions.ESDTUserMetadata{
-		Frozen: frozen,
-	}
-
-	return metadata.ToBytes()
 }
 
 func validateNewAddressMocks(testNAMs []*mj.NewAddressMock) error {
