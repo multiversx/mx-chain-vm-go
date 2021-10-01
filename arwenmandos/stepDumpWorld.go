@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
@@ -40,7 +41,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		}
 	}
 
-	tokenData, err := account.GetFullMockESDTData()
+	tokenData, err := esdtconvert.GetFullMockESDTData(account.Storage)
 	if err != nil {
 		return nil, err
 	}
