@@ -19,7 +19,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
@@ -55,9 +55,6 @@ var ESDTTransferGasCost = uint64(1)
 
 // ESDTTestTokenName is an exposed value to use in tests
 var ESDTTestTokenName = []byte("TT")
-
-// ESDTTestTokenKey is an exposed value to use in tests
-var ESDTTestTokenKey = worldmock.MakeTokenKey(ESDTTestTokenName, 0)
 
 // DefaultCodeMetadata is an exposed value to use in tests
 var DefaultCodeMetadata = []byte{3, 0}
