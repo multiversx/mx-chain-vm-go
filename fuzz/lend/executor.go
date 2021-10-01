@@ -59,9 +59,8 @@ type executor struct {
 
 	ownerAddress string
 
-	wegldLPAddress string
-	busdLPAddress  string
-
+	wegldLPAddress  string
+	busdLPAddress   string
 	lendPoolAddress string
 
 	numUsers  int
@@ -80,6 +79,9 @@ type statistics struct {
 
 	withdrawHits   int
 	withdrawMisses int
+
+	repayHits   int
+	repayMisses int
 }
 
 func newExecutor(fileResolver fr.FileResolver) (*executor, error) {
@@ -95,7 +97,6 @@ func newExecutor(fileResolver fr.FileResolver) (*executor, error) {
 		world:             arwenTestExecutor.World,
 		vm:                arwenTestExecutor.GetVM(),
 		mandosParser:      mandosParser,
-		tokenIDs:          make(map[string]string),
 		txIndex:           0,
 		generatedScenario: &mandosjson.Scenario{
 			Name: "lend fuzz generated",
