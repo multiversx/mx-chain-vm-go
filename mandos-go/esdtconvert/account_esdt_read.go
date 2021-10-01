@@ -22,7 +22,7 @@ func GetTokenBalance(tokenIdentifier []byte, nonce uint64, source map[string][]b
 
 // GetTokenData gets the ESDT information related to a token from the storage of the account.
 func GetTokenData(tokenIdentifier []byte, nonce uint64, source map[string][]byte) (*esdt.ESDigitalToken, error) {
-	tokenKey := MakeTokenKey(tokenIdentifier, nonce)
+	tokenKey := makeTokenKey(tokenIdentifier, nonce)
 	return getTokenDataByKey(tokenKey, source)
 }
 
@@ -31,7 +31,7 @@ func getTokenDataByKey(tokenKey []byte, source map[string][]byte) (*esdt.ESDigit
 		Value: big.NewInt(0),
 		Type:  uint32(core.Fungible),
 		TokenMetaData: &esdt.MetaData{
-			Name:  GetTokenNameFromKey(tokenKey),
+			Name:  getTokenNameFromKey(tokenKey),
 			Nonce: 0,
 		},
 	}
@@ -51,7 +51,7 @@ func getTokenDataByKey(tokenKey []byte, source map[string][]byte) (*esdt.ESDigit
 
 // GetTokenRoles returns the roles of the account for the specified tokenName.
 func GetTokenRoles(tokenName []byte, source map[string][]byte) ([][]byte, error) {
-	tokenRolesKey := MakeTokenRolesKey(tokenName)
+	tokenRolesKey := makeTokenRolesKey(tokenName)
 	tokenRolesData := &esdt.ESDTRoles{
 		Roles: make([][]byte, 0),
 	}
@@ -74,7 +74,7 @@ func GetTokenRoles(tokenName []byte, source map[string][]byte) ([][]byte, error)
 func GetTokenKeys(source map[string][]byte) [][]byte {
 	tokenKeys := make([][]byte, 0)
 	for key := range source {
-		if IsTokenKey([]byte(key)) {
+		if isTokenKey([]byte(key)) {
 			tokenKeys = append(tokenKeys, []byte(key))
 		}
 	}
@@ -95,7 +95,7 @@ func GetFullMockESDTData(source map[string][]byte) (map[string]*MockESDTData, er
 	resultMap := make(map[string]*MockESDTData)
 	for key := range source {
 		storageKeyBytes := []byte(key)
-		if IsTokenKey(storageKeyBytes) {
+		if isTokenKey(storageKeyBytes) {
 			tokenName, tokenInstance, err := loadMockESDTDataInstance(storageKeyBytes, source)
 			if err != nil {
 				return nil, err
@@ -104,12 +104,12 @@ func GetFullMockESDTData(source map[string][]byte) (map[string]*MockESDTData, er
 				resultObj := getOrCreateMockESDTData(tokenName, resultMap)
 				resultObj.Instances = append(resultObj.Instances, tokenInstance)
 			}
-		} else if IsNonceKey(storageKeyBytes) {
-			tokenName := key[len(ESDTNonceKeyPrefix):]
+		} else if isNonceKey(storageKeyBytes) {
+			tokenName := key[len(esdtNonceKeyPrefix):]
 			resultObj := getOrCreateMockESDTData(tokenName, resultMap)
 			resultObj.LastNonce = big.NewInt(0).SetBytes(source[key]).Uint64()
-		} else if IsRoleKey(storageKeyBytes) {
-			tokenName := key[len(ESDTRoleKeyPrefix):]
+		} else if isRoleKey(storageKeyBytes) {
+			tokenName := key[len(esdtRoleKeyPrefix):]
 			roles, err := GetTokenRoles([]byte(tokenName), source)
 			if err != nil {
 				return nil, err
@@ -129,7 +129,7 @@ func loadMockESDTDataInstance(tokenKey []byte, source map[string][]byte) (string
 		return "", nil, err
 	}
 
-	tokenNameFromKey := GetTokenNameFromKey(tokenKey)
+	tokenNameFromKey := getTokenNameFromKey(tokenKey)
 
 	var tokenName string
 	if tokenInstance.TokenMetaData == nil || tokenInstance.TokenMetaData.Nonce == 0 {

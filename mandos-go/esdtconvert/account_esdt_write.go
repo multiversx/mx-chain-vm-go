@@ -23,7 +23,7 @@ func WriteESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) 
 		isFrozen := mandosESDTData.Frozen.Value > 0
 		for _, instance := range mandosESDTData.Instances {
 			tokenNonce := instance.Nonce.Value
-			tokenKey := MakeTokenKey(tokenIdentifier, tokenNonce)
+			tokenKey := makeTokenKey(tokenIdentifier, tokenNonce)
 			tokenBalance := instance.Balance.Value
 			tokenData := &esdt.ESDigitalToken{
 				Value:      tokenBalance,
@@ -68,13 +68,13 @@ func setTokenDataByKey(tokenKey []byte, tokenData *esdt.ESDigitalToken, destinat
 }
 
 func SetTokenData(tokenIdentifier []byte, nonce uint64, tokenData *esdt.ESDigitalToken, destination map[string][]byte) error {
-	tokenKey := MakeTokenKey(tokenIdentifier, nonce)
+	tokenKey := makeTokenKey(tokenIdentifier, nonce)
 	return setTokenDataByKey(tokenKey, tokenData, destination)
 }
 
 // SetTokenRoles sets the specified roles to the account, corresponding to the given tokenIdentifier.
 func SetTokenRoles(tokenIdentifier []byte, roles [][]byte, destination map[string][]byte) error {
-	tokenRolesKey := MakeTokenRolesKey(tokenIdentifier)
+	tokenRolesKey := makeTokenRolesKey(tokenIdentifier)
 	tokenRolesData := &esdt.ESDTRoles{
 		Roles: roles,
 	}
@@ -100,7 +100,7 @@ func SetTokenRolesAsStrings(tokenIdentifier []byte, rolesAsStrings []string, des
 
 // SetLastNonce writes the last nonce of a specified ESDT into the storage.
 func SetLastNonce(tokenIdentifier []byte, lastNonce uint64, destination map[string][]byte) error {
-	tokenNonceKey := MakeLastNonceKey(tokenIdentifier)
+	tokenNonceKey := makeLastNonceKey(tokenIdentifier)
 	nonceBytes := big.NewInt(0).SetUint64(lastNonce).Bytes()
 	destination[string(tokenNonceKey)] = nonceBytes
 	return nil
@@ -109,14 +109,14 @@ func SetLastNonce(tokenIdentifier []byte, lastNonce uint64, destination map[stri
 // SetTokenBalance sets the ESDT balance of the account, specified by the token
 // key.
 func SetTokenBalance(tokenIdentifier []byte, nonce uint64, balance *big.Int, destination map[string][]byte) error {
-	tokenKey := MakeTokenKey(tokenIdentifier, nonce)
+	tokenKey := makeTokenKey(tokenIdentifier, nonce)
 	tokenData, err := getTokenDataByKey(tokenKey, destination)
 	if err != nil {
 		return err
 	}
 
 	if balance.Sign() < 0 {
-		return ErrNegativeValue
+		return errNegativeValue
 	}
 
 	tokenData.Value = balance
