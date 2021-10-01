@@ -17,20 +17,20 @@ func makeESDTUserMetadataBytes(frozen bool) []byte {
 	return metadata.ToBytes()
 }
 
-func ExportESDTStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
+func WriteESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
 	for _, mandosESDTData := range esdtData {
-		tokenName := mandosESDTData.TokenIdentifier.Value
+		tokenIdentifier := mandosESDTData.TokenIdentifier.Value
 		isFrozen := mandosESDTData.Frozen.Value > 0
 		for _, instance := range mandosESDTData.Instances {
 			tokenNonce := instance.Nonce.Value
-			tokenKey := MakeTokenKey(tokenName, tokenNonce)
+			tokenKey := MakeTokenKey(tokenIdentifier, tokenNonce)
 			tokenBalance := instance.Balance.Value
 			tokenData := &esdt.ESDigitalToken{
 				Value:      tokenBalance,
 				Type:       uint32(core.Fungible),
 				Properties: makeESDTUserMetadataBytes(isFrozen),
 				TokenMetaData: &esdt.MetaData{
-					Name:       tokenName,
+					Name:       tokenIdentifier,
 					Nonce:      tokenNonce,
 					Creator:    instance.Creator.Value,
 					Royalties:  uint32(instance.Royalties.Value),
@@ -39,16 +39,16 @@ func ExportESDTStorage(esdtData []*mj.ESDTData, destination map[string][]byte) e
 					Attributes: instance.Attributes.Value,
 				},
 			}
-			err := SetTokenData(tokenKey, tokenData, destination)
+			err := setTokenDataByKey(tokenKey, tokenData, destination)
 			if err != nil {
 				return err
 			}
 		}
-		err := SetLastNonce(tokenName, mandosESDTData.LastNonce.Value, destination)
+		err := SetLastNonce(tokenIdentifier, mandosESDTData.LastNonce.Value, destination)
 		if err != nil {
 			return err
 		}
-		err = SetTokenRolesAsStrings(tokenName, mandosESDTData.Roles, destination)
+		err = SetTokenRolesAsStrings(tokenIdentifier, mandosESDTData.Roles, destination)
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func ExportESDTStorage(esdtData []*mj.ESDTData, destination map[string][]byte) e
 }
 
 // SetTokenData sets the ESDT information related to a token into the storage of the account.
-func SetTokenData(tokenKey []byte, tokenData *esdt.ESDigitalToken, destination map[string][]byte) error {
+func setTokenDataByKey(tokenKey []byte, tokenData *esdt.ESDigitalToken, destination map[string][]byte) error {
 	marshaledData, err := esdtDataMarshalizer.Marshal(tokenData)
 	if err != nil {
 		return err
@@ -67,9 +67,14 @@ func SetTokenData(tokenKey []byte, tokenData *esdt.ESDigitalToken, destination m
 	return nil
 }
 
-// SetTokenRoles sets the specified roles to the account, corresponding to the given tokenName.
-func SetTokenRoles(tokenName []byte, roles [][]byte, destination map[string][]byte) error {
-	tokenRolesKey := MakeTokenRolesKey(tokenName)
+func SetTokenData(tokenIdentifier []byte, nonce uint64, tokenData *esdt.ESDigitalToken, destination map[string][]byte) error {
+	tokenKey := MakeTokenKey(tokenIdentifier, nonce)
+	return setTokenDataByKey(tokenKey, tokenData, destination)
+}
+
+// SetTokenRoles sets the specified roles to the account, corresponding to the given tokenIdentifier.
+func SetTokenRoles(tokenIdentifier []byte, roles [][]byte, destination map[string][]byte) error {
+	tokenRolesKey := MakeTokenRolesKey(tokenIdentifier)
 	tokenRolesData := &esdt.ESDTRoles{
 		Roles: roles,
 	}
@@ -83,20 +88,37 @@ func SetTokenRoles(tokenName []byte, roles [][]byte, destination map[string][]by
 	return nil
 }
 
-// SetTokenRolesAsStrings sets the specified roles to the account, corresponding to the given tokenName.
-func SetTokenRolesAsStrings(tokenName []byte, rolesAsStrings []string, destination map[string][]byte) error {
+// SetTokenRolesAsStrings sets the specified roles to the account, corresponding to the given tokenIdentifier.
+func SetTokenRolesAsStrings(tokenIdentifier []byte, rolesAsStrings []string, destination map[string][]byte) error {
 	roles := make([][]byte, len(rolesAsStrings))
 	for i := 0; i < len(roles); i++ {
 		roles[i] = []byte(rolesAsStrings[i])
 	}
 
-	return SetTokenRoles(tokenName, roles, destination)
+	return SetTokenRoles(tokenIdentifier, roles, destination)
 }
 
 // SetLastNonce writes the last nonce of a specified ESDT into the storage.
-func SetLastNonce(tokenName []byte, lastNonce uint64, destination map[string][]byte) error {
-	tokenNonceKey := MakeLastNonceKey(tokenName)
+func SetLastNonce(tokenIdentifier []byte, lastNonce uint64, destination map[string][]byte) error {
+	tokenNonceKey := MakeLastNonceKey(tokenIdentifier)
 	nonceBytes := big.NewInt(0).SetUint64(lastNonce).Bytes()
 	destination[string(tokenNonceKey)] = nonceBytes
 	return nil
+}
+
+// SetTokenBalance sets the ESDT balance of the account, specified by the token
+// key.
+func SetTokenBalance(tokenIdentifier []byte, nonce uint64, balance *big.Int, destination map[string][]byte) error {
+	tokenKey := MakeTokenKey(tokenIdentifier, nonce)
+	tokenData, err := getTokenDataByKey(tokenKey, destination)
+	if err != nil {
+		return err
+	}
+
+	if balance.Sign() < 0 {
+		return ErrNegativeValue
+	}
+
+	tokenData.Value = balance
+	return setTokenDataByKey(tokenKey, tokenData, destination)
 }

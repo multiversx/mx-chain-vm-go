@@ -9,17 +9,10 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
-// GetTokenBalanceByName returns the ESDT balance of the account, specified by
-// the token name.
-func GetTokenBalanceByName(tokenName string, source map[string][]byte) (*big.Int, error) {
-	tokenKey := MakeTokenKey([]byte(tokenName), 0)
-	return GetTokenBalance(tokenKey, source)
-}
-
 // GetTokenBalance returns the ESDT balance of the account, specified by the
 // token key.
-func GetTokenBalance(tokenKey []byte, source map[string][]byte) (*big.Int, error) {
-	tokenData, err := GetTokenData(tokenKey, source)
+func GetTokenBalance(tokenIdentifier []byte, nonce uint64, source map[string][]byte) (*big.Int, error) {
+	tokenData, err := GetTokenData(tokenIdentifier, nonce, source)
 	if err != nil {
 		return nil, err
 	}
@@ -27,35 +20,13 @@ func GetTokenBalance(tokenKey []byte, source map[string][]byte) (*big.Int, error
 	return tokenData.Value, nil
 }
 
-// SetTokenBalance sets the ESDT balance of the account, specified by the token
-// key.
-func SetTokenBalance(tokenKey []byte, balance *big.Int, source map[string][]byte) error {
-	tokenData, err := GetTokenData(tokenKey, source)
-	if err != nil {
-		return err
-	}
-
-	if balance.Sign() < 0 {
-		return ErrNegativeValue
-	}
-
-	tokenData.Value = balance
-	return SetTokenData(tokenKey, tokenData, source)
-}
-
-// GetTokenBalanceUint64 returns the ESDT balance of the account, specified by
-// the token key.
-func GetTokenBalanceUint64(tokenKey []byte, source map[string][]byte) (uint64, error) {
-	tokenData, err := GetTokenData(tokenKey, source)
-	if err != nil {
-		return 0, err
-	}
-
-	return tokenData.Value.Uint64(), nil
-}
-
 // GetTokenData gets the ESDT information related to a token from the storage of the account.
-func GetTokenData(tokenKey []byte, source map[string][]byte) (*esdt.ESDigitalToken, error) {
+func GetTokenData(tokenIdentifier []byte, nonce uint64, source map[string][]byte) (*esdt.ESDigitalToken, error) {
+	tokenKey := MakeTokenKey(tokenIdentifier, nonce)
+	return getTokenDataByKey(tokenKey, source)
+}
+
+func getTokenDataByKey(tokenKey []byte, source map[string][]byte) (*esdt.ESDigitalToken, error) {
 	esdtData := &esdt.ESDigitalToken{
 		Value: big.NewInt(0),
 		Type:  uint32(core.Fungible),
@@ -153,7 +124,7 @@ func GetFullMockESDTData(source map[string][]byte) (map[string]*MockESDTData, er
 
 // loads and prepared the ESDT instance
 func loadMockESDTDataInstance(tokenKey []byte, source map[string][]byte) (string, *esdt.ESDigitalToken, error) {
-	tokenInstance, err := GetTokenData(tokenKey, source)
+	tokenInstance, err := getTokenDataByKey(tokenKey, source)
 	if err != nil {
 		return "", nil, err
 	}
