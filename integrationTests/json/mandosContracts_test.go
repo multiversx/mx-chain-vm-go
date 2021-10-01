@@ -29,6 +29,13 @@ func TestESDTMultiTransferOnCallback(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
+	err := runSingleTestReturnError(
+		"features/composability/mandos",
+		"forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json")
+	require.Nil(t, err)
+}
+
 func TestDnsContract(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")

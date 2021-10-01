@@ -10,7 +10,7 @@ import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
