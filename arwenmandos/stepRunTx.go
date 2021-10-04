@@ -66,8 +66,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if err != nil {
 				return nil, err
 			}
-			length := len(ae.scenarioTraceGas)
-			if ae.scenarioTraceGas[length-1] {
+			if ae.PeekTraceGas() {
 				fmt.Println("\nIn txID:", txIndex, ", step type:Deploy", ", total gas used:", gasForExecution-output.GasRemaining)
 			}
 		case mj.ScQuery:
@@ -83,8 +82,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if err != nil {
 				return nil, err
 			}
-			length := len(ae.scenarioTraceGas)
-			if ae.scenarioTraceGas[length-1] {
+			if ae.PeekTraceGas() {
 				fmt.Println("In txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
 			}
 		case mj.Transfer:

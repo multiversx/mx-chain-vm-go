@@ -156,8 +156,7 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 }
 
 func logGasTrace(ae *ArwenTestExecutor) {
-	length := len(ae.scenarioTraceGas)
-	if ae.scenarioTraceGas[length-1] {
+	if ae.PeekTraceGas() {
 		metering := ae.GetVMHost().Metering()
 		scGasTrace := metering.GetGasTrace()
 		totalGasUsedByAPIs := 0
@@ -177,9 +176,8 @@ func logGasTrace(ae *ArwenTestExecutor) {
 }
 
 func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
-	length := len(ae.scenarioTraceGas)
 	metering := ae.GetVMHost().Metering()
-	if enable && ae.scenarioTraceGas[length-1] {
+	if enable && ae.PeekTraceGas() {
 		metering.SetGasTracing(true)
 	} else {
 		metering.SetGasTracing(false)
@@ -189,8 +187,7 @@ func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
 func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep) {
 	switch step.TraceGas.ToInt() {
 	case mj.Undefined.ToInt():
-		length := len(ae.scenarioTraceGas)
-		ae.scenarioTraceGas = append(ae.scenarioTraceGas, ae.scenarioTraceGas[length-1])
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, ae.PeekTraceGas())
 	case mj.TrueValue.ToInt():
 		ae.scenarioTraceGas = append(ae.scenarioTraceGas, true)
 	case mj.FalseValue.ToInt():
