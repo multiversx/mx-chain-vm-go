@@ -17,10 +17,13 @@ func main() {
 		1 lvl of async calls
 	*/
 	// callGraph := test.CreateGraphTestOneAsyncCallFail()
-	callGraph := test.CreateGraphTestOneAsyncCallIndirectFail()
+	// callGraph := test.CreateGraphTestAsyncCallIndirectFail()
+	// callGraph := test.CreateGraphTestOneAsyncCallbackFail()
+	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
+	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard() // !!!
+	callGraph := test.CreateGraphTestAsyncCallIndirectFailCrossShard()
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
-	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
-	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCalls()
 	// callGraph := test.CreateGraphTestSyncCalls2()
 	// callGraph := test.CreateGraphTestOneAsyncCall()
@@ -61,6 +64,7 @@ func main() {
 	createSvg("2 execution-graph", graphviz)
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
+	gasGraph.PropagateSyncFailures()
 	gasGraph.AssignExecutionRounds()
 
 	graphviz = toGraphviz(gasGraph, false)
@@ -136,7 +140,7 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 	// }
 	setGasLabelForNode(node, attrs)
 	if !node.IsGasLeaf() {
-		if node.IsIncommingEdgeFail() {
+		if node.IsIncomingEdgeFail() {
 			attrs["fillcolor"] = "hotpink"
 		} else {
 			attrs["fillcolor"] = "lightgrey"
@@ -240,9 +244,14 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	var xlabel string
 	if node.IsGasLeaf() {
 		if node.WillExecute() {
-			attrs["label"] = gasFontStart + gasUsed + gasFontEnd
+			parent := node.Parent
+			if node.IsGasLeaf() && parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail {
+				attrs["label"] = strconv.Quote(test.LeafLabel)
+			} else {
+				attrs["label"] = gasFontStart + gasUsed + gasFontEnd
+			}
 		} else {
-			attrs["label"] = strconv.Quote("*")
+			attrs["label"] = strconv.Quote(test.LeafLabel)
 		}
 	} else {
 		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)

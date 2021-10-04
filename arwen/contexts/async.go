@@ -694,6 +694,17 @@ func (context *asyncContext) SaveAsyncContextsFromStack() error {
 	return nil
 }
 
+func (context *asyncContext) GetFirstUpstreamAsyncCallContext() arwen.AsyncContext {
+	for index := range context.stateStack {
+		index = len(context.stateStack) - 1 - index
+		stackContext := context.stateStack[index]
+		if stackContext.callType == vm.AsynchronousCall || stackContext.callType == vm.AsynchronousCallBack {
+			return stackContext
+		}
+	}
+	return nil
+}
+
 func (context *asyncContext) LoadFromStackOrStore(address []byte, callID []byte) (*asyncContext, error) {
 	stackContext := context.getContextFromStack(address, callID)
 	if stackContext != nil {
@@ -851,7 +862,7 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 
 	sameShard := context.host.AreInSameShard(sender, destination)
 	if !sameShard {
-		err = context.ExecuteCrossShardCallback(vmOutput.ReturnCode, vmOutput.ReturnData, vmOutput.ReturnMessage)
+		err = context.SendCrossShardCallback(vmOutput.ReturnCode, vmOutput.ReturnData, vmOutput.ReturnMessage)
 		return false, nil, err
 	}
 
@@ -865,7 +876,7 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 	return isComplete, callbackVMOutput, nil
 }
 
-func (context *asyncContext) ExecuteCrossShardCallback(
+func (context *asyncContext) SendCrossShardCallback(
 	returnCode vmcommon.ReturnCode,
 	returnData [][]byte,
 	returnMessage string,

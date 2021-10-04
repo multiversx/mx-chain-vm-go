@@ -344,7 +344,7 @@ type AsyncContext interface {
 		callID []byte,
 		asyncCallIdentifier []byte,
 		vmInput *vmcommon.VMInput) (*AsyncCall, error)
-	ExecuteCrossShardCallback(
+	SendCrossShardCallback(
 		returnCode vmcommon.ReturnCode,
 		returnData [][]byte,
 		returnMessage string) error
@@ -358,7 +358,10 @@ type AsyncContext interface {
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
 
-	// for tests usage
+	/*
+		for tests / test framework usage
+	*/
 	SetCallID(callID []byte)
 	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
+	GetFirstUpstreamAsyncCallContext() AsyncContext
 }

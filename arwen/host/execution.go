@@ -929,21 +929,23 @@ func (host *vmHost) callSCMethod() error {
 			err = host.checkFinalGasAfterExit()
 		}
 		if err != nil {
-			log.Trace("call SC method failed", "error", err)
-			return err
-		}
+			if callType != vm.AsynchronousCall {
+				log.Trace("call SC method failed", "error", err)
+				return err
+			}
+		} else {
+			err = async.Execute()
+			if err != nil {
+				log.Trace("call SC method failed", "error", err)
+				return err
+			}
 
-		err = async.Execute()
-		if err != nil {
-			log.Trace("call SC method failed", "error", err)
-			return err
+			if !async.IsComplete() {
+				async.SetResults(host.Output().GetVMOutput())
+				async.SaveAsyncContextsFromStack()
+				return nil
+			}
 		}
-	}
-
-	if !async.IsComplete() {
-		async.SetResults(host.Output().GetVMOutput())
-		async.SaveAsyncContextsFromStack()
-		return nil
 	}
 
 	switch callType {
@@ -951,7 +953,7 @@ func (host *vmHost) callSCMethod() error {
 		break
 	case vm.AsynchronousCall:
 		output := host.Output()
-		err = async.ExecuteCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
+		err = async.SendCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()

@@ -135,8 +135,8 @@ func (node *TestCallNode) copy() *TestCallNode {
 	}
 }
 
-// IsIncommingEdgeFail -
-func (node *TestCallNode) IsIncommingEdgeFail() bool {
+// IsIncomingEdgeFail -
+func (node *TestCallNode) IsIncomingEdgeFail() bool {
 	if node.IncomingEdge != nil && node.IncomingEdge.Fail {
 		return true
 	}
@@ -836,6 +836,26 @@ func isGroupPresent(group string, groups []string) bool {
 	return false
 }
 
+// PropagateSyncFailures -
+func (graph *TestCallGraph) PropagateSyncFailures() {
+	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+		if node.IsLeaf() ||
+			(!node.IsStartNode &&
+				(incomingEdge.Type == Callback || incomingEdge.Type == CallbackCrossShard ||
+					!node.WillExecute())) {
+			return node
+		}
+
+		if node.IsIncomingEdgeFail() {
+			if parent != nil && incomingEdge.Type != Async && incomingEdge.Type != AsyncCrossShard {
+				parent.IncomingEdge.Fail = true
+			}
+		}
+
+		return node
+	})
+}
+
 // AssignExecutionRounds -
 func (graph *TestCallGraph) AssignExecutionRounds() {
 	visits := make(map[uint]bool)
@@ -879,7 +899,7 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 			getGasLeaf(node).ExecutionRound = node.ExecutionRound
 
 			// stop going deeper if node is failed
-			if node.IsIncommingEdgeFail() {
+			if node.IsIncomingEdgeFail() {
 				for _, edge := range node.AdjacentEdges {
 					if edge.Type != Callback && edge.Type != CallbackCrossShard {
 						setVisited(edge.To, visits)
@@ -913,11 +933,11 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 		if node.IsLeaf() ||
 			(!node.IsStartNode &&
 				(incomingEdge.Type == Callback || incomingEdge.Type == CallbackCrossShard ||
-					!node.WillExecute() /*|| incomingEdge.Type == GroupCallback || incomingEdge.Type == ContextCallback*/)) {
+					!node.WillExecute())) {
 			return node
 		}
 
-		if node.IsIncommingEdgeFail() {
+		if node.IsIncomingEdgeFail() {
 			node.GasRemaining = 0
 		} else {
 			nodeGasRemaining := int64(node.GasLimit)
@@ -974,7 +994,7 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 		asyncInitiator := node.Parent.Parent
 		if asyncInitiator.ExecutionRound != node.ExecutionRound {
 			// CallbackCrossShard
-			if !node.IsIncommingEdgeFail() {
+			if !node.IsIncomingEdgeFail() {
 				node.GasAccumulated += node.GasRemaining
 			} else {
 				node.GasRemaining = 0
@@ -982,7 +1002,7 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 			}
 		} else {
 			// Callback
-			if !node.IsIncommingEdgeFail() {
+			if !node.IsIncomingEdgeFail() {
 				crtEdgeType := asyncInitiator.GetIncomingEdgeType()
 				for crtParent := asyncInitiator; crtParent != nil; crtParent = crtParent.Parent {
 					if crtParent == asyncInitiator || crtEdgeType != Sync {
