@@ -113,3 +113,11 @@ func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSc
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
 }
+
+func (ae *ArwenTestExecutor) PeekTraceGas() bool {
+	length := len(ae.scenarioTraceGas)
+	if length != 0 {
+		return ae.scenarioTraceGas[length-1]
+	}
+	return false
+}
