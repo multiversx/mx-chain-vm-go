@@ -274,6 +274,8 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
 
+	log.Warn("GasSchedule change called in V4")
+
 	host.gasSchedule = newGasSchedule
 	gasCostConfig, err := config.CreateGasConfig(newGasSchedule)
 	if err != nil {
@@ -281,10 +283,11 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 		return
 	}
 
+	host.meteringContext.SetGasSchedule(newGasSchedule)
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	host.meteringContext.SetGasSchedule(newGasSchedule)
+	log.Warn("gas cost for Br", gasCostConfig.WASMOpcodeCost.Br, "as opcode ", opcodeCosts[wasmer.OpcodeBr])
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
