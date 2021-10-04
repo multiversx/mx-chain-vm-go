@@ -66,7 +66,10 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if err != nil {
 				return nil, err
 			}
-			fmt.Println("\nIn txID:", txIndex, ", step type:Deploy", ", total gas used:", gasForExecution-output.GasRemaining)
+			length := len(ae.scenarioTraceGas)
+			if ae.scenarioTraceGas[length-1] {
+				fmt.Println("\nIn txID:", txIndex, ", step type:Deploy", ", total gas used:", gasForExecution-output.GasRemaining)
+			}
 		case mj.ScQuery:
 			// imitates the behaviour of the protocol
 			// the sender is the contract itself during SC queries
@@ -80,7 +83,10 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if err != nil {
 				return nil, err
 			}
-			fmt.Println("In txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
+			length := len(ae.scenarioTraceGas)
+			if ae.scenarioTraceGas[length-1] {
+				fmt.Println("In txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
+			}
 		case mj.Transfer:
 			output = ae.simpleTransferOutput(tx)
 		case mj.ValidatorReward:
