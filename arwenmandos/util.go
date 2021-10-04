@@ -161,7 +161,7 @@ func logGasTrace(ae *ArwenTestExecutor) {
 		scGasTrace := metering.GetGasTrace()
 		totalGasUsedByAPIs := 0
 		for scAddress, gasTrace := range scGasTrace {
-			fmt.Println("\nGas Trace for: ", "SC Address", scAddress)
+			fmt.Println("Gas Trace for: ", "SC Address", scAddress)
 			for functionName, value := range gasTrace {
 				totalGasUsed := uint64(0)
 				for _, usedGas := range value {

@@ -83,7 +83,7 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 				return nil, err
 			}
 			if ae.PeekTraceGas() {
-				fmt.Println("In txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
+				fmt.Println("\nIn txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
 			}
 		case mj.Transfer:
 			output = ae.simpleTransferOutput(tx)
