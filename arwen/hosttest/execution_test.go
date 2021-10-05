@@ -479,32 +479,18 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 	arwen.SetLoggingForTests()
 	log := logger.GetOrCreate("arwen/test")
 
-	var gasSchedule config.GasScheduleMap
-	gasRemainingBeforeChange := uint64(0)
+	gasRemainingBeforeChange := uint64(99076)
 	gasRemainingAfterChange := uint64(0)
 
-	test.BuildInstanceCallTest(t).WithContracts(contract).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(100000).
-			WithFunction("iterate_over_byte_array").Build()).
-		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok()
-			gasRemainingBeforeChange = verify.VmOutput.GasRemaining
-			gasSchedule = host.GetGasScheduleMap()
-
-			require.NotZero(t, gasRemainingBeforeChange)
-			require.NotNil(t, gasSchedule)
-		})
-
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
-
-	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
 
 	test.BuildInstanceCallTest(t).WithContracts(contract).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
 			WithFunction("iterate_over_byte_array").Build()).
 		WithSetup(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub) {
+			gasSchedule := host.GetGasScheduleMap()
+			gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
 			host.GasScheduleChange(gasSchedule)
 		}).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
