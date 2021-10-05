@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
-	"strconv"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -278,7 +277,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	computeCallIDs(gasGraph)
 
 	// compute execution order (return data) assertions and compute gas assertions
-	expectedReturnData := computeExpectedValues(gasGraph)
+	expectedCallFinishData := computeExpectedValues(gasGraph)
 	totalGasUsed, totalGasRemaining := computeExpectedTotalGasValues(gasGraph)
 
 	// graph gas sanity check
@@ -292,8 +291,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	// var lastErr error
 
 	runtimeConfigsForCalls := make(map[string]*test.RuntimeConfigOfCall)
-	callsReturnData := &test.CallsReturnData{
-		Data: make([][]byte, 0),
+	callsFinishData := &test.CallsFinishData{
+		Data: make([]*test.CallFinishDataItem, 0),
 	}
 
 	var crossShardCall *test.CrossShardCall
@@ -318,7 +317,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		currentVMOutput, _ /*lastErr*/ = test.BuildMockInstanceCallTest(t).
 			WithContracts(
-				test.CreateMockContractsFromAsyncTestCallGraph(callGraph, callsReturnData, runtimeConfigsForCalls, testConfig)...,
+				test.CreateMockContractsFromAsyncTestCallGraph(callGraph, callsFinishData, runtimeConfigsForCalls, testConfig)...,
 			).
 			WithInput(test.CreateTestContractCallInputBuilder().
 				WithCallerAddr(crossShardCall.CallerAddress).
@@ -348,7 +347,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	checkReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, callsReturnData.Data)
+	checkReturnDataWithGasValuesForGraphTesting(t, expectedCallFinishData, callsFinishData.Data)
 
 	// TODO matei-p adapt depending on run config
 	// test.NewVMOutputVerifier(t, currentVMOutput, lastErr).
@@ -401,7 +400,7 @@ func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test
 func executionOrderTraversal(gasGraph *test.TestCallGraph, nodeProcessing func(node *test.TestCallNode)) {
 	sortedNodes := make(NodesList, 0)
 	for _, node := range gasGraph.Nodes {
-		if !node.WillExecute() {
+		if node.WillNotExecute() {
 			continue
 		}
 		sortedNodes = append(sortedNodes, node)
@@ -442,8 +441,8 @@ func computeCallIDs(gasGraph *test.TestCallGraph) {
 
 }
 
-func computeExpectedValues(gasGraph *test.TestCallGraph) [][]byte {
-	expectedReturnData := make([][]byte, 0)
+func computeExpectedValues(gasGraph *test.TestCallGraph) []*test.CallFinishDataItem {
+	expectedCallsFinishData := make([]*test.CallFinishDataItem, 0)
 
 	executionOrderTraversal(gasGraph, func(node *test.TestCallNode) {
 		parent := node.Parent
@@ -451,16 +450,18 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) [][]byte {
 			(parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail) {
 			return
 		}
-		expectedNodeRetData := txDataBuilder.NewBuilder()
-		expectedNodeRetData.Func(parent.Call.FunctionName)
-		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
-		expectedNodeRetData.Int64(int64(parent.GasLimit))
-		expectedNodeRetData.Int64(int64(parent.GasRemaining))
-		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
+
+		expectedCallFinishData := &test.CallFinishDataItem{
+			ContractAndFunction: string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix,
+			GasProvided:         parent.GasLimit,
+			GasRemaining:        parent.GasRemaining,
+		}
+
+		expectedCallsFinishData = append(expectedCallsFinishData, expectedCallFinishData)
 		return
 	})
 
-	return expectedReturnData
+	return expectedCallsFinishData
 }
 
 func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
@@ -558,55 +559,14 @@ func extractGasUsedPerContract(vmOutput *vmcommon.VMOutput, gasUsedPerContract m
 	}
 }
 
-type ReturnDataItem struct {
-	contractAndFunction          string
-	gasProvided                  uint64
-	gasRemaining                 uint64
-	callID                       []byte
-	callbackAsyncInitiatorCallID []byte
-	isCrossShard                 bool
-}
-
-func checkReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedReturnData [][]byte, returnData [][]byte) {
-	processedReturnData := make([]*ReturnDataItem, 0)
-	argParser := parsers.NewCallArgsParser()
-
-	// eliminte from the final return data the gas used for callback arguments
-	// in order to be able to compare them with the provided return data
-	for i := 0; i < len(returnData); i++ {
-		retDataItem := returnData[i]
-		if len(retDataItem) == 1 &&
-			(retDataItem[0] == test.Callback || retDataItem[0] == test.CallbackCrossShard) {
-			i = i + 2 // jump over next 2 items (is_callback_failing and gas_used_by_callback)
-			continue
-		}
-
-		if string(retDataItem) == arwen.ErrExecutionFailed.Error() {
-			continue
-		}
-
-		_, parsedRetData, _ := argParser.ParseData(string(retDataItem))
-		isCrossShard, _ := strconv.ParseBool(string(parsedRetData[5]))
-		processedReturnData = append(processedReturnData, &ReturnDataItem{
-			contractAndFunction:          string(parsedRetData[0]),
-			gasProvided:                  big.NewInt(0).SetBytes(parsedRetData[1]).Uint64(),
-			gasRemaining:                 big.NewInt(0).SetBytes(parsedRetData[2]).Uint64(),
-			callID:                       parsedRetData[3],
-			callbackAsyncInitiatorCallID: parsedRetData[4],
-			isCrossShard:                 isCrossShard,
-		})
-	}
-
-	require.Equal(t, len(expectedReturnData), len(processedReturnData), "ReturnData length")
-	for idx := range expectedReturnData {
-		_, expRetData, _ := argParser.ParseData(string(expectedReturnData[idx]))
-		actualReturnData := processedReturnData[idx]
-		expectedContractAndFunction := string(expRetData[0])
-		require.Equal(t, expectedContractAndFunction, actualReturnData.contractAndFunction, "ReturnData - Call")
-		expectedGasLimitForCall := big.NewInt(0).SetBytes(expRetData[1]).Uint64()
-		require.Equal(t, int(expectedGasLimitForCall), int(actualReturnData.gasProvided), fmt.Sprintf("ReturnData - Gas Limit for '%s'", expRetData[0]))
-		expectedGasRemainingForCall := big.NewInt(0).SetBytes(expRetData[2]).Uint64()
-		require.Equal(t, int(expectedGasRemainingForCall), int(actualReturnData.gasRemaining), fmt.Sprintf("ReturnData - Gas Remaining for '%s'", expRetData[0]))
+func checkReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedCallsFinishData []*test.CallFinishDataItem, callsFinishData []*test.CallFinishDataItem) {
+	require.Equal(t, len(expectedCallsFinishData), len(callsFinishData), "CallFinishData length")
+	for idx := range expectedCallsFinishData {
+		expectedCallFinishData := expectedCallsFinishData[idx]
+		actualCallFinishData := callsFinishData[idx]
+		require.Equal(t, expectedCallFinishData.ContractAndFunction, actualCallFinishData.ContractAndFunction, "CallFinishData - Call")
+		require.Equal(t, int(expectedCallFinishData.GasProvided), int(actualCallFinishData.GasProvided), fmt.Sprintf("CallFinishData - Gas Limit for '%s'", actualCallFinishData.ContractAndFunction))
+		require.Equal(t, int(expectedCallFinishData.GasRemaining), int(actualCallFinishData.GasRemaining), fmt.Sprintf("CallFinishData - Gas Remaining for '%s'", actualCallFinishData.ContractAndFunction))
 	}
 }
 

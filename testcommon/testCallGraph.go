@@ -162,9 +162,9 @@ func (node *TestCallNode) IsIncomingEdgeFail() bool {
 	return false
 }
 
-// WillExecute returns if node will execute based on execution round
-func (node *TestCallNode) WillExecute() bool {
-	return node.ExecutionRound != -1
+// WillNotExecute returns if node will execute based on execution round
+func (node *TestCallNode) WillNotExecute() bool {
+	return node.ExecutionRound == -1
 }
 
 // TestCallEdgeType the type of TestCallEdges
@@ -928,14 +928,12 @@ func isGroupPresent(group string, groups []string) bool {
 // PropagateSyncFailures -
 func (graph *TestCallGraph) PropagateSyncFailures() {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsLeaf() ||
-			(!node.IsStartNode &&
-				(incomingEdge.Type == Callback || incomingEdge.Type == CallbackCrossShard ||
-					!node.WillExecute())) {
+		if node.IsLeaf() || node.IsCallback() || node.WillNotExecute() {
 			return node
 		}
 
 		if node.IsIncomingEdgeFail() {
+			// propagate failure to parent until we reach an async node
 			if parent != nil && incomingEdge.Type != Async && incomingEdge.Type != AsyncCrossShard {
 				parent.IncomingEdge.Fail = true
 			}
@@ -1014,10 +1012,7 @@ func getGasLeaf(node *TestCallNode) *TestCallNode {
 // this will not take into consideration callback nodes that don't have provided gas info computed yet (see ComputeGasStepByStep)
 func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsLeaf() ||
-			(!node.IsStartNode &&
-				(incomingEdge.Type == Callback || incomingEdge.Type == CallbackCrossShard ||
-					!node.WillExecute())) {
+		if node.IsLeaf() || node.IsCallback() || node.WillNotExecute() {
 			return node
 		}
 
@@ -1056,9 +1051,8 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 // ComputeRemainingGasAfterCallbacks -
 func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsLeaf() ||
-			node.IsStartNode || (incomingEdge.Type != Callback && incomingEdge.Type != CallbackCrossShard) ||
-			!node.WillExecute() {
+		// process only executing callbacks
+		if !node.IsCallback() || node.WillNotExecute() {
 			return node
 		}
 

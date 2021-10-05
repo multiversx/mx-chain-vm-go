@@ -16,9 +16,8 @@ func main() {
 	/*
 		1 lvl of async calls
 	*/
-	callGraph := test.CreateGraphTestOneSyncCallError()
 	// callGraph := test.CreateGraphTestOneAsyncCallFail()
-	// callGraph := test.CreateGraphTestAsyncCallIndirectFail()
+	callGraph := test.CreateGraphTestAsyncCallIndirectFail()
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
 	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
@@ -217,10 +216,10 @@ func computeUniqueGraphvizNodeLabel(node *test.TestCallNode, nodeCounters map[st
 	}
 
 	var visualLabel string
-	if node.WillExecute() {
-		visualLabel = strconv.Quote(fmt.Sprintf("%s [%d]", prefix, node.ExecutionRound))
-	} else {
+	if node.WillNotExecute() {
 		visualLabel = strconv.Quote(prefix)
+	} else {
+		visualLabel = strconv.Quote(fmt.Sprintf("%s [%d]", prefix, node.ExecutionRound))
 	}
 
 	return strconv.Quote(prefix + suffix), visualLabel
@@ -245,19 +244,19 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 	gasLocked := strconv.Itoa(int(node.GasLocked))
 	var xlabel string
 	if node.IsGasLeaf() {
-		if node.WillExecute() {
+		if node.WillNotExecute() {
+			attrs["label"] = strconv.Quote(test.LeafLabel)
+		} else {
 			parent := node.Parent
 			if node.IsGasLeaf() && parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail {
 				attrs["label"] = strconv.Quote(test.LeafLabel)
 			} else {
 				attrs["label"] = gasFontStart + gasUsed + gasFontEnd
 			}
-		} else {
-			attrs["label"] = strconv.Quote(test.LeafLabel)
 		}
 	} else {
 		// display only gas locked for uncomputed gas values (for group callbacks and context callbacks)
-		if node.GasLimit == 0 || !node.WillExecute() {
+		if node.GasLimit == 0 || node.WillNotExecute() {
 			return
 		}
 		xlabel = gasFontStart

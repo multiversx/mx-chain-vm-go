@@ -62,14 +62,14 @@ type RuntimeConfigOfCall struct {
 	willCallbackFail  bool
 }
 
-// CallsReturnData -
-type CallsReturnData struct {
-	Data [][]byte
+// CallsFinishData -
+type CallsFinishData struct {
+	Data []*CallFinishDataItem
 }
 
 // CreateMockContractsFromAsyncTestCallGraph creates the contracts
 // with functions that reflect the behavior specified by the call graph
-func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsReturnData *CallsReturnData, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall, testConfig *TestConfig) []MockTestSmartContract {
+func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFinishData *CallsFinishData, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall, testConfig *TestConfig) []MockTestSmartContract {
 	contracts := make(map[string]*MockTestSmartContract)
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		contractAddressAsString := string(node.Call.ContractAddress)
@@ -148,8 +148,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsRe
 								}
 							}
 
-							callReturnData := computeReturnDataForTestFramework(crtFunctionCalled, host)
-							callsReturnData.Data = append(callsReturnData.Data, callReturnData)
+							callFinishData := computeReturnDataForTestFramework(crtFunctionCalled, host)
+							callsFinishData.Data = append(callsFinishData.Data, callFinishData)
 
 							return instance
 						})
@@ -262,24 +262,24 @@ func createFinishDataFromArguments(output arwen.OutputContext, arguments [][]byt
 	}
 }
 
+// CallFinishDataItem -
+type CallFinishDataItem struct {
+	ContractAndFunction          string
+	GasProvided                  uint64
+	GasRemaining                 uint64
+	CallID                       []byte
+	CallbackAsyncInitiatorCallID []byte
+	IsCrossShard                 bool
+}
+
 // return data is encoded using standard txDataBuilder
 // format is function@nodeLabel@providedGas@remainingGas
-func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHost) []byte {
+func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHost) *CallFinishDataItem {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	async := host.Async()
-
-	returnData := txDataBuilder.NewBuilder()
-	returnData.Func(crtFunctionCalled)
-	returnData.Str(string(runtime.GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix)
-	returnData.Int64(int64(runtime.GetVMInput().GasProvided))
-	returnData.Int64(int64(metering.GasLeft()))
-	returnData.Bytes(async.GetCallID())
-	returnData.Bytes(async.GetCallbackAsyncInitiatorCallID())
-	returnData.Bool(async.IsCrossShard())
-	callReturnData := returnData.ToBytes()
-	// host.Output().Finish(callReturnData)
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
+
 	/// TODO matei-p change to debug logging
 	fmt.Println(
 		"Return Data -> callID", async.GetCallID(),
@@ -289,7 +289,14 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 		"Gas provided", fmt.Sprintf("%d\t", runtime.GetVMInput().GasProvided),
 		"Gas remaining", fmt.Sprintf("%d\t", metering.GasLeft()))
 
-	return callReturnData
+	return &CallFinishDataItem{
+		ContractAndFunction:          string(runtime.GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
+		GasProvided:                  runtime.GetVMInput().GasProvided,
+		GasRemaining:                 metering.GasLeft(),
+		CallID:                       async.GetCallID(),
+		CallbackAsyncInitiatorCallID: async.GetCallbackAsyncInitiatorCallID(),
+		IsCrossShard:                 async.IsCrossShard(),
+	}
 }
 
 func readGasUsedFromArguments(host arwen.VMHost, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) *RuntimeConfigOfCall {
@@ -338,26 +345,6 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 	if !functionPresent {
 		contract.tempFunctionsList[functionName] = isCallBack
 	}
-}
-
-// CreateGraphTestOneSyncCallError -
-func CreateGraphTestOneSyncCallError() *TestCallGraph {
-	callGraph := CreateTestCallGraph()
-
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 500, 10)
-
-	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddSyncEdge(sc1f1, sc2f2).
-		SetGasLimit(100).
-		SetGasUsed(7)
-
-	sc3f3 := callGraph.AddNode("sc3", "f3")
-	callGraph.AddSyncEdge(sc2f2, sc3f3).
-		SetGasLimit(35).
-		SetGasUsed(7).
-		SetFail()
-
-	return callGraph
 }
 
 // CreateGraphTestSyncAndAsync8 -
