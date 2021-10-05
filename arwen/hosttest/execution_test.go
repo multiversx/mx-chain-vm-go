@@ -18,6 +18,7 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -469,6 +470,51 @@ func TestExecution_CallWasmerError(t *testing.T) {
 			verify.
 				ReturnCode(vmcommon.ContractInvalid)
 		})
+}
+
+func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
+	contract := test.CreateInstanceContract(test.ParentAddress).
+		WithCode(test.GetTestSCCode("misc", "../../"))
+
+	arwen.SetLoggingForTests()
+	log := logger.GetOrCreate("arwen/test")
+
+	var gasSchedule config.GasScheduleMap
+	gasRemainingBeforeChange := uint64(0)
+	gasRemainingAfterChange := uint64(0)
+
+	test.BuildInstanceCallTest(t).WithContracts(contract).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("iterate_over_byte_array").Build()).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+			gasRemainingBeforeChange = verify.VmOutput.GasRemaining
+			gasSchedule = host.GetGasScheduleMap()
+
+			require.NotZero(t, gasRemainingBeforeChange)
+			require.NotNil(t, gasSchedule)
+		})
+
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+
+	test.BuildInstanceCallTest(t).WithContracts(contract).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("iterate_over_byte_array").Build()).
+		WithSetup(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub) {
+			host.GasScheduleChange(gasSchedule)
+		}).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+			gasRemainingAfterChange = verify.VmOutput.GasRemaining
+			require.NotEqual(t, gasRemainingAfterChange, gasRemainingBeforeChange)
+		})
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas", gasRemainingBeforeChange-gasRemainingAfterChange)
+
 }
 
 func TestExecution_CallSCMethod_Init(t *testing.T) {
