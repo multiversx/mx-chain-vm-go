@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -200,15 +199,14 @@ func TestGasUsed_SyncAndAsync7_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_GraphTest1_CallGraph(t *testing.T) {
-	// t.Skip()
-	callGraph := test.CreateGraphTest1()
+func TestGasUsed_SyncAndAsync8_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync8()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_GraphTest2_CallGraph(t *testing.T) {
+func TestGasUsed_SyncAndAsync9_CallGraph(t *testing.T) {
 	// t.Skip()
-	callGraph := test.CreateGraphTest2()
+	callGraph := test.CreateGraphTestSyncAndAsync9()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -388,8 +386,7 @@ func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test
 	if incomingEdgeType == test.CallbackCrossShard &&
 		startNode.Parent != nil && startNode.Parent.Parent != nil {
 		prevPrevNode := startNode.Parent.Parent
-		if prevPrevNode.GetIncomingEdgeType() == test.Async ||
-			prevPrevNode.GetIncomingEdgeType() == test.AsyncCrossShard {
+		if prevPrevNode.IsAsync() {
 			for _, edge := range prevPrevNode.AdjacentEdges {
 				if edge.Type == test.Callback || edge.Type == test.CallbackCrossShard {
 					crossShardEdges = append(crossShardEdges, edge)
@@ -488,7 +485,7 @@ func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
 
 			if parent == nil {
 				totalGasRemaining += node.GasRemaining + node.GasAccumulated
-			} else if node.GetIncomingEdgeType() == testcommon.Callback || node.GetIncomingEdgeType() == testcommon.CallbackCrossShard {
+			} else if node.IsCallback() {
 				totalGasRemaining += node.GasAccumulated
 			}
 

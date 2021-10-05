@@ -1117,18 +1117,3 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 		return node
 	})
 }
-
-// FindFirstAsyncParent -
-func (graph *TestCallGraph) FindFirstAsyncParent(node *TestCallNode) *TestCallNode {
-	crtNode := node.Parent
-	if crtNode == nil {
-		return node
-	}
-	for crtNode.Parent != nil {
-		if crtNode.GetIncomingEdgeType() == Async || crtNode.GetIncomingEdgeType() == AsyncCrossShard {
-			break
-		}
-		crtNode = crtNode.Parent
-	}
-	return crtNode
-}

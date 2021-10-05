@@ -41,6 +41,7 @@ func main() {
 	// callGraph := test.CreateGraphTestSyncAndAsync3()
 	// callGraph := test.CreateGraphTestSyncAndAsync6()
 	// callGraph := test.CreateGraphTestSyncAndAsync7()
+	// callGraph := test.CreateGraphTestSyncAndAsync8()
 
 	/*
 		multi lvl of async calls

@@ -43,7 +43,7 @@ func createCrossShardCall(startNode *TestCallNode, callerAddress []byte, callTyp
 	crtNode := startNode
 	for crtNode.Parent != nil {
 		// we add parents for the enqueued node until we reach a callback edge
-		if crtNode.Parent.GetIncomingEdgeType() == Callback || crtNode.Parent.GetIncomingEdgeType() == CallbackCrossShard {
+		if crtNode.Parent.IsCallback() {
 			break
 		}
 		parentsPath = append(parentsPath, crtNode.Parent)

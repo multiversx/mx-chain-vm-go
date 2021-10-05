@@ -360,8 +360,8 @@ func CreateGraphTestOneSyncCallError() *TestCallGraph {
 	return callGraph
 }
 
-// CreateGraphTest1 -
-func CreateGraphTest1() *TestCallGraph {
+// CreateGraphTestSyncAndAsync8 -
+func CreateGraphTestSyncAndAsync8() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
 	sc1f1 := callGraph.AddStartNode("sc1", "f1", 5000, 10)
 
@@ -1327,8 +1327,8 @@ func CreateGraphTestDifferentTypeOfCallsToSameFunction() *TestCallGraph {
 	return callGraph
 }
 
-// CreateGraphTest2 -
-func CreateGraphTest2() *TestCallGraph {
+// CreateGraphTestSyncAndAsync9 -
+func CreateGraphTestSyncAndAsync9() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
 	sc1f1 := callGraph.AddStartNode("sc1", "f1", 5000, 10)
 
