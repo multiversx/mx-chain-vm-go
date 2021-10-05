@@ -17,12 +17,8 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-<<<<<<< HEAD
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-||||||| b382eecc
-=======
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
->>>>>>> master
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -256,15 +252,7 @@ func TestExecution_DeployWASM_Init_InfiniteLoop_Errors(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-<<<<<<< HEAD
 			verify.OutOfGas()
-||||||| b382eecc
-			verify.
-				ReturnCode(vmcommon.OutOfGas)
-=======
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed)
->>>>>>> master
 		})
 }
 
@@ -998,18 +986,8 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-<<<<<<< HEAD
 			verify.Ok().
 				GasUsed(test.ParentAddress, 3405).
-||||||| b382eecc
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 3405).
-=======
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 3404).
->>>>>>> master
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
@@ -1176,15 +1154,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, parentAccountBalance).
 				BalanceDelta(test.ParentAddress, -141).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 3612).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 3612).
-				// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 3611).
-				// test.ChildAddress
->>>>>>> master
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 3).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
@@ -1241,15 +1211,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 3461).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 3461).
-				// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 3460).
-				// test.ChildAddress
->>>>>>> master
 				BalanceDelta(test.ChildAddress, 99).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
 				GasRemaining(test.GasProvided-
@@ -1510,26 +1472,10 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 5576).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 5576).
-				// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 5552).
-				// test.ChildAddress
->>>>>>> master
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-<<<<<<< HEAD
 				GasUsed(test.ChildAddress, 3752).
-||||||| b382eecc
-				GasUsed(test.ChildAddress, 3752).
-				// other
-=======
-				GasUsed(test.ChildAddress, 3736).
-				// other
->>>>>>> master
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1717,18 +1663,8 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 					)
 				require.Equal(t, int64(42), host.ManagedTypes().GetBigIntOrCreate(12).Int64())
 			} else {
-<<<<<<< HEAD
 				verify.ExecutionFailed().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-||||||| b382eecc
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-=======
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
->>>>>>> master
 					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
 			}
@@ -1763,26 +1699,11 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 4452).
-||||||| b382eecc
 				GasUsed(test.ParentAddress, 4452).
-				/// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 4444).
-				/// test.ChildAddress
->>>>>>> master
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-<<<<<<< HEAD
 				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
-||||||| b382eecc
-				GasUsed(test.ChildAddress, 2285).
-				// other
-=======
-				GasUsed(test.ChildAddress, 2250).
-				// other
->>>>>>> master
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1837,26 +1758,10 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 4660).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 4660).
-				/// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 4652).
-				/// test.ChildAddress
->>>>>>> master
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
-<<<<<<< HEAD
 				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
-||||||| b382eecc
-				GasUsed(test.ChildAddress, 2285).
-				// other
-=======
-				GasUsed(test.ChildAddress, 2250).
-				// other
->>>>>>> master
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1936,18 +1841,8 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 
 	childOutput, err := host.ExecuteOnDestContext(childInput)
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
-<<<<<<< HEAD
 	verify.Ok().
 		GasRemaining(7729)
-||||||| b382eecc
-	verify.
-		Ok().
-		GasRemaining(7723)
-=======
-	verify.
-		Ok().
-		GasRemaining(7758)
->>>>>>> master
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -1978,25 +1873,9 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 4374).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 4374).
-				/// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 4366).
-				/// test.ChildAddress
->>>>>>> master
 				BalanceDelta(test.ChildAddress, 99).
-<<<<<<< HEAD
 				GasUsed(test.ChildAddress, 2288).
-||||||| b382eecc
-				GasUsed(test.ChildAddress, 2294).
-				// other
-=======
-				GasUsed(test.ChildAddress, 2259).
-				// other
->>>>>>> master
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
 					parentGasBeforeExecuteAPI-
@@ -2182,26 +2061,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -balanceDelta).
-<<<<<<< HEAD
 				GasUsed(test.ParentAddress, 7452).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 7452).
-				// test.ChildAddress
-=======
-				GasUsed(test.ParentAddress, 7420).
-				// test.ChildAddress
->>>>>>> master
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, balanceDelta).
-<<<<<<< HEAD
 				GasUsed(test.ChildAddress, 5614).
-||||||| b382eecc
-				GasUsed(test.ChildAddress, 5614).
-				// others
-=======
-				GasUsed(test.ChildAddress, 5590).
-				// others
->>>>>>> master
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -2450,25 +2313,11 @@ func TestExecution_AsyncCall(t *testing.T) {
 			WithArguments([]byte{0}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-<<<<<<< HEAD
 			verify.Ok().
 				// TODO matei-p restore correct gas assertions
 				// GasUsed(test.ParentAddress, 9114).
 				// GasUsed(test.ChildAddress, 2534).
 				// GasRemaining(104352).
-||||||| b382eecc
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 9114).
-				GasUsed(test.ChildAddress, 2534).
-				GasRemaining(104352).
-=======
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 4170).
-				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(110533).
->>>>>>> master
 				Balance(test.ParentAddress, 1000).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ThirdPartyAddress, 6).
@@ -2522,22 +2371,10 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 			host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-<<<<<<< HEAD
 			verify.Ok().
 				GasUsed(test.ParentAddress, 998351).
 				GasUsed(test.ChildAddress, 0).
 				GasRemaining(1649).
-||||||| b382eecc
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 998352).
-				GasRemaining(1648).
-=======
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 997170).
-				GasRemaining(2830).
->>>>>>> master
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2573,17 +2410,9 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.UserError().
 				ReturnMessage("callBack error").
-<<<<<<< HEAD
 				// TODO matei-p enable gas checks
 				// GasUsed(test.ParentAddress, 197437).
 				// GasUsed(test.ChildAddress, 2534).
-||||||| b382eecc
-				GasUsed(test.ParentAddress, 197437).
-				GasUsed(test.ChildAddress, 2534).
-=======
-				GasUsed(test.ParentAddress, 198674).
-				GasUsed(test.ChildAddress, 1297).
->>>>>>> master
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
 				// GasRemaining(29).
@@ -2746,22 +2575,8 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-<<<<<<< HEAD
-			verify.Ok().
-				GasUsed(test.ParentAddress, 2885).
-				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("fail")).
-				Storage(test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
-||||||| b382eecc
-			verify.
-				Ok().
-				GasUsed(test.ParentAddress, 2885).
-				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("fail")).
-				Storage(test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
-=======
-			verify.
-				ReturnCode(10).
+			verify.ExecutionFailed().
 				ReturnMessage("error signalled by smartcontract")
->>>>>>> master
 		})
 }
 

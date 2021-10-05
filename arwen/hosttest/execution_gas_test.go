@@ -419,60 +419,6 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 		})
 }
 
-<<<<<<< HEAD
-||||||| b382eecc
-var asyncBaseTestConfig = contracts.AsyncCallBaseTestConfig{
-	GasProvided:       1000,
-	GasUsedByParent:   400,
-	GasUsedByChild:    200,
-	GasUsedByCallback: 100,
-	GasLockCost:       150,
-
-	TransferFromParentToChild: 7,
-
-	ParentBalance: 1000,
-	ChildBalance:  1000,
-}
-
-var asyncTestConfig = &contracts.AsyncCallTestConfig{
-	AsyncCallBaseTestConfig: asyncBaseTestConfig,
-	TransferToThirdParty:    3,
-	TransferToVault:         4,
-	ESDTTokensToTransfer:    0,
-}
-
-=======
-var asyncBaseTestConfig = contracts.AsyncCallBaseTestConfig{
-	GasProvided:       1000,
-	GasUsedByParent:   400,
-	GasUsedByChild:    200,
-	GasUsedByCallback: 100,
-	GasLockCost:       150,
-
-	TransferFromParentToChild: 7,
-
-	ParentBalance: 1000,
-	ChildBalance:  1000,
-}
-
-var asyncTestConfig = &contracts.AsyncCallTestConfig{
-	AsyncCallBaseTestConfig: asyncBaseTestConfig,
-	TransferToThirdParty:    3,
-	TransferToVault:         4,
-	ESDTTokensToTransfer:    0,
-}
-
-var transferAndExecuteTestConfig = contracts.TransferAndExecuteTestConfig{
-	DirectCallGasTestConfig: contracts.DirectCallGasTestConfig{
-		GasProvided:     1000,
-		GasUsedByParent: 200,
-		ParentBalance:   1000,
-	},
-	TransferFromParentToChild: 5,
-	GasTransferToChild:        100,
-}
-
->>>>>>> master
 func TestGasUsed_AsyncCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
@@ -1309,7 +1255,6 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 		})
 }
 
-<<<<<<< HEAD
 func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 10_000
@@ -1426,8 +1371,6 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 		})
 }
 
-||||||| b382eecc
-=======
 func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 	testConfig := transferAndExecuteTestConfig
 
@@ -1485,7 +1428,6 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 		})
 }
 
->>>>>>> master
 type MockClaimBuiltin struct {
 	test.MockBuiltin
 	AmountToGive int64
@@ -1557,13 +1499,9 @@ func setZeroCodeCosts(host arwen.VMHost) {
 	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
 	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
 	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
-<<<<<<< HEAD
 	host.Metering().GasSchedule().ElrondAPICost.StorageLoad = 0
 	host.Metering().GasSchedule().ElrondAPICost.StorageStore = 0
-||||||| b382eecc
-=======
 	host.Metering().GasSchedule().ElrondAPICost.TransferValue = 0
->>>>>>> master
 }
 
 func setAsyncCosts(host arwen.VMHost, gasLock uint64) {

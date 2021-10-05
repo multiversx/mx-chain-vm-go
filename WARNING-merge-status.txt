@@ -489,24 +489,6 @@ Unmerged paths:
   (use "git add/rm <file>..." as appropriate to mark resolution)
 	both modified:   arwen/host/arwen.go
 	deleted by us:   arwen/host/asyncCall.go
-	both modified:   arwen/host/execution.go
-	both modified:   arwen/hosttest/execution_benchmark_test.go
-	both modified:   arwen/hosttest/execution_gas_test.go
-	both modified:   arwen/hosttest/execution_test.go
-	both modified:   arwen/interface.go
-	both modified:   arwenmandos/gasSchedules/gasScheduleEmbedGenerated.go
-	both modified:   arwenmandos/gasSchedules/gasScheduleV3.toml
-	both modified:   config/config.toml
-	both modified:   config/gasCost.go
-	both modified:   config/gasSchedule.go
-	both modified:   go.mod
-	both modified:   integrationTests/json/mandosFeatures_test.go
-	both modified:   mock/context/runtimeContextMock.go
-	both modified:   mock/contracts/common.go
-	both modified:   mock/world/builtinFunctionsWrapper.go
-	both added:      test/contracts/exec-dest-ctx-child/elrond.json
-	both modified:   test/contracts/exec-dest-ctx-child/output/exec-dest-ctx-child.wasm
-	added by them:   test/contracts/promises/tourist-tracking/elrond.json
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)

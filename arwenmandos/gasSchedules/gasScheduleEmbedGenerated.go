@@ -1290,14 +1290,9 @@ const (
     GetShardOfAddress  = 5000
     GetExternalBalance = 7000
     GetBlockHash       = 10000
-<<<<<<< HEAD:arwenmandos/gasSchedules/tomlfiles.go
     GetOriginalTxHash  = 10000
     GetPrevTxHash      = 10000
     GetCurrentTxHash   = 10000
-||||||| b382eecc:arwenmandos/gasSchedules/tomlfiles.go
-=======
-    GetOriginalTxHash  = 10000
->>>>>>> master:arwenmandos/gasSchedules/gasScheduleEmbedGenerated.go
     TransferValue      = 150000
     GetArgument        = 100
     GetFunction        = 100

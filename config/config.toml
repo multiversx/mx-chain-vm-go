@@ -13,14 +13,9 @@
     GetShardOfAddress  = 10
     GetExternalBalance = 10
     GetBlockHash       = 10
-<<<<<<< HEAD
     GetOriginalTxHash  = 10
     GetPrevTxHash      = 10
     GetCurrentTxHash   = 10
-||||||| b382eecc
-=======
-    GetOriginalTxHash  = 10
->>>>>>> master
     TransferValue      = 10
     GetArgument        = 10
     GetFunction        = 10

@@ -7,14 +7,8 @@ require (
 	github.com/ElrondNetwork/elrond-go-core v1.1.0
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.5
-<<<<<<< HEAD
-	github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210729134851-defc30fdb5ac
-	github.com/awalterschulze/gographviz v2.0.3+incompatible
-||||||| b382eecc
-	github.com/ElrondNetwork/elrond-vm-common v1.1.1-0.20210729134851-defc30fdb5ac
-=======
 	github.com/ElrondNetwork/elrond-vm-common v1.2.2
->>>>>>> master
+	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.1
 	github.com/mitchellh/mapstructure v1.4.1

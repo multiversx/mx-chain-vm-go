@@ -1,16 +1,6 @@
-<<<<<<< HEAD
 {
     "language": "clang",
     "source_files": [
         "exec-dest-ctx-child.c"
     ]
 }
-||||||| b382eecc
-=======
-{
-    "language": "clang",
-    "source_files": [
-        "./exec-dest-ctx-child.c"
-    ]
-}
->>>>>>> master

@@ -298,7 +298,6 @@ type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }
-<<<<<<< HEAD
 
 // AsyncContext defines the functionality needed for interacting with the asynchronous execution context
 type AsyncContext interface {
@@ -326,8 +325,6 @@ type AsyncContext interface {
 	Save() error
 	Delete() error
 }
-||||||| b382eecc
-=======
 
 // GasTracing defines the functionality needed for a gas tracing
 type GasTracing interface {
@@ -337,4 +334,3 @@ type GasTracing interface {
 	GetGasTrace() map[string]map[string][]uint64
 	IsInterfaceNil() bool
 }
->>>>>>> master
