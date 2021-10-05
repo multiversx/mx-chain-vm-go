@@ -493,6 +493,7 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
 
 	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	gasSchedule["ElrondAPICost"]["Finish"] += 1
 	host.GasScheduleChange(gasSchedule)
 
 	vmOutput, err = host.RunSmartContractCall(input)
