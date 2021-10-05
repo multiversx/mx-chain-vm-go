@@ -23,6 +23,7 @@ type BaseOperationCost struct {
 }
 
 type ElrondAPICost struct {
+<<<<<<< HEAD
 	GetSCAddress            uint64
 	GetOwnerAddress         uint64
 	IsSmartContract         uint64
@@ -68,6 +69,86 @@ type ElrondAPICost struct {
 	GetReturnData           uint64
 	GetNumReturnData        uint64
 	GetReturnDataSize       uint64
+||||||| b382eecc
+	GetSCAddress         uint64
+	GetOwnerAddress      uint64
+	IsSmartContract      uint64
+	GetShardOfAddress    uint64
+	GetExternalBalance   uint64
+	GetBlockHash         uint64
+	TransferValue        uint64
+	GetArgument          uint64
+	GetFunction          uint64
+	GetNumArguments      uint64
+	StorageStore         uint64
+	StorageLoad          uint64
+	GetCaller            uint64
+	GetCallValue         uint64
+	Log                  uint64
+	Finish               uint64
+	SignalError          uint64
+	GetBlockTimeStamp    uint64
+	GetGasLeft           uint64
+	Int64GetArgument     uint64
+	Int64StorageStore    uint64
+	Int64StorageLoad     uint64
+	Int64Finish          uint64
+	GetStateRootHash     uint64
+	GetBlockNonce        uint64
+	GetBlockEpoch        uint64
+	GetBlockRound        uint64
+	GetBlockRandomSeed   uint64
+	ExecuteOnSameContext uint64
+	ExecuteOnDestContext uint64
+	DelegateExecution    uint64
+	ExecuteReadOnly      uint64
+	AsyncCallStep        uint64
+	AsyncCallbackGasLock uint64
+	CreateContract       uint64
+	GetReturnData        uint64
+	GetNumReturnData     uint64
+	GetReturnDataSize    uint64
+=======
+	GetSCAddress         uint64
+	GetOwnerAddress      uint64
+	IsSmartContract      uint64
+	GetShardOfAddress    uint64
+	GetExternalBalance   uint64
+	GetBlockHash         uint64
+	GetOriginalTxHash    uint64
+	TransferValue        uint64
+	GetArgument          uint64
+	GetFunction          uint64
+	GetNumArguments      uint64
+	StorageStore         uint64
+	StorageLoad          uint64
+	GetCaller            uint64
+	GetCallValue         uint64
+	Log                  uint64
+	Finish               uint64
+	SignalError          uint64
+	GetBlockTimeStamp    uint64
+	GetGasLeft           uint64
+	Int64GetArgument     uint64
+	Int64StorageStore    uint64
+	Int64StorageLoad     uint64
+	Int64Finish          uint64
+	GetStateRootHash     uint64
+	GetBlockNonce        uint64
+	GetBlockEpoch        uint64
+	GetBlockRound        uint64
+	GetBlockRandomSeed   uint64
+	ExecuteOnSameContext uint64
+	ExecuteOnDestContext uint64
+	DelegateExecution    uint64
+	ExecuteReadOnly      uint64
+	AsyncCallStep        uint64
+	AsyncCallbackGasLock uint64
+	CreateContract       uint64
+	GetReturnData        uint64
+	GetNumReturnData     uint64
+	GetReturnDataSize    uint64
+>>>>>>> master
 }
 
 // TODO remove this struct
@@ -165,14 +246,19 @@ type CryptoAPICost struct {
 	UnmarshalECC           uint64
 	UnmarshalCompressedECC uint64
 	GenerateKeyECC         uint64
+	EncodeDERSig           uint64
 }
 
 type ManagedBufferAPICost struct {
 	MBufferNew                uint64
 	MBufferNewFromBytes       uint64
-	MBufferSetBytes           uint64
 	MBufferGetLength          uint64
 	MBufferGetBytes           uint64
+	MBufferGetByteSlice       uint64
+	MBufferCopyByteSlice      uint64
+	MBufferSetBytes           uint64
+	MBufferAppend             uint64
+	MBufferAppendBytes        uint64
 	MBufferToBigIntUnsigned   uint64
 	MBufferToBigIntSigned     uint64
 	MBufferFromBigIntUnsigned uint64
@@ -181,6 +267,7 @@ type ManagedBufferAPICost struct {
 	MBufferStorageLoad        uint64
 	MBufferGetArgument        uint64
 	MBufferFinish             uint64
+	MBufferSetRandom          uint64
 }
 
 type WASMOpcodeCost struct {

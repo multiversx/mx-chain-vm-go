@@ -2,13 +2,20 @@ package worldmock
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+<<<<<<< HEAD
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+||||||| b382eecc
+	"github.com/ElrondNetwork/elrond-vm-common"
+=======
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+>>>>>>> master
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of
 // the BuiltinFunctionsWrapper.
-var WorldMarshalizer = &GogoProtoMarshalizer{}
+var WorldMarshalizer = &marshal.GogoProtoMarshalizer{}
 
 // BuiltinFunctionsWrapper manages and initializes a BuiltInFunctionContainer
 // along with its dependencies

@@ -10,6 +10,7 @@ var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
+<<<<<<< HEAD
 	Err                      error
 	VMInput                  *vmcommon.VMInput
 	SCAddress                []byte
@@ -35,6 +36,59 @@ type RuntimeContextMock struct {
 	OriginalTxHash           []byte
 	PrevTxHash               []byte
 	HasFunctionResult        bool
+||||||| b382eecc
+	Err                    error
+	VMInput                *vmcommon.VMInput
+	SCAddress              []byte
+	SCCode                 []byte
+	SCCodeSize             uint64
+	CallFunction           string
+	VMType                 []byte
+	IsContractOnStack      bool
+	ReadOnlyFlag           bool
+	VerifyCode             bool
+	CurrentBreakpointValue arwen.BreakpointValue
+	PointsUsed             uint64
+	InstanceCtxID          int
+	MemLoadResult          []byte
+	MemLoadMultipleResult  [][]byte
+	FailCryptoAPI          bool
+	FailElrondAPI          bool
+	FailElrondSyncExecAPI  bool
+	FailBigIntAPI          bool
+	FailManagedBuffersAPI  bool
+	AsyncCallInfo          *arwen.AsyncCallInfo
+	RunningInstances       uint64
+	CurrentTxHash          []byte
+	OriginalTxHash         []byte
+=======
+	Err                    error
+	VMInput                *vmcommon.VMInput
+	SCAddress              []byte
+	SCCode                 []byte
+	SCCodeSize             uint64
+	CallFunction           string
+	VMType                 []byte
+	IsContractOnStack      bool
+	ReadOnlyFlag           bool
+	VerifyCode             bool
+	CurrentBreakpointValue arwen.BreakpointValue
+	PointsUsed             uint64
+	InstanceCtxID          int
+	MemLoadResult          []byte
+	MemLoadMultipleResult  [][]byte
+	FailCryptoAPI          bool
+	FailElrondAPI          bool
+	FailElrondSyncExecAPI  bool
+	FailBigIntAPI          bool
+	FailManagedBuffersAPI  bool
+	AsyncCallInfo          *arwen.AsyncCallInfo
+	RunningInstances       uint64
+	CurrentTxHash          []byte
+	OriginalTxHash         []byte
+	TraceGasEnabled        bool
+	GasTrace               map[string]map[string][]uint64
+>>>>>>> master
 }
 
 // InitState mocked method

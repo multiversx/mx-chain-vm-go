@@ -266,7 +266,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -276,11 +276,11 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
 				GasRemaining(testConfig.GasProvided - esdtTransferGasCost - testConfig.GasUsedByParent - testConfig.GasUsedByChild)
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
 		})
 }
@@ -311,7 +311,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -320,11 +320,11 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 				HasRuntimeErrors("forced fail").
 				GasRemaining(0)
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, uint64(0), childESDTBalance)
 		})
 }
@@ -355,7 +355,7 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -364,11 +364,11 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 				HasRuntimeErrors("insufficient funds").
 				GasRemaining(0)
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, uint64(0), childESDTBalance)
 		})
 }
@@ -399,9 +399,9 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, 0)
+			_ = childAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, 0)
 			_ = childAccount.SetTokenRolesAsStrings(test.ESDTTestTokenName, []string{core.ESDTRoleLocalBurn})
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
@@ -410,15 +410,69 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			verify.Ok().
 				HasRuntimeErrors("forced fail")
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, uint64(0), childESDTBalance)
 		})
 }
 
+<<<<<<< HEAD
+||||||| b382eecc
+var asyncBaseTestConfig = contracts.AsyncCallBaseTestConfig{
+	GasProvided:       1000,
+	GasUsedByParent:   400,
+	GasUsedByChild:    200,
+	GasUsedByCallback: 100,
+	GasLockCost:       150,
+
+	TransferFromParentToChild: 7,
+
+	ParentBalance: 1000,
+	ChildBalance:  1000,
+}
+
+var asyncTestConfig = &contracts.AsyncCallTestConfig{
+	AsyncCallBaseTestConfig: asyncBaseTestConfig,
+	TransferToThirdParty:    3,
+	TransferToVault:         4,
+	ESDTTokensToTransfer:    0,
+}
+
+=======
+var asyncBaseTestConfig = contracts.AsyncCallBaseTestConfig{
+	GasProvided:       1000,
+	GasUsedByParent:   400,
+	GasUsedByChild:    200,
+	GasUsedByCallback: 100,
+	GasLockCost:       150,
+
+	TransferFromParentToChild: 7,
+
+	ParentBalance: 1000,
+	ChildBalance:  1000,
+}
+
+var asyncTestConfig = &contracts.AsyncCallTestConfig{
+	AsyncCallBaseTestConfig: asyncBaseTestConfig,
+	TransferToThirdParty:    3,
+	TransferToVault:         4,
+	ESDTTokensToTransfer:    0,
+}
+
+var transferAndExecuteTestConfig = contracts.TransferAndExecuteTestConfig{
+	DirectCallGasTestConfig: contracts.DirectCallGasTestConfig{
+		GasProvided:     1000,
+		GasUsedByParent: 200,
+		ParentBalance:   1000,
+	},
+	TransferFromParentToChild: 5,
+	GasTransferToChild:        100,
+}
+
+>>>>>>> master
 func TestGasUsed_AsyncCall(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
@@ -1010,7 +1064,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_Success(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -1018,11 +1072,11 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_Success(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok()
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
 		})
 }
@@ -1056,7 +1110,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -1067,11 +1121,11 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 				GasUsed(test.ParentAddress, gasUsedByParent).
 				GasUsed(test.ChildAddress, 0)
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, uint64(0), childESDTBalance)
 		})
 }
@@ -1102,7 +1156,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -1111,11 +1165,11 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			verify.UserError().
 				ReturnMessage("wrong num of arguments")
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
 		})
 }
@@ -1147,7 +1201,7 @@ func TestGasUsed_ESDTTransferInCallback(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -1155,11 +1209,11 @@ func TestGasUsed_ESDTTransferInCallback(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok()
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, testConfig.ESDTTokensToTransfer-testConfig.CallbackESDTTokensToTransfer, childESDTBalance)
 		})
 }
@@ -1191,7 +1245,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -1200,11 +1254,11 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			verify.ExecutionFailed().
 				HasRuntimeErrors("tokenize failed")
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
 		})
 }
@@ -1236,7 +1290,7 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -1246,15 +1300,16 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 				HasRuntimeErrors("callback failed intentionally").
 				Print()
 
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
 		})
 }
 
+<<<<<<< HEAD
 func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 10_000
@@ -1371,6 +1426,66 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 		})
 }
 
+||||||| b382eecc
+=======
+func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
+	testConfig := transferAndExecuteTestConfig
+
+	noOfTransfers := 3
+
+	childContracts := []test.MockTestSmartContract{
+		test.CreateMockContractOnShard(test.ParentAddress, 0).
+			WithBalance(testConfig.ParentBalance).
+			WithConfig(testConfig).
+			WithMethods(contracts.TransferAndExecute),
+	}
+
+	startShard := 1
+	for transfer := 0; transfer < noOfTransfers; transfer++ {
+		childContracts = append(childContracts,
+			test.CreateMockContractOnShard(contracts.GetChildAddressForTransfer(transfer), uint32(startShard+transfer)).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithMethods(contracts.WasteGasChildMock))
+	}
+
+	expectedTransfers := make([]test.TransferEntry, 0)
+	for transfer := 0; transfer < noOfTransfers; transfer++ {
+		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer)).
+			WithData(big.NewInt(int64(transfer)).Bytes()).
+			WithGasLimit(testConfig.GasTransferToChild).
+			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
+		expectedTransfers = append(expectedTransfers, expectedTransfer)
+	}
+
+	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasTransferToChild
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			childContracts...,
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.UserAddress).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction(contracts.TransferAndExecuteFuncName).
+			WithArguments(big.NewInt(int64(noOfTransfers)).Bytes()).
+			WithCallType(vm.DirectCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
+				GasRemaining(gasRemaining).
+				ReturnData(contracts.TransferAndExecuteReturnData).
+				Transfers(expectedTransfers...)
+		})
+}
+
+>>>>>>> master
 type MockClaimBuiltin struct {
 	test.MockBuiltin
 	AmountToGive int64
@@ -1442,8 +1557,13 @@ func setZeroCodeCosts(host arwen.VMHost) {
 	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
 	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
 	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
+<<<<<<< HEAD
 	host.Metering().GasSchedule().ElrondAPICost.StorageLoad = 0
 	host.Metering().GasSchedule().ElrondAPICost.StorageStore = 0
+||||||| b382eecc
+=======
+	host.Metering().GasSchedule().ElrondAPICost.TransferValue = 0
+>>>>>>> master
 }
 
 func setAsyncCosts(host arwen.VMHost, gasLock uint64) {

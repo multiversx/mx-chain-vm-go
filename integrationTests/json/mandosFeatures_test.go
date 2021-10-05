@@ -38,6 +38,7 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 }
 
 func TestRustComposability(t *testing.T) {
+<<<<<<< HEAD
 	// TODO fix excluded tests and include them back, if possible
 	runTestsInFolder(t, "features/composability/mandos", []string{
 		"features/composability/mandos/recursive_caller_egld_2.scen.json",
@@ -47,6 +48,20 @@ func TestRustComposability(t *testing.T) {
 		"features/composability/mandos/forwarder_send_twice_esdt.scen.json",
 		"features/composability/mandos/recursive_caller_egld_x.scen.json",
 	})
+||||||| b382eecc
+	// TODO fix excluded tests and include them back
+	runTestsInFolder(t, "features/composability/mandos", []string{
+		"features/composability/mandos/recursive_caller_egld_2.scen.json",
+		"features/composability/mandos/recursive_caller_esdt_2.scen.json",
+		"features/composability/mandos/recursive_caller_esdt_x.scen.json",
+	})
+=======
+	runAllTestsInFolder(t, "features/composability/mandos")
+}
+
+func TestRustLegacyComposability(t *testing.T) {
+	runAllTestsInFolder(t, "features/composability/mandos-legacy")
+>>>>>>> master
 }
 
 func TestTimelocks(t *testing.T) {

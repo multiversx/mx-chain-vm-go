@@ -1,0 +1,515 @@
+On branch merge-master-into-feat-promises-final
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+	new file:   .github/workflows/code-coverage.yml
+	modified:   Makefile
+	modified:   README.md
+	modified:   arwen/common.go
+	new file:   arwen/contexts/gasTracer.go
+	new file:   arwen/contexts/gasTracer_test.go
+	modified:   arwen/contexts/managedType.go
+	modified:   arwen/contexts/managedType_test.go
+	modified:   arwen/contexts/metering.go
+	modified:   arwen/contexts/metering_test.go
+	modified:   arwen/contexts/output.go
+	modified:   arwen/cryptoapi/cryptoei.go
+	modified:   arwen/elrondapi/bigIntOps.go
+	modified:   arwen/elrondapi/elrondei.go
+	modified:   arwen/elrondapi/manBufOps.go
+	new file:   arwen/elrondapi/managedConversions.go
+	new file:   arwen/elrondapi/managedei.go
+	modified:   arwen/elrondapi/smallIntOps.go
+	modified:   arwen/errors.go
+	modified:   arwen/hosttest/execution_builtin_test.go
+	new file:   arwen/mock/blockchainContextMock.go
+	new file:   arwen/mock/epochNotifierStub.go
+	modified:   arwendebug/world.go
+	modified:   arwenmandos/exec.go
+	modified:   arwenmandos/execScenario.go
+	modified:   arwenmandos/execTest.go
+	modified:   arwenmandos/gasSchedules/gasSchedules.go
+	modified:   arwenmandos/gasSchedules/scripts/includetoml.go
+	deleted:    arwenmandos/gasSchedules/tomlfiles.go
+	modified:   arwenmandos/stepCheckAccounts.go
+	modified:   arwenmandos/stepCheckTxResult.go
+	modified:   arwenmandos/stepDumpWorld.go
+	modified:   arwenmandos/stepRunTx.go
+	modified:   arwenmandos/util.go
+	modified:   cmd/testgen/dns/genDnsTest.go
+	new file:   codecov.yml
+	modified:   crypto/interface.go
+	modified:   crypto/signing/errors.go
+	modified:   crypto/signing/secp256k1/secp256k1.go
+	new file:   crypto/signing/secp256k1/secp256k1_test.go
+	new file:   elrond.workspace.json
+	modified:   fuzz/delegation/v0.3/fuzzDelegationExecutor.go
+	modified:   fuzz/delegation/v0.4/fuzzDelegationExecutor.go
+	modified:   fuzz/delegation/v0.5/fuzzDelegationExecutor.go
+	modified:   fuzz/dex/v0.1/fuzzDexExecutor.go
+	modified:   fuzz/dex/v0.1/fuzzDexExecutorTokens.go
+	modified:   go.sum
+	modified:   integrationTests/features/pureFunctionUtil.go
+	modified:   integrationTests/json/mandosContracts_test.go
+	modified:   integrationTests/json/mandosTestCommon.go
+	modified:   mandos-go/controller/scenarioDir.go
+	modified:   mandos-go/controller/scenarioOne.go
+	modified:   mandos-go/controller/scenarioRunner.go
+	modified:   mandos-go/controller/testOne.go
+	modified:   mandos-go/controller/testRunner.go
+	new file:   mandos-go/esdtconvert/account_esdt_read.go
+	new file:   mandos-go/esdtconvert/account_esdt_write.go
+	new file:   mandos-go/esdtconvert/esdt_keys.go
+	modified:   mandos-go/json/parse/parseAccounts.go
+	modified:   mandos-go/json/parse/parseAccountsCheck.go
+	modified:   mandos-go/json/parse/parseBlock.go
+	modified:   mandos-go/json/parse/parseBlockInfo.go
+	modified:   mandos-go/json/parse/parseESDT.go
+	modified:   mandos-go/json/parse/parseESDTCheck.go
+	modified:   mandos-go/json/parse/parseESDTTx.go
+	modified:   mandos-go/json/parse/parseList.go
+	modified:   mandos-go/json/parse/parseLogs.go
+	modified:   mandos-go/json/parse/parseNewAddresses.go
+	modified:   mandos-go/json/parse/parseScenario.go
+	modified:   mandos-go/json/parse/parseTest.go
+	modified:   mandos-go/json/parse/parseTx.go
+	modified:   mandos-go/json/parse/parseTxResult.go
+	modified:   mandos-go/json/parse/parseValue.go
+	modified:   mandos-go/json/write/writeAccount.go
+	modified:   mandos-go/json/write/writeCommon.go
+	modified:   mandos-go/json/write/writeESDT.go
+	modified:   mandos-go/json/write/writeESDTCheck.go
+	modified:   mandos-go/json/write/writeScenario.go
+	modified:   mandos-go/json/write/writeTest.go
+	renamed:    mandos-go/json/model/account.go -> mandos-go/model/account.go
+	renamed:    mandos-go/json/model/convertTestToScenario.go -> mandos-go/model/convertTestToScenario.go
+	renamed:    mandos-go/json/model/esdt.go -> mandos-go/model/esdt.go
+	renamed:    mandos-go/json/model/gasSchedule.go -> mandos-go/model/gasSchedule.go
+	renamed:    mandos-go/json/model/structScenario.go -> mandos-go/model/structScenario.go
+	renamed:    mandos-go/json/model/structTest.go -> mandos-go/model/structTest.go
+	renamed:    mandos-go/json/model/transaction.go -> mandos-go/model/transaction.go
+	renamed:    mandos-go/json/model/util.go -> mandos-go/model/util.go
+	renamed:    mandos-go/json/model/valueCheck.go -> mandos-go/model/valueCheck.go
+	renamed:    mandos-go/json/model/valueInit.go -> mandos-go/model/valueInit.go
+	new file:   math/interface.go
+	new file:   math/randomnessGenerator.go
+	new file:   math/randomnessGenerator_test.go
+	modified:   mock/context/cryptoMock.go
+	modified:   mock/context/meteringContextMock.go
+	modified:   mock/context/outputContextMock.go
+	modified:   mock/context/outputContextStub.go
+	new file:   mock/contracts/transferAndExecuteSC.go
+	deleted:    mock/world/gogoProtoMarshalizer.go
+	modified:   mock/world/mockESDT.go
+	modified:   mock/world/mockESDTAccount.go
+	modified:   mock/world/worldCallbacks.go
+	modified:   test/adder/mandos/adder.scen.json
+	modified:   test/adder/output/adder.wasm
+	renamed:    test/contracts/answer/output/answer.wat -> test/contracts/answer-locals/answer-locals.wat
+	renamed:    test/contracts/answer/output/answer_generated.wasm -> test/contracts/answer-locals/output/answer-locals.wasm
+	new file:   test/contracts/answer/elrond.json
+	modified:   test/contracts/answer/output/answer.wasm
+	deleted:    test/contracts/answer/output/answer_generated.wat
+	new file:   test/contracts/async-call-builtin/elrond.json
+	modified:   test/contracts/async-call-child/output/async-call-child.wasm
+	modified:   test/contracts/async-call-parent/output/async-call-parent.wasm
+	new file:   test/contracts/breakpoint/elrond.json
+	new file:   test/contracts/deployer/elrond.json
+	modified:   test/contracts/deployer/output/deployer.wasm
+	modified:   test/contracts/elrond/bigInt.h
+	modified:   test/contracts/elrond/context.h
+	new file:   test/contracts/elrondei/elrond.json
+	new file:   test/contracts/erc20/elrond.json
+	modified:   test/contracts/erc20/output/erc20.wasm
+	modified:   test/contracts/exchange/output/exchange.wasm
+	new file:   test/contracts/exec-dest-ctx-builtin/elrond.json
+	modified:   test/contracts/exec-dest-ctx-builtin/output/exec-dest-ctx-builtin.wasm
+	new file:   test/contracts/exec-dest-ctx-by-caller/child/elrond.json
+	new file:   test/contracts/exec-dest-ctx-by-caller/parent/elrond.json
+	modified:   test/contracts/exec-dest-ctx-child/exec-dest-ctx-child.c
+	modified:   test/contracts/exec-dest-ctx-parent/exec-dest-ctx-parent.c
+	modified:   test/contracts/exec-dest-ctx-parent/output/exec-dest-ctx-parent.wasm
+	new file:   test/contracts/exec-dest-ctx-recursive-child/elrond.json
+	modified:   test/contracts/exec-dest-ctx-recursive-child/exec-dest-ctx-recursive-child.c
+	modified:   test/contracts/exec-dest-ctx-recursive-child/output/exec-dest-ctx-recursive-child.wasm
+	new file:   test/contracts/exec-dest-ctx-recursive-parent/elrond.json
+	modified:   test/contracts/exec-dest-ctx-recursive-parent/exec-dest-ctx-recursive-parent.c
+	modified:   test/contracts/exec-dest-ctx-recursive-parent/output/exec-dest-ctx-recursive-parent.wasm
+	new file:   test/contracts/exec-dest-ctx-recursive/elrond.json
+	modified:   test/contracts/exec-dest-ctx-recursive/exec-dest-ctx-recursive.c
+	modified:   test/contracts/exec-dest-ctx-recursive/output/exec-dest-ctx-recursive.wasm
+	new file:   test/contracts/exec-same-ctx-child/elrond.json
+	modified:   test/contracts/exec-same-ctx-child/exec-same-ctx-child.c
+	modified:   test/contracts/exec-same-ctx-child/output/exec-same-ctx-child.wasm
+	new file:   test/contracts/exec-same-ctx-parent/elrond.json
+	modified:   test/contracts/exec-same-ctx-parent/exec-same-ctx-parent.c
+	modified:   test/contracts/exec-same-ctx-parent/output/exec-same-ctx-parent.wasm
+	new file:   test/contracts/exec-same-ctx-recursive-child/elrond.json
+	modified:   test/contracts/exec-same-ctx-recursive-child/exec-same-ctx-recursive-child.c
+	modified:   test/contracts/exec-same-ctx-recursive-child/output/exec-same-ctx-recursive-child.wasm
+	new file:   test/contracts/exec-same-ctx-recursive-parent/elrond.json
+	modified:   test/contracts/exec-same-ctx-recursive-parent/exec-same-ctx-recursive-parent.c
+	modified:   test/contracts/exec-same-ctx-recursive-parent/output/exec-same-ctx-recursive-parent.wasm
+	new file:   test/contracts/exec-same-ctx-recursive/elrond.json
+	modified:   test/contracts/exec-same-ctx-recursive/exec-same-ctx-recursive.c
+	modified:   test/contracts/exec-same-ctx-recursive/output/exec-same-ctx-recursive.wasm
+	new file:   test/contracts/exec-same-ctx-simple-child/elrond.json
+	new file:   test/contracts/exec-same-ctx-simple-parent/elrond.json
+	new file:   test/contracts/exec-sync-ctx-multiple/alpha/elrond.json
+	modified:   test/contracts/exec-sync-ctx-multiple/alpha/output/alpha.wasm
+	new file:   test/contracts/exec-sync-ctx-multiple/beta/elrond.json
+	new file:   test/contracts/exec-sync-ctx-multiple/delta/elrond.json
+	new file:   test/contracts/exec-sync-ctx-multiple/gamma/elrond.json
+	new file:   test/contracts/init-correct/elrond.json
+	renamed:    test/contracts/answer/output/answer2.wasm -> test/contracts/init-simple-popcnt/init-simple-popcnt.wasm
+	new file:   test/contracts/init-wrong/elrond.json
+	modified:   test/contracts/managed-buffers/managed-buffers.c
+	modified:   test/contracts/managed-buffers/managed-buffers.export
+	modified:   test/contracts/managed-buffers/output/managed-buffers.wasm
+	modified:   test/contracts/memoryless/output/memoryless.wasm
+	new file:   test/contracts/misc/elrond.json
+	new file:   test/contracts/num-with-fp/elrond.json
+	new file:   test/contracts/signatures/elrond.json
+	new file:   test/contracts/timelocks/elrond.json
+	modified:   test/crowdfunding-esdt/mandos/crowdfunding-claim-failed.scen.json
+	modified:   test/crowdfunding-esdt/mandos/crowdfunding-claim-successful.scen.json
+	modified:   test/crowdfunding-esdt/mandos/crowdfunding-claim-too-early.scen.json
+	modified:   test/crowdfunding-esdt/mandos/crowdfunding-fund-too-late.scen.json
+	modified:   test/crowdfunding-esdt/mandos/crowdfunding-fund.scen.json
+	modified:   test/crowdfunding-esdt/mandos/crowdfunding-init.scen.json
+	modified:   test/crowdfunding-esdt/mandos/egld-crowdfunding-claim-failed.scen.json
+	modified:   test/crowdfunding-esdt/mandos/egld-crowdfunding-claim-successful.scen.json
+	modified:   test/crowdfunding-esdt/mandos/egld-crowdfunding-claim-too-early.scen.json
+	modified:   test/crowdfunding-esdt/mandos/egld-crowdfunding-fund-too-late.scen.json
+	modified:   test/crowdfunding-esdt/mandos/egld-crowdfunding-fund.scen.json
+	modified:   test/crowdfunding-esdt/mandos/egld-crowdfunding-init.scen.json
+	modified:   test/crowdfunding-esdt/output/crowdfunding-esdt.wasm
+	modified:   test/egld-esdt-swap/output/egld-esdt-swap.wasm
+	modified:   test/erc20-rust/mandos/allowance_CallerCaller.scen.json
+	modified:   test/erc20-rust/mandos/allowance_CallerOther.scen.json
+	modified:   test/erc20-rust/mandos/allowance_OtherCaller.scen.json
+	modified:   test/erc20-rust/mandos/allowance_OtherEqOther.scen.json
+	modified:   test/erc20-rust/mandos/allowance_OtherNEqOther.scen.json
+	modified:   test/erc20-rust/mandos/approve_Caller-Positive.scen.json
+	modified:   test/erc20-rust/mandos/approve_Caller-Zero.scen.json
+	modified:   test/erc20-rust/mandos/approve_Other-Positive.scen.json
+	modified:   test/erc20-rust/mandos/approve_Other-Zero.scen.json
+	modified:   test/erc20-rust/mandos/approve_SwitchCaller.scen.json
+	modified:   test/erc20-rust/mandos/balanceOf_Caller.scen.json
+	modified:   test/erc20-rust/mandos/balanceOf_NonCaller.scen.json
+	modified:   test/erc20-rust/mandos/not_payable.scen.json
+	modified:   test/erc20-rust/mandos/not_payable_esdt.scen.json
+	modified:   test/erc20-rust/mandos/totalSupply_Positive.scen.json
+	modified:   test/erc20-rust/mandos/totalSupply_Zero.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-BalanceEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-BalanceNEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-EntireAllowanceMoreThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-EntireBalanceEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-EntireBalanceMoreThanAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-MoreThanAllowanceLessThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-MoreThanBalanceLessThanAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-NoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllDistinct-StillNoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllEqual-AllowanceRelevant.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_AllEqual-EntireBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_CallerEqFrom-AllowanceRelevant.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_CallerEqFrom-EntireBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_CallerEqFrom-MoreThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_CallerEqTo-BalanceNEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_CallerEqTo-MoreThanAllowanceLessThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_CallerEqTo-MoreThanBalanceLessThanAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_Exploratory-MultipleTransfersSucceed.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_Exploratory-MultipleTransfersThrow.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-BalanceEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-BalanceNEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-EntireAllowanceMoreThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-EntireBalanceEqAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-EntireBalanceMoreThanAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-MoreThanAllowanceLessThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-MoreThanBalanceLessThanAllowance.scen.json
+	modified:   test/erc20-rust/mandos/transferFrom_FromEqTo-NoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-AllowanceIrrelevant.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-EntireBalance.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-MoreThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-NoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-Positive.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-StillNoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Caller-Zero.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-AllowanceIrrelevant.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-EntireBalance.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-MoreThanBalance.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-NoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-Positive.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-StillNoOverflow.scen.json
+	modified:   test/erc20-rust/mandos/transfer_Other-Zero.scen.json
+	modified:   test/erc20-rust/output/erc20.wasm
+	modified:   test/features/basic-features/mandos/big_int_to_i64.scen.json
+	new file:   test/features/basic-features/mandos/big_num_conversions.scen.json
+	renamed:    test/features/basic-features/mandos/log2_func.scen.json -> test/features/basic-features/mandos/big_uint_log2.json
+	renamed:    test/features/basic-features/mandos/pow_func.scen.json -> test/features/basic-features/mandos/big_uint_pow.json
+	renamed:    test/features/basic-features/mandos/sqrt.scen.json -> test/features/basic-features/mandos/big_uint_sqrt.scen.json
+	modified:   test/features/basic-features/mandos/big_uint_to_u64.scen.json
+	modified:   test/features/basic-features/mandos/block_info.scen.json
+	new file:   test/features/basic-features/mandos/codec_err.scen.json
+	modified:   test/features/basic-features/mandos/count_ones.scen.json
+	modified:   test/features/basic-features/mandos/crypto_elliptic_curves.scen.json
+	new file:   test/features/basic-features/mandos/crypto_ripemd160.scen.json
+	modified:   test/features/basic-features/mandos/crypto_verify_funcs.scen.json
+	modified:   test/features/basic-features/mandos/echo_async_result_empty.scen.json
+	new file:   test/features/basic-features/mandos/echo_async_result_empty_managed.scen.json
+	new file:   test/features/basic-features/mandos/echo_big_int_nested.scen.json
+	renamed:    test/features/basic-features/mandos/echo_big_int.scen.json -> test/features/basic-features/mandos/echo_big_int_top.scen.json
+	modified:   test/features/basic-features/mandos/echo_i64.scen.json
+	new file:   test/features/basic-features/mandos/echo_managed_bytes.scen.json
+	new file:   test/features/basic-features/mandos/echo_managed_vec.scen.json
+	modified:   test/features/basic-features/mandos/echo_ser_ex_1.scen.json
+	new file:   test/features/basic-features/mandos/echo_tuple_into_multiresult.scen.json
+	modified:   test/features/basic-features/mandos/echo_varags_tuples.scen.json
+	modified:   test/features/basic-features/mandos/echo_varargs_u32.scen.json
+	modified:   test/features/basic-features/mandos/events.scen.json
+	modified:   test/features/basic-features/mandos/events_legacy.scen.json
+	modified:   test/features/basic-features/mandos/get_caller.scen.json
+	modified:   test/features/basic-features/mandos/get_cumulated_validator_rewards.scen.json
+	new file:   test/features/basic-features/mandos/managed_buffer_concat_1.scen.json
+	new file:   test/features/basic-features/mandos/managed_buffer_concat_2.scen.json
+	new file:   test/features/basic-features/mandos/managed_buffer_eq.scen.json
+	new file:   test/features/basic-features/mandos/managed_buffer_overwrite.scen.json
+	new file:   test/features/basic-features/mandos/managed_buffer_slice_1.scen.json
+	new file:   test/features/basic-features/mandos/managed_buffer_slice_2.scen.json
+	new file:   test/features/basic-features/mandos/managed_vec_address_push.scen.json
+	new file:   test/features/basic-features/mandos/managed_vec_biguint_push.scen.json
+	modified:   test/features/basic-features/mandos/only_owner.scen.json
+	modified:   test/features/basic-features/mandos/sc_properties.scen.json
+	modified:   test/features/basic-features/mandos/storage_addr.scen.json
+	modified:   test/features/basic-features/mandos/storage_big_int.scen.json
+	modified:   test/features/basic-features/mandos/storage_big_uint.scen.json
+	modified:   test/features/basic-features/mandos/storage_bool.scen.json
+	modified:   test/features/basic-features/mandos/storage_clear.scen.json
+	modified:   test/features/basic-features/mandos/storage_i64.scen.json
+	modified:   test/features/basic-features/mandos/storage_i64_bad.scen.json
+	modified:   test/features/basic-features/mandos/storage_map1.scen.json
+	modified:   test/features/basic-features/mandos/storage_map2.scen.json
+	modified:   test/features/basic-features/mandos/storage_map3.scen.json
+	modified:   test/features/basic-features/mandos/storage_mapper_linked_list.scen.json
+	modified:   test/features/basic-features/mandos/storage_mapper_map.scen.json
+	modified:   test/features/basic-features/mandos/storage_mapper_map_storage.scen.json
+	new file:   test/features/basic-features/mandos/storage_mapper_queue.scen.json
+	modified:   test/features/basic-features/mandos/storage_mapper_set.scen.json
+	modified:   test/features/basic-features/mandos/storage_mapper_single_value.scen.json
+	new file:   test/features/basic-features/mandos/storage_mapper_token_attributes.scen.json
+	modified:   test/features/basic-features/mandos/storage_mapper_vec.scen.json
+	modified:   test/features/basic-features/mandos/storage_opt_addr.scen.json
+	modified:   test/features/basic-features/mandos/storage_u64.scen.json
+	modified:   test/features/basic-features/mandos/storage_u64_bad.scen.json
+	modified:   test/features/basic-features/mandos/storage_usize.scen.json
+	modified:   test/features/basic-features/mandos/storage_usize_bad.scen.json
+	modified:   test/features/basic-features/mandos/storage_vec_u8.scen.json
+	modified:   test/features/basic-features/output/basic-features.wasm
+	new file:   test/features/composability/forwarder-raw/output/forwarder-raw-new.wasm
+	new file:   test/features/composability/forwarder-raw/output/forwarder-raw-unmanaged.wasm
+	modified:   test/features/composability/forwarder-raw/output/forwarder-raw.wasm
+	new file:   test/features/composability/forwarder/output/forwarder-unmanaged.wasm
+	modified:   test/features/composability/forwarder/output/forwarder.wasm
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_async_accept_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_async_accept_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_async_echo.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_call_async_retrieve_multi_transfer.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_direct_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_direct_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_sync_echo.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_sync_echo_caller.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_sync_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_sync_readonly.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_sync_same_context.scen.json
+	renamed:    test/features/composability/mandos/recursive_caller_egld_x.scen.json -> test/features/composability/mandos-legacy/l_forw_raw_sync_same_context_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forw_raw_transf_exec_egld.scen.json
+	renamed:    test/features/composability/mandos/recursive_caller_esdt_x.scen.json -> test/features/composability/mandos-legacy/l_forwarder_call_async_accept_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_async_accept_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_async_accept_nft.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_async_multi_transfer.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_async_retrieve_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_async_retrieve_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_async_retrieve_nft.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_multi_transfer.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_nft.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_then_read_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_then_read_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_accept_then_read_nft.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_retrieve_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_retrieve_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_sync_retrieve_nft.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_egld_twice.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_esdt_twice.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_nft.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_return_values.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_accept_sft_twice.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_call_transf_exec_multi_transfer_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_contract_change_owner.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_contract_deploy.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_contract_upgrade.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_nft_create.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_nft_create_and_send.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_nft_decode_complex_attributes.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_nft_transfer_async.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_nft_transfer_exec.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_send_esdt_multi_transfer.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_send_twice_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_send_twice_esdt.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_sync_echo.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_sync_echo_range.scen.json
+	new file:   test/features/composability/mandos-legacy/l_forwarder_tranfer_esdt_with_fees.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_init.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_message_otherShard.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_message_otherShard_callback.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_message_sameShard.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_message_sameShard_callback.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_payment_otherShard.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_payment_otherShard_callback.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_payment_sameShard.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_payment_sameShard_callback.scen.json
+	new file:   test/features/composability/mandos-legacy/l_proxy_test_upgrade.scen.json
+	renamed:    test/features/composability/mandos/recursive_caller_egld_2.scen.json -> test/features/composability/mandos-legacy/l_recursive_caller_egld_1.scen.json
+	renamed:    test/features/composability/mandos/recursive_caller_esdt_2.scen.json -> test/features/composability/mandos-legacy/l_recursive_caller_esdt_1.scen.json
+	new file:   test/features/composability/mandos-legacy/l_send_egld.scen.json
+	new file:   test/features/composability/mandos-legacy/l_send_esdt.scen.json
+	modified:   test/features/composability/mandos/forw_raw_async_accept_egld.scen.json
+	modified:   test/features/composability/mandos/forw_raw_async_accept_esdt.scen.json
+	modified:   test/features/composability/mandos/forw_raw_async_echo.scen.json
+	new file:   test/features/composability/mandos/forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json
+	new file:   test/features/composability/mandos/forw_raw_call_async_retrieve_multi_transfer.scen.json
+	modified:   test/features/composability/mandos/forw_raw_direct_esdt.scen.json
+	new file:   test/features/composability/mandos/forw_raw_sync_echo_caller.scen.json
+	new file:   test/features/composability/mandos/forw_raw_sync_readonly.scen.json
+	new file:   test/features/composability/mandos/forw_raw_sync_same_context.scen.json
+	new file:   test/features/composability/mandos/forw_raw_sync_same_context_egld.scen.json
+	new file:   test/features/composability/mandos/forw_raw_transf_exec_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_async_accept_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_async_accept_esdt.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_async_accept_nft.scen.json
+	new file:   test/features/composability/mandos/forwarder_call_async_multi_transfer.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_async_retrieve_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_async_retrieve_esdt.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_async_retrieve_nft.scen.json
+	new file:   test/features/composability/mandos/forwarder_call_sync_accept_multi_transfer.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_sync_accept_then_read_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_sync_accept_then_read_esdt.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_sync_accept_then_read_nft.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_sync_retrieve_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_sync_retrieve_esdt.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_sync_retrieve_nft.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_egld_twice.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_esdt.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_esdt_twice.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_nft.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_return_values.scen.json
+	modified:   test/features/composability/mandos/forwarder_call_transf_exec_accept_sft_twice.scen.json
+	new file:   test/features/composability/mandos/forwarder_call_transf_exec_multi_transfer_esdt.scen.json
+	modified:   test/features/composability/mandos/forwarder_contract_change_owner.scen.json
+	modified:   test/features/composability/mandos/forwarder_contract_deploy.scen.json
+	modified:   test/features/composability/mandos/forwarder_contract_upgrade.scen.json
+	modified:   test/features/composability/mandos/forwarder_nft_create.scen.json
+	modified:   test/features/composability/mandos/forwarder_nft_create_and_send.scen.json
+	new file:   test/features/composability/mandos/forwarder_nft_decode_complex_attributes.scen.json
+	new file:   test/features/composability/mandos/forwarder_send_esdt_multi_transfer.scen.json
+	modified:   test/features/composability/mandos/forwarder_send_twice_egld.scen.json
+	modified:   test/features/composability/mandos/forwarder_send_twice_esdt.scen.json
+	new file:   test/features/composability/mandos/forwarder_tranfer_esdt_with_fees.scen.json
+	modified:   test/features/composability/mandos/proxy_test_init.scen.json
+	modified:   test/features/composability/mandos/proxy_test_message_otherShard.scen.json
+	modified:   test/features/composability/mandos/proxy_test_message_otherShard_callback.scen.json
+	modified:   test/features/composability/mandos/proxy_test_message_sameShard.scen.json
+	modified:   test/features/composability/mandos/proxy_test_message_sameShard_callback.scen.json
+	modified:   test/features/composability/mandos/proxy_test_payment_otherShard.scen.json
+	modified:   test/features/composability/mandos/proxy_test_payment_otherShard_callback.scen.json
+	modified:   test/features/composability/mandos/proxy_test_payment_sameShard.scen.json
+	modified:   test/features/composability/mandos/proxy_test_payment_sameShard_callback.scen.json
+	new file:   test/features/composability/mandos/proxy_test_upgrade.scen.json
+	new file:   test/features/composability/proxy-test-first/output/proxy-test-first-unmanaged.wasm
+	modified:   test/features/composability/proxy-test-first/output/proxy-test-first.wasm
+	new file:   test/features/composability/proxy-test-second/output/proxy-test-second-unmanaged.wasm
+	modified:   test/features/composability/proxy-test-second/output/proxy-test-second.wasm
+	new file:   test/features/composability/recursive-caller/output/recursive-caller-unmanaged.wasm
+	modified:   test/features/composability/recursive-caller/output/recursive-caller.wasm
+	modified:   test/features/composability/vault/output/vault.wasm
+	new file:   test/features/payable-features/mandos/call-value-check.scen.json
+	modified:   test/features/payable-features/mandos/payable_any_1.scen.json
+	modified:   test/features/payable-features/mandos/payable_any_2.scen.json
+	modified:   test/features/payable-features/mandos/payable_any_3.scen.json
+	modified:   test/features/payable-features/mandos/payable_any_4.scen.json
+	modified:   test/features/payable-features/mandos/payable_egld_1.scen.json
+	modified:   test/features/payable-features/mandos/payable_egld_2.scen.json
+	modified:   test/features/payable-features/mandos/payable_egld_3.scen.json
+	modified:   test/features/payable-features/mandos/payable_egld_4.scen.json
+	modified:   test/features/payable-features/mandos/payable_token_1.scen.json
+	modified:   test/features/payable-features/mandos/payable_token_2.scen.json
+	modified:   test/features/payable-features/mandos/payable_token_3.scen.json
+	modified:   test/features/payable-features/mandos/payable_token_4.scen.json
+	modified:   test/features/payable-features/output/payable-features.wasm
+	modified:   test/multisig/mandos/changeQuorum.scen.json
+	modified:   test/multisig/mandos/changeQuorum_tooBig.scen.json
+	modified:   test/multisig/mandos/deployAdder_err.scen.json
+	modified:   test/multisig/mandos/deployAdder_then_call.scen.json
+	modified:   test/multisig/mandos/deployFactorial.scen.json
+	modified:   test/multisig/mandos/remove_everyone.scen.json
+	modified:   test/multisig/mandos/steps/add_bm.steps.json
+	modified:   test/multisig/mandos/steps/add_prop.steps.json
+	modified:   test/multisig/mandos/steps/deploy.steps.json
+	modified:   test/multisig/mandos/steps/rem_alice.steps.json
+	modified:   test/multisig/mandos/steps/sign_unsign_bad_action.steps.json
+	modified:   test/multisig/output/multisig.wasm
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping-after-deadline.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping-before-activation.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping-before-beginning.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping-second-user.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping-twice.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping-wrong-ammount.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-ping.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-all-after-pong.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-all-interrupted-1.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-all-interrupted-2.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-all.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-all.steps.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-before-deadline.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-twice.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong-without-ping.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-call-pong.scen.json
+	modified:   test/ping-pong-egld/mandos/ping-pong-init.scen.json
+	modified:   test/ping-pong-egld/output/ping-pong-egld.wasm
+	modified:   testcommon/testInitializerInputs.go
+
+Unmerged paths:
+  (use "git add/rm <file>..." as appropriate to mark resolution)
+	both modified:   arwen/host/arwen.go
+	deleted by us:   arwen/host/asyncCall.go
+	both modified:   arwen/host/execution.go
+	both modified:   arwen/hosttest/execution_benchmark_test.go
+	both modified:   arwen/hosttest/execution_gas_test.go
+	both modified:   arwen/hosttest/execution_test.go
+	both modified:   arwen/interface.go
+	both modified:   arwenmandos/gasSchedules/gasScheduleEmbedGenerated.go
+	both modified:   arwenmandos/gasSchedules/gasScheduleV3.toml
+	both modified:   config/config.toml
+	both modified:   config/gasCost.go
+	both modified:   config/gasSchedule.go
+	both modified:   go.mod
+	both modified:   integrationTests/json/mandosFeatures_test.go
+	both modified:   mock/context/runtimeContextMock.go
+	both modified:   mock/contracts/common.go
+	both modified:   mock/world/builtinFunctionsWrapper.go
+	both added:      test/contracts/exec-dest-ctx-child/elrond.json
+	both modified:   test/contracts/exec-dest-ctx-child/output/exec-dest-ctx-child.wasm
+	added by them:   test/contracts/promises/tourist-tracking/elrond.json
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	WARNING-merge-status.txt
+	test/contracts/storage/
+

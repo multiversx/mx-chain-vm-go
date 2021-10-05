@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 

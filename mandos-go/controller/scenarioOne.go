@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
 // RunSingleJSONScenario parses and prepares test, then calls testCallback.
@@ -35,6 +35,12 @@ func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string) error {
 
 	r.Parser.ExprInterpreter.FileResolver.SetContext(contextPath)
 	scenario, parseErr := r.Parser.ParseScenarioFile(byteValue)
+
+	if r.RunsNewTest {
+		scenario.IsNewTest = true
+		r.RunsNewTest = false
+	}
+
 	if parseErr != nil {
 		return parseErr
 	}

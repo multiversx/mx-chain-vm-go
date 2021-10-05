@@ -1,7 +1,7 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -26,6 +26,11 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 	if !scenario.CheckGas {
 		ojFalse := oj.OJsonBool(false)
 		scenarioOJ.Put("checkGas", &ojFalse)
+	}
+
+	if scenario.TraceGas {
+		ojTrue := oj.OJsonBool(true)
+		scenarioOJ.Put("traceGas", &ojTrue)
 	}
 
 	scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))

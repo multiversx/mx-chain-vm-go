@@ -37,17 +37,6 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	bigIntOps := &BigIntAPICost{}
-	err = mapstructure.Decode(gasMap["BigIntAPICost"], bigIntOps)
-	if err != nil {
-		return nil, err
-	}
-
-	err = checkForZeroUint64Fields(*bigIntOps)
-	if err != nil {
-		return nil, err
-	}
-
 	ethOps := &EthAPICost{}
 	err = mapstructure.Decode(gasMap["EthAPICost"], ethOps)
 	if err != nil {
@@ -55,6 +44,17 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	}
 
 	err = checkForZeroUint64Fields(*ethOps)
+	if err != nil {
+		return nil, err
+	}
+
+	bigIntOps := &BigIntAPICost{}
+	err = mapstructure.Decode(gasMap["BigIntAPICost"], bigIntOps)
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkForZeroUint64Fields(*bigIntOps)
 	if err != nil {
 		return nil, err
 	}
@@ -183,9 +183,14 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetShardOfAddress"] = value
 	gasMap["GetExternalBalance"] = value
 	gasMap["GetBlockHash"] = value
+<<<<<<< HEAD
 	gasMap["GetOriginalTxHash"] = value
 	gasMap["GetCurrentTxHash"] = value
 	gasMap["GetPrevTxHash"] = value
+||||||| b382eecc
+=======
+	gasMap["GetOriginalTxHash"] = value
+>>>>>>> master
 	gasMap["TransferValue"] = value
 	gasMap["GetArgument"] = value
 	gasMap["GetFunction"] = value
@@ -327,6 +332,7 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap["UnmarshalECC"] = value
 	gasMap["UnmarshalCompressedECC"] = value
 	gasMap["GenerateKeyECC"] = value
+	gasMap["EncodeDERSig"] = value
 
 	return gasMap
 }
@@ -335,9 +341,13 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["MBufferNew"] = value
 	gasMap["MBufferNewFromBytes"] = value
-	gasMap["MBufferSetBytes"] = value
 	gasMap["MBufferGetLength"] = value
 	gasMap["MBufferGetBytes"] = value
+	gasMap["MBufferGetByteSlice"] = value
+	gasMap["MBufferCopyByteSlice"] = value
+	gasMap["MBufferSetBytes"] = value
+	gasMap["MBufferAppend"] = value
+	gasMap["MBufferAppendBytes"] = value
 	gasMap["MBufferToBigIntUnsigned"] = value
 	gasMap["MBufferToBigIntSigned"] = value
 	gasMap["MBufferFromBigIntUnsigned"] = value
@@ -346,6 +356,7 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferStorageLoad"] = value
 	gasMap["MBufferGetArgument"] = value
 	gasMap["MBufferFinish"] = value
+	gasMap["MBufferSetRandom"] = value
 
 	return gasMap
 }

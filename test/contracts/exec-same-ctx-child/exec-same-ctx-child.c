@@ -106,27 +106,33 @@ void childFunction_BigInts() {
 	long long b = bigIntGetInt64(intB);
 	long long c = bigIntGetInt64(intC);
 
-	if (a != 84) {
+	// The parent sent bigInt ID 0 as argument, but since the parent bigInt context is
+	// separate from the child, the ID 0 was already taken inside didCallerPay(),
+	// and now it equals to 99, the call value.
+	if (a != 99) {
 		not_ok();
+		byte msg[] = "nr a";
+		finish(msg, 4);
 		int64finish(a);
-		status = 1;
 	}
-	if (b != 96) {
+	if (b != 0) {
 		not_ok();
+		byte msg[] = "nr b";
+		finish(msg, 4);
 		int64finish(b);
-		status = 1;
 	}
-	if (c != 1024) {
+	if (c != 0) {
 		not_ok();
+		byte msg[] = "nr c";
+		finish(msg, 4);
 		int64finish(c);
-		status = 1;
 	}
 
-	// BigInt ID 3 was taken by didCallerPay(). The parent already had IDs 0, 1,
-	// and 2. Next ID available is 4.
 	bigInt intX = bigIntNew(256);
-	if (intX != 4) {
+	if (intX != 3) {
 		not_ok();
+		byte msg[] = "nr x";
+		finish(msg, 4);
 		int64finish(intX);
 		status = 1;
 	}
@@ -134,6 +140,9 @@ void childFunction_BigInts() {
 	if (status == 0) {
 		byte msg[] = "child ok";
 		finish(msg, 8);
+	} else {
+		byte msg[] = "child not ok";
+		finish(msg, 12);
 	}
 }
 

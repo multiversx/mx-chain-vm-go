@@ -5,13 +5,13 @@
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:payable-features": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
                     "code": "file:../output/payable-features.wasm"
                 },
-                "address:an_account": {
+                "address:an-account": {
                     "nonce": "0",
                     "balance": "1,000,000,000,000",
                     "storage": {},
@@ -27,8 +27,8 @@
             "step": "scCall",
             "txId": "payable_egld_4.1",
             "tx": {
-                "from": "address:an_account",
-                "to": "sc:basic-features",
+                "from": "address:an-account",
+                "to": "sc:payable-features",
                 "value": "0",
                 "function": "payable_egld_4",
                 "arguments": [],
@@ -36,7 +36,10 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0", "str:EGLD" ],
+                "out": [
+                    "0",
+                    "str:EGLD"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -47,8 +50,8 @@
             "step": "scCall",
             "txId": "payable_egld_4.2",
             "tx": {
-                "from": "address:an_account",
-                "to": "sc:basic-features",
+                "from": "address:an-account",
+                "to": "sc:payable-features",
                 "value": "5",
                 "function": "payable_egld_4",
                 "arguments": [],
@@ -56,7 +59,10 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "5", "str:EGLD" ],
+                "out": [
+                    "5",
+                    "str:EGLD"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -67,8 +73,8 @@
             "step": "scCall",
             "txId": "payable_egld_4.3",
             "tx": {
-                "from": "address:an_account",
-                "to": "sc:basic-features",
+                "from": "address:an-account",
+                "to": "sc:payable-features",
                 "value": "0",
                 "esdt": {
                     "tokenIdentifier": "str:PAYABLE-FEATURES-TOKEN",

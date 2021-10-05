@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -22,6 +22,7 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 
 	scenario := &mj.Scenario{
 		CheckGas:    true,
+		TraceGas:    false,
 		GasSchedule: mj.GasScheduleDefault,
 	}
 
@@ -43,6 +44,12 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 				return nil, errors.New("scenario checkGas flag is not boolean")
 			}
 			scenario.CheckGas = bool(*checkGasOJ)
+		case "traceGas":
+			traceGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
+			if !isBool {
+				return nil, errors.New("scenario traceGas flag is not boolean")
+			}
+			scenario.TraceGas = bool(*traceGasOJ)
 		case "gasSchedule":
 			scenario.GasSchedule, err = p.parseGasSchedule(kvp.Value)
 			if err != nil {
@@ -129,7 +136,8 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 	case "":
 		return nil, errors.New("no step type field provided")
 	case mj.StepNameExternalSteps:
-		step := &mj.ExternalStepsStep{}
+		traceGasStatus := mj.Undefined
+		step := &mj.ExternalStepsStep{TraceGas: traceGasStatus}
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
@@ -137,6 +145,16 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 				step.Comment, err = p.parseString(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("bad externalSteps step comment: %w", err)
+				}
+			case "traceGas":
+				traceGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
+				if !isBool {
+					return nil, errors.New("scenario traceGas flag is not boolean")
+				}
+				if bool(*traceGasOJ) {
+					step.TraceGas = 1
+				} else {
+					step.TraceGas = 0
 				}
 			case "path":
 				step.Path, err = p.parseString(kvp.Value)

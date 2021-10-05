@@ -7,7 +7,7 @@ import (
 	"math"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -66,6 +66,9 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if err != nil {
 				return nil, err
 			}
+			if ae.PeekTraceGas() {
+				fmt.Println("\nIn txID:", txIndex, ", step type:Deploy", ", total gas used:", gasForExecution-output.GasRemaining)
+			}
 		case mj.ScQuery:
 			// imitates the behaviour of the protocol
 			// the sender is the contract itself during SC queries
@@ -78,6 +81,9 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			output, err = ae.scCall(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
+			}
+			if ae.PeekTraceGas() {
+				fmt.Println("\nIn txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
 			}
 		case mj.Transfer:
 			output = ae.simpleTransferOutput(tx)
