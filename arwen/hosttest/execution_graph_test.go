@@ -25,11 +25,6 @@ func TestGasUsed_SyncCalls_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// func TestGasUsed_SyncCallFail_CallGraph(t *testing.T) {
-// 	callGraph := test.CreateGraphTestOneSyncCallError()
-// 	runGraphCallTestTemplate(t, callGraph)
-// }
-
 func TestGasUsed_SyncCalls2_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncCalls2()
 	runGraphCallTestTemplate(t, callGraph)
@@ -285,22 +280,23 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	computeCallIDs(gasGraph)
 
 	// compute execution order (return data) assertions and compute gas assertions
-	// totalGasUsed, totalGasRemaining, expectedReturnData := computeExpectedValues(gasGraph)
-	_, _, expectedReturnData := computeExpectedValues(gasGraph)
+	expectedReturnData := computeExpectedValues(gasGraph)
+	totalGasUsed, totalGasRemaining := computeExpectedTotalGasValues(gasGraph)
 
-	// expected gas sanity check
-	// require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
+	// graph gas sanity check
+	require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
 
 	// account -> (key -> value)
 	storage := make(map[string]map[string][]byte)
-
-	globalReturnData := make([][]byte, 0)
 	crtTxNumber := 0
 
 	var currentVMOutput *vmcommon.VMOutput
 	// var lastErr error
 
 	runtimeConfigsForCalls := make(map[string]*test.RuntimeConfigOfCall)
+	callsReturnData := &test.CallsReturnData{
+		Data: make([][]byte, 0),
+	}
 
 	var crossShardCall *test.CrossShardCall
 	for !crossShardCallsQueue.IsEmpty() {
@@ -324,7 +320,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		currentVMOutput, _ /*lastErr*/ = test.BuildMockInstanceCallTest(t).
 			WithContracts(
-				test.CreateMockContractsFromAsyncTestCallGraph(callGraph, runtimeConfigsForCalls, testConfig)...,
+				test.CreateMockContractsFromAsyncTestCallGraph(callGraph, callsReturnData, runtimeConfigsForCalls, testConfig)...,
 			).
 			WithInput(test.CreateTestContractCallInputBuilder().
 				WithCallerAddr(crossShardCall.CallerAddress).
@@ -350,12 +346,12 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 			})
 
 		extractStores(currentVMOutput, storage)
-		globalReturnData = append(globalReturnData, currentVMOutput.ReturnData...)
 
 		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	checkReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, globalReturnData)
+	checkReturnDataWithGasValuesForGraphTesting(t, expectedReturnData, callsReturnData.Data)
+
 	// TODO matei-p adapt depending on run config
 	// test.NewVMOutputVerifier(t, currentVMOutput, lastErr).
 	// 	Ok().
@@ -438,71 +434,72 @@ func computeCallIDs(gasGraph *test.TestCallGraph) {
 		} else {
 			parent = node.Parent
 		}
-		// fmt.Println("compute callID for", string(node.Call.ContractAddress)+"_"+node.Call.FunctionName, "gasLimit", parent.GasLimit)
 
 		if parent != nil {
 			parent.NonGasEdgeCounter++
 			newCallID := append(parent.Call.CallID, big.NewInt(parent.NonGasEdgeCounter).Bytes()...)
 			newCallID, _ = gasGraph.Crypto.Sha256(newCallID)
 			node.Call.CallID = newCallID
-			// fmt.Println("label", node.Label, "CallID", newCallID)
 		}
 	})
 
 }
 
-func computeExpectedValues(gasGraph *test.TestCallGraph) (uint64, uint64, [][]byte) {
-	totalGasUsed := uint64(0)
-	totalGasRemaining := uint64(0)
+func computeExpectedValues(gasGraph *test.TestCallGraph) [][]byte {
 	expectedReturnData := make([][]byte, 0)
 
 	executionOrderTraversal(gasGraph, func(node *test.TestCallNode) {
 		parent := node.Parent
-		if !node.IsLeaf() {
-			if parent == nil {
-				totalGasRemaining += node.GasRemaining + node.GasAccumulated
-			} else if node.GetIncomingEdgeType() == testcommon.Callback || node.GetIncomingEdgeType() == testcommon.CallbackCrossShard {
-				totalGasRemaining += node.GasAccumulated
-			}
+		if !node.IsLeaf() ||
+			(parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail) {
 			return
 		}
-		if parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail {
-			// all gas is used for failed callss
-			totalGasUsed += parent.GasLimit
-			return
-		}
-
-		totalGasUsed += node.GasUsed
-
 		expectedNodeRetData := txDataBuilder.NewBuilder()
 		expectedNodeRetData.Func(parent.Call.FunctionName)
 		expectedNodeRetData.Str(string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix)
 		expectedNodeRetData.Int64(int64(parent.GasLimit))
 		expectedNodeRetData.Int64(int64(parent.GasRemaining))
 		expectedReturnData = append(expectedReturnData, expectedNodeRetData.ToBytes())
-
 		return
 	})
 
-	return totalGasUsed, totalGasRemaining, expectedReturnData
+	return expectedReturnData
 }
 
-func computeGasRemainingForNode(node *test.TestCallNode) {
-	var gasUsed uint64
-	for _, edge := range node.AdjacentEdges {
-		destNode := edge.To
-		if edge.To.IsGasLeaf() {
-			gasUsed += destNode.GasUsed
-		} else if edge.Type != testcommon.Callback && edge.Type != testcommon.CallbackCrossShard {
-			gasUsed += destNode.GasLimit + destNode.GasLocked - destNode.GasRemaining
-		}
-	}
-	node.GasRemaining = node.GasLimit - gasUsed
+func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
+	visits := make(map[uint]bool)
+	totalGasUsed := uint64(0)
+	totalGasRemaining := uint64(0)
+
+	graph.DfsFromNodeUntilFailures(graph.StartNode.Parent, graph.StartNode, nil, make([]*test.TestCallNode, 0),
+		func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
+			if node.IsLeaf() {
+				// fmt.Printf("node %s used %d\n", node.VisualLabel, node.GasUsed)
+				totalGasUsed += node.GasUsed
+				return node
+			}
+
+			// all gas is used for failed callss
+			if node.IncomingEdge != nil && node.IncomingEdge.Fail {
+				// fmt.Printf("failed %s used %d\n", node.VisualLabel, node.GasLimit)
+				totalGasUsed += node.GasLimit
+				return node
+			}
+
+			if parent == nil {
+				totalGasRemaining += node.GasRemaining + node.GasAccumulated
+			} else if node.GetIncomingEdgeType() == testcommon.Callback || node.GetIncomingEdgeType() == testcommon.CallbackCrossShard {
+				totalGasRemaining += node.GasAccumulated
+			}
+
+			return node
+		}, visits)
+
+	return totalGasUsed, totalGasRemaining
 }
 
 func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*test.TestCallEdge, crossShardCallsQueue *test.CrossShardCallsQueue) {
 	for _, crossShardEdge := range crossShardEdges {
-		edgeFromAddress := string(crossShardEdge.To.Parent.Call.ContractAddress)
 		edgeToAddress := string(crossShardEdge.To.Call.ContractAddress)
 		for _, outputAccount := range vmOutput.OutputAccounts {
 			transferDestinationAddress := string(outputAccount.Address)
@@ -511,7 +508,6 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 			}
 			for _, outputTransfer := range outputAccount.OutputTransfers {
 				callType := outputTransfer.CallType
-				transferSenderAddress := string(outputTransfer.SenderAddress)
 
 				argParser := parsers.NewCallArgsParser()
 				function, parsedArgs, _ := argParser.ParseData(string(outputTransfer.Data))
@@ -519,9 +515,7 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 				callID := parsedArgs[0]
 
 				var encodedArgs []byte
-				if edgeFromAddress == transferSenderAddress &&
-					bytes.Equal(callID, crossShardEdge.To.Call.CallID) &&
-					(callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) {
+				if bytes.Equal(callID, crossShardEdge.To.Call.CallID) {
 					fmt.Println(
 						"Found transfer from sender", string(outputTransfer.SenderAddress),
 						"to", string(outputAccount.Address),
@@ -539,8 +533,6 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 						encodedArgs = callData.ToBytes()
 					}
 					crossShardCallsQueue.Enqueue(outputTransfer.SenderAddress, crossShardEdge.To, callType, encodedArgs)
-					// "delete" info so we use the output transfer only once
-					outputTransfer.SenderAddress = nil
 				}
 			}
 		}

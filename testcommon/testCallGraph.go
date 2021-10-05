@@ -89,6 +89,7 @@ type TestCallNode struct {
 	CrtTxHash []byte
 
 	ShardID uint32
+	Fail    bool
 }
 
 // LeafLabel - special node label for leafs
@@ -117,6 +118,23 @@ func (node *TestCallNode) GetIncomingEdgeType() TestCallEdgeType {
 	return node.IncomingEdge.Type
 }
 
+// IsSync -
+func (node *TestCallNode) IsSync() bool {
+	return node.GetIncomingEdgeType() == Sync
+}
+
+// IsAsync -
+func (node *TestCallNode) IsAsync() bool {
+	incEdgeType := node.GetIncomingEdgeType()
+	return incEdgeType == Async || incEdgeType == AsyncCrossShard
+}
+
+// IsCallback -
+func (node *TestCallNode) IsCallback() bool {
+	incEdgeType := node.GetIncomingEdgeType()
+	return incEdgeType == Callback || incEdgeType == CallbackCrossShard
+}
+
 // Copy copyies the node call info into a new node
 func (node *TestCallNode) copy() *TestCallNode {
 	return &TestCallNode{
@@ -131,7 +149,8 @@ func (node *TestCallNode) copy() *TestCallNode {
 		GasRemaining: node.GasRemaining,
 		GasUsed:      node.GasUsed,
 		GasLocked:    node.GasLocked,
-		IncomingEdge: node.IncomingEdge,
+		// IncomingEdge: node.IncomingEdge,
+		Fail: node.Fail,
 	}
 }
 
@@ -197,6 +216,7 @@ func (edge *TestCallEdge) copy() *TestCallEdge {
 		GasUsedByCallback: edge.GasUsedByCallback,
 		GasLocked:         edge.GasLocked,
 		Label:             edge.Label,
+		Fail:              edge.Fail,
 	}
 }
 
@@ -224,6 +244,7 @@ func (edge *TestCallEdge) SetGasUsed(gasUsed uint64) *TestCallEdge {
 // SetFail - builder style setter
 func (edge *TestCallEdge) SetFail() *TestCallEdge {
 	edge.Fail = true
+	edge.To.Fail = true
 	return edge
 }
 
@@ -448,18 +469,6 @@ func (graph *TestCallGraph) dfsFromNode(parent *TestCallNode, node *TestCallNode
 	processNode processNodeFunc,
 	visits map[uint]bool,
 	followCrossShardEdges bool) *TestCallNode {
-	return graph.dfsFromNodeWithPostProcess(parent, node, incomingEdge, path, processNode,
-		func(path []*TestCallNode, parent, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-			return node
-		},
-		visits, followCrossShardEdges)
-}
-
-func (graph *TestCallGraph) dfsFromNodeWithPostProcess(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, path []*TestCallNode,
-	processNode processNodeFunc,
-	postProcessNode processNodeFunc,
-	visits map[uint]bool,
-	followCrossShardEdges bool) *TestCallNode {
 	if isVisited(node, visits) {
 		return node
 	}
@@ -476,10 +485,88 @@ func (graph *TestCallGraph) dfsFromNodeWithPostProcess(parent *TestCallNode, nod
 		if !followCrossShardEdges && (edge.Type == AsyncCrossShard || edge.Type == CallbackCrossShard) {
 			continue
 		}
-		processedNode := graph.dfsFromNodeWithPostProcess(processedParent, edge.To, edge, path, processNode, postProcessNode, visits, followCrossShardEdges)
-		postProcessNode(path, processedParent, processedNode, edge)
+		graph.dfsFromNode(processedParent, edge.To, edge, path, processNode, visits, followCrossShardEdges)
 	}
 	return processedParent
+}
+
+func (graph *TestCallGraph) dfsFromNodeRunningOrder(
+	parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, path []*TestCallNode,
+	processNode processNodeFunc,
+	postProcessNode processNodeFunc,
+	visits map[uint]bool) *TestCallNode {
+
+	if isVisited(node, visits) {
+		return node
+	}
+
+	path = append(path, node)
+	processNode(path, parent, node, incomingEdge)
+	// nodes configured as fail will stop DFS
+	if node.Fail {
+		// even if failed, async nodes need to traverse the callback branch
+		if node.IsAsync() {
+			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
+			if callbackEdge.To.IsCallback() {
+				graph.dfsFromNodeRunningOrder(node, callbackEdge.To, callbackEdge, path, processNode, postProcessNode, visits)
+			}
+		}
+		// stop DFS
+		return nil
+	}
+
+	setVisited(node, visits)
+
+	for _, edge := range node.AdjacentEdges {
+		processedNode := graph.dfsFromNodeRunningOrder(node, edge.To, edge, path, processNode, postProcessNode, visits)
+		// failed non-async branches will stop the DFS edge processing for current node
+		if processedNode == nil && !edge.To.IsAsync() {
+			// if the current node is an async node,
+			// it will also immediately fail the current node itself
+			if !node.IsAsync() {
+				return nil
+			}
+			// for async nodes with failed branches, we call the callback and don't fail the node
+			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
+			graph.dfsFromNodeRunningOrder(node, callbackEdge.To, callbackEdge, path, processNode, postProcessNode, visits)
+			break
+		}
+		postProcessNode(path, node, processedNode, edge)
+	}
+
+	return node
+}
+
+// DfsFromNodeUntilFailures will stop DFS going deeper at first encountered fail
+func (graph *TestCallGraph) DfsFromNodeUntilFailures(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge, path []*TestCallNode,
+	processNode processNodeFunc,
+	visits map[uint]bool) *TestCallNode {
+
+	if isVisited(node, visits) {
+		return node
+	}
+
+	path = append(path, node)
+	processNode(path, parent, node, incomingEdge)
+	// any failed node stops DFS (configured or not - due failure upstream propagation)
+	if incomingEdge != nil && incomingEdge.Fail {
+		// evan if failed, async nodes need to traverse the callback branch
+		if node.IsAsync() {
+			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
+			if callbackEdge.To.IsCallback() {
+				graph.DfsFromNodeUntilFailures(node, callbackEdge.To, callbackEdge, path, processNode, visits)
+			}
+		}
+		return node
+	}
+
+	setVisited(node, visits)
+
+	for _, edge := range node.AdjacentEdges {
+		graph.DfsFromNodeUntilFailures(node, edge.To, edge, path, processNode, visits)
+	}
+
+	return node
 }
 
 // DfsGraphFromNodePostOrder - standard post order DFS
@@ -631,6 +718,7 @@ func addAsyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallG
 			execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination)
 			if edge.CallbackFail {
 				execEdge.Fail = true
+				execEdge.To.Fail = true
 			}
 			if edge.Type == Async {
 				execEdge.Type = Callback
@@ -820,6 +908,7 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 			LogGraph.Trace("add edge " + parent.Label + " -> " + crtNode.Label)
 			pathEdge := path.edges[pathIdx-1]
 			newEdge := newGraph.addEdge(parent, crtNode)
+			newEdge.To.IncomingEdge = newEdge // these are edges in a tree
 			newEdge.copyAttributesFrom(pathEdge)
 		}
 	}
@@ -872,11 +961,12 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 		}
 	}
 
-	graph.dfsFromNodeWithPostProcess(graph.StartNode.Parent, graph.StartNode, nil, make([]*TestCallNode, 0),
+	graph.dfsFromNodeRunningOrder(graph.StartNode.Parent, graph.StartNode, nil, make([]*TestCallNode, 0),
 		func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 			if incomingEdge == nil || node.IsGasLeaf() {
 				return node
 			}
+
 			switch incomingEdge.Type {
 			case Sync:
 				node.ExecutionRound = parent.ExecutionRound
@@ -898,23 +988,17 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 			node.MaxSubtreeExecutionRound = node.ExecutionRound
 			getGasLeaf(node).ExecutionRound = node.ExecutionRound
 
-			// stop going deeper if node is failed
-			if node.IsIncomingEdgeFail() {
-				for _, edge := range node.AdjacentEdges {
-					if edge.Type != Callback && edge.Type != CallbackCrossShard {
-						setVisited(edge.To, visits)
-					}
-				}
-			}
-
 			return node
 		},
 		func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
+			if node == nil {
+				return node
+			}
 			if parent.MaxSubtreeExecutionRound < node.MaxSubtreeExecutionRound {
 				parent.MaxSubtreeExecutionRound = node.MaxSubtreeExecutionRound
 			}
 			return node
-		}, visits, true)
+		}, visits)
 }
 
 func getGasLeaf(node *TestCallNode) *TestCallNode {
@@ -973,7 +1057,8 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() ||
-			node.IsStartNode || (incomingEdge.Type != Callback && incomingEdge.Type != CallbackCrossShard) {
+			node.IsStartNode || (incomingEdge.Type != Callback && incomingEdge.Type != CallbackCrossShard) ||
+			!node.WillExecute() {
 			return node
 		}
 
