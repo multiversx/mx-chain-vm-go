@@ -473,34 +473,36 @@ func TestExecution_CallWasmerError(t *testing.T) {
 }
 
 func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
-	contract := test.CreateInstanceContract(test.ParentAddress).
-		WithCode(test.GetTestSCCode("misc", "../../"))
+	contractCode := test.GetTestSCCode("misc", "../../")
 
 	arwen.SetLoggingForTests()
 	log := logger.GetOrCreate("arwen/test")
 
-	gasRemainingBeforeChange := uint64(99076)
-	gasRemainingAfterChange := uint64(0)
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
 
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
 
-	test.BuildInstanceCallTest(t).WithContracts(contract).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(100000).
-			WithFunction("iterate_over_byte_array").Build()).
-		WithSetup(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub) {
-			gasSchedule := host.GetGasScheduleMap()
-			gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
-			host.GasScheduleChange(gasSchedule)
-		}).
-		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok()
-			gasRemainingAfterChange = verify.VmOutput.GasRemaining
-			require.NotEqual(t, gasRemainingAfterChange, gasRemainingBeforeChange)
-		})
-	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
-	log.Trace("gas difference after change", "gas", gasRemainingBeforeChange-gasRemainingAfterChange)
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
 
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
 }
 
 func TestExecution_CallSCMethod_Init(t *testing.T) {
