@@ -340,7 +340,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	}
 
 	async.SetResults(vmOutput)
-	async.SaveAsyncContextsFromStack()
+	async.SaveIncompleteContextAndItsStack()
 
 	gasSpentByChildContract := metering.GasSpentByContract()
 
@@ -893,7 +893,7 @@ func (host *vmHost) callSCMethod() error {
 			return err
 		}
 
-		asyncCall, _ := async.UpdateCurrentAsyncCallStatus(
+		asyncCall, err := async.UpdateCurrentAsyncCallStatus(
 			runtime.GetSCAddress(),
 			callerCallCallID,
 			async.GetCallerCallID(),
@@ -942,7 +942,7 @@ func (host *vmHost) callSCMethod() error {
 
 			if !async.IsComplete() {
 				async.SetResults(host.Output().GetVMOutput())
-				async.SaveAsyncContextsFromStack()
+				async.SaveIncompleteContextAndItsStack()
 				return nil
 			}
 		}

@@ -84,6 +84,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 					shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
 				}
 				node.ShardID = shardID
+				fmt.Println("-> shard of ", string(node.Call.ContractAddress), "is", node.ShardID)
 			} else {
 				shardID = node.ShardID
 			}
@@ -879,13 +880,18 @@ func CreateGraphTestOneAsyncCallbackFailCrossShard() *TestCallGraph {
 
 	sc1f1 := callGraph.AddStartNode("sc1", "f1", 500, 10)
 
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+	callGraph.AddSyncEdge(sc1f1, sc5f5).
+		SetGasLimit(400).
+		SetGasUsed(6)
+
 	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddAsyncCrossShardEdge(sc1f1, sc2f2, "cb1", "gr1").
+	callGraph.AddAsyncCrossShardEdge(sc5f5, sc2f2, "cb1", "gr1").
 		SetGasLimit(35).
 		SetGasUsed(7).
 		SetGasUsedByCallback(6).
 		SetCallbackFail()
-	sc1cb1 := callGraph.AddNode("sc1", "cb1")
+	sc5cb1 := callGraph.AddNode("sc5", "cb1")
 
 	sc3f3 := callGraph.AddNode("sc3", "f3")
 	callGraph.AddSyncEdge(sc2f2, sc3f3).
@@ -893,7 +899,7 @@ func CreateGraphTestOneAsyncCallbackFailCrossShard() *TestCallGraph {
 		SetGasUsed(4)
 
 	sc4f4 := callGraph.AddNode("sc4", "f4")
-	callGraph.AddSyncEdge(sc1cb1, sc4f4).
+	callGraph.AddSyncEdge(sc5cb1, sc4f4).
 		SetGasLimit(100).
 		SetGasUsed(40)
 
@@ -1370,6 +1376,29 @@ func CreateGraphTestOneAsyncCallCrossShard() *TestCallGraph {
 		SetGasUsedByCallback(6)
 
 	callGraph.AddNode("sc1", "cb1")
+
+	return callGraph
+}
+
+// CreateGraphTestOneAsyncCallCrossShard2 -
+func CreateGraphTestOneAsyncCallCrossShard2() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 500, 10)
+
+	sc2f2 := callGraph.AddNode("sc2", "f2")
+	callGraph.AddSyncEdge(sc1f1, sc2f2).
+		SetGasLimit(300).
+		SetGasUsed(20)
+
+	sc3f3 := callGraph.AddNode("sc3", "f3")
+
+	callGraph.AddAsyncCrossShardEdge(sc2f2, sc3f3, "cb1", "").
+		SetGasLimit(35).
+		SetGasUsed(7).
+		SetGasUsedByCallback(6)
+
+	callGraph.AddNode("sc2", "cb1")
 
 	return callGraph
 }

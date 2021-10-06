@@ -161,14 +161,22 @@ func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte,
 }
 
 // DefaultTestArwenForCallWithInstanceMocks creates an InstanceBuilderMock
-func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *worldmock.MockWorld, *contextmock.InstanceBuilderMock) {
+func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
 	world := worldmock.NewMockWorld()
+	return DefaultTestArwenForCallWithInstanceMocksAndWorld(tb, world)
+}
+
+// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an InstanceBuilderMock
+func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
+	if world == nil {
+		world = worldmock.NewMockWorld()
+	}
 	host := DefaultTestArwen(tb, world)
 
 	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 
-	return host, world, instanceBuilderMock
+	return host, instanceBuilderMock
 }
 
 // DefaultTestArwenForCallWithWorldMock creates a MockWorld

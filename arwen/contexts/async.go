@@ -675,9 +675,9 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
-// SaveAsyncContextsFromStack - save context and all it's stack parents to store
+// SaveIncompleteContextAndItsStack - save incomplete context and all it's stack parents to store
 // (if exists on stack are either sync or local async calls)
-func (context *asyncContext) SaveAsyncContextsFromStack() error {
+func (context *asyncContext) SaveIncompleteContextAndItsStack() error {
 	if !context.IsComplete() {
 		err := context.Save()
 		if err != nil {

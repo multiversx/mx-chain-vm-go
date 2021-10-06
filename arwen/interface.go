@@ -328,7 +328,7 @@ type AsyncContext interface {
 
 	LoadParentContext() error
 	Save() error
-	SaveAsyncContextsFromStack() error
+	SaveIncompleteContextAndItsStack() error
 	Delete() error
 
 	GetCallID() []byte
