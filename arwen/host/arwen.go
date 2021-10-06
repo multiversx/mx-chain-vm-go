@@ -287,7 +287,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
-	log.Warn("gas cost for Br", gasCostConfig.WASMOpcodeCost.Br, "as opcode ", opcodeCosts[wasmer.OpcodeBr])
+	log.Warn("gas cost in arwen", "for Br", gasCostConfig.WASMOpcodeCost.Br, "as opcode ", opcodeCosts[wasmer.OpcodeBr], "wasmer", wasmer.OpcodeBr)
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
