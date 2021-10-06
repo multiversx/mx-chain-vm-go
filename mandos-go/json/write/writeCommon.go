@@ -154,3 +154,8 @@ func checkUint64ToOJ(i mj.JSONCheckUint64) oj.OJsonObject {
 func stringToOJ(str string) oj.OJsonObject {
 	return &oj.OJsonString{Value: str}
 }
+
+func boolToOJ(val bool) oj.OJsonObject {
+	obj := oj.OJsonBool(val)
+	return &obj
+}
