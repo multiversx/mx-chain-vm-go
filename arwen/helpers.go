@@ -104,7 +104,7 @@ func SetLoggingForTests() {
 	logger.ToggleLoggerName(true)
 }
 
-// DisableLoggingForTests sets log level to *NONE
+// DisableLoggingForTests sets log level to *:NONE
 func DisableLoggingForTests() {
 	_ = logger.SetLogLevel("*:NONE")
 }
