@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,4 +37,23 @@ func TestBigInt(t *testing.T) {
 	result, err = p.parseBigInt("0x00", bigIntSignedBytes)
 	require.Nil(t, err)
 	require.True(t, big.NewInt(0).Cmp(result) == 0)
+}
+
+func TestParseBool(t *testing.T) {
+	p := Parser{}
+
+	objBool := oj.OJsonBool(false)
+	valueBool := p.parseBoolOrFalse(&objBool)
+	require.Equal(t, valueBool, false)
+
+	objBool = true
+	valueBool = p.parseBoolOrFalse(&objBool)
+	require.Equal(t, valueBool, true)
+
+	objStr := oj.OJsonString{Value: "my_str"}
+	valueBool = p.parseBoolOrFalse(&objStr)
+	require.Equal(t, valueBool, false)
+
+	valueBool = p.parseBoolOrFalse(nil)
+	require.Equal(t, valueBool, false)
 }

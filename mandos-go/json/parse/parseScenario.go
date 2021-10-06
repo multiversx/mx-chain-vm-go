@@ -267,6 +267,8 @@ func (p *Parser) parseTxStep(txType mj.TransactionType, stepMap *oj.OJsonMap) (*
 			if err != nil {
 				return nil, fmt.Errorf("bad tx step id: %w", err)
 			}
+		case "displayLogs":
+			step.DisplayLogs = p.parseBoolOrFalse(kvp.Value)
 		case "comment":
 			step.Comment, err = p.parseString(kvp.Value)
 			if err != nil {
