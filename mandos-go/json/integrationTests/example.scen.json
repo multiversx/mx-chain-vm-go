@@ -257,7 +257,6 @@
             "step": "scCall",
             "txId": "1c",
             "comment": "without logs",
-            "displayLogs": true,
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
@@ -338,6 +337,20 @@
             "tx": {
                 "to": "sc:delegation",
                 "value": "555,000,000"
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "5",
+            "displayLogs": true,
+            "tx": {
+                "to": "address:this_is_just_a_display_logs_test",
+                "function": "thisIsJustADisplayLogsTest",
+                "arguments": []
+            },
+            "expect": {
+                "out": [],
+                "status": ""
             }
         },
         {

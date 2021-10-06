@@ -43,17 +43,19 @@ func TestParseBool(t *testing.T) {
 	p := Parser{}
 
 	objBool := oj.OJsonBool(false)
-	valueBool := p.parseBoolOrFalse(&objBool)
-	require.Equal(t, valueBool, false)
+	valueBool, err := p.parseBool(&objBool)
+	require.Nil(t, err)
+	require.Equal(t, false,valueBool)
 
 	objBool = true
-	valueBool = p.parseBoolOrFalse(&objBool)
-	require.Equal(t, valueBool, true)
+	valueBool, err = p.parseBool(&objBool)
+	require.Nil(t, err)
+	require.Equal(t, true, valueBool)
 
 	objStr := oj.OJsonString{Value: "my_str"}
-	valueBool = p.parseBoolOrFalse(&objStr)
-	require.Equal(t, valueBool, false)
+	valueBool, err = p.parseBool(&objStr)
+	require.NotNil(t, err)
 
-	valueBool = p.parseBoolOrFalse(nil)
-	require.Equal(t, valueBool, false)
+	valueBool, err = p.parseBool(nil)
+	require.NotNil(t, err)
 }
