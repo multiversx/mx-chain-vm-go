@@ -274,6 +274,8 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
 	defer host.mutExecution.Unlock()
 
+	host.Clean()
+
 	log.Warn("GasSchedule change called in V4")
 
 	host.gasSchedule = newGasSchedule
