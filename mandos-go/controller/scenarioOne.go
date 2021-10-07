@@ -11,29 +11,12 @@ import (
 
 // RunSingleJSONScenario parses and prepares test, then calls testCallback.
 func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string) error {
-	var err error
-	contextPath, err = filepath.Abs(contextPath)
+	absContextPath, byteValue, err := manageFile(contextPath)
 	if err != nil {
 		return err
 	}
 
-	// Open our jsonFile
-	var jsonFile *os.File
-	jsonFile, err = os.Open(contextPath)
-	// if we os.Open returns an error then handle it
-	if err != nil {
-		return err
-	}
-
-	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return err
-	}
-
-	r.Parser.ExprInterpreter.FileResolver.SetContext(contextPath)
+	r.Parser.ExprInterpreter.FileResolver.SetContext(absContextPath)
 	scenario, parseErr := r.Parser.ParseScenarioFile(byteValue)
 
 	if r.RunsNewTest {
@@ -61,4 +44,42 @@ func saveModifiedScenario(toPath string, scenario *mj.Scenario) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (r *ScenarioRunner) ParseTestToScenario(contextPath string) (*mj.Scenario, error) {
+	absContextPath, byteValue, err := manageFile(contextPath)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Parser.ExprInterpreter.FileResolver.SetContext(absContextPath)
+	scenario, parseErr := r.Parser.ParseScenarioFile(byteValue)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	return scenario, parseErr
+}
+
+func manageFile(contextPath string) (absContextPath string, byteValue []byte, err error) {
+	absContextPath, err = filepath.Abs(contextPath)
+	if err != nil {
+		return "", nil, err
+	}
+
+	// Open our jsonFile
+	var jsonFile *os.File
+	jsonFile, err = os.Open(absContextPath)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		return "", nil, err
+	}
+
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, err = ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return "", nil, err
+	}
+	return absContextPath, byteValue, nil
 }
