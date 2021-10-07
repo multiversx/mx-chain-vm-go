@@ -1,6 +1,7 @@
 package arwenmandos
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
@@ -130,9 +131,17 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 		log.Trace("ExecuteTxStep", "comment", step.Comment)
 	}
 
+	if step.DisplayLogs {
+		arwen.SetLoggingForTests()
+	}
+
 	output, err := ae.executeTx(step.TxIdent, step.Tx)
 	if err != nil {
 		return nil, err
+	}
+
+	if step.DisplayLogs {
+		arwen.DisableLoggingForTests()
 	}
 
 	// check results

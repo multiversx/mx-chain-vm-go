@@ -141,6 +141,14 @@ func (p *Parser) parseString(obj oj.OJsonObject) (string, error) {
 	return str.Value, nil
 }
 
+func (p *Parser) parseBool(obj oj.OJsonObject) (bool, error) {
+	value, isBool := obj.(*oj.OJsonBool)
+	if !isBool {
+		return false, errors.New("not a bool value")
+	}
+	return bool(*value), nil
+}
+
 // IsStar returns whether check object is othe form "*".
 func IsStar(obj oj.OJsonObject) bool {
 	str, isStr := obj.(*oj.OJsonString)

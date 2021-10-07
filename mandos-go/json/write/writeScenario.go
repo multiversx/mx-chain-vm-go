@@ -81,6 +81,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
+			if step.DisplayLogs {
+				stepOJ.Put("displayLogs", boolToOJ(step.DisplayLogs))
+			}
 			stepOJ.Put("tx", transactionToScenarioOJ(step.Tx))
 			if step.Tx.Type.IsSmartContractTx() && step.ExpectedResult != nil {
 				stepOJ.Put("expect", resultToOJ(step.ExpectedResult))
