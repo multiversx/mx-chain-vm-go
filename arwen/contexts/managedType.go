@@ -179,9 +179,8 @@ func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
 func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
-	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 
-	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(DataCopyPerByte)))
+	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)))
 	maxGasBigInt := big.NewInt(0).SetUint64(basicMath.MaxUint64)
 	gasToUse := uint64(basicMath.MaxUint64)
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
