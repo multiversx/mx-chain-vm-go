@@ -623,6 +623,9 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 			WithFunction(parentFunctionChildCall).
 			WithGasProvided(test.GasProvided).
 			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
+		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				// test.ParentAddress
@@ -2130,14 +2133,17 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithArguments([]byte{0, 3}).
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
+		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.UserError().
 				ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 197420).
-				GasUsed(test.ChildAddress, 2534).
+				GasUsed(test.ParentAddress, 197285).
+				GasUsed(test.ChildAddress, 2525).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				GasRemaining(46).
+				GasRemaining(190).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).

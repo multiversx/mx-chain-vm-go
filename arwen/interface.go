@@ -328,8 +328,8 @@ type AsyncContext interface {
 
 	LoadParentContext() error
 	Save() error
-	SaveIncompleteContextAndItsStack() error
 	Delete() error
+	DeleteFromAddress(address []byte) error
 
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte
@@ -350,7 +350,7 @@ type AsyncContext interface {
 		returnMessage string) error
 
 	CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error
-	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64, gasToRestore uint64) (AsyncContext, error)
+	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (AsyncContext, error)
 
 	AccumulateGasFromPreviousState()
 	SetResults(vmOutput *vmcommon.VMOutput)

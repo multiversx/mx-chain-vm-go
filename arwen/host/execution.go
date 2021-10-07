@@ -340,7 +340,9 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	}
 
 	async.SetResults(vmOutput)
-	async.SaveIncompleteContextAndItsStack()
+	if !async.IsComplete() {
+		async.Save()
+	}
 
 	gasSpentByChildContract := metering.GasSpentByContract()
 
@@ -929,7 +931,7 @@ func (host *vmHost) callSCMethod() error {
 			err = host.checkFinalGasAfterExit()
 		}
 		if err != nil {
-			if callType != vm.AsynchronousCall {
+			if callType == vm.DirectCall {
 				log.Trace("call SC method failed", "error", err)
 				return err
 			}
@@ -942,7 +944,7 @@ func (host *vmHost) callSCMethod() error {
 
 			if !async.IsComplete() {
 				async.SetResults(host.Output().GetVMOutput())
-				async.SaveIncompleteContextAndItsStack()
+				async.Save()
 				return nil
 			}
 		}
@@ -957,12 +959,7 @@ func (host *vmHost) callSCMethod() error {
 		break
 	case vm.AsynchronousCallBack:
 		async.LoadParentContext()
-		rootAsyncContext, _ :=
-			async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft(), 0)
-		fmt.Println(
-			"rootAsyncContext", string(rootAsyncContext.GetAddress()),
-			"CallID", rootAsyncContext.GetCallID(),
-			"gas accumulated", rootAsyncContext.GetGasAccumulated())
+		async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
 	default:
 		err = arwen.ErrUnknownCallType
 	}

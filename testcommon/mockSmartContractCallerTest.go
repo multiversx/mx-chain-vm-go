@@ -61,16 +61,19 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func
 }
 
 // AndAssertResultsWithWorld provides the function that will aserts the results
-func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(world *worldmock.MockWorld, initializeContracts bool, assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) (*vmcommon.VMOutput, error) {
+func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(world *worldmock.MockWorld, createContractAccounts bool, assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) (*vmcommon.VMOutput, error) {
 	callerTest.assertResults = assertResults
-	return callerTest.runTest(world, initializeContracts)
+	if world == nil {
+		world = worldmock.NewMockWorld()
+	}
+	return callerTest.runTest(world, createContractAccounts)
 }
 
-func (callerTest *MockInstancesTestTemplate) runTest(world *worldmock.MockWorld, initializeContracts bool) (*vmcommon.VMOutput, error) {
+func (callerTest *MockInstancesTestTemplate) runTest(world *worldmock.MockWorld, createContractAccounts bool) (*vmcommon.VMOutput, error) {
 	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.t, world)
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.initialize(callerTest.t, host, imb, initializeContracts)
+		mockSC.initialize(callerTest.t, host, imb, createContractAccounts)
 	}
 
 	callerTest.setup(host, world)

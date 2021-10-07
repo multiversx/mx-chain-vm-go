@@ -675,25 +675,6 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
-// SaveIncompleteContextAndItsStack - save incomplete context and all it's stack parents to store
-// (if exists on stack are either sync or local async calls)
-func (context *asyncContext) SaveIncompleteContextAndItsStack() error {
-	if !context.IsComplete() {
-		err := context.Save()
-		if err != nil {
-			return err
-		}
-		for _, stackContext := range context.stateStack {
-			stackContext.host = context.host
-			err = stackContext.Save()
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (context *asyncContext) GetFirstUpstreamAsyncCallContext() arwen.AsyncContext {
 	for index := range context.stateStack {
 		index = len(context.stateStack) - 1 - index
@@ -767,7 +748,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	return gasToLock, nil
 }
 
-func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64, gasToRestore uint64) (arwen.AsyncContext, error) {
+func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (arwen.AsyncContext, error) {
 	// TODO matei-p change to debug logging
 	fmt.Println("NofityChildIsComplete")
 	fmt.Println("\taddress", string(context.address))
@@ -776,7 +757,6 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 	fmt.Println("\tcallerCallID", context.callerCallID)
 	fmt.Println("\tasyncCallIdentifier", asyncCallIdentifier)
 	fmt.Println("\tgasToAccumulate", gasToAccumulate)
-	fmt.Println("\tgasToRestore", gasToRestore)
 
 	context.CompleteChild(asyncCallIdentifier, gasToAccumulate)
 
@@ -786,14 +766,14 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 	} else {
 		// There are no more callbacks to return from other shards. The context can
 		// be deleted from storage.
-		err := context.Delete()
+		err := context.DeleteFromAddress(context.address)
+		// err := context.Delete()
 		if err != nil {
 			return nil, err
 		}
 
 		// if we reached first call, stop notification chain
 		if context.IsFirstCall() {
-			context.accumulateGas(gasToRestore)
 			return context, nil
 		}
 
@@ -807,15 +787,15 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 				return nil, err
 			}
 			if isComplete {
-				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0, 0)
+				return context.NotifyChildIsComplete(currentAsyncCallIdentifier, 0)
 			}
 		} else if context.callType == vm.AsynchronousCallBack {
 			currentAsyncCallIdentifier := context.GetCallerCallID()
 			context.LoadParentContext()
-			return context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext, 0)
+			return context.NotifyChildIsComplete(currentAsyncCallIdentifier, gasAccumulatedInNotifingContext)
 		} else if context.callType == vm.DirectCall {
 			context.LoadParentContext()
-			return context.NotifyChildIsComplete(nil, gasAccumulatedInNotifingContext, gasToRestore)
+			return context.NotifyChildIsComplete(nil, gasAccumulatedInNotifingContext)
 		}
 	}
 
@@ -913,7 +893,6 @@ func (context *asyncContext) Save() error {
 	address := context.address
 	callID := context.callID
 	storage := context.host.Storage()
-	// fmt.Println("save address", string(address), "callID", DebugPartialArrayToString(callID), "callsCounter", context.callsCounter)
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data, err := json.Marshal(context.toSerializable())
@@ -999,6 +978,14 @@ func (context *asyncContext) Delete() error {
 	storage := context.host.Storage()
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, context.callID)
 	_, err := storage.SetProtectedStorage(storageKey, nil)
+	return err
+}
+
+// Delete deletes the persisted state of the AsyncContext from the contract storage.
+func (context *asyncContext) DeleteFromAddress(address []byte) error {
+	storage := context.host.Storage()
+	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, context.callID)
+	_, err := storage.SetProtectedStorageToAddress(address, storageKey, nil)
 	return err
 }
 
@@ -1110,7 +1097,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 	err := output.Transfer(
 		destination,
 		sender,
-		gasLeft, // TODO matei-p de discutat cu camil
+		gasLeft,
 		0,
 		currentCall.CallValue,
 		data,

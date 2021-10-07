@@ -84,7 +84,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 					shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
 				}
 				node.ShardID = shardID
-				fmt.Println("-> shard of ", string(node.Call.ContractAddress), "is", node.ShardID)
+				// fmt.Println("-> shard of ", string(node.Call.ContractAddress), "is", node.ShardID)
 			} else {
 				shardID = node.ShardID
 			}

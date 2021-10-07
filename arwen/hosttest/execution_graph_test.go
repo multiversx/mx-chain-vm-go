@@ -109,25 +109,25 @@ func TestGasUsed_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -143,25 +143,25 @@ func TestGasUsed_CallbackCallsSync_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -182,13 +182,13 @@ func TestGasUsed_SyncAndAsync3_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_SyncAndAsync4_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_SyncAndAsync5_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync5()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -209,55 +209,55 @@ func TestGasUsed_SyncAndAsync8_CallGraph(t *testing.T) {
 }
 
 func TestGasUsed_SyncAndAsync9_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync9()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard5()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard8()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGasUsed_AsyncCall9_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -356,7 +356,6 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	// TODO matei-p enable this check
 	checkThatStoreIsEmpty(t, world)
 
 	checkReturnDataWithGasValuesForGraphTesting(t, expectedCallFinishData, callsFinishData.Data)
