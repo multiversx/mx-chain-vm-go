@@ -172,6 +172,8 @@ func NewArwenVM(
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
+	log.Warn("gas cost in new arwen", "for Br", gasCostConfig.WASMOpcodeCost.Br, "as opcode ", opcodeCosts[wasmer.OpcodeBr], "wasmer", wasmer.OpcodeBr)
+
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
