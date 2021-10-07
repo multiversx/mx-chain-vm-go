@@ -487,7 +487,6 @@ Changes to be committed:
 
 Unmerged paths:
   (use "git add/rm <file>..." as appropriate to mark resolution)
-	both modified:   arwen/host/arwen.go
 	deleted by us:   arwen/host/asyncCall.go
 
 Untracked files:

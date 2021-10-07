@@ -16,6 +16,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/atomic"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -49,14 +50,10 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
-<<<<<<< HEAD
 	callArgsParser       arwen.CallArgsParser
-||||||| b382eecc
-=======
 
 	multiESDTTransferAsyncCallBackEnableEpoch uint32
 	flagMultiESDTTransferAsyncCallBack        atomic.Flag
->>>>>>> master
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -94,12 +91,8 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
-<<<<<<< HEAD
 		callArgsParser:       parsers.NewCallArgsParser(),
-||||||| b382eecc
-=======
 		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
->>>>>>> master
 	}
 
 	var err error
