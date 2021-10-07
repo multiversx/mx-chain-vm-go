@@ -36,60 +36,46 @@ func (p *Parser) processESDTData(
 	}
 }
 
-// map containing other fields too, e.g.:
+// Map containing ESDT fields, e.g.:
 // {
-// 	"balance": "400,000,000,000",
+// 	"instances": [ ... ],
+//  "lastNonce": "5",
 // 	"frozen": "true"
 // }
 func (p *Parser) processESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
 	esdtData := mj.ESDTData{
 		TokenIdentifier: tokenName,
 	}
-	// var err error
-	firstInstance := &mj.ESDTInstance{}
-	firstInstanceLoaded := false
-	var explicitInstances []*mj.ESDTInstance
+	var err error
 
 	for _, kvp := range esdtDataMap.OrderedKV {
-		// it is allowed to load the instance directly, fields set to the first instance
-		instanceFieldLoaded, err := p.tryProcessESDTInstanceField(kvp, firstInstance)
-		if err != nil {
-			return nil, fmt.Errorf("invalid account ESDT instance field: %w", err)
-		}
-		if instanceFieldLoaded {
-			firstInstanceLoaded = true
-		} else {
-			switch kvp.Key {
-			case "instances":
-				explicitInstances, err = p.processESDTInstances(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("invalid account ESDT instances: %w", err)
-				}
-			case "lastNonce":
-				esdtData.LastNonce, err = p.processUint64(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("invalid account ESDT lastNonce: %w", err)
-				}
-			case "roles":
-				esdtData.Roles, err = p.processStringList(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("invalid account ESDT roles: %w", err)
-				}
-			case "frozen":
-				esdtData.Frozen, err = p.processUint64(kvp.Value)
-				if err != nil {
-					return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
-				}
-			default:
-				return nil, fmt.Errorf("unknown ESDT data field: %s", kvp.Key)
-			}
-		}
-	}
 
-	if firstInstanceLoaded {
-		esdtData.Instances = []*mj.ESDTInstance{firstInstance}
+		switch kvp.Key {
+		case "instances":
+			esdtData.Instances, err = p.processESDTInstances(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account ESDT instances: %w", err)
+			}
+		case "lastNonce":
+			esdtData.LastNonce, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account ESDT lastNonce: %w", err)
+			}
+		case "roles":
+			esdtData.Roles, err = p.processStringList(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid account ESDT roles: %w", err)
+			}
+		case "frozen":
+			esdtData.Frozen, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
+			}
+		default:
+			return nil, fmt.Errorf("unknown ESDT data field: %s", kvp.Key)
+		}
+
 	}
-	esdtData.Instances = append(esdtData.Instances, explicitInstances...)
 
 	return &esdtData, nil
 }

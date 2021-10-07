@@ -53,9 +53,7 @@ func esdtItemToOJ(esdtItem *mj.ESDTData) oj.OJsonObject {
 	esdtItemOJ := oj.NewMap()
 
 	// instances
-	if len(esdtItem.Instances) == 1 {
-		appendESDTInstanceToOJ(esdtItem.Instances[0], esdtItemOJ)
-	} else {
+	if len(esdtItem.Instances) > 0 {
 		var convertedList []oj.OJsonObject
 		for _, esdtInstance := range esdtItem.Instances {
 			esdtInstanceOJ := oj.NewMap()

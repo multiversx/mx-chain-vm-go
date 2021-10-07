@@ -16,8 +16,12 @@
                         "str:TOK-123": "1000",
                         "str:OTHERTOK-123": "500",
                         "str:SFT-123": {
-                            "nonce": "5",
-                            "balance": "20"
+                            "instances": [
+                                {
+                                    "nonce": "5",
+                                    "balance": "20"
+                                }
+                            ]
                         }
                     },
                     "storage": {},
