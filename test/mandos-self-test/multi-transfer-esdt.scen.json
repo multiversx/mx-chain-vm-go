@@ -11,8 +11,12 @@
                         "str:TOK-123": "150",
                         "str:OTHERTOK-123": "500",
                         "str:NFT-123": {
-                            "nonce": "5",
-                            "balance": "20"
+                            "instances": [
+                                {
+                                    "nonce": "5",
+                                    "balance": "20"
+                                }
+                            ]
                         }
                     },
                     "storage": {},
@@ -62,8 +66,12 @@
                         "str:TOK-123": "50",
                         "str:OTHERTOK-123": "100",
                         "str:NFT-123": {
-                            "nonce": "5",
-                            "balance": "10"
+                            "instances": [
+                                {
+                                    "nonce": "5",
+                                    "balance": "10"
+                                }
+                            ]
                         }
                     },
                     "storage": {},
@@ -75,8 +83,12 @@
                         "str:TOK-123": "100",
                         "str:OTHERTOK-123": "400",
                         "str:NFT-123": {
-                            "nonce": "5",
-                            "balance": "10"
+                            "instances": [
+                                {
+                                    "nonce": "5",
+                                    "balance": "10"
+                                }
+                            ]
                         }
                     },
                     "storage": {},
