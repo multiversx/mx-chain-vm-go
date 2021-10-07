@@ -192,6 +192,10 @@ func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
 }
 
+// RemoveNonUpdatedStorage mocked method
+func (o *OutputContextMock) RemoveNonUpdatedStorage() {
+}
+
 // DeployCode mocked method
 func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
 }

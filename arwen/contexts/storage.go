@@ -193,6 +193,7 @@ func (context *storageContext) isElrondReservedKey(key []byte) bool {
 	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
 }
 
+// SetProtectedStorage sets storage for timelocks and promises
 func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	context.disableStorageProtection()
 	defer context.enableStorageProtection()
@@ -248,8 +249,9 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	}
 
 	newUpdate := &vmcommon.StorageUpdate{
-		Offset: key,
-		Data:   make([]byte, length),
+		Offset:  key,
+		Data:    make([]byte, length),
+		Written: true,
 	}
 	copy(newUpdate.Data[:length], value[:length])
 	storageUpdates[strKey] = newUpdate
