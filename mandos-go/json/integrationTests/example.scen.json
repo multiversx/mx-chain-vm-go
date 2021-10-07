@@ -20,15 +20,29 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "balance": "400,000,000,000",
+                            "instances": [
+                                {
+                                    "nonce": "0",
+                                    "balance": "400,000,000,000"
+                                }
+                            ],
                             "frozen": "false"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
-                            "balance": "400,000,000,000",
+                            "instances": [
+                                {
+                                    "nonce": "0",
+                                    "balance": "400,000,000,000"
+                                }
+                            ],
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
-                            "nonce": "1023",
+                            "instances": [
+                                {
+                                    "nonce": "1023"
+                                }
+                            ],
                             "roles": [
                                 "role1",
                                 "role2"
@@ -350,16 +364,29 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "balance": "400,000,000,000",
+                            "instances": [
+                                {
+                                    "nonce": "0",
+                                    "balance": "400,000,000,000"
+                                }
+                            ],
                             "frozen": "*"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
-                            "nonce": "*",
-                            "balance": "*",
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "*"
+                                }
+                            ],
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
-                            "nonce": "1023",
+                            "instances": [
+                                {
+                                    "nonce": "1023"
+                                }
+                            ],
                             "roles": [
                                 "role1",
                                 "role2"
