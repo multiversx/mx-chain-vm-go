@@ -93,7 +93,7 @@ func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuil
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
-		logRuntime.Error("create instance", "error", arwen.ErrMaxInstancesReached)
+		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
 
@@ -623,7 +623,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 	if context.callFunction == arwen.CallbackFunctionName {
 		// TODO rewrite this condition, until the AsyncContext is merged
-		logRuntime.Error("get function to call", "error", arwen.ErrNilCallbackFunction)
+		logRuntime.Trace("get function to call", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 
