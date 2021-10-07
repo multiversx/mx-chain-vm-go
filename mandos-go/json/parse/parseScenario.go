@@ -77,12 +77,10 @@ func (p *Parser) parseGasSchedule(value oj.OJsonObject) (mj.GasSchedule, error) 
 		return mj.GasScheduleDefault, nil
 	case "dummy":
 		return mj.GasScheduleDummy, nil
-	case "v1":
-		return mj.GasScheduleV1, nil
-	case "v2":
-		return mj.GasScheduleV2, nil
 	case "v3":
 		return mj.GasScheduleV3, nil
+	case "v4":
+		return mj.GasScheduleV4, nil
 	default:
 		return mj.GasScheduleDummy, fmt.Errorf("invalid gasSchedule: %s", gasScheduleStr)
 	}

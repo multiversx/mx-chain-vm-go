@@ -44,6 +44,7 @@ type OutputContextStub struct {
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
+	RemoveNonUpdatedStorageCalled     func()
 }
 
 // AddToActiveState mocked method
@@ -260,6 +261,13 @@ func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 		return o.GetVMOutputCalled()
 	}
 	return nil
+}
+
+// GetVMOutput mocked method
+func (o *OutputContextStub) RemoveNonUpdatedStorage() {
+	if o.RemoveNonUpdatedStorageCalled != nil {
+		o.RemoveNonUpdatedStorageCalled()
+	}
 }
 
 // AddTxValueToAccount mocked method

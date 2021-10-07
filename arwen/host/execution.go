@@ -86,6 +86,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
+	output.RemoveNonUpdatedStorage()
 	vmOutput := output.GetVMOutput()
 	runtime.CleanWasmerInstance()
 	return vmOutput, nil
@@ -185,6 +186,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
+	output.RemoveNonUpdatedStorage()
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",

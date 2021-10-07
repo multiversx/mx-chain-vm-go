@@ -175,12 +175,10 @@ func gasScheduleToOJ(gasSchedule mj.GasSchedule) oj.OJsonObject {
 		return stringToOJ("default")
 	case mj.GasScheduleDummy:
 		return stringToOJ("dummy")
-	case mj.GasScheduleV1:
-		return stringToOJ("v1")
-	case mj.GasScheduleV2:
-		return stringToOJ("v2")
 	case mj.GasScheduleV3:
 		return stringToOJ("v3")
+	case mj.GasScheduleV4:
+		return stringToOJ("v4")
 	default:
 		return stringToOJ("")
 	}

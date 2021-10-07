@@ -213,6 +213,7 @@ type OutputContext interface {
 	PrependFinish(data []byte)
 	DeleteFirstReturnData()
 	GetVMOutput() *vmcommon.VMOutput
+	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput

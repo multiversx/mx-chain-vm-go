@@ -103,12 +103,10 @@ func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSc
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
-	case mj.GasScheduleV1:
-		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV1())
-	case mj.GasScheduleV2:
-		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV2())
 	case mj.GasScheduleV3:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+	case mj.GasScheduleV4:
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}

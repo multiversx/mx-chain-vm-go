@@ -618,7 +618,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -657,7 +657,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -680,7 +680,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			finalBuffer := make([]byte, 0)
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				finalBuffer = append(finalBuffer, randomBuffer...)
 			}
 			verify.
@@ -703,7 +703,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -725,7 +725,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -747,7 +747,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -769,7 +769,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -795,8 +795,8 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -831,8 +831,8 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -1776,7 +1776,6 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(nil),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
@@ -2566,8 +2565,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 				GasUsed(childAddress, 472).
 				// other
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
-				Storage(
-					test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+				Storage()
 		})
 }
 
