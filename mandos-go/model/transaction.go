@@ -22,7 +22,7 @@ const (
 	ValidatorReward
 )
 
-// HasSender is a helper function to indicate if transaction has `to` field.
+// HasSender is a helper function to indicate if transaction has `from` field.
 func (tt TransactionType) HasSender() bool {
 	return tt != ScQuery && tt != ValidatorReward
 }
