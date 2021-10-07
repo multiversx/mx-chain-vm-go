@@ -16,9 +16,9 @@ var addressAdder = []byte{0, 0, 0, 0, 0, 0, 0, 0, 97, 100, 100, 101, 114, 95, 95
 
 func TestGetAccountsAndTransactionsFromAdder(t *testing.T) {
 	accounts, scAccounts, transactions, err := GetAccountsAndTransactionsFromMandos("./mandos/adder.scen.json")
-	expectedAccs := make([]*testAccount, 0)
-	expectedScAccs := make([]*testAccount, 0)
-	expectedTxs := make([]*transaction, 0)
+	expectedAccs := make([]*TestAccount, 0)
+	expectedScAccs := make([]*TestAccount, 0)
+	expectedTxs := make([]*Transaction, 0)
 	adderSCAcc := NewTestAccount().WithAddress(addressAdder)
 
 	expectedAccs = append(expectedAccs, NewTestAccount().WithAddress(addressOwner).WithNonce(1))

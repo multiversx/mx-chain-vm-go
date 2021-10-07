@@ -15,7 +15,7 @@ var errNoStepsProvided = errors.New("no steps were provided")
 
 var errStepIsNotTxStep = errors.New("step is not deploy or scCall")
 
-func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*testAccount, scAccounts []*testAccount, txs []*transaction, err error) {
+func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, scAccounts []*TestAccount, txs []*Transaction, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
 		return nil, nil, nil, err
@@ -28,9 +28,9 @@ func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*te
 	return accounts, scAccounts, txs, nil
 }
 
-func setAccounts(setStateStep *mj.SetStateStep) (userAccounts []*testAccount, scAccounts []*testAccount, err error) {
-	accounts := make([]*testAccount, 0)
-	scAccounts = make([]*testAccount, 0)
+func setAccounts(setStateStep *mj.SetStateStep) (userAccounts []*TestAccount, scAccounts []*TestAccount, err error) {
+	accounts := make([]*TestAccount, 0)
+	scAccounts = make([]*TestAccount, 0)
 	// append accounts
 	for _, mandosAccount := range setStateStep.Accounts {
 		if mandosAccount.Code.Value != nil {
@@ -64,7 +64,7 @@ func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 	return scenario, err
 }
 
-func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*testAccount, scAccounts []*testAccount, txs []*transaction, err error) {
+func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccount, scAccounts []*TestAccount, txs []*Transaction, err error) {
 	if len(steps) == 0 {
 		return nil, nil, nil, errNoStepsProvided
 	}
@@ -79,7 +79,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*testAccou
 			return nil, nil, nil, err
 		}
 	}
-	txs = make([]*transaction, 0)
+	txs = make([]*Transaction, 0)
 
 	for i := 1; i < len(steps); i++ {
 		switch txStep := steps[i].(type) {
@@ -119,7 +119,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*testAccou
 	return accounts, scAccounts, txs, nil
 }
 
-func convertMandosToTestAccount(mandosAcc *mj.Account) (*testAccount, error) {
+func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
 	if len(mandosAcc.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
 	}
