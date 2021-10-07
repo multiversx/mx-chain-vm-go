@@ -164,7 +164,7 @@ func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen in
 	gasToUse := uint64(0)
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
-		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)
 		metering.UseAndTraceGas(gasToUse)
 	}
 }

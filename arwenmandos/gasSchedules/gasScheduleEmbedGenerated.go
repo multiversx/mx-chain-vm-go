@@ -176,6 +176,7 @@ const (
     BigIntGetSignedArgument     = 1000
     BigIntGetCallValue          = 1000
     BigIntGetExternalBalance    = 10000
+    CopyPerByteForTooBig        = 1000
 
 [CryptoAPICost]
     SHA256                 = 1000000
@@ -836,6 +837,7 @@ const (
     BigIntGetSignedArgument     = 1000
     BigIntGetCallValue          = 1000
     BigIntGetExternalBalance    = 10000
+    CopyPerByteForTooBig        = 1000
 
 [CryptoAPICost]
     SHA256                 = 1000000
