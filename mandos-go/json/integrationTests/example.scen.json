@@ -340,6 +340,20 @@
             }
         },
         {
+            "step": "scQuery",
+            "txId": "5",
+            "displayLogs": true,
+            "tx": {
+                "to": "address:this_is_just_a_display_logs_test",
+                "function": "thisIsJustADisplayLogsTest",
+                "arguments": []
+            },
+            "expect": {
+                "out": [],
+                "status": ""
+            }
+        },
+        {
             "step": "checkState",
             "comment": "check that previous tx did the right thing",
             "accounts": {
