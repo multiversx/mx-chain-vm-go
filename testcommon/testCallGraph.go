@@ -12,13 +12,16 @@ import (
 // DefaultCallGraphLockedGas is the default gas locked value
 const DefaultCallGraphLockedGas = 150
 
+const FakeCallbackName = "<>"
+
 var logTestGraph = logger.GetOrCreate("arwen/testgraph")
 
 // TestCall represents the payload of a node in the call graph
 type TestCall struct {
-	ContractAddress []byte
-	FunctionName    string
-	CallID          []byte
+	ContractAddress    []byte
+	FunctionName       string
+	CallID             []byte
+	OriginalContractID string
 }
 
 // ToString - string representatin of a TestCall
@@ -28,17 +31,19 @@ func (call *TestCall) ToString() string {
 
 func (call *TestCall) copy() *TestCall {
 	return &TestCall{
-		ContractAddress: call.ContractAddress,
-		FunctionName:    call.FunctionName,
-		CallID:          call.CallID,
+		ContractAddress:    call.ContractAddress,
+		FunctionName:       call.FunctionName,
+		CallID:             call.CallID,
+		OriginalContractID: call.OriginalContractID,
 	}
 }
 
 func buildTestCall(contractID string, functionName string) *TestCall {
 	return &TestCall{
-		ContractAddress: MakeTestSCAddress(contractID),
-		FunctionName:    functionName,
-		CallID:          []byte{1}, // initial callID, should be updated when an edge is added
+		ContractAddress:    MakeTestSCAddress(contractID),
+		FunctionName:       functionName,
+		CallID:             []byte{1},  // initial callID, should be updated when an edge is added
+		OriginalContractID: contractID, // used for fake cross shard callbacks scenarios
 	}
 }
 
@@ -133,6 +138,16 @@ func (node *TestCallNode) IsAsync() bool {
 func (node *TestCallNode) IsCallback() bool {
 	incEdgeType := node.GetIncomingEdgeType()
 	return incEdgeType == Callback || incEdgeType == CallbackCrossShard
+}
+
+// HasCallback -
+func (node *TestCallNode) HasCallback() bool {
+	for _, edge := range node.AdjacentEdges {
+		if edge.Type == Callback || edge.Type == CallbackCrossShard {
+			return true
+		}
+	}
+	return false
 }
 
 // Copy copyies the node call info into a new node
@@ -230,6 +245,9 @@ func (edge *TestCallEdge) SetGasLimit(gasLimit uint64) *TestCallEdge {
 func (edge *TestCallEdge) SetGasUsedByCallback(gasUsedByCallback uint64) *TestCallEdge {
 	if edge.Type != Async && edge.Type != AsyncCrossShard {
 		panic("Callbacks are only for async edges")
+	}
+	if edge.Callback == FakeCallbackName && gasUsedByCallback != 0 {
+		panic("Callbacks not present, can't use gas")
 	}
 	edge.GasUsedByCallback = gasUsedByCallback
 	return edge
@@ -373,12 +391,20 @@ func (graph *TestCallGraph) AddAsyncCrossShardEdge(from *TestCallNode, to *TestC
 }
 
 func (graph *TestCallGraph) addAsyncEdgeWithType(edgeType TestCallEdgeType, from *TestCallNode, to *TestCallNode, callBack string, group string) *TestCallEdge {
+	gasLocked := uint64(0)
+	if callBack != "" {
+		gasLocked = DefaultCallGraphLockedGas
+	} else if edgeType == AsyncCrossShard {
+		callBack = FakeCallbackName
+		graph.AddNode(from.Call.OriginalContractID, callBack)
+	}
+
 	edge := &TestCallEdge{
 		Type:     edgeType,
 		Callback: callBack,
 		// Group:     group,
 		To:        to,
-		GasLocked: DefaultCallGraphLockedGas,
+		GasLocked: gasLocked,
 	}
 	edge.setAsyncEdgeAttributes(group, callBack)
 	from.AdjacentEdges = append(from.AdjacentEdges, edge)
@@ -508,7 +534,11 @@ func (graph *TestCallGraph) dfsFromNodeRunningOrder(
 		if node.IsAsync() {
 			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
 			if callbackEdge.To.IsCallback() {
-				graph.dfsFromNodeRunningOrder(node, callbackEdge.To, callbackEdge, path, processNode, postProcessNode, visits)
+				processedNode := graph.dfsFromNodeRunningOrder(node, callbackEdge.To, callbackEdge, path, processNode, postProcessNode, visits)
+				// post proces callback
+				postProcessNode(path, node, processedNode, incomingEdge)
+				// post process failed async call
+				postProcessNode(path, parent, node, parent.IncomingEdge)
 			}
 		}
 		// stop DFS
@@ -1037,6 +1067,10 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 			if parent != nil && incomingEdge.Type != Async && incomingEdge.Type != AsyncCrossShard {
 				parent.GasRemaining += uint64(node.GasRemaining)
 			}
+		}
+
+		if node.IsAsync() && !node.HasCallback() {
+			node.GasAccumulated += node.GasRemaining
 		}
 
 		for _, edge := range node.AdjacentEdges {

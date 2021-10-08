@@ -18,245 +18,409 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGasUsed_SyncCalls_CallGraph(t *testing.T) {
+func TestGraph_SyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncCalls()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncCalls2_CallGraph(t *testing.T) {
+func TestGraph_SyncCalls2_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncCalls2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCall_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCall_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCall()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallFail_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallNoCallback_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallNoCallback()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_OneAsyncCallFail_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallIndirectFail_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallNoCallbackFail_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallNoCallbackFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallIndirectFail_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestAsyncCallIndirectFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallbackFail_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallbackFail_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallbackIndirectFail_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallbackIndirectFail_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallCrossShard_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallCrossShard2_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallNoCallbackCrossShard_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallNoCallbackCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_OneAsyncCallCrossShard2_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallFailCrossShard_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallIndirectFailCrossShard_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallFailNoCallbackCrossShard_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestOneAsyncCallFailNoCallbackCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallIndirectFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestAsyncCallIndirectFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_OneAsyncCallbackFailCrossShard_CallGraph(t *testing.T) {
+func TestGraph_OneAsyncCallbackFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallbackIndirectFailCrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallbackIndirectFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestAsyncCallbackIndirectFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_TwoAsyncCalls_CallGraph(t *testing.T) {
+func TestGraph_TwoAsyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_TwoAsyncCallsOneFail_CallGraph(t *testing.T) {
+func TestGraph_TwoAsyncCallsOneFail_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCallsOneFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_TwoAsyncCalls_LocalCross_CallGraph(t *testing.T) {
+func TestGraph_TwoAsyncCalls_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_TwoAsyncCalls_CrossLocal_CallGraph(t *testing.T) {
+func TestGraph_TwoAsyncCalls_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
+func TestGraph_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallsAsync_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallsAsync_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallsAsyncFirstNoCallback_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallback()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondNoCallback_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallback()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstFail_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstCallbackFail_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondFail_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondCallbackFail_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFail()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallsAsyncFirstNoCallback_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondNoCallback_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstFail_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondFail_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstCallbackFail_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondCallbackFail_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallsAsyncFirstNoCallback_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondNoCallback_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstFail_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondFail_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstCallbackFail_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondCallbackFail_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
+func TestGraph_AsyncCallsAsyncFirstNoCallbackCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondNoCallbackCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstFailCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondFailCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncFirstCallbackFailCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncCallsAsyncSecondCallbackFailCrossShard_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_CallbackCallsSync_CallGraph(t *testing.T) {
+func TestGraph_CallbackCallsSync_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestCallbackCallsSync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
+func TestGraph_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
+func TestGraph_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
+func TestGraph_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
+func TestGraph_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync1_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync1_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncAndAsync1()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync2_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync2_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncAndAsync2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync3_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync3_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncAndAsync3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync4_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync4_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync5_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync5_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync5()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync6_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync6_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncAndAsync6()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync7_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync7_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncAndAsync7()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync8_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync8_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestSyncAndAsync8()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_SyncAndAsync9_CallGraph(t *testing.T) {
+func TestGraph_SyncAndAsync9_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync9()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard5()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard8()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGasUsed_AsyncCall9_CrossShard_CallGraph(t *testing.T) {
+func TestGraph_AsyncCall9_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
 	runGraphCallTestTemplate(t, callGraph)
@@ -316,8 +480,6 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		crtTxHash := big.NewInt(int64(crtTxNumber)).Bytes()
 		crossShardCall.StartNode.CrtTxHash = crtTxHash
 
-		crossShardEdges := getCrossShardEdgesFromSubtree(gasGraph, startNode, crossShardCallsQueue)
-
 		arguments := [][]byte{}
 		if len(crossShardCall.Data) != 0 {
 			_, parsedArguments, err := parsers.NewCallArgsParser().ParseData(string(crossShardCall.Data))
@@ -353,6 +515,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 		extractAndPersistStores(t, world, currentVMOutput)
 
+		crossShardEdges := getCrossShardEdgesFromSubtree(gasGraph, startNode, crossShardCallsQueue)
 		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
@@ -458,6 +621,10 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) []*test.CallFinishDataI
 			return
 		}
 
+		if parent.Call.FunctionName == test.FakeCallbackName {
+			return
+		}
+
 		expectedCallFinishData := &test.CallFinishDataItem{
 			ContractAndFunction: string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix,
 			GasProvided:         parent.GasLimit,
@@ -493,7 +660,7 @@ func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
 
 			if parent == nil {
 				totalGasRemaining += node.GasRemaining + node.GasAccumulated
-			} else if node.IsCallback() {
+			} else if node.IsCallback() || (node.IsAsync() && !node.HasCallback()) {
 				totalGasRemaining += node.GasAccumulated
 			}
 

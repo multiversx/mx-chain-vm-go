@@ -87,6 +87,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 				context.CompleteChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
 			}
 		} else {
+			metering.UseGas(vmOutput.GasRemaining)
 			context.CompleteChild(asyncCall.CallID, 0)
 		}
 	}

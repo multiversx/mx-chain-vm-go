@@ -16,25 +16,32 @@ func main() {
 	/*
 		1 lvl of async calls
 	*/
+	// callGraph := test.CreateGraphTestOneAsyncCall()
+	// callGraph := test.CreateGraphTestOneAsyncCallNoCallback()
 	// callGraph := test.CreateGraphTestOneAsyncCallFail()
+	// callGraph := test.CreateGraphTestOneAsyncCallNoCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallIndirectFail()
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
 	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
 	// callGraph := test.CreateGraphTestAsyncCallIndirectFailCrossShard()
-	callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCalls()
 	// callGraph := test.CreateGraphTestSyncCalls2()
 	// callGraph := test.CreateGraphTestOneAsyncCall()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard()
 	// callGraph := test.CreateGraphTestOneAsyncCallCrossShard2() //!
+	// callGraph := test.CreateGraphTestOneAsyncCallNoCallbackCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallFailNoCallbackCrossShard()
 	// callGraph := test.CreateGraphTestTwoAsyncCalls()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsOneFail()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard() //!
-	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
+	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailLocalCross()
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSyncAndAsync2()
@@ -53,7 +60,7 @@ func main() {
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
-	// callGraph := test.CreateGraphTestAsyncCallsAsync()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 
 	///////////////////
