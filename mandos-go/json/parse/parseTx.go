@@ -98,21 +98,21 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 			if txType != mj.ScDeploy && len(blt.Code.Value) > 0 {
 				return nil, errors.New("transaction contractCode field only allowed int scDeploy transactions")
 			}
-		case "gasPrice":
-			if !txType.HasGas() {
-				return nil, errors.New("`gasPrice` not allowed in this context")
-			}
-			blt.GasPrice, err = p.processUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid transaction gasPrice: %w", err)
-			}
 		case "gasLimit":
-			if !txType.HasGas() {
+			if !txType.HasGasLimit() {
 				return nil, errors.New("`gasLimit` not allowed in this context")
 			}
 			blt.GasLimit, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction gasLimit: %w", err)
+			}
+		case "gasPrice":
+			if !txType.HasGasPrice() {
+				return nil, errors.New("`gasPrice` not allowed in this context")
+			}
+			blt.GasPrice, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid transaction gasPrice: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown field in transaction: %s", kvp.Key)

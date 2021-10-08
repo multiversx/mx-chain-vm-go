@@ -33,7 +33,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 		scenarioOJ.Put("traceGas", &ojTrue)
 	}
 
-	scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))
+	if scenario.GasSchedule != mj.GasScheduleDefault {
+		scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))
+	}
 
 	var stepOJList []oj.OJsonObject
 
@@ -130,8 +132,11 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("arguments", &argOJ)
 	}
 
-	if tx.Type.HasGas() {
+	if tx.Type.HasGasLimit() {
 		transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
+	}
+
+	if tx.Type.HasGasPrice() {
 		transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	}
 
