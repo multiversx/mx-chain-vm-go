@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 )
 
 // TransferAndExecuteFuncName -
@@ -16,8 +17,7 @@ var TransferAndExecuteFuncName = "transferAndExecute"
 var TransferAndExecuteReturnData = []byte{1, 2, 3}
 
 // TransferAndExecute is an exposed mock contract method
-func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(TransferAndExecuteTestConfig)
+func TransferAndExecute(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	instanceMock.AddMockMethod(TransferAndExecuteFuncName, func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -31,7 +31,7 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 			elrondapi.TransferValueExecuteWithTypedArgs(host,
 				GetChildAddressForTransfer(transfer),
 				big.NewInt(testConfig.TransferFromParentToChild),
-				int64(testConfig.GasTransferToChild),
+				int64(testConfig.GasProvidedToChild),
 				big.NewInt(int64(transfer)).Bytes(), // transfer data
 				[][]byte{},
 			)

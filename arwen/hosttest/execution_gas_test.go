@@ -1372,7 +1372,7 @@ func runGraphCallTestTemplate(t *testing.T, testConfig *test.TestConfig, callGra
 }
 
 func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
-	testConfig := transferAndExecuteTestConfig
+	testConfig := makeTestConfig()
 
 	noOfTransfers := 3
 
@@ -1396,12 +1396,12 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 	for transfer := 0; transfer < noOfTransfers; transfer++ {
 		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer)).
 			WithData(big.NewInt(int64(transfer)).Bytes()).
-			WithGasLimit(testConfig.GasTransferToChild).
+			WithGasLimit(testConfig.GasProvidedToChild).
 			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
 		expectedTransfers = append(expectedTransfers, expectedTransfer)
 	}
 
-	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasTransferToChild
+	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasProvidedToChild
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
