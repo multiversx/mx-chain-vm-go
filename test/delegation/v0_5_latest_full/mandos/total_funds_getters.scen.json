@@ -32,7 +32,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator1",
-                "value": "5,000,000,000"
+                "egldValue": "5,000,000,000"
             }
         },
         {
@@ -41,7 +41,7 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "5,000,000,000",
+                "egldValue": "5,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -61,7 +61,6 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -83,7 +82,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalWithdrawOnlyStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -105,7 +103,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalWaitingStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -127,7 +124,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalActiveStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -149,7 +145,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalUnstakedStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -171,7 +166,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDeferredPaymentStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -200,7 +194,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUnBondable",
                 "arguments": [
                     "address:delegator2"
@@ -224,7 +217,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUnStakeable",
                 "arguments": [
                     "address:delegator2"

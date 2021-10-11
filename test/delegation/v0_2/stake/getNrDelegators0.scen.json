@@ -38,7 +38,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNrDelegators",
                 "arguments": [],
                 "gasLimit": "0x100000",

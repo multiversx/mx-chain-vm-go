@@ -17,7 +17,6 @@
             "txId": "1",
             "tx": {
                 "from": "''node_address__________________s1",
-                "value": "0",
                 "contractCode": "file:../delegation.wasm",
                 "arguments": [],
                 "gasLimit": "0x100000",

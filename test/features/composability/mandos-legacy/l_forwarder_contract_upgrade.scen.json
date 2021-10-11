@@ -20,7 +20,6 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
                 "function": "upgradeChildContract",
                 "arguments": [
                     "sc:child",
@@ -49,7 +48,6 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
                 "function": "upgradeVault",
                 "arguments": [
                     "sc:child",

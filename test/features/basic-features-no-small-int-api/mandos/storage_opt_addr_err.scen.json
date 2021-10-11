@@ -28,7 +28,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_opt_addr",
                 "arguments": [],
                 "gasLimit": "0x100000",

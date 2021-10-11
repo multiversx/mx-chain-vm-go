@@ -16,7 +16,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getAuctionContractAddress",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -38,7 +37,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -60,7 +58,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -90,7 +87,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",

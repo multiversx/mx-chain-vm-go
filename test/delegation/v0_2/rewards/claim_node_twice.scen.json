@@ -53,7 +53,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -73,7 +72,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",

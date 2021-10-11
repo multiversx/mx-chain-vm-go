@@ -24,7 +24,6 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
                 "function": "changeOwnerAddress",
                 "arguments": [
                     "sc:child",

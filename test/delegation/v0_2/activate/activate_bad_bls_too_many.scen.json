@@ -60,7 +60,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "activate",
                 "arguments": [
                     "''signature_1_____________________",

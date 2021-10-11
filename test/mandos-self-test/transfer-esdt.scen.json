@@ -23,7 +23,7 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "esdt": [
+                "esdtValue": [
                     {
                         "tokenIdentifier": "str:TOK-123",
                         "value": "100"
@@ -62,7 +62,7 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "esdt": [
+                "esdtValue": [
                     {
                         "tokenIdentifier": "str:TOK-123",
                         "value": "50"

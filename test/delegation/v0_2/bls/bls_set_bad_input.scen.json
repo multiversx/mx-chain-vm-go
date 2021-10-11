@@ -43,7 +43,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setBlsKeys",
                 "arguments": [
                     "''ok_length_______________________________________________________________________________________",
@@ -67,7 +66,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setNumNodes",
                 "arguments": [
                     "5"
@@ -89,7 +87,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setBlsKeys",
                 "arguments": [
                     "''ok_length_______________________________________________________________________________________",
@@ -114,7 +111,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setNumNodes",
                 "arguments": [
                     "2"
@@ -136,7 +132,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setBlsKeys",
                 "arguments": [
                     "''too_long______________________________________________________________________________________>>>!",
@@ -160,7 +155,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setBlsKeys",
                 "arguments": [
                     "''ok_length_______________________________________________________________________________________",
@@ -184,7 +178,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -204,7 +197,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",

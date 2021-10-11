@@ -20,8 +20,7 @@
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
-                "esdt": [
+                "esdtValue": [
                     {
                         "tokenIdentifier": "str:NFT-123456",
                         "nonce": "1",

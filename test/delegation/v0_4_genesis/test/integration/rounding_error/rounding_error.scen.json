@@ -24,7 +24,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "stakeGenesis",
                 "arguments": [
                     "444,000,000,000,000"
@@ -49,7 +48,7 @@
             "txId": "validatorReward-1",
             "tx": {
                 "to": "sc:delegation",
-                "value": "1"
+                "egldValue": "1"
             }
         },
         {
@@ -58,7 +57,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -75,7 +73,7 @@
             "txId": "validatorReward-2",
             "tx": {
                 "to": "sc:delegation",
-                "value": "1"
+                "egldValue": "1"
             }
         },
         {
@@ -84,7 +82,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -102,7 +99,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",

@@ -12,7 +12,6 @@
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "withdraw",
                 "arguments": [
                     "str:NFT-123456",

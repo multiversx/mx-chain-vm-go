@@ -33,7 +33,6 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "500,000,000",
@@ -55,7 +54,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
@@ -103,7 +101,6 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -125,7 +122,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"

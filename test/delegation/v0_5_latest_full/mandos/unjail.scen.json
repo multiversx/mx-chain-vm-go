@@ -45,7 +45,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:node_address",
-                "value": "1,000,000,000"
+                "egldValue": "1,000,000,000"
             }
         },
         {
@@ -54,7 +54,7 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "unJailNodes",
                 "arguments": [
                     "''bls_key_1_______________________________________________________________________________________",
@@ -78,7 +78,7 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "unJailNodes",
                 "arguments": [
                     "''bls_key_x_______________________________________________________________________________________",
@@ -102,7 +102,7 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "unJailNodes",
                 "arguments": [
                     "''bls_key_2_______________________________________________________________________________________",

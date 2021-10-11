@@ -72,7 +72,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "offerStakeForSale",
                 "arguments": [
                     "250,000,000,006"
@@ -101,7 +100,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "forceUnstake",
                 "arguments": [],
                 "gasLimit": "1,000,000",

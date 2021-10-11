@@ -53,7 +53,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUnexpectedBalance",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -75,7 +74,7 @@
             "tx": {
                 "from": "''someone_______________________s2",
                 "to": "sc:delegation",
-                "value": "50,000"
+                "egldValue": "50,000"
             }
         },
         {
@@ -84,7 +83,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUnexpectedBalance",
                 "arguments": [],
                 "gasLimit": "0x100000",

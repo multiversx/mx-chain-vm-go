@@ -66,7 +66,7 @@ func (tt TransactionType) HasGasPrice() bool {
 type Transaction struct {
 	Type      TransactionType
 	Nonce     JSONUint64
-	Value     JSONBigInt
+	EGLDValue JSONBigInt
 	ESDTValue []*ESDTTxData
 	From      JSONBytesFromString
 	To        JSONBytesFromString

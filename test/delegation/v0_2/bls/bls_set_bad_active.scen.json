@@ -46,7 +46,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setBlsKeys",
                 "arguments": [
                     "''bls_key_1_______________________________________________________________________________________"
@@ -69,7 +68,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -91,7 +89,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",

@@ -20,7 +20,6 @@
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "endAuction",
                 "arguments": [
                     "str:NFT-123456",

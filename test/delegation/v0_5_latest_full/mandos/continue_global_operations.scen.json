@@ -28,7 +28,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "isBootstrapMode",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -50,7 +49,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
@@ -72,7 +70,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -94,7 +91,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDelegationCap",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -116,7 +112,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "2000"
@@ -140,7 +135,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "modifyTotalDelegationCap",
                 "arguments": [
                     "200,000,000,000,000"
@@ -163,7 +157,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "1000"
@@ -186,7 +179,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "90,000,000",
@@ -212,7 +204,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -234,7 +225,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
@@ -256,7 +246,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -278,7 +267,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDelegationCap",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -300,7 +288,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "modifyTotalDelegationCap",
                 "arguments": [
                     "200,000,000,000,000"
@@ -324,7 +311,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDelegationCap",
                 "arguments": [],
                 "gasLimit": "100,000,000",

@@ -80,7 +80,7 @@
             "tx": {
                 "from": "address:delegator_1",
                 "to": "sc:delegation",
-                "value": "7,777,000,000",
+                "egldValue": "7,777,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -110,7 +110,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getFullWaitingList",
                 "arguments": [],
                 "gasLimit": "100,000,000",

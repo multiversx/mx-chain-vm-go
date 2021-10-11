@@ -43,7 +43,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getStake",
                 "arguments": [
                     "''node_address__________________s1"

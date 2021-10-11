@@ -53,7 +53,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -73,7 +72,6 @@
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -93,7 +91,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -113,7 +110,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -133,7 +129,6 @@
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -153,7 +148,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -173,7 +167,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -193,7 +186,6 @@
             "tx": {
                 "from": "''delegator_2___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -213,7 +205,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "0x100000",

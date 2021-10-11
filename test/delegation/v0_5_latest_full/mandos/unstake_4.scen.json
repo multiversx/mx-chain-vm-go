@@ -29,7 +29,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
                 "arguments": [
                     "200,000,000,000,000"
@@ -110,7 +109,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -153,7 +151,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -175,7 +172,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"
@@ -216,7 +212,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:node_address",
-                "value": "199,999,000,000,000"
+                "egldValue": "199,999,000,000,000"
             }
         },
         {
@@ -225,7 +221,7 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "199,999,000,000,000",
+                "egldValue": "199,999,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -263,7 +259,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -285,7 +280,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"

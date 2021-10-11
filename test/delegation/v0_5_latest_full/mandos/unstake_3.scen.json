@@ -29,7 +29,6 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
                 "arguments": [
                     "200,001,000,000,000"
@@ -52,7 +51,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
@@ -80,7 +78,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"
@@ -108,7 +105,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
                 "gasLimit": "100,000,000",

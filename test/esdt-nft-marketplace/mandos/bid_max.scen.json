@@ -12,7 +12,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "1000",
+                "egldValue": "1000",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",

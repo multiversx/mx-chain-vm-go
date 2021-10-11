@@ -59,7 +59,6 @@
             "comment": "10% cut for the marketplace",
             "tx": {
                 "from": "address:owner",
-                "value": "0",
                 "contractCode": "file:../output/esdt-nft-marketplace.wasm",
                 "arguments": [
                     "1000"

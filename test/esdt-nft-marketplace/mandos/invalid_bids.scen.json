@@ -12,7 +12,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "500",
+                "egldValue": "500",
                 "function": "bid",
                 "arguments": [
                     "str:ANOTHERNFT-123456",
@@ -35,7 +35,6 @@
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -65,7 +64,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "500",
+                "egldValue": "500",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -108,8 +107,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "0",
-                "esdt": [
+                "esdtValue": [
                     {
                         "tokenIdentifier": "str:RANDTOK-123456",
                         "value": "100"
@@ -137,7 +135,7 @@
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "300",
+                "egldValue": "300",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -160,7 +158,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "50",
+                "egldValue": "50",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -183,7 +181,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "150",
+                "egldValue": "150",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -206,7 +204,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "1500",
+                "egldValue": "1500",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",

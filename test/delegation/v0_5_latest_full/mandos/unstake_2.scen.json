@@ -33,7 +33,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator3",
-                "value": "200,000,000,000,000"
+                "egldValue": "200,000,000,000,000"
             }
         },
         {
@@ -42,7 +42,7 @@
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
-                "value": "200,000,000,000,000",
+                "egldValue": "200,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -79,7 +79,6 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
                 "arguments": [
                     "50,000,000,000,000"
@@ -101,7 +100,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
@@ -129,7 +127,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"
@@ -157,7 +154,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserDeferredPaymentList",
                 "arguments": [
                     "address:delegator2"
@@ -182,7 +178,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator3"
@@ -210,7 +205,6 @@
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
                 "arguments": [
                     "150,000,000,000,000"
@@ -232,7 +226,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator3"

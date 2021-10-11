@@ -36,7 +36,6 @@
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStake",
                 "arguments": [
                     "''node_address__________________s1"
@@ -60,7 +59,6 @@
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
