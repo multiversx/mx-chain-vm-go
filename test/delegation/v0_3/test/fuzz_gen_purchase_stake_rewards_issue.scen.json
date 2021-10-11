@@ -9,9 +9,7 @@
             "accounts": {
                 "''fuzz_owner_addr_______________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:fuzz-auction": {
                     "nonce": "0",
@@ -23,21 +21,15 @@
                 },
                 "''endless_sack_of_erd___________s1": {
                     "nonce": "0",
-                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000"
                 },
                 "''withdraw_target_______________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "''stake_purchase_forwarded______s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             },
             "newAddresses": [
@@ -53,9 +45,7 @@
             "accounts": {
                 "''delegator     1               s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -64,9 +54,7 @@
             "accounts": {
                 "''delegator     2               s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -75,9 +63,7 @@
             "accounts": {
                 "''delegator     3               s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -86,9 +72,7 @@
             "accounts": {
                 "''delegator     4               s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },

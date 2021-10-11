@@ -18,15 +18,11 @@
                                 }
                             ]
                         }
-                    },
-                    "storage": {},
-                    "code": ""
+                    }
                 },
                 "address:B": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },

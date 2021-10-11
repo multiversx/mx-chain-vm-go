@@ -13,25 +13,27 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
         },
         {
             "step": "scCall",
-            "comment": "unStake 1,000,000,000 from delegator_1 so that the first delegator has 33,(3)% stake, and the second one 66,(6)%",
             "txId": "user-unstake",
+            "comment": "unStake 1,000,000,000 from delegator_1 so that the first delegator has 33,(3)% stake, and the second one 66,(6)%",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
                 "value": "0",
                 "function": "unStake",
-                "arguments": ["1,000,000,000"],
+                "arguments": [
+                    "1,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
@@ -59,7 +61,9 @@
                 "to": "sc:delegation",
                 "value": "0",
                 "function": "unStake",
-                "arguments": ["100,000,000,000,000"],
+                "arguments": [
+                    "100,000,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
@@ -85,7 +89,11 @@
             },
             "expect": {
                 "out": [
-                    "0", "0","200,000,000,000,000", "100,000,000,000,000","1,000,000,000"
+                    "0",
+                    "0",
+                    "200,000,000,000,000",
+                    "100,000,000,000,000",
+                    "1,000,000,000"
                 ],
                 "status": "",
                 "logs": [],

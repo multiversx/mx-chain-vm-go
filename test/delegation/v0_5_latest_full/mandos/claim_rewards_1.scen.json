@@ -13,11 +13,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "scCall",
             "txId": "getFullWaitingList",
@@ -32,7 +32,12 @@
             },
             "expect": {
                 "out": [
-                    "address:delegator1","100,000,000,000,000","0","address:delegator2","200,000,000,000,000","0"
+                    "address:delegator1",
+                    "100,000,000,000,000",
+                    "0",
+                    "address:delegator2",
+                    "200,000,000,000,000",
+                    "0"
                 ],
                 "status": "",
                 "logs": [],

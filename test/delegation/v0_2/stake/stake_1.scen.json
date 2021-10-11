@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",
@@ -31,15 +28,11 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "567,001,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "567,001,000,000"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -87,7 +80,6 @@
                     "balance": "567,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",

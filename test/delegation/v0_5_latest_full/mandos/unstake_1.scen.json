@@ -1,6 +1,6 @@
 {
     "name": "unstake-1",
-    "comment":"unstake a portion, and check that it is replaced from waiting",
+    "comment": "unstake a portion, and check that it is replaced from waiting",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -14,11 +14,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -31,7 +31,9 @@
                 "to": "sc:delegation",
                 "value": "0",
                 "function": "unStake",
-                "arguments": ["1,000,000,000"],
+                "arguments": [
+                    "1,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
@@ -59,7 +61,11 @@
             },
             "expect": {
                 "out": [
-                    "0","0", "100,000,000,000,000", "0", "1,000,000,000"
+                    "0",
+                    "0",
+                    "100,000,000,000,000",
+                    "0",
+                    "1,000,000,000"
                 ],
                 "status": "",
                 "logs": [],
@@ -83,7 +89,11 @@
             },
             "expect": {
                 "out": [
-                    "0", "0","200,000,000,000,000", "0","0"
+                    "0",
+                    "0",
+                    "200,000,000,000,000",
+                    "0",
+                    "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -105,7 +115,11 @@
             },
             "expect": {
                 "out": [
-                   "0", "0", "300,000,000,000,000",  "0", "1,000,000,000"
+                    "0",
+                    "0",
+                    "300,000,000,000,000",
+                    "0",
+                    "1,000,000,000"
                 ],
                 "status": "",
                 "logs": [],

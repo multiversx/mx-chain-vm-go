@@ -8,9 +8,7 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0x100000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x100000"
                 }
             }
         },

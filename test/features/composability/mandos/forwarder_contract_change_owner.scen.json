@@ -10,14 +10,13 @@
                     "code": "file:../forwarder/output/forwarder.wasm"
                 },
                 "sc:child": {
-                    "owner": "sc:forwarder",
-                    "code": "file:../vault/output/vault.wasm"
+                    "code": "file:../vault/output/vault.wasm",
+                    "owner": "sc:forwarder"
                 }
             }
         },
         {
-            "step": "setState",
-            "accounts": {}
+            "step": "setState"
         },
         {
             "step": "scCall",
@@ -45,10 +44,10 @@
             "step": "checkState",
             "accounts": {
                 "sc:child": {
-                    "owner": "address:new_owner",
-                    "code": "file:../vault/output/vault.wasm"
+                    "code": "file:../vault/output/vault.wasm",
+                    "owner": "address:new_owner"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

@@ -9,8 +9,8 @@
                     "code": "file:../forwarder/output/forwarder.wasm"
                 },
                 "sc:child": {
-                    "owner": "sc:forwarder",
-                    "code": "file:../vault/output/vault.wasm"
+                    "code": "file:../vault/output/vault.wasm",
+                    "owner": "sc:forwarder"
                 }
             }
         },
@@ -39,7 +39,7 @@
                 "sc:child": {
                     "code": "file:../forwarder/output/forwarder.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         },
         {
@@ -68,7 +68,7 @@
                 "sc:child": {
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "+": {}
+                "+": ""
             }
         }
     ]

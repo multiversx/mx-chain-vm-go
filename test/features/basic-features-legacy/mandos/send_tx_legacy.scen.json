@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },

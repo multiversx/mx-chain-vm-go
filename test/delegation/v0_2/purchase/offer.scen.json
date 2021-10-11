@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "3000",
@@ -36,15 +33,11 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0x300abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x300abc"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "40,004,000,002",
-                    "storage": {},
-                    "code": ""
+                    "balance": "40,004,000,002"
                 }
             },
             "currentBlockInfo": {
@@ -66,7 +59,9 @@
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [ "0" ],
+                "out": [
+                    "0"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -110,7 +105,9 @@
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [ "250,000,000,006" ],
+                "out": [
+                    "250,000,000,006"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -131,7 +128,6 @@
                     "balance": "10000400010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "3000",

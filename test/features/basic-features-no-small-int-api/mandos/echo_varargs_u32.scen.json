@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-no-small-int-api.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -70,6 +67,5 @@
                 "refund": "*"
             }
         }
-        
     ]
 }

@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "1000000000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1000000000"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "3000",
@@ -36,9 +33,7 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -74,7 +69,9 @@
                 "to": "sc:delegation",
                 "value": "0",
                 "function": "setNumNodes",
-                "arguments": [ "5" ],
+                "arguments": [
+                    "5"
+                ],
                 "gasLimit": "0x100000",
                 "gasPrice": "1"
             },
@@ -119,7 +116,9 @@
                 "to": "sc:delegation",
                 "value": "0",
                 "function": "setNumNodes",
-                "arguments": [ "2" ],
+                "arguments": [
+                    "2"
+                ],
                 "gasLimit": "0x100000",
                 "gasPrice": "1"
             },
@@ -235,7 +234,6 @@
                     "balance": "10000400010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "2",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "3000",

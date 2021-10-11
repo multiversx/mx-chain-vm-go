@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0x900abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x900abc"
                 }
             }
         },
@@ -223,7 +220,9 @@
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "0" ],
+                "out": [
+                    "0"
+                ],
                 "status": "0",
                 "logs": [],
                 "gas": "*",

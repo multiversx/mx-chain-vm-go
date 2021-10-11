@@ -23,7 +23,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["true"],
+                "out": [
+                    "true"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -45,7 +47,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -65,7 +69,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["1000"],
+                "out": [
+                    "1000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -75,11 +81,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -97,7 +103,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["false"],
+                "out": [
+                    "false"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -119,7 +127,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:interrupted"],
+                "out": [
+                    "str:interrupted"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -139,7 +149,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["1000"],
+                "out": [
+                    "1000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -159,7 +171,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -179,7 +193,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["2000"],
+                "out": [
+                    "2000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -201,7 +217,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -221,7 +239,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["2000"],
+                "out": [
+                    "2000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

@@ -13,11 +13,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -28,8 +28,8 @@
         },
         {
             "step": "scCall",
-            "comment": "unbond before unbonding period over should not unbond",
             "txId": "unBond-before",
+            "comment": "unbond before unbonding period over should not unbond",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
@@ -40,7 +40,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0" ],
+                "out": [
+                    "0"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -63,7 +65,11 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "50,000,000,000,000", "50,000,000,000,000", "1,000,000,000"
+                    "0",
+                    "0",
+                    "50,000,000,000,000",
+                    "50,000,000,000,000",
+                    "1,000,000,000"
                 ],
                 "status": "",
                 "logs": [],
@@ -92,8 +98,8 @@
         },
         {
             "step": "scCall",
-            "comment": "unbond after unbonding period over should work",
             "txId": "unBond-after",
+            "comment": "unbond after unbonding period over should work",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
@@ -104,7 +110,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "1,000,000,000" ],
+                "out": [
+                    "1,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -127,7 +135,11 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "50,000,000,000,000", "50,000,000,000,000", "0"
+                    "0",
+                    "0",
+                    "50,000,000,000,000",
+                    "50,000,000,000,000",
+                    "0"
                 ],
                 "status": "",
                 "logs": [],

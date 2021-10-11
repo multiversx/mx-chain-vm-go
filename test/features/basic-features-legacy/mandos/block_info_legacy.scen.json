@@ -9,14 +9,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             },
             "currentBlockInfo": {
@@ -39,7 +36,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "511" ],
+                "out": [
+                    "511"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -59,7 +58,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "522" ],
+                "out": [
+                    "522"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -79,7 +80,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "533" ],
+                "out": [
+                    "533"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -99,7 +102,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "544" ],
+                "out": [
+                    "544"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

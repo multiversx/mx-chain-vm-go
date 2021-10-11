@@ -7,21 +7,15 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "1,000,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000,000"
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "567,001,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "567,001,000,000"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             },
             "newAddresses": [
@@ -112,7 +106,9 @@
                 "gasPrice": "1"
             },
             "expect": {
-                "out": [ "789,000,000,000" ],
+                "out": [
+                    "789,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -163,7 +159,6 @@
                     "balance": "567,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",
