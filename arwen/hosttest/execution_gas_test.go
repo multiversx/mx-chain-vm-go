@@ -592,7 +592,6 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
-	arwen.SetLoggingForTests()
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 

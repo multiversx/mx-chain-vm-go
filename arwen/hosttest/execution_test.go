@@ -1505,7 +1505,6 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
-	arwen.SetLoggingForTests()
 	// This test ensures that host.ExecuteOnDestContext() calls
 	// metering.GasLeft() on the Wasmer instance of the child, and not of the
 	// parent.
@@ -1551,6 +1550,8 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childInput.Function = "childFunction"
 	childInput.RecipientAddr = test.ChildAddress
 	childInput.Arguments = [][]byte{
+		[]byte("dummyCallID"),
+		[]byte("dummyCallerCallID"),
 		[]byte("some data"),
 		[]byte("argument"),
 		[]byte("another argument"),
@@ -2316,7 +2317,6 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
-
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
 	newAddr := "newAddr_"
