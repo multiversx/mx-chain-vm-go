@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
@@ -32,6 +33,7 @@ func makeAsyncContext(t testing.TB, host arwen.VMHost) *asyncContext {
 		host,
 		callParser,
 		esdtParser,
+		&atomic.Flag{},
 	)
 	require.Nil(t, err)
 	require.NotNil(t, async)
@@ -114,6 +116,30 @@ func TestNewAsyncContext(t *testing.T) {
 	require.Nil(t, async.returnData)
 	require.NotNil(t, async.asyncCallGroups)
 	require.Empty(t, async.asyncCallGroups)
+}
+
+func TestAsyncContext_ArwenFlag(t *testing.T) {
+	host, _ := initializeArwenAndWasmer_AsyncContext()
+	callParser := parsers.NewCallArgsParser()
+	esdtParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+
+	flag := atomic.Flag{}
+	async, err := NewAsyncContext(
+		host,
+		callParser,
+		esdtParser,
+		&flag,
+	)
+	require.Nil(t, err)
+	require.NotNil(t, async)
+
+	require.False(t, async.flagMultiESDTTransferAsyncCallBack.IsSet())
+
+	flag.Set()
+	require.True(t, async.flagMultiESDTTransferAsyncCallBack.IsSet())
+
+	flag.Unset()
+	require.False(t, async.flagMultiESDTTransferAsyncCallBack.IsSet())
 }
 
 func TestAsyncContext_InitState(t *testing.T) {

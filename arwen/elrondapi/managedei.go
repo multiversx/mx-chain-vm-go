@@ -472,6 +472,7 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
+	async := host.Async()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedAsyncCallName)
@@ -496,7 +497,7 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseAndTraceGas(gasToUse)
 
-	err = runtime.ExecuteAsyncCall(vmInput.destination, []byte(data), value.Bytes())
+	err = async.RegisterLegacyAsyncCall(vmInput.destination, []byte(data), value.Bytes())
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return

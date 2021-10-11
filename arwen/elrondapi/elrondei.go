@@ -122,6 +122,9 @@ const (
 	transferESDTNFTExecuteName       = "transferESDTNFTExecute"
 	multiTransferESDTNFTExecuteName  = "multiTransferESDTNFTExecute"
 	transferValueExecuteName         = "transferValueExecute"
+	createAsyncCallName              = "createAsyncCall"
+	setAsyncGroupCallbackName        = "setAsyncGroupCallback"
+	setAsyncContextCallbackName      = "setAsyncContextCallback"
 	getArgumentLengthName            = "getArgumentLength"
 	getArgumentName                  = "getArgument"
 	getFunctionName                  = "getFunction"
@@ -183,6 +186,8 @@ const (
 	getPrevBlockEpochName            = "getPrevBlockEpoch"
 	getPrevBlockRandomSeedName       = "getPrevBlockRandomSeed"
 	getOriginalTxHashName            = "getOriginalTxHash"
+	getCurrentTxHashName             = "getCurrentTxHash"
+	getPrevTxHashName                = "getPrevTxHash"
 )
 
 var logEEI = logger.GetOrCreate("arwen/eei")
@@ -1478,8 +1483,10 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 	metering := host.Metering()
 	async := host.Async()
 
+	metering.StartGasTracing(createAsyncCallName)
+
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateAsyncCall
-	metering.UseGasAndAddTracedGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1530,7 +1537,7 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 
 	if asyncCall.HasDefinedAnyCallback() {
 		gasToUse := metering.GasSchedule().ElrondAPICost.SetAsyncCallback
-		metering.UseGasAndAddTracedGas(gasToUse)
+		metering.UseAndTraceGas(gasToUse)
 	}
 
 	err = async.RegisterAsyncCall(groupID, asyncCall)
@@ -1553,9 +1560,10 @@ func v1_4_setAsyncGroupCallback(context unsafe.Pointer,
 	runtime := host.Runtime()
 	metering := host.Metering()
 	async := host.Async()
+	metering.StartGasTracing(setAsyncGroupCallbackName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.SetAsyncGroupCallback
-	metering.UseGasAndAddTracedGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1607,9 +1615,10 @@ func v1_4_setAsyncContextCallback(context unsafe.Pointer,
 	runtime := host.Runtime()
 	metering := host.Metering()
 	async := host.Async()
+	metering.StartGasTracing(setAsyncContextCallbackName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.SetAsyncContextCallback
-	metering.UseGasAndAddTracedGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	callbackNameBytes, err := runtime.MemLoad(callback, callbackLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -3213,7 +3222,7 @@ func v1_4_getCurrentTxHash(context unsafe.Pointer, dataOffset int32) {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCurrentTxHash
-	metering.UseGasAndAddTracedGas(gasToUse)
+	metering.UseGasAndAddTracedGas(getCurrentTxHashName, gasToUse)
 
 	err := runtime.MemStore(dataOffset, runtime.GetCurrentTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
@@ -3225,7 +3234,7 @@ func v1_4_getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetPrevTxHash
-	metering.UseGasAndAddTracedGas(gasToUse)
+	metering.UseGasAndAddTracedGas(getPrevTxHashName, gasToUse)
 
 	err := runtime.MemStore(dataOffset, runtime.GetPrevTxHash())
 	_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())

@@ -118,16 +118,6 @@ func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
 	return nil
 }
 
-// IsArwenV2Enabled mocked method
-func (vhs *VMHostStub) IsArwenV2Enabled() bool {
-	return true
-}
-
-// IsArwenV3Enabled mocked method
-func (vhs *VMHostStub) IsArwenV3Enabled() bool {
-	return true
-}
-
 // IsAheadOfTimeCompileEnabled mocked method
 func (vhs *VMHostStub) IsAheadOfTimeCompileEnabled() bool {
 	return true

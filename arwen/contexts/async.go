@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
@@ -33,6 +34,8 @@ type asyncContext struct {
 
 	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
+
+	flagMultiESDTTransferAsyncCallBack *atomic.Flag
 }
 
 type serializableAsyncContext struct {
@@ -50,6 +53,7 @@ func NewAsyncContext(
 	host arwen.VMHost,
 	callArgsParser arwen.CallArgsParser,
 	esdtTransferParser vmcommon.ESDTTransferParser,
+	flagMultiESDTTransferAsyncCallBack *atomic.Flag,
 ) (*asyncContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -62,19 +66,20 @@ func NewAsyncContext(
 	}
 
 	context := &asyncContext{
-		host:                   host,
-		stateStack:             nil,
-		callerAddr:             nil,
-		callback:               "",
-		callbackData:           nil,
-		gasPrice:               0,
-		gasAccumulated:         0,
-		returnData:             nil,
-		asyncCallGroups:        make([]*arwen.AsyncCallGroup, 0),
-		callArgsParser:         callArgsParser,
-		esdtTransferParser:     esdtTransferParser,
-		groupCallbacksEnabled:  false,
-		contextCallbackEnabled: false,
+		host:                               host,
+		stateStack:                         nil,
+		callerAddr:                         nil,
+		callback:                           "",
+		callbackData:                       nil,
+		gasPrice:                           0,
+		gasAccumulated:                     0,
+		returnData:                         nil,
+		asyncCallGroups:                    make([]*arwen.AsyncCallGroup, 0),
+		callArgsParser:                     callArgsParser,
+		esdtTransferParser:                 esdtTransferParser,
+		groupCallbacksEnabled:              false,
+		contextCallbackEnabled:             false,
+		flagMultiESDTTransferAsyncCallBack: flagMultiESDTTransferAsyncCallBack,
 	}
 
 	return context, nil
@@ -743,17 +748,18 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 		return arwen.AsyncUnknown, err
 	}
 
-	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), destination)
+	actualDestination := context.determineDestinationForAsyncCall(destination, data)
+	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
 			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
 				runtime.GetSCAddress(),
-				destination,
+				actualDestination,
 				functionName,
 				args)
 			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
-			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
+			isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
 
 			if isESDTTransfer && isAsyncCall && isReturningCall {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -765,12 +771,31 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 		return arwen.AsyncBuiltinFuncCrossShard, nil
 	}
 
-	code, err := blockchain.GetCode(destination)
+	code, err := blockchain.GetCode(actualDestination)
 	if len(code) > 0 && err == nil {
 		return arwen.SyncExecution, nil
 	}
 
 	return arwen.AsyncUnknown, nil
+}
+
+func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) []byte {
+	if !bytes.Equal(context.host.Runtime().GetSCAddress(), destination) {
+		return destination
+	}
+
+	argsParser := context.callArgsParser
+	functionName, args, err := argsParser.ParseData(string(data))
+	if !context.host.IsBuiltinFunctionName(functionName) {
+		return destination
+	}
+
+	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(destination, destination, functionName, args)
+	if err != nil {
+		return destination
+	}
+
+	return parsedTransfer.RcvAddr
 }
 
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall) error {
@@ -794,7 +819,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	return nil
 }
 
-// executeAsyncContextCallback will either execute a sync call (in-shard) to
+// executeContextCallback will either execute a sync call (in-shard) to
 // the original caller by invoking its callback directly, or will dispatch a
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
