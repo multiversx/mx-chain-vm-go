@@ -20,7 +20,6 @@
 /arwendebug/testdata/db
 /cmd/arwendebug/arwendebug
 /cmd/arwendebug/db
-/cmd/mandosupgrade/mandosupgrade
 /ipc/tests/testdata/streams
 /ipc/tests/arwen
 
