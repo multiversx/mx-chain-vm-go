@@ -2517,9 +2517,6 @@ func ExecuteOnSameContextWithTypedArgs(
 		return 1
 	}
 
-	// send the callID to a sync call
-	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
-
 	err = host.ExecuteOnSameContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1

@@ -1505,6 +1505,7 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
+	arwen.SetLoggingForTests()
 	// This test ensures that host.ExecuteOnDestContext() calls
 	// metering.GasLeft() on the Wasmer instance of the child, and not of the
 	// parent.
