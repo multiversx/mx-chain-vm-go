@@ -2372,6 +2372,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 						_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
 						require.Nil(t, err)
 						childInput := test.DefaultTestContractCallInput()
+						childInput.Arguments = make([][]byte, 2)
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ChildAddress
 						childInput.CallValue = big.NewInt(4)
