@@ -254,6 +254,8 @@ type MeteringContext interface {
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	DisableRestoreGas()
+	EnableRestoreGas()
 }
 
 // StorageStatus defines the states the storage can be in

@@ -852,7 +852,10 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 	if errLoad != nil {
 		return false, nil, errLoad
 	}
-	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, true, err)
+
+	context.host.Metering().DisableRestoreGas()
+	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, err)
+	context.host.Metering().EnableRestoreGas()
 	return isComplete, callbackVMOutput, nil
 }
 

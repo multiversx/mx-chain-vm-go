@@ -20,9 +20,11 @@ void init() {
 		signalError(message, sizeof(message) - 1);
 	}
 
-	BinaryArgs args = NewBinaryArgs();
+	BinaryArgs args = NewBinaryArgs();	
 
 	int lastArg = 0;
+	AddBinaryArg(&args, 0, 1);
+	AddBinaryArg(&args, 0, 1);
 	lastArg = AddBinaryArg(&args, parentAddress, parentAddressSize);
 
 	byte arguments[100];

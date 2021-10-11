@@ -312,9 +312,33 @@ func TestGraph_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGraph_CallbackCallsAsyncFail_LocalLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncFailLocalLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_CallbackCallsAsyncCallbackFail_LocalLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGraph_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_CallbackCallsAsyncFail_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncFailLocalCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_CallbackCallsAsyncCallbackFail_LocalCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -324,9 +348,33 @@ func TestGraph_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGraph_CallbackCallsAsyncFail_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncFailCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_CallbackCallsAsyncCallbackFail_CrossLocal_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossLocal()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGraph_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_CallbackCallsAsyncFail_CrossCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncFailCrossCross()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_CallbackCallsAsyncCallbackFail_CrossCross_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 

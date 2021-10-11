@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
@@ -181,3 +181,9 @@ func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDe
 func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
 }
+
+// EnableRestoreGas mocked method
+func (m *MeteringContextMock) EnableRestoreGas() {}
+
+// DisableRestoreGas mocked method
+func (m *MeteringContextMock) DisableRestoreGas() {}

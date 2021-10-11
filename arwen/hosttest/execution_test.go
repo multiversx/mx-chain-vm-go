@@ -1933,6 +1933,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction("call_child").
 			WithGasProvided(2000).
+			//WithArguments([]byte{}, []byte{}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
@@ -2148,7 +2149,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				GasRemaining(190).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).
+				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
@@ -2317,6 +2318,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
+	arwen.SetLoggingForTests()
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
 	newAddr := "newAddr_"

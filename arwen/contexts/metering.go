@@ -23,6 +23,7 @@ type meteringContext struct {
 	initialCost        uint64
 	gasForExecution    uint64
 	gasUsedByAccounts  map[string]uint64
+	restoreGasEnabled  bool
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -46,6 +47,7 @@ func NewMeteringContext(
 		gasSchedule:       gasSchedule,
 		blockGasLimit:     blockGasLimit,
 		gasUsedByAccounts: make(map[string]uint64),
+		restoreGasEnabled: true,
 	}
 
 	context.InitState()
@@ -60,6 +62,7 @@ func (context *meteringContext) InitState() {
 	context.initialCost = 0
 	context.gasForExecution = 0
 	context.gasUsedByAccounts = make(map[string]uint64)
+	context.restoreGasEnabled = true
 }
 
 // InitStateFromContractCallInput initializes the internal state of the
@@ -78,6 +81,7 @@ func (context *meteringContext) PushState() {
 		initialCost:        context.initialCost,
 		gasForExecution:    context.gasForExecution,
 		gasUsedByAccounts:  context.cloneGasUsedByAccounts(),
+		restoreGasEnabled:  context.restoreGasEnabled,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -98,6 +102,7 @@ func (context *meteringContext) PopSetActiveState() {
 	context.initialCost = prevState.initialCost
 	context.gasForExecution = prevState.gasForExecution
 	context.gasUsedByAccounts = prevState.gasUsedByAccounts
+	context.restoreGasEnabled = prevState.restoreGasEnabled
 }
 
 // PopDiscard pops the state at the top of the internal state stack, and discards it
@@ -124,6 +129,7 @@ func (context *meteringContext) PopMergeActiveState() {
 	context.initialGasProvided = prevState.initialGasProvided
 	context.initialCost = prevState.initialCost
 	context.gasForExecution = prevState.gasForExecution
+	context.restoreGasEnabled = prevState.restoreGasEnabled
 
 	context.addToGasUsedByAccounts(prevState.gasUsedByAccounts)
 }
@@ -325,6 +331,9 @@ func (context *meteringContext) UseGas(gas uint64) {
 
 // RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance.
 func (context *meteringContext) RestoreGas(gas uint64) {
+	if !context.restoreGasEnabled {
+		return
+	}
 	gasUsed := context.host.Runtime().GetPointsUsed()
 	if gas <= gasUsed {
 		gasUsed = math.SubUint64(gasUsed, gas)
@@ -488,6 +497,16 @@ func (context *meteringContext) deductInitialGas(
 	context.initialCost = initialCost
 	context.gasForExecution = input.GasProvided - initialCost
 	return nil
+}
+
+// DisableRestoreGas disables the restore gas mechanism
+func (context *meteringContext) DisableRestoreGas() {
+	context.restoreGasEnabled = false
+}
+
+// DisableRestoreGas enables the restore gas mechanism
+func (context *meteringContext) EnableRestoreGas() {
+	context.restoreGasEnabled = true
 }
 
 // PrintState dumps the internal state of the meteringContext to the TRACE output

@@ -1,0 +1,6 @@
+{
+    "language": "clang",
+    "source_files": [
+        "/home/bogdan/Elrond/arwen-wasm-vm/test/contracts/exec-dest-ctx-by-caller/parent/parent.c"
+    ]
+}

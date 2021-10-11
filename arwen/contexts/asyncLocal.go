@@ -81,7 +81,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 		if asyncCall.HasCallback() {
 			// Restore gas locked while still on the caller instance; otherwise, the
 			// locked gas will appear to have been used twice by the caller instance.
-			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, false, err)
+			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, err)
 			if isCallbackComplete && callbackVMOutput != nil {
 				callbackVMOutput.GasRemaining = 0
 				context.CompleteChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
@@ -95,8 +95,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, viaNotify bool, err error) (bool, *vmcommon.VMOutput) {
-	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, viaNotify, err)
+func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
+	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
 	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	return isComplete, callbackVMOutput
 }
@@ -105,7 +105,6 @@ func (context *asyncContext) executeSyncCallback(
 	asyncCall *arwen.AsyncCall,
 	destinationVMOutput *vmcommon.VMOutput,
 	gasAccumulated uint64,
-	viaNotify bool,
 	destinationErr error,
 ) (*vmcommon.VMOutput, bool, error) {
 
@@ -118,17 +117,8 @@ func (context *asyncContext) executeSyncCallback(
 	var isComplete bool
 	var callBackErr error
 
-	if viaNotify {
-		context.host.SetGasFlag(false)
-	} else {
-		context.host.Metering().RestoreGas(asyncCall.GasLocked)
-	}
-
+	context.host.Metering().RestoreGas(asyncCall.GasLocked)
 	callbackVMOutput, isComplete, callBackErr = context.host.ExecuteOnDestContext(callbackInput)
-
-	if viaNotify {
-		context.host.SetGasFlag(true)
-	}
 
 	return callbackVMOutput, isComplete, callBackErr
 }
@@ -199,7 +189,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
-		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, false, err)
+		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
 		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
 	}
 
