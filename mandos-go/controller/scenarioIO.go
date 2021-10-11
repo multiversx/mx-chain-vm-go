@@ -45,8 +45,7 @@ func ParseMandosScenarioDefaultParser(scenFilePath string) (*mj.Scenario, error)
 	return ParseMandosScenario(parser, scenFilePath)
 }
 
-// tool to modify scenarios
-// use with extreme caution
+// WriteMandosScenario exports a Mandos scenario to a file, using the default formatting.
 func WriteMandosScenario(scenario *mj.Scenario, toPath string) error {
 	jsonString := mjwrite.ScenarioToJSONString(scenario)
 
