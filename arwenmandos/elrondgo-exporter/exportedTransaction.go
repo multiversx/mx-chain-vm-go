@@ -64,7 +64,7 @@ func (tx *Transaction) GetCallValue() *big.Int {
 }
 
 func (tx *Transaction) WithESDTTransfers(esdtTransfers []*mj.ESDTTxData) *Transaction {
-	copy(tx.esdtValue, esdtTransfers)
+	tx.esdtValue = append(tx.esdtValue, esdtTransfers...)
 	return tx
 }
 
@@ -82,7 +82,7 @@ func (tx *Transaction) GetCallFunction() string {
 }
 
 func (tx *Transaction) WithCallArguments(arguments [][]byte) *Transaction {
-	copy(tx.args, arguments)
+	tx.args = append(tx.args, arguments...)
 	return tx
 }
 
@@ -91,7 +91,7 @@ func (tx *Transaction) GetCallArguments() [][]byte {
 }
 
 func (tx *Transaction) WithSenderAddress(address []byte) *Transaction {
-	copy(tx.sndAddr, address)
+	tx.sndAddr = append(tx.sndAddr, address...)
 	return tx
 }
 
@@ -100,7 +100,7 @@ func (tx *Transaction) GetSenderAddress() []byte {
 }
 
 func (tx *Transaction) WithReceiverAddress(address []byte) *Transaction {
-	copy(tx.rcvAddr, address)
+	tx.rcvAddr = append(tx.rcvAddr, address...)
 	return tx
 }
 

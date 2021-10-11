@@ -15,7 +15,8 @@ var addressOwner = []byte{111, 119, 110, 101, 114, 95, 95, 95, 95, 95, 95, 95, 9
 var addressAdder = []byte{0, 0, 0, 0, 0, 0, 0, 0, 97, 100, 100, 101, 114, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95}
 
 func TestGetAccountsAndTransactionsFromAdder(t *testing.T) {
-	accounts, scAccounts, transactions, err := GetAccountsAndTransactionsFromMandos("./mandos/adder.scen.json")
+	accounts, scAccounts, transactions, err := GetAccountsAndTransactionsFromMandos("./mandosTests/adder.scen.json")
+	require.Nil(t, err)
 	expectedAccs := make([]*TestAccount, 0)
 	expectedScAccs := make([]*TestAccount, 0)
 	expectedTxs := make([]*Transaction, 0)
