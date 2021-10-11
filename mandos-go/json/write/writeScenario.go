@@ -109,10 +109,10 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 	if tx.Type.HasReceiver() {
 		transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 	}
-	if tx.Type.HasValue() {
+	if tx.Type.HasValue() && len(tx.Value.Original) > 0 {
 		transactionOJ.Put("value", bigIntToOJ(tx.Value))
 	}
-	if tx.ESDTValue != nil {
+	if len(tx.ESDTValue) > 0 {
 		esdtItemOJ := esdtTxDataToOJ(tx.ESDTValue)
 		transactionOJ.Put("esdt", esdtItemOJ)
 	}
@@ -132,11 +132,11 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("arguments", &argOJ)
 	}
 
-	if tx.Type.HasGasLimit() {
+	if tx.Type.HasGasLimit() && len(tx.GasLimit.Original) > 0 {
 		transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
 	}
 
-	if tx.Type.HasGasPrice() {
+	if tx.Type.HasGasPrice() && len(tx.GasPrice.Original) > 0 {
 		transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	}
 

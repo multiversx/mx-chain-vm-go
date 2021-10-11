@@ -31,9 +31,10 @@ type CheckAccount struct {
 	Nonce                 JSONCheckUint64
 	Balance               JSONCheckBigInt
 	Username              JSONCheckBytes
-	CheckStorage          []*CheckStorageKeyValuePair
+	ExplicitStorage       bool
 	IgnoreStorage         bool
 	MoreStorageAllowed    bool
+	CheckStorage          []*CheckStorageKeyValuePair
 	Code                  JSONCheckBytes
 	Owner                 JSONCheckBytes
 	AsyncCallData         JSONCheckBytes

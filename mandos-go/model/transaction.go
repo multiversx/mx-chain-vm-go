@@ -54,12 +54,12 @@ func (tt TransactionType) HasFunction() bool {
 
 // HasGasLimit is a helper function to indicate if transaction has `gasLimit` field.
 func (tt TransactionType) HasGasLimit() bool {
-	return tt == ScDeploy || tt == ScCall
+	return tt == ScDeploy || tt == ScCall || tt == Transfer
 }
 
 // HasGasLimit is a helper function to indicate if transaction has `gasPrice` field.
 func (tt TransactionType) HasGasPrice() bool {
-	return tt == ScDeploy || tt == ScCall
+	return tt == ScDeploy || tt == ScCall || tt == Transfer
 }
 
 // Transaction is a json object representing a transaction.
