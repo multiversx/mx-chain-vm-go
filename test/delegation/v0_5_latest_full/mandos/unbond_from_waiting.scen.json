@@ -13,25 +13,26 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
         },
         {
             "step": "scCall",
-            "comment":"withdraw partially",
             "txId": "withdraw-inactive-stake",
+            "comment": "withdraw partially",
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
-                "arguments": ["1,000,000,000"],
+                "arguments": [
+                    "1,000,000,000"
+                ],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"
             },
@@ -42,14 +43,13 @@
                 "gas": "*",
                 "refund": "*"
             }
-        }, 
+        },
         {
             "step": "scCall",
             "txId": "check-stake-by-type-total",
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -57,7 +57,11 @@
             },
             "expect": {
                 "out": [
-                   "1,000,000,000",  "0", "300,000,000,000,000", "0", "0"
+                    "1,000,000,000",
+                    "0",
+                    "300,000,000,000,000",
+                    "0",
+                    "0"
                 ],
                 "status": "",
                 "logs": [],
@@ -71,14 +75,15 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "1,000,000,000" ],
+                "out": [
+                    "1,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -91,7 +96,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"
@@ -101,7 +105,11 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "199,999,000,000,000", "0", "0"
+                    "0",
+                    "0",
+                    "199,999,000,000,000",
+                    "0",
+                    "0"
                 ],
                 "status": "",
                 "logs": [],

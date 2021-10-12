@@ -44,7 +44,7 @@ func (tt TransactionType) HasValue() bool {
 
 // HasESDT is a helper function to indicate if transaction has `esdtValue` or `esdtToken` fields.
 func (tt TransactionType) HasESDT() bool {
-	return tt != ScQuery && tt != ValidatorReward
+	return tt == ScCall || tt == Transfer
 }
 
 // HasFunction indicates whether tx type allows a `function` field.
@@ -52,16 +52,21 @@ func (tt TransactionType) HasFunction() bool {
 	return tt == ScCall || tt == ScQuery
 }
 
-// HasGas is a helper function to indicate if transaction has `esdtValue` or `esdtToken` fields.
-func (tt TransactionType) HasGas() bool {
-	return tt == ScDeploy || tt == ScCall || tt.HasESDT()
+// HasGasLimit is a helper function to indicate if transaction has `gasLimit` field.
+func (tt TransactionType) HasGasLimit() bool {
+	return tt == ScDeploy || tt == ScCall || tt == Transfer
+}
+
+// HasGasLimit is a helper function to indicate if transaction has `gasPrice` field.
+func (tt TransactionType) HasGasPrice() bool {
+	return tt == ScDeploy || tt == ScCall || tt == Transfer
 }
 
 // Transaction is a json object representing a transaction.
 type Transaction struct {
 	Type      TransactionType
 	Nonce     JSONUint64
-	Value     JSONBigInt
+	EGLDValue JSONBigInt
 	ESDTValue []*ESDTTxData
 	From      JSONBytesFromString
 	To        JSONBytesFromString

@@ -6,19 +6,14 @@ import (
 )
 
 func esdtTxDataToOJ(esdtItems []*mj.ESDTTxData) oj.OJsonObject {
-	nrTransfers := len(esdtItems)
-
-	if nrTransfers == 1 {
-		return esdtTxRawEntryToOJ(esdtItems[0])
-	} else {
-		esdtItemList := oj.OJsonList{}
-		for _, esdtItemRaw := range esdtItems {
-			esdtItemOJ := esdtTxRawEntryToOJ(esdtItemRaw)
-			esdtItemList = append(esdtItemList, esdtItemOJ)
-		}
-
-		return &esdtItemList
+	esdtItemList := oj.OJsonList{}
+	for _, esdtItemRaw := range esdtItems {
+		esdtItemOJ := esdtTxRawEntryToOJ(esdtItemRaw)
+		esdtItemList = append(esdtItemList, esdtItemOJ)
 	}
+
+	return &esdtItemList
+
 }
 
 func esdtTxRawEntryToOJ(esdtItemRaw *mj.ESDTTxData) *oj.OJsonMap {
