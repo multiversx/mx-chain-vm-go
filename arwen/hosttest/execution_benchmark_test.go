@@ -1,7 +1,6 @@
 package hosttest
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -12,11 +11,14 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
+
+var logBenchmark = logger.GetOrCreate("arwen/benchmark")
 
 var owner = []byte("owner")
 var receiver = []byte("receiver")
@@ -67,7 +69,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 		}
 		elapsedTime := time.Since(start)
-		fmt.Printf("Executing %d ERC20 transfers: %s\n", nTransfers, elapsedTime.String())
+		logBenchmark.Trace("Executing ERC20 transfers", "transfers", nTransfers, "time", elapsedTime.String())
 	}
 
 	verifyTransfers(tb, mockWorld, totalTokenSupply)
@@ -88,7 +90,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		NewAddress:     scAddress,
 	})
 
-	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV2())
+	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)

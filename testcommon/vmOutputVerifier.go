@@ -28,8 +28,8 @@ func NewVMOutputVerifier(t testing.TB, vmOutput *vmcommon.VMOutput, err error) *
 
 // NewVMOutputVerifierWithAllErrors builds a new verifier with all errors included
 func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput, err error, allErrors error) *VMOutputVerifier {
-	require.Nil(t, err)
-	require.NotNil(t, vmOutput)
+	require.Nil(t, err, "Error is not nil")
+	require.NotNil(t, vmOutput, "Provided VMOutput is nil")
 
 	var allErrorsAsWrappable arwen.WrappableError
 	if allErrors != nil {
@@ -354,10 +354,18 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 		log.Trace("VMOutput", "OutputAccount["+address+"].Balance", account.Balance.String())
 		log.Trace("VMOutput", "OutputAccount["+address+"].BalanceDelta", account.BalanceDelta.String())
 		log.Trace("VMOutput", "OutputAccount["+address+"].GasUsed", account.GasUsed)
-		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
 		log.Trace("VMOutput", "OutputAccount["+address+"].StorageUpdates", len(account.StorageUpdates))
 		log.Trace("VMOutput", "OutputAccount["+address+"].Code", len(account.Code))
 		log.Trace("VMOutput", "OutputAccount["+address+"].CodeMetadata", account.CodeMetadata)
+		log.Trace("VMOutput", "OutputAccount["+address+"].OutputTransfers", len(account.OutputTransfers))
+		for i, transfer := range account.OutputTransfers {
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Sender", string(transfer.SenderAddress))
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].CallType", transfer.CallType)
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].GasLimit", transfer.GasLimit)
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].GasLocked", transfer.GasLocked)
+			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Value", transfer.Value)
+			log.Trace("VMOutput", "└ OutputTransfers["+fmt.Sprint(i)+"].Data", transfer.Data)
+		}
 	}
 	return v
 }

@@ -67,8 +67,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
 	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
-	if err != nil {
-		return err
+	if vmOutput == nil {
+		return arwen.ErrNilDestinationCallVMOutput
 	}
 
 	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,

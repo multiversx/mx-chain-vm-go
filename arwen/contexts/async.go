@@ -414,13 +414,18 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	metering := context.host.Metering()
 	gasLimit := math.SubUint64(metering.GasLeft(), gasToLock)
 
+	callbackFunction := ""
+	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
+		callbackFunction = arwen.CallbackFunctionName
+	}
+
 	err = context.addAsyncCall(legacyGroupID, &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,
 		Destination:     address,
 		Data:            data,
 		ValueBytes:      value,
-		SuccessCallback: arwen.CallbackFunctionName,
-		ErrorCallback:   arwen.CallbackFunctionName,
+		SuccessCallback: callbackFunction,
+		ErrorCallback:   callbackFunction,
 		GasLimit:        gasLimit,
 		GasLocked:       gasToLock,
 	})
@@ -479,6 +484,15 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 		}
 	}
 	group.AddAsyncCall(call)
+
+	logAsync.Trace(
+		"added async call",
+		"group", groupID,
+		"dest", string(call.Destination),
+		"mode", call.ExecutionMode,
+		"gas limit", call.GasLimit,
+		"gas locked", call.GasLocked,
+	)
 
 	return nil
 }
@@ -586,7 +600,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	}
 
 	gasToLock := uint64(0)
-	if context.HasCallback() {
+	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
 		gasToLock = metering.ComputeGasLockedForAsync()
 	}
 
@@ -801,6 +815,7 @@ func (context *asyncContext) executeContextCallback() error {
 	return nil
 }
 
+// TODO compare with host.sendAsyncCallbackToCaller()
 func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 	host := context.host
 	runtime := host.Runtime()
@@ -822,6 +837,12 @@ func (context *asyncContext) sendContextCallbackToOriginalCaller() error {
 		runtime.FailExecution(err)
 		return err
 	}
+
+	logAsync.Trace(
+		"sendContextCallbackToOriginalCaller",
+		"caller", context.callerAddr,
+		"data", context.returnData,
+		"gas", context.gasAccumulated)
 
 	return nil
 }
