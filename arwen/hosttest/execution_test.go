@@ -18,6 +18,7 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -469,6 +470,72 @@ func TestExecution_CallWasmerError(t *testing.T) {
 			verify.
 				ReturnCode(vmcommon.ContractInvalid)
 		})
+}
+
+func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	arwen.SetLoggingForTests()
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
+}
+
+func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	arwen.SetLoggingForTests()
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["ElrondAPICost"]["Finish"] += 1
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
 }
 
 func TestExecution_CallSCMethod_Init(t *testing.T) {
