@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -40,6 +41,8 @@ type runtimeContext struct {
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
 	errors          arwen.WrappableError
+
+	flagFixOOGReturnCode *atomic.Flag
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -47,16 +50,18 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	flagFixOOGReturnCode *atomic.Flag,
 ) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
-		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:        nil,
+		host:                 host,
+		vmType:               vmType,
+		stateStack:           make([]*runtimeContext, 0),
+		instanceStack:        make([]wasmer.InstanceHandler, 0),
+		validator:            newWASMValidator(scAPINames, builtInFuncContainer),
+		errors:               nil,
+		flagFixOOGReturnCode: flagFixOOGReturnCode,
 	}
 
 	context.instanceBuilder = &wasmerInstanceBuilder{}
@@ -471,7 +476,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
-		if errors.Is(err, arwen.ErrNotEnoughGas) {
+		if errors.Is(err, arwen.ErrNotEnoughGas) && context.flagFixOOGReturnCode.IsSet() {
 			breakpoint = arwen.BreakpointOutOfGas
 		}
 	} else {

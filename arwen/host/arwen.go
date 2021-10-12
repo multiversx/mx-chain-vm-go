@@ -50,6 +50,9 @@ type vmHost struct {
 
 	multiESDTTransferAsyncCallBackEnableEpoch uint32
 	flagMultiESDTTransferAsyncCallBack        atomic.Flag
+
+	fixOOGReturnCodeEnableEpoch uint32
+	flagFixOOGReturnCode        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -87,6 +90,7 @@ func NewArwenVM(
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
 	}
 
 	var err error
@@ -137,6 +141,7 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		&host.flagFixOOGReturnCode,
 	)
 	if err != nil {
 		return nil, err
@@ -401,4 +406,7 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 	host.flagMultiESDTTransferAsyncCallBack.Toggle(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
 	log.Debug("Arwen VM: multi esdt transfer on async callback intra shard", "enabled", host.flagMultiESDTTransferAsyncCallBack.IsSet())
+
+	host.flagFixOOGReturnCode.Toggle(epoch >= host.fixOOGReturnCodeEnableEpoch)
+	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
 }
