@@ -270,7 +270,7 @@ func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, starti
 		return 1
 	}
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(sliceLength))
 	metering.UseAndTraceGas(gasToUse)
 
 	return 0
@@ -300,7 +300,7 @@ func v1_4_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, start
 	slice := sourceBytes[startingPosition : startingPosition+sliceLength]
 	managedType.SetBytes(destinationHandle, slice)
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(slice)))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(sliceLength))
 	metering.UseAndTraceGas(gasToUse)
 
 	return 0
