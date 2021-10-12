@@ -466,16 +466,21 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
 	var message string
+	breakpoint := arwen.BreakpointExecutionFailed
+
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
+			breakpoint = arwen.BreakpointOutOfGas
+		}
 	} else {
 		message = "execution failed"
 		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+	context.SetRuntimeBreakpointValue(breakpoint)
 
 	traceMessage := message
 	if err != nil {
