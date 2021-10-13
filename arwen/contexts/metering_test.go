@@ -355,7 +355,6 @@ func initStateFromChildGetParentPointsBeforeStacking(t *testing.T, host *context
 }
 
 func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
-
 	parentExecutionGas := uint64(1000) // this is the contract size, but I chose to keep the convention used on child
 	parentUsedGas := uint64(400)
 	parentInput := &vmcommon.ContractCallInput{
