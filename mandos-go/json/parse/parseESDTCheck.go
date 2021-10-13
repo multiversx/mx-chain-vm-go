@@ -46,34 +46,62 @@ func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtD
 	esdtData := mj.CheckESDTData{
 		TokenIdentifier: tokenName,
 	}
-	var err error
-	for _, kvp := range esdtDataMap.OrderedKV {
-		switch kvp.Key {
-		case "instances":
-			esdtData.Instances, err = p.processCheckESDTInstances(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid account ESDT instances: %w", err)
-			}
-		case "lastNonce":
-			esdtData.LastNonce, err = p.processCheckUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid account ESDT lastNonce: %w", err)
-			}
-		case "roles":
-			esdtData.Roles, err = p.processStringList(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid account ESDT roles: %w", err)
-			}
-		case "frozen":
-			esdtData.Frozen, err = p.processCheckUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
-			}
-		default:
-			return nil, fmt.Errorf("unknown ESDT data field: %s", kvp.Key)
-		}
-
+	// var err error
+	firstInstance := &mj.CheckESDTInstance{
+		Nonce:      mj.JSONCheckUint64Unspecified(),
+		Balance:    mj.JSONCheckBigIntUnspecified(),
+		Creator:    mj.JSONCheckBytesUnspecified(),
+		Royalties:  mj.JSONCheckUint64Unspecified(),
+		Hash:       mj.JSONCheckBytesUnspecified(),
+		Uri:        mj.JSONCheckBytesUnspecified(),
+		Attributes: mj.JSONCheckBytesUnspecified(),
 	}
+	firstInstanceLoaded := false
+	var explicitInstances []*mj.CheckESDTInstance
+
+	for _, kvp := range esdtDataMap.OrderedKV {
+		// it is allowed to load the instance directly, fields set to the first instance
+		instanceFieldLoaded, err := p.tryProcessCheckESDTInstanceField(kvp, firstInstance)
+		if err != nil {
+			return nil, fmt.Errorf("invalid account ESDT instance field: %w", err)
+		}
+		if instanceFieldLoaded {
+			firstInstanceLoaded = true
+		} else {
+			switch kvp.Key {
+			case "instances":
+				explicitInstances, err = p.processCheckESDTInstances(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account ESDT instances: %w", err)
+				}
+			case "lastNonce":
+				esdtData.LastNonce, err = p.processCheckUint64(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account ESDT lastNonce: %w", err)
+				}
+			case "roles":
+				esdtData.Roles, err = p.processStringList(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid account ESDT roles: %w", err)
+				}
+			case "frozen":
+				esdtData.Frozen, err = p.processCheckUint64(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("invalid ESDT frozen flag: %w", err)
+				}
+			default:
+				return nil, fmt.Errorf("unknown ESDT data field: %s", kvp.Key)
+			}
+		}
+	}
+
+	if firstInstanceLoaded {
+		if !p.AllowEsdtLegacyCheckSyntax {
+			return nil, fmt.Errorf("wrong ESDT check state syntax: instances in root no longer allowed")
+		}
+		esdtData.Instances = []*mj.CheckESDTInstance{firstInstance}
+	}
+	esdtData.Instances = append(esdtData.Instances, explicitInstances...)
 
 	return &esdtData, nil
 }

@@ -32,5 +32,7 @@ func upgradeMandosFile(mandosFilePath string) {
 	scenario, err := mc.ParseMandosScenarioDefaultParser(mandosFilePath)
 	if err == nil {
 		mc.WriteMandosScenario(scenario, mandosFilePath)
+	} else {
+		fmt.Printf("Error upgrading: %s\n", err.Error())
 	}
 }
