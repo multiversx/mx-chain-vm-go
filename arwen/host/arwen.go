@@ -29,6 +29,8 @@ type TryFunction func()
 // CatchFunction corresponds to the catch() part of a try / catch block
 type CatchFunction func(error)
 
+var _ arwen.VMHost = (*vmHost)(nil)
+
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook   crypto.VMCrypto
@@ -141,7 +143,6 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
-		&host.flagFixOOGReturnCode,
 	)
 	if err != nil {
 		return nil, err
@@ -409,4 +410,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagFixOOGReturnCode.Toggle(epoch >= host.fixOOGReturnCodeEnableEpoch)
 	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
+}
+
+// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
+func (host *vmHost) FixOOGReturnCodeEnabled() bool {
+	return host.flagFixOOGReturnCode.IsSet()
 }

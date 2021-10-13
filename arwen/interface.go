@@ -53,6 +53,8 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	FixOOGReturnCodeEnabled() bool
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
