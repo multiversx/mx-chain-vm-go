@@ -2612,7 +2612,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	// send the callID to a sync call
+	// send callID and callerCallID to a sync call
 	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 
 	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
@@ -2719,6 +2719,9 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
 		return 1
 	}
+
+	// send callID and callerCallID to a sync call
+	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2934,7 +2937,34 @@ func v1_4_createContract(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
+	return createContractWithHost(
+		host,
+		gasLimit,
+		valueOffset,
+		codeOffset,
+		codeMetadataOffset,
+		length,
+		resultOffset,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+}
+
+func createContractWithHost(
+	host arwen.VMHost,
+	gasLimit int64,
+	valueOffset int32,
+	codeOffset int32,
+	codeMetadataOffset int32,
+	length int32,
+	resultOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
 	runtime := host.Runtime()
+
 	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
@@ -2942,17 +2972,17 @@ func v1_4_createContract(
 
 	sender := runtime.GetSCAddress()
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	code, err := runtime.MemLoad(codeOffset, length)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	codeMetadata, err := runtime.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -2966,7 +2996,7 @@ func v1_4_createContract(
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -2978,7 +3008,7 @@ func v1_4_createContract(
 	}
 
 	err = runtime.MemStore(resultOffset, newAddress)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -3098,6 +3128,9 @@ func createContract(
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 	}
+
+	// send callID and callerCallID to a sync call
+	_, contractCreate.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCreate.Arguments)
 
 	return host.CreateNewContract(contractCreate)
 }

@@ -7,7 +7,6 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/stretchr/testify/require"
 )
 
 // RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method
@@ -15,7 +14,6 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, testC
 	instanceMock.AddMockMethod("recursiveAsyncCall", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 		arguments := host.Runtime().Arguments()
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
@@ -50,7 +48,10 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, testC
 
 		async := host.Async()
 		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+			return instance
+		}
 
 		return instance
 	})

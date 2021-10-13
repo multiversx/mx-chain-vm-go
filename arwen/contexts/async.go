@@ -564,7 +564,7 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
-	runtime := context.host.Runtime()
+	// runtime := context.host.Runtime()
 	metering := context.host.Metering()
 
 	call.Source = context.host.Runtime().GetSCAddress()
@@ -572,12 +572,12 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	// TODO discuss
 	// TODO add exception for the first callback instance of the same address,
 	// which must be allowed to modify the AsyncContext
-	scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
-	callType := runtime.GetVMInput().CallType
-	modifiableAsyncContext := (scOccurrences == 0) || (callType == vm.AsynchronousCallBack)
-	if !modifiableAsyncContext {
-		return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
-	}
+	// scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
+	// callType := runtime.GetVMInput().CallType
+	// modifiableAsyncContext := (scOccurrences == 0) || (callType == vm.AsynchronousCallBack)
+	// if !modifiableAsyncContext {
+	// 	return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
+	// }
 
 	err := metering.UseGasBounded(call.GasLocked)
 	if err != nil {

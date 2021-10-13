@@ -6,8 +6,8 @@ byte newAddress[32] = {};
 
 byte deploymentValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,42};
 
-byte arguments[] = {0, 0};
-int argumentsLengths[] = {1, 1};
+byte arguments[0] = {};
+int argumentsLengths[0] = {};
 
 byte contractMetadata[2] = {3, 0};
 
@@ -21,7 +21,7 @@ void deployCodeFromAnotherContract() {
 			sourceContractAddress,
 			contractMetadata,
 			newAddress,
-			2,
+			0,
 			(byte*)argumentsLengths,
 			arguments);
 

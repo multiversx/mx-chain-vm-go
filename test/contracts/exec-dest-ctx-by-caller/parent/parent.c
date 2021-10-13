@@ -16,18 +16,18 @@ void call_child() {
 
 	byte value[32] = {0};
 	byte function[] = "give";
-	u32 argLengths[] = {1, 1, 1};
+	i32 argLengths[1] = {1};
 
-  byte value_to_give[] = {2, 3, 42};
+  byte value_to_give = 42;
   executeOnDestContextByCaller(
       1000,
       childSC,
 			value,
 			function,
 			4,
-			3,
+			1,
 			(byte*)argLengths,
-			value_to_give
+			&value_to_give
   );
 
 	byte msg[] = "child called";

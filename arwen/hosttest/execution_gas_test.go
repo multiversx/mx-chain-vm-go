@@ -923,13 +923,16 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	//TODO reenable test after contracts are allowed to call themselves
 	// repeatedly with async calls (see restriction in asyncContext.addAsyncCall())
-	t.Skip("recursive async self-call currently disabled")
+	// t.Skip("recursive async self-call currently disabled")
+	arwen.SetLoggingForTests()
 
 	testConfig := makeTestConfig()
 	testConfig.RecursiveChildCalls = 3
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasUsedByChild +
+	// expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasUsedByChild +
+	// 	uint64(testConfig.RecursiveChildCalls-1)*testConfig.GasUsedByCallback
+	expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasProvidedToChild +
 		uint64(testConfig.RecursiveChildCalls-1)*testConfig.GasUsedByCallback
 
 	test.BuildMockInstanceCallTest(t).
