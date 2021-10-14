@@ -46,6 +46,36 @@ func (v *VMOutputVerifier) Ok() *VMOutputVerifier {
 	return v.ReturnCode(vmcommon.Ok)
 }
 
+// ExecutionFailed verifies if return code is vmcommon.ExecutionFailed
+func (v *VMOutputVerifier) ExecutionFailed() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ExecutionFailed)
+}
+
+// OutOfGas verifies if return code is vmcommon.OutOfGas
+func (v *VMOutputVerifier) OutOfGas() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.OutOfGas)
+}
+
+// ContractInvalid verifies if return code is vmcommon.ContractInvalid
+func (v *VMOutputVerifier) ContractInvalid() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ContractInvalid)
+}
+
+// ContractNotFound verifies if return code is vmcommon.ContractNotFound
+func (v *VMOutputVerifier) ContractNotFound() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ContractNotFound)
+}
+
+// UserError verifies if return code is vmcommon.UserError
+func (v *VMOutputVerifier) UserError() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.UserError)
+}
+
+// FunctionNotFound verifies if return code is vmcommon.FunctionNotFound
+func (v *VMOutputVerifier) FunctionNotFound() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.FunctionNotFound)
+}
+
 // ReturnCode verifies if ReturnCode of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnCode(code vmcommon.ReturnCode) *VMOutputVerifier {
 	require.Equal(v.T, code, v.VmOutput.ReturnCode, "ReturnCode")

@@ -29,6 +29,8 @@ type TryFunction func()
 // CatchFunction corresponds to the catch() part of a try / catch block
 type CatchFunction func(error)
 
+var _ arwen.VMHost = (*vmHost)(nil)
+
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook   crypto.VMCrypto
@@ -50,6 +52,9 @@ type vmHost struct {
 
 	multiESDTTransferAsyncCallBackEnableEpoch uint32
 	flagMultiESDTTransferAsyncCallBack        atomic.Flag
+
+	fixOOGReturnCodeEnableEpoch uint32
+	flagFixOOGReturnCode        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -87,6 +92,7 @@ func NewArwenVM(
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
 	}
 
 	var err error
@@ -401,4 +407,12 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 	host.flagMultiESDTTransferAsyncCallBack.Toggle(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
 	log.Debug("Arwen VM: multi esdt transfer on async callback intra shard", "enabled", host.flagMultiESDTTransferAsyncCallBack.IsSet())
+
+	host.flagFixOOGReturnCode.Toggle(epoch >= host.fixOOGReturnCodeEnableEpoch)
+	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
+}
+
+// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
+func (host *vmHost) FixOOGReturnCodeEnabled() bool {
+	return host.flagFixOOGReturnCode.IsSet()
 }
