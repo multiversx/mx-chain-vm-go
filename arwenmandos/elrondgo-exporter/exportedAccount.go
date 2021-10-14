@@ -7,6 +7,7 @@ type TestAccount struct {
 	address []byte
 	balance *big.Int
 	storage map[string][]byte
+	code    []byte
 }
 
 func NewTestAccount() *TestAccount {
@@ -14,11 +15,12 @@ func NewTestAccount() *TestAccount {
 		address: make([]byte, 0),
 		balance: big.NewInt(0),
 		storage: make(map[string][]byte),
+		code:    make([]byte, 0),
 	}
 }
 
-func SetNewAccount(nonce uint64, address []byte, balance *big.Int, storage map[string][]byte) *TestAccount {
-	return NewTestAccount().WithNonce(nonce).WithAddress(address).WithBalance(balance).WithStorage(storage)
+func SetNewAccount(nonce uint64, address []byte, balance *big.Int, storage map[string][]byte, code []byte) *TestAccount {
+	return NewTestAccount().WithNonce(nonce).WithAddress(address).WithBalance(balance).WithStorage(storage).WithCode(code)
 }
 
 func (tAcc *TestAccount) WithNonce(nonce uint64) *TestAccount {
@@ -41,6 +43,11 @@ func (tAcc *TestAccount) WithStorage(storage map[string][]byte) *TestAccount {
 	return tAcc
 }
 
+func (tAcc *TestAccount) WithCode(code []byte) *TestAccount {
+	tAcc.code = append(tAcc.code, code...)
+	return tAcc
+}
+
 func (tAcc *TestAccount) GetNonce() uint64 {
 	return tAcc.nonce
 }
@@ -55,4 +62,8 @@ func (tAcc *TestAccount) GetBalance() *big.Int {
 
 func (tAcc *TestAccount) GetStorage() map[string][]byte {
 	return tAcc.storage
+}
+
+func (tAcc *TestAccount) GetCode() []byte {
+	return tAcc.code
 }

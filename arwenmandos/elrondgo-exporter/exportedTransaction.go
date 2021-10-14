@@ -7,9 +7,6 @@ import (
 )
 
 type Transaction struct {
-	isDeploy   bool
-	deployPath string
-
 	function  string
 	args      [][]byte
 	nonce     uint64
@@ -29,20 +26,6 @@ func NewTransaction() *Transaction {
 		sndAddr:   make([]byte, 0),
 		rcvAddr:   make([]byte, 0),
 	}
-}
-
-func (tx *Transaction) WithDeployWithPath(path string) *Transaction {
-	tx.isDeploy = true
-	tx.deployPath = path
-	return tx
-}
-
-func (tx *Transaction) IsDeploy() bool {
-	return tx.isDeploy
-}
-
-func (tx *Transaction) GetDeployPath() string {
-	return tx.deployPath
 }
 
 func (tx *Transaction) WithNonce(nonce uint64) *Transaction {
@@ -116,10 +99,6 @@ func (tx *Transaction) WithGasLimitAndPrice(gasLimit, gasPrice uint64) *Transact
 
 func (tx *Transaction) GetGasLimitAndPrice() (uint64, uint64) {
 	return tx.gasLimit, tx.gasPrice
-}
-
-func CreateDeployTransaction(deployPath string, args [][]byte, nonce uint64, value *big.Int, sndAddr []byte, gasLimit uint64, gasPrice uint64) *Transaction {
-	return NewTransaction().WithDeployWithPath(deployPath[5:]).WithCallArguments(args).WithNonce(nonce).WithCallValue(value).WithSenderAddress(sndAddr).WithGasLimitAndPrice(gasLimit, gasPrice)
 }
 
 func CreateTransaction(function string, args [][]byte, nonce uint64, value *big.Int, esdtTransfers []*mj.ESDTTxData, sndAddr []byte, rcvAddr []byte, gasLimit uint64, gasPrice uint64) *Transaction {

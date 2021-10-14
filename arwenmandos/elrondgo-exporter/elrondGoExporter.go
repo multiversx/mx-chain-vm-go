@@ -15,37 +15,33 @@ var errNoStepsProvided = errors.New("no steps were provided")
 
 var errStepIsNotTxStep = errors.New("step is not deploy or scCall")
 
-func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, scAccounts []*TestAccount, txs []*Transaction, err error) {
+var errTxStepIsNotScCall = errors.New("txStep is not scCall")
+
+func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, txs []*Transaction, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 	steps := scenario.Steps
-	accounts, scAccounts, txs, err = getAccountsAndTransactionsFromSteps(steps)
+	accounts, txs, err = getAccountsAndTransactionsFromSteps(steps)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
-	return accounts, scAccounts, txs, nil
+	return accounts, txs, nil
 }
 
-func setAccounts(setStateStep *mj.SetStateStep) (userAccounts []*TestAccount, scAccounts []*TestAccount, err error) {
-	accounts := make([]*TestAccount, 0)
-	scAccounts = make([]*TestAccount, 0)
+func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, err error) {
+	accounts = make([]*TestAccount, 0)
 	// append accounts
 	for _, mandosAccount := range setStateStep.Accounts {
-		if mandosAccount.Code.Value != nil {
-			account, err := convertMandosToTestAccount(mandosAccount)
-			if err != nil {
-				return nil, nil, err
-			}
-			accounts = append(accounts, account)
+		account, err := convertMandosToTestAccount(mandosAccount)
+		if err != nil {
+			return nil, err
 		}
+		accounts = append(accounts, account)
 	}
-	for _, mandosNewAccount := range setStateStep.NewAddressMocks {
-		newScAccount := NewTestAccount().WithAddress(mandosNewAccount.NewAddress.Value)
-		scAccounts = append(scAccounts, newScAccount)
-	}
-	return accounts, scAccounts, nil
+
+	return accounts, nil
 }
 
 func getScenario(testPath string) (scenario *mj.Scenario, err error) {
@@ -64,19 +60,19 @@ func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 	return scenario, err
 }
 
-func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccount, scAccounts []*TestAccount, txs []*Transaction, err error) {
+func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccount, txs []*Transaction, err error) {
 	if len(steps) == 0 {
-		return nil, nil, nil, errNoStepsProvided
+		return nil, nil, errNoStepsProvided
 	}
 	if !stepIsSetState(steps[0]) {
-		return nil, nil, nil, errFirstStepMustSetState
+		return nil, nil, errFirstStepMustSetState
 	}
 
 	switch step := steps[0].(type) {
 	case *mj.SetStateStep:
-		accounts, scAccounts, err = setAccounts(step)
+		accounts, err = setAccounts(step)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, err
 		}
 	}
 	txs = make([]*Transaction, 0)
@@ -85,18 +81,6 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 		switch txStep := steps[i].(type) {
 		case *mj.TxStep:
 			switch txStep.StepTypeName() {
-			case "scDeploy":
-				arguments := getArguments(txStep.Tx.Arguments)
-				tx := CreateDeployTransaction(
-					txStep.Tx.Code.Original,
-					arguments,
-					txStep.Tx.Nonce.Value,
-					txStep.Tx.Value.Value,
-					txStep.Tx.From.Value,
-					txStep.Tx.GasLimit.Value,
-					txStep.Tx.GasPrice.Value,
-				)
-				txs = append(txs, tx)
 			case "scCall":
 				arguments := getArguments(txStep.Tx.Arguments)
 				tx := CreateTransaction(
@@ -111,26 +95,27 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 					txStep.Tx.GasPrice.Value,
 				)
 				txs = append(txs, tx)
+			default:
+				return nil, nil, errTxStepIsNotScCall
 			}
 		default:
-			return nil, nil, nil, errStepIsNotTxStep
+			return nil, nil, errStepIsNotTxStep
 		}
 	}
-	return accounts, scAccounts, txs, nil
+	return accounts, txs, nil
 }
 
 func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
 	if len(mandosAcc.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
 	}
-
 	storage := make(map[string][]byte)
 	for _, stkvp := range mandosAcc.Storage {
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
 	esdtconvert.WriteESDTToStorage(mandosAcc.ESDTData, storage)
-	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage)
+	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value)
 	return account, nil
 }
 
