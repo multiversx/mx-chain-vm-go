@@ -22,8 +22,8 @@ func TestGetAccountsAndTransactionsFromAdder(t *testing.T) {
 	expectedAccs := make([]*TestAccount, 0)
 	expectedTxs := make([]*Transaction, 0)
 
-	ownerAccount := SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0))
-	scAccount := SetNewAccount(0, addressAdder, big.NewInt(0), make(map[string][]byte), adderCode)
+	ownerAccount := SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
+	scAccount := SetNewAccount(0, addressAdder, big.NewInt(0), make(map[string][]byte), adderCode, addressOwner)
 	expectedAccs = append(expectedAccs, ownerAccount, scAccount)
 	require.Equal(t, 2, len(expectedAccs))
 

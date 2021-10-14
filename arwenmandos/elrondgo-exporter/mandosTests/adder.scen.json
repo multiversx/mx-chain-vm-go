@@ -16,7 +16,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../../../test/adder/output/adder.wasm"
+                    "code": "file:../../../test/adder/output/adder.wasm",
+                    "owner": "address:owner"
                 }
             }
         },

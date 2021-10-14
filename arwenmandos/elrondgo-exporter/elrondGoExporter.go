@@ -115,7 +115,7 @@ func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
 		storage[key] = stkvp.Value.Value
 	}
 	esdtconvert.WriteESDTToStorage(mandosAcc.ESDTData, storage)
-	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value)
+	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value, mandosAcc.Owner.Value)
 	return account, nil
 }
 
