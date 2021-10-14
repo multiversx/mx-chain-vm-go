@@ -137,6 +137,10 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
+	for _, account := range context.outputState.OutputAccounts {
+		account.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+	}
+
 	logOutput.Trace("state content censored")
 }
 
@@ -617,11 +621,7 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
-	lenLeftOutTransfers := len(leftAccount.OutputTransfers)
-	lenRightOutTransfers := len(rightAccount.OutputTransfers)
-	if lenRightOutTransfers > lenLeftOutTransfers {
-		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
-	}
+	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
 
 	leftAccount.GasUsed = rightAccount.GasUsed
 

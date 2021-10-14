@@ -3107,6 +3107,158 @@ func CreateGraphTestDifferentTypeOfCallsToSameFunction() *TestCallGraph {
 	return callGraph
 }
 
+// CreateGraphTestSameContractWithDifferentSubCallsLocalLocal -
+func CreateGraphTestSameContractWithDifferentSubCallsLocalLocal() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 3000, 10)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	callGraph.AddSyncEdge(sc1f1, sc4f4).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncEdge(sc4f4, sc5f5, "cb4", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc4", "cb4")
+
+	sc4f7 := callGraph.AddNode("sc4", "f7")
+	callGraph.AddSyncEdge(sc1f1, sc4f7).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f8 := callGraph.AddNode("sc5", "f8")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncEdge(sc4f7, sc5f8, "cb5", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc4", "cb5")
+
+	return callGraph
+}
+
+// CreateGraphTestSameContractWithDifferentSubCallsLocalCross -
+func CreateGraphTestSameContractWithDifferentSubCallsLocalCross() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 3000, 10)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	callGraph.AddSyncEdge(sc1f1, sc4f4).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncEdge(sc4f4, sc5f5, "cb4", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc4", "cb4")
+
+	sc4f7 := callGraph.AddNode("sc4", "f7")
+	callGraph.AddSyncEdge(sc1f1, sc4f7).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc6f8 := callGraph.AddNode("sc6", "f8")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc4f7, sc6f8, "cb5", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc4", "cb5")
+
+	return callGraph
+}
+
+// CreateGraphTestSameContractWithDifferentSubCallsCrossLocal -
+func CreateGraphTestSameContractWithDifferentSubCallsCrossLocal() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 3000, 10)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	callGraph.AddSyncEdge(sc1f1, sc4f4).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc4f4, sc5f5, "cb4", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc4", "cb4")
+
+	sc4f7 := callGraph.AddNode("sc4", "f7")
+	callGraph.AddSyncEdge(sc1f1, sc4f7).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc6f8 := callGraph.AddNode("sc6", "f8")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncEdge(sc4f7, sc6f8, "cb5", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc4", "cb5")
+
+	return callGraph
+}
+
+// CreateGraphTestSameContractWithDifferentSubCallsCrossCross -
+func CreateGraphTestSameContractWithDifferentSubCallsCrossCross() *TestCallGraph {
+	callGraph := CreateTestCallGraph()
+
+	sc1f1 := callGraph.AddStartNode("sc1", "f1", 3000, 10)
+
+	sc4f4 := callGraph.AddNode("sc4", "f4")
+	callGraph.AddSyncEdge(sc1f1, sc4f4).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f5 := callGraph.AddNode("sc5", "f5")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc4f4, sc5f5, "cb4", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc1", "cb1")
+	callGraph.AddNode("sc4", "cb4")
+
+	sc4f7 := callGraph.AddNode("sc4", "f7")
+	callGraph.AddSyncEdge(sc1f1, sc4f7).
+		SetGasLimit(300).
+		SetGasUsed(15)
+
+	sc5f8 := callGraph.AddNode("sc5", "f8")
+	callGraph.AddNode("sc2", "cb2")
+	callGraph.AddAsyncCrossShardEdge(sc4f7, sc5f8, "cb5", "").
+		SetGasLimit(100).
+		SetGasUsed(50).
+		SetGasUsedByCallback(10)
+
+	callGraph.AddNode("sc4", "cb5")
+
+	return callGraph
+}
+
 // CreateGraphTestSyncAndAsync9 -
 func CreateGraphTestSyncAndAsync9() *TestCallGraph {
 	callGraph := CreateTestCallGraph()
