@@ -120,6 +120,7 @@ type VMHostParameters struct {
 	EpochNotifier                             vmcommon.EpochNotifier
 	MultiESDTTransferAsyncCallBackEnableEpoch uint32
 	FixOOGReturnCodeEnableEpoch               uint32
+	RemoveNonUpdatedStorageEnableEpoch        uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
