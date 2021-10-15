@@ -24,9 +24,23 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConf
 		arguments := host.Runtime().Arguments()
 		destination := arguments[0]
 		function := arguments[1]
+		legacy := arguments[2]
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		err = host.Async().RegisterLegacyAsyncCall(destination, function, value)
+		if big.NewInt(0).SetBytes(legacy).Int64() == 1 {
+			err = host.Async().RegisterLegacyAsyncCall(destination, function, value)
+		} else {
+			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+				Status:          arwen.AsyncCallPending,
+				Destination:     destination,
+				Data:            function,
+				ValueBytes:      value,
+				SuccessCallback: "callBack",
+				ErrorCallback:   "callBack",
+				GasLimit:        testConfig.GasProvidedToChild,
+				GasLocked:       150,
+			})
+		}
 		require.Nil(instance.T, err)
 
 		return instance

@@ -41,7 +41,7 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard() //!
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
-	callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSyncAndAsync2()
@@ -58,7 +58,8 @@ func main() {
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
-	// callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
+	callGraph := test.CreateGraphTestSyncAndAsync10()
+	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
@@ -74,7 +75,7 @@ func main() {
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.PropagateSyncFailures()
-	gasGraph.AssignExecutionRounds()
+	// gasGraph.AssignExecutionRounds()
 
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 initial-gas-graph", graphviz)

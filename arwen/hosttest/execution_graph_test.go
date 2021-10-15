@@ -630,6 +630,12 @@ func TestGraph_SyncAndAsync9_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGraph_SyncAndAsync10_CallGraph(t *testing.T) {
+	// t.Skip()
+	callGraph := test.CreateGraphTestSyncAndAsync10()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGraph_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()

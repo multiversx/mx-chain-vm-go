@@ -665,11 +665,28 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 }
 
 func TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t *testing.T) {
+	// all gas for builtin call is consummed on caller
+	inShardBuiltinCall(t, true)
+}
+
+func TestGasUsed_AsyncCall_InShard_BuiltinCall(t *testing.T) {
+	// all gas for builtin call is consummed on caller
+	inShardBuiltinCall(t, false)
+}
+
+func inShardBuiltinCall(t *testing.T, legacy bool) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
-	expectedGasUsedByChild := uint64(0) // all gas for builtin call is consummed on caller
+	expectedGasUsedByChild := uint64(0)
+
+	var callType []byte
+	if legacy {
+		callType = arwen.One.Bytes()
+	} else {
+		callType = arwen.Zero.Bytes()
+	}
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -682,7 +699,7 @@ func TestGasUsed_LegacyAsyncCall_InShard_BuiltinCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("builtinClaim")).
+			WithArguments(test.UserAddress, []byte("builtinClaim"), callType).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -719,7 +736,7 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("builtinFail")).
+			WithArguments(test.UserAddress, []byte("builtinFail"), arwen.One.Bytes()).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -754,7 +771,7 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("sendMessage")).
+			WithArguments(test.UserAddress, []byte("sendMessage"), arwen.One.Bytes()).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
@@ -766,7 +783,13 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				GasRemaining(0).
-				GasUsed(test.ParentAddress, expectedGasUsedByParent)
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				Transfers(
+					test.CreateTransferEntry(test.ParentAddress, test.UserAddress).
+						WithData([]byte("message")).
+						WithGasLimit(480).
+						WithValue(big.NewInt(0)),
+				)
 		})
 }
 
@@ -795,7 +818,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.ChildAddress, []byte("forwardAsyncCall"), []byte("builtinClaim") /*, arwen.One.Bytes()*/).
+			WithArguments(test.ChildAddress, []byte("forwardAsyncCall"), []byte("builtinClaim"), arwen.One.Bytes()).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -832,7 +855,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("performAsyncCall").
-			WithArguments([]byte{1}).
+			WithArguments(arwen.One.Bytes()).
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {

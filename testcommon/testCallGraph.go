@@ -12,6 +12,7 @@ import (
 // DefaultCallGraphLockedGas is the default gas locked value
 const DefaultCallGraphLockedGas = 150
 
+// FakeCallbackName - used by test framework to reprezent visually a callback that is not present
 const FakeCallbackName = "<>"
 
 var logTestGraph = logger.GetOrCreate("arwen/testgraph")
@@ -198,6 +199,8 @@ const (
 
 // TestCallEdge an edge between two nodes of the call graph
 type TestCallEdge struct {
+	ID uint
+
 	Type TestCallEdgeType
 
 	// callback function name
@@ -222,6 +225,7 @@ type TestCallEdge struct {
 
 func (edge *TestCallEdge) copy() *TestCallEdge {
 	return &TestCallEdge{
+		ID:       edge.ID,
 		Type:     edge.Type,
 		Callback: edge.Callback,
 		// Group:             edge.Group,
@@ -282,6 +286,7 @@ func (edge *TestCallEdge) SetGasLocked(gasLocked uint64) *TestCallEdge {
 }
 
 func (edge *TestCallEdge) copyAttributesFrom(sourceEdge *TestCallEdge) {
+	edge.ID = sourceEdge.ID
 	edge.Type = sourceEdge.Type
 	edge.Callback = sourceEdge.Callback
 	// edge.Group = sourceEdge.Group
@@ -298,8 +303,9 @@ type TestCallGraph struct {
 	Nodes     []*TestCallNode
 	StartNode *TestCallNode
 
-	Crypto   crypto.VMCrypto
-	sequence uint
+	Crypto       crypto.VMCrypto
+	sequence     uint
+	edgeSequence uint
 }
 
 // CreateTestCallGraph is the initial build metohd for the call graph
@@ -350,28 +356,34 @@ func (graph *TestCallGraph) AddNode(contractID string, functionName string) *Tes
 
 // AddSyncEdge adds a labeled sync call edge between two nodes of the call graph
 func (graph *TestCallGraph) AddSyncEdge(from *TestCallNode, to *TestCallNode) *TestCallEdge {
-	edge := graph.addEdge(from, to)
+	edge := graph.addEdge(from, to, true)
 	edge.Label = "Sync"
 	return edge
 }
 
 // addEdge adds an edge between two nodes of the call graph
-func (graph *TestCallGraph) addEdge(from *TestCallNode, to *TestCallNode) *TestCallEdge {
-	edge := buildEdge(to)
+func (graph *TestCallGraph) addEdge(from *TestCallNode, to *TestCallNode, fillEdgeID bool) *TestCallEdge {
+	edge := graph.buildEdge(to, fillEdgeID)
 	to.Parent = from
 	from.AdjacentEdges = append(from.AdjacentEdges, edge)
 	return edge
 }
 
-func (graph *TestCallGraph) addEdgeAtStart(from *TestCallNode, to *TestCallNode) *TestCallEdge {
-	edge := buildEdge(to)
+func (graph *TestCallGraph) addEdgeAtStart(from *TestCallNode, to *TestCallNode, fillEdgeID bool) *TestCallEdge {
+	edge := graph.buildEdge(to, fillEdgeID)
 	to.Parent = from
 	from.AdjacentEdges = append([]*TestCallEdge{edge}, from.AdjacentEdges...)
 	return edge
 }
 
-func buildEdge(to *TestCallNode) *TestCallEdge {
+func (graph *TestCallGraph) buildEdge(to *TestCallNode, fillEdgeID bool) *TestCallEdge {
+	ID := uint(0)
+	if fillEdgeID {
+		graph.edgeSequence++
+		ID = graph.edgeSequence
+	}
 	edge := &TestCallEdge{
+		ID:       ID,
 		Type:     Sync,
 		Callback: "",
 		// Group:    "",
@@ -399,7 +411,9 @@ func (graph *TestCallGraph) addAsyncEdgeWithType(edgeType TestCallEdgeType, from
 		graph.AddNode(from.Call.OriginalContractID, callBack)
 	}
 
+	graph.edgeSequence++
 	edge := &TestCallEdge{
+		ID:       graph.edgeSequence,
 		Type:     edgeType,
 		Callback: callBack,
 		// Group:     group,
@@ -717,7 +731,7 @@ func addSyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallGr
 		originalDestination := edge.To.Call
 		newDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
 
-		execEdge := executionGraph.addEdge(newSource, newDestination)
+		execEdge := executionGraph.addEdge(newSource, newDestination, false)
 		execEdge.copyAttributesFrom(edge)
 	}
 }
@@ -737,7 +751,7 @@ func addAsyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallG
 		originalDestination := edge.To.Call
 		newAsyncDestination := executionGraph.FindNode(originalDestination.ContractAddress, originalDestination.FunctionName)
 
-		execEdge := executionGraph.addEdge(newSource, newAsyncDestination)
+		execEdge := executionGraph.addEdge(newSource, newAsyncDestination, false)
 		execEdge.copyAttributesFrom(edge)
 
 		if edge.Callback != "" {
@@ -745,7 +759,7 @@ func addAsyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallG
 			if callbackDestination == nil {
 				panic(fmt.Sprintf("Cant find node %s %s", node.Call.ContractAddress, edge.Callback))
 			}
-			execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination)
+			execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination, false)
 			if edge.CallbackFail {
 				execEdge.Fail = true
 				execEdge.To.Fail = true
@@ -770,9 +784,9 @@ func addFinishNodeAsFirstEdge(graph *TestCallGraph, sourceNode *TestCallNode) {
 	addFinishNodeWithEdgeFunc(graph, sourceNode, graph.addEdgeAtStart)
 }
 
-func addFinishNodeWithEdgeFunc(graph *TestCallGraph, sourceNode *TestCallNode, addEdge func(*TestCallNode, *TestCallNode) *TestCallEdge) {
+func addFinishNodeWithEdgeFunc(graph *TestCallGraph, sourceNode *TestCallNode, addEdge func(*TestCallNode, *TestCallNode, bool) *TestCallEdge) {
 	finishNode := buildFinishNode(graph, sourceNode)
-	addEdge(sourceNode, finishNode)
+	addEdge(sourceNode, finishNode, false)
 }
 
 func buildFinishNode(graph *TestCallGraph, sourceNode *TestCallNode) *TestCallNode {
@@ -828,6 +842,7 @@ func (graph *TestCallGraph) getPaths() []*TestCallPath {
 	}
 	paths := make([]*TestCallPath, 0)
 	graph.getPathsRecursive(path, func(newPath *TestCallPath) {
+		newPath.print()
 		paths = append(paths, newPath.copy())
 	})
 	return paths
@@ -891,10 +906,24 @@ func (path *TestCallPath) print() {
 	LogGraph.Trace("path = ")
 	for pathIdx, node := range path.nodes {
 		if pathIdx > 0 {
-			LogGraph.Trace(" [" + path.edges[pathIdx-1].Label + "] ")
+			LogGraph.Trace(" [" + eliminateNewLines(path.edges[pathIdx-1].Label) + "#" + strconv.Itoa(int(path.edges[pathIdx-1].ID)) + "] ")
+			LogGraph.Trace(" / ")
 		}
 		LogGraph.Trace(node.Label + " ")
+		LogGraph.Trace(" / ")
 	}
+}
+
+func eliminateNewLines(input string) string {
+	result := ""
+	for _, c := range input {
+		if c != '\n' {
+			result += string(c)
+		} else {
+			result += "|"
+		}
+	}
+	return result
 }
 
 // ComputeGasGraphFromExecutionGraph - creates a gas graph from an execution graph
@@ -927,7 +956,8 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 				LogGraph.Trace(edge.Label + "==" + path.edges[pathIdx-1].Label + "\n=>" + strconv.FormatBool(edge.Label == path.edges[pathIdx-1].Label))
 				if string(crtChild.Call.ContractAddress) == string(node.Call.ContractAddress) &&
 					crtChild.Call.FunctionName == node.Call.FunctionName &&
-					edge.Label == path.edges[pathIdx-1].Label {
+					edge.Label == path.edges[pathIdx-1].Label &&
+					edge.ID == path.edges[pathIdx-1].ID {
 					crtNode = crtChild
 					continue nextNode
 				}
@@ -937,7 +967,7 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 
 			LogGraph.Trace("add edge " + parent.Label + " -> " + crtNode.Label)
 			pathEdge := path.edges[pathIdx-1]
-			newEdge := newGraph.addEdge(parent, crtNode)
+			newEdge := newGraph.addEdge(parent, crtNode, false)
 			newEdge.To.IncomingEdge = newEdge // these are edges in a tree
 			newEdge.copyAttributesFrom(pathEdge)
 		}
