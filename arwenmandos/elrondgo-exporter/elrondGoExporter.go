@@ -3,7 +3,6 @@ package elrondgo_exporter
 import (
 	"errors"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
@@ -45,15 +44,7 @@ func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, err er
 }
 
 func getScenario(testPath string) (scenario *mj.Scenario, err error) {
-	executor, err := arwenmandos.NewArwenTestExecutor()
-	if err != nil {
-		return nil, err
-	}
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-	scenario, err = runner.ParseTestToScenario(testPath)
+	scenario, err = mc.ParseMandosScenarioDefaultParser(testPath)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +78,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 					txStep.Tx.Function,
 					arguments,
 					txStep.Tx.Nonce.Value,
-					txStep.Tx.Value.Value,
+					txStep.Tx.EGLDValue.Value,
 					txStep.Tx.ESDTValue,
 					txStep.Tx.From.Value,
 					txStep.Tx.To.Value,
