@@ -430,6 +430,17 @@ func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 }
 
+// RemoveNonUpdatedStorage removes non updated storage from output state
+func (context *outputContext) RemoveNonUpdatedStorage() {
+	for _, outAcc := range context.outputState.OutputAccounts {
+		for _, storageUpdate := range outAcc.StorageUpdates {
+			if !storageUpdate.Written {
+				delete(outAcc.StorageUpdates, string(storageUpdate.Offset))
+			}
+		}
+	}
+}
+
 // GetVMOutput updates the current VMOutput and returns it
 func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 	context.removeNonUpdatedCode()

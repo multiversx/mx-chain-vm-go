@@ -72,6 +72,7 @@ type DumpStateStep struct {
 type TxStep struct {
 	TxIdent        string
 	Comment        string
+	DisplayLogs    bool
 	Tx             *Transaction
 	ExpectedResult *TransactionResult
 }

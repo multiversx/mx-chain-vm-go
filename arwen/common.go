@@ -2,7 +2,7 @@ package arwen
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ArwenVersion returns the current arwen version
@@ -119,6 +119,8 @@ type VMHostParameters struct {
 	ElrondProtectedKeyPrefix                  []byte
 	EpochNotifier                             vmcommon.EpochNotifier
 	MultiESDTTransferAsyncCallBackEnableEpoch uint32
+	FixOOGReturnCodeEnableEpoch               uint32
+	RemoveNonUpdatedStorageEnableEpoch        uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

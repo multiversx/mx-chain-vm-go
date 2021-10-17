@@ -139,6 +139,7 @@ type BigIntAPICost struct {
 	BigIntGetSignedArgument    uint64
 	BigIntGetCallValue         uint64
 	BigIntGetExternalBalance   uint64
+	CopyPerByteForTooBig       uint64
 }
 
 type CryptoAPICost struct {

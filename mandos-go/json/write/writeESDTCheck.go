@@ -24,9 +24,7 @@ func checkESDTItemToOJ(esdtItem *mj.CheckESDTData) oj.OJsonObject {
 	esdtItemOJ := oj.NewMap()
 
 	// instances
-	if len(esdtItem.Instances) == 1 {
-		appendCheckESDTInstanceToOJ(esdtItem.Instances[0], esdtItemOJ)
-	} else {
+	if len(esdtItem.Instances) > 0 {
 		var convertedList []oj.OJsonObject
 		for _, esdtInstance := range esdtItem.Instances {
 			esdtInstanceOJ := oj.NewMap()
@@ -74,7 +72,7 @@ func appendCheckESDTInstanceToOJ(esdtInstance *mj.CheckESDTInstance, targetOj *o
 		targetOj.Put("hash", checkBytesToOJ(esdtInstance.Hash))
 	}
 	if !esdtInstance.Uri.Unspecified && len(esdtInstance.Uri.Value) > 0 {
-		targetOj.Put("uri", checkBytesToOJ(esdtInstance.Creator))
+		targetOj.Put("uri", checkBytesToOJ(esdtInstance.Uri))
 	}
 	if !esdtInstance.Attributes.Unspecified && len(esdtInstance.Attributes.Value) > 0 {
 		targetOj.Put("attributes", checkBytesToOJ(esdtInstance.Attributes))

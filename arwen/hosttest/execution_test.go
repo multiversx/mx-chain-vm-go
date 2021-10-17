@@ -18,6 +18,7 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -102,8 +103,7 @@ func TestExecution_DeployNewAddressErr(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				ReturnMessage(errNewAddress.Error())
 		})
 }
@@ -115,8 +115,7 @@ func TestExecution_DeployOutOfGas(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.OutOfGas).
+			verify.OutOfGas().
 				ReturnMessage(arwen.ErrNotEnoughGas.Error())
 		})
 }
@@ -129,8 +128,7 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
 }
 
@@ -142,8 +140,7 @@ func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
 }
 
@@ -155,8 +152,7 @@ func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
 }
 
@@ -168,8 +164,7 @@ func TestExecution_DeployWASM_WrongMethods(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
 }
 
@@ -233,8 +228,7 @@ func TestExecution_DeployWASM_MoreThanMaximumLocals(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
 }
 
@@ -248,8 +242,7 @@ func TestExecution_DeployWASM_Init_Errors(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.UserError)
+			verify.UserError()
 		})
 }
 
@@ -263,8 +256,8 @@ func TestExecution_DeployWASM_Init_InfiniteLoop_Errors(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed)
+			verify.OutOfGas().
+				ReturnMessage(arwen.ErrNotEnoughGas.Error())
 		})
 }
 
@@ -406,8 +399,7 @@ func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
 			Build()).
 		WithAddress(newAddress).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
 }
 
@@ -423,8 +415,7 @@ func TestExecution_CallGetUserAccountErr(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractNotFound).
+			verify.ContractNotFound().
 				ReturnMessage(arwen.ErrContractNotFound.Error())
 		})
 }
@@ -435,8 +426,7 @@ func TestExecution_NotEnoughGasForGetCode(t *testing.T) {
 			WithGasProvided(0).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.OutOfGas).
+			verify.OutOfGas().
 				ReturnMessage(arwen.ErrNotEnoughGas.Error())
 		})
 }
@@ -450,8 +440,7 @@ func TestExecution_CallOutOfGas(t *testing.T) {
 			WithGasProvided(0).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.OutOfGas).
+			verify.OutOfGas().
 				ReturnMessage(arwen.ErrNotEnoughGas.Error())
 		})
 }
@@ -466,9 +455,72 @@ func TestExecution_CallWasmerError(t *testing.T) {
 			WithFunction(increment).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ContractInvalid)
+			verify.ContractInvalid()
 		})
+}
+
+func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
+}
+
+func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["ElrondAPICost"]["Finish"] += 1
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
 }
 
 func TestExecution_CallSCMethod_Init(t *testing.T) {
@@ -481,8 +533,7 @@ func TestExecution_CallSCMethod_Init(t *testing.T) {
 			WithFunction("init").
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.UserError).
+			verify.UserError().
 				ReturnMessage(arwen.ErrInitFuncCalledInRun.Error())
 		})
 }
@@ -497,8 +548,7 @@ func TestExecution_CallSCMethod_Callback(t *testing.T) {
 			WithFunction("callBack").
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.UserError).
+			verify.UserError().
 				ReturnMessage(arwen.ErrCallBackFuncCalledInRun.Error())
 		})
 }
@@ -513,8 +563,7 @@ func TestExecution_CallSCMethod_MissingFunction(t *testing.T) {
 			WithFunction("wrong").
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.FunctionNotFound)
+			verify.FunctionNotFound()
 		})
 }
 
@@ -618,7 +667,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -657,7 +706,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -680,7 +729,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			finalBuffer := make([]byte, 0)
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				finalBuffer = append(finalBuffer, randomBuffer...)
 			}
 			verify.
@@ -703,7 +752,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -725,7 +774,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -747,7 +796,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -769,7 +818,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -795,8 +844,8 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -831,8 +880,8 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -995,9 +1044,8 @@ func TestExecution_Call_Breakpoints_UserError(t *testing.T) {
 			WithArguments([]byte{1}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
+			verify.UserError().
 				ReturnData().
-				ReturnCode(vmcommon.UserError).
 				ReturnMessage("exit here")
 		})
 }
@@ -1079,8 +1127,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 							WithValue(big.NewInt(test.ParentTransferValue)),
 					)
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
+				verify.ExecutionFailed().
 					ReturnMessage("account not found").
 					GasRemaining(0)
 			}
@@ -1140,10 +1187,9 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					)
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1357,8 +1403,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 					)
 				require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
+				verify.ExecutionFailed().
 					ReturnMessage(arwen.ErrExecutionFailed.Error()).
 					HasRuntimeErrors(arwen.ErrMaxInstancesReached.Error(), arwen.ErrExecutionFailed.Error()).
 					GasRemaining(0)
@@ -1554,15 +1599,13 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
-				verify.
-					ReturnCode(vmcommon.OutOfGas).
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1657,8 +1700,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 							WithValue(big.NewInt(test.ParentTransferValue)),
 					)
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
+				verify.ExecutionFailed().
 					ReturnMessage("account not found").
 					GasRemaining(0)
 			}
@@ -1719,10 +1761,9 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 					)
 				require.Equal(t, int64(42), host.ManagedTypes().GetBigIntOrCreate(12).Int64())
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1776,7 +1817,6 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(nil),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
@@ -1905,8 +1945,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 
 	childOutput, _, err := host.ExecuteOnDestContext(childInput)
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
-	verify.
-		Ok().
+	verify.Ok().
 		GasRemaining(7758)
 }
 
@@ -1935,8 +1974,7 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
@@ -2170,14 +2208,12 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
-				verify.
-					ReturnCode(vmcommon.OutOfGas).
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error())
 			} else {
-				verify.
-					ReturnCode(vmcommon.ExecutionFailed).
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -2566,8 +2602,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 				GasUsed(childAddress, 472).
 				// other
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
-				Storage(
-					test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+				Storage()
 		})
 }
 
@@ -2666,8 +2701,7 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(10).
+			verify.ExecutionFailed().
 				ReturnMessage("error signalled by smartcontract")
 		})
 }
@@ -2711,8 +2745,7 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData([]byte("succ")) /* returned from child contract init */
 		})
 }

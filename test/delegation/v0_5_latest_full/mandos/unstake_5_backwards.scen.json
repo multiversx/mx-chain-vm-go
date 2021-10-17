@@ -1,6 +1,6 @@
 {
     "name": "unstake-5",
-    "comment":"check that unstake from waiting list takes funds in reverse order",
+    "comment": "check that unstake from waiting list takes funds in reverse order",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -14,11 +14,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -33,7 +33,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator3",
-                "value": "500,000,000,000,000"
+                "egldValue": "500,000,000,000,000"
             }
         },
         {
@@ -49,7 +49,7 @@
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
-                "value": "200,000,000,000,000",
+                "egldValue": "200,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -86,7 +86,7 @@
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
-                "value": "300,000,000,000,000",
+                "egldValue": "300,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -116,7 +116,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getFullWaitingList",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -124,8 +123,12 @@
             },
             "expect": {
                 "out": [
-                    "address:delegator3", "150,000,000,000,000", "501",
-                    "address:delegator3", "300,000,000,000,000", "502"
+                    "address:delegator3",
+                    "150,000,000,000,000",
+                    "501",
+                    "address:delegator3",
+                    "300,000,000,000,000",
+                    "502"
                 ],
                 "status": "",
                 "logs": [],
@@ -139,9 +142,10 @@
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
-                "arguments": ["10,000,000,000,000"],
+                "arguments": [
+                    "10,000,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
@@ -159,7 +163,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getFullWaitingList",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -167,8 +170,12 @@
             },
             "expect": {
                 "out": [
-                    "address:delegator3", "150,000,000,000,000", "501",
-                    "address:delegator3", "290,000,000,000,000", "502"
+                    "address:delegator3",
+                    "150,000,000,000,000",
+                    "501",
+                    "address:delegator3",
+                    "290,000,000,000,000",
+                    "502"
                 ],
                 "status": "",
                 "logs": [],

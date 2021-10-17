@@ -36,16 +36,16 @@ func (p *Parser) processESDTData(
 	}
 }
 
-// map containing other fields too, e.g.:
+// Map containing ESDT fields, e.g.:
 // {
-// 	"balance": "400,000,000,000",
+// 	"instances": [ ... ],
+//  "lastNonce": "5",
 // 	"frozen": "true"
 // }
 func (p *Parser) processESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
 	esdtData := mj.ESDTData{
 		TokenIdentifier: tokenName,
 	}
-	// var err error
 	firstInstance := &mj.ESDTInstance{}
 	firstInstanceLoaded := false
 	var explicitInstances []*mj.ESDTInstance
@@ -87,6 +87,9 @@ func (p *Parser) processESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMa
 	}
 
 	if firstInstanceLoaded {
+		if !p.AllowEsdtLegacySetSyntax {
+			return nil, fmt.Errorf("wrong ESDT set state syntax: instances in root no longer allowed")
+		}
 		esdtData.Instances = []*mj.ESDTInstance{firstInstance}
 	}
 	esdtData.Instances = append(esdtData.Instances, explicitInstances...)
