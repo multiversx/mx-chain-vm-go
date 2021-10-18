@@ -9,6 +9,14 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
+// MockESDTData groups together all instances of a token (same token name, different nonces).
+type MockESDTData struct {
+	TokenIdentifier []byte
+	Instances       []*esdt.ESDigitalToken
+	LastNonce       uint64
+	Roles           [][]byte
+}
+
 // GetTokenBalance returns the ESDT balance of the account, specified by the
 // token key.
 func GetTokenBalance(tokenIdentifier []byte, nonce uint64, source map[string][]byte) (*big.Int, error) {
@@ -80,14 +88,6 @@ func GetTokenKeys(source map[string][]byte) [][]byte {
 	}
 
 	return tokenKeys
-}
-
-// MockESDTData groups together all instances of a token (same token name, different nonces).
-type MockESDTData struct {
-	TokenIdentifier []byte
-	Instances       []*esdt.ESDigitalToken
-	LastNonce       uint64
-	Roles           [][]byte
 }
 
 // GetFullMockESDTData returns the information about all the ESDT tokens held by the account.
