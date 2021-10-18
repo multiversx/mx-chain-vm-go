@@ -1,6 +1,7 @@
 package arwenmandos
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -153,6 +154,37 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 			}
 		}
 	}
+}
+
+// CreateMultiTransferData builds data for a multiTransferESDT
+func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName string, arguments [][]byte) []byte {
+	multiTransferData := make([]byte, 0)
+	multiTransferData = append(multiTransferData, []byte(core.BuiltInFunctionMultiESDTNFTTransfer)...)
+	multiTransferData = append(multiTransferData, to...)
+
+	encodedNumberOfTransfers := hex.EncodeToString(big.NewInt(int64(len(esdtData))).Bytes())
+	multiTransferData = append(multiTransferData, []byte(encodedNumberOfTransfers)...)
+
+	for _, esdtDataTransfer := range esdtData {
+		multiTransferData = append(multiTransferData, esdtDataTransfer.TokenIdentifier.Value...)
+
+		encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
+		multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
+
+		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
+		multiTransferData = append(multiTransferData, []byte(encodedAmountValue)...)
+	}
+
+	if len(endpointName) > 0 {
+		encodedEndpointName := hex.EncodeToString([]byte(endpointName))
+		multiTransferData = append(multiTransferData, []byte(encodedEndpointName)...)
+
+		for _, arg := range arguments {
+			encodedArg := hex.EncodeToString(arg)
+			multiTransferData = append(multiTransferData, []byte(encodedArg)...)
+		}
+	}
+	return multiTransferData
 }
 
 func logGasTrace(ae *ArwenTestExecutor) {
