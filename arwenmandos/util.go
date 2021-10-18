@@ -156,7 +156,7 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	}
 }
 
-// CreateMultiTransferData builds for a multiTransferESDT
+// CreateMultiTransferData builds data for a multiTransferESDT
 func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName string, arguments [][]byte) []byte {
 	multiTransferData := make([]byte, 0)
 	multiTransferData = append(multiTransferData, []byte(core.BuiltInFunctionMultiESDTNFTTransfer)...)
