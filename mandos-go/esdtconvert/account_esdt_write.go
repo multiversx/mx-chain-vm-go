@@ -17,7 +17,7 @@ func makeESDTUserMetadataBytes(frozen bool) []byte {
 	return metadata.ToBytes()
 }
 
-func WriteMockESDTToStorage(esdtData map[string]*MockESDTData, destination map[string][]byte) error {
+func WriteMockESDTToStorage(esdtData []*MockESDTData, destination map[string][]byte) error {
 	for _, token := range esdtData {
 		tokenIdentifier := token.TokenIdentifier
 		for _, instance := range token.Instances {
