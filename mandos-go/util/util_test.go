@@ -1,4 +1,4 @@
-package arwenmandos
+package util
 
 import (
 	"math/big"

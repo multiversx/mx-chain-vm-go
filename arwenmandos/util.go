@@ -1,7 +1,6 @@
 package arwenmandos
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -13,8 +12,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
-var separator = []byte("@")
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
 	storage := make(map[string][]byte)
@@ -156,45 +153,6 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 			}
 		}
 	}
-}
-
-// CreateMultiTransferData builds data for a multiTransferESDT
-func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName string, arguments [][]byte) []byte {
-	multiTransferData := make([]byte, 0)
-	multiTransferData = append(multiTransferData, []byte(core.BuiltInFunctionMultiESDTNFTTransfer)...)
-	multiTransferData = append(multiTransferData, separator...)
-	multiTransferData = append(multiTransferData, to...)
-	multiTransferData = append(multiTransferData, separator...)
-
-	encodedNumberOfTransfers := hex.EncodeToString(big.NewInt(int64(len(esdtData))).Bytes())
-	multiTransferData = append(multiTransferData, []byte(encodedNumberOfTransfers)...)
-	multiTransferData = append(multiTransferData, separator...)
-
-	for _, esdtDataTransfer := range esdtData {
-		multiTransferData = append(multiTransferData, esdtDataTransfer.TokenIdentifier.Value...)
-		multiTransferData = append(multiTransferData, separator...)
-
-		encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
-		multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
-		multiTransferData = append(multiTransferData, separator...)
-
-		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
-		multiTransferData = append(multiTransferData, []byte(encodedAmountValue)...)
-		multiTransferData = append(multiTransferData, separator...)
-	}
-
-	if len(endpointName) > 0 {
-		encodedEndpointName := hex.EncodeToString([]byte(endpointName))
-		multiTransferData = append(multiTransferData, []byte(encodedEndpointName)...)
-		multiTransferData = append(multiTransferData, separator...)
-
-		for _, arg := range arguments {
-			encodedArg := hex.EncodeToString(arg)
-			multiTransferData = append(multiTransferData, []byte(encodedArg)...)
-			multiTransferData = append(multiTransferData, separator...)
-		}
-	}
-	return multiTransferData[:len(multiTransferData)-1]
 }
 
 func logGasTrace(ae *ArwenTestExecutor) {
