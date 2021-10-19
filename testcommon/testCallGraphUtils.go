@@ -147,8 +147,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 										return instance
 									}
 								} else {
-									err := makeAsyncCallFromEdge(host, edge, testConfig)
-									require.Nil(t, err)
+									makeAsyncCallFromEdge(host, edge, testConfig)
+									require.Equal(t, arwen.BreakpointNone, host.Runtime().GetRuntimeBreakpointValue())
 								}
 							}
 
@@ -222,8 +222,7 @@ func setGraphCallArg(arguments [][]byte, index int, value int) {
 	arguments[index] = big.NewInt(int64(value)).Bytes()
 }
 
-func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *TestConfig) error {
-	async := host.Async()
+func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *TestConfig) {
 	destFunctionName := edge.To.Call.FunctionName
 	destAddress := edge.To.Call.ContractAddress
 	value := big.NewInt(testConfig.TransferFromParentToChild)
@@ -244,16 +243,23 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		callbackName = ""
 	}
 
-	err := async.RegisterAsyncCall("", &arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
-		Destination:     destAddress,
-		Data:            callDataAsBytes,
-		ValueBytes:      value.Bytes(),
-		GasLimit:        edge.GasLimit,
-		SuccessCallback: callbackName,
-		ErrorCallback:   callbackName,
-	})
-	return err
+	// err := async.RegisterAsyncCall("", &arwen.AsyncCall{
+	// 	Status:          arwen.AsyncCallPending,
+	// 	Destination:     destAddress,
+	// 	Data:            callDataAsBytes,
+	// 	ValueBytes:      value.Bytes(),
+	// 	GasLimit:        edge.GasLimit,
+	// 	SuccessCallback: callbackName,
+	// 	ErrorCallback:   callbackName,
+	// })
+
+	elrondapi.CreateAsyncCallWithTypedArgs(host,
+		destAddress,
+		value.Bytes(),
+		callDataAsBytes,
+		[]byte(callbackName),
+		[]byte(callbackName),
+		int64(edge.GasLimit))
 }
 
 func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte) ([]byte, string) {

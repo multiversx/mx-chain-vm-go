@@ -881,46 +881,94 @@ func (host *vmHost) callSCMethod() error {
 	log.Trace("callSCMethod")
 
 	runtime := host.Runtime()
-
-	vmInput := runtime.GetVMInput()
-	async := host.Async()
-	callType := vmInput.CallType
+	callType := runtime.GetVMInput().CallType
 
 	var err error
+	switch callType {
+	case vm.DirectCall:
+		err = host.callSCMethodDirectCall()
+		break
+	case vm.AsynchronousCall:
+		err = host.callSCMethodAsynchronousCall()
+		break
+	case vm.AsynchronousCallBack:
+		err = host.callSCMethodAsynchronousCallBack()
+		break
+	default:
+		err = arwen.ErrUnknownCallType
+	}
+
+	if err != nil {
+		log.Trace("call SC method failed", "error", err)
+	}
+
+	return err
+}
+
+func (host *vmHost) callSCMethodDirectCall() error {
+	_, err := host.callFunctionAndExecuteAsync()
+	return err
+}
+
+func (host *vmHost) callSCMethodAsynchronousCall() error {
+	isCallComplete, err := host.callFunctionAndExecuteAsync()
+	if !isCallComplete || err != nil {
+		return err
+	}
+
+	async := host.Async()
+	output := host.Output()
+	err = async.SendCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
+
+	return err
+}
+
+func (host *vmHost) callSCMethodAsynchronousCallBack() error {
+	runtime := host.Runtime()
+	async := host.Async()
+
 	callerCallCallID := async.GetCallerCallID()
 
-	// in case of a callback, updates the status of the async call and gets the callback name
-	if callType == vm.AsynchronousCallBack {
-		if err != nil {
-			return err
-		}
-
-		asyncCall, err := async.UpdateCurrentAsyncCallStatus(
-			runtime.GetSCAddress(),
-			callerCallCallID,
-			async.GetCallerCallID(),
-			vmInput)
-		if err != nil {
-			log.Trace("UpdateCurrentCallStatus failed", "error", err)
-			return err
-		}
-
-		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
+	asyncCall, err := async.UpdateCurrentAsyncCallStatus(
+		runtime.GetSCAddress(),
+		callerCallCallID,
+		async.GetCallerCallID(),
+		runtime.GetVMInput())
+	if err != nil {
+		log.Trace("UpdateCurrentCallStatus failed", "error", err)
+		return err
 	}
+
+	runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
+
+	isCallComplete, err := host.callFunctionAndExecuteAsync()
+	if !isCallComplete || err != nil {
+		return err
+	}
+
+	async.LoadParentContext()
+	async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
+
+	return nil
+}
+
+func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
+	runtime := host.Runtime()
+	async := host.Async()
 
 	// TODO refactor this, and apply this condition in other places where a
 	// function is called
 	if runtime.Function() != "" {
-		err = host.verifyAllowedFunctionCall()
+		err := host.verifyAllowedFunctionCall()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
-			return err
+			return false, err
 		}
 
 		function, err := runtime.GetFunctionToCall()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
-			return err
+			return false, err
 		}
 
 		_, err = function()
@@ -931,44 +979,26 @@ func (host *vmHost) callSCMethod() error {
 			err = host.checkFinalGasAfterExit()
 		}
 		if err != nil {
-			if callType == vm.DirectCall {
+			if runtime.GetVMInput().CallType == vm.DirectCall {
 				log.Trace("call SC method failed", "error", err)
-				return err
+				return false, err
 			}
 		} else {
 			err = async.Execute()
 			if err != nil {
 				log.Trace("call SC method failed", "error", err)
-				return err
+				return false, err
 			}
 
 			if !async.IsComplete() {
 				async.SetResults(host.Output().GetVMOutput())
 				async.Save()
-				return nil
+				return false, nil
 			}
 		}
 	}
 
-	switch callType {
-	case vm.DirectCall:
-		break
-	case vm.AsynchronousCall:
-		output := host.Output()
-		err = async.SendCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
-		break
-	case vm.AsynchronousCallBack:
-		async.LoadParentContext()
-		async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
-	default:
-		err = arwen.ErrUnknownCallType
-	}
-
-	if err != nil {
-		log.Trace("call SC method failed", "error", err)
-	}
-
-	return err
+	return true, nil
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {
