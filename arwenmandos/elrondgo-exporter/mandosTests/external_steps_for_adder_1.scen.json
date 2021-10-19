@@ -6,9 +6,9 @@
         {
             "step": "setState",
             "accounts": {
-                "address:owner": {
-                    "nonce": "1",
-                    "balance": "48",
+                "address:alice": {
+                    "nonce": "5",
+                    "balance": "284",
                     "storage": {},
                     "code": ""
                 },
@@ -22,10 +22,15 @@
             }
         },
         {
+            "step": "externalSteps",
+            "comment": "verify that externalStep in externalStep appends accounts and transactions correctly",
+            "path": "external_steps_for_adder_2.scen.json"
+        },
+        {
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "address:owner",
+                "from": "address:alice",
                 "to": "address:adder",
                 "value": "0",
                 "function": "add",
@@ -38,28 +43,6 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "1",
-            "tx": {
-                "from": "address:owner",
-                "to": "address:adder",
-                "value": "0",
-                "function": "add",
-                "arguments": [
-                    "3"
-                ],
-                "gasLimit": "5,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [],
-                "status": "4",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
