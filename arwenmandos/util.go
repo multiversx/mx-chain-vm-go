@@ -160,31 +160,39 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName string, arguments [][]byte) []byte {
 	multiTransferData := make([]byte, 0)
 	multiTransferData = append(multiTransferData, []byte(core.BuiltInFunctionMultiESDTNFTTransfer)...)
+	multiTransferData = append(multiTransferData, []byte("@")...)
 	multiTransferData = append(multiTransferData, to...)
+	multiTransferData = append(multiTransferData, []byte("@")...)
 
 	encodedNumberOfTransfers := hex.EncodeToString(big.NewInt(int64(len(esdtData))).Bytes())
 	multiTransferData = append(multiTransferData, []byte(encodedNumberOfTransfers)...)
+	multiTransferData = append(multiTransferData, []byte("@")...)
 
 	for _, esdtDataTransfer := range esdtData {
 		multiTransferData = append(multiTransferData, esdtDataTransfer.TokenIdentifier.Value...)
+		multiTransferData = append(multiTransferData, []byte("@")...)
 
 		encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
 		multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
+		multiTransferData = append(multiTransferData, []byte("@")...)
 
 		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
 		multiTransferData = append(multiTransferData, []byte(encodedAmountValue)...)
+		multiTransferData = append(multiTransferData, []byte("@")...)
 	}
 
 	if len(endpointName) > 0 {
 		encodedEndpointName := hex.EncodeToString([]byte(endpointName))
 		multiTransferData = append(multiTransferData, []byte(encodedEndpointName)...)
+		multiTransferData = append(multiTransferData, []byte("@")...)
 
 		for _, arg := range arguments {
 			encodedArg := hex.EncodeToString(arg)
 			multiTransferData = append(multiTransferData, []byte(encodedArg)...)
+			multiTransferData = append(multiTransferData, []byte("@")...)
 		}
 	}
-	return multiTransferData
+	return multiTransferData[:len(multiTransferData)-1]
 }
 
 func logGasTrace(ae *ArwenTestExecutor) {
