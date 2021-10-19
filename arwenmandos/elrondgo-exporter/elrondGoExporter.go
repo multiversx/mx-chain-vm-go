@@ -2,6 +2,7 @@ package elrondgo_exporter
 
 import (
 	"errors"
+	"math/big"
 
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
@@ -12,9 +13,11 @@ var errFirstStepMustSetState = errors.New("first step must be of type SetState")
 
 var errNoStepsProvided = errors.New("no steps were provided")
 
-var errStepIsNotTxStep = errors.New("step is not deploy or scCall")
+var errStepIsNotTxStep = errors.New("step is not scCall")
 
 var errTxStepIsNotScCall = errors.New("txStep is not scCall")
+
+var okStatus = big.NewInt(0)
 
 func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, txs []*Transaction, err error) {
 	scenario, err := getScenario(mandosTestPath)
@@ -55,40 +58,49 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 	if len(steps) == 0 {
 		return nil, nil, errNoStepsProvided
 	}
-	if !stepIsSetState(steps[0]) {
+	if !stepIsSetState(steps[0]) && !stepIsExternalStep(steps[0]) {
 		return nil, nil, errFirstStepMustSetState
 	}
 
-	switch step := steps[0].(type) {
-	case *mj.SetStateStep:
-		accounts, err = setAccounts(step)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
 	txs = make([]*Transaction, 0)
+	accounts = make([]*TestAccount, 0)
 
-	for i := 1; i < len(steps); i++ {
-		switch txStep := steps[i].(type) {
+	for i := 0; i < len(steps); i++ {
+		switch step := steps[i].(type) {
+		case *mj.SetStateStep:
+			setStepAccounts, err := setAccounts(step)
+			if err != nil {
+				return nil, nil, err
+			}
+			accounts = append(accounts, setStepAccounts...)
 		case *mj.TxStep:
-			switch txStep.StepTypeName() {
+			switch step.StepTypeName() {
 			case "scCall":
-				arguments := getArguments(txStep.Tx.Arguments)
-				tx := CreateTransaction(
-					txStep.Tx.Function,
-					arguments,
-					txStep.Tx.Nonce.Value,
-					txStep.Tx.EGLDValue.Value,
-					txStep.Tx.ESDTValue,
-					txStep.Tx.From.Value,
-					txStep.Tx.To.Value,
-					txStep.Tx.GasLimit.Value,
-					txStep.Tx.GasPrice.Value,
-				)
-				txs = append(txs, tx)
+				if step.ExpectedResult.Status.Value.Cmp(okStatus) == 0 {
+					arguments := getArguments(step.Tx.Arguments)
+					tx := CreateTransaction(
+						step.Tx.Function,
+						arguments,
+						step.Tx.Nonce.Value,
+						step.Tx.EGLDValue.Value,
+						step.Tx.ESDTValue,
+						step.Tx.From.Value,
+						step.Tx.To.Value,
+						step.Tx.GasLimit.Value,
+						step.Tx.GasPrice.Value,
+					)
+					txs = append(txs, tx)
+				}
 			default:
 				return nil, nil, errTxStepIsNotScCall
 			}
+		case *mj.ExternalStepsStep:
+			externalStepAccounts, externalStepTtransactions, err := GetAccountsAndTransactionsFromMandos(step.Path)
+			if err != nil {
+				return nil, nil, err
+			}
+			accounts = append(accounts, externalStepAccounts...)
+			txs = append(txs, externalStepTtransactions...)
 		default:
 			return nil, nil, errStepIsNotTxStep
 		}
@@ -120,4 +132,8 @@ func getArguments(args []mj.JSONBytesFromTree) [][]byte {
 
 func stepIsSetState(step mj.Step) bool {
 	return step.StepTypeName() == "setState"
+}
+
+func stepIsExternalStep(step mj.Step) bool {
+	return step.StepTypeName() == "externalSteps"
 }
