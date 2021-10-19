@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	elrondgo_exporter "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/elrondgo-exporter"
+	elrondgo_exporter "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/elrondgo-exporter"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
