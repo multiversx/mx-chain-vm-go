@@ -33,7 +33,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 		scenarioOJ.Put("traceGas", &ojTrue)
 	}
 
-	scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))
+	if scenario.GasSchedule != mj.GasScheduleDefault {
+		scenarioOJ.Put("gasSchedule", gasScheduleToOJ(scenario.GasSchedule))
+	}
 
 	var stepOJList []oj.OJsonObject
 
@@ -81,6 +83,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
+			if step.DisplayLogs {
+				stepOJ.Put("displayLogs", boolToOJ(step.DisplayLogs))
+			}
 			stepOJ.Put("tx", transactionToScenarioOJ(step.Tx))
 			if step.Tx.Type.IsSmartContractTx() && step.ExpectedResult != nil {
 				stepOJ.Put("expect", resultToOJ(step.ExpectedResult))
@@ -104,12 +109,12 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 	if tx.Type.HasReceiver() {
 		transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 	}
-	if tx.Type.HasValue() {
-		transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	if tx.Type.HasValue() && len(tx.EGLDValue.Original) > 0 && tx.EGLDValue.Original != "0" {
+		transactionOJ.Put("egldValue", bigIntToOJ(tx.EGLDValue))
 	}
-	if tx.ESDTValue != nil {
+	if len(tx.ESDTValue) > 0 {
 		esdtItemOJ := esdtTxDataToOJ(tx.ESDTValue)
-		transactionOJ.Put("esdt", esdtItemOJ)
+		transactionOJ.Put("esdtValue", esdtItemOJ)
 	}
 	if tx.Type.HasFunction() {
 		transactionOJ.Put("function", stringToOJ(tx.Function))
@@ -127,8 +132,11 @@ func transactionToScenarioOJ(tx *mj.Transaction) oj.OJsonObject {
 		transactionOJ.Put("arguments", &argOJ)
 	}
 
-	if tx.Type.HasGas() {
+	if tx.Type.HasGasLimit() && len(tx.GasLimit.Original) > 0 {
 		transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
+	}
+
+	if tx.Type.HasGasPrice() && len(tx.GasPrice.Original) > 0 {
 		transactionOJ.Put("gasPrice", uint64ToOJ(tx.GasPrice))
 	}
 
@@ -175,12 +183,10 @@ func gasScheduleToOJ(gasSchedule mj.GasSchedule) oj.OJsonObject {
 		return stringToOJ("default")
 	case mj.GasScheduleDummy:
 		return stringToOJ("dummy")
-	case mj.GasScheduleV1:
-		return stringToOJ("v1")
-	case mj.GasScheduleV2:
-		return stringToOJ("v2")
 	case mj.GasScheduleV3:
 		return stringToOJ("v3")
+	case mj.GasScheduleV4:
+		return stringToOJ("v4")
 	default:
 		return stringToOJ("")
 	}

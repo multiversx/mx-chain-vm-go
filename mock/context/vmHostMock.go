@@ -234,3 +234,8 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	host.VMOutputToReturn += 1
 	return vmOutput
 }
+
+// FixOOGReturnCodeEnabled mocked method
+func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
+	return true
+}

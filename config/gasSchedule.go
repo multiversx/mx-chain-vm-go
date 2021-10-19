@@ -305,6 +305,7 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigIntGetSignedArgument"] = value
 	gasMap["BigIntGetCallValue"] = value
 	gasMap["BigIntGetExternalBalance"] = value
+	gasMap["CopyPerByteForTooBig"] = value
 
 	return gasMap
 }

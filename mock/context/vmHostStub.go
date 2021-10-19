@@ -157,6 +157,14 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	return nil
 }
 
+// Async mocked method
+func (vhs *VMHostStub) Async() arwen.AsyncContext {
+	if vhs.AsyncCalled != nil {
+		return vhs.AsyncCalled()
+	}
+	return nil
+}
+
 // ExecuteESDTTransfer mocked method
 func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
@@ -290,10 +298,7 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	}
 }
 
-// Async mocked method
-func (vhs *VMHostStub) Async() arwen.AsyncContext {
-	if vhs.AsyncCalled != nil {
-		return vhs.AsyncCalled()
-	}
-	return nil
+// FixOOGReturnCodeEnabled mocked method
+func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
+	return true
 }

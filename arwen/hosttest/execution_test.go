@@ -19,6 +19,7 @@ import (
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -454,6 +455,70 @@ func TestExecution_CallWasmerError(t *testing.T) {
 		})
 }
 
+func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
+}
+
+func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["ElrondAPICost"]["Finish"] += 1
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
+}
+
 func TestExecution_CallSCMethod_Init(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -596,7 +661,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -635,7 +700,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -658,7 +723,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			finalBuffer := make([]byte, 0)
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				finalBuffer = append(finalBuffer, randomBuffer...)
 			}
 			verify.
@@ -681,7 +746,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -703,7 +768,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -725,7 +790,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -747,7 +812,7 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.
 				Ok().
@@ -773,8 +838,8 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -809,8 +874,8 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -1107,9 +1172,9 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					)
 			} else {
-				verify.ExecutionFailed().
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1508,9 +1573,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			} else {
-				verify.ExecutionFailed().
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1663,9 +1728,9 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 					)
 				require.Equal(t, int64(42), host.ManagedTypes().GetBigIntOrCreate(12).Int64())
 			} else {
-				verify.ExecutionFailed().
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1716,7 +1781,6 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(nil),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
@@ -1842,7 +1906,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childOutput, err := host.ExecuteOnDestContext(childInput)
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
 	verify.Ok().
-		GasRemaining(7729)
+		GasRemaining(7758)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -2098,9 +2162,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error())
 			} else {
-				verify.ExecutionFailed().
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -2477,8 +2541,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 				CodeDeployerAddress(childAddress, test.ParentAddress).
 				GasUsed(childAddress, 472).
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
-				Storage(
-					test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+				Storage()
 		})
 }
 

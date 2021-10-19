@@ -48,7 +48,7 @@ func transactionToTestOJ(tx *mj.Transaction) oj.OJsonObject {
 	transactionOJ.Put("nonce", uint64ToOJ(tx.Nonce))
 	transactionOJ.Put("function", stringToOJ(tx.Function))
 	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
-	transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	transactionOJ.Put("value", bigIntToOJ(tx.EGLDValue))
 	transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 
 	var argList []oj.OJsonObject

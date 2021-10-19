@@ -48,7 +48,6 @@
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "588,000,000",
-                    "code": "*",
                     "storage": {
                         "``ELRONDreward": "888,000,000",
                         "``auction_addr": "sc:auction",
@@ -101,7 +100,8 @@
                         "``user_id|``delegator_2___________________s1": "3",
                         "``user_id|``delegator_3___________________s1": "4",
                         "``user_id|``node_address__________________s1": "1"
-                    }
+                    },
+                    "code": "*"
                 },
                 "+": ""
             }
