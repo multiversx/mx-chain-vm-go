@@ -1,6 +1,7 @@
-package elrondgo_exporter
+package mandosTests
 
 import (
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/elrondgo-exporter"
 	"math/big"
 	"testing"
 
@@ -16,17 +17,17 @@ var addressOwner = []byte{111, 119, 110, 101, 114, 95, 95, 95, 95, 95, 95, 95, 9
 var addressAdder = []byte{97, 100, 100, 101, 114, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95, 95}
 
 func TestGetAccountsAndTransactionsFromAdder(t *testing.T) {
-	accounts, transactions, err := GetAccountsAndTransactionsFromMandos("./mandosTests/adder.scen.json")
+	accounts, transactions, err := elrondgo_exporter.GetAccountsAndTransactionsFromMandos("adder.scen.json")
 	require.Nil(t, err)
-	expectedAccs := make([]*TestAccount, 0)
-	expectedTxs := make([]*Transaction, 0)
+	expectedAccs := make([]*elrondgo_exporter.TestAccount, 0)
+	expectedTxs := make([]*elrondgo_exporter.Transaction, 0)
 
-	ownerAccount := SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
-	scAccount := SetNewAccount(0, addressAdder, big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../test/adder/output/adder.wasm"), addressOwner)
+	ownerAccount := elrondgo_exporter.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
+	scAccount := elrondgo_exporter.SetNewAccount(0, addressAdder, big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
 	expectedAccs = append(expectedAccs, ownerAccount, scAccount)
 	require.Equal(t, 2, len(expectedAccs))
 
-	transaction := CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].address, accounts[1].address, 5000000, 0)
+	transaction := elrondgo_exporter.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
 	expectedTxs = append(expectedTxs, transaction)
 
 	require.Nil(t, err)
