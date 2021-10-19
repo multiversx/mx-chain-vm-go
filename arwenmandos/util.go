@@ -181,7 +181,6 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
 		multiTransferData = append(multiTransferData, []byte(encodedAmountValue)...)
 		multiTransferData = append(multiTransferData, separator...)
-
 	}
 
 	if len(endpointName) > 0 {
@@ -195,7 +194,7 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 			multiTransferData = append(multiTransferData, separator...)
 		}
 	}
-	return multiTransferData[:(len(multiTransferData) - 1)]
+	return multiTransferData[:len(multiTransferData)-1]
 }
 
 func logGasTrace(ae *ArwenTestExecutor) {
