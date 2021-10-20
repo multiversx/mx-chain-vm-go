@@ -2,6 +2,8 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRustBasicFeaturesLatest(t *testing.T) {
@@ -43,6 +45,11 @@ func TestRustComposability(t *testing.T) {
 
 func TestRustLegacyComposability(t *testing.T) {
 	runAllTestsInFolder(t, "features/composability/mandos-legacy")
+}
+
+func TestSingleScenario(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_send_twice_egld.scen.json")
+	require.Nil(t, err)
 }
 
 func TestTimelocks(t *testing.T) {
