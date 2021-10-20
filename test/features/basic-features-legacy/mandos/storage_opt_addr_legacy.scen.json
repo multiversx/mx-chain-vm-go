@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "100000000000000000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "100000000000000000"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "store_opt_addr",
                 "arguments": [
                     "``____________address_____________"
@@ -61,14 +57,15 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_opt_addr",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "``____________address_____________" ],
+                "out": [
+                    "``____________address_____________"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -81,10 +78,8 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "store_opt_addr",
-                "arguments": [
-                ],
+                "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
@@ -116,14 +111,13 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_opt_addr",
                 "arguments": [],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ ],
+                "out": [],
                 "status": "",
                 "logs": [],
                 "gas": "*",

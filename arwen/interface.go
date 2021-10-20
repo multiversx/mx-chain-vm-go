@@ -53,6 +53,8 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	FixOOGReturnCodeEnabled() bool
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -162,9 +164,11 @@ type ManagedTypesContext interface {
 	GetRandReader() io.Reader
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
+	ConsumeGasForBytes(bytes []byte)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
 	ConsumeGasForBigFloatCopy(values ...*big.Float)
-	PutBigInt(value int64) int32
+	NewBigInt(value *big.Int) int32
+	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
@@ -216,7 +220,9 @@ type OutputContext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	PrependFinish(data []byte)
+	DeleteFirstReturnData()
 	GetVMOutput() *vmcommon.VMOutput
+	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
@@ -231,6 +237,8 @@ type MeteringContext interface {
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
+	UseAndTraceGas(gas uint64)
+	UseGasAndAddTracedGas(functionName string, gas uint64)
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
@@ -251,6 +259,9 @@ type MeteringContext interface {
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	StartGasTracing(functionName string)
+	SetGasTracing(enableGasTracing bool)
+	GetGasTrace() map[string]map[string][]uint64
 }
 
 // StorageStatus defines the states the storage can be in
@@ -296,4 +307,13 @@ type AsyncCallInfoHandler interface {
 type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+}
+
+// GasTracing defines the functionality needed for a gas tracing
+type GasTracing interface {
+	BeginTrace(scAddress string, functionName string)
+	AddToCurrentTrace(usedGas uint64)
+	AddTracedGas(scAddress string, functionName string, usedGas uint64)
+	GetGasTrace() map[string]map[string][]uint64
+	IsInterfaceNil() bool
 }

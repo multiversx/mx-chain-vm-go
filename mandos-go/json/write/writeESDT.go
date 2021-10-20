@@ -1,24 +1,19 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
 func esdtTxDataToOJ(esdtItems []*mj.ESDTTxData) oj.OJsonObject {
-	nrTransfers := len(esdtItems)
-
-	if nrTransfers == 1 {
-		return esdtTxRawEntryToOJ(esdtItems[0])
-	} else {
-		esdtItemList := oj.OJsonList{}
-		for _, esdtItemRaw := range esdtItems {
-			esdtItemOJ := esdtTxRawEntryToOJ(esdtItemRaw)
-			esdtItemList = append(esdtItemList, esdtItemOJ)
-		}
-
-		return &esdtItemList
+	esdtItemList := oj.OJsonList{}
+	for _, esdtItemRaw := range esdtItems {
+		esdtItemOJ := esdtTxRawEntryToOJ(esdtItemRaw)
+		esdtItemList = append(esdtItemList, esdtItemOJ)
 	}
+
+	return &esdtItemList
+
 }
 
 func esdtTxRawEntryToOJ(esdtItemRaw *mj.ESDTTxData) *oj.OJsonMap {
@@ -53,9 +48,7 @@ func esdtItemToOJ(esdtItem *mj.ESDTData) oj.OJsonObject {
 	esdtItemOJ := oj.NewMap()
 
 	// instances
-	if len(esdtItem.Instances) == 1 {
-		appendESDTInstanceToOJ(esdtItem.Instances[0], esdtItemOJ)
-	} else {
+	if len(esdtItem.Instances) > 0 {
 		var convertedList []oj.OJsonObject
 		for _, esdtInstance := range esdtItem.Instances {
 			esdtInstanceOJ := oj.NewMap()

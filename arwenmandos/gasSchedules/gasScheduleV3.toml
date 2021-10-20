@@ -54,6 +54,7 @@
     GetShardOfAddress  = 5000
     GetExternalBalance = 7000
     GetBlockHash       = 10000
+    GetOriginalTxHash  = 10000
     TransferValue      = 150000
     GetArgument        = 100
     GetFunction        = 100
@@ -165,6 +166,7 @@
     BigIntGetSignedArgument     = 1000
     BigIntGetCallValue          = 1000
     BigIntGetExternalBalance    = 10000
+    CopyPerByteForTooBig        = 1000
 
 [BigFloatAPICost]
     BigFloatNewFromParts = 2000

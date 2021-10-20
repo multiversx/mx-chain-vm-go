@@ -9,8 +9,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -96,6 +97,10 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
+	if !host.flagMultiESDTTransferAsyncCallBack.IsSet() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+		return false, functionName, args
+	}
+
 	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args
@@ -103,6 +108,25 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 
 	isNoCallAfter := len(parsedTransfer.CallFunction) == 0
 	return isNoCallAfter, functionName, args
+}
+
+func (host *vmHost) determineDestinationForAsyncCall(asyncCallInfo arwen.AsyncCallInfoHandler) []byte {
+	if !bytes.Equal(host.Runtime().GetSCAddress(), asyncCallInfo.GetDestination()) {
+		return asyncCallInfo.GetDestination()
+	}
+
+	argsParser := parsers.NewCallArgsParser()
+	functionName, args, err := argsParser.ParseData(string(asyncCallInfo.GetData()))
+	if !host.IsBuiltinFunctionName(functionName) {
+		return asyncCallInfo.GetDestination()
+	}
+
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(asyncCallInfo.GetDestination(), asyncCallInfo.GetDestination(), functionName, args)
+	if err != nil {
+		return asyncCallInfo.GetDestination()
+	}
+
+	return parsedTransfer.RcvAddr
 }
 
 func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCallInfo) (arwen.AsyncCallExecutionMode, error) {
@@ -117,12 +141,14 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 		return arwen.AsyncUnknown, err
 	}
 
-	sameShard := host.AreInSameShard(runtime.GetSCAddress(), asyncCallInfo.Destination)
+	actualDestination := host.determineDestinationForAsyncCall(asyncCallInfo)
+
+	sameShard := host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), asyncCallInfo.Destination, functionName, args)
+			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), actualDestination, functionName, args)
 			if isESDTTransfer && runtime.GetVMInput().CallType == vm.AsynchronousCall &&
-				bytes.Equal(runtime.GetVMInput().CallerAddr, asyncCallInfo.Destination) {
+				bytes.Equal(runtime.GetVMInput().CallerAddr, actualDestination) {
 				return arwen.ESDTTransferOnCallBack, nil
 			}
 
@@ -131,7 +157,7 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 		return arwen.AsyncBuiltinFuncCrossShard, nil
 	}
 
-	code, err := blockchain.GetCode(asyncCallInfo.Destination)
+	code, err := blockchain.GetCode(actualDestination)
 	if len(code) > 0 && err == nil {
 		return arwen.SyncCall, nil
 	}
@@ -169,10 +195,14 @@ func (host *vmHost) executeSyncCallbackCall(
 	destinationVMOutput *vmcommon.VMOutput,
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
+	actualDestination := asyncCallInfo.GetDestination()
+	if host.flagMultiESDTTransferAsyncCallBack.IsSet() {
+		actualDestination = host.determineDestinationForAsyncCall(asyncCallInfo)
+	}
 	callbackCallInput, err := host.createCallbackContractCallInput(
 		asyncCallInfo,
 		destinationVMOutput,
-		asyncCallInfo.GetDestination(),
+		actualDestination,
 		arwen.CallbackFunctionName,
 		destinationErr,
 	)
@@ -415,9 +445,22 @@ func (host *vmHost) createCallbackContractCallInput(
 		if len(destinationVMOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
 		}
+		if host.isSameShardNFTTransfer(contractCallInput) {
+			contractCallInput.RecipientAddr = contractCallInput.CallerAddr
+		}
+		host.Output().DeleteFirstReturnData()
 	}
 
 	return contractCallInput, nil
+}
+
+func (host *vmHost) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractCallInput) bool {
+	if !host.AreInSameShard(contractCallInput.CallerAddr, contractCallInput.RecipientAddr) {
+		return false
+	}
+
+	return contractCallInput.Function == core.BuiltInFunctionMultiESDTNFTTransfer ||
+		contractCallInput.Function == core.BuiltInFunctionESDTNFTTransfer
 }
 
 func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput, callBackErr error) error {

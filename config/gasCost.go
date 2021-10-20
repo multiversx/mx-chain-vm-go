@@ -30,6 +30,7 @@ type ElrondAPICost struct {
 	GetShardOfAddress    uint64
 	GetExternalBalance   uint64
 	GetBlockHash         uint64
+	GetOriginalTxHash    uint64
 	TransferValue        uint64
 	GetArgument          uint64
 	GetFunction          uint64
@@ -139,6 +140,7 @@ type BigIntAPICost struct {
 	BigIntGetSignedArgument    uint64
 	BigIntGetCallValue         uint64
 	BigIntGetExternalBalance   uint64
+	CopyPerByteForTooBig       uint64
 }
 
 type BigFloatAPICost struct {

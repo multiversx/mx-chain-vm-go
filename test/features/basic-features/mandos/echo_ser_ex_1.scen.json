@@ -7,14 +7,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -24,16 +21,21 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_ser_example_1",
                 "arguments": [
                     {
                         "0-int": "u16:0",
-                        "1-seq": ["u32:3", "0x010203"],
+                        "1-seq": [
+                            "u32:3",
+                            "0x010203"
+                        ],
                         "2-another_byte": "u8:4",
                         "3-uint_32": "u32:5",
                         "4-uint_64": "u64:6",
-                        "5-boxed_bytes": ["u32:4", "0x0708090a"]
+                        "5-boxed_bytes": [
+                            "u32:4",
+                            "0x0708090a"
+                        ]
                     }
                 ],
                 "gasLimit": "50,000,000",
@@ -43,11 +45,17 @@
                 "out": [
                     {
                         "0-int": "u16:0",
-                        "1-seq": ["u32:3", "0x010203"],
+                        "1-seq": [
+                            "u32:3",
+                            "0x010203"
+                        ],
                         "2-another_byte": "u8:4",
                         "3-uint_32": "u32:5",
                         "4-uint_64": "u64:6",
-                        "5-boxed_bytes": ["u32:4", "0x0708090a"]
+                        "5-boxed_bytes": [
+                            "u32:4",
+                            "0x0708090a"
+                        ]
                     }
                 ],
                 "status": "",
@@ -63,15 +71,20 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_boxed_ser_example_1",
                 "arguments": [
                     {
                         "3-uint_32": "u32:5",
                         "4-uint_64": "u64:6",
-                        "5-boxed_bytes": ["u32:4", "0x0708090a"],
+                        "5-boxed_bytes": [
+                            "u32:4",
+                            "0x0708090a"
+                        ],
                         "0-int": "u16:0",
-                        "1-seq": ["u32:3", "0x010203"],
+                        "1-seq": [
+                            "u32:3",
+                            "0x010203"
+                        ],
                         "2-another_byte": "u8:4"
                     }
                 ],
@@ -81,12 +94,17 @@
             "expect": {
                 "out": [
                     {
-                        
-                        "5-boxed_bytes": ["u32:4", "0x0708090a"],
+                        "5-boxed_bytes": [
+                            "u32:4",
+                            "0x0708090a"
+                        ],
                         "4-uint_64": "u64:6",
                         "3-uint_32": "u32:5",
                         "2-another_byte": "u8:4",
-                        "1-seq": ["u32:3", "0x010203"],
+                        "1-seq": [
+                            "u32:3",
+                            "0x010203"
+                        ],
                         "0-int": "u16:0"
                     }
                 ],

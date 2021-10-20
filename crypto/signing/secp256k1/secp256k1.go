@@ -11,6 +11,7 @@ import (
 )
 
 type MessageHashType uint8
+
 const (
 	ECDSAPlainMsg MessageHashType = iota
 	ECDSASha256
