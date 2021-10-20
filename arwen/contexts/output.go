@@ -216,6 +216,13 @@ func (context *outputContext) PrependFinish(data []byte) {
 	context.outputState.ReturnData = append([][]byte{data}, context.outputState.ReturnData...)
 }
 
+// DeleteFirstReturnData deletes the first return data, to be used after prepend
+func (context *outputContext) DeleteFirstReturnData() {
+	if len(context.outputState.ReturnData) > 0 {
+		context.outputState.ReturnData = context.outputState.ReturnData[1:]
+	}
+}
+
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
@@ -239,7 +246,6 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
-	return
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -422,6 +428,17 @@ func (context *outputContext) hasSufficientBalance(address []byte, value *big.In
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
+}
+
+// RemoveNonUpdatedStorage removes non updated storage from output state
+func (context *outputContext) RemoveNonUpdatedStorage() {
+	for _, outAcc := range context.outputState.OutputAccounts {
+		for _, storageUpdate := range outAcc.StorageUpdates {
+			if !storageUpdate.Written {
+				delete(outAcc.StorageUpdates, string(storageUpdate.Offset))
+			}
+		}
+	}
 }
 
 // GetVMOutput updates the current VMOutput and returns it

@@ -10,7 +10,7 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
@@ -24,12 +24,13 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	World                   *worldhook.MockWorld
-	vm                      vmi.VMExecutionHandler
-	checkGas                bool
-	mandosGasScheduleLoaded bool
-	fileResolver            fr.FileResolver
-	exprReconstructor       er.ExprReconstructor
+	World             *worldhook.MockWorld
+	vm                vmi.VMExecutionHandler
+	vmHost            arwen.VMHost
+	checkGas          bool
+	scenarioTraceGas  []bool
+	fileResolver      fr.FileResolver
+	exprReconstructor er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -40,12 +41,12 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
 	return &ArwenTestExecutor{
-		World:                   world,
-		vm:                      nil,
-		checkGas:                true,
-		mandosGasScheduleLoaded: false,
-		fileResolver:            nil,
-		exprReconstructor:       er.ExprReconstructor{},
+		World:             world,
+		vm:                nil,
+		checkGas:          true,
+		scenarioTraceGas:  make([]bool, 0),
+		fileResolver:      nil,
+		exprReconstructor: er.ExprReconstructor{},
 	}, nil
 }
 
@@ -75,12 +76,14 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &worldhook.EpochNotifierStub{},
 	})
 	if err != nil {
 		return err
 	}
 
 	ae.vm = vm
+	ae.vmHost = vm
 	return nil
 }
 
@@ -89,19 +92,30 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
 }
 
+// GetVMHost returns de vm Context from the vm context map
+func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
+	return ae.vmHost
+}
+
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
-	case mj.GasScheduleV1:
-		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV1())
-	case mj.GasScheduleV2:
-		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV2())
 	case mj.GasScheduleV3:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+	case mj.GasScheduleV4:
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	default:
 		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
 	}
+}
+
+func (ae *ArwenTestExecutor) PeekTraceGas() bool {
+	length := len(ae.scenarioTraceGas)
+	if length != 0 {
+		return ae.scenarioTraceGas[length-1]
+	}
+	return false
 }

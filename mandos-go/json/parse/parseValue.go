@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
@@ -139,6 +139,14 @@ func (p *Parser) parseString(obj oj.OJsonObject) (string, error) {
 		return "", errors.New("not a string value")
 	}
 	return str.Value, nil
+}
+
+func (p *Parser) parseBool(obj oj.OJsonObject) (bool, error) {
+	value, isBool := obj.(*oj.OJsonBool)
+	if !isBool {
+		return false, errors.New("not a bool value")
+	}
+	return bool(*value), nil
 }
 
 // IsStar returns whether check object is othe form "*".

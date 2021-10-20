@@ -7,22 +7,19 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0x10000000000000e8d4a51000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x10000000000000e8d4a51000"
                 },
                 "sc:proxy-first": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``other_contract": "sc:proxy-second"
+                        "str:other_contract": "sc:proxy-second"
                     },
                     "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
                 "sc:proxy-second": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../proxy-test-second/output/proxy-test-second.wasm"
                 }
             }
@@ -33,7 +30,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:proxy-first",
-                "value": "0x123400",
+                "egldValue": "0x123400",
                 "function": "forwardToOtherContractWithCallback",
                 "arguments": [],
                 "gasLimit": "0x1000000000000",
@@ -62,8 +59,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``other_contract": "sc:proxy-second",
-                        "``callback_info": "0x7777"
+                        "str:other_contract": "sc:proxy-second",
+                        "str:callback_info": "0x7777"
                     },
                     "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
@@ -71,8 +68,8 @@
                     "nonce": "0",
                     "balance": "0x123400",
                     "storage": {
-                        "``pay_me_arg": "0x56",
-                        "``last_payment": "0x123400"
+                        "str:pay_me_arg": "0x56",
+                        "str:last_payment": "0x123400"
                     },
                     "code": "file:../proxy-test-second/output/proxy-test-second.wasm"
                 }

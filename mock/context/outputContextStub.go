@@ -37,12 +37,14 @@ type OutputContextStub struct {
 	ClearReturnDataCalled             func()
 	FinishCalled                      func(data []byte)
 	PrependFinishCalled               func(data []byte)
+	DeleteFirstReturnDataCalled       func()
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
+	RemoveNonUpdatedStorageCalled     func()
 }
 
 // AddToActiveState mocked method
@@ -246,12 +248,26 @@ func (o *OutputContextStub) PrependFinish(data []byte) {
 	}
 }
 
+// DeleteFirstReturnData mocked method
+func (o *OutputContextStub) DeleteFirstReturnData() {
+	if o.DeleteFirstReturnDataCalled != nil {
+		o.DeleteFirstReturnDataCalled()
+	}
+}
+
 // GetVMOutput mocked method
 func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 	if o.GetVMOutputCalled != nil {
 		return o.GetVMOutputCalled()
 	}
 	return nil
+}
+
+// GetVMOutput mocked method
+func (o *OutputContextStub) RemoveNonUpdatedStorage() {
+	if o.RemoveNonUpdatedStorageCalled != nil {
+		o.RemoveNonUpdatedStorageCalled()
+	}
 }
 
 // AddTxValueToAccount mocked method
