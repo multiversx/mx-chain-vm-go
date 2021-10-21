@@ -235,6 +235,11 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	return vmOutput
 }
 
+// MultiESDTTransferAsyncCallBackEnabled mocked method
+func (host *VMHostMock) MultiESDTTransferAsyncCallBackEnabled() bool {
+	return true
+}
+
 // FixOOGReturnCodeEnabled mocked method
 func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 	return true

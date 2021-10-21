@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
@@ -34,8 +33,6 @@ type asyncContext struct {
 
 	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
-
-	flagMultiESDTTransferAsyncCallBack *atomic.Flag
 }
 
 type serializableAsyncContext struct {
@@ -53,7 +50,6 @@ func NewAsyncContext(
 	host arwen.VMHost,
 	callArgsParser arwen.CallArgsParser,
 	esdtTransferParser vmcommon.ESDTTransferParser,
-	flagMultiESDTTransferAsyncCallBack *atomic.Flag,
 ) (*asyncContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -66,20 +62,19 @@ func NewAsyncContext(
 	}
 
 	context := &asyncContext{
-		host:                               host,
-		stateStack:                         nil,
-		callerAddr:                         nil,
-		callback:                           "",
-		callbackData:                       nil,
-		gasPrice:                           0,
-		gasAccumulated:                     0,
-		returnData:                         nil,
-		asyncCallGroups:                    make([]*arwen.AsyncCallGroup, 0),
-		callArgsParser:                     callArgsParser,
-		esdtTransferParser:                 esdtTransferParser,
-		groupCallbacksEnabled:              false,
-		contextCallbackEnabled:             false,
-		flagMultiESDTTransferAsyncCallBack: flagMultiESDTTransferAsyncCallBack,
+		host:                   host,
+		stateStack:             nil,
+		callerAddr:             nil,
+		callback:               "",
+		callbackData:           nil,
+		gasPrice:               0,
+		gasAccumulated:         0,
+		returnData:             nil,
+		asyncCallGroups:        make([]*arwen.AsyncCallGroup, 0),
+		callArgsParser:         callArgsParser,
+		esdtTransferParser:     esdtTransferParser,
+		groupCallbacksEnabled:  false,
+		contextCallbackEnabled: false,
 	}
 
 	return context, nil

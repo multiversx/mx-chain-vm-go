@@ -298,6 +298,11 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	}
 }
 
+// MultiESDTTransferAsyncCallBackEnabled mocked method
+func (vhs *VMHostStub) MultiESDTTransferAsyncCallBackEnabled() bool {
+	return true
+}
+
 // FixOOGReturnCodeEnabled mocked method
 func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 	return true

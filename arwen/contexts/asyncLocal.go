@@ -265,7 +265,7 @@ func (context *asyncContext) createCallbackInput(
 	runtime := context.host.Runtime()
 
 	actualCallbackInitiator := asyncCall.GetDestination()
-	if context.flagMultiESDTTransferAsyncCallBack.IsSet() {
+	if context.host.MultiESDTTransferAsyncCallBackEnabled() {
 		actualCallbackInitiator = context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
 	}
 
@@ -430,7 +430,7 @@ func (context *asyncContext) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
-	if !context.flagMultiESDTTransferAsyncCallBack.IsSet() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+	if !context.host.MultiESDTTransferAsyncCallBackEnabled() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
 		return false, functionName, args
 	}
 

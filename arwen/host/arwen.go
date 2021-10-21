@@ -154,7 +154,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser, &host.flagMultiESDTTransferAsyncCallBack)
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser)
 	if err != nil {
 		return nil, err
 	}
@@ -435,6 +435,11 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagRemoveNonUpdatedStorage.Toggle(epoch >= host.removeNonUpdatedStorageEnableEpoch)
 	log.Debug("Arwen VM: remove non updated storage", "enabled", host.flagRemoveNonUpdatedStorage.IsSet())
+}
+
+// MultiESDTTransferAsyncCallBackEnabled returns true if the corresponding flag is set
+func (host *vmHost) MultiESDTTransferAsyncCallBackEnabled() bool {
+	return host.flagMultiESDTTransferAsyncCallBack.IsSet()
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
