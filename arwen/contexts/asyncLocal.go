@@ -215,10 +215,9 @@ func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutp
 		vmOutput = output.CreateVMOutputInCaseOfError(err)
 	}
 
-	output.SetReturnCode(vmOutput.ReturnCode)
-
-	output.SetReturnMessage(vmOutput.ReturnMessage)
-	output.Finish([]byte(vmOutput.ReturnCode.String()))
+	// output.SetReturnCode(vmOutput.ReturnCode)
+	// output.SetReturnMessage(vmOutput.ReturnMessage)
+	// output.Finish([]byte(vmOutput.ReturnCode.String()))
 }
 
 func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {

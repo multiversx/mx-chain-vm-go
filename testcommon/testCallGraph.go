@@ -95,7 +95,15 @@ type TestCallNode struct {
 	CrtTxHash []byte
 
 	ShardID uint32
-	Fail    bool
+
+	/*
+		for some processes we don't have a tree traversal, but just an execution order,
+		so we need this info copied from the incoming edge
+	*/
+	// a failed edge points to this node
+	Fail bool
+	// error of the failed edge
+	ErrFail error
 }
 
 // LeafLabel - special node label for leafs
@@ -166,7 +174,8 @@ func (node *TestCallNode) copy() *TestCallNode {
 		GasUsed:      node.GasUsed,
 		GasLocked:    node.GasLocked,
 		// IncomingEdge: node.IncomingEdge,
-		Fail: node.Fail,
+		Fail:    node.Fail,
+		ErrFail: node.ErrFail,
 	}
 }
 
@@ -174,6 +183,16 @@ func (node *TestCallNode) copy() *TestCallNode {
 func (node *TestCallNode) IsIncomingEdgeFail() bool {
 	if node.IncomingEdge != nil && node.IncomingEdge.Fail {
 		return true
+	}
+	return false
+}
+
+// HasFailSyncEdge -
+func (node *TestCallNode) HasFailSyncEdge() bool {
+	for _, edge := range node.AdjacentEdges {
+		if edge.Type == Sync && edge.Fail {
+			return true
+		}
 	}
 	return false
 }
@@ -219,7 +238,10 @@ type TestCallEdge struct {
 	// used only for visualization & debugging
 	Label string
 
-	Fail         bool
+	Fail    bool
+	ErrFail error
+	// uses for non-framework triggered fails (e.g. multi-level async call restrictions)
+	ExpectedFail bool
 	CallbackFail bool
 }
 
@@ -236,6 +258,9 @@ func (edge *TestCallEdge) copy() *TestCallEdge {
 		GasLocked:         edge.GasLocked,
 		Label:             edge.Label,
 		Fail:              edge.Fail,
+		CallbackFail:      edge.CallbackFail,
+		ErrFail:           edge.ErrFail,
+		ExpectedFail:      edge.ExpectedFail,
 	}
 }
 
@@ -267,12 +292,29 @@ func (edge *TestCallEdge) SetGasUsed(gasUsed uint64) *TestCallEdge {
 func (edge *TestCallEdge) SetFail() *TestCallEdge {
 	edge.Fail = true
 	edge.To.Fail = true
+	switch edge.Type {
+	case Sync:
+		edge.ErrFail = ErrSyncCallFail
+		break
+	case Async, AsyncCrossShard:
+		edge.ErrFail = ErrAsyncCallFail
+		break
+	}
+	edge.To.ErrFail = edge.ErrFail
+	return edge
+}
+
+// SetExpectedFail - builder style setter
+func (edge *TestCallEdge) SetExpectedFail() *TestCallEdge {
+	edge.ExpectedFail = true
+	edge.SetFail()
 	return edge
 }
 
 // SetCallbackFail - builder style setter
 func (edge *TestCallEdge) SetCallbackFail() *TestCallEdge {
 	edge.CallbackFail = true
+	edge.ErrFail = ErrAsyncCallbackFail
 	return edge
 }
 
@@ -296,6 +338,9 @@ func (edge *TestCallEdge) copyAttributesFrom(sourceEdge *TestCallEdge) {
 	edge.GasUsedByCallback = sourceEdge.GasUsedByCallback
 	edge.Label = sourceEdge.Label
 	edge.Fail = sourceEdge.Fail
+	edge.CallbackFail = sourceEdge.CallbackFail
+	edge.ErrFail = sourceEdge.ErrFail
+	edge.ExpectedFail = sourceEdge.ExpectedFail
 }
 
 // TestCallGraph is the call graph
@@ -564,18 +609,17 @@ func (graph *TestCallGraph) dfsFromNodeRunningOrder(
 	for _, edge := range node.AdjacentEdges {
 		processedNode := graph.dfsFromNodeRunningOrder(node, edge.To, edge, path, processNode, postProcessNode, visits)
 		// failed non-async branches will stop the DFS edge processing for current node
-		if processedNode == nil && !edge.To.IsAsync() {
-			// if the current node is an async node,
-			// it will also immediately fail the current node itself
+		if processedNode == nil && !edge.To.IsAsync() && !edge.To.IsCallback() {
 			if !node.IsAsync() {
 				return nil
 			}
 			// for async nodes with failed branches, we call the callback and don't fail the node
 			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
 			graph.dfsFromNodeRunningOrder(node, callbackEdge.To, callbackEdge, path, processNode, postProcessNode, visits)
+			postProcessNode(path, node, edge.To, edge)
 			break
 		}
-		postProcessNode(path, node, processedNode, edge)
+		postProcessNode(path, node, edge.To, edge)
 	}
 
 	return node
@@ -593,7 +637,7 @@ func (graph *TestCallGraph) DfsFromNodeUntilFailures(parent *TestCallNode, node 
 	path = append(path, node)
 	processNode(path, parent, node, incomingEdge)
 	// any failed node stops DFS (configured or not - due failure upstream propagation)
-	if incomingEdge != nil && incomingEdge.Fail {
+	if (incomingEdge != nil && incomingEdge.Fail) || node.HasFailSyncEdge() {
 		// evan if failed, async nodes need to traverse the callback branch
 		if node.IsAsync() {
 			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
@@ -761,8 +805,9 @@ func addAsyncEdgesToExecutionGraph(node *TestCallNode, executionGraph *TestCallG
 			}
 			execEdge := executionGraph.addEdge(newAsyncDestination, callbackDestination, false)
 			if edge.CallbackFail {
-				execEdge.Fail = true
-				execEdge.To.Fail = true
+				execEdge.SetFail()
+				execEdge.ErrFail = ErrAsyncCallbackFail
+				execEdge.To.ErrFail = ErrAsyncCallbackFail
 			}
 			if edge.Type == Async {
 				execEdge.Type = Callback
@@ -987,15 +1032,19 @@ func isGroupPresent(group string, groups []string) bool {
 
 // PropagateSyncFailures -
 func (graph *TestCallGraph) PropagateSyncFailures() {
+	// propagate failure to parent until we reach an async node
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
-		if node.IsLeaf() || node.IsCallback() || node.WillNotExecute() {
+		if node.IsLeaf() || node.IsAsync() || node.IsCallback() || node.WillNotExecute() {
 			return node
 		}
 
 		if node.IsIncomingEdgeFail() {
-			// propagate failure to parent until we reach an async node
-			if parent != nil && incomingEdge.Type != Async && incomingEdge.Type != AsyncCrossShard {
+			if parent != nil && parent.IncomingEdge != nil {
 				parent.IncomingEdge.Fail = true
+				parent.IncomingEdge.ErrFail = node.IncomingEdge.ErrFail
+				parent.ErrFail = node.IncomingEdge.ErrFail
+			} else {
+				parent.ErrFail = node.IncomingEdge.ErrFail
 			}
 		}
 
@@ -1011,6 +1060,11 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 	for _, node := range graph.Nodes {
 		node.ExecutionRound = -1
 	}
+
+	if graph.StartNode.Fail {
+		return
+	}
+
 	graph.StartNode.ExecutionRound = 0
 	for _, edge := range graph.StartNode.AdjacentEdges {
 		if edge.To.IsLeaf() {
@@ -1033,12 +1087,14 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 				node.ExecutionRound = parent.ExecutionRound
 				break
 			case AsyncCrossShard:
+				// fmt.Println("Set node.ExecutionRound of " + node.Label + " to " + strconv.Itoa(parent.MaxSubtreeExecutionRound+1))
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound + 1
 				break
 			case Callback:
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound
 				break
 			case CallbackCrossShard:
+				// fmt.Println("Set node.ExecutionRound of " + node.Label + " to " + strconv.Itoa(parent.MaxSubtreeExecutionRound+1))
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound + 1
 				break
 			}
@@ -1053,6 +1109,7 @@ func (graph *TestCallGraph) AssignExecutionRounds() {
 				return node
 			}
 			if parent.MaxSubtreeExecutionRound < node.MaxSubtreeExecutionRound {
+				// fmt.Println("Set parent.MaxSubtreeExecutionRound of " + parent.Label + " to " + strconv.Itoa(node.MaxSubtreeExecutionRound))
 				parent.MaxSubtreeExecutionRound = node.MaxSubtreeExecutionRound
 			}
 			return node
@@ -1076,7 +1133,7 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 			return node
 		}
 
-		if node.IsIncomingEdgeFail() {
+		if node.IsIncomingEdgeFail() || node.HasFailSyncEdge() {
 			node.GasRemaining = 0
 		} else {
 			nodeGasRemaining := int64(node.GasLimit)

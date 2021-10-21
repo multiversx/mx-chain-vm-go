@@ -26,12 +26,6 @@ func NewCrossShardCallQueue() *CrossShardCallsQueue {
 }
 
 // Enqueue -
-// func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
-// 	callToEnqueue := createCrossShardCall(startNode, callerAddress, callType, data)
-// 	queue.Data = append(queue.Data, callToEnqueue)
-// }
-
-// Enqueue -
 func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
 	callToEnqueue := createCrossShardCall(startNode, callerAddress, callType, data)
 	queue.Data = append(queue.Data, callToEnqueue)

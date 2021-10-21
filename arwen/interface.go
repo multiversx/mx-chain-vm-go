@@ -365,5 +365,4 @@ type AsyncContext interface {
 	*/
 	SetCallID(callID []byte)
 	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
-	GetFirstUpstreamAsyncCallContext() AsyncContext
 }

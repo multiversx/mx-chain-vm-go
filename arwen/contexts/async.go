@@ -564,20 +564,14 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
-	// runtime := context.host.Runtime()
-	metering := context.host.Metering()
 
-	call.Source = context.host.Runtime().GetSCAddress()
-
-	// TODO discuss
-	// TODO add exception for the first callback instance of the same address,
-	// which must be allowed to modify the AsyncContext
-	// scOccurrences := runtime.CountSameContractInstancesOnStack(runtime.GetSCAddress())
-	// callType := runtime.GetVMInput().CallType
-	// modifiableAsyncContext := (scOccurrences == 0) || (callType == vm.AsynchronousCallBack)
-	// if !modifiableAsyncContext {
-	// 	return arwen.ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback
+	// TODO matei-p enable this and skip complex tests
+	// if context.isMultiLevelAsync() {
+	// 	return fmt.Errorf("Multi-level async calls are not allowed yet")
 	// }
+
+	metering := context.host.Metering()
+	call.Source = context.host.Runtime().GetSCAddress()
 
 	err := metering.UseGasBounded(call.GasLocked)
 	if err != nil {
@@ -614,6 +608,10 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	)
 
 	return nil
+}
+
+func (context *asyncContext) isMultiLevelAsync() bool {
+	return context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack || context.getFirstUpstreamAsyncCallContext() != nil
 }
 
 // Execute is the entry-point of the async calling mechanism; it is called by
@@ -675,7 +673,7 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
-func (context *asyncContext) GetFirstUpstreamAsyncCallContext() arwen.AsyncContext {
+func (context *asyncContext) getFirstUpstreamAsyncCallContext() arwen.AsyncContext {
 	for index := range context.stateStack {
 		index = len(context.stateStack) - 1 - index
 		stackContext := context.stateStack[index]
@@ -686,7 +684,7 @@ func (context *asyncContext) GetFirstUpstreamAsyncCallContext() arwen.AsyncConte
 	return nil
 }
 
-func (context *asyncContext) LoadFromStackOrStore(address []byte, callID []byte) (*asyncContext, error) {
+func (context *asyncContext) loadFromStackOrStore(address []byte, callID []byte) (*asyncContext, error) {
 	stackContext := context.getContextFromStack(address, callID)
 	if stackContext != nil {
 		return stackContext, nil
@@ -847,7 +845,7 @@ func (context *asyncContext) callCallback(asyncCallIdentifier []byte, vmOutput *
 	}
 
 	gasAccumulated := context.gasAccumulated
-	context, _ = context.LoadParentContextFromStackOrStore()
+	context, _ = context.loadParentContextFromStackOrStore()
 	asyncCall, _, _, errLoad := context.GetCallByAsyncIdentifier(asyncCallIdentifier)
 	if errLoad != nil {
 		return false, nil, errLoad
@@ -918,11 +916,11 @@ func (context *asyncContext) LoadParentContext() error {
 	return context.LoadSpecifiedContext(context.address, context.callbackAsyncInitiatorCallID)
 }
 
-func (context *asyncContext) LoadParentContextFromStackOrStore() (*asyncContext, error) {
+func (context *asyncContext) loadParentContextFromStackOrStore() (*asyncContext, error) {
 	if context.callType != vm.AsynchronousCallBack {
-		return context.LoadFromStackOrStore(context.callerAddr, context.callerCallID)
+		return context.loadFromStackOrStore(context.callerAddr, context.callerCallID)
 	}
-	return context.LoadFromStackOrStore(context.address, context.callbackAsyncInitiatorCallID)
+	return context.loadFromStackOrStore(context.address, context.callbackAsyncInitiatorCallID)
 }
 
 // Load restores the internal state of the AsyncContext from the storage of the contract.

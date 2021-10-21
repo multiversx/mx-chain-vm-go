@@ -16,14 +16,13 @@ func main() {
 	/*
 		1 lvl of async calls
 	*/
-	callGraph := test.CreateGraphTestOneAsyncCall()
+	// callGraph := test.CreateGraphTestOneAsyncCall()
 	// callGraph := test.CreateGraphTestOneAsyncCallNoCallback()
 	// callGraph := test.CreateGraphTestOneAsyncCallFail()
 	// callGraph := test.CreateGraphTestOneAsyncCallNoCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallIndirectFail()
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
-	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
 	// callGraph := test.CreateGraphTestAsyncCallIndirectFailCrossShard()
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFailCrossShard()
@@ -38,7 +37,6 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsOneFail()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsLocalCross()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
-	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard() //!
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
@@ -49,12 +47,17 @@ func main() {
 	// callGraph := test.CreateGraphTestSyncAndAsync6()
 	// callGraph := test.CreateGraphTestSyncAndAsync7()
 	// callGraph := test.CreateGraphTestSyncAndAsync8()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestSyncCallsFailPropagation()
+	callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
 
 	/*
 		multi lvl of async calls
 	*/
-	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
+	// callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
@@ -75,7 +78,7 @@ func main() {
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.PropagateSyncFailures()
-	// gasGraph.AssignExecutionRounds()
+	gasGraph.AssignExecutionRounds()
 
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 initial-gas-graph", graphviz)
@@ -150,7 +153,7 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 	// }
 	setGasLabelForNode(node, attrs)
 	if !node.IsGasLeaf() {
-		if node.IsIncomingEdgeFail() {
+		if node.Fail || node.IsIncomingEdgeFail() {
 			attrs["fillcolor"] = "hotpink"
 		} else {
 			attrs["fillcolor"] = "lightgrey"

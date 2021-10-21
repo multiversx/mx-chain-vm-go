@@ -33,6 +33,11 @@ func TestGraph_SyncCalls2_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGraph_SyncCalls_FailPropagation_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncCallsFailPropagation()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGraph_OneAsyncCall_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestOneAsyncCall()
 	runGraphCallTestTemplate(t, callGraph)
@@ -285,6 +290,16 @@ func TestGraph_TwoAsyncCallsSecondCallbackFailCrossShard_CallGraph(t *testing.T)
 
 func TestGraph_TwoAsyncCallsBothCallbacksFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.CreateGraphTestTwoAsyncCallsBothCallbacksFailCrossShard()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
+func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
@@ -705,9 +720,9 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	// compute execution order (return data) assertions and compute gas assertions
 	expectedCallFinishData := computeExpectedValues(gasGraph)
-	totalGasUsed, totalGasRemaining := computeExpectedTotalGasValues(gasGraph)
 
 	// graph gas sanity check
+	totalGasUsed, totalGasRemaining := computeExpectedTotalGasValues(gasGraph)
 	require.Equal(t, int(gasGraph.StartNode.GasLimit), int(totalGasUsed+totalGasRemaining), "Expected Gas Sanity Check")
 
 	crtTxNumber := 0
@@ -777,7 +792,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 		extractOuptutTransferCalls(currentVMOutput, crossShardEdges, crossShardCallsQueue)
 	}
 
-	// TODO matei-p enable this
+	// TODO matei-p enable this for single level tests (R1)
 	// checkThatStoreIsEmpty(t, world)
 
 	checkReturnDataWithGasValuesForGraphTesting(t, expectedCallFinishData, callsFinishData.Data)
@@ -875,8 +890,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) []*test.CallFinishDataI
 
 	executionOrderTraversal(gasGraph, func(node *test.TestCallNode) {
 		parent := node.Parent
-		if !node.IsLeaf() ||
-			(parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail) {
+		if !node.IsLeaf() {
 			return
 		}
 
@@ -888,6 +902,7 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) []*test.CallFinishDataI
 			ContractAndFunction: string(parent.Call.ContractAddress) + "_" + parent.Call.FunctionName + test.TestReturnDataSuffix,
 			GasProvided:         parent.GasLimit,
 			GasRemaining:        parent.GasRemaining,
+			FailError:           parent.ErrFail,
 		}
 
 		expectedCallsFinishData = append(expectedCallsFinishData, expectedCallFinishData)
@@ -910,8 +925,9 @@ func computeExpectedTotalGasValues(graph *test.TestCallGraph) (uint64, uint64) {
 				return node
 			}
 
-			// all gas is used for failed callss
-			if node.IncomingEdge != nil && node.IncomingEdge.Fail {
+			// all gas is used for failed calls
+			if (parent == nil && node.HasFailSyncEdge()) ||
+				node.IsIncomingEdgeFail() {
 				// fmt.Printf("failed %s used %d\n", node.VisualLabel, node.GasLimit)
 				totalGasUsed += node.GasLimit
 				return node
@@ -998,6 +1014,7 @@ func checkReturnDataWithGasValuesForGraphTesting(t testing.TB, expectedCallsFini
 		require.Equal(t, expectedCallFinishData.ContractAndFunction, actualCallFinishData.ContractAndFunction, "CallFinishData - Call")
 		require.Equal(t, int(expectedCallFinishData.GasProvided), int(actualCallFinishData.GasProvided), fmt.Sprintf("CallFinishData - Gas Limit for '%s'", actualCallFinishData.ContractAndFunction))
 		require.Equal(t, int(expectedCallFinishData.GasRemaining), int(actualCallFinishData.GasRemaining), fmt.Sprintf("CallFinishData - Gas Remaining for '%s'", actualCallFinishData.ContractAndFunction))
+		require.Equal(t, expectedCallFinishData.FailError, actualCallFinishData.FailError, fmt.Sprintf("CallFinishData - Fail error for '%s'", actualCallFinishData.ContractAndFunction))
 	}
 }
 
