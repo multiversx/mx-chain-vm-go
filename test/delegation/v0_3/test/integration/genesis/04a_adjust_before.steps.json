@@ -44,7 +44,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:withdrawInactiveStake",
+                        "endpoint": "str:withdrawInactiveStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
                             "''delegator_2___________________s1"

@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -270,6 +271,11 @@ func (context *asyncContext) createCallbackInput(
 	metering := context.host.Metering()
 	runtime := context.host.Runtime()
 
+	actualCallbackInitiator := asyncCall.GetDestination()
+	if context.host.MultiESDTTransferAsyncCallBackEnabled() {
+		actualCallbackInitiator = context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
+	}
+
 	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, gasAccumulated, destinationErr)
 
 	esdtFunction := ""
@@ -280,7 +286,7 @@ func (context *asyncContext) createCallbackInput(
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
 		isESDTOnCallBack, esdtFunction, esdtArgs = context.isESDTTransferOnReturnDataWithNoAdditionalData(
-			asyncCall.Destination,
+			actualCallbackInitiator,
 			runtime.GetSCAddress(),
 			vmOutput)
 	} else {
@@ -304,7 +310,7 @@ func (context *asyncContext) createCallbackInput(
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
-			CallerAddr:           asyncCall.Destination,
+			CallerAddr:           actualCallbackInitiator,
 			Arguments:            arguments,
 			CallValue:            context.computeCallValueFromVMOutput(vmOutput),
 			CallType:             vm.AsynchronousCallBack,
@@ -329,8 +335,12 @@ func (context *asyncContext) createCallbackInput(
 		if len(vmOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
 		}
-
+		if context.isSameShardNFTTransfer(contractCallInput) {
+			contractCallInput.RecipientAddr = contractCallInput.CallerAddr
+		}
 		contractCallInput.Arguments = context.PrependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
+
+		context.host.Output().DeleteFirstReturnData()
 	}
 
 	return contractCallInput, nil
@@ -352,6 +362,15 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 	}
 
 	return context.PrependCallbackArgumentsForAsyncContext(arguments, asyncCall, gasAccumulated)
+}
+
+func (context *asyncContext) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractCallInput) bool {
+	if !context.host.AreInSameShard(contractCallInput.CallerAddr, contractCallInput.RecipientAddr) {
+		return false
+	}
+
+	return contractCallInput.Function == core.BuiltInFunctionMultiESDTNFTTransfer ||
+		contractCallInput.Function == core.BuiltInFunctionESDTNFTTransfer
 }
 
 func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGroup) *vmcommon.ContractCallInput {
@@ -427,6 +446,10 @@ func (context *asyncContext) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
+	if !context.host.MultiESDTTransferAsyncCallBackEnabled() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+		return false, functionName, args
+	}
+
 	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args

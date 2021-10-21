@@ -40,9 +40,6 @@ var ESDTTransferGasCost = uint64(1)
 // ESDTTestTokenName is an exposed value to use in tests
 var ESDTTestTokenName = []byte("TT")
 
-// ESDTTestTokenKey is an exposed value to use in tests
-var ESDTTestTokenKey = worldmock.MakeTokenKey(ESDTTestTokenName, 0)
-
 // DefaultCodeMetadata is an exposed value to use in tests
 var DefaultCodeMetadata = []byte{3, 0}
 

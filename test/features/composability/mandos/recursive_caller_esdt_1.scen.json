@@ -7,14 +7,11 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:recursive-caller": {
@@ -23,7 +20,6 @@
                     "esdt": {
                         "str:REC-TOKEN": "1000"
                     },
-                    "storage": {},
                     "code": "file:../recursive-caller/output/recursive-caller.wasm"
                 }
             }
@@ -34,7 +30,6 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:recursive-caller",
-                "value": "0",
                 "function": "recursive_send_funds",
                 "arguments": [
                     "sc:vault",
@@ -51,7 +46,7 @@
                 "logs": [
                     {
                         "address": "sc:recursive-caller",
-                        "identifier": "str:recursive_send_funds",
+                        "endpoint": "str:recursive_send_funds",
                         "topics": [
                             "str:recursive_send_funds",
                             "sc:vault",
@@ -62,9 +57,10 @@
                     },
                     {
                         "address": "sc:recursive-caller",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:REC-TOKEN",
+                            "",
                             "1",
                             "sc:vault"
                         ],
@@ -72,7 +68,7 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:REC-TOKEN",
@@ -84,7 +80,7 @@
                     },
                     {
                         "address": "sc:recursive-caller",
-                        "identifier": "str:callBack",
+                        "endpoint": "str:callBack",
                         "topics": [
                             "str:recursive_send_funds_callback",
                             "sc:vault",

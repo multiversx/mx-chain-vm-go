@@ -156,6 +156,13 @@ func (o *OutputContextMock) PrependFinish(data []byte) {
 	o.ReturnDataMock = append([][]byte{data}, o.ReturnDataMock...)
 }
 
+// DeleteFirstReturnData mocked method
+func (o *OutputContextMock) DeleteFirstReturnData() {
+	if len(o.ReturnDataMock) > 0 {
+		o.ReturnDataMock = o.ReturnDataMock[1:]
+	}
+}
+
 // WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
 	return
@@ -183,6 +190,10 @@ func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {
 // GetVMOutput mocked method
 func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
+}
+
+// RemoveNonUpdatedStorage mocked method
+func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 }
 
 // DeployCode mocked method

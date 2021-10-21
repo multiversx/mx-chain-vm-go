@@ -2,6 +2,7 @@ package arwen
 
 import (
 	"crypto/elliptic"
+	"io"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
@@ -56,6 +57,9 @@ type VMHost interface {
 	InitState()
 
 	SetGasFlag(flag bool)
+
+	FixOOGReturnCodeEnabled() bool
+	MultiESDTTransferAsyncCallBackEnabled() bool
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -169,10 +173,13 @@ type AddressAndCallID struct {
 type ManagedTypesContext interface {
 	StateStack
 
+	GetRandReader() io.Reader
 	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
+	ConsumeGasForBytes(bytes []byte)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
-	PutBigInt(value int64) int32
+	NewBigInt(value *big.Int) int32
+	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
@@ -219,7 +226,9 @@ type OutputContext interface {
 	ClearReturnData()
 	Finish(data []byte)
 	PrependFinish(data []byte)
+	DeleteFirstReturnData()
 	GetVMOutput() *vmcommon.VMOutput
+	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
@@ -234,6 +243,8 @@ type MeteringContext interface {
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
+	UseAndTraceGas(gas uint64)
+	UseGasAndAddTracedGas(functionName string, gas uint64)
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
@@ -256,6 +267,9 @@ type MeteringContext interface {
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
 	DisableRestoreGas()
 	EnableRestoreGas()
+	StartGasTracing(functionName string)
+	SetGasTracing(enableGasTracing bool)
+	GetGasTrace() map[string]map[string][]uint64
 }
 
 // StorageStatus defines the states the storage can be in
@@ -365,4 +379,13 @@ type AsyncContext interface {
 	*/
 	SetCallID(callID []byte)
 	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
+}
+
+// GasTracing defines the functionality needed for a gas tracing
+type GasTracing interface {
+	BeginTrace(scAddress string, functionName string)
+	AddToCurrentTrace(usedGas uint64)
+	AddTracedGas(scAddress string, functionName string, usedGas uint64)
+	GetGasTrace() map[string]map[string][]uint64
+	IsInterfaceNil() bool
 }

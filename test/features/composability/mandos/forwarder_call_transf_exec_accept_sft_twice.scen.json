@@ -9,23 +9,23 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "nonce": "5",
-                            "balance": "2"
+                            "instances": [
+                                {
+                                    "nonce": "5",
+                                    "balance": "2"
+                                }
+                            ]
                         }
-                    },
-                    "storage": {},
-                    "code": ""
+                    }
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -36,12 +36,13 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:NFT-0001",
-                    "value": "2",
-                    "nonce": "5"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:NFT-0001",
+                        "nonce": "5",
+                        "value": "2"
+                    }
+                ],
                 "function": "forward_transf_exec_accept_funds_twice",
                 "arguments": [
                     "sc:vault"
@@ -55,17 +56,18 @@
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTNFTTransfer",
+                        "endpoint": "str:ESDTNFTTransfer",
                         "topics": [
                             "str:NFT-0001",
                             "5",
+                            "01",
                             "sc:vault"
                         ],
                         "data": ""
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:NFT-0001",
@@ -77,17 +79,18 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTNFTTransfer",
+                        "endpoint": "str:ESDTNFTTransfer",
                         "topics": [
                             "str:NFT-0001",
                             "5",
+                            "01",
                             "sc:vault"
                         ],
                         "data": ""
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:NFT-0001",
@@ -113,8 +116,12 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "nonce": "5",
-                            "balance": "2"
+                            "instances": [
+                                {
+                                    "nonce": "5",
+                                    "balance": "2"
+                                }
+                            ]
                         }
                     },
                     "storage": {

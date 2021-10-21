@@ -102,8 +102,8 @@ func (v *VMOutputVerifier) HasRuntimeErrors(messages ...string) *VMOutputVerifie
 	for _, message := range messages {
 		errorFound := false
 		require.NotNil(v.T, v.AllErrors)
-		for _, error := range v.AllErrors.GetAllErrors() {
-			if error.Error() == message {
+		for _, err := range v.AllErrors.GetAllErrors() {
+			if err.Error() == message {
 				errorFound = true
 			}
 		}
@@ -220,6 +220,7 @@ type StoreEntry struct {
 	key         []byte
 	value       []byte
 	ignoreValue bool
+	written     bool
 }
 
 // CreateStoreEntry creates the data for a storage assertion
@@ -236,6 +237,7 @@ func (storeEntry *StoreEntry) WithKey(key []byte) *StoreEntry {
 // WithValue sets the value for a storage assertion
 func (storeEntry *StoreEntry) WithValue(value []byte) StoreEntry {
 	storeEntry.value = value
+	storeEntry.written = true
 	return *storeEntry
 }
 
@@ -259,7 +261,7 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 			accountStorageMap = make(map[string]vmcommon.StorageUpdate)
 			storage[account] = accountStorageMap
 		}
-		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value}
+		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value, Written: storeEntry.written}
 		if storeEntry.ignoreValue {
 			ignoredValuesForKeys[string(storeEntry.key)] = true
 		}

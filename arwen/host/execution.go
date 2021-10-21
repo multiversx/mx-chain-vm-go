@@ -85,6 +85,10 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
+	if host.flagRemoveNonUpdatedStorage.IsSet() {
+		output.RemoveNonUpdatedStorage()
+	}
+
 	vmOutput := output.GetVMOutput()
 	runtime.CleanWasmerInstance()
 	return vmOutput, nil
@@ -186,6 +190,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
+	if host.flagRemoveNonUpdatedStorage.IsSet() {
+		output.RemoveNonUpdatedStorage()
+	}
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
@@ -274,9 +281,9 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error, isComplete bool) {
-	bigInt, _, metering, output, runtime, async, storage := host.GetContexts()
-	bigInt.PushState()
-	bigInt.InitState()
+	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
+	managedTypes.PushState()
+	managedTypes.InitState()
 
 	output.PushState()
 	output.CensorVMOutput()
@@ -326,7 +333,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
-	bigInt, _, metering, output, runtime, async, storage := host.GetContexts()
+	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 
 	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
@@ -347,7 +354,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	gasSpentByChildContract := metering.GasSpentByContract()
 
 	// Restore the previous context states
-	bigInt.PopSetActiveState()
+	managedTypes.PopSetActiveState()
 	storage.PopSetActiveState()
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
@@ -389,11 +396,12 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		return arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	bigInt, blockchain, metering, output, runtime, _, _ := host.GetContexts()
+	managedTypes, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
-	// Back up the states of the contexts (except Storage and Async, which aren't
-	// affected by ExecuteOnSameContext())
-	bigInt.PushState()
+	// Back up the states of the contexts (except Storage and Async, which aren't affected
+	// by ExecuteOnSameContext())
+	managedTypes.PushState()
+	managedTypes.InitState()
 	output.PushState()
 
 	copyTxHashesFromContext(runtime, input)
@@ -423,15 +431,15 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	bigInt, blockchain, metering, output, runtime, _, _ := host.GetContexts()
+	managedTypes, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
-		bigInt.PopSetActiveState()
+		managedTypes.PopSetActiveState()
 		metering.PopSetActiveState()
 		output.PopSetActiveState()
-		runtime.PopSetActiveState()
 		blockchain.PopSetActiveState()
+		runtime.PopSetActiveState()
 		return
 	}
 
@@ -442,10 +450,9 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	metering.PopMergeActiveState()
 	output.PopDiscard()
-	bigInt.PopDiscard()
 	blockchain.PopDiscard()
+	managedTypes.PopSetActiveState()
 	runtime.PopSetActiveState()
-
 	// Restore remaining gas to the caller (parent) Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 }
@@ -1024,6 +1031,9 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	vmOutput *vmcommon.VMOutput,
 ) (*vmcommon.ContractCallInput, error) {
 	if vmOutput.ReturnCode != vmcommon.Ok {
+		return nil, nil
+	}
+	if vmInput.ReturnCallAfterError && vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
 

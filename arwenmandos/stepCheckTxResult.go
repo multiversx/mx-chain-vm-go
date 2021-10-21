@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -79,7 +79,7 @@ func (ae *ArwenTestExecutor) checkTxResults(
 				mjwrite.LogToString(testLog),
 				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
-		if !testLog.Identifier.Check(outLog.Identifier) {
+		if !testLog.Endpoint.Check(outLog.Identifier) {
 			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,
 				mjwrite.LogToString(testLog),

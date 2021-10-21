@@ -6,9 +6,7 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:vault": {
                     "nonce": "0",
@@ -16,13 +14,11 @@
                     "esdt": {
                         "str:TEST-TOKEN": "1000"
                     },
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -33,7 +29,6 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
                 "function": "forward_sync_retrieve_funds",
                 "arguments": [
                     "sc:vault",
@@ -50,7 +45,7 @@
                 "logs": [
                     {
                         "address": "sc:vault",
-                        "identifier": "str:retrieve_funds",
+                        "endpoint": "str:retrieve_funds",
                         "topics": [
                             "str:retrieve_funds",
                             "str:TEST-TOKEN",
@@ -61,9 +56,10 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:TEST-TOKEN",
+                            "",
                             "1000",
                             "sc:forwarder"
                         ],

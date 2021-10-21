@@ -120,16 +120,6 @@ func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
 	return nil
 }
 
-// IsArwenV2Enabled mocked method
-func (vhs *VMHostStub) IsArwenV2Enabled() bool {
-	return true
-}
-
-// IsArwenV3Enabled mocked method
-func (vhs *VMHostStub) IsArwenV3Enabled() bool {
-	return true
-}
-
 // IsAheadOfTimeCompileEnabled mocked method
 func (vhs *VMHostStub) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -165,6 +155,14 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
+	}
+	return nil
+}
+
+// Async mocked method
+func (vhs *VMHostStub) Async() arwen.AsyncContext {
+	if vhs.AsyncCalled != nil {
+		return vhs.AsyncCalled()
 	}
 	return nil
 }
@@ -302,12 +300,14 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	}
 }
 
-// Async mocked method
-func (vhs *VMHostStub) Async() arwen.AsyncContext {
-	if vhs.AsyncCalled != nil {
-		return vhs.AsyncCalled()
-	}
-	return nil
+// MultiESDTTransferAsyncCallBackEnabled mocked method
+func (vhs *VMHostStub) MultiESDTTransferAsyncCallBackEnabled() bool {
+	return true
+}
+
+// FixOOGReturnCodeEnabled mocked method
+func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
+	return true
 }
 
 // UpdateCurrentAsyncCallStatus mock method

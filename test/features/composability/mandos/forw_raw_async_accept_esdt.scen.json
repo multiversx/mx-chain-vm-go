@@ -9,20 +9,16 @@
                     "balance": "0",
                     "esdt": {
                         "str:TEST-TOKEN": "1000"
-                    },
-                    "storage": {},
-                    "code": ""
+                    }
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
@@ -33,11 +29,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:TEST-TOKEN",
-                    "value": "1000"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:TEST-TOKEN",
+                        "value": "1000"
+                    }
+                ],
                 "function": "forward_async_call",
                 "arguments": [
                     "sc:vault",
@@ -52,9 +49,10 @@
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:ESDTTransfer",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
                             "str:TEST-TOKEN",
+                            "",
                             "1000",
                             "sc:vault"
                         ],
@@ -62,7 +60,7 @@
                     },
                     {
                         "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
                             "str:TEST-TOKEN",
@@ -74,11 +72,9 @@
                     },
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:callBack",
+                        "endpoint": "str:callBack",
                         "topics": [
-                            "str:callback_raw",
-                            "str:EGLD",
-                            "0"
+                            "str:callback_raw"
                         ],
                         "data": {
                             "0-status": "biguint:0"
@@ -118,9 +114,6 @@
                     "storage": {
                         "str:callback_data.len": "1",
                         "str:callback_data.item|u32:1": [
-                            "u32:4", "str:EGLD",
-                            "u32:0",
-                            "u32:1",
                             "u32:0"
                         ]
                     },

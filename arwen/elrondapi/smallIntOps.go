@@ -33,6 +33,21 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
+const (
+	smallIntGetUnsignedArgumentName  = "smallIntGetUnsignedArgument"
+	smallIntGetSignedArgumentName    = "smallIntGetSignedArgument"
+	smallIntFinishUnsignedName       = "smallIntFinishUnsigned"
+	smallIntFinishSignedName         = "smallIntFinishSigned"
+	smallIntStorageStoreUnsignedName = "smallIntStorageStoreUnsigned"
+	smallIntStorageStoreSignedName   = "smallIntStorageStoreSigned"
+	smallIntStorageLoadUnsignedName  = "smallIntStorageLoadUnsigned"
+	smallIntStorageLoadSignedName    = "smallIntStorageLoadSigned"
+	int64getArgumentName             = "int64getArgument"
+	int64storageStoreName            = "int64storageStore"
+	int64storageLoadName             = "int64storageLoad"
+	int64finishName                  = "int64finish"
+)
+
 // SmallIntImports creates a new wasmer.Imports populated with the small int (int64/uint64) API methods
 func SmallIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
@@ -108,18 +123,18 @@ func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
-		arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	return int64(argBigInt.Uint64())
@@ -131,18 +146,18 @@ func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	return argBigInt.Int64()
@@ -154,7 +169,7 @@ func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
 	output.Finish(valueBytes)
@@ -166,7 +181,7 @@ func v1_4_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntFinishSignedName, gasToUse)
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
 	output.Finish(valueBytes)
@@ -179,7 +194,7 @@ func v1_4_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, 
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -202,7 +217,7 @@ func v1_4_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, ke
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -225,7 +240,7 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageLoadUnsignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -235,7 +250,7 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	data := storage.GetStorage(key)
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
-		arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -249,7 +264,7 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(smallIntStorageLoadSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -259,7 +274,7 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	data := storage.GetStorage(key)
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
-		arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 

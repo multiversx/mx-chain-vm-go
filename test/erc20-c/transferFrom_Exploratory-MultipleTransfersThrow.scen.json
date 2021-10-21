@@ -7,9 +7,7 @@
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0xe8d4a51000"
                 },
                 "sc:erc20": {
                     "nonce": "0",
@@ -29,7 +27,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
                     "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -45,7 +42,7 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "str:transferFrom",
+                        "endpoint": "str:transferFrom",
                         "topics": [
                             "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
                             "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -64,7 +61,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
                     "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -80,7 +76,7 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "str:transferFrom",
+                        "endpoint": "str:transferFrom",
                         "topics": [
                             "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
                             "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -99,7 +95,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
                     "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -115,7 +110,7 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "str:transferFrom",
+                        "endpoint": "str:transferFrom",
                         "topics": [
                             "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
                             "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -134,7 +129,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
                     "0x7777777777777777777707777777777777777777777777177777777777771234",

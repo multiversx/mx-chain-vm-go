@@ -76,16 +76,6 @@ func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }
 
-// IsArwenV2Enabled mocked method
-func (host *VMHostMock) IsArwenV2Enabled() bool {
-	return true
-}
-
-// IsArwenV3Enabled mocked method
-func (host *VMHostMock) IsArwenV3Enabled() bool {
-	return true
-}
-
 // IsAheadOfTimeCompileEnabled mocked method
 func (host *VMHostMock) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -245,10 +235,15 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	return vmOutput
 }
 
-// UpdateCurrentAsyncCallStatus mock method
-func (host *VMHostMock) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
-	return nil, nil
+func (host *VMHostMock) SetGasFlag(flag bool) {
 }
 
-func (host *VMHostMock) SetGasFlag(flag bool) {
+// MultiESDTTransferAsyncCallBackEnabled mocked method
+func (host *VMHostMock) MultiESDTTransferAsyncCallBackEnabled() bool {
+	return true
+}
+
+// FixOOGReturnCodeEnabled mocked method
+func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
+	return true
 }

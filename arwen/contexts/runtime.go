@@ -92,7 +92,7 @@ func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuil
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
-		logRuntime.Error("create instance", "error", arwen.ErrMaxInstancesReached)
+		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
 
@@ -469,16 +469,21 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
 	var message string
+	breakpoint := arwen.BreakpointExecutionFailed
+
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
+		if errors.Is(err, arwen.ErrNotEnoughGas) && context.host.FixOOGReturnCodeEnabled() {
+			breakpoint = arwen.BreakpointOutOfGas
+		}
 	} else {
 		message = "execution failed"
 		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+	context.SetRuntimeBreakpointValue(breakpoint)
 
 	traceMessage := message
 	if err != nil {

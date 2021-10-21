@@ -1,2 +1,14 @@
 init
 mBufferMethod
+mBufferNewTest
+mBufferNewFromBytesTest
+mBufferSetRandomTest
+mBufferGetLengthTest
+mBufferGetBytesTest
+mBufferAppendTest
+mBufferToBigIntUnsignedTest
+mBufferToBigIntSignedTest
+mBufferFromBigIntUnsignedTest
+mBufferFromBigIntSignedTest
+mBufferStorageStoreTest
+mBufferStorageLoadTest

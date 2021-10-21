@@ -26,10 +26,12 @@ int ellipticCurveGetValues(int ecHandle, int fieldOrderHandle, int basePointOrde
 // Managed Buffers
 int	mBufferNew();
 int mBufferNewFromBytes(byte*dataOffset, int dataLength);
+int mBufferSetRandom(int mBufferHandle, int length);
 int	mBufferSetBytes(int mBufferHandle, byte*dataOffset, int dataLength);
 int mBufferGetLength(int mBufferHandle);
 int	mBufferGetBytes(int mBufferHandle, byte *resultOffset);
-int	mBufferAppend(int mBufferHandle, byte*dataOffset, int dataLength);
+int	mBufferAppend(int mBufferHandle, int otherHandle);
+int	mBufferAppendBytes(int mBufferHandle, byte*dataOffset, int dataLength);
 int	mBufferToBigIntUnsigned(int mBufferHandle, int bigIntHandle);
 int mBufferToBigIntSigned(int mBufferHandle, int bigIntHandle);
 int	mBufferFromBigIntUnsigned(int mBufferHandle, int bigIntHandle);

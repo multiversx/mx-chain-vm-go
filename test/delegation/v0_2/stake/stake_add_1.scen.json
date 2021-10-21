@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",
@@ -31,15 +28,11 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "568,002,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "568,002,000,000"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -49,7 +42,7 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "567,000,000,000",
+                "egldValue": "567,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -61,7 +54,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:stake",
+                        "endpoint": "str:stake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "''delegator_1___________________s1"
@@ -79,7 +72,7 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "001,000,000,000",
+                "egldValue": "001,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -91,7 +84,7 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "str:stake",
+                        "endpoint": "str:stake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000001",
                             "''delegator_1___________________s1"
@@ -117,7 +110,6 @@
                     "balance": "568,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",

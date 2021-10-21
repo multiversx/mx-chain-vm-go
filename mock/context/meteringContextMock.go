@@ -58,6 +58,13 @@ func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 func (m *MeteringContextMock) UseGas(_ uint64) {
 }
 
+// UseAndTraceGas mocked method
+func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {
+}
+
+func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {
+}
+
 // FreeGas mocked method
 func (m *MeteringContextMock) FreeGas(_ uint64) {
 }
@@ -183,7 +190,19 @@ func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.Code
 }
 
 // EnableRestoreGas mocked method
-func (m *MeteringContextMock) EnableRestoreGas() {}
+func (m *MeteringContextMock) EnableRestoreGas() {
+}
 
 // DisableRestoreGas mocked method
-func (m *MeteringContextMock) DisableRestoreGas() {}
+func (m *MeteringContextMock) DisableRestoreGas() {
+}
+
+func (m *MeteringContextMock) StartGasTracing(_ string) {
+}
+
+func (m *MeteringContextMock) SetGasTracing(_ bool) {
+}
+
+func (m *MeteringContextMock) GetGasTrace() map[string]map[string][]uint64 {
+	return nil
+}

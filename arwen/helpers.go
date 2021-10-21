@@ -160,18 +160,16 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
-func U64MulToBigInt(x, y uint64) *big.Int {
-	bx := big.NewInt(0).SetUint64(x)
-	by := big.NewInt(0).SetUint64(y)
-
-	return big.NewInt(0).Mul(bx, by)
-}
-
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
 	logger.SetLogLevel("*:TRACE")
 	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
+}
+
+// DisableLoggingForTests sets log level to *:NONE
+func DisableLoggingForTests() {
+	_ = logger.SetLogLevel("*:NONE")
 }
 
 // U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode

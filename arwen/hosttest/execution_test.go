@@ -4,18 +4,22 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/big"
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +41,6 @@ var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 const (
 	get                     = "get"
 	increment               = "increment"
-	mBuffer                 = "mBufferMethod"
 	callRecursive           = "callRecursive"
 	parentCallsChild        = "parentCallsChild"
 	parentPerformAsyncCall  = "parentPerformAsyncCall"
@@ -452,6 +455,70 @@ func TestExecution_CallWasmerError(t *testing.T) {
 		})
 }
 
+func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["WASMOpcodeCost"]["BrIf"] += 20
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
+}
+
+func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
+	contractCode := test.GetTestSCCode("misc", "../../")
+
+	log := logger.GetOrCreate("arwen/test")
+
+	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	gasSchedule := host.GetGasScheduleMap()
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(10000).
+		WithFunction("iterate_over_byte_array").
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingBeforeChange := vmOutput.GasRemaining
+	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
+
+	gasSchedule["ElrondAPICost"]["Finish"] += 1
+	host.GasScheduleChange(gasSchedule)
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.Ok()
+	gasRemainingAfterChange := vmOutput.GasRemaining
+	log.Trace("gas remaining after change", "gas", gasRemainingAfterChange)
+	log.Trace("gas difference after change", "gas diff", gasRemainingBeforeChange-gasRemainingAfterChange)
+
+	require.NotEqual(t, gasRemainingBeforeChange, gasRemainingAfterChange)
+}
+
 func TestExecution_CallSCMethod_Init(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -519,13 +586,19 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_ManagedBuffers(t *testing.T) {
+	var functionNumber = 0
+	var mBuffer = [...]string{"mBufferMethod", "mBufferNewTest", "mBufferNewFromBytesTest", "mBufferSetRandomTest",
+		"mBufferGetLengthTest", "mBufferGetBytesTest", "mBufferAppendTest", "mBufferToBigIntUnsignedTest",
+		"mBufferToBigIntSignedTest", "mBufferFromBigIntUnsignedTest", "mBufferFromBigIntSignedTest",
+		"mBufferStorageStoreTest", "mBufferStorageLoadTest"}
+
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction(mBuffer).
+			WithFunction(mBuffer[functionNumber]). // mBufferMethod
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
@@ -536,6 +609,301 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer),
 				)
 		})
+	functionNumber++
+
+	numberOfReps := 100
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferNewTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					[]byte{byte(numberOfReps - 1)})
+		})
+	functionNumber++
+
+	lengthOfBuffer := 64
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferNewFromBytesTest
+			WithArguments([]byte{byte(numberOfReps)}, []byte{byte(lengthOfBuffer)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					managedBuffer)
+		})
+	functionNumber++
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferSetRandomTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferGetLengthTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(
+					[]byte{byte(numberOfReps)})
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferGetBytesTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, randomBuffer[:numberOfReps])
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferAppendTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			finalBuffer := make([]byte, 0)
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+				finalBuffer = append(finalBuffer, randomBuffer...)
+			}
+			verify.
+				Ok().
+				ReturnData(finalBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferToBigIntUnsignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, randomBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferToBigIntSignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:])
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferFromBigIntUnsignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, randomBuffer)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferFromBigIntSignedTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			randomBuffer := make([]byte, numberOfReps)
+			for i := 0; i < numberOfReps; i++ {
+				_, _ = randReader.Read(randomBuffer)
+			}
+			verify.
+				Ok().
+				ReturnData(randomBuffer, twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:])
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferStorageStoreTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			lastRandomBuffer := make([]byte, numberOfReps)
+			lastRandomKey := make([]byte, 5)
+			storage := make([]test.StoreEntry, 0)
+			for i := 0; i < numberOfReps; i++ {
+				keyBuffer := make([]byte, 5)
+				randomBuffer := make([]byte, numberOfReps)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
+				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
+				storage = append(storage, entry)
+				if i == numberOfReps-1 {
+					lastRandomBuffer = randomBuffer
+					lastRandomKey = keyBuffer
+				}
+			}
+			verify.
+				Ok().
+				ReturnData(lastRandomBuffer, lastRandomKey).
+				Storage(
+					storage...,
+				)
+		})
+
+	functionNumber++
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("managed-buffers", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction(mBuffer[functionNumber]). // mBufferStorageLoadTest
+			WithArguments([]byte{byte(numberOfReps)}).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			randReader := buildRandomizer(host)
+
+			lastRandomBuffer := make([]byte, numberOfReps)
+			lastRandomKey := make([]byte, 5)
+			storage := make([]test.StoreEntry, 0)
+			for i := 0; i < numberOfReps; i++ {
+				keyBuffer := make([]byte, 5)
+				randomBuffer := make([]byte, numberOfReps)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
+				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
+				storage = append(storage, entry)
+				if i == numberOfReps-1 {
+					lastRandomBuffer = randomBuffer
+					lastRandomKey = keyBuffer
+				}
+			}
+			verify.
+				Ok().
+				ReturnData(lastRandomBuffer, lastRandomKey).
+				Storage(
+					storage...,
+				)
+		})
+
+}
+
+func buildRandomizer(host arwen.VMHost) io.Reader {
+	// building the randomizer
+	blockchainContext := host.Blockchain()
+	previousRandomSeed := blockchainContext.LastRandomSeed()
+	currentRandomSeed := blockchainContext.CurrentRandomSeed()
+	txHash := host.Runtime().GetCurrentTxHash()
+
+	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
+	randomSeed := append(blocksRandomSeed, txHash...)
+	randReader := arwenMath.NewSeedRandReader(randomSeed)
+	return randReader
 }
 
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
@@ -628,13 +996,10 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				BalanceDelta(test.ParentAddress, -198).
 				GasUsed(test.ParentAddress, parentGasUsed).
-				// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 198).
 				GasUsed(test.ChildAddress, childGasUsed).
-				// other
 				GasRemaining(test.GasProvided - executionCost).
 				ReturnData(returnData...)
 		})
@@ -690,7 +1055,7 @@ func TestExecution_ExecuteOnSameContext_Prepare(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 3405).
+				GasUsed(test.ParentAddress, 3404).
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
@@ -810,9 +1175,9 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 						test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
 					)
 			} else {
-				verify.ExecutionFailed().
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -855,15 +1220,12 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, parentAccountBalance).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 3612).
-				// test.ChildAddress
+				GasUsed(test.ParentAddress, 3611).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 3).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
-				// others
 				BalanceDelta(test.ChildTransferReceiver, 96).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
 				GasRemaining(test.GasProvided-
@@ -895,7 +1257,7 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 	// method of the child SC that takes some big Int references as arguments and
 	// produce a new big Int out of the arguments.
 
-	childExecutionCost := uint64(108)
+	childExecutionCost := uint64(102)
 	parentGasBeforeExecuteAPI := uint64(114)
 	executeAPICost := uint64(13)
 	finalCost := uint64(67)
@@ -915,14 +1277,11 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-				GasUsed(test.ParentAddress, 3461).
-				// test.ChildAddress
+				GasUsed(test.ParentAddress, 3460).
 				BalanceDelta(test.ChildAddress, 99).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
-				// others
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostSameCtx-
 					parentGasBeforeExecuteAPI-
@@ -968,7 +1327,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 	}
 
 	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationCounterKey).WithValue([]byte{byte(recursiveCalls + 1)}))
-	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
+	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -985,11 +1344,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, 0).
-				GasUsed(test.ParentAddress, 25916).
+				GasUsed(test.ParentAddress, 25868).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
+			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1057,7 +1416,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 	var storeEntries []test.StoreEntry
 
 	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationCounterKey).WithValue([]byte{byte(recursiveCalls + 1)}))
-	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
+	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 
 	returnData = append(returnData, []byte("start recursive mutual calls"))
 
@@ -1100,11 +1459,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_Methods(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, (big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1))).Int64()).
-				GasUsed(test.ParentAddress, 30162).
+				GasUsed(test.ParentAddress, 30106).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
+			require.Equal(t, int64(0), host.ManagedTypes().GetBigIntOrCreate(16).Int64())
 		})
 }
 
@@ -1161,7 +1520,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 	}
 
 	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationCounterKey).WithValue([]byte{byte(recursiveCalls + 1)}))
-	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(recursiveCalls+1)).Bytes()))
+	storeEntries = append(storeEntries, test.CreateStoreEntry(test.ParentAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -1179,19 +1538,16 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-				GasUsed(test.ParentAddress, 5576).
-				// test.ChildAddress
+				GasUsed(test.ParentAddress, 5552).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-				GasUsed(test.ChildAddress, 3752).
-				// other
+				GasUsed(test.ChildAddress, 3736).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
-			require.Equal(t, int64(recursiveCalls+1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
+			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
 		})
 }
 
@@ -1220,9 +1576,9 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			} else {
-				verify.ExecutionFailed().
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1249,7 +1605,7 @@ func TestExecution_ExecuteOnDestContext_Prepare(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -test.ParentTransferValue).
-				GasUsed(test.ParentAddress, 4317).
+				GasUsed(test.ParentAddress, 4309).
 				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1326,7 +1682,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 	// Scenario:
 	// Parent sets data into the storage, finishes data and creates a bigint
 	// Parent calls executeOnDestContext, sending some value as well
-	// Parent provides insufficient gas to executeOnDestContext (enoguh to start the SC though)
+	// Parent provides insufficient gas to executeOnDestContext (enough to start the SC though)
 	// Child SC starts executing: sets data into the storage, finishes data and changes the bigint
 	// Child starts an infinite loop, which must surely end with OutOfGas
 	// Execution returns to parent, which finishes with the result of executeOnDestContext
@@ -1375,9 +1731,9 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 					)
 				require.Equal(t, int64(42), host.ManagedTypes().GetBigIntOrCreate(12).Int64())
 			} else {
-				verify.ExecutionFailed().
+				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1409,15 +1765,13 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4452).
-				/// test.ChildAddress
+				GasUsed(test.ParentAddress, 4444).
+				GasUsed(test.ParentAddress, 4444).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
-				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1430,7 +1784,6 @@ func TestExecution_ExecuteOnDestContext_Successful(t *testing.T) {
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
-					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ChildKey).WithValue(nil),
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				).
 				Transfers(
@@ -1470,15 +1823,12 @@ func TestExecution_ExecuteOnDestContext_Successful_ChildReturns(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 4660).
-				/// test.ChildAddress
+				GasUsed(test.ParentAddress, 4652).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, 99-childTransferValue).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostDestCtx+childExecutionCost).
-				// other
 				BalanceDelta(test.ChildTransferReceiver, childTransferValue).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
@@ -1561,7 +1911,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childOutput, _, err := host.ExecuteOnDestContext(childInput)
 	verify := test.NewVMOutputVerifier(t, childOutput, err)
 	verify.Ok().
-		GasRemaining(7729)
+		GasRemaining(7758)
 }
 
 func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
@@ -1590,14 +1940,11 @@ func TestExecution_ExecuteOnDestContext_Successful_BigInts(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -99).
-				GasUsed(test.ParentAddress, 4374).
-				/// test.ChildAddress
+				GasUsed(test.ParentAddress, 4366).
 				BalanceDelta(test.ChildAddress, 99).
-				GasUsed(test.ChildAddress, 2288).
-				// other
+				GasUsed(test.ChildAddress, 2259).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostDestCtx-
 					parentGasBeforeExecuteAPI-
@@ -1650,7 +1997,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Direct(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 30244).
+				GasUsed(test.ParentAddress, 30188).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1709,7 +2056,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_Methods(t *testing.T) {
 			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				GasUsed(test.ParentAddress, 38816).
+				GasUsed(test.ParentAddress, 38744).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1781,15 +2128,12 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -balanceDelta).
-				GasUsed(test.ParentAddress, 7452).
-				// test.ChildAddress
+				GasUsed(test.ParentAddress, 7420).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, balanceDelta).
-				GasUsed(test.ChildAddress, 5614).
-				// others
+				GasUsed(test.ChildAddress, 5590).
 				ReturnData(returnData...).
 				Storage(storeEntries...)
 
@@ -1823,9 +2167,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 				verify.OutOfGas().
 					ReturnMessage(arwen.ErrNotEnoughGas.Error())
 			} else {
-				verify.ExecutionFailed().
-					ReturnMessage(arwen.ErrExecutionFailed.Error()).
-					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error(), arwen.ErrExecutionFailed.Error()).
+				verify.OutOfGas().
+					ReturnMessage(arwen.ErrNotEnoughGas.Error()).
+					HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
 			}
 		})
@@ -1937,15 +2281,11 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				GasUsed(test.ParentAddress, 762).
-				/// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, -transferValue).
 				GasUsed(test.ChildAddress, 667).
-				// test.UserAddress
 				BalanceDelta(test.UserAddress, transferValue).
-				// other
 				ReturnData([]byte("sent"), []byte("child called")).
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.UserAddress).
@@ -2101,9 +2441,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 998351).
+				GasUsed(test.ParentAddress, 997169).
 				GasUsed(test.ChildAddress, 0).
-				GasRemaining(1649).
+				GasRemaining(2831).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2200,19 +2540,15 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				GasUsed(test.ParentAddress, 885).
-				/// test.ChildAddress
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
 				CodeDeployerAddress(childAddress, test.ParentAddress).
 				GasUsed(childAddress, 472).
-				// other
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
-				Storage(
-					test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+				Storage()
 		})
 }
 
@@ -2284,7 +2620,6 @@ func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
 
 func TestExecution_CreateNewContract_Fail(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
-	l := len(childCode)
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
@@ -2310,10 +2645,8 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok().
-				GasUsed(test.ParentAddress, 2885).
-				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("fail")).
-				Storage(test.CreateStoreEntry(test.ParentAddress).WithKey([]byte{'A'}).WithValue(childCode))
+			verify.ExecutionFailed().
+				ReturnMessage("error signalled by smartcontract")
 		})
 }
 
@@ -2405,14 +2738,11 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, -4).
 				GasUsed(test.ParentAddress, 547).
-				/// test.ChildAddress
 				BalanceDelta(test.ChildAddress, 4).
 				GasUsed(test.ChildAddress, 146).
-				// other
 				GasRemaining(307).
 				ReturnData([]byte("parent returns this"), []byte("child returns this")).
 				Storage(
@@ -2425,7 +2755,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
 // number of i64 locals it instantiates
 func makeBytecodeWithLocals(numLocals uint64) []byte {
-	originalCode := test.GetTestSCCode("answer", "../../")
+	originalCode := test.GetTestSCCode("answer-locals", "../../")
 	firstSlice := originalCode[:0x5B]
 	secondSlice := originalCode[0x5C:]
 

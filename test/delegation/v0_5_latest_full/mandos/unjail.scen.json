@@ -13,11 +13,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -36,7 +36,7 @@
                     "storage": "*",
                     "code": "file:../../auction-mock/output/auction-mock.wasm"
                 },
-                "+":""
+                "+": ""
             }
         },
         {
@@ -44,21 +44,21 @@
             "txId": "supply node address",
             "tx": {
                 "from": "address:endless_sack_of_erd",
-                "to":  "address:node_address",
-                "value": "1,000,000,000"
+                "to": "address:node_address",
+                "egldValue": "1,000,000,000"
             }
         },
         {
             "step": "scCall",
             "txId": "unJail inactive nodes",
             "tx": {
-                "from":  "address:node_address",
+                "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "unJailNodes",
                 "arguments": [
                     "''bls_key_1_______________________________________________________________________________________",
-                    "''bls_key_3_______________________________________________________________________________________"  
+                    "''bls_key_3_______________________________________________________________________________________"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -76,13 +76,13 @@
             "step": "scCall",
             "txId": "unJail unknown nodes",
             "tx": {
-                "from":  "address:node_address",
+                "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "unJailNodes",
                 "arguments": [
                     "''bls_key_x_______________________________________________________________________________________",
-                    "''bls_key_3_______________________________________________________________________________________"  
+                    "''bls_key_3_______________________________________________________________________________________"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -100,13 +100,13 @@
             "step": "scCall",
             "txId": "unJail nodes",
             "tx": {
-                "from":  "address:node_address",
+                "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "1,000,000,000",
+                "egldValue": "1,000,000,000",
                 "function": "unJailNodes",
                 "arguments": [
                     "''bls_key_2_______________________________________________________________________________________",
-                    "''bls_key_3_______________________________________________________________________________________"  
+                    "''bls_key_3_______________________________________________________________________________________"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -129,7 +129,7 @@
                     "storage": "*",
                     "code": "file:../../auction-mock/output/auction-mock.wasm"
                 },
-                "+":""
+                "+": ""
             }
         }
     ]
