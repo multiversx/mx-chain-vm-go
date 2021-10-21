@@ -2,8 +2,8 @@ package mandoscontroller
 
 import (
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
 // ScenarioExecutor describes a component that can run a VM scenario.
@@ -19,8 +19,9 @@ type ScenarioExecutor interface {
 
 // ScenarioRunner is a component that can run json scenarios, using a provided executor.
 type ScenarioRunner struct {
-	Executor ScenarioExecutor
-	Parser   mjparse.Parser
+	Executor    ScenarioExecutor
+	RunsNewTest bool
+	Parser      mjparse.Parser
 }
 
 // NewScenarioRunner creates new ScenarioRunner instance.

@@ -13,11 +13,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -28,14 +28,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "isBootstrapMode",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["false"],
+                "out": [
+                    "false"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -48,14 +49,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -68,14 +70,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["5000"],
+                "out": [
+                    "5000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -88,14 +91,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDelegationCap",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["300,000,000,000,000"],
+                "out": [
+                    "300,000,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -108,7 +112,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "2000"
@@ -117,7 +120,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:interrupted"],
+                "out": [
+                    "str:interrupted"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -130,7 +135,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "modifyTotalDelegationCap",
                 "arguments": [
                     "200,000,000,000,000"
@@ -153,7 +157,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "1000"
@@ -164,7 +167,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message":"''global checkpoint is in progress",
+                "message": "''global checkpoint is in progress",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -176,14 +179,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "90,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:interrupted"],
+                "out": [
+                    "str:interrupted"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -193,21 +197,22 @@
         {
             "step": "externalSteps",
             "path": "steps/node_operations_paused.steps.json"
-        }, 
+        },
         {
             "step": "scCall",
             "txId": "-get-service-fee-",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["5000"],
+                "out": [
+                    "5000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -220,14 +225,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -240,14 +246,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["2000"],
+                "out": [
+                    "2000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -260,14 +267,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDelegationCap",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["300,000,000,000,000"],
+                "out": [
+                    "300,000,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -280,7 +288,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "modifyTotalDelegationCap",
                 "arguments": [
                     "200,000,000,000,000"
@@ -289,7 +296,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -302,14 +311,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalDelegationCap",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["200,000,000,000,000"],
+                "out": [
+                    "200,000,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

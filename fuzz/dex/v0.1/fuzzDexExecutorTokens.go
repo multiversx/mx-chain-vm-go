@@ -1,10 +1,9 @@
 package dex
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"math/big"
 
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
 func (pfe *fuzzDexExecutor) interpretExpr(expression string) []byte {
@@ -16,16 +15,13 @@ func (pfe *fuzzDexExecutor) interpretExpr(expression string) []byte {
 }
 
 func (pfe *fuzzDexExecutor) getTokensWithNonce(address string, toktik string, nonce int) (*big.Int, error) {
-	token := worldmock.MakeTokenKey([]byte(toktik), uint64(nonce))
-	return pfe.world.BuiltinFuncs.GetTokenBalance(pfe.interpretExpr(address), token)
+	return pfe.world.BuiltinFuncs.GetTokenBalance(pfe.interpretExpr(address), []byte(toktik), uint64(nonce))
 }
 
 func (pfe *fuzzDexExecutor) getTokens(address string, toktik string) (*big.Int, error) {
-	token := worldmock.MakeTokenKey([]byte(toktik), 0)
-	return pfe.world.BuiltinFuncs.GetTokenBalance(pfe.interpretExpr(address), token)
+	return pfe.world.BuiltinFuncs.GetTokenBalance(pfe.interpretExpr(address), []byte(toktik), 0)
 }
 
 func (pfe *fuzzDexExecutor) getTokenData(address string, toktik string, nonce int) (*esdt.ESDigitalToken, error) {
-	token := worldmock.MakeTokenKey([]byte(toktik), uint64(nonce))
-	return pfe.world.BuiltinFuncs.GetTokenData(pfe.interpretExpr(address), token)
+	return pfe.world.BuiltinFuncs.GetTokenData(pfe.interpretExpr(address), []byte(toktik), uint64(nonce))
 }

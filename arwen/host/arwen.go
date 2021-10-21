@@ -15,6 +15,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -27,6 +28,8 @@ type TryFunction func()
 
 // CatchFunction corresponds to the catch() part of a try / catch block
 type CatchFunction func(error)
+
+var _ arwen.VMHost = (*vmHost)(nil)
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -46,6 +49,15 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
+
+	multiESDTTransferAsyncCallBackEnableEpoch uint32
+	flagMultiESDTTransferAsyncCallBack        atomic.Flag
+
+	fixOOGReturnCodeEnableEpoch uint32
+	flagFixOOGReturnCode        atomic.Flag
+
+	removeNonUpdatedStorageEnableEpoch uint32
+	flagRemoveNonUpdatedStorage        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -66,6 +78,9 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.BuiltInFuncContainer) {
 		return nil, arwen.ErrNilBuiltInFunctionsContainer
 	}
+	if check.IfNil(hostParameters.EpochNotifier) {
+		return nil, arwen.ErrNilEpochNotifier
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
@@ -79,6 +94,9 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
+		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
+		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
 	}
 
 	var err error
@@ -99,6 +117,11 @@ func NewArwenVM(
 	}
 
 	imports, err = elrondapi.SmallIntImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = elrondapi.ManagedEIImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +188,7 @@ func NewArwenVM(
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host.initContexts()
+	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
 	return host, nil
 }
@@ -386,4 +410,21 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 		return
 	}
 	host.builtInFuncContainer = builtInFuncs
+}
+
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
+	host.flagMultiESDTTransferAsyncCallBack.Toggle(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
+	log.Debug("Arwen VM: multi esdt transfer on async callback intra shard", "enabled", host.flagMultiESDTTransferAsyncCallBack.IsSet())
+
+	host.flagFixOOGReturnCode.Toggle(epoch >= host.fixOOGReturnCodeEnableEpoch)
+	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
+
+	host.flagRemoveNonUpdatedStorage.Toggle(epoch >= host.removeNonUpdatedStorageEnableEpoch)
+	log.Debug("Arwen VM: remove non updated storage", "enabled", host.flagRemoveNonUpdatedStorage.IsSet())
+}
+
+// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
+func (host *vmHost) FixOOGReturnCodeEnabled() bool {
+	return host.flagFixOOGReturnCode.IsSet()
 }
