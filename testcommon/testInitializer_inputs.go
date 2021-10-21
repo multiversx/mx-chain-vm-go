@@ -19,7 +19,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
@@ -55,9 +55,6 @@ var ESDTTransferGasCost = uint64(1)
 
 // ESDTTestTokenName is an exposed value to use in tests
 var ESDTTestTokenName = []byte("TT")
-
-// ESDTTestTokenKey is an exposed value to use in tests
-var ESDTTestTokenKey = worldmock.MakeTokenKey(ESDTTestTokenName, 0)
 
 // DefaultCodeMetadata is an exposed value to use in tests
 var DefaultCodeMetadata = []byte{3, 0}
@@ -292,6 +289,7 @@ func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.Mock
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &worldmock.EpochNotifierStub{},
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -314,6 +312,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &worldmock.EpochNotifierStub{},
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

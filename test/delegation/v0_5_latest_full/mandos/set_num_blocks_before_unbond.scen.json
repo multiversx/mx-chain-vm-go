@@ -16,14 +16,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["60"],
+                "out": [
+                    "60"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -36,7 +37,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setNumBlocksBeforeUnBond",
                 "arguments": [
                     "15"
@@ -58,14 +58,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["15"],
+                "out": [
+                    "15"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

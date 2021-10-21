@@ -46,6 +46,36 @@ func (v *VMOutputVerifier) Ok() *VMOutputVerifier {
 	return v.ReturnCode(vmcommon.Ok)
 }
 
+// ExecutionFailed verifies if return code is vmcommon.ExecutionFailed
+func (v *VMOutputVerifier) ExecutionFailed() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ExecutionFailed)
+}
+
+// OutOfGas verifies if return code is vmcommon.OutOfGas
+func (v *VMOutputVerifier) OutOfGas() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.OutOfGas)
+}
+
+// ContractInvalid verifies if return code is vmcommon.ContractInvalid
+func (v *VMOutputVerifier) ContractInvalid() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ContractInvalid)
+}
+
+// ContractNotFound verifies if return code is vmcommon.ContractNotFound
+func (v *VMOutputVerifier) ContractNotFound() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.ContractNotFound)
+}
+
+// UserError verifies if return code is vmcommon.UserError
+func (v *VMOutputVerifier) UserError() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.UserError)
+}
+
+// FunctionNotFound verifies if return code is vmcommon.FunctionNotFound
+func (v *VMOutputVerifier) FunctionNotFound() *VMOutputVerifier {
+	return v.ReturnCode(vmcommon.FunctionNotFound)
+}
+
 // ReturnCode verifies if ReturnCode of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnCode(code vmcommon.ReturnCode) *VMOutputVerifier {
 	require.Equal(v.T, code, v.VmOutput.ReturnCode, "ReturnCode")
@@ -69,8 +99,8 @@ func (v *VMOutputVerifier) HasRuntimeErrors(messages ...string) *VMOutputVerifie
 	for _, message := range messages {
 		errorFound := false
 		require.NotNil(v.T, v.AllErrors)
-		for _, error := range v.AllErrors.GetAllErrors() {
-			if error.Error() == message {
+		for _, err := range v.AllErrors.GetAllErrors() {
+			if err.Error() == message {
 				errorFound = true
 			}
 		}
@@ -164,6 +194,7 @@ type StoreEntry struct {
 	address []byte
 	key     []byte
 	value   []byte
+	written bool
 }
 
 // CreateStoreEntry creates the data for a storage assertion
@@ -180,6 +211,7 @@ func (storeEntry *StoreEntry) WithKey(key []byte) *StoreEntry {
 // WithValue sets the value for a storage assertion
 func (storeEntry *StoreEntry) WithValue(value []byte) StoreEntry {
 	storeEntry.value = value
+	storeEntry.written = true
 	return *storeEntry
 }
 
@@ -195,7 +227,7 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 			accountStorageMap = make(map[string]vmcommon.StorageUpdate)
 			storage[account] = accountStorageMap
 		}
-		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value}
+		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value, Written: storeEntry.written}
 	}
 
 	for _, outputAccount := range v.VmOutput.OutputAccounts {

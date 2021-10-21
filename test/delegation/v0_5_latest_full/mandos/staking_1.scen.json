@@ -16,14 +16,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getAuctionContractAddress",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "sc:auction" ],
+                "out": [
+                    "sc:auction"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -36,14 +37,15 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlocksBeforeUnBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "60" ],
+                "out": [
+                    "60"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -56,24 +58,25 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "5000" ],
+                "out": [
+                    "5000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
-        },            
+        },
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
@@ -84,14 +87,15 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "300,001,000,000,000" ],
+                "out": [
+                    "300,001,000,000,000"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -108,9 +112,24 @@
             },
             "expect": {
                 "out": [
-                    "address:node_address", "0", "0", "0", "0", "0",
-                    "address:delegator1", "0", "100,000,000,000,000", "1,000,000,000","0","0",
-                    "address:delegator2", "0", "200,000,000,000,000", "0","0","0"
+                    "address:node_address",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "0",
+                    "address:delegator1",
+                    "0",
+                    "100,000,000,000,000",
+                    "1,000,000,000",
+                    "0",
+                    "0",
+                    "address:delegator2",
+                    "0",
+                    "200,000,000,000,000",
+                    "0",
+                    "0",
+                    "0"
                 ],
                 "status": ""
             }
@@ -125,7 +144,11 @@
             },
             "expect": {
                 "out": [
-                   "0",  "300,000,000,000,000", "1,000,000,000", "0", "0"
+                    "0",
+                    "300,000,000,000,000",
+                    "1,000,000,000",
+                    "0",
+                    "0"
                 ],
                 "status": ""
             }
