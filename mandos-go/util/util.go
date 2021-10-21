@@ -14,7 +14,8 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 	multiTransferData := make([]byte, 0)
 	multiTransferData = append(multiTransferData, []byte(core.BuiltInFunctionMultiESDTNFTTransfer)...)
 	multiTransferData = append(multiTransferData, separator...)
-	multiTransferData = append(multiTransferData, to...)
+	encodedReceiverAddress := hex.EncodeToString(to)
+	multiTransferData = append(multiTransferData, []byte(encodedReceiverAddress)...)
 	multiTransferData = append(multiTransferData, separator...)
 
 	encodedNumberOfTransfers := hex.EncodeToString(big.NewInt(int64(len(esdtData))).Bytes())
