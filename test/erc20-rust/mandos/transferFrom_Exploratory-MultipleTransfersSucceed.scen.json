@@ -5,17 +5,19 @@
         {
             "step": "setState",
             "accounts": {
-                "address:account_1": {
+                "``account_1_____________________s1": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000"
+                    "balance": "0xe8d4a51000",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:allowance|address:coin_holder_1|address:account_1": "0x28",
-                        "str:balance|address:coin_holder_1": "0x2710",
-                        "str:totalSupply": "0x2710"
+                        "``allowance|``coin_holder_1_________________sx|``account_1_____________________s1": "0x28",
+                        "``balance|``coin_holder_1_________________sx": "0x2710",
+                        "``total_supply": "0x2710"
                     },
                     "code": "file:../output/erc20.wasm"
                 }
@@ -25,12 +27,13 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "address:account_1",
+                "from": "``account_1_____________________s1",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
-                    "address:coin_holder_1",
-                    "address:coin_holder_2",
+                    "``coin_holder_1_________________sx",
+                    "``coin_holder_2_________________sx",
                     "0x0a"
                 ],
                 "gasLimit": "0x100000",
@@ -45,8 +48,8 @@
                         "endpoint": "str:transferFrom",
                         "topics": [
                             "str:transfer",
-                            "address:coin_holder_1",
-                            "address:coin_holder_2"
+                            "``coin_holder_1_________________sx",
+                            "``coin_holder_2_________________sx"
                         ],
                         "data": "0x0a"
                     }
@@ -59,12 +62,13 @@
             "step": "scCall",
             "txId": "2",
             "tx": {
-                "from": "address:account_1",
+                "from": "``account_1_____________________s1",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
-                    "address:coin_holder_1",
-                    "address:account_6",
+                    "``coin_holder_1_________________sx",
+                    "``account_6_____________________s1",
                     "0x0a"
                 ],
                 "gasLimit": "0x100000",
@@ -79,8 +83,8 @@
                         "endpoint": "str:transferFrom",
                         "topics": [
                             "str:transfer",
-                            "address:coin_holder_1",
-                            "address:account_6"
+                            "``coin_holder_1_________________sx",
+                            "``account_6_____________________s1"
                         ],
                         "data": "0x0a"
                     }
@@ -93,12 +97,13 @@
             "step": "scCall",
             "txId": "3",
             "tx": {
-                "from": "address:account_1",
+                "from": "``account_1_____________________s1",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
-                    "address:coin_holder_1",
-                    "address:coin_holder_1",
+                    "``coin_holder_1_________________sx",
+                    "``coin_holder_1_________________sx",
                     "0x0a"
                 ],
                 "gasLimit": "0x100000",
@@ -113,8 +118,8 @@
                         "endpoint": "str:transferFrom",
                         "topics": [
                             "str:transfer",
-                            "address:coin_holder_1",
-                            "address:coin_holder_1"
+                            "``coin_holder_1_________________sx",
+                            "``coin_holder_1_________________sx"
                         ],
                         "data": "0x0a"
                     }
@@ -127,12 +132,13 @@
             "step": "scCall",
             "txId": "4",
             "tx": {
-                "from": "address:account_1",
+                "from": "``account_1_____________________s1",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
-                    "address:coin_holder_1",
-                    "address:account_1",
+                    "``coin_holder_1_________________sx",
+                    "``account_1_____________________s1",
                     "0x0a"
                 ],
                 "gasLimit": "0x100000",
@@ -147,8 +153,8 @@
                         "endpoint": "str:transferFrom",
                         "topics": [
                             "str:transfer",
-                            "address:coin_holder_1",
-                            "address:account_1"
+                            "``coin_holder_1_________________sx",
+                            "``account_1_____________________s1"
                         ],
                         "data": "0x0a"
                     }
@@ -160,7 +166,7 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:account_1": {
+                "``account_1_____________________s1": {
                     "nonce": "4",
                     "balance": "0xe8d4651000",
                     "storage": {},
@@ -170,11 +176,11 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:balance|address:coin_holder_1": "0x26f2",
-                        "str:balance|address:coin_holder_2": "0x0a",
-                        "str:balance|address:account_6": "0x0a",
-                        "str:balance|address:account_1": "0x0a",
-                        "str:totalSupply": "0x2710"
+                        "``balance|``coin_holder_1_________________sx": "0x26f2",
+                        "``balance|``coin_holder_2_________________sx": "0x0a",
+                        "``balance|``account_6_____________________s1": "0x0a",
+                        "``balance|``account_1_____________________s1": "0x0a",
+                        "``total_supply": "0x2710"
                     },
                     "code": "file:../output/erc20.wasm"
                 }

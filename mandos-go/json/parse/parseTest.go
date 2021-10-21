@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 

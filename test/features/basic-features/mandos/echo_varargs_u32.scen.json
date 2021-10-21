@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,6 +25,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_varags_u32",
                 "arguments": [
                     "10",
@@ -50,6 +54,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_varags_u32",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -65,5 +70,6 @@
                 "refund": "*"
             }
         }
+        
     ]
 }

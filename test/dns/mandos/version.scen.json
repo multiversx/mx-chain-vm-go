@@ -8,6 +8,7 @@
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/dns.wasm"
                 }
             }
@@ -17,13 +18,10 @@
             "txId": "version",
             "tx": {
                 "to": "sc:delegation",
-                "function": "version",
-                "arguments": []
+                "function": "version"
             },
             "expect": {
-                "out": [
-                    "str:0.3.1"
-                ]
+                "out": [ "str:0.3.1" ]
             }
         }
     ]

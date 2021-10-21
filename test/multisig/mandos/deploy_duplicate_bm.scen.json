@@ -11,6 +11,7 @@
             "txId": "multisig-deploy",
             "tx": {
                 "from": "address:owner",
+                "value": "0",
                 "contractCode": "file:../output/multisig.wasm",
                 "arguments": [
                     "2",

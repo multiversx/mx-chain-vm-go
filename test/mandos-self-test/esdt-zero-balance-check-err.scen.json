@@ -9,11 +9,15 @@
                     "balance": "0",
                     "esdt": {
                         "str:TOK-123": "150"
-                    }
+                    },
+                    "storage": {},
+                    "code": ""
                 },
                 "address:B": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },

@@ -9,16 +9,15 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``opt_addr": [
-                            "1",
-                            "``____________address_too_long____________"
-                        ]
+                        "``opt_addr": ["1", "``____________address_too_long____________"]
                     },
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "100000000000000000"
+                    "balance": "100000000000000000",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -28,6 +27,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_opt_addr",
                 "arguments": [],
                 "gasLimit": "0x100000",

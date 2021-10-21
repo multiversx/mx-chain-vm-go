@@ -3,7 +3,6 @@ package mandosjsonparse
 import (
 	"testing"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,7 +12,6 @@ func TestParseScenario(t *testing.T) {
 		"step": "scCall",
 		"txId": "1",
 		"comment": "just an example",
-		"displayLogs": true,
 		"tx": {
 			"from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
 			"to": "0x1000000000000000000000000000000000000000000000000000000000000000",
@@ -53,5 +51,4 @@ func TestParseScenario(t *testing.T) {
 	require.Nil(t, parseErr)
 	require.NotNil(t, step)
 	require.Equal(t, "scCall", step.StepTypeName())
-	require.Equal(t, true, step.(*mj.TxStep).DisplayLogs)
 }

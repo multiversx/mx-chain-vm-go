@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,10 +25,11 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_map2",
                 "arguments": [
-                    "str:__________address_1_____________",
-                    "str:__________address_2_____________",
+                    "``__________address_1_____________",
+                    "``__________address_2_____________",
                     "123"
                 ],
                 "gasLimit": "50,000,000",
@@ -46,7 +50,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:map2|str:__________address_1_____________|str:__________address_2_____________": "123"
+                        "``map2|``__________address_1_____________|``__________address_2_____________": "123"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -64,18 +68,17 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_map2",
                 "arguments": [
-                    "str:__________address_1_____________",
-                    "str:__________address_2_____________"
+                    "``__________address_1_____________",
+                    "``__________address_2_____________"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "123"
-                ],
+                "out": [ "123" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -88,10 +91,11 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_map2",
                 "arguments": [
-                    "str:__________address_1_____________",
-                    "str:__________address_2_____________",
+                    "``__________address_1_____________",
+                    "``__________address_2_____________",
                     "0"
                 ],
                 "gasLimit": "50,000,000",
@@ -112,7 +116,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:map2|str:__________address_1_____________|str:__________address_2_____________": "0"
+                        "``map2|``__________address_1_____________|``__________address_2_____________": "0"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -130,18 +134,17 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_map2",
                 "arguments": [
-                    "str:__________address_1_____________",
-                    "str:__________address_2_____________"
+                    "``__________address_1_____________",
+                    "``__________address_2_____________"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "0"
-                ],
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

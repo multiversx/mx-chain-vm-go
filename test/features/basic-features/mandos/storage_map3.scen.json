@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,6 +25,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_map3",
                 "arguments": [
                     "0x57",
@@ -45,7 +49,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:map3|0x00000057": "true"
+                        "``map3|0x00000057": "true"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -63,6 +67,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_map3",
                 "arguments": [
                     "0x57"
@@ -71,9 +76,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "true"
-                ],
+                "out": [ "true" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -86,6 +89,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_map3",
                 "arguments": [
                     "0x57",
@@ -109,7 +113,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:map3|0x00000057": "false"
+                        "``map3|0x00000057": "false"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -127,6 +131,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_map3",
                 "arguments": [
                     "0x57"
@@ -135,9 +140,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "false"
-                ],
+                "out": [ "false" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

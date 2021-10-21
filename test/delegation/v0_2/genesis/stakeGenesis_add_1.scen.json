@@ -7,13 +7,16 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "''owner": "''node_address__________________s1",
+                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",
@@ -28,11 +31,15 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "2,000,000"
+                    "balance": "2,000,000",
+                    "storage": {},
+                    "code": ""
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -42,6 +49,7 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "stakeGenesis",
                 "arguments": [
                     "567,000,000,000"
@@ -73,6 +81,7 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "stakeGenesis",
                 "arguments": [
                     "001,000,000,000"
@@ -112,6 +121,7 @@
                     "balance": "0",
                     "storage": {
                         "''owner": "''node_address__________________s1",
+                        
                         "''num_nodes": "1",
                         "''stake_per_node": "789,000,000,000",
                         "''node_share": "3455",

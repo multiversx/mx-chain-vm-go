@@ -6,11 +6,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -26,9 +29,7 @@
                 ]
             },
             "expect": {
-                "out": [
-                    "str:new"
-                ]
+                "out": [ "str:new" ]
             }
         }
     ]

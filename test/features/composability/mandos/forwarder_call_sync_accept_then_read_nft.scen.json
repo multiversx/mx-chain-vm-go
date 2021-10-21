@@ -9,18 +9,16 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "5",
-                                    "balance": "1"
-                                }
-                            ],
+                            "nonce": "5",
+                            "balance": "1",
                             "lastNonce": "1",
                             "roles": [
                                 "ESDTRoleNFTCreate"
                             ]
                         }
-                    }
+                    },
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:vault": {
                     "nonce": "0",
@@ -30,6 +28,7 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -40,13 +39,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "esdtValue": [
-                    {
-                        "tokenIdentifier": "str:NFT-0001",
-                        "nonce": "5",
-                        "value": "1"
-                    }
-                ],
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:NFT-0001",
+                    "value": "1",
+                    "nonce": "5"
+                },
                 "function": "forward_sync_accept_funds_then_read",
                 "arguments": [
                     "sc:vault"
@@ -109,18 +107,14 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "5",
-                                    "balance": "1"
-                                }
-                            ]
-                        }
-                    },
                     "storage": {
                         "str:call_counts|nested:str:accept_funds": "1"
+                    },
+                    "esdt": {
+                        "str:NFT-0001": {
+                            "nonce": "5",
+                            "balance": "1"
+                        }
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },

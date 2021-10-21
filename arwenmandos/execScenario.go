@@ -1,10 +1,9 @@
 package arwenmandos
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -18,8 +17,6 @@ func (ae *ArwenTestExecutor) Reset() {
 func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
-	resetGasTracesIfNewTest(ae, scenario)
-
 	err := ae.InitVM(scenario.GasSchedule)
 	if err != nil {
 		return err
@@ -27,12 +24,11 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 
 	txIndex := 0
 	for _, generalStep := range scenario.Steps {
-		setGasTraceInMetering(ae, true)
 		err := ae.ExecuteStep(generalStep)
 		if err != nil {
 			return err
 		}
-		setGasTraceInMetering(ae, false)
+
 		txIndex++
 	}
 
@@ -46,9 +42,6 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	switch step := generalStep.(type) {
 	case *mj.ExternalStepsStep:
 		err = ae.ExecuteExternalStep(step)
-		length := len(ae.scenarioTraceGas)
-		ae.scenarioTraceGas = ae.scenarioTraceGas[:length-1]
-		return err
 	case *mj.SetStateStep:
 		err = ae.ExecuteSetStateStep(step)
 	case *mj.CheckStateStep:
@@ -58,8 +51,6 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	case *mj.DumpStateStep:
 		err = ae.DumpWorld()
 	}
-
-	logGasTrace(ae)
 
 	return err
 }
@@ -76,8 +67,6 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 	externalStepsRunner := mc.NewScenarioRunner(ae, clonedFileResolver)
 
 	extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
-	setExternalStepGasTracing(ae, step)
-
 	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth)
 	if err != nil {
 		return err
@@ -131,17 +120,9 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 		log.Trace("ExecuteTxStep", "comment", step.Comment)
 	}
 
-	if step.DisplayLogs {
-		arwen.SetLoggingForTests()
-	}
-
 	output, err := ae.executeTx(step.TxIdent, step.Tx)
 	if err != nil {
 		return nil, err
-	}
-
-	if step.DisplayLogs {
-		arwen.DisableLoggingForTests()
 	}
 
 	// check results

@@ -9,7 +9,9 @@
             "accounts": {
                 "''fuzz_owner_addr_______________s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:fuzz-auction": {
                     "nonce": "0",
@@ -21,15 +23,21 @@
                 },
                 "''endless_sack_of_erd___________s1": {
                     "nonce": "0",
-                    "balance": "1,000,000,000,000,000,000,000,000,000,000"
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
+                    "storage": {},
+                    "code": ""
                 },
                 "''withdraw_target_______________s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 },
                 "''stake_purchase_forwarded______s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             },
             "newAddresses": [
@@ -45,7 +53,9 @@
             "accounts": {
                 "''delegator     1               s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -54,7 +64,9 @@
             "accounts": {
                 "''delegator     2               s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -63,7 +75,9 @@
             "accounts": {
                 "''delegator     3               s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -72,7 +86,9 @@
             "accounts": {
                 "''delegator     4               s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -81,6 +97,7 @@
             "txId": "-deploy-",
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
+                "value": "0",
                 "contractCode": "file:../output/delegation.wasm",
                 "arguments": [
                     "sc:fuzz-auction",
@@ -106,6 +123,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "setStakePerNode",
                 "arguments": [
                     "1000000000"
@@ -127,6 +145,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "setAnyoneCanActivate",
                 "arguments": [],
                 "gasLimit": "100,000",
@@ -146,6 +165,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "enableUnStake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -165,6 +185,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -188,7 +209,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
-                "egldValue": "499027768"
+                "value": "499027768"
             }
         },
         {
@@ -197,7 +218,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "499027768",
+                "value": "499027768",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator     3               s1"
@@ -212,7 +233,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "''endless_sack_of_erd___________s1",
-                "egldValue": "499027768"
+                "value": "499027768"
             }
         },
         {
@@ -221,6 +242,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -244,6 +266,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "397569153"
@@ -258,6 +281,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -281,6 +305,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -304,6 +329,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     0 ..................................................................................",
@@ -328,7 +354,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     3               s1",
-                "egldValue": "467972316"
+                "value": "467972316"
             }
         },
         {
@@ -337,7 +363,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "467972316",
+                "value": "467972316",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -357,6 +383,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     2 ..................................................................................",
@@ -379,6 +406,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1559143929"
@@ -393,6 +421,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     3 ..................................................................................",
@@ -415,7 +444,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     2               s1",
-                "egldValue": "737384007"
+                "value": "737384007"
             }
         },
         {
@@ -424,7 +453,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "737384007",
+                "value": "737384007",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -443,7 +472,7 @@
             "txId": "18",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "12642127"
+                "value": "12642127"
             }
         },
         {
@@ -452,6 +481,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "134394279"
@@ -466,7 +496,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "''withdraw_target_______________s1",
-                "egldValue": "134394279"
+                "value": "134394279"
             }
         },
         {
@@ -475,6 +505,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -498,6 +529,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1574886564"
@@ -511,7 +543,7 @@
             "txId": "23",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "627846195"
+                "value": "627846195"
             }
         },
         {
@@ -520,6 +552,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -543,6 +576,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -562,6 +596,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -585,7 +620,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
-                "egldValue": "792252865"
+                "value": "792252865"
             }
         },
         {
@@ -594,7 +629,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "792252865",
+                "value": "792252865",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -614,6 +649,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -637,6 +673,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -656,6 +693,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -679,6 +717,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -702,6 +741,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     4 ..................................................................................",
@@ -724,7 +764,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
-                "egldValue": "313058827"
+                "value": "313058827"
             }
         },
         {
@@ -733,7 +773,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "313058827",
+                "value": "313058827",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator     1               s1"
@@ -748,7 +788,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "''endless_sack_of_erd___________s1",
-                "egldValue": "313058827"
+                "value": "313058827"
             }
         },
         {
@@ -756,7 +796,7 @@
             "txId": "37",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "838671303"
+                "value": "838671303"
             }
         },
         {
@@ -765,6 +805,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     5 ..................................................................................",
@@ -789,7 +830,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
-                "egldValue": "1819811332"
+                "value": "1819811332"
             }
         },
         {
@@ -798,7 +839,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1819811332",
+                "value": "1819811332",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -818,6 +859,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -841,6 +883,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -860,6 +903,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     2               s1"
@@ -883,6 +927,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -906,6 +951,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -929,6 +975,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -948,6 +995,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -971,6 +1019,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     7 ..................................................................................",
@@ -993,7 +1042,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
-                "egldValue": "992756815"
+                "value": "992756815"
             }
         },
         {
@@ -1002,7 +1051,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "992756815",
+                "value": "992756815",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1022,6 +1071,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -1044,7 +1094,7 @@
             "txId": "52",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "87632960"
+                "value": "87632960"
             }
         },
         {
@@ -1052,7 +1102,7 @@
             "txId": "53",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "180236611"
+                "value": "180236611"
             }
         },
         {
@@ -1060,7 +1110,7 @@
             "txId": "54",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "757891758"
+                "value": "757891758"
             }
         },
         {
@@ -1069,7 +1119,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
-                "egldValue": "431932315"
+                "value": "431932315"
             }
         },
         {
@@ -1078,7 +1128,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "431932315",
+                "value": "431932315",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1097,7 +1147,7 @@
             "txId": "57",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "89533436"
+                "value": "89533436"
             }
         },
         {
@@ -1105,7 +1155,7 @@
             "txId": "58",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "385811304"
+                "value": "385811304"
             }
         },
         {
@@ -1113,7 +1163,7 @@
             "txId": "59",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "327899858"
+                "value": "327899858"
             }
         },
         {
@@ -1121,7 +1171,7 @@
             "txId": "60",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "384963639"
+                "value": "384963639"
             }
         },
         {
@@ -1130,6 +1180,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     8 ..................................................................................",
@@ -1151,7 +1202,7 @@
             "txId": "62",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "491574005"
+                "value": "491574005"
             }
         },
         {
@@ -1160,6 +1211,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1251836792"
@@ -1174,6 +1226,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "607618169"
@@ -1188,6 +1241,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     3               s1"
@@ -1211,6 +1265,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -1230,6 +1285,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     3               s1"
@@ -1253,6 +1309,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -1276,6 +1333,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -1295,6 +1353,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -1317,7 +1376,7 @@
             "txId": "71",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "376309784"
+                "value": "376309784"
             }
         },
         {
@@ -1325,7 +1384,7 @@
             "txId": "72",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "471328750"
+                "value": "471328750"
             }
         },
         {
@@ -1334,6 +1393,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1743217373"
@@ -1347,7 +1407,7 @@
             "txId": "74",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "781329581"
+                "value": "781329581"
             }
         },
         {
@@ -1356,6 +1416,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "308354886"
@@ -1370,6 +1431,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     3               s1"
@@ -1393,6 +1455,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -1412,6 +1475,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     3               s1"
@@ -1435,7 +1499,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     3               s1",
-                "egldValue": "1113315070"
+                "value": "1113315070"
             }
         },
         {
@@ -1444,7 +1508,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1113315070",
+                "value": "1113315070",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1464,6 +1528,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key     9 ..................................................................................",
@@ -1486,7 +1551,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     2               s1",
-                "egldValue": "524892108"
+                "value": "524892108"
             }
         },
         {
@@ -1495,7 +1560,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "524892108",
+                "value": "524892108",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1515,6 +1580,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1700619150"
@@ -1529,6 +1595,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
@@ -1548,7 +1615,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
-                "egldValue": "648462692"
+                "value": "648462692"
             }
         },
         {
@@ -1557,7 +1624,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "648462692",
+                "value": "648462692",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1577,7 +1644,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
-                "egldValue": "306514485"
+                "value": "306514485"
             }
         },
         {
@@ -1586,7 +1653,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "306514485",
+                "value": "306514485",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1606,6 +1673,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -1629,6 +1697,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -1648,6 +1717,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -1671,6 +1741,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1830562900"
@@ -1685,7 +1756,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     3               s1",
-                "egldValue": "1196802522"
+                "value": "1196802522"
             }
         },
         {
@@ -1694,7 +1765,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1196802522",
+                "value": "1196802522",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1714,6 +1785,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "451786662"
@@ -1728,6 +1800,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -1751,7 +1824,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
-                "egldValue": "1406229407"
+                "value": "1406229407"
             }
         },
         {
@@ -1760,7 +1833,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1406229407",
+                "value": "1406229407",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1780,6 +1853,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -1803,6 +1877,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -1822,6 +1897,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -1844,7 +1920,7 @@
             "txId": "103",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "474001198"
+                "value": "474001198"
             }
         },
         {
@@ -1852,7 +1928,7 @@
             "txId": "104",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "567220707"
+                "value": "567220707"
             }
         },
         {
@@ -1860,7 +1936,7 @@
             "txId": "105",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "612413903"
+                "value": "612413903"
             }
         },
         {
@@ -1868,7 +1944,7 @@
             "txId": "106",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "597557567"
+                "value": "597557567"
             }
         },
         {
@@ -1877,6 +1953,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "32961903"
@@ -1891,6 +1968,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -1914,6 +1992,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -1933,6 +2012,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -1956,7 +2036,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
-                "egldValue": "1760262263"
+                "value": "1760262263"
             }
         },
         {
@@ -1965,7 +2045,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1760262263",
+                "value": "1760262263",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -1985,6 +2065,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     3               s1"
@@ -2008,6 +2089,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2027,6 +2109,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     3               s1"
@@ -2050,6 +2133,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1737942243"
@@ -2064,6 +2148,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "511271448"
@@ -2078,6 +2163,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -2101,6 +2187,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2120,6 +2207,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     1               s1"
@@ -2142,7 +2230,7 @@
             "txId": "121",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "275134738"
+                "value": "275134738"
             }
         },
         {
@@ -2151,6 +2239,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -2174,6 +2263,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2193,6 +2283,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -2216,6 +2307,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1183963121"
@@ -2229,7 +2321,7 @@
             "txId": "126",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "123486878"
+                "value": "123486878"
             }
         },
         {
@@ -2238,6 +2330,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1582378144"
@@ -2252,6 +2345,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1198180290"
@@ -2266,6 +2360,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -2289,6 +2384,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2308,6 +2404,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -2331,7 +2428,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
-                "egldValue": "665303107"
+                "value": "665303107"
             }
         },
         {
@@ -2340,7 +2437,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "665303107",
+                "value": "665303107",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -2360,6 +2457,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "401595257"
@@ -2373,7 +2471,7 @@
             "txId": "135",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "364678386"
+                "value": "364678386"
             }
         },
         {
@@ -2382,6 +2480,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1111808799"
@@ -2396,6 +2495,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -2419,6 +2519,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2438,6 +2539,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -2460,7 +2562,7 @@
             "txId": "140",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "235827408"
+                "value": "235827408"
             }
         },
         {
@@ -2469,7 +2571,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
-                "egldValue": "1598185590"
+                "value": "1598185590"
             }
         },
         {
@@ -2478,7 +2580,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1598185590",
+                "value": "1598185590",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -2498,6 +2600,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key    10 ..................................................................................",
@@ -2522,7 +2625,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
-                "egldValue": "1631571719"
+                "value": "1631571719"
             }
         },
         {
@@ -2531,7 +2634,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1631571719",
+                "value": "1631571719",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator     2               s1"
@@ -2546,7 +2649,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "''endless_sack_of_erd___________s1",
-                "egldValue": "1631571719"
+                "value": "1631571719"
             }
         },
         {
@@ -2555,7 +2658,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     2               s1",
-                "egldValue": "1418319025"
+                "value": "1418319025"
             }
         },
         {
@@ -2564,7 +2667,7 @@
             "tx": {
                 "from": "''delegator     2               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "1418319025",
+                "value": "1418319025",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -2583,7 +2686,7 @@
             "txId": "149",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "312596408"
+                "value": "312596408"
             }
         },
         {
@@ -2591,7 +2694,7 @@
             "txId": "150",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "930538118"
+                "value": "930538118"
             }
         },
         {
@@ -2600,6 +2703,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1356390697"
@@ -2614,6 +2718,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1523180880"
@@ -2628,6 +2733,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1027810651"
@@ -2642,7 +2748,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
-                "egldValue": "883405550"
+                "value": "883405550"
             }
         },
         {
@@ -2651,7 +2757,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "883405550",
+                "value": "883405550",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -2671,6 +2777,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key    12 ..................................................................................",
@@ -2693,6 +2800,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -2716,6 +2824,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2735,6 +2844,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -2758,6 +2868,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [
                     "''bls key    13 ..................................................................................",
@@ -2779,7 +2890,7 @@
             "txId": "161",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "706675421"
+                "value": "706675421"
             }
         },
         {
@@ -2787,7 +2898,7 @@
             "txId": "162",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "262170966"
+                "value": "262170966"
             }
         },
         {
@@ -2796,6 +2907,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1347134300"
@@ -2810,7 +2922,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     1               s1",
-                "egldValue": "36208287"
+                "value": "36208287"
             }
         },
         {
@@ -2819,7 +2931,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "36208287",
+                "value": "36208287",
                 "function": "purchaseStake",
                 "arguments": [
                     "''delegator     3               s1"
@@ -2834,7 +2946,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "''endless_sack_of_erd___________s1",
-                "egldValue": "36208287"
+                "value": "36208287"
             }
         },
         {
@@ -2842,7 +2954,7 @@
             "txId": "167",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "114902944"
+                "value": "114902944"
             }
         },
         {
@@ -2851,7 +2963,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''fuzz_owner_addr_______________s1",
-                "egldValue": "421160305"
+                "value": "421160305"
             }
         },
         {
@@ -2860,7 +2972,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "421160305",
+                "value": "421160305",
                 "function": "purchaseStake",
                 "arguments": [
                     "''fuzz_owner_addr_______________s1"
@@ -2875,7 +2987,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "''endless_sack_of_erd___________s1",
-                "egldValue": "421160305"
+                "value": "421160305"
             }
         },
         {
@@ -2884,6 +2996,7 @@
             "tx": {
                 "from": "''delegator     1               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "withdrawInactiveStake",
                 "arguments": [
                     "1649918887"
@@ -2897,7 +3010,7 @@
             "txId": "172",
             "tx": {
                 "to": "sc:fuzz-delegation",
-                "egldValue": "237729454"
+                "value": "237729454"
             }
         },
         {
@@ -2906,6 +3019,7 @@
             "tx": {
                 "from": "''delegator     3               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "announceUnStake",
                 "arguments": [
                     "1945004347"
@@ -2920,6 +3034,7 @@
             "tx": {
                 "from": "''fuzz_owner_addr_______________s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "addNodes",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
@@ -2939,6 +3054,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -2962,6 +3078,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "claimRewards",
                 "arguments": [],
                 "gasLimit": "1,000,000",
@@ -2981,6 +3098,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
+                "value": "0",
                 "function": "getClaimableRewards",
                 "arguments": [
                     "''delegator     4               s1"
@@ -3004,7 +3122,7 @@
             "tx": {
                 "from": "''endless_sack_of_erd___________s1",
                 "to": "''delegator     4               s1",
-                "egldValue": "940763384"
+                "value": "940763384"
             }
         },
         {
@@ -3013,7 +3131,7 @@
             "tx": {
                 "from": "''delegator     4               s1",
                 "to": "sc:fuzz-delegation",
-                "egldValue": "940763384",
+                "value": "940763384",
                 "function": "stakeAndTryActivate",
                 "arguments": [],
                 "gasLimit": "100,000,000",

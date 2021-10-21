@@ -20,13 +20,12 @@
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "esdtValue": [
-                    {
-                        "tokenIdentifier": "str:NFT-123456",
-                        "nonce": "1",
-                        "value": "1"
-                    }
-                ],
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:NFT-123456",
+                    "nonce": "1",
+                    "value": "1"
+                },
                 "function": "auctionToken",
                 "arguments": [
                     "100",
@@ -38,7 +37,6 @@
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -52,7 +50,9 @@
                     "nonce": "1",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-123456": {}
+                        "str:NFT-123456": {
+                            "instances": []
+                        }
                     },
                     "storage": {}
                 },
@@ -87,7 +87,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": ""
+                "+": {}
             }
         }
     ]

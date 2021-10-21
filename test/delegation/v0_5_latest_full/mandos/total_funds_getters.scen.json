@@ -13,11 +13,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        },
+        }, 
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        },
+        }, 
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -32,7 +32,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator1",
-                "egldValue": "5,000,000,000"
+                "value": "5,000,000,000"
             }
         },
         {
@@ -41,7 +41,7 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "egldValue": "5,000,000,000",
+                "value": "5,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -61,15 +61,14 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "300,009,000,000,000"
-                ],
+                "out": ["300,009,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -82,15 +81,14 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getTotalWithdrawOnlyStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "1,000,000,000"
-                ],
+                "out": ["1,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -103,15 +101,14 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getTotalWaitingStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "3,000,000,000"
-                ],
+                "out": ["3,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -124,15 +121,14 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getTotalActiveStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "300,000,000,000,000"
-                ],
+                "out": ["300,000,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -145,15 +141,14 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getTotalUnstakedStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "0"
-                ],
+                "out": ["0"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -166,21 +161,21 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getTotalDeferredPaymentStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "5,000,000,000"
-                ],
+                "out": ["5,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
         },
+
         {
             "step": "setState",
             "comment": "block nonce for unbond, just in time",
@@ -194,17 +189,14 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getUnBondable",
-                "arguments": [
-                    "address:delegator2"
-                ],
+                "arguments": ["address:delegator2"],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "6,000,000,000"
-                ],
+                "out": ["6,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -217,17 +209,14 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getUnStakeable",
-                "arguments": [
-                    "address:delegator2"
-                ],
+                "arguments": ["address:delegator2"],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "199,997,000,000,000"
-                ],
+                "out": ["199,997,000,000,000"],
                 "status": "",
                 "logs": [],
                 "gas": "*",

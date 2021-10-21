@@ -194,6 +194,3 @@ var ErrBigFloatWrongPrecision = errors.New("precision of the big float must be 5
 
 // ErrAllOperandsAreEqualToZero signals that all operands are equal to 0
 var ErrAllOperandsAreEqualToZero = errors.New("all operands are equal to 0")
-
-// ErrNilEpochNotifier signals that epoch notifier is nil
-var ErrNilEpochNotifier = errors.New("nil epoch notifier")

@@ -9,28 +9,23 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "0"
-                                }
-                            ]
+                            "nonce": "1",
+                            "balance": "0"
                         }
-                    }
+                    },
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1"
-                                }
-                            ]
+                            "nonce": "1",
+                            "balance": "1"
                         }
                     },
+                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -67,12 +62,8 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1"
-                                }
-                            ]
+                            "nonce": "1",
+                            "balance": "1"
                         }
                     },
                     "storage": {},
@@ -83,12 +74,8 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "0"
-                                }
-                            ]
+                            "nonce": "1",
+                            "balance": "0"
                         }
                     },
                     "storage": {},

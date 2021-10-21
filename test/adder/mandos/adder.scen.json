@@ -7,14 +7,16 @@
             "step": "setState",
             "accounts": {
                 "address:owner": {
-                    "nonce": "1",
-                    "balance": "0"
+                    "nonce": "5",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             },
             "newAddresses": [
                 {
                     "creatorAddress": "address:owner",
-                    "creatorNonce": "1",
+                    "creatorNonce": "5",
                     "newAddress": "sc:adder"
                 }
             ]
@@ -24,9 +26,10 @@
             "txId": "1",
             "tx": {
                 "from": "address:owner",
+                "value": "0",
                 "contractCode": "file:../output/adder.wasm",
                 "arguments": [
-                    "5"
+                    "0x05"
                 ],
                 "gasLimit": "5,000,000",
                 "gasPrice": "0"
@@ -61,6 +64,7 @@
             "tx": {
                 "from": "address:owner",
                 "to": "sc:adder",
+                "value": "0",
                 "function": "add",
                 "arguments": [
                     "3"
@@ -80,7 +84,7 @@
             "step": "checkState",
             "accounts": {
                 "address:owner": {
-                    "nonce": "*",
+                    "nonce": "7",
                     "balance": "0",
                     "storage": {},
                     "code": ""
@@ -89,7 +93,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:sum": "8"
+                        "``sum": "0x08"
                     },
                     "code": "file:../output/adder.wasm"
                 }

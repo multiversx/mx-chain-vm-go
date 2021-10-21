@@ -59,7 +59,6 @@ func getHostParameters() *arwen.VMHostParameters {
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
 	}
 }
 

@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "100000000000000000"
+                    "balance": "100000000000000000",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,6 +25,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_map3",
                 "arguments": [
                     "0x57",

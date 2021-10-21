@@ -6,7 +6,8 @@
             "accounts": {
                 "address:user": {
                     "nonce": "0",
-                    "balance": "1000"
+                    "balance": "1000",
+                    "storage": {}
                 },
                 "sc:egld-esdt-swap": {
                     "nonce": "0",
@@ -28,14 +29,13 @@
             "tx": {
                 "from": "address:user",
                 "to": "sc:egld-esdt-swap",
-                "egldValue": "500",
+                "value": "500",
                 "function": "wrapEgld",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
                 "status": "0",
                 "message": "",
                 "logs": [

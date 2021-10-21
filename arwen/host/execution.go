@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -86,10 +86,6 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
-	if host.flagRemoveNonUpdatedStorage.IsSet() {
-		output.RemoveNonUpdatedStorage()
-	}
-
 	vmOutput := output.GetVMOutput()
 	runtime.CleanWasmerInstance()
 	return vmOutput, nil
@@ -189,9 +185,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	if host.flagRemoveNonUpdatedStorage.IsSet() {
-		output.RemoveNonUpdatedStorage()
-	}
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
@@ -264,9 +257,9 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
-	managedTypes, _, metering, output, runtime, storage := host.GetContexts()
-	managedTypes.PushState()
-	managedTypes.InitState()
+	bigInt, _, metering, output, runtime, storage := host.GetContexts()
+	bigInt.PushState()
+	bigInt.InitState()
 
 	output.PushState()
 	output.CensorVMOutput()
@@ -311,7 +304,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
-	managedTypes, _, metering, output, runtime, storage := host.GetContexts()
+	bigInt, _, metering, output, runtime, storage := host.GetContexts()
 
 	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
@@ -327,7 +320,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	gasSpentByChildContract := metering.GasSpentByContract()
 
 	// Restore the previous context states
-	managedTypes.PopSetActiveState()
+	bigInt.PopSetActiveState()
 	storage.PopSetActiveState()
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
@@ -358,12 +351,11 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	managedTypes, blockchain, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
-	managedTypes.PushState()
-	managedTypes.InitState()
+	bigInt.PushState()
 	output.PushState()
 
 	copyTxHashesFromContext(runtime, input)
@@ -397,15 +389,15 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	managedTypes, blockchain, metering, output, runtime, _ := host.GetContexts()
+	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
-		managedTypes.PopSetActiveState()
+		bigInt.PopSetActiveState()
 		metering.PopSetActiveState()
 		output.PopSetActiveState()
-		blockchain.PopSetActiveState()
 		runtime.PopSetActiveState()
+		blockchain.PopSetActiveState()
 		return
 	}
 
@@ -416,9 +408,10 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	metering.PopMergeActiveState()
 	output.PopDiscard()
+	bigInt.PopDiscard()
 	blockchain.PopDiscard()
-	managedTypes.PopSetActiveState()
 	runtime.PopSetActiveState()
+
 	// Restore remaining gas to the caller (parent) Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 }
@@ -929,9 +922,6 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	vmOutput *vmcommon.VMOutput,
 ) (*vmcommon.ContractCallInput, error) {
 	if vmOutput.ReturnCode != vmcommon.Ok {
-		return nil, nil
-	}
-	if vmInput.ReturnCallAfterError && vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
 

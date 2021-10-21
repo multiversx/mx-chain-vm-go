@@ -7,11 +7,14 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "1,000,000,000"
+                    "balance": "1,000,000,000",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:auction": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../auction-mock.wasm"
                 },
                 "sc:delegation": {
@@ -19,8 +22,10 @@
                     "balance": "789,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
+                        
                         "''num_nodes": "0",
                         "''stake_per_node": "789,000,000,000",
+                        
                         "''node_share": "3455",
                         "''node_rewards_addr": "''node_address__________________s1",
                         "''num_users": "3",
@@ -45,11 +50,15 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -59,8 +68,10 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "activate",
-                "arguments": [],
+                "arguments": [
+                ],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "1"
             },
@@ -72,6 +83,6 @@
                 "gas": "*",
                 "refund": "*"
             }
-        }
+        }        
     ]
 }

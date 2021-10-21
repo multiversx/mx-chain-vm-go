@@ -2,8 +2,8 @@ package mandoscontroller
 
 import (
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
 // TestExecutor describes a component that can run a VM test.

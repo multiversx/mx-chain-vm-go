@@ -3,7 +3,7 @@ package contracts
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // DirectCallGasTestConfig is configuration for direct call tests
@@ -15,13 +15,6 @@ type DirectCallGasTestConfig struct {
 	ParentBalance        int64
 	ChildBalance         int64
 	ESDTTokensToTransfer uint64
-}
-
-// TransferAndExecuteTestConfig is configuration for transfer and execute tests
-type TransferAndExecuteTestConfig struct {
-	DirectCallGasTestConfig
-	TransferFromParentToChild int64
-	GasTransferToChild        uint64
 }
 
 // AsyncCallBaseTestConfig is base configuration for async call tests

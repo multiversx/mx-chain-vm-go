@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -16,7 +16,7 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 
 	blt := mj.Transaction{
 		Type:      txType,
-		EGLDValue: mj.JSONBigIntZero(),
+		Value:     mj.JSONBigIntZero(),
 		ESDTValue: nil,
 	}
 
@@ -67,26 +67,20 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 				return nil, errors.New("transaction function field not allowed in this context")
 			}
 		case "value":
-			// backwards compatibility
-			fallthrough
-		case "egldValue":
 			if !txType.HasValue() {
-				return nil, errors.New("`egldValue` not allowed in this context")
+				return nil, errors.New("`value` not allowed in this context")
 			}
-			blt.EGLDValue, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			blt.Value, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
-				return nil, fmt.Errorf("invalid transaction egldValue: %w", err)
+				return nil, fmt.Errorf("invalid transaction value: %w", err)
 			}
 		case "esdt":
-			// backwards compatibility
-			fallthrough
-		case "esdtValue":
 			if !txType.HasESDT() {
-				return nil, errors.New("`esdtValue` not allowed in this context")
+				return nil, errors.New("`esdt` not allowed in this context")
 			}
 			blt.ESDTValue, err = p.processTxESDT(kvp.Value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid transaction esdtValue: %w", err)
+				return nil, fmt.Errorf("invalid transaction ESDT value: %w", err)
 			}
 		case "arguments":
 			blt.Arguments, err = p.parseSubTreeList(kvp.Value)
@@ -104,21 +98,21 @@ func (p *Parser) processTx(txType mj.TransactionType, blrRaw oj.OJsonObject) (*m
 			if txType != mj.ScDeploy && len(blt.Code.Value) > 0 {
 				return nil, errors.New("transaction contractCode field only allowed int scDeploy transactions")
 			}
-		case "gasLimit":
-			if !txType.HasGasLimit() {
-				return nil, errors.New("`gasLimit` not allowed in this context")
-			}
-			blt.GasLimit, err = p.processUint64(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid transaction gasLimit: %w", err)
-			}
 		case "gasPrice":
-			if !txType.HasGasPrice() {
+			if !txType.HasGas() {
 				return nil, errors.New("`gasPrice` not allowed in this context")
 			}
 			blt.GasPrice, err = p.processUint64(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid transaction gasPrice: %w", err)
+			}
+		case "gasLimit":
+			if !txType.HasGas() {
+				return nil, errors.New("`gasLimit` not allowed in this context")
+			}
+			blt.GasLimit, err = p.processUint64(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid transaction gasLimit: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown field in transaction: %s", kvp.Key)

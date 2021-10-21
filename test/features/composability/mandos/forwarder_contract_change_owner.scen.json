@@ -10,13 +10,16 @@
                     "code": "file:../forwarder/output/forwarder.wasm"
                 },
                 "sc:child": {
-                    "code": "file:../vault/output/vault.wasm",
-                    "owner": "sc:forwarder"
+                    "owner": "sc:forwarder",
+                    "code":"file:../vault/output/vault.wasm"
                 }
             }
         },
         {
-            "step": "setState"
+            "step": "setState",
+            "accounts": {
+                
+            }
         },
         {
             "step": "scCall",
@@ -24,6 +27,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
+                "value": "0",
                 "function": "changeOwnerAddress",
                 "arguments": [
                     "sc:child",
@@ -33,20 +37,17 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "address:new_owner",
-                    "address:new_owner"
-                ]
+                "out": [ "address:new_owner", "address:new_owner" ]
             }
         },
         {
             "step": "checkState",
             "accounts": {
                 "sc:child": {
-                    "code": "file:../vault/output/vault.wasm",
-                    "owner": "address:new_owner"
+                    "owner": "address:new_owner",
+                    "code":"file:../vault/output/vault.wasm"
                 },
-                "+": ""
+                "+": {}
             }
         }
     ]

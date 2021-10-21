@@ -6,11 +6,15 @@
             "accounts": {
                 "address:A": {
                     "nonce": "0",
-                    "balance": "150"
+                    "balance": "150",
+                    "storage": {},
+                    "code": ""
                 },
                 "address:B": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -20,7 +24,7 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "egldValue": "100"
+                "value": "100"
             }
         },
         {
@@ -46,7 +50,7 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "egldValue": "50"
+                "value": "50"
             }
         },
         {

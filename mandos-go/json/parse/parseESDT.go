@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -36,16 +36,16 @@ func (p *Parser) processESDTData(
 	}
 }
 
-// Map containing ESDT fields, e.g.:
+// map containing other fields too, e.g.:
 // {
-// 	"instances": [ ... ],
-//  "lastNonce": "5",
+// 	"balance": "400,000,000,000",
 // 	"frozen": "true"
 // }
 func (p *Parser) processESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMap *oj.OJsonMap) (*mj.ESDTData, error) {
 	esdtData := mj.ESDTData{
 		TokenIdentifier: tokenName,
 	}
+	// var err error
 	firstInstance := &mj.ESDTInstance{}
 	firstInstanceLoaded := false
 	var explicitInstances []*mj.ESDTInstance
@@ -87,9 +87,6 @@ func (p *Parser) processESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMa
 	}
 
 	if firstInstanceLoaded {
-		if !p.AllowEsdtLegacySetSyntax {
-			return nil, fmt.Errorf("wrong ESDT set state syntax: instances in root no longer allowed")
-		}
 		esdtData.Instances = []*mj.ESDTInstance{firstInstance}
 	}
 	esdtData.Instances = append(esdtData.Instances, explicitInstances...)

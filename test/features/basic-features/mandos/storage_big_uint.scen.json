@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,6 +25,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_big_uint",
                 "arguments": [
                     "123"
@@ -44,7 +48,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:big_uint": "123"
+                        "``big_uint": "123"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -62,15 +66,14 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_big_uint",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "123"
-                ],
+                "out": [ "123" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -83,6 +86,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "store_big_uint",
                 "arguments": [
                     "0"
@@ -105,7 +109,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:big_uint": "0"
+                        "``big_uint": "0"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -123,15 +127,14 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "load_big_uint",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "0"
-                ],
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

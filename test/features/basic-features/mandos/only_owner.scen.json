@@ -7,15 +7,20 @@
             "accounts": {
                 "address:owner": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm",
                     "owner": "address:owner"
                 }
@@ -27,6 +32,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "only_owner_endpoint",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -35,7 +41,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "str:Endpoint can only be called by owner",
+                "message": "str:Endpoint can olny be called by owner",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
@@ -47,6 +53,7 @@
             "tx": {
                 "from": "address:owner",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "only_owner_endpoint",
                 "arguments": [],
                 "gasLimit": "50,000,000",

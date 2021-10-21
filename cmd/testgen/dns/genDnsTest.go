@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
 func getTestRoot() string {

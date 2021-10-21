@@ -7,11 +7,15 @@
             "accounts": {
                 "0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1000000000000000000000000": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000"
+                    "balance": "0xe8d4a51000",
+                    "storage": {},
+                    "code": ""
                 },
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000"
+                    "balance": "0xe8d4a51000",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:erc20": {
                     "nonce": "0",
@@ -30,6 +34,7 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "allowance",
                 "arguments": [
                     "0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1000000000000000000000000",
@@ -54,6 +59,7 @@
             "tx": {
                 "from": "0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1000000000000000000000000",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "approve",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
@@ -87,6 +93,7 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "allowance",
                 "arguments": [
                     "0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1000000000000000000000000",

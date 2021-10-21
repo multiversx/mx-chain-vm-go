@@ -20,29 +20,15 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "instances": [
-                                {
-                                    "nonce": "0",
-                                    "balance": "400,000,000,000"
-                                }
-                            ],
+                            "balance": "400,000,000,000",
                             "frozen": "false"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
-                            "instances": [
-                                {
-                                    "nonce": "0",
-                                    "balance": "400,000,000,000"
-                                }
-                            ],
+                            "balance": "400,000,000,000",
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
-                            "instances": [
-                                {
-                                    "nonce": "1023"
-                                }
-                            ],
+                            "nonce": "1023",
                             "roles": [
                                 "role1",
                                 "role2"
@@ -118,7 +104,9 @@
                             ]
                         }
                     },
-                    "username": "str:myusername.elrond"
+                    "username": "str:myusername.elrond",
+                    "storage": {},
+                    "code": ""
                 },
                 "address:smart_contract_address": {
                     "nonce": "0x00",
@@ -179,7 +167,7 @@
             "tx": {
                 "from": "address:an_address",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
-                "egldValue": "0x00",
+                "value": "0x00",
                 "function": "someFunctionName",
                 "arguments": [
                     "0x1234123400000000000000000000000000000000000000000000000000000004",
@@ -235,13 +223,11 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
-                "egldValue": "0x00",
-                "esdtValue": [
-                    {
-                        "tokenIdentifier": "str:MyToken",
-                        "value": "250,000,000,000"
-                    }
-                ],
+                "value": "0x00",
+                "esdt": {
+                    "tokenIdentifier": "str:MyToken",
+                    "value": "250,000,000,000"
+                },
                 "function": "someFunctionName",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -255,6 +241,7 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                "value": "0x00",
                 "function": "someFunctionName",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -273,6 +260,7 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
+                "value": "0x00",
                 "function": "someFunctionName",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -289,7 +277,11 @@
             "comment": "another",
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
-                "egldValue": "123,456,000",
+                "value": "0x00",
+                "esdt": {
+                    "tokenIdentifier": "str:CrowdToken",
+                    "value": "250,000,000,000"
+                },
                 "contractCode": "``new contract code here",
                 "arguments": [
                     "0x1234123400000000000000000000000000000000000000000000000000000004",
@@ -329,13 +321,13 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "0x1000000000000000000000000000000000000000000000000000000000000000",
-                "egldValue": "1234",
-                "esdtValue": [
-                    {
-                        "tokenIdentifier": "str:MyToken",
-                        "value": "250,000,000,000"
-                    }
-                ]
+                "value": "1234",
+                "esdt": {
+                    "tokenIdentifier": "str:MyToken",
+                    "value": "250,000,000,000"
+                },
+                "gasLimit": "",
+                "gasPrice": ""
             }
         },
         {
@@ -344,21 +336,7 @@
             "comment": "system send out validator rewards",
             "tx": {
                 "to": "sc:delegation",
-                "egldValue": "555,000,000"
-            }
-        },
-        {
-            "step": "scQuery",
-            "txId": "5",
-            "displayLogs": true,
-            "tx": {
-                "to": "address:this_is_just_a_display_logs_test",
-                "function": "thisIsJustADisplayLogsTest",
-                "arguments": []
-            },
-            "expect": {
-                "out": [],
-                "status": ""
+                "value": "555,000,000"
             }
         },
         {
@@ -372,29 +350,16 @@
                     "esdt": {
                         "str:1-MyToken": "400,000,000,000",
                         "str:2-AnotherToken": {
-                            "instances": [
-                                {
-                                    "nonce": "0",
-                                    "balance": "400,000,000,000"
-                                }
-                            ],
+                            "balance": "400,000,000,000",
                             "frozen": "*"
                         },
                         "str:3-AnotherTokenThatIsFrozen": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "*"
-                                }
-                            ],
+                            "nonce": "*",
+                            "balance": "*",
                             "frozen": "true"
                         },
                         "str:4-SimpleNFT": {
-                            "instances": [
-                                {
-                                    "nonce": "1023"
-                                }
-                            ],
+                            "nonce": "1023",
                             "roles": [
                                 "role1",
                                 "role2"
@@ -477,7 +442,8 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "esdtValue": [
+                "value": "",
+                "esdt": [
                     {
                         "tokenIdentifier": "str:TOK-123",
                         "value": "100"

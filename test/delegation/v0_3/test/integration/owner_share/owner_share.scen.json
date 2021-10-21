@@ -36,6 +36,7 @@
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getUserStake",
                 "arguments": [
                     "''node_address__________________s1"
@@ -44,9 +45,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "11,000,000,000,000"
-                ],
+                "out": [ "11,000,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -59,15 +58,14 @@
             "tx": {
                 "from": "''someone_______________________s1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "444,001,000,000,000"
-                ],
+                "out": [ "444,001,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -78,5 +76,6 @@
             "step": "externalSteps",
             "path": "../main/04_activate.steps.json"
         }
+
     ]
 }

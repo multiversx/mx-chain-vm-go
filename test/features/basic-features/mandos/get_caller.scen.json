@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,15 +25,14 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "get_caller",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "address:an_account"
-                ],
+                "out": [ "address:an_account" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -42,13 +44,10 @@
             "txId": "get_caller_query",
             "tx": {
                 "to": "sc:basic-features",
-                "function": "get_caller",
-                "arguments": []
+                "function": "get_caller"
             },
             "expect": {
-                "out": [
-                    "sc:basic-features"
-                ],
+                "out": [ "sc:basic-features" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

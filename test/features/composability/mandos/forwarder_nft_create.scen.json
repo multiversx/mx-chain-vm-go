@@ -9,32 +9,27 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1"
-                                }
-                            ]
+                            "nonce": "1",
+                            "balance": "1"
                         }
-                    }
+                    },
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1"
-                                }
-                            ],
+                            "nonce": "1",
+                            "balance": "1",
                             "lastNonce": "1",
                             "roles": [
                                 "ESDTRoleNFTCreate"
                             ]
                         }
                     },
+                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -60,10 +55,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "2",
-                    "2"
-                ],
+                "out": ["2", "2"],
                 "status": "0",
                 "gas": "*",
                 "refund": "*"
@@ -77,12 +69,8 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1"
-                                }
-                            ]
+                            "nonce": "1",
+                            "balance": "1"
                         }
                     },
                     "storage": {},
@@ -104,10 +92,10 @@
                                     "creator": "sc:forwarder",
                                     "royalties": "0",
                                     "hash": "str:nft-create-hash-----------------",
+                                    "attributes": "0x808080",
                                     "uri": [
                                         "str:nft-create-uri"
-                                    ],
-                                    "attributes": "0x808080"
+                                    ]
                                 }
                             ],
                             "lastNonce": "2",

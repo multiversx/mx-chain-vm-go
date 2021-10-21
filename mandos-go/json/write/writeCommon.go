@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -153,9 +153,4 @@ func checkUint64ToOJ(i mj.JSONCheckUint64) oj.OJsonObject {
 
 func stringToOJ(str string) oj.OJsonObject {
 	return &oj.OJsonString{Value: str}
-}
-
-func boolToOJ(val bool) oj.OJsonObject {
-	obj := oj.OJsonBool(val)
-	return &obj
 }

@@ -13,7 +13,6 @@
     GetShardOfAddress  = 10
     GetExternalBalance = 10
     GetBlockHash       = 10
-    GetOriginalTxHash  = 10
     TransferValue      = 10
     GetArgument        = 10
     GetFunction        = 10
@@ -121,7 +120,6 @@
 	BigIntGetSignedArgument    = 10
 	BigIntGetCallValue         = 10
 	BigIntGetExternalBalance   = 10
-    CopyPerByteForTooBig       = 10
 
 [BigFloatAPICost]
     BigFloatNewFromParts = 10

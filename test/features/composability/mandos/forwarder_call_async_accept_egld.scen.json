@@ -6,16 +6,20 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "1000"
+                    "balance": "1000",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -26,12 +30,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "egldValue": "1000",
+                "value": "1000",
                 "function": "forward_async_accept_funds",
                 "arguments": [
                     "sc:vault"
                 ],
-                "gasLimit": "60,000,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {

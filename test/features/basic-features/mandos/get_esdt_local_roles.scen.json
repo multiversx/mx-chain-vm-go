@@ -11,21 +11,25 @@
                     "esdt": {
                         "str:ESDT-123456": "200"
                     },
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:viewer": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "0",
             "comment": "no roles",
+            "txId": "0",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "get_esdt_local_roles",
                 "arguments": [
                     "str:ESDT-123456"
@@ -49,26 +53,31 @@
                     "balance": "0",
                     "esdt": {
                         "str:ESDT-123456": {
+                            "balance": "200",
                             "roles": [
                                 "ESDTRoleLocalMint"
                             ]
                         }
                     },
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:viewer": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "1",
             "comment": "one role",
+            "txId": "1",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "get_esdt_local_roles",
                 "arguments": [
                     "str:ESDT-123456"
@@ -94,27 +103,32 @@
                     "balance": "0",
                     "esdt": {
                         "str:ESDT-123456": {
+                            "balance": "200",
                             "roles": [
                                 "ESDTRoleLocalMint",
                                 "ESDTRoleLocalBurn"
                             ]
                         }
                     },
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:viewer": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "2",
             "comment": "multiple roles",
+            "txId": "2",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "get_esdt_local_roles",
                 "arguments": [
                     "str:ESDT-123456"
@@ -141,6 +155,7 @@
                     "balance": "0",
                     "esdt": {
                         "str:ESDT-123456": {
+                            "balance": "200",
                             "lastNonce": "5",
                             "roles": [
                                 "ESDTRoleNFTCreate",
@@ -149,21 +164,25 @@
                             ]
                         }
                     },
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:viewer": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "3",
             "comment": "nft roles",
+            "txId": "3",
             "tx": {
                 "from": "address:viewer",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "get_esdt_local_roles",
                 "arguments": [
                     "str:ESDT-123456"

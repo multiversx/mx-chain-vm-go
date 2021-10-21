@@ -17,7 +17,7 @@
             "tx": {
                 "from": "address:participant1",
                 "to": "sc:ping-pong",
-                "egldValue": "500,000,000,000",
+                "value": "500,000,000,000",
                 "function": "ping",
                 "arguments": [
                     ""
@@ -26,7 +26,6 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
                 "status": "4",
                 "message": "str:smart contract not active yet",
                 "gas": "*",
@@ -55,9 +54,9 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:pingAmount": "500,000,000,000",
-                        "str:activationTimestamp": "780",
-                        "str:deadline": "123,780"
+                        "''ping_amount": "500,000,000,000",
+                        "''activation_timestamp": "780",
+                        "''deadline": "123,780"
                     },
                     "code": "file:../output/ping-pong-egld.wasm"
                 }

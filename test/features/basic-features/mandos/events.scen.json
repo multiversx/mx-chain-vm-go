@@ -7,11 +7,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -21,6 +24,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "logEventA",
                 "arguments": [
                     "0"
@@ -51,6 +55,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "logEventA",
                 "arguments": [
                     "0x1234abc"
@@ -81,10 +86,11 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "logEventB",
                 "arguments": [
                     "0xa1",
-                    "str:arg2_an_address_______________s3",
+                    "``arg2_an_address_______________s3",
                     "1",
                     "2"
                 ],
@@ -101,12 +107,13 @@
                         "topics": [
                             "str:event_b",
                             "0xa1",
-                            "str:arg2_an_address_______________s3"
+                            "``arg2_an_address_______________s3"
                         ],
                         "data": [
                             "biguint:1",
                             "biguint:2"
                         ]
+                        
                     }
                 ],
                 "gas": "*",

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -13,9 +13,6 @@ func (p *Parser) processTxESDT(txEsdtRaw oj.OJsonObject) ([]*mj.ESDTTxData, erro
 
 	switch txEsdt := txEsdtRaw.(type) {
 	case *oj.OJsonMap:
-		if !p.AllowEsdtTxLegacySyntax {
-			return nil, fmt.Errorf("wrong ESDT Multi-Transfer format, list expected")
-		}
 		entry, err := p.parseSingleTxEsdtEntry(txEsdt)
 		if err != nil {
 			return nil, err
@@ -26,7 +23,7 @@ func (p *Parser) processTxESDT(txEsdtRaw oj.OJsonObject) ([]*mj.ESDTTxData, erro
 		for _, txEsdtListItem := range txEsdt.AsList() {
 			txEsdtMap, isMap := txEsdtListItem.(*oj.OJsonMap)
 			if !isMap {
-				return nil, fmt.Errorf("wrong ESDT Multi-Transfer format")
+				return nil, fmt.Errorf("Wrong ESDT Multi-Transfer format")
 			}
 
 			entry, err := p.parseSingleTxEsdtEntry(txEsdtMap)
@@ -37,7 +34,7 @@ func (p *Parser) processTxESDT(txEsdtRaw oj.OJsonObject) ([]*mj.ESDTTxData, erro
 			allEsdtData = append(allEsdtData, entry)
 		}
 	default:
-		return nil, fmt.Errorf("wrong ESDT transfer format, expected list")
+		return nil, fmt.Errorf("Wrong ESDT transfer format")
 	}
 
 	return allEsdtData, nil

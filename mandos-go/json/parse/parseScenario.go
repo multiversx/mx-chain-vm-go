@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -22,7 +22,6 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 
 	scenario := &mj.Scenario{
 		CheckGas:    true,
-		TraceGas:    false,
 		GasSchedule: mj.GasScheduleDefault,
 	}
 
@@ -44,12 +43,6 @@ func (p *Parser) ParseScenarioFile(jsonString []byte) (*mj.Scenario, error) {
 				return nil, errors.New("scenario checkGas flag is not boolean")
 			}
 			scenario.CheckGas = bool(*checkGasOJ)
-		case "traceGas":
-			traceGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
-			if !isBool {
-				return nil, errors.New("scenario traceGas flag is not boolean")
-			}
-			scenario.TraceGas = bool(*traceGasOJ)
 		case "gasSchedule":
 			scenario.GasSchedule, err = p.parseGasSchedule(kvp.Value)
 			if err != nil {
@@ -77,10 +70,12 @@ func (p *Parser) parseGasSchedule(value oj.OJsonObject) (mj.GasSchedule, error) 
 		return mj.GasScheduleDefault, nil
 	case "dummy":
 		return mj.GasScheduleDummy, nil
+	case "v1":
+		return mj.GasScheduleV1, nil
+	case "v2":
+		return mj.GasScheduleV2, nil
 	case "v3":
 		return mj.GasScheduleV3, nil
-	case "v4":
-		return mj.GasScheduleV4, nil
 	default:
 		return mj.GasScheduleDummy, fmt.Errorf("invalid gasSchedule: %s", gasScheduleStr)
 	}
@@ -134,8 +129,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 	case "":
 		return nil, errors.New("no step type field provided")
 	case mj.StepNameExternalSteps:
-		traceGasStatus := mj.Undefined
-		step := &mj.ExternalStepsStep{TraceGas: traceGasStatus}
+		step := &mj.ExternalStepsStep{}
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
@@ -143,16 +137,6 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 				step.Comment, err = p.parseString(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("bad externalSteps step comment: %w", err)
-				}
-			case "traceGas":
-				traceGasOJ, isBool := kvp.Value.(*oj.OJsonBool)
-				if !isBool {
-					return nil, errors.New("scenario traceGas flag is not boolean")
-				}
-				if bool(*traceGasOJ) {
-					step.TraceGas = 1
-				} else {
-					step.TraceGas = 0
 				}
 			case "path":
 				step.Path, err = p.parseString(kvp.Value)
@@ -264,11 +248,6 @@ func (p *Parser) parseTxStep(txType mj.TransactionType, stepMap *oj.OJsonMap) (*
 			step.TxIdent, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("bad tx step id: %w", err)
-			}
-		case "displayLogs":
-			step.DisplayLogs, err = p.parseBool(kvp.Value)
-			if err != nil {
-				return nil, fmt.Errorf("bad tx step displayLogs: %w", err)
 			}
 		case "comment":
 			step.Comment, err = p.parseString(kvp.Value)

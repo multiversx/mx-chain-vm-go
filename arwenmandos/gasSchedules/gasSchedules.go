@@ -14,12 +14,15 @@ package gasschedules
 
 //go:generate go run scripts/includetoml.go
 
-// GetV3 yields the schedule V3
-func GetV3() string {
-	return gasScheduleV3
+// Deprecated: GetV1 yields an old version of the gas schedule.
+func GetV1() string {
+	return gasScheduleV1
 }
 
-// GetV4 yields the schedule V4
-func GetV4() string {
-	return gasScheduleV4
+// Deprecated: GetV2 yields an old version of the gas schedule.
+func GetV2() string {
+	return gasScheduleV2
+}
+func GetV3() string {
+	return gasScheduleV3
 }

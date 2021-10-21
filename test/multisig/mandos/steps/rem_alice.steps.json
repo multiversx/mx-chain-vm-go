@@ -17,9 +17,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "3"
-                ],
+                "out": ["3"],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -34,9 +32,7 @@
                 "to": "sc:multisig",
                 "value": "0",
                 "function": "sign",
-                "arguments": [
-                    "3"
-                ],
+                "arguments": ["3"],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
@@ -56,9 +52,7 @@
                 "to": "sc:multisig",
                 "value": "0",
                 "function": "sign",
-                "arguments": [
-                    "3"
-                ],
+                "arguments": ["3"],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
@@ -78,9 +72,7 @@
                 "to": "sc:multisig",
                 "value": "0",
                 "function": "performAction",
-                "arguments": [
-                    "3"
-                ],
+                "arguments": ["3"],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },

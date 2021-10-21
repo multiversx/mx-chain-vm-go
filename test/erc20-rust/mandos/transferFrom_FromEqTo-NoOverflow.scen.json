@@ -5,18 +5,20 @@
         {
             "step": "setState",
             "accounts": {
-                "address:account_1": {
+                "``account_1_____________________s1": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000"
+                    "balance": "0xe8d4a51000",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:allowance|address:coin_holder_1|address:account_1": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
-                        "str:balance|address:coin_holder_1": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
-                        "str:balance|address:account_2": "0x0a",
-                        "str:totalSupply": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                        "``allowance|``coin_holder_1_________________sx|``account_1_____________________s1": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
+                        "``balance|``coin_holder_1_________________sx": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5",
+                        "``balance|``account_2_____________________s1": "0x0a",
+                        "``total_supply": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                     },
                     "code": "file:../output/erc20.wasm"
                 }
@@ -26,12 +28,13 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "address:account_1",
+                "from": "``account_1_____________________s1",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
-                    "address:coin_holder_1",
-                    "address:account_2",
+                    "``coin_holder_1_________________sx",
+                    "``account_2_____________________s1",
                     "+0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5"
                 ],
                 "gasLimit": "0x100000",
@@ -46,8 +49,8 @@
                         "endpoint": "str:transferFrom",
                         "topics": [
                             "str:transfer",
-                            "address:coin_holder_1",
-                            "address:account_2"
+                            "``coin_holder_1_________________sx",
+                            "``account_2_____________________s1"
                         ],
                         "data": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5"
                     }
@@ -59,7 +62,7 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:account_1": {
+                "``account_1_____________________s1": {
                     "nonce": "1",
                     "balance": "0xe8d4951000",
                     "storage": {},
@@ -69,8 +72,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:balance|address:account_2": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-                        "str:totalSupply": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                        "``balance|``account_2_____________________s1": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "``total_supply": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
                     },
                     "code": "file:../output/erc20.wasm"
                 }

@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
+                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0x900abc"
+                    "balance": "0x900abc",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,6 +25,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "0"
@@ -45,6 +49,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "5"
@@ -68,6 +73,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "-3"
@@ -91,6 +97,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "0x010000000000000000"
@@ -113,6 +120,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "0xffffffff"
@@ -136,6 +144,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "0x7fffffff"
@@ -159,6 +168,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "+2147483648"
@@ -181,6 +191,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "echo_i32",
                 "arguments": [
                     "-2147483649"

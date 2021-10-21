@@ -9,23 +9,23 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "5",
-                                    "balance": "2"
-                                }
-                            ]
+                            "nonce": "5",
+                            "balance": "2"
                         }
-                    }
+                    },
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -36,13 +36,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "esdtValue": [
-                    {
-                        "tokenIdentifier": "str:NFT-0001",
-                        "nonce": "5",
-                        "value": "2"
-                    }
-                ],
+                "value": "0",
+                "esdt": {
+                    "tokenIdentifier": "str:NFT-0001",
+                    "value": "2",
+                    "nonce": "5"
+                },
                 "function": "forward_transf_exec_accept_funds_twice",
                 "arguments": [
                     "sc:vault"
@@ -116,12 +115,8 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-0001": {
-                            "instances": [
-                                {
-                                    "nonce": "5",
-                                    "balance": "2"
-                                }
-                            ]
+                            "nonce": "5",
+                            "balance": "2"
                         }
                     },
                     "storage": {

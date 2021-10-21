@@ -12,7 +12,7 @@
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "egldValue": "200",
+                "value": "200",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -22,7 +22,6 @@
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -73,7 +72,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": ""
+                "+": {}
             }
         }
     ]

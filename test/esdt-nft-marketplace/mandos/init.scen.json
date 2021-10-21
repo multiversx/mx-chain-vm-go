@@ -7,7 +7,8 @@
             "accounts": {
                 "address:owner": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {}
                 },
                 "address:nft_creator": {
                     "nonce": "0",
@@ -18,7 +19,8 @@
                                 "ESDTRoleNFTCreate"
                             ]
                         }
-                    }
+                    },
+                    "storage": {}
                 },
                 "address:seller": {
                     "nonce": "0",
@@ -34,15 +36,18 @@
                                 }
                             ]
                         }
-                    }
+                    },
+                    "storage": {}
                 },
                 "address:first_bidder": {
                     "nonce": "0",
-                    "balance": "1,000"
+                    "balance": "1,000",
+                    "storage": {}
                 },
                 "address:second_bidder": {
                     "nonce": "0",
-                    "balance": "1,000"
+                    "balance": "1,000",
+                    "storage": {}
                 }
             },
             "newAddresses": [
@@ -59,6 +64,7 @@
             "comment": "10% cut for the marketplace",
             "tx": {
                 "from": "address:owner",
+                "value": "0",
                 "contractCode": "file:../output/esdt-nft-marketplace.wasm",
                 "arguments": [
                     "1000"
@@ -67,7 +73,6 @@
                 "gasPrice": "0x00"
             },
             "expect": {
-                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -90,7 +95,7 @@
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": ""
+                "+": {}
             }
         }
     ]

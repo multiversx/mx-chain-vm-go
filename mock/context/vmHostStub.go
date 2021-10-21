@@ -287,8 +287,3 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 		vhs.SetRuntimeContextCalled(runtime)
 	}
 }
-
-// FixOOGReturnCodeEnabled mocked method
-func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
-	return true
-}

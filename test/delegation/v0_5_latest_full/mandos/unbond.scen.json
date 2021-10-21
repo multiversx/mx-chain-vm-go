@@ -13,11 +13,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        },
+        }, 
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        },
+        }, 
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -28,20 +28,19 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond-before",
             "comment": "unbond before unbonding period over should not unbond",
+            "txId": "unBond-before",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "500,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "0"
-                ],
+                "out": [ "0" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -54,6 +53,7 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
@@ -63,11 +63,7 @@
             },
             "expect": {
                 "out": [
-                    "0",
-                    "0",
-                    "50,000,000,000,000",
-                    "50,000,000,000,000",
-                    "1,000,000,000"
+                    "0", "0", "50,000,000,000,000", "50,000,000,000,000", "1,000,000,000"
                 ],
                 "status": "",
                 "logs": [],
@@ -96,20 +92,19 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond-after",
             "comment": "unbond after unbonding period over should work",
+            "txId": "unBond-after",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "unBond",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "1,000,000,000"
-                ],
+                "out": [ "1,000,000,000" ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -122,6 +117,7 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
+                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
@@ -131,11 +127,7 @@
             },
             "expect": {
                 "out": [
-                    "0",
-                    "0",
-                    "50,000,000,000,000",
-                    "50,000,000,000,000",
-                    "0"
+                    "0", "0", "50,000,000,000,000", "50,000,000,000,000", "0"
                 ],
                 "status": "",
                 "logs": [],

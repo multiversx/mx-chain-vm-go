@@ -5,16 +5,18 @@
         {
             "step": "setState",
             "accounts": {
-                "address:account_1": {
+                "``account_1_____________________s1": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000"
+                    "balance": "0xe8d4a51000",
+                    "storage": {},
+                    "code": ""
                 },
                 "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:balance|address:account_1": "0x2710",
-                        "str:totalSupply": "0x2710"
+                        "``balance|``account_1_____________________s1": "0x2710",
+                        "``total_supply": "0x2710"
                     },
                     "code": "file:../output/erc20.wasm"
                 }
@@ -24,11 +26,12 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "address:account_1",
+                "from": "``account_1_____________________s1",
                 "to": "sc:erc20",
+                "value": "0",
                 "function": "approve",
                 "arguments": [
-                    "address:account_1",
+                    "``account_1_____________________s1",
                     "0x25"
                 ],
                 "gasLimit": "0x100000",
@@ -43,8 +46,8 @@
                         "endpoint": "str:approve",
                         "topics": [
                             "str:approve",
-                            "address:account_1",
-                            "address:account_1"
+                            "``account_1_____________________s1",
+                            "``account_1_____________________s1"
                         ],
                         "data": "0x25"
                     }
@@ -56,7 +59,7 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:account_1": {
+                "``account_1_____________________s1": {
                     "nonce": "1",
                     "balance": "0xe8d4951000",
                     "storage": {},
@@ -66,9 +69,9 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:balance|address:account_1": "0x2710",
-                        "str:allowance|address:account_1|address:account_1": "0x25",
-                        "str:totalSupply": "0x2710"
+                        "``balance|``account_1_____________________s1": "0x2710",
+                        "``allowance|``account_1_____________________s1|``account_1_____________________s1": "0x25",
+                        "``total_supply": "0x2710"
                     },
                     "code": "file:../output/erc20.wasm"
                 }

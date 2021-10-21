@@ -3,7 +3,7 @@ package mock
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
@@ -55,13 +55,6 @@ func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 
 // UseGas mocked method
 func (m *MeteringContextMock) UseGas(_ uint64) {
-}
-
-// UseAndTraceGas mocked method
-func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {
-}
-
-func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {
 }
 
 // FreeGas mocked method
@@ -186,14 +179,4 @@ func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDe
 // DeductInitialGasForIndirectDeployment mocked method
 func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
-}
-
-func (m *MeteringContextMock) StartGasTracing(_ string) {
-}
-
-func (m *MeteringContextMock) SetGasTracing(_ bool) {
-}
-
-func (m *MeteringContextMock) GetGasTrace() map[string]map[string][]uint64 {
-	return nil
 }

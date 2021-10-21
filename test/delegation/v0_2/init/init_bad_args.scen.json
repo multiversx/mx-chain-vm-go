@@ -8,7 +8,9 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0x100000"
+                    "balance": "0x100000",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -17,6 +19,7 @@
             "txId": "1",
             "tx": {
                 "from": "''node_address__________________s1",
+                "value": "0",
                 "contractCode": "file:../delegation.wasm",
                 "arguments": [],
                 "gasLimit": "0x100000",

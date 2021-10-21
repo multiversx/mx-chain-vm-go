@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
@@ -19,8 +19,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 		Nonce:                 mj.JSONCheckUint64Unspecified(),
 		Balance:               mj.JSONCheckBigIntUnspecified(),
 		Username:              mj.JSONCheckBytesUnspecified(),
-		ExplicitStorage:       false,
-		IgnoreStorage:         true,
+		IgnoreStorage:         false,
 		MoreStorageAllowed:    false,
 		CheckStorage:          nil,
 		Code:                  mj.JSONCheckBytesUnspecified(),
@@ -79,7 +78,6 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 				return nil, fmt.Errorf("invalid account username: %w", err)
 			}
 		case "storage":
-			acct.ExplicitStorage = true
 			acct.IgnoreStorage = IsStar(kvp.Value)
 			if !acct.IgnoreStorage {
 				storageMap, storageOk := kvp.Value.(*oj.OJsonMap)

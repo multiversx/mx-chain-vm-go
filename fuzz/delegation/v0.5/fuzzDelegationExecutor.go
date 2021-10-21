@@ -12,9 +12,9 @@ import (
 
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"

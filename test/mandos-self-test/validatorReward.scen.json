@@ -6,7 +6,9 @@
             "accounts": {
                 "address:A": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -15,7 +17,7 @@
             "txId": "1",
             "tx": {
                 "to": "address:A",
-                "egldValue": "100"
+                "value": "100"
             }
         },
         {
@@ -36,7 +38,7 @@
             "txId": "2",
             "tx": {
                 "to": "address:A",
-                "egldValue": "50"
+                "value": "50"
             }
         },
         {

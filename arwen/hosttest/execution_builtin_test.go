@@ -8,6 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
@@ -24,14 +25,11 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	scBalance := big.NewInt(1000)
 	host, world := test.DefaultTestArwenForCallWithWorldMock(t, code, scBalance)
 
-	err := world.BuiltinFuncs.SetTokenData(
-		test.ParentAddress,
-		test.ESDTTestTokenName,
-		0,
-		&esdt.ESDigitalToken{
-			Value: big.NewInt(100),
-			Type:  uint32(core.Fungible),
-		})
+	tokenKey := worldmock.MakeTokenKey(test.ESDTTestTokenName, 0)
+	err := world.BuiltinFuncs.SetTokenData(test.ParentAddress, tokenKey, &esdt.ESDigitalToken{
+		Value: big.NewInt(100),
+		Type:  uint32(core.Fungible),
+	})
 	require.Nil(t, err)
 
 	input := test.DefaultTestContractCallInput()
@@ -203,7 +201,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	// by the "parent" using a manual call to host.ExecuteOnDestContext().
 	dummyCode := test.GetTestSCCode("init-simple", "../../")
 	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, dummyCode, world)
-	_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+	_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
 
 	// Deploy the exchange contract, which will receive ESDT and verify that it
 	// can see the received token amount and token name.
@@ -239,7 +237,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
 
-	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)
 }
 

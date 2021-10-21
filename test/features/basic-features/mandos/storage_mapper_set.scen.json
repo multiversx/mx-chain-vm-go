@@ -8,11 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
+                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
                 }
             }
         },
@@ -22,6 +25,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -41,6 +45,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper_insert",
                 "arguments": [
                     "123"
@@ -65,10 +70,10 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:set_mapper.node_links|u32:1": "u32:0|u32:0",
-                        "str:set_mapper.value|u32:1": "123",
-                        "str:set_mapper.node_id|u32:123": "1",
-                        "str:set_mapper.info": "u32:1|u32:1|u32:1|u32:1"
+                        "``set_mapper.node_links|u32:1": "u32:0|u32:0",
+                        "``set_mapper.value|u32:1": "123",
+                        "``set_mapper.node_id|u32:123": "1",
+                        "``set_mapper.info": "u32:1|u32:1|u32:1|u32:1"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -86,6 +91,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -107,6 +113,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper_insert",
                 "arguments": [
                     "111"
@@ -130,6 +137,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -153,13 +161,13 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:set_mapper.node_links|u32:1": "u32:0|u32:2",
-                        "str:set_mapper.node_links|u32:2": "u32:1|u32:0",
-                        "str:set_mapper.value|u32:1": "123",
-                        "str:set_mapper.value|u32:2": "111",
-                        "str:set_mapper.node_id|u32:123": "1",
-                        "str:set_mapper.node_id|u32:111": "2",
-                        "str:set_mapper.info": "u32:2|u32:1|u32:2|u32:2"
+                        "``set_mapper.node_links|u32:1": "u32:0|u32:2",
+                        "``set_mapper.node_links|u32:2": "u32:1|u32:0",
+                        "``set_mapper.value|u32:1": "123",
+                        "``set_mapper.value|u32:2": "111",
+                        "``set_mapper.node_id|u32:123": "1",
+                        "``set_mapper.node_id|u32:111": "2",
+                        "``set_mapper.info": "u32:2|u32:1|u32:2|u32:2"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -177,6 +185,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper_contains",
                 "arguments": [
                     "111"
@@ -200,6 +209,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper_remove",
                 "arguments": [
                     "123"
@@ -224,10 +234,10 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:set_mapper.node_links|u32:2": "u32:0|u32:0",
-                        "str:set_mapper.value|u32:2": "111",
-                        "str:set_mapper.node_id|u32:111": "2",
-                        "str:set_mapper.info": "u32:1|u32:2|u32:2|u32:2"
+                        "``set_mapper.node_links|u32:2": "u32:0|u32:0",
+                        "``set_mapper.value|u32:2": "111",
+                        "``set_mapper.node_id|u32:111": "2",
+                        "``set_mapper.info": "u32:1|u32:2|u32:2|u32:2"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -245,6 +255,7 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
+                "value": "0",
                 "function": "set_mapper_remove",
                 "arguments": [
                     "111"
@@ -285,7 +296,8 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "queue_mapper_front",
+                "value": "0",
+                "function": "list_mapper_front",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -293,7 +305,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "str:Queue empty!",
+                "message": "str:List empty!",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
