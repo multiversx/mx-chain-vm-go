@@ -3,6 +3,9 @@ package lendFuzz
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mandosjson "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
@@ -10,8 +13,6 @@ import (
 	jsonWrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"io/ioutil"
-	"log"
 )
 
 const (
@@ -24,7 +25,7 @@ const (
 	bbusd = "BBUSD-abcdef"
 )
 
-type executorArgs struct {
+type fuzzLendExecutorArgs struct {
 	wegldTokenID  string
 	lwegldTokenID string
 	bwegldTokenID string
@@ -42,7 +43,7 @@ type executorArgs struct {
 	numEvents int
 }
 
-type executor struct {
+type fuzzLendExecutor struct {
 	vm                vmcommon.VMExecutionHandler
 	arwenTestExecutor *arwenmandos.ArwenTestExecutor
 	world             *worldmock.MockWorld
@@ -84,7 +85,7 @@ type statistics struct {
 	repayMisses int
 }
 
-func newExecutor(fileResolver fr.FileResolver) (*executor, error) {
+func newFuzzLendExecutor(fileResolver fr.FileResolver) (*fuzzLendExecutor, error) {
 	arwenTestExecutor, err := arwenmandos.NewArwenTestExecutor()
 	if err != nil {
 		return nil, err
@@ -92,7 +93,7 @@ func newExecutor(fileResolver fr.FileResolver) (*executor, error) {
 
 	mandosParser := parser.NewParser(fileResolver)
 
-	return &executor{
+	return &fuzzLendExecutor{
 		arwenTestExecutor: arwenTestExecutor,
 		world:             arwenTestExecutor.World,
 		vm:                arwenTestExecutor.GetVM(),
@@ -104,7 +105,7 @@ func newExecutor(fileResolver fr.FileResolver) (*executor, error) {
 	}, nil
 }
 
-func (e *executor) executeStep(stepSnippet string) error {
+func (e *fuzzLendExecutor) executeStep(stepSnippet string) error {
 	step, err := e.mandosParser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return err
@@ -114,7 +115,7 @@ func (e *executor) executeStep(stepSnippet string) error {
 	return e.arwenTestExecutor.ExecuteStep(step)
 }
 
-func (e *executor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error) {
+func (e *fuzzLendExecutor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error) {
 	step, err := e.mandosParser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
@@ -129,7 +130,7 @@ func (e *executor) executeTxStep(stepSnippet string) (*vmcommon.VMOutput, error)
 	return e.arwenTestExecutor.ExecuteTxStep(txStep)
 }
 
-func (e *executor) increaseBlockNonce(epochDelta int) error {
+func (e *fuzzLendExecutor) increaseBlockNonce(epochDelta int) error {
 	var currBlockNonce uint64
 	if e.world.CurrentBlockInfo != nil {
 		currBlockNonce = e.world.CurrentBlockInfo.BlockNonce
@@ -153,7 +154,7 @@ func (e *executor) increaseBlockNonce(epochDelta int) error {
 	return nil
 }
 
-func (e *executor) saveGeneratedScenario() {
+func (e *fuzzLendExecutor) saveGeneratedScenario() {
 	serialized := jsonWrite.ScenarioToJSONString(e.generatedScenario)
 
 	err := ioutil.WriteFile("lend_fuzz_gen.scen.json", []byte(serialized), 0644)
@@ -162,11 +163,11 @@ func (e *executor) saveGeneratedScenario() {
 	}
 }
 
-func (e *executor) nextTxIndex() int {
+func (e *fuzzLendExecutor) nextTxIndex() int {
 	e.txIndex++
 	return e.txIndex
 }
 
-func (e *executor) addStep(step mandosjson.Step) {
+func (e *fuzzLendExecutor) addStep(step mandosjson.Step) {
 	e.generatedScenario.Steps = append(e.generatedScenario.Steps, step)
 }
