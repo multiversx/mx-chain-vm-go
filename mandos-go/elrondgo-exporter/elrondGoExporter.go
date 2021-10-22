@@ -19,9 +19,9 @@ var errTxStepIsNotScCall = errors.New("txStep is not scCall")
 
 var okStatus = big.NewInt(0)
 
-var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0}
+var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 5}
 
-var ScAddressPrefixLength = 8
+var ScAddressPrefixLength = 10
 
 func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, txs []*Transaction, err error) {
 	scenario, err := getScenario(mandosTestPath)
