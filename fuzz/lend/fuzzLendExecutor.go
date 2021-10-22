@@ -157,7 +157,7 @@ func (e *fuzzLendExecutor) increaseBlockNonce(epochDelta int) error {
 func (e *fuzzLendExecutor) saveGeneratedScenario() {
 	serialized := jsonWrite.ScenarioToJSONString(e.generatedScenario)
 
-	err := ioutil.WriteFile("lend_fuzz_gen.scen.json", []byte(serialized), 0644)
+	err := ioutil.WriteFile("lend_fuzz.gen.scen.json", []byte(serialized), 0644)
 	if err != nil {
 		log.Panicln("could not save scenario", "err", err.Error())
 	}

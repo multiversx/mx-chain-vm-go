@@ -22,7 +22,12 @@ func (e *fuzzLendExecutor) init(args *fuzzLendExecutorArgs) error {
 	e.numTokens = args.numTokens
 	e.numEvents = args.numEvents
 
-	err := e.initAccounts()
+	err := e.initOwner()
+	if err != nil {
+		return err
+	}
+
+	err = e.initAccounts()
 	if err != nil {
 		return err
 	}
