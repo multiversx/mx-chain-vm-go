@@ -31,7 +31,7 @@
                             ],
                             "lastNonce": "1",
                             "roles": [
-                                "ESDTRoleNFTCreate"
+                                "ESDTRoleNFTAddQuantity"
                             ]
                         }
                     },
@@ -41,72 +41,30 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "txId": "nft_add_quantity",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "create_and_send",
+                "function": "nft_add_quantity",
                 "arguments": [
-                    "address:a_user",
                     "str:NFT-0001",
                     "1",
-                    "str:nft-create-name",
-                    "0",
-                    "str:nft-create-hash-----------------",
-                    "0x808080",
-                    "str:nft-create-uri"
+                    "1200"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "2"
-                ],
+                "out": [],
                 "status": "0",
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "endpoint": "str:ESDTNFTCreate",
+                        "endpoint": "str:ESDTNFTAddQuantity",
                         "topics": [
                             "str:NFT-0001",
-                            "2",
-                            "01",
-                            "*"
-                        ],
-                        "data": ""
-                    },
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:create_and_send",
-                        "topics": [
-                            "str:create",
-                            "str:NFT-0001",
-                            "2",
-                            "1"
-                        ],
-                        "data": ""
-                    },
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:ESDTNFTTransfer",
-                        "topics": [
-                            "str:NFT-0001",
-                            "2",
-                            "01",
-                            "address:a_user"
-                        ],
-                        "data": ""
-                    },
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:create_and_send",
-                        "topics": [
-                            "str:send",
-                            "address:a_user",
-                            "str:NFT-0001",
-                            "2",
-                            "1"
+                            "1",
+                            "1200"
                         ],
                         "data": ""
                     }
@@ -127,17 +85,6 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1"
-                                },
-                                {
-                                    "nonce": "2",
-                                    "balance": "1",
-                                    "creator": "sc:forwarder",
-                                    "royalties": "0",
-                                    "hash": "str:nft-create-hash-----------------",
-                                    "uri": [
-                                        "str:nft-create-uri"
-                                    ],
-                                    "attributes": "0x808080"
                                 }
                             ]
                         }
@@ -153,12 +100,12 @@
                             "instances": [
                                 {
                                     "nonce": "1",
-                                    "balance": "1"
+                                    "balance": "1201"
                                 }
                             ],
-                            "lastNonce": "2",
+                            "lastNonce": "1",
                             "roles": [
-                                "ESDTRoleNFTCreate"
+                                "ESDTRoleNFTAddQuantity"
                             ]
                         }
                     },
