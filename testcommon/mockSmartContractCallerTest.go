@@ -86,7 +86,9 @@ func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, wo
 
 	allErrors := host.Runtime().GetAllErrors()
 	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
-	callerTest.assertResults(startNode, world, verify)
+	if callerTest.assertResults != nil {
+		callerTest.assertResults(startNode, world, verify)
+	}
 
 	return vmOutput, err
 }
