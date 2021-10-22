@@ -19,6 +19,10 @@ var errTxStepIsNotScCall = errors.New("txStep is not scCall")
 
 var okStatus = big.NewInt(0)
 
+var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0}
+
+var ScAddressPrefixLength = 8
+
 func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, txs []*Transaction, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
@@ -37,6 +41,9 @@ func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, err er
 	// append accounts
 	for _, mandosAccount := range setStateStep.Accounts {
 		account, err := convertMandosToTestAccount(mandosAccount)
+		if len(account.code) > 0 {
+			account.address = append(ScAddressPrefix, account.address[ScAddressPrefixLength:]...)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +92,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 						step.Tx.EGLDValue.Value,
 						step.Tx.ESDTValue,
 						step.Tx.From.Value,
-						step.Tx.To.Value,
+						append(ScAddressPrefix, step.Tx.To.Value[ScAddressPrefixLength:]...),
 						step.Tx.GasLimit.Value,
 						step.Tx.GasPrice.Value,
 					)
