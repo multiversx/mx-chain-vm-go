@@ -125,7 +125,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 									gasUsed: crtNode.GasUsed,
 								}
 							} else {
-								runtimeConfig = readGasUsedFromArguments(host, runtimeConfigsForCalls)
+								runtimeConfig = readRuntimeConfigFromArguments(host, runtimeConfigsForCalls)
 							}
 							runtimeConfigsForCalls[string(host.Async().GetCallID())] = runtimeConfig
 
@@ -140,7 +140,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 							}()
 
 							if runtimeConfig.edgeType == Async || runtimeConfig.edgeType == AsyncCrossShard {
-								// prepare arguments for callback
+								// prepare arguments for callback (in current's call ReturnData)
 								arguments := callbackArgumentsFromRuntimeConfig(runtimeConfig)
 								if !runtimeConfig.willFail || runtimeConfig.willFailExpected {
 									createFinishDataFromArguments(host.Output(), arguments)
@@ -335,7 +335,7 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 	}
 }
 
-func readGasUsedFromArguments(host arwen.VMHost, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) *RuntimeConfigOfCall {
+func readRuntimeConfigFromArguments(host arwen.VMHost, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) *RuntimeConfigOfCall {
 	runtimeConfig := &RuntimeConfigOfCall{}
 	var argIndexes argIndexesForGraphCall
 
@@ -1832,6 +1832,7 @@ func CreateGraphTestAsyncCallIndirectFailCrossShard() *TestCallGraph {
 		SetGasLimit(35).
 		SetGasUsed(7).
 		SetGasUsedByCallback(6)
+
 	sc1cb1 := callGraph.AddNode("sc1", "cb1")
 
 	sc6f6 := callGraph.AddNode("sc6", "f6")
@@ -2503,8 +2504,7 @@ func CreateGraphTestTwoAsyncCallsSecondCallbackFailLocalCross() *TestCallGraph {
 	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
 		SetGasLimit(20).
 		SetGasUsed(7).
-		SetGasUsedByCallback(5).
-		SetCallbackFail()
+		SetGasUsedByCallback(5)
 
 	s3f3 := callGraph.AddNode("s3", "f3")
 	callGraph.AddAsyncCrossShardEdge(sc1f1, s3f3, "cb2", "").

@@ -610,10 +610,10 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 
 	// Verify the final VMOutput, containing the failure.
 	expectedOutput := arwen.MakeEmptyVMOutput()
-	expectedOutput.ReturnCode = vmcommon.OutOfGas
-	expectedOutput.ReturnMessage = "not enough gas"
-	expectedOutput.GasRemaining = 0
-	arwen.AddFinishData(expectedOutput, []byte("out of gas"))
+	// expectedOutput.ReturnCode = vmcommon.OutOfGas
+	// expectedOutput.ReturnMessage = "not enough gas"
+	// expectedOutput.GasRemaining = 0
+	// arwen.AddFinishData(expectedOutput, []byte("out of gas"))
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -621,7 +621,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	vmOutput := host.Output().GetVMOutput()
 	// Bob entry is retuned by the MockWorld.GetStorageData()
 	delete(vmOutput.OutputAccounts, string(Bob))
@@ -822,7 +822,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
@@ -835,9 +835,9 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async.finishAsyncLocalExecution(nil, syncExecErr)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
-	expectedOutput.ReturnCode = vmcommon.OutOfGas
-	expectedOutput.ReturnMessage = syncExecErr.Error()
-	arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
+	// expectedOutput.ReturnCode = vmcommon.OutOfGas
+	// expectedOutput.ReturnMessage = syncExecErr.Error()
+	// arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -845,7 +845,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
@@ -861,9 +861,9 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
-	expectedOutput.ReturnCode = vmcommon.UserError
-	expectedOutput.ReturnMessage = "user made an error"
-	arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
+	// expectedOutput.ReturnCode = vmcommon.UserError
+	// expectedOutput.ReturnMessage = "user made an error"
+	// arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -871,7 +871,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 

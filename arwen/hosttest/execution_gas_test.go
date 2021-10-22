@@ -943,18 +943,15 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
-	//TODO reenable test after contracts are allowed to call themselves
+	// TODO reenable test correct assertions after contracts are allowed to call themselves
 	// repeatedly with async calls (see restriction in asyncContext.addAsyncCall())
-	t.Skip("recursive async self-call currently disabled")
 
 	testConfig := makeTestConfig()
 	testConfig.RecursiveChildCalls = 3
 
-	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasUsedByChild +
+	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	// expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasProvidedToChild +
 	// 	uint64(testConfig.RecursiveChildCalls-1)*testConfig.GasUsedByCallback
-	expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasProvidedToChild +
-		uint64(testConfig.RecursiveChildCalls-1)*testConfig.GasUsedByCallback
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -979,12 +976,13 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
-				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.ChildAddress, expectedGasUsedByChild).
-				GasRemaining(testConfig.GasProvided-expectedGasUsedByParent-expectedGasUsedByChild).
-				BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild).
-				ReturnData(big.NewInt(2).Bytes(), big.NewInt(1).Bytes(), big.NewInt(0).Bytes())
+				HasRuntimeErrors(arwen.ErrExecutionFailed.Error())
+			// BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
+			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
+			// GasUsed(test.ChildAddress, expectedGasUsedByChild).
+			// GasRemaining(testConfig.GasProvided-expectedGasUsedByParent-expectedGasUsedByChild).
+			// BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild).
+			// ReturnData(big.NewInt(2).Bytes(), big.NewInt(1).Bytes(), big.NewInt(0).Bytes())
 		})
 }
 

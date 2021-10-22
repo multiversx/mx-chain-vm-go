@@ -908,7 +908,7 @@ func (host *vmHost) callSCMethodDirectCall() error {
 
 func (host *vmHost) callSCMethodAsynchronousCall() error {
 	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete || err != nil {
+	if !isCallComplete /*|| err != nil*/ {
 		return err
 	}
 
@@ -938,14 +938,14 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 
 	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete || err != nil {
+	if !isCallComplete /*|| err != nil*/ {
 		return err
 	}
 
 	async.LoadParentContext()
 	async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
 
-	return nil
+	return err
 }
 
 func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
@@ -975,22 +975,22 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			err = host.checkFinalGasAfterExit()
 		}
 		if err != nil {
-			if runtime.GetVMInput().CallType == vm.DirectCall {
-				log.Trace("call SC method failed", "error", err)
-				return false, err
-			}
-		} else {
-			err = async.Execute()
-			if err != nil {
-				log.Trace("call SC method failed", "error", err)
-				return false, err
-			}
+			// if runtime.GetVMInput().CallType == vm.DirectCall || runtime.GetVMInput().CallType == vm.AsynchronousCallBack {
+			log.Trace("call SC method failed", "error", err)
+			return true, err
+			// }
+		}
 
-			if !async.IsComplete() {
-				async.SetResults(host.Output().GetVMOutput())
-				async.Save()
-				return false, nil
-			}
+		err = async.Execute()
+		if err != nil {
+			log.Trace("call SC method failed", "error", err)
+			return false, err
+		}
+
+		if !async.IsComplete() {
+			async.SetResults(host.Output().GetVMOutput())
+			async.Save()
+			return false, nil
 		}
 	}
 

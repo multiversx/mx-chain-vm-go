@@ -24,7 +24,9 @@ func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
 	// callGraph := test.CreateGraphTestAsyncCallIndirectFailCrossShard()
-	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
+	callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsSecondCallbackFailLocalCross()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCalls()
 	// callGraph := test.CreateGraphTestSyncCalls2()
@@ -39,7 +41,6 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
-	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSyncAndAsync2()
@@ -50,14 +51,15 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstCallbackFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCallsFailPropagation()
-	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstFailLocalCross()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackLocalCross()
 
 	/*
 		multi lvl of async calls
 	*/
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
-	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
+	// callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()

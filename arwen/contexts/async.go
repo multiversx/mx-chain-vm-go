@@ -864,7 +864,7 @@ func (context *asyncContext) SendCrossShardCallback(
 ) error {
 	sender := context.address
 	destination := context.callerAddr
-	data := context.createCallbackArgumentForCrossShardCallback(returnCode, returnData, returnMessage)
+	data := context.createCallbackArgumentsForCrossShardCallback(returnCode, returnData, returnMessage)
 	err := sendCrossShardCallback(context.host, sender, destination, data)
 	return err
 }
@@ -1119,7 +1119,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 	return nil
 }
 
-func (context *asyncContext) createCallbackArgumentForCrossShardCallback(
+func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 	returnCode vmcommon.ReturnCode,
 	returnData [][]byte,
 	returnMessage string,

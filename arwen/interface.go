@@ -358,6 +358,8 @@ type AsyncContext interface {
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
 
+	DecrementCallsCounter()
+
 	/*
 		for tests / test framework usage
 	*/
