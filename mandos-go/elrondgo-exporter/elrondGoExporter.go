@@ -19,7 +19,7 @@ var errTxStepIsNotScCall = errors.New("txStep is not scCall")
 
 var okStatus = big.NewInt(0)
 
-var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 5}
+var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0, 5, 0}
 
 var ScAddressPrefixLength = 10
 
