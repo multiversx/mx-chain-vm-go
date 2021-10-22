@@ -317,6 +317,3 @@ func (vhs *VMHostStub) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, p
 	}
 	return nil, nil
 }
-
-func (vhs *VMHostStub) SetGasFlag(flag bool) {
-}

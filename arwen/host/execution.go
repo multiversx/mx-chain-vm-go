@@ -371,10 +371,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	async.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
-	if host.gasFlag {
-		if !isAsyncCall || (isAsyncCall && isAsyncComplete) {
-			metering.RestoreGas(vmOutput.GasRemaining)
-		}
+	if !isAsyncCall || (isAsyncCall && isAsyncComplete) {
+		metering.RestoreGas(vmOutput.GasRemaining)
 	}
 
 	return vmOutput
@@ -634,11 +632,9 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		return arwen.ErrInitFuncCalledInRun
 	}
 
-	if host.gasFlag {
-		// Use all gas initially, on the Wasmer instance of the caller. In case of
-		// successful execution, the unused gas will be restored.
-		metering.UseGas(input.GasProvided)
-	}
+	// Use all gas initially, on the Wasmer instance of the caller. In case of
+	// successful execution, the unused gas will be restored.
+	metering.UseGas(input.GasProvided)
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {

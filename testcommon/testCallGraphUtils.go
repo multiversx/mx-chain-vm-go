@@ -139,8 +139,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 								callsFinishData.Data = append(callsFinishData.Data, callFinishData)
 							}()
 
-							// prepare arguments for callback
 							if runtimeConfig.edgeType == Async || runtimeConfig.edgeType == AsyncCrossShard {
+								// prepare arguments for callback
 								arguments := callbackArgumentsFromRuntimeConfig(runtimeConfig)
 								if !runtimeConfig.willFail || runtimeConfig.willFailExpected {
 									createFinishDataFromArguments(host.Output(), arguments)

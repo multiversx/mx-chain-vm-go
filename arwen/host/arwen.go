@@ -50,8 +50,6 @@ type vmHost struct {
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       arwen.CallArgsParser
-
-	gasFlag bool
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -87,7 +85,6 @@ func NewArwenVM(
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		callArgsParser:       parsers.NewCallArgsParser(),
-		gasFlag:              true,
 	}
 
 	var err error
@@ -402,8 +399,4 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 		return
 	}
 	host.builtInFuncContainer = builtInFuncs
-}
-
-func (host *vmHost) SetGasFlag(flag bool) {
-	host.gasFlag = flag
 }
