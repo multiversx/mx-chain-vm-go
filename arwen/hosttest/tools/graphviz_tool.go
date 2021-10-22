@@ -50,14 +50,14 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstCallbackFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCallsFailPropagation()
-	callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
 
 	/*
 		multi lvl of async calls
 	*/
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
-	// callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
+	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
@@ -78,12 +78,12 @@ func main() {
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.PropagateSyncFailures()
-	gasGraph.AssignExecutionRounds()
+	gasGraph.AssignExecutionRounds(nil)
 
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 initial-gas-graph", graphviz)
 
-	gasGraph.ComputeRemainingGasBeforeCallbacks()
+	gasGraph.ComputeRemainingGasBeforeCallbacks(nil)
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("4 gas-graph-gasbeforecallbacks", graphviz)
 
@@ -153,7 +153,7 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 	// }
 	setGasLabelForNode(node, attrs)
 	if !node.IsGasLeaf() {
-		if node.Fail || node.IsIncomingEdgeFail() {
+		if node.Fail || node.IsIncomingEdgeFail() || node.HasFailSyncEdge() {
 			attrs["fillcolor"] = "hotpink"
 		} else {
 			attrs["fillcolor"] = "lightgrey"
@@ -260,7 +260,7 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 			attrs["label"] = strconv.Quote(test.LeafLabel)
 		} else {
 			parent := node.Parent
-			if node.IsGasLeaf() && parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail {
+			if node.IsGasLeaf() && parent != nil && parent.IsIncomingEdgeFail() {
 				attrs["label"] = strconv.Quote(test.LeafLabel)
 			} else {
 				attrs["label"] = gasFontStart + gasUsed + gasFontEnd

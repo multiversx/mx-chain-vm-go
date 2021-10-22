@@ -293,15 +293,18 @@ func TestGraph_TwoAsyncCallsBothCallbacksFailCrossShard_CallGraph(t *testing.T) 
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
-	runGraphCallTestTemplate(t, callGraph)
-}
+// func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
+// 	// TODO matei-p reactivate this
+// 	// t.Skip()
+// 	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
 
-func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail2()
-	runGraphCallTestTemplate(t, callGraph)
-}
+// async, sync, async
+// func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
+// 	callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail2()
+// 	runGraphCallTestTemplate(t, callGraph)
+// }
 
 func TestGraph_AsyncCallsAsync_CallGraph(t *testing.T) {
 	// t.Skip()
@@ -651,6 +654,11 @@ func TestGraph_SyncAndAsync10_CallGraph(t *testing.T) {
 	runGraphCallTestTemplate(t, callGraph)
 }
 
+func TestGraph_SyncAndAsync11_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync11()
+	runGraphCallTestTemplate(t, callGraph)
+}
+
 func TestGraph_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
 	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
@@ -708,8 +716,8 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.PropagateSyncFailures()
-	gasGraph.AssignExecutionRounds()
-	gasGraph.ComputeRemainingGasBeforeCallbacks()
+	gasGraph.AssignExecutionRounds(t)
+	gasGraph.ComputeRemainingGasBeforeCallbacks(t)
 	gasGraph.ComputeRemainingGasAfterCallbacks()
 
 	startNode := gasGraph.GetStartNode()
