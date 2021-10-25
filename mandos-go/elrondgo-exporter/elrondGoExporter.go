@@ -17,6 +17,8 @@ var errStepIsNotTxStep = errors.New("step is not scCall")
 
 var errTxStepIsNotScCall = errors.New("txStep is not scCall")
 
+var errScAccountMustHaveOwner = errors.New("scAccount must have owner")
+
 var okStatus = big.NewInt(0)
 
 var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0, 5, 0}
@@ -41,11 +43,11 @@ func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, err er
 	// append accounts
 	for _, mandosAccount := range setStateStep.Accounts {
 		account, err := convertMandosToTestAccount(mandosAccount)
-		if len(account.code) > 0 {
-			account.address = append(ScAddressPrefix, account.address[ScAddressPrefixLength:]...)
-		}
 		if err != nil {
 			return nil, err
+		}
+		if len(account.code) > 0 {
+			account.address = append(ScAddressPrefix, account.address[ScAddressPrefixLength:]...)
 		}
 		accounts = append(accounts, account)
 	}
@@ -126,6 +128,11 @@ func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
 	}
 	esdtconvert.WriteESDTToStorage(mandosAcc.ESDTData, storage)
 	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value, mandosAcc.Owner.Value)
+
+	if len(account.code) != 0 && len(account.ownerAddress) == 0 {
+		return nil, errScAccountMustHaveOwner
+	}
+
 	return account, nil
 }
 
