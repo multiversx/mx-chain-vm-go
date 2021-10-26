@@ -162,7 +162,12 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
-	logger.SetLogLevel("*:TRACE")
+	SetLoggingForTestsWithLogger("*")
+}
+
+// SetLoggingForTestsWithLogger configures the logger package with a certain logger
+func SetLoggingForTestsWithLogger(loggerName string) {
+	logger.SetLogLevel(fmt.Sprintf("*:NONE,%s:TRACE", loggerName))
 	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }

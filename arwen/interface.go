@@ -56,8 +56,6 @@ type VMHost interface {
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
 
-	SetGasFlag(flag bool)
-
 	FixOOGReturnCodeEnabled() bool
 	MultiESDTTransferAsyncCallBackEnabled() bool
 }
@@ -258,7 +256,7 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	ComputeGasLockedForAsync() uint64
+	ComputeGasLockedForAsync(extraGasForCallback uint64) uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
@@ -373,6 +371,8 @@ type AsyncContext interface {
 	GetGasAccumulated() uint64
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
+
+	DecrementCallsCounter()
 
 	/*
 		for tests / test framework usage

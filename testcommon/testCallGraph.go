@@ -3,6 +3,7 @@ package testcommon
 import (
 	"fmt"
 	"strconv"
+	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
@@ -190,7 +191,7 @@ func (node *TestCallNode) IsIncomingEdgeFail() bool {
 // HasFailSyncEdge -
 func (node *TestCallNode) HasFailSyncEdge() bool {
 	for _, edge := range node.AdjacentEdges {
-		if edge.Type == Sync && edge.Fail {
+		if edge.Type == Sync && edge.IsFailFail() {
 			return true
 		}
 	}
@@ -238,10 +239,8 @@ type TestCallEdge struct {
 	// used only for visualization & debugging
 	Label string
 
-	Fail    bool
-	ErrFail error
-	// uses for non-framework triggered fails (e.g. multi-level async call restrictions)
-	ExpectedFail bool
+	Fail         bool
+	ErrFail      error
 	CallbackFail bool
 }
 
@@ -260,7 +259,6 @@ func (edge *TestCallEdge) copy() *TestCallEdge {
 		Fail:              edge.Fail,
 		CallbackFail:      edge.CallbackFail,
 		ErrFail:           edge.ErrFail,
-		ExpectedFail:      edge.ExpectedFail,
 	}
 }
 
@@ -304,11 +302,17 @@ func (edge *TestCallEdge) SetFail() *TestCallEdge {
 	return edge
 }
 
-// SetExpectedFail - builder style setter
-func (edge *TestCallEdge) SetExpectedFail() *TestCallEdge {
-	edge.ExpectedFail = true
-	edge.SetFail()
+// SetFailWithExpectedError - builder style setter
+func (edge *TestCallEdge) SetFailWithExpectedError(expectedError error) *TestCallEdge {
+	edge.To.Fail = true
+	edge.ErrFail = expectedError
+	edge.To.ErrFail = edge.ErrFail
 	return edge
+}
+
+// IsFailFail -
+func (edge *TestCallEdge) IsFailFail() bool {
+	return edge.Fail
 }
 
 // SetCallbackFail - builder style setter
@@ -323,7 +327,7 @@ func (edge *TestCallEdge) SetGasLocked(gasLocked uint64) *TestCallEdge {
 	if edge.Type != Async && edge.Type != AsyncCrossShard {
 		panic("Gas locked is only for async edges")
 	}
-	edge.GasLocked = gasLocked
+	edge.GasLocked = DefaultCallGraphLockedGas + gasLocked
 	return edge
 }
 
@@ -340,7 +344,6 @@ func (edge *TestCallEdge) copyAttributesFrom(sourceEdge *TestCallEdge) {
 	edge.Fail = sourceEdge.Fail
 	edge.CallbackFail = sourceEdge.CallbackFail
 	edge.ErrFail = sourceEdge.ErrFail
-	edge.ExpectedFail = sourceEdge.ExpectedFail
 }
 
 // TestCallGraph is the call graph
@@ -637,7 +640,7 @@ func (graph *TestCallGraph) DfsFromNodeUntilFailures(parent *TestCallNode, node 
 	path = append(path, node)
 	processNode(path, parent, node, incomingEdge)
 	// any failed node stops DFS (configured or not - due failure upstream propagation)
-	if (incomingEdge != nil && incomingEdge.Fail) || node.HasFailSyncEdge() {
+	if (incomingEdge != nil && incomingEdge.IsFailFail()) || node.HasFailSyncEdge() {
 		// evan if failed, async nodes need to traverse the callback branch
 		if node.IsAsync() {
 			callbackEdge := node.AdjacentEdges[len(node.AdjacentEdges)-1]
@@ -1053,7 +1056,7 @@ func (graph *TestCallGraph) PropagateSyncFailures() {
 }
 
 // AssignExecutionRounds -
-func (graph *TestCallGraph) AssignExecutionRounds() {
+func (graph *TestCallGraph) AssignExecutionRounds(t *testing.T) {
 	visits := make(map[uint]bool)
 
 	// init execution rounds for graph, all -1 except root and it's execution leaf
@@ -1127,7 +1130,7 @@ func getGasLeaf(node *TestCallNode) *TestCallNode {
 
 // ComputeRemainingGasBeforeCallbacks - adjusts the gas graph / tree remaining gas info using the gas provided to children
 // this will not take into consideration callback nodes that don't have provided gas info computed yet (see ComputeGasStepByStep)
-func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
+func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks(t *testing.T) {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() || node.IsCallback() || node.WillNotExecute() {
 			return node
@@ -1145,7 +1148,12 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks() {
 						if incomingEdge != nil {
 							incomingEdgeLabel = incomingEdge.Label
 						}
-						panic(fmt.Sprintf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel))
+						err := fmt.Errorf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel)
+						if t != nil {
+							t.Error(err)
+						} else {
+							panic(err)
+						}
 					}
 				}
 			}

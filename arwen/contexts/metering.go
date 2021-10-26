@@ -452,7 +452,7 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 }
 
 // ComputeGasLockedForAsync calculates the minimum amount of gas to lock for async callbacks
-func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
+func (context *meteringContext) ComputeGasLockedForAsync(extraGasForCallback uint64) uint64 {
 	baseGasSchedule := context.GasSchedule().BaseOperationCost
 	apiGasSchedule := context.GasSchedule().ElrondAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
@@ -464,6 +464,7 @@ func (context *meteringContext) ComputeGasLockedForAsync() uint64 {
 	// Minimum amount required to execute the callback
 	executionGasLock := math.AddUint64(apiGasSchedule.AsyncCallStep, apiGasSchedule.AsyncCallbackGasLock)
 	gasLockedForAsync := math.AddUint64(compilationGasLock, executionGasLock)
+	gasLockedForAsync = math.AddUint64(gasLockedForAsync, extraGasForCallback)
 
 	return gasLockedForAsync
 }

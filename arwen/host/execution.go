@@ -378,10 +378,8 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	async.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
-	if host.gasFlag {
-		if !isAsyncCall || (isAsyncCall && isAsyncComplete) {
-			metering.RestoreGas(vmOutput.GasRemaining)
-		}
+	if !isAsyncCall || (isAsyncCall && isAsyncComplete) {
+		metering.RestoreGas(vmOutput.GasRemaining)
 	}
 
 	return vmOutput
@@ -641,11 +639,9 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 		return arwen.ErrInitFuncCalledInRun
 	}
 
-	if host.gasFlag {
-		// Use all gas initially, on the Wasmer instance of the caller. In case of
-		// successful execution, the unused gas will be restored.
-		metering.UseGas(input.GasProvided)
-	}
+	// Use all gas initially, on the Wasmer instance of the caller. In case of
+	// successful execution, the unused gas will be restored.
+	metering.UseGas(input.GasProvided)
 
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
@@ -919,7 +915,7 @@ func (host *vmHost) callSCMethodDirectCall() error {
 
 func (host *vmHost) callSCMethodAsynchronousCall() error {
 	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete || err != nil {
+	if !isCallComplete /*|| err != nil*/ {
 		return err
 	}
 
@@ -949,13 +945,21 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 
 	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete || err != nil {
+	if !isCallComplete {
 		return err
 	}
 
 	async.LoadParentContext()
 	async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
 
+	// TODO matei-p for R2 we need to return the callback error, but we also
+	// need to keep in the vmoutput the storage cleaning of the async contexts
+	// return err
+
+	if err != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+	}
 	return nil
 }
 
@@ -986,22 +990,22 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			err = host.checkFinalGasAfterExit()
 		}
 		if err != nil {
-			if runtime.GetVMInput().CallType == vm.DirectCall {
-				log.Trace("call SC method failed", "error", err)
-				return false, err
-			}
-		} else {
-			err = async.Execute()
-			if err != nil {
-				log.Trace("call SC method failed", "error", err)
-				return false, err
-			}
+			// if runtime.GetVMInput().CallType == vm.DirectCall || runtime.GetVMInput().CallType == vm.AsynchronousCallBack {
+			log.Trace("call SC method failed", "error", err)
+			return true, err
+			// }
+		}
 
-			if !async.IsComplete() {
-				async.SetResults(host.Output().GetVMOutput())
-				async.Save()
-				return false, nil
-			}
+		err = async.Execute()
+		if err != nil {
+			log.Trace("call SC method failed", "error", err)
+			return false, err
+		}
+
+		if !async.IsComplete() {
+			async.SetResults(host.Output().GetVMOutput())
+			async.Save()
+			return false, nil
 		}
 	}
 

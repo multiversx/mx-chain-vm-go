@@ -24,7 +24,9 @@ func main() {
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFail()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFail()
 	// callGraph := test.CreateGraphTestAsyncCallIndirectFailCrossShard()
+	// callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
 	// callGraph := test.CreateGraphTestOneAsyncCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsSecondCallbackFailLocalCross()
 	// callGraph := test.CreateGraphTestAsyncCallbackIndirectFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCalls()
 	// callGraph := test.CreateGraphTestSyncCalls2()
@@ -39,7 +41,6 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossLocal()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
-	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestCallbackCallsSync()
 	// callGraph := test.CreateGraphTestSyncAndAsync1()
 	// callGraph := test.CreateGraphTestSyncAndAsync2()
@@ -50,22 +51,29 @@ func main() {
 	// callGraph := test.CreateGraphTestTwoAsyncCallsCrossShard()
 	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstCallbackFailCrossShard()
 	// callGraph := test.CreateGraphTestSyncCallsFailPropagation()
-	callGraph := test.CreateGraphTestOneAsyncCallFailCrossShard()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstFail()
+	// callGraph := test.CreateGraphTestTwoAsyncCallsFirstFailLocalCross()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackLocalCross()
+	callGraph := test.CreateGraphTestOneAsyncCallCustomGasLocked()
 
 	/*
 		multi lvl of async calls
 	*/
+	// callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	// callGraph := test.CreateGraphTestAsyncsOnMultiLevelFail1()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
-	// callGraph := test.CreateGraphTestSyncAndAsync10()
+	// callGraph := test.CreateGraphTestSyncAndAsync5()
 	// callGraph := test.CreateGraphTestDifferentTypeOfCallsToSameFunction()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	// callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossShard()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailLocalCross()
+	// callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailLocalCross()
 
 	///////////////////
 
@@ -78,12 +86,12 @@ func main() {
 
 	gasGraph := executionGraph.ComputeGasGraphFromExecutionGraph()
 	gasGraph.PropagateSyncFailures()
-	gasGraph.AssignExecutionRounds()
+	gasGraph.AssignExecutionRounds(nil)
 
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("3 initial-gas-graph", graphviz)
 
-	gasGraph.ComputeRemainingGasBeforeCallbacks()
+	gasGraph.ComputeRemainingGasBeforeCallbacks(nil)
 	graphviz = toGraphviz(gasGraph, false)
 	createSvg("4 gas-graph-gasbeforecallbacks", graphviz)
 
@@ -153,7 +161,7 @@ func setNodeAttributes(node *test.TestCallNode, attrs map[string]string) {
 	// }
 	setGasLabelForNode(node, attrs)
 	if !node.IsGasLeaf() {
-		if node.Fail || node.IsIncomingEdgeFail() {
+		if node.Fail || node.IsIncomingEdgeFail() || node.HasFailSyncEdge() {
 			attrs["fillcolor"] = "hotpink"
 		} else {
 			attrs["fillcolor"] = "lightgrey"
@@ -260,7 +268,7 @@ func setGasLabelForNode(node *test.TestCallNode, attrs map[string]string) {
 			attrs["label"] = strconv.Quote(test.LeafLabel)
 		} else {
 			parent := node.Parent
-			if node.IsGasLeaf() && parent != nil && parent.IncomingEdge != nil && parent.IncomingEdge.Fail {
+			if node.IsGasLeaf() && parent != nil && parent.IsIncomingEdgeFail() {
 				attrs["label"] = strconv.Quote(test.LeafLabel)
 			} else {
 				attrs["label"] = gasFontStart + gasUsed + gasFontEnd

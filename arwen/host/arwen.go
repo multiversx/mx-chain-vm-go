@@ -54,8 +54,6 @@ type vmHost struct {
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       arwen.CallArgsParser
 
-	gasFlag bool
-
 	multiESDTTransferAsyncCallBackEnableEpoch uint32
 	flagMultiESDTTransferAsyncCallBack        atomic.Flag
 
@@ -102,7 +100,6 @@ func NewArwenVM(
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		callArgsParser:       parsers.NewCallArgsParser(),
-		gasFlag:              true,
 		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
 		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
@@ -426,10 +423,6 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 		return
 	}
 	host.builtInFuncContainer = builtInFuncs
-}
-
-func (host *vmHost) SetGasFlag(flag bool) {
-	host.gasFlag = flag
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed

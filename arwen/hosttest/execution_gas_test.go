@@ -912,15 +912,14 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("callBack error").
+			verify.Ok().
 				HasRuntimeErrors("callBack error").
 				BalanceDelta(test.ParentAddress, -(2*testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, expectedGasUsedByChild).
 				GasRemaining(0).
-				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error")).
+				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
@@ -941,18 +940,15 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
-	//TODO reenable test after contracts are allowed to call themselves
+	// TODO reenable test correct assertions after contracts are allowed to call themselves
 	// repeatedly with async calls (see restriction in asyncContext.addAsyncCall())
-	t.Skip("recursive async self-call currently disabled")
 
 	testConfig := makeTestConfig()
 	testConfig.RecursiveChildCalls = 3
 
-	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
-	// expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasUsedByChild +
+	// expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
+	// expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasProvidedToChild +
 	// 	uint64(testConfig.RecursiveChildCalls-1)*testConfig.GasUsedByCallback
-	expectedGasUsedByChild := uint64(testConfig.RecursiveChildCalls)*testConfig.GasProvidedToChild +
-		uint64(testConfig.RecursiveChildCalls-1)*testConfig.GasUsedByCallback
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -977,12 +973,13 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
-				GasUsed(test.ParentAddress, expectedGasUsedByParent).
-				GasUsed(test.ChildAddress, expectedGasUsedByChild).
-				GasRemaining(testConfig.GasProvided-expectedGasUsedByParent-expectedGasUsedByChild).
-				BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild).
-				ReturnData(big.NewInt(2).Bytes(), big.NewInt(1).Bytes(), big.NewInt(0).Bytes())
+				HasRuntimeErrors(arwen.ErrExecutionFailed.Error())
+			// BalanceDelta(test.ParentAddress, -testConfig.TransferFromParentToChild).
+			// GasUsed(test.ParentAddress, expectedGasUsedByParent).
+			// GasUsed(test.ChildAddress, expectedGasUsedByChild).
+			// GasRemaining(testConfig.GasProvided-expectedGasUsedByParent-expectedGasUsedByChild).
+			// BalanceDelta(test.ChildAddress, testConfig.TransferFromParentToChild).
+			// ReturnData(big.NewInt(2).Bytes(), big.NewInt(1).Bytes(), big.NewInt(0).Bytes())
 		})
 }
 
@@ -1149,8 +1146,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("wrong num of arguments")
+			verify.Ok()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1238,7 +1234,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.ExecutionFailed().
+			verify.Ok().
 				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
@@ -1283,9 +1279,9 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				HasRuntimeErrors("callback failed intentionally").
-				Print()
+			verify.Ok().
+				HasRuntimeErrors("callback failed intentionally")
+				//.Print()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)

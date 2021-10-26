@@ -235,9 +235,6 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	return vmOutput
 }
 
-func (host *VMHostMock) SetGasFlag(flag bool) {
-}
-
 // MultiESDTTransferAsyncCallBackEnabled mocked method
 func (host *VMHostMock) MultiESDTTransferAsyncCallBackEnabled() bool {
 	return true
