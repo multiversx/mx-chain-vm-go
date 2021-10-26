@@ -117,7 +117,7 @@ func (context *asyncContext) executeSyncCallback(
 	var isComplete bool
 	var callBackErr error
 
-	context.host.Metering().RestoreGas(asyncCall.GasLocked)
+	context.host.Metering().RestoreGas(asyncCall.ExtraGasLocked)
 	callbackVMOutput, isComplete, callBackErr = context.host.ExecuteOnDestContext(callbackInput)
 
 	return callbackVMOutput, isComplete, callBackErr
@@ -134,7 +134,7 @@ func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.Asyn
 	// * GasLimit cannot be paid here, because it's the *destination*
 	// contract that ends up paying the gas for the ESDTTransfer
 	context.host.Metering().RestoreGas(asyncCall.GasLimit)
-	context.host.Metering().RestoreGas(asyncCall.GasLocked)
+	context.host.Metering().RestoreGas(asyncCall.ExtraGasLocked)
 	asyncCall.UpdateStatus(vmcommon.Ok)
 }
 

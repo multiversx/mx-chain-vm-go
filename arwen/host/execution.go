@@ -938,14 +938,22 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 
 	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete /*|| err != nil*/ {
+	if !isCallComplete {
 		return err
 	}
 
 	async.LoadParentContext()
 	async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
 
-	return err
+	// TODO matei-p for R2 we need to return the callback error, but we also
+	// need to keep in the vmoutput the storage cleaning of the async contexts
+	// return err
+
+	if err != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+	}
+	return nil
 }
 
 func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {

@@ -44,8 +44,6 @@ func TestGraph_OneAsyncCall_CallGraph(t *testing.T) {
 }
 
 func TestGraph_OneAsyncCallCustomGasLocked_CallGraph(t *testing.T) {
-	// TODO matei-p this must be enabled and implemented for R1!
-	t.Skip()
 	callGraph := test.CreateGraphTestOneAsyncCallCustomGasLocked()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -121,6 +119,7 @@ func TestGraph_AsyncCallbackIndirectFailCrossShard_CallGraph(t *testing.T) {
 }
 
 func TestGraph_TwoAsyncCalls_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -464,13 +463,17 @@ func TestGraph_AsyncCallsAsyncFirstCallbackFail_LocalCross_CallGraph(t *testing.
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	// TODO matei-p activate in R2 - this fails in R1 due gas usage missmatch error that
+	// prevents storage cleanup taking place
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	// TODO matei-p activate in R2 - this fails in R1 due gas usage missmatch error that
+	// prevents storage cleanup taking place
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -512,17 +515,13 @@ func TestGraph_AsyncCallsAsyncFirstCallbackFailCrossShard_CallGraph(t *testing.T
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFailCrossShard_CallGraph(t *testing.T) {
-	// TODO matei-p for R2, this currently fails because the output transfer added
-	// by nodification is cleared from VMOutput due callback failure
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFailCrossShard_CallGraph(t *testing.T) {
-	// TODO matei-p for R2, this currently fails because the output transfer added
-	// by nodification is cleared from VMOutput due callback failure
-	t.Skip()
+	// t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -769,8 +768,7 @@ func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 			}
 		},
 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
-			// TODO matei-p enable this for single level tests (R1)
-			// checkThatStoreIsEmpty(t, world)
+			checkThatStoreIsEmpty(t, world)
 			checkCallFinishDataForGraphTesting(t, expectedCallFinishData, callsFinishData.Data)
 		},
 	})

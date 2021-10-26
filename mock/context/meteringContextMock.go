@@ -130,7 +130,7 @@ func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 }
 
 // ComputeGasLockedForAsync mocked method
-func (m *MeteringContextMock) ComputeGasLockedForAsync() uint64 {
+func (m *MeteringContextMock) ComputeGasLockedForAsync(extraGasForCallback uint64) uint64 {
 	return m.GasComputedToLock
 }
 

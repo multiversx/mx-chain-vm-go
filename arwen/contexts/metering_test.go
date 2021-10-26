@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -240,7 +240,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
 	meteringContext.gasForExecution = gasProvided
-	gasToLock := meteringContext.ComputeGasLockedForAsync()
+	gasToLock := meteringContext.ComputeGasLockedForAsync(0)
 	err = meteringContext.UseGasBounded(gasToLock)
 	require.Nil(t, err)
 	expectedGasLeft := gasProvided - gasToLock

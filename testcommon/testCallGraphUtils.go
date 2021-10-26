@@ -14,6 +14,7 @@ import (
 
 // LogGraph -
 var LogGraph = logger.GetOrCreate("arwen/graph")
+var logAsync = logger.GetOrCreate("arwen/async")
 
 // TestReturnDataSuffix -
 var TestReturnDataSuffix = "_returnData"
@@ -156,9 +157,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 								return instance
 							}
 
-							// TODO matei-p change to debug logging
 							// burn gas for function
-							fmt.Println("Burning", "gas", runtimeConfig.gasUsed, "function", crtFunctionCalled)
+							logAsync.Trace("Burning", "gas", runtimeConfig.gasUsed, "function", crtFunctionCalled)
 							host.Metering().UseGasBounded(uint64(runtimeConfig.gasUsed))
 
 							for _, edge := range crtNode.AdjacentEdges {
@@ -265,13 +265,19 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		callbackName = ""
 	}
 
+	extraGasLocked := uint64(0)
+	if callbackName != "" {
+		extraGasLocked = edge.GasLocked - DefaultCallGraphLockedGas
+	}
+
 	elrondapi.CreateAsyncCallWithTypedArgs(host,
 		destAddress,
 		value.Bytes(),
 		callDataAsBytes,
 		[]byte(callbackName),
 		[]byte(callbackName),
-		int64(edge.GasLimit))
+		int64(edge.GasLimit),
+		int64(extraGasLocked))
 }
 
 func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte) ([]byte, string) {
@@ -308,14 +314,14 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 	async := host.Async()
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
 
-	/// TODO matei-p change to debug logging
-	fmt.Println(
-		"CallFinishDataItem -> callID", async.GetCallID(),
-		"CallbackAsyncInitiatorCallID", async.GetCallbackAsyncInitiatorCallID(),
-		"IsCrossShard", async.IsCrossShard(),
-		"For contract ", string(runtime.GetSCAddress()), "/ "+crtFunctionCalled+"\t",
-		"Gas provided", fmt.Sprintf("%d\t", runtime.GetVMInput().GasProvided),
-		"Gas remaining", fmt.Sprintf("%d\t", metering.GasLeft()))
+	/*
+		fmt.Println(
+			"CallFinishDataItem -> callID", async.GetCallID(),
+			"CallbackAsyncInitiatorCallID", async.GetCallbackAsyncInitiatorCallID(),
+			"IsCrossShard", async.IsCrossShard(),
+			"For contract ", string(runtime.GetSCAddress()), "/ "+crtFunctionCalled+"\t",
+			"Gas provided", fmt.Sprintf("%d\t", runtime.GetVMInput().GasProvided),
+			"Gas remaining", fmt.Sprintf("%d\t", metering.GasLeft()))*/
 
 	var gasLeft uint64
 	if err != nil {
@@ -1786,10 +1792,7 @@ func CreateGraphTestOneAsyncCallNoCallback() *TestCallGraph {
 	sc2f2 := callGraph.AddNode("sc2", "f2")
 	callGraph.AddAsyncEdge(sc1f1, sc2f2, "", "").
 		SetGasLimit(35).
-		SetGasUsed(7).
-		SetGasUsedByCallback(6)
-
-	callGraph.AddNode("sc1", "cb1")
+		SetGasUsed(7)
 
 	return callGraph
 }

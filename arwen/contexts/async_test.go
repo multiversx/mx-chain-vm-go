@@ -517,11 +517,11 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	async := makeAsyncContext(t, host)
 
 	asyncCall := &arwen.AsyncCall{
-		Destination: []byte("destination"),
-		GasLimit:    42,
-		GasLocked:   98,
-		ValueBytes:  big.NewInt(88).Bytes(),
-		Data:        []byte("some_data"),
+		Destination:    []byte("destination"),
+		GasLimit:       42,
+		ExtraGasLocked: 98,
+		ValueBytes:     big.NewInt(88).Bytes(),
+		Data:           []byte("some_data"),
 	}
 
 	host.Runtime().GetVMInput().GasProvided = 200
@@ -639,14 +639,14 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.GasLimit = 200
-	asyncCall.GasLocked = 90
+	asyncCall.ExtraGasLocked = 90
 	gasConsumedByDestination := uint64(23)
 	gasConsumedByCallback := uint64(22)
 
 	// The expected input passed to host.ExecuteOnDestContext() to call Bob as destination
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
 	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
-	destInput.GasLocked = asyncCall.GasLocked
+	destInput.GasLocked = asyncCall.ExtraGasLocked
 
 	// Prepare the output of Bob (the destination call)
 	destOutput := defaultDestOutput_Ok()
@@ -654,7 +654,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 
 	// Prepare the input to Alice's callback
 	callbackInput := defaultCallbackInput_BobToAlice(originalVMInput)
-	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.GasLocked
+	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.ExtraGasLocked
 	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput) + 4*(32+1)
 	callbackInput.GasProvided -= GasForAsyncStep
 	callbackInput.GasLocked = 0
@@ -739,7 +739,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallResolved
-	asyncCall.GasLocked = 300
+	asyncCall.ExtraGasLocked = 300
 
 	vmOutput := defaultDestOutput_Ok()
 	vmOutput.GasRemaining = 12
@@ -748,7 +748,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, err)
 
-	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
+	expectedGasProvided := asyncCall.ExtraGasLocked + vmOutput.GasRemaining
 	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
@@ -765,14 +765,14 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallRejected
-	asyncCall.GasLocked = 200
+	asyncCall.ExtraGasLocked = 200
 
 	vmOutput := defaultDestOutput_UserError()
 	destinationErr := arwen.ErrSignalError
 	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, err)
 
-	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
+	expectedGasProvided := asyncCall.ExtraGasLocked + vmOutput.GasRemaining
 	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
@@ -880,7 +880,7 @@ func defaultAsyncCall_AliceToBob() *arwen.AsyncCall {
 		Destination:     Bob,
 		Data:            []byte("function@0A0B0C@03"),
 		GasLimit:        0,
-		GasLocked:       0,
+		ExtraGasLocked:  0,
 		ValueBytes:      big.NewInt(88).Bytes(),
 		SuccessCallback: "successCallback",
 		ErrorCallback:   "errorCallback",

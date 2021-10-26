@@ -14,7 +14,7 @@ type AsyncCall struct {
 	Destination     []byte
 	Data            []byte
 	GasLimit        uint64
-	GasLocked       uint64
+	ExtraGasLocked  uint64
 	ValueBytes      []byte
 	SuccessCallback string
 	ErrorCallback   string
@@ -30,7 +30,7 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		Destination:     make([]byte, len(ac.Destination)),
 		Data:            make([]byte, len(ac.Data)),
 		GasLimit:        ac.GasLimit,
-		GasLocked:       ac.GasLocked,
+		ExtraGasLocked:  ac.ExtraGasLocked,
 		ValueBytes:      make([]byte, len(ac.ValueBytes)),
 		SuccessCallback: ac.SuccessCallback,
 		ErrorCallback:   ac.ErrorCallback,
@@ -71,12 +71,12 @@ func (ac *AsyncCall) GetGasLimit() uint64 {
 
 // GetGasLocked returns the gas locked for the async callback
 func (ac *AsyncCall) GetGasLocked() uint64 {
-	return ac.GasLocked
+	return ac.ExtraGasLocked
 }
 
 // GetTotalGas returns the sum of the gas limit and gas locked
 func (ac *AsyncCall) GetTotalGas() uint64 {
-	return math.AddUint64(ac.GasLimit, ac.GasLocked)
+	return math.AddUint64(ac.GasLimit, ac.ExtraGasLocked)
 }
 
 // GetValue returns the byte representation of the value of the async call

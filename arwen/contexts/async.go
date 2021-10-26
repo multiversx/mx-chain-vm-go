@@ -126,8 +126,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetSCAddress()
 
-	// TODO matei-p change to debug logging
-	fmt.Println("Calling function ", input.Function)
+	logAsync.Trace("Calling", "function", input.Function)
 	if len(context.stateStack) == 0 && input.CallType != vm.AsynchronousCall && input.CallType != vm.AsynchronousCallBack {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
@@ -139,22 +138,19 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 
-	// TODO matei-p change to debug logging
-	fmt.Println("\taddress", string(context.address))
-	fmt.Println("\tcallID", context.callID) // DebugCallIDAsString(
+	logAsync.Trace("", "address", string(context.address))
+	logAsync.Trace("", "callID", context.callID)
 	if input.CallType == vm.AsynchronousCallBack {
 		context.callbackAsyncInitiatorCallID = runtime.GetAndEliminateFirstArgumentFromList()
 		context.gasAccumulated = big.NewInt(0).SetBytes(runtime.GetAndEliminateFirstArgumentFromList()).Uint64()
-		// TODO matei-p change to debug logging
-		fmt.Println("\tcallerAddr", string(context.callerAddr))
-		fmt.Println("\tcallerCallID", context.callerCallID)
-		fmt.Println("\tcallbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
-		fmt.Println("\tgasAccumulated", context.gasAccumulated)
+		logAsync.Trace("", "callerAddr", string(context.callerAddr))
+		logAsync.Trace("", "callerCallID", context.callerCallID)
+		logAsync.Trace("", "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
+		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
 	}
-	// TODO matei-p change to debug logging
-	fmt.Println("\tinput.GasProvided", input.GasProvided)
+	logAsync.Trace("", "input.GasProvided", input.GasProvided)
 	if input.GasLocked != 0 {
-		fmt.Println("\tinput.GasLocked", input.GasLocked)
+		logAsync.Trace("", "input.GasLocked", input.GasLocked)
 	}
 }
 
@@ -342,7 +338,7 @@ func (context *asyncContext) SetGroupCallback(groupID string, callbackName strin
 	}
 
 	metering := context.host.Metering()
-	gasToLock := metering.ComputeGasLockedForAsync() + gas
+	gasToLock := metering.ComputeGasLockedForAsync(0) + gas
 	err = metering.UseGasBounded(gasToLock)
 	if err != nil {
 		return err
@@ -367,7 +363,7 @@ func (context *asyncContext) SetContextCallback(callbackName string, data []byte
 	}
 
 	metering := context.host.Metering()
-	gasToLock := metering.ComputeGasLockedForAsync() + gas
+	gasToLock := metering.ComputeGasLockedForAsync(0) + gas
 	err = metering.UseGasBounded(gasToLock)
 	if err != nil {
 		return err
@@ -494,7 +490,7 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.Async
 	}
 
 	if shouldLockGas {
-		call.GasLocked = metering.ComputeGasLockedForAsync()
+		call.ExtraGasLocked = metering.ComputeGasLockedForAsync(call.ExtraGasLocked)
 	}
 
 	call.CallID = nil
@@ -543,7 +539,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 		SuccessCallback: callbackFunction,
 		ErrorCallback:   callbackFunction,
 		GasLimit:        gasLimit,
-		GasLocked:       gasToLock,
+		ExtraGasLocked:  gasToLock,
 	})
 	if err != nil {
 		return err
@@ -573,7 +569,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	metering := context.host.Metering()
 	call.Source = context.host.Runtime().GetSCAddress()
 
-	err := metering.UseGasBounded(call.GasLocked)
+	err := metering.UseGasBounded(call.ExtraGasLocked)
 	if err != nil {
 		return err
 	}
@@ -604,7 +600,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 		"dest", string(call.Destination),
 		"mode", call.ExecutionMode,
 		"gas limit", call.GasLimit,
-		"gas locked", call.GasLocked,
+		"gas locked", call.ExtraGasLocked,
 	)
 
 	return nil
@@ -740,21 +736,20 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 
 	gasToLock := uint64(0)
 	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
-		gasToLock = metering.ComputeGasLockedForAsync()
+		gasToLock = metering.ComputeGasLockedForAsync(0)
 	}
 
 	return gasToLock, nil
 }
 
 func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (arwen.AsyncContext, error) {
-	// TODO matei-p change to debug logging
-	fmt.Println("NofityChildIsComplete")
-	fmt.Println("\taddress", string(context.address))
-	fmt.Println("\tcallID", context.callID) // DebugCallIDAsString
-	fmt.Println("\tcallerAddr", string(context.callerAddr))
-	fmt.Println("\tcallerCallID", context.callerCallID)
-	fmt.Println("\tasyncCallIdentifier", asyncCallIdentifier)
-	fmt.Println("\tgasToAccumulate", gasToAccumulate)
+	logAsync.Trace("NofityChildIsComplete")
+	logAsync.Trace("", "address", string(context.address))
+	logAsync.Trace("", "callID", context.callID) // DebugCallIDAsString
+	logAsync.Trace("", "callerAddr", string(context.callerAddr))
+	logAsync.Trace("", "callerCallID", context.callerCallID)
+	logAsync.Trace("", "asyncCallIdentifier", asyncCallIdentifier)
+	logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
 
 	context.CompleteChild(asyncCallIdentifier, gasToAccumulate)
 

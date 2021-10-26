@@ -62,7 +62,7 @@ package elrondapi
 // extern void		v1_4_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern int32_t	v1_4_createAsyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
+// extern int32_t	v1_4_createAsyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 // extern int32_t	v1_4_setAsyncContextCallback(void *context, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
 // extern int32_t v1_4_setAsyncGroupCallback(void *context, int32_t groupIDOffset, int32_t groupIDLength,int32_t callback, int32_t callbackLength,int32_t data, int32_t dataLength,  long long gas);
 //
@@ -1360,6 +1360,7 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 	errorOffset int32,
 	errorLength int32,
 	gas int64,
+	extraGasForCallback int64,
 ) int32 {
 	host := arwen.GetVMHost(context)
 	return CreateAsyncCallWithHost(
@@ -1372,7 +1373,8 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 		successLength,
 		errorOffset,
 		errorLength,
-		gas)
+		gas,
+		extraGasForCallback)
 }
 
 // CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
@@ -1386,6 +1388,7 @@ func CreateAsyncCallWithHost(host arwen.VMHost,
 	errorOffset int32,
 	errorLength int32,
 	gas int64,
+	extraGasForCallback int64,
 ) int32 {
 	runtime := host.Runtime()
 
@@ -1420,7 +1423,8 @@ func CreateAsyncCallWithHost(host arwen.VMHost,
 		data,
 		successFunc,
 		errorFunc,
-		gas)
+		gas,
+		extraGasForCallback)
 }
 
 // CreateAsyncCallWithTypedArgs - createAsyncCall with arguments already read from memory
@@ -1430,7 +1434,8 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 	data []byte,
 	successFunc []byte,
 	errorFunc []byte,
-	gas int64) int32 {
+	gas int64,
+	extraGasForCallback int64) int32 {
 
 	metering := host.Metering()
 	runtime := host.Runtime()
@@ -1448,6 +1453,7 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 		GasLimit:        uint64(gas),
 		SuccessCallback: string(successFunc),
 		ErrorCallback:   string(errorFunc),
+		ExtraGasLocked:  uint64(extraGasForCallback),
 	}
 
 	if asyncCall.HasDefinedAnyCallback() {

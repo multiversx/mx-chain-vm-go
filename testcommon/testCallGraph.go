@@ -327,7 +327,7 @@ func (edge *TestCallEdge) SetGasLocked(gasLocked uint64) *TestCallEdge {
 	if edge.Type != Async && edge.Type != AsyncCrossShard {
 		panic("Gas locked is only for async edges")
 	}
-	edge.GasLocked = gasLocked
+	edge.GasLocked = DefaultCallGraphLockedGas + gasLocked
 	return edge
 }
 
