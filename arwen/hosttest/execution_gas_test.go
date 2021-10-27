@@ -791,6 +791,9 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_BuiltinMultiContractChainCall(t *testing.T) {
+	// TODO matei-p enable this test for R2
+	t.Skip()
+
 	testConfig := makeTestConfig()
 	testConfig.TransferFromChildToParent = 5
 

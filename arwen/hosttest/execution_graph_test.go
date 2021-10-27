@@ -120,7 +120,7 @@ func TestGraph_AsyncCallbackIndirectFailCrossShard_CallGraph(t *testing.T) {
 }
 
 func TestGraph_TwoAsyncCalls_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTestsWithLogger("arwen/async")
+	// arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.CreateGraphTestTwoAsyncCalls()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -301,8 +301,8 @@ func TestGraph_TwoAsyncCallsBothCallbacksFailCrossShard_CallGraph(t *testing.T) 
 }
 
 func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	// TODO remove test for R2
+	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
 		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
@@ -313,8 +313,8 @@ func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
 }
 
 func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
-	callGraph := test.CreateGraphTestSyncAndAsync5()
 	// TODO remove test for R2
+	callGraph := test.CreateGraphTestSyncAndAsync5()
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
 		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {

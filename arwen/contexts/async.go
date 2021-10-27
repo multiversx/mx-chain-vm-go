@@ -560,11 +560,6 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
-
-	if context.isMultiLevelAsync() {
-		return fmt.Errorf("Multi-level async calls are not allowed yet")
-	}
-
 	metering := context.host.Metering()
 	call.Source = context.host.Runtime().GetSCAddress()
 
@@ -582,6 +577,11 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	}
 
 	call.ExecutionMode = execMode
+
+	if context.isMultiLevelAsync(call) {
+		return fmt.Errorf("Multi-level async calls are not allowed yet")
+	}
+
 	group, ok := context.GetCallGroup(groupID)
 	if !ok {
 		group = arwen.NewAsyncCallGroup(groupID)
@@ -605,8 +605,9 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	return nil
 }
 
-func (context *asyncContext) isMultiLevelAsync() bool {
-	return context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack || context.getFirstUpstreamAsyncCallContext() != nil
+func (context *asyncContext) isMultiLevelAsync(call *arwen.AsyncCall) bool {
+	return (context.isCallAsync() || context.getFirstUpstreamAsyncCallContext() != nil) &&
+		call.ExecutionMode != arwen.ESDTTransferOnCallBack
 }
 
 // Execute is the entry-point of the async calling mechanism; it is called by
@@ -672,11 +673,15 @@ func (context *asyncContext) getFirstUpstreamAsyncCallContext() arwen.AsyncConte
 	for index := range context.stateStack {
 		index = len(context.stateStack) - 1 - index
 		stackContext := context.stateStack[index]
-		if stackContext.callType == vm.AsynchronousCall || stackContext.callType == vm.AsynchronousCallBack {
+		if stackContext.isCallAsync() {
 			return stackContext
 		}
 	}
 	return nil
+}
+
+func (context *asyncContext) isCallAsync() bool {
+	return context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack
 }
 
 func (context *asyncContext) loadFromStackOrStore(address []byte, callID []byte) (*asyncContext, error) {
