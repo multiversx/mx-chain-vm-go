@@ -561,10 +561,9 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
 func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
 
-	// TODO matei-p enable this and skip complex tests
-	// if context.isMultiLevelAsync() {
-	// 	return fmt.Errorf("Multi-level async calls are not allowed yet")
-	// }
+	if context.isMultiLevelAsync() {
+		return fmt.Errorf("Multi-level async calls are not allowed yet")
+	}
 
 	metering := context.host.Metering()
 	call.Source = context.host.Runtime().GetSCAddress()

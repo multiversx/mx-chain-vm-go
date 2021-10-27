@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -299,164 +300,162 @@ func TestGraph_TwoAsyncCallsBothCallbacksFailCrossShard_CallGraph(t *testing.T) 
 	runGraphCallTestTemplate(t, callGraph)
 }
 
-// TODO matei-p enable this test for R1 !
-// func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
-// 	callGraph := test.CreateGraphTestAsyncCallsAsync()
-// 	// TODO remove test for R2
-// 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
-// 		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
-// 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
-// 			checkThatStoreIsEmpty(t, world)
-// 			require.Equal(t, testcommon.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
-// 		},
-// 	})
-// }
+func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestAsyncCallsAsync()
+	// TODO remove test for R2
+	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
+		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
+		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
+			checkThatStoreIsEmpty(t, world)
+			require.Equal(t, testcommon.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
+		},
+	})
+}
 
-// TODO matei-p enable this test for R1 !
-// func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
-// 	callGraph := test.CreateGraphTestSyncAndAsync5()
-// 	// TODO remove test for R2
-// 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
-// 		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
-// 		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
-// 			checkThatStoreIsEmpty(t, world)
-// 			require.Equal(t, testcommon.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
-// 		},
-// 	})
-// }
+func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
+	callGraph := test.CreateGraphTestSyncAndAsync5()
+	// TODO remove test for R2
+	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
+		assertsAfterEachRootCall: noAssertsAfterEachRootCall,
+		finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
+			checkThatStoreIsEmpty(t, world)
+			require.Equal(t, testcommon.ErrAsyncRegisterFail, callsFinishData.Data[1].FailError)
+		},
+	})
+}
 
 func TestGraph_AsyncCallsAsync_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallback()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallback()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
@@ -479,49 +478,49 @@ func TestGraph_AsyncCallsAsyncBothCallbacksFail_LocalCross_CallGraph(t *testing.
 }
 
 func TestGraph_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallbackCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallbackCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFailCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFailCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFailCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFailCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFailCrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -557,73 +556,73 @@ func TestGraph_CallbackCallsSync_CallGraph(t *testing.T) {
 }
 
 func TestGraph_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_LocalLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_LocalLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_LocalCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_CrossLocal_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_CrossCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_CrossCross_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -644,13 +643,13 @@ func TestGraph_SyncAndAsync3_CallGraph(t *testing.T) {
 }
 
 func TestGraph_SyncAndAsync4_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync5_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync5()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -671,13 +670,13 @@ func TestGraph_SyncAndAsync8_CallGraph(t *testing.T) {
 }
 
 func TestGraph_SyncAndAsync9_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync9()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync10_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestSyncAndAsync10()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -688,53 +687,53 @@ func TestGraph_SyncAndAsync11_CallGraph(t *testing.T) {
 }
 
 func TestGraph_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard4()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard5()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard8()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall9_CrossShard_CallGraph(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
@@ -745,8 +744,10 @@ type assertsConfig struct {
 	finalAsserts             func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData)
 }
 
+var noAssertsAfterEachRootCall = func(*test.TestCallNode, *worldmock.MockWorld, *test.VMOutputVerifier, []string) {}
+
 var assertsConfigForR1MultiLevel = &assertsConfig{
-	assertsAfterEachRootCall: func(*test.TestCallNode, *worldmock.MockWorld, *test.VMOutputVerifier, []string) {},
+	assertsAfterEachRootCall: noAssertsAfterEachRootCall,
 	finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
 		checkCallFinishDataForGraphTesting(t, expectedCallFinishData, callsFinishData.Data)
 	},
