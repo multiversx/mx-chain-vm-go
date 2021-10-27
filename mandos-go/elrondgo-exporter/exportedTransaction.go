@@ -1,30 +1,37 @@
 package elrondgo_exporter
 
 import (
+	"bytes"
 	"math/big"
 
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
+var vmTypeHex = "0500"
+
+const dummyCodeMetadataHex = "0102"
+
 type Transaction struct {
-	function  string
-	args      [][]byte
-	nonce     uint64
-	value     *big.Int
-	esdtValue []*mj.ESDTTxData
-	sndAddr   []byte
-	rcvAddr   []byte
-	gasPrice  uint64
-	gasLimit  uint64
+	function   string
+	args       [][]byte
+	deployData []byte
+	nonce      uint64
+	value      *big.Int
+	esdtValue  []*mj.ESDTTxData
+	sndAddr    []byte
+	rcvAddr    []byte
+	gasPrice   uint64
+	gasLimit   uint64
 }
 
 func NewTransaction() *Transaction {
 	return &Transaction{
-		args:      make([][]byte, 0),
-		value:     big.NewInt(0),
-		esdtValue: make([]*mj.ESDTTxData, 0),
-		sndAddr:   make([]byte, 0),
-		rcvAddr:   make([]byte, 0),
+		args:       make([][]byte, 0),
+		value:      big.NewInt(0),
+		esdtValue:  make([]*mj.ESDTTxData, 0),
+		sndAddr:    make([]byte, 0),
+		rcvAddr:    make([]byte, 0),
+		deployData: make([]byte, 0),
 	}
 }
 
@@ -101,6 +108,28 @@ func (tx *Transaction) GetGasLimitAndPrice() (uint64, uint64) {
 	return tx.gasLimit, tx.gasPrice
 }
 
+func (tx *Transaction) WithDeployData(scCode []byte, args [][]byte) *Transaction {
+	deployData := createDeployTxData(scCode, args)
+	tx.deployData = append(tx.deployData, deployData...)
+	return tx
+}
+
+func createDeployTxData(scCode []byte, args [][]byte) []byte {
+	deployData := bytes.Join([][]byte{scCode, []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
+	if args != nil {
+		deployData = []byte(string(deployData) + "@" + string(bytes.Join(args, []byte("@"))))
+	}
+	return deployData
+}
+
+func (tx *Transaction) GetDeployData() []byte {
+	return tx.deployData
+}
+
 func CreateTransaction(function string, args [][]byte, nonce uint64, value *big.Int, esdtTransfers []*mj.ESDTTxData, sndAddr []byte, rcvAddr []byte, gasLimit uint64, gasPrice uint64) *Transaction {
 	return NewTransaction().WithCallFunction(function).WithCallArguments(args).WithNonce(nonce).WithCallValue(value).WithESDTTransfers(esdtTransfers).WithSenderAddress(sndAddr).WithReceiverAddress(rcvAddr).WithGasLimitAndPrice(gasLimit, gasPrice)
+}
+
+func CreateDeployTransaction(args [][]byte, scCode []byte, sndAddr []byte, gasLimit uint64, gasPrice uint64) *Transaction {
+	return NewTransaction().WithDeployData(scCode, args).WithSenderAddress(sndAddr).WithGasLimitAndPrice(gasLimit, gasPrice)
 }

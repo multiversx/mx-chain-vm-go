@@ -25,17 +25,17 @@ var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0, 5, 0}
 
 var ScAddressPrefixLength = 10
 
-func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, txs []*Transaction, err error) {
+func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, txs []*Transaction, deployTxs []*Transaction, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	steps := scenario.Steps
-	accounts, txs, err = getAccountsAndTransactionsFromSteps(steps)
+	accounts, txs, deployTxs, err = getAccountsAndTransactionsFromSteps(steps)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return accounts, txs, nil
+	return accounts, txs, deployTxs, nil
 }
 
 func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, err error) {
@@ -51,6 +51,12 @@ func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, err er
 		}
 		accounts = append(accounts, account)
 	}
+	for _, newMandosAddressMock := range setStateStep.NewAddressMocks {
+		scAddress := newMandosAddressMock.NewAddress.Value
+		ownerAddress := newMandosAddressMock.CreatorAddress.Value
+		account := SetNewAccount(0, scAddress, big.NewInt(0), make(map[string][]byte), make([]byte, 0), ownerAddress)
+		accounts = append(accounts, account)
+	}
 
 	return accounts, nil
 }
@@ -63,30 +69,33 @@ func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 	return scenario, err
 }
 
-func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccount, txs []*Transaction, err error) {
+func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccount, txs []*Transaction, deployTxs []*Transaction, err error) {
 	if len(steps) == 0 {
-		return nil, nil, errNoStepsProvided
+		return nil, nil, nil, errNoStepsProvided
 	}
 	if !stepIsSetState(steps[0]) && !stepIsExternalStep(steps[0]) {
-		return nil, nil, errFirstStepMustSetState
+		return nil, nil, nil, errFirstStepMustSetState
 	}
 
 	txs = make([]*Transaction, 0)
+	deployTxs = make([]*Transaction, 0)
 	accounts = make([]*TestAccount, 0)
 
 	for i := 0; i < len(steps); i++ {
 		switch step := steps[i].(type) {
 		case *mj.SetStateStep:
+
 			setStepAccounts, err := setAccounts(step)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, nil, err
 			}
 			accounts = append(accounts, setStepAccounts...)
+
 		case *mj.TxStep:
-			switch step.StepTypeName() {
-			case "scCall":
-				if step.ExpectedResult.Status.Value.Cmp(okStatus) == 0 {
-					arguments := getArguments(step.Tx.Arguments)
+			arguments := getArguments(step.Tx.Arguments)
+			if step.ExpectedResult.Status.Value.Cmp(okStatus) == 0 {
+				switch step.StepTypeName() {
+				case "scCall":
 					tx := CreateTransaction(
 						step.Tx.Function,
 						arguments,
@@ -99,22 +108,32 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 						step.Tx.GasPrice.Value,
 					)
 					txs = append(txs, tx)
+				case "scDeploy":
+					deployTx := CreateDeployTransaction(
+						arguments,
+						step.Tx.Code.Value,
+						step.Tx.From.Value,
+						step.Tx.GasLimit.Value,
+						step.Tx.GasPrice.Value,
+					)
+					deployTxs = append(deployTxs, deployTx)
+				default:
+					return nil, nil, nil, errTxStepIsNotScCall
 				}
-			default:
-				return nil, nil, errTxStepIsNotScCall
 			}
 		case *mj.ExternalStepsStep:
-			externalStepAccounts, externalStepTtransactions, err := GetAccountsAndTransactionsFromMandos(step.Path)
+			externalStepAccounts, externalStepTransactions, externalDeployTransactions, err := GetAccountsAndTransactionsFromMandos(step.Path)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, nil, err
 			}
 			accounts = append(accounts, externalStepAccounts...)
-			txs = append(txs, externalStepTtransactions...)
+			txs = append(txs, externalStepTransactions...)
+			deployTxs = append(deployTxs, externalDeployTransactions...)
 		default:
-			return nil, nil, errStepIsNotTxStep
+			return nil, nil, nil, errStepIsNotTxStep
 		}
 	}
-	return accounts, txs, nil
+	return accounts, txs, deployTxs, nil
 }
 
 func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {

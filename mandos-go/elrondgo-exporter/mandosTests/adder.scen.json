@@ -19,7 +19,14 @@
                     "code": "file:../../../test/adder/output/adder.wasm",
                     "owner": "address:owner"
                 }
-            }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "0",
+                    "newAddress": "address:deployedAdder"
+                }
+            ]
         },
         {
             "step": "scCall",
