@@ -12,6 +12,7 @@ import (
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
@@ -366,10 +367,16 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 		})
 }
 
+func TestMultipleTimes(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t)
+	}
+}
+
 func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
-
+	_ = logger.SetLogLevel(":TRACE")
 	testConfig := simpleGasTestConfig
 	testConfig.ESDTTokensToTransfer = 10
 
