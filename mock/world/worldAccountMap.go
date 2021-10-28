@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // AccountMap is a map from address to Account, also implementing the
@@ -91,7 +91,7 @@ func (am AccountMap) LoadAccountStorageFrom(otherAM AccountMap) error {
 		otherAccount, otherExists := otherAM[address]
 		if !otherExists {
 			if bytes.Equal([]byte(address), vmcommon.SystemAccountAddress) {
-				return nil
+				continue
 			}
 
 			return fmt.Errorf(
