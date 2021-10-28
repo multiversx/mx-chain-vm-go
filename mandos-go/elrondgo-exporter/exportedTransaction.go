@@ -124,6 +124,10 @@ func createDeployTxData(scCodePath string, args [][]byte) []byte {
 	encodedScCode := hex.EncodeToString(scCode)
 	deployData := bytes.Join([][]byte{[]byte(encodedScCode), []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
 	if args != nil {
+		for i := 0; i < len(args); i++ {
+			encodedArg := hex.EncodeToString(args[i])
+			args[i] = []byte(encodedArg)
+		}
 		deployData = []byte(string(deployData) + "@" + string(bytes.Join(args, []byte("@"))))
 	}
 	return deployData
