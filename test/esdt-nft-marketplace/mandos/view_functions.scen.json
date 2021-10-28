@@ -13,7 +13,7 @@
                 "to": "sc:marketplace",
                 "function": "isAlreadyUpForAuction",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -32,7 +32,7 @@
                 "to": "sc:marketplace",
                 "function": "isAlreadyUpForAuction",
                 "arguments": [
-                    "str:ANOTHERNFT-123456",
+                    "str:ANOTHERNFT-123456456",
                     "5"
                 ]
             },
@@ -51,7 +51,7 @@
                 "to": "sc:marketplace",
                 "function": "getPaymentTokenForAuctionedNft",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -71,7 +71,7 @@
                 "to": "sc:marketplace",
                 "function": "getMinMaxBid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -91,7 +91,7 @@
                 "to": "sc:marketplace",
                 "function": "getDeadline",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -110,7 +110,7 @@
                 "to": "sc:marketplace",
                 "function": "getOriginalOwner",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -129,7 +129,7 @@
                 "to": "sc:marketplace",
                 "function": "getCurrentWinningBid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -148,7 +148,7 @@
                 "to": "sc:marketplace",
                 "function": "getCurrentWinner",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },
@@ -167,7 +167,7 @@
                 "to": "sc:marketplace",
                 "function": "getFullAuctionData",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ]
             },

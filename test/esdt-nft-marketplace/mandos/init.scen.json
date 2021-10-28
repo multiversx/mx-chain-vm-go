@@ -13,7 +13,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-123456": {
+                        "str:NFT-123456456": {
                             "roles": [
                                 "ESDTRoleNFTCreate"
                             ]
@@ -24,7 +24,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-123456": {
+                        "str:NFT-123456456": {
                             "instances": [
                                 {
                                     "nonce": "1",

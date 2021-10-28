@@ -15,7 +15,7 @@
                 "egldValue": "1000",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -46,7 +46,7 @@
                     "nonce": "0",
                     "balance": "1000",
                     "esdt": {
-                        "str:NFT-123456": {
+                        "str:NFT-123456456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -59,7 +59,7 @@
                     },
                     "storage": {
                         "str:bidCutPerecentage": "1000",
-                        "str:auctionForToken|nested:str:NFT-123456|u64:1": {
+                        "str:auctionForToken|nested:str:NFT-123456456|u64:1": {
                             "0-payment_token": "nested:str:EGLD|u64:0",
                             "1-min_bid": "biguint:100",
                             "2-max_bid": "biguint:1000",

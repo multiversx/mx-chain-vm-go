@@ -110,7 +110,7 @@ func SetLastNonce(tokenIdentifier []byte, lastNonce uint64, destination map[stri
 // key.
 func SetTokenBalance(tokenIdentifier []byte, nonce uint64, balance *big.Int, destination map[string][]byte) error {
 	tokenKey := makeTokenKey(tokenIdentifier, nonce)
-	tokenData, err := getTokenDataByKey(tokenKey, destination)
+	tokenData, err := getTokenDataByKey(tokenKey, destination, make(map[string][]byte))
 	if err != nil {
 		return err
 	}

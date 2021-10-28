@@ -15,7 +15,7 @@
                 "egldValue": "500",
                 "function": "bid",
                 "arguments": [
-                    "str:ANOTHERNFT-123456",
+                    "str:ANOTHERNFT-123456456",
                     "5"
                 ],
                 "gasLimit": "0x100000",
@@ -37,7 +37,7 @@
                 "to": "sc:marketplace",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -67,7 +67,7 @@
                 "egldValue": "500",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -115,7 +115,7 @@
                 ],
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -138,7 +138,7 @@
                 "egldValue": "300",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -161,7 +161,7 @@
                 "egldValue": "50",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -184,7 +184,7 @@
                 "egldValue": "150",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -207,7 +207,7 @@
                 "egldValue": "1500",
                 "function": "bid",
                 "arguments": [
-                    "str:NFT-123456",
+                    "str:NFT-123456456",
                     "1"
                 ],
                 "gasLimit": "0x100000",

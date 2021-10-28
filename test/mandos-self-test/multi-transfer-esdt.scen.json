@@ -10,7 +10,7 @@
                     "esdt": {
                         "str:TOK-123": "150",
                         "str:OTHERTOK-123": "500",
-                        "str:NFT-123": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "5",
@@ -42,7 +42,7 @@
                         "value": "400"
                     },
                     {
-                        "tokenIdentifier": "str:NFT-123",
+                        "tokenIdentifier": "str:NFT-123456",
                         "nonce": "5",
                         "value": "10"
                     }
@@ -61,7 +61,7 @@
                     "esdt": {
                         "str:TOK-123": "50",
                         "str:OTHERTOK-123": "100",
-                        "str:NFT-123": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "5",
@@ -78,7 +78,7 @@
                     "esdt": {
                         "str:TOK-123": "100",
                         "str:OTHERTOK-123": "400",
-                        "str:NFT-123": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "5",

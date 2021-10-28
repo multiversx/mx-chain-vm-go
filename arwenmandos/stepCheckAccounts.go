@@ -13,6 +13,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -28,7 +29,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 	if !checkAccounts.MoreAccountsAllowed {
 		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
-			if postAcctMatch == nil {
+			if postAcctMatch == nil && !bytes.Equal([]byte(worldAcctAddr), vmcommon.SystemAccountAddress) {
 				return fmt.Errorf("unexpected account address: %s",
 					ae.exprReconstructor.Reconstruct(
 						[]byte(worldAcctAddr),
@@ -163,9 +164,10 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 		return nil
 	}
 
+	systemAcc := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
-	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage)
+	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage, systemAcc.Storage)
 	if err != nil {
 		return err
 	}
@@ -225,7 +227,8 @@ func (ae *ArwenTestExecutor) checkTokenState(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *esdtconvert.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData,
+) []error {
 
 	var errors []error
 
@@ -245,10 +248,11 @@ func (ae *ArwenTestExecutor) checkTokenState(
 }
 
 func (ae *ArwenTestExecutor) checkTokenInstances(
-	accountAddress string,
+	_ string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *esdtconvert.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData,
+) []error {
 
 	var errors []error
 
