@@ -272,7 +272,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 
 		if expectedInstance == nil {
 			expectedInstance = &mj.CheckESDTInstance{
-				Nonce:   mj.JSONCheckUint64{Value: nonce, Original: ""},
+				Nonce:   mj.JSONUint64{Value: nonce, Original: ""},
 				Balance: mj.JSONCheckBigInt{Value: big.NewInt(0), Original: ""},
 			}
 		} else if accountInstance == nil {

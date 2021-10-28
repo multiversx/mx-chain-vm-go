@@ -24,7 +24,7 @@ func (p *Parser) processCheckESDTData(
 		}
 		esdtData.Instances = []*mj.CheckESDTInstance{
 			{
-				Nonce:   mj.JSONCheckUint64{Value: 0, Original: ""},
+				Nonce:   mj.JSONUint64Zero(),
 				Balance: balance,
 			},
 		}
@@ -48,7 +48,7 @@ func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtD
 	}
 	// var err error
 	firstInstance := &mj.CheckESDTInstance{
-		Nonce:      mj.JSONCheckUint64Unspecified(),
+		Nonce:      mj.JSONUint64Zero(),
 		Balance:    mj.JSONCheckBigIntUnspecified(),
 		Creator:    mj.JSONCheckBytesUnspecified(),
 		Royalties:  mj.JSONCheckUint64Unspecified(),
@@ -110,7 +110,7 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 	var err error
 	switch kvp.Key {
 	case "nonce":
-		targetInstance.Nonce, err = p.processCheckUint64(kvp.Value)
+		targetInstance.Nonce, err = p.processUint64(kvp.Value)
 		if err != nil {
 			return false, fmt.Errorf("invalid account nonce: %w", err)
 		}
