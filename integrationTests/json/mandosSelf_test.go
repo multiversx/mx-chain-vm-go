@@ -108,26 +108,26 @@ func TestMandosCheckESDTErr1(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-esdt.err1.json")
 	require.EqualError(t, err,
 		`mismatch for account "address:the-address":
-  for token: NFT-123456456, nonce: 1: Bad balance. Want: "4". Have: "1"
-  for token: NFT-123456456, nonce: 1: Bad creator. Want: "address:another-address". Have: "address:the-address"
-  for token: NFT-123456456, nonce: 1: Bad royalties. Want: "2001". Have: "2000"
-  for token: NFT-123456456, nonce: 1: Bad hash. Want: "keccak256:str:another_hash". Have: 0x54e3ea4bdef3b22154767a2cae081fca2bec2eae1ec62ee71308cb2a300d675d (str:"T\xe3\xeaK\xde\xf3\xb2!Tvz,\xae\b\x1f\xca+\xec.\xae\x1e\xc6.\xe7\x13\b\xcb*0\rg]")
-  for token: NFT-123456456, nonce: 1: Bad URI. Want: [
+  for token: NFT-123456, nonce: 1: Bad balance. Want: "4". Have: "1"
+  for token: NFT-123456, nonce: 1: Bad creator. Want: "address:another-address". Have: "address:the-address"
+  for token: NFT-123456, nonce: 1: Bad royalties. Want: "2001". Have: "2000"
+  for token: NFT-123456, nonce: 1: Bad hash. Want: "keccak256:str:another_hash". Have: 0x54e3ea4bdef3b22154767a2cae081fca2bec2eae1ec62ee71308cb2a300d675d (str:"T\xe3\xeaK\xde\xf3\xb2!Tvz,\xae\b\x1f\xca+\xec.\xae\x1e\xc6.\xe7\x13\b\xcb*0\rg]")
+  for token: NFT-123456, nonce: 1: Bad URI. Want: [
     "str:www.cool_nft.com/another_nft.jpg"
 ]. Have: "str:www.cool_nft.com/my_nft.jpg"
-  for token: NFT-123456456, nonce: 1: Bad attributes. Want: "str:other_attributes". Have: "str:serialized_attributes"`)
+  for token: NFT-123456, nonce: 1: Bad attributes. Want: "str:other_attributes". Have: "str:serialized_attributes"`)
 }
 
 func TestMandosEsdtZeroBalance(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test", "esdt-zero-balance-check-err.scen.json")
 	require.EqualError(t, err,
 		`mismatch for account "address:A":
-  for token: TOK-123, nonce: 0: Bad balance. Want: "". Have: "150"`)
+  for token: TOK-123456, nonce: 0: Bad balance. Want: "". Have: "150"`)
 }
 
 func TestMandosEsdtNonZeroBalance(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test", "esdt-non-zero-balance-check-err.scen.json")
 	require.EqualError(t, err,
 		`mismatch for account "address:B":
-  for token: TOK-123, nonce: 0: Bad balance. Want: "100". Have: "0"`)
+  for token: TOK-123456, nonce: 0: Bad balance. Want: "100". Have: "0"`)
 }

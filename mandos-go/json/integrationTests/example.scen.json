@@ -479,11 +479,11 @@
                 "to": "address:B",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:TOK-123",
+                        "tokenIdentifier": "str:TOK-123456",
                         "value": "100"
                     },
                     {
-                        "tokenIdentifier": "str:OTHERTOK-123",
+                        "tokenIdentifier": "str:OTHERTOK-123456",
                         "value": "1000"
                     },
                     {

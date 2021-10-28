@@ -2,7 +2,6 @@ package arwenmandos
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -161,18 +160,19 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 }
 
 func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
-	if expectedAcct.IgnoreESDT || len(expectedAcct.CheckESDTData) == 0 {
+	if expectedAcct.IgnoreESDT {
 		return nil
 	}
 
+	systemAccStorage := make(map[string][]byte)
 	systemAcc, exists := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
-	if !exists {
-		return errors.New("Missing SystemAccount")
+	if exists {
+		systemAccStorage = systemAcc.Storage
 	}
 
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
-	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage, systemAcc.Storage)
+	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage, systemAccStorage)
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 	for tokenName := range accountTokens {
 		allTokenNames[tokenName] = true
 	}
-	var errors []error
+	var errs []error
 	for tokenName := range allTokenNames {
 		expectedToken := expectedTokens[tokenName]
 		accountToken := accountTokens[tokenName]
@@ -207,10 +207,10 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 			}
 		}
 
-		errors = append(errors, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
+		errs = append(errs, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
 	}
 
-	errorString := makeErrorString(errors)
+	errorString := makeErrorString(errs)
 	if len(errorString) > 0 {
 		return fmt.Errorf("mismatch for account \"%s\":%s", accountAddress, errorString)
 	}

@@ -6,7 +6,7 @@
             "accounts": {
                 "address:the-address": {
                     "esdt": {
-                        "str:NFT-123456456": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -30,7 +30,7 @@
             "accounts": {
                 "address:the-address": {
                     "esdt": {
-                        "str:NFT-123456456": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -54,7 +54,7 @@
             "accounts": {
                 "address:the-address": {
                     "esdt": {
-                        "str:NFT-123456456": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -72,7 +72,7 @@
             "accounts": {
                 "address:the-address": {
                     "esdt": {
-                        "str:NFT-123456456": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",

@@ -22,7 +22,7 @@
                 "to": "sc:marketplace",
                 "function": "endAuction",
                 "arguments": [
-                    "str:NFT-123456456",
+                    "str:NFT-123456",
                     "1"
                 ],
                 "gasLimit": "0x100000",
@@ -48,7 +48,7 @@
                     "nonce": "0",
                     "balance": "40",
                     "esdt": {
-                        "str:NFT-123456456": {
+                        "str:NFT-123456": {
                             "roles": [
                                 "ESDTRoleNFTCreate"
                             ]
@@ -70,7 +70,7 @@
                     "nonce": "2",
                     "balance": "800",
                     "esdt": {
-                        "str:NFT-123456456": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -88,7 +88,7 @@
                     "balance": "0",
                     "storage": {
                         "str:bidCutPerecentage": "1000",
-                        "str:auctionForToken|nested:str:NFT-123456456|u64:1": ""
+                        "str:auctionForToken|nested:str:NFT-123456|u64:1": ""
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
