@@ -2,6 +2,7 @@ package elrondgo_exporter
 
 import (
 	"bytes"
+	"encoding/hex"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -120,7 +121,8 @@ func (tx *Transaction) WithDeployData(scCodePath string, args [][]byte) *Transac
 
 func createDeployTxData(scCodePath string, args [][]byte) []byte {
 	scCode := arwen.GetSCCode(scCodePath[contractCodePrefixLength:])
-	deployData := bytes.Join([][]byte{scCode, []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
+	encodedScCode := hex.EncodeToString(scCode)
+	deployData := bytes.Join([][]byte{[]byte(encodedScCode), []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
 	if args != nil {
 		deployData = []byte(string(deployData) + "@" + string(bytes.Join(args, []byte("@"))))
 	}
