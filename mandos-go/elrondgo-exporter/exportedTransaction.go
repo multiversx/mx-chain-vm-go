@@ -8,9 +8,12 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
-var vmTypeHex = "0500"
+const vmTypeHex = "0500"
 
 const dummyCodeMetadataHex = "0102"
+
+// length of "file:" in the mandos test
+const contractCodePrefixLength = 5
 
 type Transaction struct {
 	function   string
@@ -116,7 +119,7 @@ func (tx *Transaction) WithDeployData(scCodePath string, args [][]byte) *Transac
 }
 
 func createDeployTxData(scCodePath string, args [][]byte) []byte {
-	scCode := arwen.GetSCCode(scCodePath)
+	scCode := arwen.GetSCCode(scCodePath[contractCodePrefixLength:])
 	deployData := bytes.Join([][]byte{scCode, []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
 	if args != nil {
 		deployData = []byte(string(deployData) + "@" + string(bytes.Join(args, []byte("@"))))
