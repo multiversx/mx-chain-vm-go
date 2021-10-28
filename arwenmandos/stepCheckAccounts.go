@@ -2,6 +2,7 @@ package arwenmandos
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -160,11 +161,15 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 }
 
 func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
-	if expectedAcct.IgnoreESDT {
+	if expectedAcct.IgnoreESDT || len(expectedAcct.CheckESDTData) == 0 {
 		return nil
 	}
 
-	systemAcc := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
+	systemAcc, exists := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
+	if !exists {
+		return errors.New("Missing SystemAccount")
+	}
+
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
 	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage, systemAcc.Storage)
