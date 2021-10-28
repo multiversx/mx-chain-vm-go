@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"math/big"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
@@ -108,13 +109,14 @@ func (tx *Transaction) GetGasLimitAndPrice() (uint64, uint64) {
 	return tx.gasLimit, tx.gasPrice
 }
 
-func (tx *Transaction) WithDeployData(scCode []byte, args [][]byte) *Transaction {
-	deployData := createDeployTxData(scCode, args)
+func (tx *Transaction) WithDeployData(scCodePath string, args [][]byte) *Transaction {
+	deployData := createDeployTxData(scCodePath, args)
 	tx.deployData = append(tx.deployData, deployData...)
 	return tx
 }
 
-func createDeployTxData(scCode []byte, args [][]byte) []byte {
+func createDeployTxData(scCodePath string, args [][]byte) []byte {
+	scCode := arwen.GetSCCode(scCodePath)
 	deployData := bytes.Join([][]byte{scCode, []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
 	if args != nil {
 		deployData = []byte(string(deployData) + "@" + string(bytes.Join(args, []byte("@"))))
@@ -130,6 +132,6 @@ func CreateTransaction(function string, args [][]byte, nonce uint64, value *big.
 	return NewTransaction().WithCallFunction(function).WithCallArguments(args).WithNonce(nonce).WithCallValue(value).WithESDTTransfers(esdtTransfers).WithSenderAddress(sndAddr).WithReceiverAddress(rcvAddr).WithGasLimitAndPrice(gasLimit, gasPrice)
 }
 
-func CreateDeployTransaction(args [][]byte, scCode []byte, sndAddr []byte, gasLimit uint64, gasPrice uint64) *Transaction {
-	return NewTransaction().WithDeployData(scCode, args).WithSenderAddress(sndAddr).WithGasLimitAndPrice(gasLimit, gasPrice)
+func CreateDeployTransaction(args [][]byte, scCodePath string, sndAddr []byte, gasLimit uint64, gasPrice uint64) *Transaction {
+	return NewTransaction().WithDeployData(scCodePath, args).WithSenderAddress(sndAddr).WithGasLimitAndPrice(gasLimit, gasPrice)
 }

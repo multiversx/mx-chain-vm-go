@@ -113,7 +113,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 				case "scDeploy":
 					deployTx := CreateDeployTransaction(
 						arguments,
-						step.Tx.Code.Value,
+						step.Tx.Code.Original,
 						step.Tx.From.Value,
 						step.Tx.GasLimit.Value,
 						step.Tx.GasPrice.Value,
