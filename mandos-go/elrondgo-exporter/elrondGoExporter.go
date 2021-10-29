@@ -120,7 +120,6 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 					)
 					deployTxs = append(deployTxs, deployTx)
 				default:
-					return nil, nil, nil, nil, errTxStepIsNotScCall
 				}
 			}
 		case *mj.ExternalStepsStep:
@@ -133,7 +132,6 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 			txs = append(txs, externalStepTransactions...)
 			deployTxs = append(deployTxs, externalDeployTransactions...)
 		default:
-			return nil, nil, nil, nil, errStepIsNotTxStep
 		}
 	}
 	return accounts, deployedAccounts, txs, deployTxs, nil
