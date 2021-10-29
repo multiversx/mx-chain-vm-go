@@ -12,6 +12,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -27,7 +28,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 	if !checkAccounts.MoreAccountsAllowed {
 		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
-			if postAcctMatch == nil {
+			if postAcctMatch == nil && !bytes.Equal(vmcommon.SystemAccountAddress, []byte(worldAcctAddr)) {
 				return fmt.Errorf("unexpected account address: %s",
 					ae.exprReconstructor.Reconstruct(
 						[]byte(worldAcctAddr),
