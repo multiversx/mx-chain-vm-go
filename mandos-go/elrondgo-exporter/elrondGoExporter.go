@@ -13,10 +13,6 @@ var errFirstStepMustSetState = errors.New("first step must be of type SetState")
 
 var errNoStepsProvided = errors.New("no steps were provided")
 
-var errStepIsNotTxStep = errors.New("step is not scCall")
-
-var errTxStepIsNotScCall = errors.New("txStep is not scCall")
-
 var errScAccountMustHaveOwner = errors.New("scAccount must have owner")
 
 var okStatus = big.NewInt(0)
