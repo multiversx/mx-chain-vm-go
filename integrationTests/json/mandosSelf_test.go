@@ -63,11 +63,6 @@ func TestMandosCheckOwnerErr2(t *testing.T) {
 		"bad account owner. Account: address:parent. Want: \"address:other\". Have: \"\"")
 }
 
-func TestMandosCheckOwner(t *testing.T) {
-	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-owner.scen.json")
-	require.Nil(t, err)
-}
-
 func TestMandosCheckBalanceErr(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-balance.err.json")
 	require.EqualError(t, err,
