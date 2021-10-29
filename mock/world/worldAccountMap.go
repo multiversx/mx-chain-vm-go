@@ -1,6 +1,7 @@
 package worldmock
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -89,6 +90,10 @@ func (am AccountMap) LoadAccountStorageFrom(otherAM AccountMap) error {
 	for address, account := range am {
 		otherAccount, otherExists := otherAM[address]
 		if !otherExists {
+			if bytes.Equal([]byte(address), vmcommon.SystemAccountAddress) {
+				continue
+			}
+
 			return fmt.Errorf(
 				"account %s could not be loaded from AccountMap",
 				hex.EncodeToString([]byte(address)))
