@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -18,6 +19,8 @@ import (
 var _ arwen.AsyncContext = (*asyncContext)(nil)
 
 var logAsync = logger.GetOrCreate("arwen/async")
+
+var marshalizer = &marshal.GogoProtoMarshalizer{}
 
 type asyncContext struct {
 	host       arwen.VMHost
@@ -895,7 +898,7 @@ func (context *asyncContext) Save() error {
 	storage := context.host.Storage()
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
-	data, err := json.Marshal(context.toSerializable())
+	data, err := marshalizer.Marshal(context.toSerializable())
 	if err != nil {
 		return err
 	}
@@ -1169,7 +1172,7 @@ func (context *asyncContext) Serialize() ([]byte, error) {
 
 func deserializeAsyncContext(data []byte) (*SerializableAsyncContext, error) {
 	deserializedContext := &SerializableAsyncContext{}
-	err := json.Unmarshal(data, deserializedContext)
+	err := marshalizer.Unmarshal(deserializedContext, data)
 	if err != nil {
 		return nil, err
 	}

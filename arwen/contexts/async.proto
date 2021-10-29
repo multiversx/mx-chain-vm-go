@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+// import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option go_package = "../contexts";
+// option (gogoproto.stable_marshaler_all) = true;
+
+package contexts;
+
+enum SerializableCallType {
+    DirectCall = 0;
+    AsynchronousCall = 1;
+    AsynchronousCallBack = 2;
+    ESDTTransferAndExecute = 3;
+}
+
+enum AsyncCallStatus {
+    AsyncCallPending = 0;
+    AsyncCallResolved = 1;
+    AsyncCallRejected = 2;
+}
+
+enum AsyncCallExecutionMode {
+    SyncExecution = 0;
+    AsyncBuiltinFuncIntraShard = 1;
+    AsyncBuiltinFuncCrossShard = 2;
+    ESDTTransferOnCallBack = 3;
+    AsyncUnknown = 4;
+}
+
+message SerializableAsyncCall {
+    bytes CallID = 1;
+    AsyncCallStatus Status = 2;
+    AsyncCallExecutionMode ExecutionMode = 3;
+    bytes Source = 4;
+    bytes Destination = 5;
+    bytes Data = 6;
+    uint64 GasLimit = 7;
+    uint64 ExtraGasLocked = 8;
+    bytes ValueBytes = 9;
+    string SuccessCallback = 10;
+    string ErrorCallback = 11;
+}
+
+message SerializableAsyncCallGroup {
+    string Callback = 1;
+    uint64 GasLocked = 2;
+    bytes CallbackData = 3;
+    string Identifier = 4;
+    repeated SerializableAsyncCall AsyncCalls = 5;
+}
+
+message SerializableVMOutput {
+    repeated bytes ReturnData = 1;
+    uint64 ReturnCode = 2;
+    string ReturnMessage = 3; 
+    uint64 GasRemaining = 4; 
+    // bytes  GasRefund = 5 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+}
+
+message SerializableOutputTransfer {
+    // bytes Value = 1 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    uint64 GasLimit = 2;
+    uint64 GasLocked = 3; 
+    bytes Data = 4;
+    SerializableCallType CallType = 5;
+    bytes SenderAddress = 6;
+}
+
+message SerializableStorageUpdate {
+    bytes Offset = 1;
+    bytes Data = 2;
+    bool Written = 3;
+}
+
+message SerializableOutputAccount {
+    bytes Address = 1;
+    uint64 Nonce= 2;
+    // bytes Balance = 3; [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    map<string, SerializableStorageUpdate>  StorageUpdates = 4;
+    bytes Code = 5;
+    bytes CodeMetadata = 6;
+    bytes CodeDeployerAddress = 7;
+    // bytes BalanceDelta = 8; [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    repeated SerializableOutputTransfer OutputTransfers = 9;
+    uint64 GasUsed = 10;
+}
+
+message SerializableLogEntry {
+    bytes Identifier = 1;
+    bytes Address = 2;
+    repeated bytes Topics = 3;
+    bytes Data = 4;
+}
+
+message SerializableAsyncContextProto {
+    bytes Address = 1;
+    bytes CallID = 2;
+    SerializableCallType CallType = 3;
+    bytes CallerAddr = 4;
+	bytes CallerCallID = 5;
+	bytes CallbackAsyncInitiatorCallID = 6;
+	string Callback = 7;
+	bytes CallbackData = 8;  
+	uint64 GasPrice = 9;
+	uint64 GasAccumulated = 10;
+	bytes ReturnData = 11;     
+    repeated SerializableAsyncCallGroup asyncCallGroups = 12;
+    SerializableVMOutput ChildResults = 13;
+	uint64 CallsCounter = 14;
+	uint64 TotalCallsCounter = 15;
+    map<string, SerializableOutputAccount> OutputAccounts = 16;
+	repeated bytes DeletedAccounts = 17;
+	repeated bytes TouchedAccounts = 18;
+	SerializableLogEntry Logs = 19;
+}
