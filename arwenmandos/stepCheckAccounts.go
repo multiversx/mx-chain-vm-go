@@ -83,6 +83,15 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 					er.CodeHint))
 		}
 
+		if !expectedAcct.Owner.IsUnspecified() && !bytes.Equal(matchingAcct.OwnerAddress, expectedAcct.Owner.Value) {
+			return fmt.Errorf("bad account owner. Account: %s. Want: %s. Have: \"%s\"",
+				expectedAcct.Address.Original,
+				oj.JSONString(expectedAcct.Owner.Original),
+				ae.exprReconstructor.Reconstruct(
+					matchingAcct.OwnerAddress,
+					er.AddressHint))
+		}
+
 		// currently ignoring asyncCallData that is unspecified in the json
 		if !expectedAcct.AsyncCallData.IsUnspecified() &&
 			!expectedAcct.AsyncCallData.Check([]byte(matchingAcct.AsyncCallData)) {
