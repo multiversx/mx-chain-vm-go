@@ -118,3 +118,48 @@ func (acg *AsyncCallGroup) DeleteCompletedAsyncCalls() {
 func (acg *AsyncCallGroup) IsInterfaceNil() bool {
 	return acg == nil
 }
+
+func (acg *AsyncCallGroup) toSerializable() *SerializableAsyncCallGroup {
+
+	var serializableAsyncCalls = make([]*SerializableAsyncCall, 0)
+
+	for _, ac := range acg.AsyncCalls {
+		serializableAsyncCalls = append(serializableAsyncCalls, ac.toSerializable())
+	}
+
+	return &SerializableAsyncCallGroup{
+		Callback:     acg.Callback,
+		GasLocked:    acg.GasLocked,
+		CallbackData: acg.CallbackData,
+		Identifier:   acg.Identifier,
+		AsyncCalls:   serializableAsyncCalls,
+	}
+}
+
+// ToSerializableAsyncCallGroups -
+func ToSerializableAsyncCallGroups(asyncCallGroups []*AsyncCallGroup) []*SerializableAsyncCallGroup {
+	var serializableGroups = make([]*SerializableAsyncCallGroup, 0)
+	for _, acg := range asyncCallGroups {
+		serializableGroups = append(serializableGroups, acg.toSerializable())
+	}
+	return serializableGroups
+}
+
+// FromSerializableAsyncCallGroups -
+func FromSerializableAsyncCallGroups(serializableAsyncCallGroups []*SerializableAsyncCallGroup) []*AsyncCallGroup {
+	var asyncCallGroups = make([]*AsyncCallGroup, 0)
+	for _, serCallGroup := range serializableAsyncCallGroups {
+		asyncCallGroups = append(asyncCallGroups, serCallGroup.fromSerializable())
+	}
+	return asyncCallGroups
+}
+
+func (serializableCallGroup *SerializableAsyncCallGroup) fromSerializable() *AsyncCallGroup {
+	return &AsyncCallGroup{
+		Callback:     serializableCallGroup.Callback,
+		GasLocked:    serializableCallGroup.GasLocked,
+		CallbackData: serializableCallGroup.CallbackData,
+		Identifier:   serializableCallGroup.Identifier,
+		AsyncCalls:   fromSerializableAsyncCalls(serializableCallGroup.AsyncCalls),
+	}
+}

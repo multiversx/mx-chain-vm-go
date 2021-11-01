@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+// import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option go_package = "../arwen";
+// option (gogoproto.stable_marshaler_all) = true;
+
+package arwen;
+
+enum SearializableAsyncCallStatus {
+    AsyncCallPending = 0;
+    AsyncCallResolved = 1;
+    AsyncCallRejected = 2;
+}
+
+enum SearializableAsyncCallExecutionMode {
+    SyncExecution = 0;
+    AsyncBuiltinFuncIntraShard = 1;
+    AsyncBuiltinFuncCrossShard = 2;
+    ESDTTransferOnCallBack = 3;
+    AsyncUnknown = 4;
+}
+
+message SerializableAsyncCall {
+    bytes CallID = 1;
+    SearializableAsyncCallStatus Status = 2;
+    SearializableAsyncCallExecutionMode ExecutionMode = 3;
+    bytes Source = 4;
+    bytes Destination = 5;
+    bytes Data = 6;
+    uint64 GasLimit = 7;
+    uint64 ExtraGasLocked = 8;
+    bytes ValueBytes = 9;
+    string SuccessCallback = 10;
+    string ErrorCallback = 11;
+}
+
+message SerializableAsyncCallGroup {
+    string Callback = 1;
+    uint64 GasLocked = 2;
+    bytes CallbackData = 3;
+    string Identifier = 4;
+    repeated SerializableAsyncCall AsyncCalls = 5;
+}
+

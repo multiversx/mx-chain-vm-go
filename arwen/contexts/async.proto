@@ -1,9 +1,10 @@
 syntax = "proto3";
 
-// import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-
 option go_package = "../contexts";
-// option (gogoproto.stable_marshaler_all) = true;
+option (gogoproto.stable_marshaler_all) = true;
+
+import "asyncCall.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 package contexts;
 
@@ -14,48 +15,12 @@ enum SerializableCallType {
     ESDTTransferAndExecute = 3;
 }
 
-enum AsyncCallStatus {
-    AsyncCallPending = 0;
-    AsyncCallResolved = 1;
-    AsyncCallRejected = 2;
-}
-
-enum AsyncCallExecutionMode {
-    SyncExecution = 0;
-    AsyncBuiltinFuncIntraShard = 1;
-    AsyncBuiltinFuncCrossShard = 2;
-    ESDTTransferOnCallBack = 3;
-    AsyncUnknown = 4;
-}
-
-message SerializableAsyncCall {
-    bytes CallID = 1;
-    AsyncCallStatus Status = 2;
-    AsyncCallExecutionMode ExecutionMode = 3;
-    bytes Source = 4;
-    bytes Destination = 5;
-    bytes Data = 6;
-    uint64 GasLimit = 7;
-    uint64 ExtraGasLocked = 8;
-    bytes ValueBytes = 9;
-    string SuccessCallback = 10;
-    string ErrorCallback = 11;
-}
-
-message SerializableAsyncCallGroup {
-    string Callback = 1;
-    uint64 GasLocked = 2;
-    bytes CallbackData = 3;
-    string Identifier = 4;
-    repeated SerializableAsyncCall AsyncCalls = 5;
-}
-
 message SerializableVMOutput {
     repeated bytes ReturnData = 1;
     uint64 ReturnCode = 2;
     string ReturnMessage = 3; 
     uint64 GasRemaining = 4; 
-    // bytes  GasRefund = 5 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    bytes  GasRefund = 5 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
 }
 
 message SerializableOutputTransfer {
@@ -105,7 +70,7 @@ message SerializableAsyncContextProto {
 	uint64 GasPrice = 9;
 	uint64 GasAccumulated = 10;
 	bytes ReturnData = 11;     
-    repeated SerializableAsyncCallGroup asyncCallGroups = 12;
+    repeated arwen.SerializableAsyncCallGroup asyncCallGroups = 12;
     SerializableVMOutput ChildResults = 13;
 	uint64 CallsCounter = 14;
 	uint64 TotalCallsCounter = 15;

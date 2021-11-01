@@ -136,3 +136,44 @@ func (ac *AsyncCall) GetCallbackName() string {
 func (ac *AsyncCall) IsInterfaceNil() bool {
 	return ac == nil
 }
+
+func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
+	return &SerializableAsyncCall{
+		CallID:          ac.CallID,
+		Status:          SearializableAsyncCallStatus(ac.Status),
+		ExecutionMode:   SearializableAsyncCallExecutionMode(ac.ExecutionMode),
+		Source:          ac.Source,
+		Destination:     ac.Destination,
+		Data:            ac.Data,
+		GasLimit:        ac.GasLimit,
+		ExtraGasLocked:  ac.ExtraGasLocked,
+		ValueBytes:      ac.ValueBytes,
+		SuccessCallback: ac.SuccessCallback,
+		ErrorCallback:   ac.ErrorCallback,
+	}
+}
+
+func fromSerializableAsyncCalls(serializableAsyncCalls []*SerializableAsyncCall) []*AsyncCall {
+	var asyncCalls = make([]*AsyncCall, 0)
+	for _, serAsyncCall := range serializableAsyncCalls {
+		asyncCalls = append(asyncCalls, serAsyncCall.FromSerializable())
+	}
+	return asyncCalls
+}
+
+// FromSerializable -
+func (serAsyncCall *SerializableAsyncCall) FromSerializable() *AsyncCall {
+	return &AsyncCall{
+		CallID:          serAsyncCall.CallID,
+		Status:          AsyncCallStatus(serAsyncCall.Status),
+		ExecutionMode:   AsyncCallExecutionMode(serAsyncCall.ExecutionMode),
+		Source:          serAsyncCall.Source,
+		Destination:     serAsyncCall.Destination,
+		Data:            serAsyncCall.Data,
+		GasLimit:        serAsyncCall.GasLimit,
+		ExtraGasLocked:  serAsyncCall.ExtraGasLocked,
+		ValueBytes:      serAsyncCall.ValueBytes,
+		SuccessCallback: serAsyncCall.SuccessCallback,
+		ErrorCallback:   serAsyncCall.ErrorCallback,
+	}
+}
