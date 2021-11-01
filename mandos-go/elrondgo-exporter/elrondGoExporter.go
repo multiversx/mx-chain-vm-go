@@ -23,7 +23,7 @@ var ScAddressPrefixLength = 10
 
 var benchmarkTxIdent = "benchmark"
 
-var invalidBenchmarkTxPos = -1
+var InvalidBenchmarkTxPos = -1
 
 func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, deployedAccounts []*TestAccount, txs []*Transaction, deployTxs []*Transaction, benchmarkTxPos int, err error) {
 	scenario, err := getScenario(mandosTestPath)
@@ -73,10 +73,10 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 	benchmarkTxPos = -1
 
 	if len(steps) == 0 {
-		return nil, nil, nil, nil, invalidBenchmarkTxPos, errNoStepsProvided
+		return nil, nil, nil, nil, InvalidBenchmarkTxPos, errNoStepsProvided
 	}
 	if !stepIsSetState(steps[0]) && !stepIsExternalStep(steps[0]) {
-		return nil, nil, nil, nil, invalidBenchmarkTxPos, errFirstStepMustSetState
+		return nil, nil, nil, nil, InvalidBenchmarkTxPos, errFirstStepMustSetState
 	}
 
 	txs = make([]*Transaction, 0)
@@ -90,7 +90,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 
 			setStepAccounts, setStepDeployedAccounts, err := setAccounts(step)
 			if err != nil {
-				return nil, nil, nil, nil, invalidBenchmarkTxPos, err
+				return nil, nil, nil, nil, InvalidBenchmarkTxPos, err
 			}
 			accounts = append(accounts, setStepAccounts...)
 			deployedAccounts = append(deployedAccounts, setStepDeployedAccounts...)
@@ -132,7 +132,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 		case *mj.ExternalStepsStep:
 			externalStepAccounts, externalStepDeployedAccounts, externalStepTransactions, externalDeployTransactions, externalBenchmarkTxPos, err := GetAccountsAndTransactionsFromMandos(step.Path)
 			if err != nil {
-				return nil, nil, nil, nil, invalidBenchmarkTxPos, err
+				return nil, nil, nil, nil, InvalidBenchmarkTxPos, err
 			}
 			if benchmarkTxPosIsNotSet(benchmarkTxPos) {
 				benchmarkTxPos = externalBenchmarkTxPos
