@@ -86,7 +86,8 @@ func (tx *Transaction) GetCallArguments() [][]byte {
 }
 
 func (tx *Transaction) WithSenderAddress(address []byte) *Transaction {
-	tx.sndAddr = append(tx.sndAddr, address...)
+	tx.sndAddr = make([]byte, 0)
+	tx.sndAddr = address
 	return tx
 }
 
@@ -95,7 +96,8 @@ func (tx *Transaction) GetSenderAddress() []byte {
 }
 
 func (tx *Transaction) WithReceiverAddress(address []byte) *Transaction {
-	tx.rcvAddr = append(tx.rcvAddr, address...)
+	tx.rcvAddr = make([]byte, 0)
+	tx.rcvAddr = address
 	return tx
 }
 

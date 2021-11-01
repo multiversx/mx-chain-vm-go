@@ -31,7 +31,8 @@ func (tAcc *TestAccount) WithNonce(nonce uint64) *TestAccount {
 }
 
 func (tAcc *TestAccount) WithAddress(address []byte) *TestAccount {
-	tAcc.address = append(tAcc.address, address...)
+	tAcc.address = make([]byte, 0)
+	tAcc.address = address
 	return tAcc
 }
 
