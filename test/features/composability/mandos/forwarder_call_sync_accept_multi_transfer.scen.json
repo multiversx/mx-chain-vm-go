@@ -13,7 +13,7 @@
                     "balance": "0",
                     "esdt": {
                         "str:FWD-TOKEN": "1000",
-                        "str:NFT-123": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -21,7 +21,7 @@
                                 }
                             ]
                         },
-                        "str:SFT-456": {
+                        "str:SFT-456789": {
                             "instances": [
                                 {
                                     "nonce": "3",
@@ -55,13 +55,13 @@
                     "str:FWD-TOKEN",
                     "0",
                     "200",
-                    "str:NFT-123",
+                    "str:NFT-123456",
                     "1",
                     "1",
-                    "str:SFT-456",
+                    "str:SFT-456789",
                     "3",
                     "3",
-                    "str:SFT-456",
+                    "str:SFT-456789",
                     "3",
                     "4"
                 ],
@@ -90,7 +90,7 @@
                     "balance": "0",
                     "esdt": {
                         "str:FWD-TOKEN": "300",
-                        "str:NFT-123": {
+                        "str:NFT-123456": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -98,7 +98,7 @@
                                 }
                             ]
                         },
-                        "str:SFT-456": {
+                        "str:SFT-456789": {
                             "instances": [
                                 {
                                     "nonce": "3",
@@ -117,7 +117,7 @@
                     "balance": "0",
                     "esdt": {
                         "str:FWD-TOKEN": "700",
-                        "str:SFT-456": {
+                        "str:SFT-456789": {
                             "instances": [
                                 {
                                     "nonce": "3",
