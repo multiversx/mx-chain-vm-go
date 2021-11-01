@@ -38,29 +38,6 @@ func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*Te
 	return accounts, deployedAccounts, txs, deployTxs, benchmarkTxPos, nil
 }
 
-func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, deployedAccounts []*TestAccount, err error) {
-	accounts = make([]*TestAccount, 0)
-	deployedAccounts = make([]*TestAccount, 0)
-	for _, mandosAccount := range setStateStep.Accounts {
-		account, err := convertMandosToTestAccount(mandosAccount)
-		if err != nil {
-			return nil, nil, err
-		}
-		if len(account.code) > 0 {
-			account.address = append(ScAddressPrefix, account.address[ScAddressPrefixLength:]...)
-		}
-		accounts = append(accounts, account)
-	}
-	for _, newMandosAddressMock := range setStateStep.NewAddressMocks {
-		scAddress := newMandosAddressMock.NewAddress.Value
-		ownerAddress := newMandosAddressMock.CreatorAddress.Value
-		account := SetNewAccount(0, scAddress, big.NewInt(0), make(map[string][]byte), make([]byte, 0), ownerAddress)
-		deployedAccounts = append(deployedAccounts, account)
-	}
-
-	return accounts, deployedAccounts, nil
-}
-
 func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 	scenario, err = mc.ParseMandosScenarioDefaultParser(testPath)
 	if err != nil {
@@ -147,6 +124,29 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 		}
 	}
 	return accounts, deployedAccounts, txs, deployTxs, benchmarkTxPos, nil
+}
+
+func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, deployedAccounts []*TestAccount, err error) {
+	accounts = make([]*TestAccount, 0)
+	deployedAccounts = make([]*TestAccount, 0)
+	for _, mandosAccount := range setStateStep.Accounts {
+		account, err := convertMandosToTestAccount(mandosAccount)
+		if err != nil {
+			return nil, nil, err
+		}
+		if len(account.code) > 0 {
+			account.address = append(ScAddressPrefix, account.address[ScAddressPrefixLength:]...)
+		}
+		accounts = append(accounts, account)
+	}
+	for _, newMandosAddressMock := range setStateStep.NewAddressMocks {
+		scAddress := append(ScAddressPrefix, newMandosAddressMock.NewAddress.Value[ScAddressPrefixLength:]...)
+		ownerAddress := newMandosAddressMock.CreatorAddress.Value
+		account := SetNewAccount(0, scAddress, big.NewInt(0), make(map[string][]byte), make([]byte, 0), ownerAddress)
+		deployedAccounts = append(deployedAccounts, account)
+	}
+
+	return accounts, deployedAccounts, nil
 }
 
 func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
