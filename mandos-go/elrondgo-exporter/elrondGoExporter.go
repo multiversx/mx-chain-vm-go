@@ -25,6 +25,8 @@ var benchmarkTxIdent = "benchmark"
 
 var InvalidBenchmarkTxPos = -1
 
+var minimumAcceptedGasPrice = uint64(1)
+
 func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, deployedAccounts []*TestAccount, txs []*Transaction, deployTxs []*Transaction, benchmarkTxPos int, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
@@ -74,6 +76,10 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 
 		case *mj.TxStep:
 			if step.ExpectedResult.Status.Value.Cmp(okStatus) == 0 {
+
+				if step.Tx.GasPrice.Value == 0 {
+					step.Tx.GasPrice.Value = minimumAcceptedGasPrice
+				}
 				arguments := getArguments(step.Tx.Arguments)
 				switch step.StepTypeName() {
 				case "scCall":
