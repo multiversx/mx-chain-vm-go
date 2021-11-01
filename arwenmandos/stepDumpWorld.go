@@ -147,6 +147,10 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		},
 		Storage:  storageKvps,
 		ESDTData: mandosESDT,
+		Owner: mj.JSONBytesFromString{
+			Value:    account.OwnerAddress,
+			Original: ae.exprReconstructor.Reconstruct(account.OwnerAddress, er.AddressHint),
+		},
 	}, nil
 }
 
