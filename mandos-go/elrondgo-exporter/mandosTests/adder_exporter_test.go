@@ -41,7 +41,7 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 	expectedAccs = append(expectedAccs, ownerAccount, scAccount)
 	expectedDeployedAccs = append(expectedDeployedAccs, deployedScAccount)
 
-	transaction := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
+	transaction := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
 	expectedTxs = append(expectedTxs, transaction, transaction)
 
 	require.Nil(t, err)
@@ -67,9 +67,9 @@ func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
 	expectedAccs = append(expectedAccs, aliceAccount, scAccount, bobAccount, ownerAccount)
 	require.Equal(t, expectedAccs, accounts)
 
-	transactionAlice := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
-	transactionBob := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[2].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
-	transactionOwner := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[3].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
+	transactionAlice := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
+	transactionBob := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[2].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
+	transactionOwner := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[3].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
 	expectedTxs = append(expectedTxs, transactionBob, transactionAlice, transactionOwner)
 	require.Equal(t, expectedBenchmarkTxPos, benchmarkTxPos)
 	require.Equal(t, expectedTxs, transactions)
