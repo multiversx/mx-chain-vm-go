@@ -2,9 +2,10 @@ package util
 
 import (
 	"encoding/hex"
+	"math/big"
+
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"math/big"
 )
 
 var separator = []byte("@")
@@ -26,9 +27,11 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 		multiTransferData = append(multiTransferData, esdtDataTransfer.TokenIdentifier.Value...)
 		multiTransferData = append(multiTransferData, separator...)
 
-		encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
-		multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
-		multiTransferData = append(multiTransferData, separator...)
+		if tokenIsESDTNFT(esdtDataTransfer.Nonce.Original) {
+			encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
+			multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
+			multiTransferData = append(multiTransferData, separator...)
+		}
 
 		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
 		multiTransferData = append(multiTransferData, []byte(encodedAmountValue)...)
@@ -47,4 +50,8 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 		}
 	}
 	return multiTransferData[:len(multiTransferData)-1]
+}
+
+func tokenIsESDTNFT(nonceStringValue string) bool {
+	return nonceStringValue == ""
 }
