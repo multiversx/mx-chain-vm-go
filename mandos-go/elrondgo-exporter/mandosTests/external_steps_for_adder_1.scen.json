@@ -28,7 +28,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "txId": "benchmark",
             "tx": {
                 "from": "address:alice",
                 "to": "address:adder",

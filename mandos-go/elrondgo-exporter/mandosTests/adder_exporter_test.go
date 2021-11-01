@@ -27,12 +27,13 @@ var addressBob = []byte("bob_____________________________")
 var addressDeployedAdder = []byte("deployedAdder___________________")
 
 func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
-	accounts, deployedAccounts, transactions, deployTxs, err := mge.GetAccountsAndTransactionsFromMandos("adder.scen.json")
+	accounts, deployedAccounts, transactions, deployTxs, benchmarkTxPos, err := mge.GetAccountsAndTransactionsFromMandos("adder.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedDeployedAccs := make([]*mge.TestAccount, 0)
 	expectedTxs := make([]*mge.Transaction, 0)
 	expectedDeployTxs := make([]*mge.Transaction, 0)
+	expectedBenchmarkTxPos := 1
 
 	ownerAccount := mge.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
@@ -41,9 +42,10 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 	expectedDeployedAccs = append(expectedDeployedAccs, deployedScAccount)
 
 	transaction := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
-	expectedTxs = append(expectedTxs, transaction)
+	expectedTxs = append(expectedTxs, transaction, transaction)
 
 	require.Nil(t, err)
+	require.Equal(t, expectedBenchmarkTxPos, benchmarkTxPos)
 	require.Equal(t, expectedAccs, accounts)
 	require.Equal(t, expectedDeployedAccs, deployedAccounts)
 	require.Equal(t, expectedDeployTxs, deployTxs)
@@ -51,11 +53,12 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 }
 
 func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
-	accounts, _, transactions, deployTxs, err := mge.GetAccountsAndTransactionsFromMandos("adder_with_external_steps.scen.json")
+	accounts, _, transactions, deployTxs, benchmarkTxPos, err := mge.GetAccountsAndTransactionsFromMandos("adder_with_external_steps.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedTxs := make([]*mge.Transaction, 0)
 	expectedDeployTxs := make([]*mge.Transaction, 0)
+	expectedBenchmarkTxPos := 1
 
 	ownerAccount := mge.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
@@ -68,6 +71,7 @@ func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
 	transactionBob := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[2].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
 	transactionOwner := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[3].GetAddress(), accounts[1].GetAddress(), 5000000, 0)
 	expectedTxs = append(expectedTxs, transactionBob, transactionAlice, transactionOwner)
+	require.Equal(t, expectedBenchmarkTxPos, benchmarkTxPos)
 	require.Equal(t, expectedTxs, transactions)
 	require.Equal(t, expectedDeployTxs, deployTxs)
 }
