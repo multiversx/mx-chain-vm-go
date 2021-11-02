@@ -28,13 +28,8 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 		multiTransferData = append(multiTransferData, encodedTokenIdentifier...)
 		multiTransferData = append(multiTransferData, separator...)
 
-		if esdtDataTransfer.Nonce.Value == 0 {
-			encodedNonceValue := hex.EncodeToString([]byte{0})
-			multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
-		} else {
-			encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
-			multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
-		}
+		encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
+		multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
 		multiTransferData = append(multiTransferData, separator...)
 
 		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
