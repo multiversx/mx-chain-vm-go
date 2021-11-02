@@ -28,11 +28,9 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 		multiTransferData = append(multiTransferData, encodedTokenIdentifier...)
 		multiTransferData = append(multiTransferData, separator...)
 
-		if tokenIsESDTNFT(esdtDataTransfer.Nonce.Value) {
-			encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
-			multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
-			multiTransferData = append(multiTransferData, separator...)
-		}
+		encodedNonceValue := hex.EncodeToString(big.NewInt(int64(esdtDataTransfer.Nonce.Value)).Bytes())
+		multiTransferData = append(multiTransferData, []byte(encodedNonceValue)...)
+		multiTransferData = append(multiTransferData, separator...)
 
 		encodedAmountValue := hex.EncodeToString(esdtDataTransfer.Value.Value.Bytes())
 		multiTransferData = append(multiTransferData, []byte(encodedAmountValue)...)
@@ -51,8 +49,4 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 		}
 	}
 	return multiTransferData[:len(multiTransferData)-1]
-}
-
-func tokenIsESDTNFT(nonceValue uint64) bool {
-	return nonceValue != 0
 }
