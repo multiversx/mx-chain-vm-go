@@ -24,7 +24,8 @@ func CreateMultiTransferData(to []byte, esdtData []*mj.ESDTTxData, endpointName 
 	multiTransferData = append(multiTransferData, separator...)
 
 	for _, esdtDataTransfer := range esdtData {
-		multiTransferData = append(multiTransferData, esdtDataTransfer.TokenIdentifier.Value...)
+		encodedTokenIdentifier := hex.EncodeToString(esdtDataTransfer.TokenIdentifier.Value)
+		multiTransferData = append(multiTransferData, encodedTokenIdentifier...)
 		multiTransferData = append(multiTransferData, separator...)
 
 		if tokenIsESDTNFT(esdtDataTransfer.Nonce.Value) {
