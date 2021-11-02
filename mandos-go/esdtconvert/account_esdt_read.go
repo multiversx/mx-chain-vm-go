@@ -2,7 +2,7 @@ package esdtconvert
 
 import (
 	"bytes"
-	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
@@ -17,10 +17,15 @@ type MockESDTData struct {
 	Roles           [][]byte
 }
 
+const (
+	esdtIdentifierSeparator  = "-"
+	esdtRandomSequenceLength = 6
+)
+
 // GetTokenBalance returns the ESDT balance of the account, specified by the
 // token key.
 func GetTokenBalance(tokenIdentifier []byte, nonce uint64, source map[string][]byte) (*big.Int, error) {
-	tokenData, err := GetTokenData(tokenIdentifier, nonce, source)
+	tokenData, err := GetTokenData(tokenIdentifier, nonce, source, make(map[string][]byte))
 	if err != nil {
 		return nil, err
 	}
@@ -29,12 +34,12 @@ func GetTokenBalance(tokenIdentifier []byte, nonce uint64, source map[string][]b
 }
 
 // GetTokenData gets the ESDT information related to a token from the storage of the account.
-func GetTokenData(tokenIdentifier []byte, nonce uint64, source map[string][]byte) (*esdt.ESDigitalToken, error) {
+func GetTokenData(tokenIdentifier []byte, nonce uint64, source map[string][]byte, systemAccStorage map[string][]byte) (*esdt.ESDigitalToken, error) {
 	tokenKey := makeTokenKey(tokenIdentifier, nonce)
-	return getTokenDataByKey(tokenKey, source)
+	return getTokenDataByKey(tokenKey, source, systemAccStorage)
 }
 
-func getTokenDataByKey(tokenKey []byte, source map[string][]byte) (*esdt.ESDigitalToken, error) {
+func getTokenDataByKey(tokenKey []byte, source map[string][]byte, systemAccStorage map[string][]byte) (*esdt.ESDigitalToken, error) {
 	esdtData := &esdt.ESDigitalToken{
 		Value: big.NewInt(0),
 		Type:  uint32(core.Fungible),
@@ -53,6 +58,18 @@ func getTokenDataByKey(tokenKey []byte, source map[string][]byte) (*esdt.ESDigit
 	if err != nil {
 		return nil, err
 	}
+
+	marshaledData = systemAccStorage[string(tokenKey)]
+	if len(marshaledData) == 0 {
+		return esdtData, nil
+	}
+	esdtDataFromSystemAcc := &esdt.ESDigitalToken{}
+	err = esdtDataMarshalizer.Unmarshal(esdtDataFromSystemAcc, marshaledData)
+	if err != nil {
+		return nil, err
+	}
+
+	esdtData.TokenMetaData = esdtDataFromSystemAcc.TokenMetaData
 
 	return esdtData, nil
 }
@@ -91,12 +108,12 @@ func GetTokenKeys(source map[string][]byte) [][]byte {
 }
 
 // GetFullMockESDTData returns the information about all the ESDT tokens held by the account.
-func GetFullMockESDTData(source map[string][]byte) (map[string]*MockESDTData, error) {
+func GetFullMockESDTData(source map[string][]byte, systemAccStorage map[string][]byte) (map[string]*MockESDTData, error) {
 	resultMap := make(map[string]*MockESDTData)
 	for key := range source {
 		storageKeyBytes := []byte(key)
 		if isTokenKey(storageKeyBytes) {
-			tokenName, tokenInstance, err := loadMockESDTDataInstance(storageKeyBytes, source)
+			tokenName, tokenInstance, err := loadMockESDTDataInstance(storageKeyBytes, source, systemAccStorage)
 			if err != nil {
 				return nil, err
 			}
@@ -122,35 +139,40 @@ func GetFullMockESDTData(source map[string][]byte) (map[string]*MockESDTData, er
 	return resultMap, nil
 }
 
+func extractTokenIdentifierAndNonceESDTWipe(args []byte) ([]byte, uint64) {
+	argsSplit := bytes.Split(args, []byte(esdtIdentifierSeparator))
+	if len(argsSplit) < 2 {
+		return args, 0
+	}
+
+	if len(argsSplit[1]) <= esdtRandomSequenceLength {
+		return args, 0
+	}
+
+	identifier := []byte(fmt.Sprintf("%s-%s", argsSplit[0], argsSplit[1][:esdtRandomSequenceLength]))
+	nonce := big.NewInt(0).SetBytes(argsSplit[1][esdtRandomSequenceLength:])
+
+	return identifier, nonce.Uint64()
+}
+
 // loads and prepared the ESDT instance
-func loadMockESDTDataInstance(tokenKey []byte, source map[string][]byte) (string, *esdt.ESDigitalToken, error) {
-	tokenInstance, err := getTokenDataByKey(tokenKey, source)
+func loadMockESDTDataInstance(tokenKey []byte, source map[string][]byte, systemAccStorage map[string][]byte) (string, *esdt.ESDigitalToken, error) {
+	tokenInstance, err := getTokenDataByKey(tokenKey, source, systemAccStorage)
 	if err != nil {
 		return "", nil, err
 	}
 
 	tokenNameFromKey := getTokenNameFromKey(tokenKey)
+	tokenName, nonce := extractTokenIdentifierAndNonceESDTWipe(tokenNameFromKey)
 
-	var tokenName string
-	if tokenInstance.TokenMetaData == nil || tokenInstance.TokenMetaData.Nonce == 0 {
-		// ESDT, no nonce in the key
+	if tokenInstance.TokenMetaData == nil {
 		tokenInstance.TokenMetaData = &esdt.MetaData{
-			Name:  tokenNameFromKey,
-			Nonce: 0,
+			Name:  tokenName,
+			Nonce: nonce,
 		}
-		tokenName = string(tokenNameFromKey)
-	} else {
-		nonceAsBytes := big.NewInt(0).SetUint64(tokenInstance.TokenMetaData.Nonce).Bytes()
-		tokenNameLen := len(tokenNameFromKey) - len(nonceAsBytes)
-
-		if !bytes.Equal(nonceAsBytes, tokenNameFromKey[tokenNameLen:]) {
-			return "", nil, errors.New("invalid key for NFT (key does not end in nonce)")
-		}
-
-		tokenName = string(tokenNameFromKey[:tokenNameLen])
 	}
 
-	return tokenName, tokenInstance, nil
+	return string(tokenName), tokenInstance, nil
 }
 
 func getOrCreateMockESDTData(tokenName string, resultMap map[string]*MockESDTData) *MockESDTData {

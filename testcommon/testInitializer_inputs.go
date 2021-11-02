@@ -54,7 +54,7 @@ var customGasSchedule = config.GasScheduleMap(nil)
 var ESDTTransferGasCost = uint64(1)
 
 // ESDTTestTokenName is an exposed value to use in tests
-var ESDTTestTokenName = []byte("TT")
+var ESDTTestTokenName = []byte("TTT-010101")
 
 // DefaultCodeMetadata is an exposed value to use in tests
 var DefaultCodeMetadata = []byte{3, 0}

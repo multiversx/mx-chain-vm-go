@@ -36,8 +36,8 @@ func (a *Account) SetTokenBalanceUint64(tokenIdentifier []byte, nonce uint64, ba
 }
 
 // GetTokenData gets the ESDT information related to a token from the storage of the account.
-func (a *Account) GetTokenData(tokenIdentifier []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
-	return esdtconvert.GetTokenData(tokenIdentifier, nonce, a.Storage)
+func (a *Account) GetTokenData(tokenIdentifier []byte, nonce uint64, systemAccStorage map[string][]byte) (*esdt.ESDigitalToken, error) {
+	return esdtconvert.GetTokenData(tokenIdentifier, nonce, a.Storage, systemAccStorage)
 }
 
 // SetTokenData sets the ESDT information related to a token into the storage of the account.
