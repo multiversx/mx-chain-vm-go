@@ -2707,7 +2707,6 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
-
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
 	newAddr := "newAddr_"
@@ -2808,6 +2807,49 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey([]byte("parent")).WithValue([]byte("parent storage")),
 					test.CreateStoreEntry(test.ChildAddress).WithKey([]byte("child")).WithValue([]byte("child storage")),
 				)
+		})
+}
+
+var codeMemGrow []byte = test.GetTestSCCodeModule("opcodes/memgrow", "memgrow", "../../")
+
+func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
+	arwen.SetLoggingForTests()
+
+	log := logger.GetOrCreate("vm/test")
+	reps := big.NewInt(3400)
+	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
+	log.Info("reps", "big", reps)
+	log.Info("reps", "big bytes", repsBytes)
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(codeMemGrow)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(80000).
+			WithFunction("testFunc").
+			WithArguments(repsBytes).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ReturnMessage("").Ok()
+		})
+}
+
+func BenchmarkExecution_Opcodes_MemoryGrow(b *testing.B) {
+	reps := big.NewInt(int64(b.N))
+	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
+
+	test.BuildInstanceCallTest(b).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(codeMemGrow)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(80000).
+			WithFunction("memGrow").
+			WithArguments(repsBytes).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
 		})
 }
 

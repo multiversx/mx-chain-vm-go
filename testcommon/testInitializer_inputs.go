@@ -233,7 +233,7 @@ func DefaultTestArwenForTwoSCs(
 }
 
 func defaultTestArwenForContracts(
-	t *testing.T,
+	tb testing.TB,
 	contracts []*InstanceTestSmartContract,
 ) (arwen.VMHost, *contextmock.BlockchainHookStub) {
 
@@ -267,7 +267,7 @@ func defaultTestArwenForContracts(
 		return nil
 	}
 
-	host := DefaultTestArwen(t, stubBlockchainHook)
+	host := DefaultTestArwen(tb, stubBlockchainHook)
 	return host, stubBlockchainHook
 }
 
