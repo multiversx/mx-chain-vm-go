@@ -7,7 +7,7 @@
 package contexts
 
 import (
-	arwen "../arwen"
+	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

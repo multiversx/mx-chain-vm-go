@@ -47,6 +47,9 @@ func (context *asyncContext) toSerializable() *SerializableAsyncContextProto {
 }
 
 func toSerializableVMOutput(vmOutput *vmcommon.VMOutput) *SerializableVMOutput {
+	if vmOutput == nil {
+		return nil
+	}
 	return &SerializableVMOutput{
 		ReturnData:    vmOutput.ReturnData,
 		ReturnCode:    uint64(vmOutput.ReturnCode),

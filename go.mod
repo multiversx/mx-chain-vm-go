@@ -16,6 +16,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
-	google.golang.org/protobuf v1.27.1
-	github.com/gogo/protobuf/gogoproto v1.3.2
+	google.golang.org/protobuf v1.26.0
+	github.com/gogo/protobuf v1.3.2
 )
+
+replace github.com/gogo/protobuf => github.com/ElrondNetwork/protobuf v1.3.2
