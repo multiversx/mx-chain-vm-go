@@ -23,7 +23,7 @@ func Test_CreateMultiTransferData_SingleTransfer(t *testing.T) {
 			[]byte("arg1"),
 			[]byte("arg2")},
 	)
-	require.Equal(t, "MultiESDTNFTTransfer@726563656976657241646472657373@01@544f4b312d616263646566@00@64@66756e6374696f6e31@61726731@61726732", string(data))
+	require.Equal(t, "MultiESDTNFTTransfer@726563656976657241646472657373@01@544f4b312d616263646566@@64@66756e6374696f6e31@61726731@61726732", string(data))
 }
 
 func Test_CreateMultiTransferData_MultipleTransfers(t *testing.T) {
