@@ -2810,42 +2810,58 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		})
 }
 
-var codeMemGrow []byte = test.GetTestSCCodeModule("opcodes/memgrow", "memgrow", "../../")
+var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
-	arwen.SetLoggingForTests()
-
-	log := logger.GetOrCreate("vm/test")
-	reps := big.NewInt(3400)
+	reps := big.NewInt(100)
 	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
-	log.Info("reps", "big", reps)
-	log.Info("reps", "big bytes", repsBytes)
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(codeMemGrow)).
+				WithCode(codeOpcodes)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(80000).
-			WithFunction("testFunc").
+			WithFunction("memGrow").
 			WithArguments(repsBytes).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+		})
+}
+
+func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
+	arwen.SetLoggingForTests()
+	reps := big.NewInt(1)
+	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
+	delta := big.NewInt(16000)
+	deltaBytes := arwen.PadBytesLeft(delta.Bytes(), 8)
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(codeOpcodes)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(80000).
+			WithFunction("memGrowDelta").
+			WithArguments(repsBytes, deltaBytes).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnMessage("").Ok()
 		})
 }
 
-func BenchmarkExecution_Opcodes_MemoryGrow(b *testing.B) {
-	reps := big.NewInt(int64(b.N))
+func TestExecution_Opcodes_MemorySize(t *testing.T) {
+	reps := big.NewInt(10000)
 	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
 
-	test.BuildInstanceCallTest(b).
+	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(codeMemGrow)).
+				WithCode(codeOpcodes)).
 		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(80000).
-			WithFunction("memGrow").
+			WithGasProvided(1000000).
+			WithFunction("memSize").
 			WithArguments(repsBytes).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {

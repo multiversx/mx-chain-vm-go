@@ -1,6 +1,0 @@
-{
-    "language": "clang",
-    "source_files": [
-        "/home/camil.bancioiu/Work/Elrond/arwen-wasm-vm/test/contracts/opcodes/memgrow/memgrow.c"
-    ]
-}
