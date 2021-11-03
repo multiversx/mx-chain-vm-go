@@ -2816,6 +2816,10 @@ func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
 	runWASMOpcodeTestMemGrow(t, 16, 100, vmcommon.Ok)
 }
 
+func BenchmarkOpcodeMemoryGrow(b *testing.B) {
+	runWASMOpcodeTestMemGrow(b, int64(b.N), 10, vmcommon.Ok)
+}
+
 func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
 	maxAllowedDelta := int64(config.MakeGasMapForTests()["WASMOpcodeCost"]["MaxMemoryGrowDelta"])
 	runWASMOpcodeTestMemGrow(t, 1, maxAllowedDelta-1, vmcommon.Ok)

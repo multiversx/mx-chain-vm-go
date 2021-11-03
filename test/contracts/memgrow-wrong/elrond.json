@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "opcodes.c"
+        "memgrow-wrong.c"
     ]
 }
