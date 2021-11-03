@@ -2813,7 +2813,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
-	runWASMOpcodeTestMemGrow(t, 16, 100, vmcommon.Ok)
+	runWASMOpcodeTestMemGrow(t, 32, 10, vmcommon.Ok)
 }
 
 func BenchmarkOpcodeMemoryGrow(b *testing.B) {
