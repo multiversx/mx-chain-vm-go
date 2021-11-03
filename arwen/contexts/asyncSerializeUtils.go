@@ -30,9 +30,9 @@ func (context *asyncContext) toSerializable() *SerializableAsyncContextProto {
 	return &SerializableAsyncContextProto{
 		Address:                      context.address,
 		CallID:                       context.callID,
+		CallType:                     SerializableCallType(context.callType),
 		CallerAddr:                   context.callerAddr,
 		CallerCallID:                 context.callerCallID,
-		CallType:                     SerializableCallType(context.callType),
 		CallbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
 		Callback:                     context.callback,
 		CallbackData:                 context.callbackData,
@@ -81,12 +81,14 @@ func fromSerializable(serializedContext *SerializableAsyncContextProto) *asyncCo
 }
 
 func fromSerializableVMOutput(serializedVMOutput *SerializableVMOutput) *vmcommon.VMOutput {
+	if serializedVMOutput == nil {
+		return nil
+	}
 	return &vmcommon.VMOutput{
 		ReturnData:    serializedVMOutput.ReturnData,
 		ReturnCode:    vmcommon.ReturnCode(serializedVMOutput.ReturnCode),
 		ReturnMessage: serializedVMOutput.ReturnMessage,
 		GasRemaining:  serializedVMOutput.GasRemaining,
-		// TODO matei-p update async.proto for all big.Int fields
-		// GasRefund:     serVMOutput.GasRefund,
+		GasRefund:     serializedVMOutput.GasRefund,
 	}
 }

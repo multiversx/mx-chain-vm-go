@@ -16,8 +16,12 @@ import (
 var _ arwen.AsyncContext = (*asyncContext)(nil)
 
 type asyncContext struct {
-	host       arwen.VMHost
-	stateStack []*asyncContext
+	host                   arwen.VMHost
+	stateStack             []*asyncContext
+	callArgsParser         arwen.CallArgsParser
+	esdtTransferParser     vmcommon.ESDTTransferParser
+	groupCallbacksEnabled  bool
+	contextCallbackEnabled bool
 
 	address  []byte
 	callID   []byte
@@ -27,43 +31,18 @@ type asyncContext struct {
 	callerCallID                 []byte
 	callbackAsyncInitiatorCallID []byte
 
-	callback           string
-	callbackData       []byte
-	gasPrice           uint64
-	gasAccumulated     uint64
-	returnData         []byte
-	asyncCallGroups    []*arwen.AsyncCallGroup
-	callArgsParser     arwen.CallArgsParser
-	esdtTransferParser vmcommon.ESDTTransferParser
-
-	groupCallbacksEnabled  bool
-	contextCallbackEnabled bool
+	callback        string
+	callbackData    []byte
+	gasPrice        uint64
+	gasAccumulated  uint64
+	returnData      []byte
+	asyncCallGroups []*arwen.AsyncCallGroup
 
 	callsCounter      uint64 // incremented and decremented during run
 	totalCallsCounter uint64 // used for callid generation
-	childResults      *vmcommon.VMOutput
+
+	childResults *vmcommon.VMOutput
 }
-
-// type SerializableAsyncContext struct {
-// 	Address  []byte
-// 	CallID   []byte
-// 	CallType vm.CallType
-
-// 	CallerAddr                   []byte
-// 	CallerCallID                 []byte
-// 	CallbackAsyncInitiatorCallID []byte
-
-// 	Callback        string
-// 	CallbackData    []byte
-// 	GasPrice        uint64
-// 	GasAccumulated  uint64
-// 	ReturnData      []byte
-// 	AsyncCallGroups []*arwen.AsyncCallGroup
-
-// 	ChildResults      *vmcommon.VMOutput
-// 	CallsCounter      uint64 // incremented and decremented during run
-// 	TotalCallsCounter uint64 // used for callid generation
-// }
 
 // NewAsyncContext creates a new asyncContext.
 func NewAsyncContext(

@@ -59,11 +59,15 @@ func (SerializableCallType) EnumDescriptor() ([]byte, []int) {
 }
 
 type SerializableVMOutput struct {
-	ReturnData    [][]byte      `protobuf:"bytes,1,rep,name=ReturnData,proto3" json:"ReturnData,omitempty"`
-	ReturnCode    uint64        `protobuf:"varint,2,opt,name=ReturnCode,proto3" json:"ReturnCode,omitempty"`
-	ReturnMessage string        `protobuf:"bytes,3,opt,name=ReturnMessage,proto3" json:"ReturnMessage,omitempty"`
-	GasRemaining  uint64        `protobuf:"varint,4,opt,name=GasRemaining,proto3" json:"GasRemaining,omitempty"`
-	GasRefund     *math_big.Int `protobuf:"bytes,5,opt,name=GasRefund,proto3,casttypewith=math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster" json:"Value"`
+	ReturnData      [][]byte                              `protobuf:"bytes,1,rep,name=ReturnData,proto3" json:"ReturnData,omitempty"`
+	ReturnCode      uint64                                `protobuf:"varint,2,opt,name=ReturnCode,proto3" json:"ReturnCode,omitempty"`
+	ReturnMessage   string                                `protobuf:"bytes,3,opt,name=ReturnMessage,proto3" json:"ReturnMessage,omitempty"`
+	GasRemaining    uint64                                `protobuf:"varint,4,opt,name=GasRemaining,proto3" json:"GasRemaining,omitempty"`
+	GasRefund       *math_big.Int                         `protobuf:"bytes,5,opt,name=GasRefund,proto3,casttypewith=math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster" json:"Value"`
+	OutputAccounts  map[string]*SerializableOutputAccount `protobuf:"bytes,6,rep,name=OutputAccounts,proto3" json:"OutputAccounts,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	DeletedAccounts [][]byte                              `protobuf:"bytes,7,rep,name=DeletedAccounts,proto3" json:"DeletedAccounts,omitempty"`
+	TouchedAccounts [][]byte                              `protobuf:"bytes,8,rep,name=TouchedAccounts,proto3" json:"TouchedAccounts,omitempty"`
+	Logs            *SerializableLogEntry                 `protobuf:"bytes,9,opt,name=Logs,proto3" json:"Logs,omitempty"`
 }
 
 func (m *SerializableVMOutput) Reset()      { *m = SerializableVMOutput{} }
@@ -125,6 +129,34 @@ func (m *SerializableVMOutput) GetGasRemaining() uint64 {
 func (m *SerializableVMOutput) GetGasRefund() *math_big.Int {
 	if m != nil {
 		return m.GasRefund
+	}
+	return nil
+}
+
+func (m *SerializableVMOutput) GetOutputAccounts() map[string]*SerializableOutputAccount {
+	if m != nil {
+		return m.OutputAccounts
+	}
+	return nil
+}
+
+func (m *SerializableVMOutput) GetDeletedAccounts() [][]byte {
+	if m != nil {
+		return m.DeletedAccounts
+	}
+	return nil
+}
+
+func (m *SerializableVMOutput) GetTouchedAccounts() [][]byte {
+	if m != nil {
+		return m.TouchedAccounts
+	}
+	return nil
+}
+
+func (m *SerializableVMOutput) GetLogs() *SerializableLogEntry {
+	if m != nil {
+		return m.Logs
 	}
 	return nil
 }
@@ -438,25 +470,21 @@ func (m *SerializableLogEntry) GetData() []byte {
 }
 
 type SerializableAsyncContextProto struct {
-	Address                      []byte                                `protobuf:"bytes,1,opt,name=Address,proto3" json:"Address,omitempty"`
-	CallID                       []byte                                `protobuf:"bytes,2,opt,name=CallID,proto3" json:"CallID,omitempty"`
-	CallType                     SerializableCallType                  `protobuf:"varint,3,opt,name=CallType,proto3,enum=contexts.SerializableCallType" json:"CallType,omitempty"`
-	CallerAddr                   []byte                                `protobuf:"bytes,4,opt,name=CallerAddr,proto3" json:"CallerAddr,omitempty"`
-	CallerCallID                 []byte                                `protobuf:"bytes,5,opt,name=CallerCallID,proto3" json:"CallerCallID,omitempty"`
-	CallbackAsyncInitiatorCallID []byte                                `protobuf:"bytes,6,opt,name=CallbackAsyncInitiatorCallID,proto3" json:"CallbackAsyncInitiatorCallID,omitempty"`
-	Callback                     string                                `protobuf:"bytes,7,opt,name=Callback,proto3" json:"Callback,omitempty"`
-	CallbackData                 []byte                                `protobuf:"bytes,8,opt,name=CallbackData,proto3" json:"CallbackData,omitempty"`
-	GasPrice                     uint64                                `protobuf:"varint,9,opt,name=GasPrice,proto3" json:"GasPrice,omitempty"`
-	GasAccumulated               uint64                                `protobuf:"varint,10,opt,name=GasAccumulated,proto3" json:"GasAccumulated,omitempty"`
-	ReturnData                   []byte                                `protobuf:"bytes,11,opt,name=ReturnData,proto3" json:"ReturnData,omitempty"`
-	AsyncCallGroups              []*arwen.SerializableAsyncCallGroup   `protobuf:"bytes,12,rep,name=asyncCallGroups,proto3" json:"asyncCallGroups,omitempty"`
-	ChildResults                 *SerializableVMOutput                 `protobuf:"bytes,13,opt,name=ChildResults,proto3" json:"ChildResults,omitempty"`
-	CallsCounter                 uint64                                `protobuf:"varint,14,opt,name=CallsCounter,proto3" json:"CallsCounter,omitempty"`
-	TotalCallsCounter            uint64                                `protobuf:"varint,15,opt,name=TotalCallsCounter,proto3" json:"TotalCallsCounter,omitempty"`
-	OutputAccounts               map[string]*SerializableOutputAccount `protobuf:"bytes,16,rep,name=OutputAccounts,proto3" json:"OutputAccounts,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	DeletedAccounts              [][]byte                              `protobuf:"bytes,17,rep,name=DeletedAccounts,proto3" json:"DeletedAccounts,omitempty"`
-	TouchedAccounts              [][]byte                              `protobuf:"bytes,18,rep,name=TouchedAccounts,proto3" json:"TouchedAccounts,omitempty"`
-	Logs                         *SerializableLogEntry                 `protobuf:"bytes,19,opt,name=Logs,proto3" json:"Logs,omitempty"`
+	Address                      []byte                              `protobuf:"bytes,1,opt,name=Address,proto3" json:"Address,omitempty"`
+	CallID                       []byte                              `protobuf:"bytes,2,opt,name=CallID,proto3" json:"CallID,omitempty"`
+	CallType                     SerializableCallType                `protobuf:"varint,3,opt,name=CallType,proto3,enum=contexts.SerializableCallType" json:"CallType,omitempty"`
+	CallerAddr                   []byte                              `protobuf:"bytes,4,opt,name=CallerAddr,proto3" json:"CallerAddr,omitempty"`
+	CallerCallID                 []byte                              `protobuf:"bytes,5,opt,name=CallerCallID,proto3" json:"CallerCallID,omitempty"`
+	CallbackAsyncInitiatorCallID []byte                              `protobuf:"bytes,6,opt,name=CallbackAsyncInitiatorCallID,proto3" json:"CallbackAsyncInitiatorCallID,omitempty"`
+	Callback                     string                              `protobuf:"bytes,7,opt,name=Callback,proto3" json:"Callback,omitempty"`
+	CallbackData                 []byte                              `protobuf:"bytes,8,opt,name=CallbackData,proto3" json:"CallbackData,omitempty"`
+	GasPrice                     uint64                              `protobuf:"varint,9,opt,name=GasPrice,proto3" json:"GasPrice,omitempty"`
+	GasAccumulated               uint64                              `protobuf:"varint,10,opt,name=GasAccumulated,proto3" json:"GasAccumulated,omitempty"`
+	ReturnData                   []byte                              `protobuf:"bytes,11,opt,name=ReturnData,proto3" json:"ReturnData,omitempty"`
+	AsyncCallGroups              []*arwen.SerializableAsyncCallGroup `protobuf:"bytes,12,rep,name=asyncCallGroups,proto3" json:"asyncCallGroups,omitempty"`
+	CallsCounter                 uint64                              `protobuf:"varint,13,opt,name=CallsCounter,proto3" json:"CallsCounter,omitempty"`
+	TotalCallsCounter            uint64                              `protobuf:"varint,14,opt,name=TotalCallsCounter,proto3" json:"TotalCallsCounter,omitempty"`
+	ChildResults                 *SerializableVMOutput               `protobuf:"bytes,15,opt,name=ChildResults,proto3" json:"ChildResults,omitempty"`
 }
 
 func (m *SerializableAsyncContextProto) Reset()      { *m = SerializableAsyncContextProto{} }
@@ -571,13 +599,6 @@ func (m *SerializableAsyncContextProto) GetAsyncCallGroups() []*arwen.Serializab
 	return nil
 }
 
-func (m *SerializableAsyncContextProto) GetChildResults() *SerializableVMOutput {
-	if m != nil {
-		return m.ChildResults
-	}
-	return nil
-}
-
 func (m *SerializableAsyncContextProto) GetCallsCounter() uint64 {
 	if m != nil {
 		return m.CallsCounter
@@ -592,30 +613,9 @@ func (m *SerializableAsyncContextProto) GetTotalCallsCounter() uint64 {
 	return 0
 }
 
-func (m *SerializableAsyncContextProto) GetOutputAccounts() map[string]*SerializableOutputAccount {
+func (m *SerializableAsyncContextProto) GetChildResults() *SerializableVMOutput {
 	if m != nil {
-		return m.OutputAccounts
-	}
-	return nil
-}
-
-func (m *SerializableAsyncContextProto) GetDeletedAccounts() [][]byte {
-	if m != nil {
-		return m.DeletedAccounts
-	}
-	return nil
-}
-
-func (m *SerializableAsyncContextProto) GetTouchedAccounts() [][]byte {
-	if m != nil {
-		return m.TouchedAccounts
-	}
-	return nil
-}
-
-func (m *SerializableAsyncContextProto) GetLogs() *SerializableLogEntry {
-	if m != nil {
-		return m.Logs
+		return m.ChildResults
 	}
 	return nil
 }
@@ -623,89 +623,90 @@ func (m *SerializableAsyncContextProto) GetLogs() *SerializableLogEntry {
 func init() {
 	proto.RegisterEnum("contexts.SerializableCallType", SerializableCallType_name, SerializableCallType_value)
 	proto.RegisterType((*SerializableVMOutput)(nil), "contexts.SerializableVMOutput")
+	proto.RegisterMapType((map[string]*SerializableOutputAccount)(nil), "contexts.SerializableVMOutput.OutputAccountsEntry")
 	proto.RegisterType((*SerializableOutputTransfer)(nil), "contexts.SerializableOutputTransfer")
 	proto.RegisterType((*SerializableStorageUpdate)(nil), "contexts.SerializableStorageUpdate")
 	proto.RegisterType((*SerializableOutputAccount)(nil), "contexts.SerializableOutputAccount")
 	proto.RegisterMapType((map[string]*SerializableStorageUpdate)(nil), "contexts.SerializableOutputAccount.StorageUpdatesEntry")
 	proto.RegisterType((*SerializableLogEntry)(nil), "contexts.SerializableLogEntry")
 	proto.RegisterType((*SerializableAsyncContextProto)(nil), "contexts.SerializableAsyncContextProto")
-	proto.RegisterMapType((map[string]*SerializableOutputAccount)(nil), "contexts.SerializableAsyncContextProto.OutputAccountsEntry")
 }
 
 func init() { proto.RegisterFile("async.proto", fileDescriptor_83b2a03067ffcb1d) }
 
 var fileDescriptor_83b2a03067ffcb1d = []byte{
-	// 1112 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xcf, 0x6e, 0x23, 0xc5,
-	0x13, 0xf6, 0xf8, 0x4f, 0x62, 0x57, 0xbc, 0x8e, 0xb7, 0x13, 0x45, 0xf3, 0xb3, 0xf6, 0x37, 0x1b,
-	0xcc, 0x0a, 0x59, 0x88, 0x8c, 0x51, 0x38, 0x00, 0xbb, 0xa7, 0x38, 0x0e, 0x51, 0x44, 0x92, 0x5d,
-	0x4d, 0xbc, 0x8b, 0xc4, 0x05, 0xb5, 0x67, 0xda, 0xce, 0x28, 0xe3, 0x69, 0xd3, 0xdd, 0x43, 0x36,
-	0x88, 0x03, 0x8f, 0x80, 0xc4, 0x4b, 0x20, 0x5e, 0x80, 0x57, 0xe0, 0x98, 0x63, 0x4e, 0x40, 0x9c,
-	0x0b, 0xe2, 0xb4, 0xbc, 0x01, 0xea, 0x9e, 0x19, 0x7b, 0xda, 0xf1, 0x46, 0x02, 0x29, 0x27, 0x77,
-	0x7d, 0x53, 0xdd, 0x55, 0xfd, 0x55, 0xd5, 0xd7, 0x86, 0x15, 0xcc, 0x2f, 0x42, 0xd7, 0x1e, 0x33,
-	0x2a, 0x28, 0x2a, 0xbb, 0x34, 0x14, 0xe4, 0xb5, 0xe0, 0x8d, 0x55, 0x05, 0xef, 0xe2, 0x20, 0x88,
-	0x3f, 0x35, 0xb6, 0x86, 0xbe, 0x38, 0x8d, 0xfa, 0xb6, 0x4b, 0x47, 0xed, 0x21, 0x1d, 0xd2, 0xb6,
-	0x82, 0xfb, 0xd1, 0x40, 0x59, 0xca, 0x50, 0xab, 0xd8, 0xbd, 0xf9, 0x63, 0x1e, 0xd6, 0x4f, 0x08,
-	0xf3, 0x71, 0xe0, 0x7f, 0x8b, 0xfb, 0x01, 0x79, 0x75, 0xf4, 0x3c, 0x12, 0xe3, 0x48, 0x20, 0x0b,
-	0xc0, 0x21, 0x22, 0x62, 0x61, 0x17, 0x0b, 0x6c, 0x1a, 0x9b, 0x85, 0x56, 0xd5, 0xc9, 0x20, 0xb3,
-	0xef, 0xbb, 0xd4, 0x23, 0x66, 0x7e, 0xd3, 0x68, 0x15, 0x9d, 0x0c, 0x82, 0x9e, 0xc0, 0x83, 0xd8,
-	0x3a, 0x22, 0x9c, 0xe3, 0x21, 0x31, 0x0b, 0x9b, 0x46, 0xab, 0xe2, 0xe8, 0x20, 0x6a, 0x42, 0x75,
-	0x1f, 0x73, 0x87, 0x8c, 0xb0, 0x1f, 0xfa, 0xe1, 0xd0, 0x2c, 0xaa, 0x73, 0x34, 0x0c, 0x7d, 0x0d,
-	0x15, 0x65, 0x0f, 0xa2, 0xd0, 0x33, 0x4b, 0x9b, 0x46, 0xab, 0xda, 0x39, 0xf9, 0xeb, 0xb7, 0xc7,
-	0xa5, 0x57, 0x38, 0x88, 0xc8, 0xcf, 0xbf, 0x3f, 0xfe, 0x6c, 0x84, 0xc5, 0x69, 0xbb, 0xef, 0x0f,
-	0xed, 0x83, 0x50, 0x3c, 0xcb, 0x5c, 0x7f, 0x2f, 0x60, 0x34, 0xf4, 0x8e, 0x89, 0x38, 0xa7, 0xec,
-	0xac, 0x4d, 0x94, 0xb5, 0x35, 0xa4, 0x5b, 0x2e, 0x65, 0xa4, 0xed, 0x61, 0x81, 0xed, 0x8e, 0x3f,
-	0x3c, 0x08, 0xc5, 0x2e, 0xe6, 0x82, 0x30, 0x67, 0x16, 0xa5, 0xf9, 0x4b, 0x1e, 0x1a, 0x59, 0x56,
-	0x62, 0x4e, 0x7a, 0x0c, 0x87, 0x7c, 0x40, 0x18, 0xf2, 0x21, 0x0e, 0x6e, 0x1a, 0xf7, 0x97, 0x4d,
-	0x7c, 0x20, 0x6a, 0x40, 0x79, 0x1f, 0xf3, 0x43, 0x7f, 0xe4, 0x8b, 0x84, 0xe4, 0xa9, 0x8d, 0x1e,
-	0x29, 0x62, 0x0e, 0xa9, 0x7b, 0x46, 0x3c, 0x45, 0x6f, 0xd1, 0x99, 0x01, 0x08, 0x41, 0x51, 0x95,
-	0x4e, 0x52, 0x5a, 0x75, 0xd4, 0x1a, 0x3d, 0x85, 0xb2, 0x6c, 0x95, 0xde, 0xc5, 0x98, 0x28, 0x26,
-	0x6b, 0xdb, 0x96, 0x9d, 0xb6, 0x92, 0x9d, 0xbd, 0x70, 0xea, 0xe5, 0x4c, 0xfd, 0x65, 0x41, 0x4f,
-	0x48, 0xe8, 0x11, 0xb6, 0xe3, 0x79, 0x8c, 0x70, 0x6e, 0x2e, 0xa9, 0x83, 0x75, 0xb0, 0x89, 0xe1,
-	0x7f, 0xd9, 0x73, 0x4e, 0x04, 0x65, 0x78, 0x48, 0x5e, 0x8e, 0x3d, 0x2c, 0x08, 0xda, 0x80, 0xa5,
-	0xe7, 0x83, 0x01, 0x27, 0x22, 0x26, 0xce, 0x49, 0xac, 0x69, 0xaa, 0xf9, 0x4c, 0xaa, 0x26, 0x2c,
-	0x7f, 0xc1, 0x7c, 0x21, 0x48, 0xa8, 0xae, 0x56, 0x76, 0x52, 0xb3, 0x79, 0x59, 0xd2, 0x63, 0xc4,
-	0xc5, 0xd9, 0x71, 0x5d, 0x1a, 0x85, 0x42, 0xee, 0x4b, 0x13, 0x8c, 0x83, 0xa4, 0x26, 0x5a, 0x87,
-	0xd2, 0x31, 0x0d, 0xdd, 0xb4, 0x59, 0x63, 0x03, 0x8d, 0x60, 0xb9, 0x83, 0x03, 0x2c, 0xf1, 0xc2,
-	0xfd, 0x55, 0x33, 0x8d, 0x81, 0xbe, 0x82, 0x9a, 0xc6, 0x09, 0x37, 0x8b, 0x9b, 0x85, 0xd6, 0xca,
-	0xf6, 0xc7, 0x8b, 0xeb, 0xa0, 0xdd, 0xcd, 0xd6, 0x77, 0xee, 0x85, 0x82, 0x5d, 0x38, 0x73, 0xc7,
-	0x49, 0x2e, 0xd5, 0x44, 0x96, 0x62, 0x2e, 0xd5, 0x2c, 0x36, 0xa1, 0x2a, 0x7f, 0x8f, 0x88, 0xc0,
-	0x32, 0xb5, 0xa4, 0x72, 0x1a, 0x86, 0x3e, 0x84, 0x35, 0x69, 0x77, 0xc9, 0x38, 0xa0, 0x17, 0xb3,
-	0x22, 0x2f, 0x2b, 0xd7, 0x45, 0x9f, 0xd0, 0x39, 0x54, 0x93, 0x5b, 0x75, 0x49, 0x20, 0xb0, 0x59,
-	0xbe, 0x3f, 0xfa, 0xb4, 0x40, 0xe8, 0x18, 0x56, 0xf5, 0x81, 0xe4, 0x66, 0x45, 0x91, 0xf8, 0xe4,
-	0x2e, 0x12, 0x53, 0x67, 0x67, 0x7e, 0xb3, 0x6c, 0x99, 0x7d, 0xcc, 0x5f, 0x72, 0xe2, 0x99, 0xa0,
-	0x5a, 0x23, 0x35, 0x1b, 0x03, 0x58, 0x5b, 0xc0, 0x39, 0xaa, 0x43, 0xe1, 0x8c, 0x5c, 0xa8, 0xfe,
-	0xaa, 0x38, 0x72, 0x89, 0x3e, 0x85, 0xd2, 0x37, 0x4a, 0x11, 0x64, 0x6f, 0xad, 0x6c, 0xbf, 0xbb,
-	0x38, 0x11, 0xed, 0x2c, 0x27, 0xde, 0xf1, 0x34, 0xff, 0x89, 0xd1, 0xfc, 0x4e, 0x17, 0xe1, 0x43,
-	0x3a, 0x8c, 0x03, 0x59, 0x00, 0x07, 0x1e, 0x09, 0x85, 0x3f, 0xf0, 0x09, 0x4b, 0xfa, 0x39, 0x83,
-	0x64, 0x9b, 0x3d, 0xaf, 0x37, 0xfb, 0x06, 0x2c, 0xf5, 0xe8, 0xd8, 0x77, 0xb9, 0x59, 0x50, 0xd2,
-	0x9d, 0x58, 0x8b, 0x54, 0xa1, 0xf9, 0xf7, 0x32, 0xfc, 0x3f, 0x1b, 0x7e, 0x47, 0x3d, 0x29, 0xf1,
-	0x05, 0x5e, 0xa8, 0xf7, 0xe6, 0xed, 0x43, 0xb5, 0x01, 0x4b, 0x52, 0x21, 0x0e, 0xba, 0x49, 0x02,
-	0x89, 0xa5, 0x29, 0x4d, 0xe1, 0x5f, 0x2a, 0x8d, 0x05, 0x20, 0xd7, 0x71, 0xa7, 0x25, 0x99, 0x66,
-	0x10, 0xd5, 0xce, 0xca, 0x4a, 0x22, 0x97, 0x92, 0x76, 0xce, 0x60, 0xa8, 0x03, 0x8f, 0xe4, 0xaa,
-	0x8f, 0xdd, 0x33, 0x75, 0x9d, 0x83, 0xd0, 0x17, 0x3e, 0x16, 0x34, 0xdd, 0x13, 0x8f, 0xc0, 0x9d,
-	0x3e, 0x52, 0x7b, 0xd3, 0xef, 0x6a, 0x0e, 0x2a, 0xce, 0xd4, 0x4e, 0x73, 0x90, 0x6b, 0xc5, 0x67,
-	0x79, 0x96, 0x43, 0x8a, 0x25, 0xda, 0xfd, 0x82, 0xf9, 0x2e, 0x31, 0x2b, 0x53, 0xed, 0x56, 0x36,
-	0x7a, 0x0f, 0x6a, 0xfb, 0x98, 0xef, 0xb8, 0x6e, 0x34, 0x8a, 0x02, 0x2c, 0xa6, 0xad, 0x37, 0x87,
-	0xce, 0x3d, 0xc3, 0x2b, 0x31, 0x17, 0x99, 0x67, 0xf8, 0x73, 0x98, 0xfd, 0x03, 0xd8, 0x67, 0x34,
-	0x1a, 0x73, 0xb3, 0xaa, 0x66, 0xe1, 0x1d, 0x1b, 0xb3, 0x73, 0x12, 0xda, 0xb7, 0x0b, 0x9b, 0x7a,
-	0x3a, 0xf3, 0x3b, 0x51, 0x07, 0xaa, 0xbb, 0xa7, 0x7e, 0xe0, 0x39, 0x84, 0x47, 0x81, 0xe0, 0xe6,
-	0x03, 0xd5, 0xcc, 0x6f, 0x29, 0x5c, 0xfa, 0x4f, 0xc1, 0xd1, 0xf6, 0xa4, 0xc4, 0xf0, 0x5d, 0xa9,
-	0x58, 0x84, 0x99, 0xb5, 0xf8, 0x45, 0xcf, 0x62, 0xe8, 0x03, 0x78, 0xd8, 0xa3, 0x02, 0x07, 0x9a,
-	0xe3, 0xaa, 0x72, 0xbc, 0xfd, 0x01, 0xb9, 0x50, 0xd3, 0x64, 0x90, 0x9b, 0x75, 0x75, 0xc3, 0x67,
-	0x8b, 0xf3, 0xba, 0xd5, 0xbd, 0xb6, 0xbe, 0x3b, 0x91, 0x4d, 0x1d, 0x44, 0x2d, 0x58, 0xed, 0x92,
-	0x80, 0x08, 0xe2, 0x4d, 0xa3, 0x3c, 0x54, 0x83, 0x33, 0x0f, 0x4b, 0xcf, 0x1e, 0x8d, 0xdc, 0xd3,
-	0x8c, 0x27, 0x8a, 0x3d, 0xe7, 0x60, 0xb4, 0x0d, 0xc5, 0x43, 0x3a, 0xe4, 0xe6, 0xda, 0x5d, 0x34,
-	0xa6, 0xb3, 0xee, 0x28, 0x5f, 0xa9, 0x38, 0x0b, 0xd2, 0xfd, 0xcf, 0x8a, 0xa3, 0x9d, 0x95, 0x51,
-	0x9c, 0xf7, 0x99, 0xae, 0x38, 0xd3, 0xd9, 0xab, 0x01, 0x74, 0x7d, 0x46, 0x5c, 0x21, 0x91, 0x7a,
-	0x0e, 0xad, 0x43, 0x5d, 0x11, 0x7a, 0xca, 0x68, 0x48, 0x23, 0xae, 0x50, 0x03, 0x99, 0xb0, 0x3e,
-	0x8f, 0x76, 0xb0, 0x7b, 0x56, 0xcf, 0xa3, 0x06, 0x6c, 0xec, 0x9d, 0x74, 0x7b, 0xa9, 0xb8, 0xee,
-	0x84, 0xde, 0xde, 0x6b, 0xe2, 0x46, 0x82, 0xd4, 0x0b, 0x9d, 0xbd, 0xcb, 0x6b, 0x2b, 0x77, 0x75,
-	0x6d, 0xe5, 0xde, 0x5c, 0x5b, 0xc6, 0xf7, 0x13, 0xcb, 0xf8, 0x69, 0x62, 0x19, 0xbf, 0x4e, 0x2c,
-	0xe3, 0x72, 0x62, 0x19, 0x57, 0x13, 0xcb, 0xf8, 0x63, 0x62, 0x19, 0x7f, 0x4e, 0xac, 0xdc, 0x9b,
-	0x89, 0x65, 0xfc, 0x70, 0x63, 0xe5, 0x2e, 0x6f, 0xac, 0xdc, 0xd5, 0x8d, 0x95, 0xfb, 0x72, 0xc5,
-	0xb6, 0xdb, 0xe9, 0xfd, 0xfa, 0x4b, 0xea, 0x9f, 0xeb, 0x47, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff,
-	0x4c, 0x41, 0xff, 0x0f, 0x12, 0x0b, 0x00, 0x00,
+	// 1123 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xcf, 0x6e, 0xe3, 0x44,
+	0x18, 0x8f, 0xf3, 0xa7, 0x4d, 0xbf, 0x64, 0xd3, 0x32, 0x5b, 0x55, 0x26, 0x5a, 0xbc, 0x21, 0xac,
+	0x50, 0x84, 0xa8, 0x83, 0xca, 0x01, 0x58, 0xb8, 0x34, 0x4d, 0xa9, 0x2a, 0xda, 0xee, 0xca, 0xcd,
+	0x2e, 0xd2, 0x5e, 0xd0, 0xc4, 0x9e, 0xb8, 0x56, 0x1d, 0x4f, 0x98, 0x19, 0x6f, 0x37, 0x88, 0x03,
+	0x8f, 0xc0, 0x03, 0xf0, 0x00, 0x88, 0x17, 0xe0, 0x15, 0x38, 0xf6, 0xd8, 0x13, 0x4b, 0xd3, 0x0b,
+	0xe2, 0xb4, 0x8f, 0x80, 0x66, 0x6c, 0x27, 0x76, 0x9a, 0x56, 0xb0, 0x52, 0x4f, 0x9e, 0xdf, 0xcf,
+	0xdf, 0xf7, 0xcd, 0x37, 0xdf, 0xbf, 0x19, 0xa8, 0x60, 0x3e, 0x0e, 0x6c, 0x73, 0xc4, 0xa8, 0xa0,
+	0xa8, 0x6c, 0xd3, 0x40, 0x90, 0x57, 0x82, 0xd7, 0xbf, 0x72, 0x3d, 0x71, 0x12, 0xf6, 0x4d, 0x9b,
+	0x0e, 0xdb, 0xbb, 0x3e, 0xa3, 0x81, 0x73, 0x44, 0xc4, 0x19, 0x65, 0xa7, 0x6d, 0xcc, 0xce, 0x48,
+	0xb0, 0x79, 0x86, 0xf9, 0x70, 0xf3, 0xe5, 0x30, 0x42, 0x6d, 0x65, 0x63, 0x07, 0xfb, 0x7e, 0x64,
+	0xa7, 0xbe, 0x99, 0xd2, 0x76, 0xa9, 0x4b, 0xdb, 0x8a, 0xee, 0x87, 0x03, 0x85, 0x14, 0x50, 0xab,
+	0x48, 0xbc, 0xf9, 0xba, 0x08, 0xeb, 0xc7, 0x84, 0x79, 0xd8, 0xf7, 0x7e, 0xc0, 0x7d, 0x9f, 0x3c,
+	0x3f, 0x7c, 0x12, 0x8a, 0x51, 0x28, 0x90, 0x01, 0x60, 0x11, 0x11, 0xb2, 0xa0, 0x8b, 0x05, 0xd6,
+	0xb5, 0x46, 0xa1, 0x55, 0xb5, 0x52, 0xcc, 0xec, 0xff, 0x0e, 0x75, 0x88, 0x9e, 0x6f, 0x68, 0xad,
+	0xa2, 0x95, 0x62, 0xd0, 0x23, 0xb8, 0x17, 0xa1, 0x43, 0xc2, 0x39, 0x76, 0x89, 0x5e, 0x68, 0x68,
+	0xad, 0x15, 0x2b, 0x4b, 0xa2, 0x26, 0x54, 0xf7, 0x30, 0xb7, 0xc8, 0x10, 0x7b, 0x81, 0x17, 0xb8,
+	0x7a, 0x51, 0xd9, 0xc9, 0x70, 0xe8, 0x7b, 0x58, 0x51, 0x78, 0x10, 0x06, 0x8e, 0x5e, 0x6a, 0x68,
+	0xad, 0x6a, 0xe7, 0xf8, 0x9f, 0x3f, 0x1f, 0x96, 0x9e, 0x63, 0x3f, 0x24, 0xbf, 0xbd, 0x7e, 0xf8,
+	0xf5, 0x10, 0x8b, 0x93, 0x76, 0xdf, 0x73, 0xcd, 0xfd, 0x40, 0x7c, 0x79, 0x63, 0xf0, 0x88, 0x42,
+	0x9b, 0x2e, 0xdd, 0xb4, 0x29, 0x23, 0x6d, 0x07, 0x0b, 0x6c, 0x76, 0x3c, 0x77, 0x3f, 0x10, 0x3b,
+	0x98, 0x0b, 0xc2, 0xac, 0xd9, 0x2e, 0xe8, 0x05, 0xd4, 0xa2, 0x30, 0x6c, 0xdb, 0x36, 0x0d, 0x03,
+	0xc1, 0xf5, 0xa5, 0x46, 0xa1, 0x55, 0xd9, 0xda, 0x32, 0x93, 0x2c, 0x99, 0x8b, 0x82, 0x66, 0x66,
+	0x95, 0x76, 0x03, 0xc1, 0xc6, 0xd6, 0x9c, 0x25, 0xd4, 0x82, 0xd5, 0x2e, 0xf1, 0x89, 0x20, 0xce,
+	0xd4, 0xf8, 0xb2, 0x8a, 0xee, 0x3c, 0x2d, 0x25, 0x7b, 0x34, 0xb4, 0x4f, 0x52, 0x92, 0xe5, 0x48,
+	0x72, 0x8e, 0x46, 0x5b, 0x50, 0x3c, 0xa0, 0x2e, 0xd7, 0x57, 0x1a, 0x5a, 0xab, 0xb2, 0x65, 0x2c,
+	0xf6, 0xf2, 0x80, 0xba, 0x91, 0x47, 0x4a, 0xb6, 0x3e, 0x80, 0xfb, 0x0b, 0xdc, 0x45, 0x6b, 0x50,
+	0x38, 0x25, 0x63, 0x5d, 0x53, 0xd9, 0x92, 0x4b, 0xf4, 0x05, 0x94, 0x5e, 0xca, 0x50, 0xab, 0x24,
+	0x57, 0xb6, 0x3e, 0x58, 0x6c, 0x3d, 0x63, 0xcb, 0x8a, 0x34, 0x1e, 0xe7, 0x3f, 0xd7, 0x9a, 0xbf,
+	0xe7, 0xa1, 0x7e, 0x5d, 0xb0, 0xc7, 0x70, 0xc0, 0x07, 0x84, 0x21, 0x0f, 0xa2, 0x44, 0xaa, 0x1d,
+	0xef, 0x28, 0xb3, 0x91, 0x41, 0x54, 0x87, 0xf2, 0x1e, 0xe6, 0x07, 0xde, 0xd0, 0x13, 0x71, 0xc1,
+	0x4e, 0x31, 0x7a, 0xa0, 0x8a, 0xec, 0x80, 0xda, 0xa7, 0xc4, 0x51, 0xa5, 0x5a, 0xb4, 0x66, 0x04,
+	0x42, 0x50, 0x54, 0x6d, 0x20, 0xcb, 0xb3, 0x6a, 0xa9, 0x35, 0x7a, 0x0c, 0x65, 0xd9, 0x76, 0xbd,
+	0xf1, 0x88, 0xa8, 0xaa, 0xac, 0xdd, 0x14, 0xf7, 0x44, 0xca, 0x9a, 0xca, 0xcb, 0xe6, 0x38, 0x26,
+	0x81, 0x43, 0xd8, 0xb6, 0xe3, 0x30, 0xc2, 0x65, 0x79, 0x49, 0xc3, 0x59, 0xb2, 0x89, 0xe1, 0xdd,
+	0xb4, 0x9d, 0x63, 0x41, 0x19, 0x76, 0xc9, 0xb3, 0x91, 0x83, 0x05, 0x41, 0x1b, 0xb0, 0xf4, 0x64,
+	0x30, 0xe0, 0x44, 0x44, 0x81, 0xb3, 0x62, 0x34, 0x75, 0x35, 0x9f, 0x72, 0x55, 0x87, 0xe5, 0x6f,
+	0x99, 0x27, 0x04, 0x09, 0xd4, 0xd1, 0xca, 0x56, 0x02, 0x9b, 0xe7, 0xa5, 0xec, 0x1e, 0x99, 0x2c,
+	0x4a, 0xbd, 0xc4, 0xc1, 0x68, 0x93, 0x04, 0xa2, 0x75, 0x28, 0x1d, 0xd1, 0xc0, 0x4e, 0x1a, 0x3f,
+	0x02, 0x68, 0x08, 0xcb, 0x1d, 0xec, 0x63, 0xc9, 0x17, 0xee, 0x2e, 0x9b, 0xc9, 0x1e, 0xe8, 0x3b,
+	0xa8, 0x65, 0x62, 0xc2, 0xf5, 0xa2, 0xea, 0xd2, 0xcf, 0xfe, 0x43, 0x85, 0x9a, 0x59, 0xcd, 0xb8,
+	0x55, 0xb3, 0xa4, 0x8c, 0xa5, 0x9a, 0x6e, 0xa5, 0x28, 0x96, 0x6a, 0xae, 0x35, 0xa1, 0x2a, 0xbf,
+	0x87, 0x44, 0x60, 0xe9, 0x5a, 0x9c, 0xb9, 0x0c, 0x87, 0x3e, 0x81, 0xfb, 0x12, 0x77, 0xc9, 0xc8,
+	0xa7, 0xe3, 0x59, 0x92, 0x97, 0x95, 0xe8, 0xa2, 0x5f, 0xe8, 0x0c, 0xaa, 0xf1, 0xa9, 0xba, 0xc4,
+	0x17, 0x58, 0x2f, 0xdf, 0x5d, 0xf8, 0x32, 0x1b, 0xa1, 0x23, 0x58, 0xcd, 0x36, 0xa4, 0x1c, 0x22,
+	0x32, 0x88, 0x8f, 0x6e, 0x0b, 0x62, 0x22, 0x6c, 0xcd, 0x2b, 0xcb, 0x92, 0xd9, 0xc3, 0xfc, 0x19,
+	0x27, 0x8e, 0x0e, 0xaa, 0x34, 0x12, 0x28, 0xe7, 0xcd, 0x82, 0x98, 0xbf, 0xf5, 0xbc, 0xc9, 0xd8,
+	0x4a, 0xcf, 0x9b, 0x1f, 0xb3, 0x17, 0x5a, 0x32, 0xf5, 0xe4, 0x85, 0xb5, 0xef, 0x90, 0x40, 0x78,
+	0x03, 0x8f, 0xb0, 0xb8, 0x9e, 0x53, 0x4c, 0xba, 0xd8, 0xf3, 0xd9, 0x62, 0xdf, 0x80, 0xa5, 0x1e,
+	0x1d, 0x79, 0x36, 0xd7, 0x0b, 0x6a, 0xfc, 0xc6, 0x68, 0xd1, 0x54, 0x68, 0xfe, 0x52, 0x82, 0xf7,
+	0xd2, 0xdb, 0x6f, 0xab, 0xeb, 0x39, 0x3a, 0xc0, 0x53, 0x75, 0xd1, 0xdf, 0xdc, 0x54, 0x1b, 0xb0,
+	0x24, 0x27, 0xc4, 0x7e, 0x37, 0x76, 0x20, 0x46, 0x99, 0x49, 0x53, 0xf8, 0x9f, 0x93, 0xc6, 0x00,
+	0x90, 0xeb, 0xa8, 0xd2, 0x62, 0x4f, 0x53, 0x8c, 0x2a, 0x67, 0x85, 0xe2, 0x9d, 0x4b, 0x71, 0x39,
+	0xa7, 0x38, 0xd4, 0x81, 0x07, 0x72, 0xd5, 0xc7, 0xf6, 0xa9, 0x3a, 0xce, 0x7e, 0xe0, 0x09, 0x0f,
+	0x0b, 0x9a, 0xe8, 0x44, 0x2d, 0x70, 0xab, 0x8c, 0x9c, 0xbd, 0xc9, 0x7f, 0xd5, 0x07, 0x2b, 0xd6,
+	0x14, 0x27, 0x3e, 0xc8, 0xb5, 0x8a, 0x67, 0x79, 0xe6, 0x43, 0xc2, 0xc5, 0xb3, 0xfb, 0x29, 0xf3,
+	0x6c, 0xa2, 0x6e, 0xb9, 0x68, 0x76, 0x2b, 0x8c, 0x3e, 0x84, 0xda, 0x1e, 0xe6, 0xdb, 0xb6, 0x1d,
+	0x0e, 0x43, 0x1f, 0x8b, 0x69, 0xe9, 0xcd, 0xb1, 0x73, 0x4f, 0x9a, 0x4a, 0x14, 0x8b, 0xd4, 0x93,
+	0xe6, 0x1b, 0x58, 0x9d, 0xbe, 0xa6, 0xf6, 0x18, 0x0d, 0x47, 0x5c, 0xaf, 0xaa, 0x5e, 0x78, 0xdf,
+	0x54, 0x6f, 0x2d, 0xf3, 0x7a, 0x62, 0x13, 0x49, 0x6b, 0x5e, 0x33, 0x39, 0x14, 0xdf, 0x91, 0xd3,
+	0x86, 0x30, 0xfd, 0x5e, 0xf4, 0xb2, 0x49, 0x73, 0xe8, 0x63, 0x78, 0xa7, 0x47, 0x05, 0xf6, 0x33,
+	0x82, 0x35, 0x25, 0x78, 0xfd, 0x07, 0xea, 0x40, 0x75, 0xe7, 0xc4, 0xf3, 0x1d, 0x8b, 0xf0, 0xd0,
+	0x17, 0x5c, 0x5f, 0xbd, 0xed, 0xb2, 0x4f, 0x9e, 0x24, 0x56, 0x46, 0xe7, 0x23, 0x96, 0x6d, 0x8e,
+	0x69, 0x99, 0xd4, 0x00, 0xba, 0x1e, 0x23, 0xb6, 0x90, 0xcc, 0x5a, 0x0e, 0xad, 0xc3, 0x9a, 0x3a,
+	0xe0, 0x09, 0xa3, 0x01, 0x0d, 0xb9, 0x62, 0x35, 0xa4, 0xc3, 0xfa, 0x3c, 0xdb, 0xc1, 0xf6, 0xe9,
+	0x5a, 0x1e, 0xd5, 0x61, 0x63, 0xf7, 0xb8, 0xdb, 0x4b, 0xe6, 0xc0, 0x76, 0xe0, 0xec, 0xbe, 0x22,
+	0x76, 0x28, 0xc8, 0x5a, 0xa1, 0xb3, 0x7b, 0x7e, 0x69, 0xe4, 0x2e, 0x2e, 0x8d, 0xdc, 0x9b, 0x4b,
+	0x43, 0xfb, 0x69, 0x62, 0x68, 0xbf, 0x4e, 0x0c, 0xed, 0x8f, 0x89, 0xa1, 0x9d, 0x4f, 0x0c, 0xed,
+	0x62, 0x62, 0x68, 0x7f, 0x4d, 0x0c, 0xed, 0xef, 0x89, 0x91, 0x7b, 0x33, 0x31, 0xb4, 0x9f, 0xaf,
+	0x8c, 0xdc, 0xf9, 0x95, 0x91, 0xbb, 0xb8, 0x32, 0x72, 0x2f, 0x2a, 0xa6, 0xd9, 0x4e, 0x4e, 0xd7,
+	0x5f, 0x52, 0x0f, 0xd6, 0x4f, 0xff, 0x0d, 0x00, 0x00, 0xff, 0xff, 0x54, 0xf9, 0x51, 0x9d, 0x36,
+	0x0b, 0x00, 0x00,
 }
 
 func (x SerializableCallType) String() string {
@@ -756,6 +757,33 @@ func (this *SerializableVMOutput) Equal(that interface{}) bool {
 		if !__caster.Equal(this.GasRefund, that1.GasRefund) {
 			return false
 		}
+	}
+	if len(this.OutputAccounts) != len(that1.OutputAccounts) {
+		return false
+	}
+	for i := range this.OutputAccounts {
+		if !this.OutputAccounts[i].Equal(that1.OutputAccounts[i]) {
+			return false
+		}
+	}
+	if len(this.DeletedAccounts) != len(that1.DeletedAccounts) {
+		return false
+	}
+	for i := range this.DeletedAccounts {
+		if !bytes.Equal(this.DeletedAccounts[i], that1.DeletedAccounts[i]) {
+			return false
+		}
+	}
+	if len(this.TouchedAccounts) != len(that1.TouchedAccounts) {
+		return false
+	}
+	for i := range this.TouchedAccounts {
+		if !bytes.Equal(this.TouchedAccounts[i], that1.TouchedAccounts[i]) {
+			return false
+		}
+	}
+	if !this.Logs.Equal(that1.Logs) {
+		return false
 	}
 	return true
 }
@@ -996,40 +1024,13 @@ func (this *SerializableAsyncContextProto) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	if !this.ChildResults.Equal(that1.ChildResults) {
-		return false
-	}
 	if this.CallsCounter != that1.CallsCounter {
 		return false
 	}
 	if this.TotalCallsCounter != that1.TotalCallsCounter {
 		return false
 	}
-	if len(this.OutputAccounts) != len(that1.OutputAccounts) {
-		return false
-	}
-	for i := range this.OutputAccounts {
-		if !this.OutputAccounts[i].Equal(that1.OutputAccounts[i]) {
-			return false
-		}
-	}
-	if len(this.DeletedAccounts) != len(that1.DeletedAccounts) {
-		return false
-	}
-	for i := range this.DeletedAccounts {
-		if !bytes.Equal(this.DeletedAccounts[i], that1.DeletedAccounts[i]) {
-			return false
-		}
-	}
-	if len(this.TouchedAccounts) != len(that1.TouchedAccounts) {
-		return false
-	}
-	for i := range this.TouchedAccounts {
-		if !bytes.Equal(this.TouchedAccounts[i], that1.TouchedAccounts[i]) {
-			return false
-		}
-	}
-	if !this.Logs.Equal(that1.Logs) {
+	if !this.ChildResults.Equal(that1.ChildResults) {
 		return false
 	}
 	return true
@@ -1038,13 +1039,31 @@ func (this *SerializableVMOutput) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 9)
+	s := make([]string, 0, 13)
 	s = append(s, "&contexts.SerializableVMOutput{")
 	s = append(s, "ReturnData: "+fmt.Sprintf("%#v", this.ReturnData)+",\n")
 	s = append(s, "ReturnCode: "+fmt.Sprintf("%#v", this.ReturnCode)+",\n")
 	s = append(s, "ReturnMessage: "+fmt.Sprintf("%#v", this.ReturnMessage)+",\n")
 	s = append(s, "GasRemaining: "+fmt.Sprintf("%#v", this.GasRemaining)+",\n")
 	s = append(s, "GasRefund: "+fmt.Sprintf("%#v", this.GasRefund)+",\n")
+	keysForOutputAccounts := make([]string, 0, len(this.OutputAccounts))
+	for k, _ := range this.OutputAccounts {
+		keysForOutputAccounts = append(keysForOutputAccounts, k)
+	}
+	github_com_gogo_protobuf_sortkeys.Strings(keysForOutputAccounts)
+	mapStringForOutputAccounts := "map[string]*SerializableOutputAccount{"
+	for _, k := range keysForOutputAccounts {
+		mapStringForOutputAccounts += fmt.Sprintf("%#v: %#v,", k, this.OutputAccounts[k])
+	}
+	mapStringForOutputAccounts += "}"
+	if this.OutputAccounts != nil {
+		s = append(s, "OutputAccounts: "+mapStringForOutputAccounts+",\n")
+	}
+	s = append(s, "DeletedAccounts: "+fmt.Sprintf("%#v", this.DeletedAccounts)+",\n")
+	s = append(s, "TouchedAccounts: "+fmt.Sprintf("%#v", this.TouchedAccounts)+",\n")
+	if this.Logs != nil {
+		s = append(s, "Logs: "+fmt.Sprintf("%#v", this.Logs)+",\n")
+	}
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -1125,7 +1144,7 @@ func (this *SerializableAsyncContextProto) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 23)
+	s := make([]string, 0, 19)
 	s = append(s, "&contexts.SerializableAsyncContextProto{")
 	s = append(s, "Address: "+fmt.Sprintf("%#v", this.Address)+",\n")
 	s = append(s, "CallID: "+fmt.Sprintf("%#v", this.CallID)+",\n")
@@ -1141,28 +1160,10 @@ func (this *SerializableAsyncContextProto) GoString() string {
 	if this.AsyncCallGroups != nil {
 		s = append(s, "AsyncCallGroups: "+fmt.Sprintf("%#v", this.AsyncCallGroups)+",\n")
 	}
-	if this.ChildResults != nil {
-		s = append(s, "ChildResults: "+fmt.Sprintf("%#v", this.ChildResults)+",\n")
-	}
 	s = append(s, "CallsCounter: "+fmt.Sprintf("%#v", this.CallsCounter)+",\n")
 	s = append(s, "TotalCallsCounter: "+fmt.Sprintf("%#v", this.TotalCallsCounter)+",\n")
-	keysForOutputAccounts := make([]string, 0, len(this.OutputAccounts))
-	for k, _ := range this.OutputAccounts {
-		keysForOutputAccounts = append(keysForOutputAccounts, k)
-	}
-	github_com_gogo_protobuf_sortkeys.Strings(keysForOutputAccounts)
-	mapStringForOutputAccounts := "map[string]*SerializableOutputAccount{"
-	for _, k := range keysForOutputAccounts {
-		mapStringForOutputAccounts += fmt.Sprintf("%#v: %#v,", k, this.OutputAccounts[k])
-	}
-	mapStringForOutputAccounts += "}"
-	if this.OutputAccounts != nil {
-		s = append(s, "OutputAccounts: "+mapStringForOutputAccounts+",\n")
-	}
-	s = append(s, "DeletedAccounts: "+fmt.Sprintf("%#v", this.DeletedAccounts)+",\n")
-	s = append(s, "TouchedAccounts: "+fmt.Sprintf("%#v", this.TouchedAccounts)+",\n")
-	if this.Logs != nil {
-		s = append(s, "Logs: "+fmt.Sprintf("%#v", this.Logs)+",\n")
+	if this.ChildResults != nil {
+		s = append(s, "ChildResults: "+fmt.Sprintf("%#v", this.ChildResults)+",\n")
 	}
 	s = append(s, "}")
 	return strings.Join(s, "")
@@ -1195,6 +1196,67 @@ func (m *SerializableVMOutput) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.Logs != nil {
+		{
+			size, err := m.Logs.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintAsync(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x4a
+	}
+	if len(m.TouchedAccounts) > 0 {
+		for iNdEx := len(m.TouchedAccounts) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TouchedAccounts[iNdEx])
+			copy(dAtA[i:], m.TouchedAccounts[iNdEx])
+			i = encodeVarintAsync(dAtA, i, uint64(len(m.TouchedAccounts[iNdEx])))
+			i--
+			dAtA[i] = 0x42
+		}
+	}
+	if len(m.DeletedAccounts) > 0 {
+		for iNdEx := len(m.DeletedAccounts) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.DeletedAccounts[iNdEx])
+			copy(dAtA[i:], m.DeletedAccounts[iNdEx])
+			i = encodeVarintAsync(dAtA, i, uint64(len(m.DeletedAccounts[iNdEx])))
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.OutputAccounts) > 0 {
+		keysForOutputAccounts := make([]string, 0, len(m.OutputAccounts))
+		for k := range m.OutputAccounts {
+			keysForOutputAccounts = append(keysForOutputAccounts, string(k))
+		}
+		github_com_gogo_protobuf_sortkeys.Strings(keysForOutputAccounts)
+		for iNdEx := len(keysForOutputAccounts) - 1; iNdEx >= 0; iNdEx-- {
+			v := m.OutputAccounts[string(keysForOutputAccounts[iNdEx])]
+			baseI := i
+			if v != nil {
+				{
+					size, err := v.MarshalToSizedBuffer(dAtA[:i])
+					if err != nil {
+						return 0, err
+					}
+					i -= size
+					i = encodeVarintAsync(dAtA, i, uint64(size))
+				}
+				i--
+				dAtA[i] = 0x12
+			}
+			i -= len(keysForOutputAccounts[iNdEx])
+			copy(dAtA[i:], keysForOutputAccounts[iNdEx])
+			i = encodeVarintAsync(dAtA, i, uint64(len(keysForOutputAccounts[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarintAsync(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
 	{
 		__caster := &github_com_ElrondNetwork_elrond_go_core_data.BigIntCaster{}
 		size := __caster.Size(m.GasRefund)
@@ -1546,85 +1608,6 @@ func (m *SerializableAsyncContextProto) MarshalToSizedBuffer(dAtA []byte) (int, 
 	_ = i
 	var l int
 	_ = l
-	if m.Logs != nil {
-		{
-			size, err := m.Logs.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintAsync(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x9a
-	}
-	if len(m.TouchedAccounts) > 0 {
-		for iNdEx := len(m.TouchedAccounts) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.TouchedAccounts[iNdEx])
-			copy(dAtA[i:], m.TouchedAccounts[iNdEx])
-			i = encodeVarintAsync(dAtA, i, uint64(len(m.TouchedAccounts[iNdEx])))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x92
-		}
-	}
-	if len(m.DeletedAccounts) > 0 {
-		for iNdEx := len(m.DeletedAccounts) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.DeletedAccounts[iNdEx])
-			copy(dAtA[i:], m.DeletedAccounts[iNdEx])
-			i = encodeVarintAsync(dAtA, i, uint64(len(m.DeletedAccounts[iNdEx])))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x8a
-		}
-	}
-	if len(m.OutputAccounts) > 0 {
-		keysForOutputAccounts := make([]string, 0, len(m.OutputAccounts))
-		for k := range m.OutputAccounts {
-			keysForOutputAccounts = append(keysForOutputAccounts, string(k))
-		}
-		github_com_gogo_protobuf_sortkeys.Strings(keysForOutputAccounts)
-		for iNdEx := len(keysForOutputAccounts) - 1; iNdEx >= 0; iNdEx-- {
-			v := m.OutputAccounts[string(keysForOutputAccounts[iNdEx])]
-			baseI := i
-			if v != nil {
-				{
-					size, err := v.MarshalToSizedBuffer(dAtA[:i])
-					if err != nil {
-						return 0, err
-					}
-					i -= size
-					i = encodeVarintAsync(dAtA, i, uint64(size))
-				}
-				i--
-				dAtA[i] = 0x12
-			}
-			i -= len(keysForOutputAccounts[iNdEx])
-			copy(dAtA[i:], keysForOutputAccounts[iNdEx])
-			i = encodeVarintAsync(dAtA, i, uint64(len(keysForOutputAccounts[iNdEx])))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintAsync(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x82
-		}
-	}
-	if m.TotalCallsCounter != 0 {
-		i = encodeVarintAsync(dAtA, i, uint64(m.TotalCallsCounter))
-		i--
-		dAtA[i] = 0x78
-	}
-	if m.CallsCounter != 0 {
-		i = encodeVarintAsync(dAtA, i, uint64(m.CallsCounter))
-		i--
-		dAtA[i] = 0x70
-	}
 	if m.ChildResults != nil {
 		{
 			size, err := m.ChildResults.MarshalToSizedBuffer(dAtA[:i])
@@ -1635,7 +1618,17 @@ func (m *SerializableAsyncContextProto) MarshalToSizedBuffer(dAtA []byte) (int, 
 			i = encodeVarintAsync(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x6a
+		dAtA[i] = 0x7a
+	}
+	if m.TotalCallsCounter != 0 {
+		i = encodeVarintAsync(dAtA, i, uint64(m.TotalCallsCounter))
+		i--
+		dAtA[i] = 0x70
+	}
+	if m.CallsCounter != 0 {
+		i = encodeVarintAsync(dAtA, i, uint64(m.CallsCounter))
+		i--
+		dAtA[i] = 0x68
 	}
 	if len(m.AsyncCallGroups) > 0 {
 		for iNdEx := len(m.AsyncCallGroups) - 1; iNdEx >= 0; iNdEx-- {
@@ -1761,6 +1754,35 @@ func (m *SerializableVMOutput) Size() (n int) {
 	{
 		__caster := &github_com_ElrondNetwork_elrond_go_core_data.BigIntCaster{}
 		l = __caster.Size(m.GasRefund)
+		n += 1 + l + sovAsync(uint64(l))
+	}
+	if len(m.OutputAccounts) > 0 {
+		for k, v := range m.OutputAccounts {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.Size()
+				l += 1 + sovAsync(uint64(l))
+			}
+			mapEntrySize := 1 + len(k) + sovAsync(uint64(len(k))) + l
+			n += mapEntrySize + 1 + sovAsync(uint64(mapEntrySize))
+		}
+	}
+	if len(m.DeletedAccounts) > 0 {
+		for _, b := range m.DeletedAccounts {
+			l = len(b)
+			n += 1 + l + sovAsync(uint64(l))
+		}
+	}
+	if len(m.TouchedAccounts) > 0 {
+		for _, b := range m.TouchedAccounts {
+			l = len(b)
+			n += 1 + l + sovAsync(uint64(l))
+		}
+	}
+	if m.Logs != nil {
+		l = m.Logs.Size()
 		n += 1 + l + sovAsync(uint64(l))
 	}
 	return n
@@ -1957,44 +1979,15 @@ func (m *SerializableAsyncContextProto) Size() (n int) {
 			n += 1 + l + sovAsync(uint64(l))
 		}
 	}
-	if m.ChildResults != nil {
-		l = m.ChildResults.Size()
-		n += 1 + l + sovAsync(uint64(l))
-	}
 	if m.CallsCounter != 0 {
 		n += 1 + sovAsync(uint64(m.CallsCounter))
 	}
 	if m.TotalCallsCounter != 0 {
 		n += 1 + sovAsync(uint64(m.TotalCallsCounter))
 	}
-	if len(m.OutputAccounts) > 0 {
-		for k, v := range m.OutputAccounts {
-			_ = k
-			_ = v
-			l = 0
-			if v != nil {
-				l = v.Size()
-				l += 1 + sovAsync(uint64(l))
-			}
-			mapEntrySize := 1 + len(k) + sovAsync(uint64(len(k))) + l
-			n += mapEntrySize + 2 + sovAsync(uint64(mapEntrySize))
-		}
-	}
-	if len(m.DeletedAccounts) > 0 {
-		for _, b := range m.DeletedAccounts {
-			l = len(b)
-			n += 2 + l + sovAsync(uint64(l))
-		}
-	}
-	if len(m.TouchedAccounts) > 0 {
-		for _, b := range m.TouchedAccounts {
-			l = len(b)
-			n += 2 + l + sovAsync(uint64(l))
-		}
-	}
-	if m.Logs != nil {
-		l = m.Logs.Size()
-		n += 2 + l + sovAsync(uint64(l))
+	if m.ChildResults != nil {
+		l = m.ChildResults.Size()
+		n += 1 + l + sovAsync(uint64(l))
 	}
 	return n
 }
@@ -2009,12 +2002,26 @@ func (this *SerializableVMOutput) String() string {
 	if this == nil {
 		return "nil"
 	}
+	keysForOutputAccounts := make([]string, 0, len(this.OutputAccounts))
+	for k, _ := range this.OutputAccounts {
+		keysForOutputAccounts = append(keysForOutputAccounts, k)
+	}
+	github_com_gogo_protobuf_sortkeys.Strings(keysForOutputAccounts)
+	mapStringForOutputAccounts := "map[string]*SerializableOutputAccount{"
+	for _, k := range keysForOutputAccounts {
+		mapStringForOutputAccounts += fmt.Sprintf("%v: %v,", k, this.OutputAccounts[k])
+	}
+	mapStringForOutputAccounts += "}"
 	s := strings.Join([]string{`&SerializableVMOutput{`,
 		`ReturnData:` + fmt.Sprintf("%v", this.ReturnData) + `,`,
 		`ReturnCode:` + fmt.Sprintf("%v", this.ReturnCode) + `,`,
 		`ReturnMessage:` + fmt.Sprintf("%v", this.ReturnMessage) + `,`,
 		`GasRemaining:` + fmt.Sprintf("%v", this.GasRemaining) + `,`,
 		`GasRefund:` + fmt.Sprintf("%v", this.GasRefund) + `,`,
+		`OutputAccounts:` + mapStringForOutputAccounts + `,`,
+		`DeletedAccounts:` + fmt.Sprintf("%v", this.DeletedAccounts) + `,`,
+		`TouchedAccounts:` + fmt.Sprintf("%v", this.TouchedAccounts) + `,`,
+		`Logs:` + strings.Replace(this.Logs.String(), "SerializableLogEntry", "SerializableLogEntry", 1) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2102,16 +2109,6 @@ func (this *SerializableAsyncContextProto) String() string {
 		repeatedStringForAsyncCallGroups += strings.Replace(fmt.Sprintf("%v", f), "SerializableAsyncCallGroup", "arwen.SerializableAsyncCallGroup", 1) + ","
 	}
 	repeatedStringForAsyncCallGroups += "}"
-	keysForOutputAccounts := make([]string, 0, len(this.OutputAccounts))
-	for k, _ := range this.OutputAccounts {
-		keysForOutputAccounts = append(keysForOutputAccounts, k)
-	}
-	github_com_gogo_protobuf_sortkeys.Strings(keysForOutputAccounts)
-	mapStringForOutputAccounts := "map[string]*SerializableOutputAccount{"
-	for _, k := range keysForOutputAccounts {
-		mapStringForOutputAccounts += fmt.Sprintf("%v: %v,", k, this.OutputAccounts[k])
-	}
-	mapStringForOutputAccounts += "}"
 	s := strings.Join([]string{`&SerializableAsyncContextProto{`,
 		`Address:` + fmt.Sprintf("%v", this.Address) + `,`,
 		`CallID:` + fmt.Sprintf("%v", this.CallID) + `,`,
@@ -2125,13 +2122,9 @@ func (this *SerializableAsyncContextProto) String() string {
 		`GasAccumulated:` + fmt.Sprintf("%v", this.GasAccumulated) + `,`,
 		`ReturnData:` + fmt.Sprintf("%v", this.ReturnData) + `,`,
 		`AsyncCallGroups:` + repeatedStringForAsyncCallGroups + `,`,
-		`ChildResults:` + strings.Replace(this.ChildResults.String(), "SerializableVMOutput", "SerializableVMOutput", 1) + `,`,
 		`CallsCounter:` + fmt.Sprintf("%v", this.CallsCounter) + `,`,
 		`TotalCallsCounter:` + fmt.Sprintf("%v", this.TotalCallsCounter) + `,`,
-		`OutputAccounts:` + mapStringForOutputAccounts + `,`,
-		`DeletedAccounts:` + fmt.Sprintf("%v", this.DeletedAccounts) + `,`,
-		`TouchedAccounts:` + fmt.Sprintf("%v", this.TouchedAccounts) + `,`,
-		`Logs:` + strings.Replace(this.Logs.String(), "SerializableLogEntry", "SerializableLogEntry", 1) + `,`,
+		`ChildResults:` + strings.Replace(this.ChildResults.String(), "SerializableVMOutput", "SerializableVMOutput", 1) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2311,6 +2304,235 @@ func (m *SerializableVMOutput) Unmarshal(dAtA []byte) error {
 				} else {
 					m.GasRefund = tmp
 				}
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OutputAccounts", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsync
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAsync
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAsync
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.OutputAccounts == nil {
+				m.OutputAccounts = make(map[string]*SerializableOutputAccount)
+			}
+			var mapkey string
+			var mapvalue *SerializableOutputAccount
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowAsync
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowAsync
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLengthAsync
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLengthAsync
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowAsync
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return ErrInvalidLengthAsync
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return ErrInvalidLengthAsync
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &SerializableOutputAccount{}
+					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skipAsync(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if skippy < 0 {
+						return ErrInvalidLengthAsync
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.OutputAccounts[mapkey] = mapvalue
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DeletedAccounts", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsync
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthAsync
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAsync
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DeletedAccounts = append(m.DeletedAccounts, make([]byte, postIndex-iNdEx))
+			copy(m.DeletedAccounts[len(m.DeletedAccounts)-1], dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TouchedAccounts", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsync
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthAsync
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAsync
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TouchedAccounts = append(m.TouchedAccounts, make([]byte, postIndex-iNdEx))
+			copy(m.TouchedAccounts[len(m.TouchedAccounts)-1], dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Logs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsync
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAsync
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAsync
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Logs == nil {
+				m.Logs = &SerializableLogEntry{}
+			}
+			if err := m.Logs.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -3738,6 +3960,44 @@ func (m *SerializableAsyncContextProto) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CallsCounter", wireType)
+			}
+			m.CallsCounter = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsync
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.CallsCounter |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 14:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TotalCallsCounter", wireType)
+			}
+			m.TotalCallsCounter = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAsync
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TotalCallsCounter |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 15:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ChildResults", wireType)
 			}
@@ -3770,273 +4030,6 @@ func (m *SerializableAsyncContextProto) Unmarshal(dAtA []byte) error {
 				m.ChildResults = &SerializableVMOutput{}
 			}
 			if err := m.ChildResults.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 14:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CallsCounter", wireType)
-			}
-			m.CallsCounter = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowAsync
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.CallsCounter |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 15:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TotalCallsCounter", wireType)
-			}
-			m.TotalCallsCounter = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowAsync
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TotalCallsCounter |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 16:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OutputAccounts", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowAsync
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthAsync
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthAsync
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.OutputAccounts == nil {
-				m.OutputAccounts = make(map[string]*SerializableOutputAccount)
-			}
-			var mapkey string
-			var mapvalue *SerializableOutputAccount
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowAsync
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowAsync
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthAsync
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthAsync
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var mapmsglen int
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowAsync
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						mapmsglen |= int(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					if mapmsglen < 0 {
-						return ErrInvalidLengthAsync
-					}
-					postmsgIndex := iNdEx + mapmsglen
-					if postmsgIndex < 0 {
-						return ErrInvalidLengthAsync
-					}
-					if postmsgIndex > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = &SerializableOutputAccount{}
-					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
-						return err
-					}
-					iNdEx = postmsgIndex
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipAsync(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if skippy < 0 {
-						return ErrInvalidLengthAsync
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.OutputAccounts[mapkey] = mapvalue
-			iNdEx = postIndex
-		case 17:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field DeletedAccounts", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowAsync
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthAsync
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthAsync
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.DeletedAccounts = append(m.DeletedAccounts, make([]byte, postIndex-iNdEx))
-			copy(m.DeletedAccounts[len(m.DeletedAccounts)-1], dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 18:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TouchedAccounts", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowAsync
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthAsync
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthAsync
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.TouchedAccounts = append(m.TouchedAccounts, make([]byte, postIndex-iNdEx))
-			copy(m.TouchedAccounts[len(m.TouchedAccounts)-1], dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 19:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Logs", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowAsync
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthAsync
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthAsync
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Logs == nil {
-				m.Logs = &SerializableLogEntry{}
-			}
-			if err := m.Logs.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

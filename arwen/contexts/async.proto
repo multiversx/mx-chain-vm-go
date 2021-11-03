@@ -3,7 +3,7 @@ syntax = "proto3";
 option go_package = "../contexts";
 option (gogoproto.stable_marshaler_all) = true;
 
-import "asyncCall.proto";
+import "github.com/ElrondNetwork/arwen-wasm-vm/arwen/asyncCall.proto";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 package contexts;
@@ -21,6 +21,10 @@ message SerializableVMOutput {
     string ReturnMessage = 3; 
     uint64 GasRemaining = 4; 
     bytes  GasRefund = 5 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    map<string, SerializableOutputAccount> OutputAccounts = 6;
+	repeated bytes DeletedAccounts = 7;
+	repeated bytes TouchedAccounts = 8;
+	SerializableLogEntry Logs = 9;
 }
 
 message SerializableOutputTransfer {
@@ -71,11 +75,7 @@ message SerializableAsyncContextProto {
 	uint64 GasAccumulated = 10;
 	bytes ReturnData = 11;     
     repeated arwen.SerializableAsyncCallGroup asyncCallGroups = 12;
-    SerializableVMOutput ChildResults = 13;
-	uint64 CallsCounter = 14;
-	uint64 TotalCallsCounter = 15;
-    map<string, SerializableOutputAccount> OutputAccounts = 16;
-	repeated bytes DeletedAccounts = 17;
-	repeated bytes TouchedAccounts = 18;
-	SerializableLogEntry Logs = 19;
+    uint64 CallsCounter = 13;
+	uint64 TotalCallsCounter = 14;
+    SerializableVMOutput ChildResults = 15;
 }

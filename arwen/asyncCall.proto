@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen";
+option go_package = "arwen";
 option (gogoproto.stable_marshaler_all) = true;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
@@ -8,17 +8,17 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 package arwen;
 
 enum SearializableAsyncCallStatus {
-    AsyncCallPending = 0;
-    AsyncCallResolved = 1;
-    AsyncCallRejected = 2;
+    SearializableAsyncCallPending = 0;
+    SearializableAsyncCallResolved = 1;
+    SearializableAsyncCallRejected = 2;
 }
 
 enum SearializableAsyncCallExecutionMode {
-    SyncExecution = 0;
-    AsyncBuiltinFuncIntraShard = 1;
-    AsyncBuiltinFuncCrossShard = 2;
-    ESDTTransferOnCallBack = 3;
-    AsyncUnknown = 4;
+    SearializableSyncExecution = 0;
+    SearializableAsyncBuiltinFuncIntraShard = 1;
+    SearializableAsyncBuiltinFuncCrossShard = 2;
+    SearializableESDTTransferOnCallBack = 3;
+    SearializableAsyncUnknown = 4;
 }
 
 message SerializableAsyncCall {
