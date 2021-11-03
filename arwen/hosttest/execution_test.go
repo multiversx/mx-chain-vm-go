@@ -2813,31 +2813,24 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
-	reps := big.NewInt(100)
-	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
-
-	test.BuildInstanceCallTest(t).
-		WithContracts(
-			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(codeOpcodes)).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(80000).
-			WithFunction("memGrow").
-			WithArguments(repsBytes).
-			Build()).
-		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok()
-		})
+	runWASMOpcodeTestMemGrow(t, 16, 100, vmcommon.Ok)
 }
 
 func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
-	arwen.SetLoggingForTests()
-	reps := big.NewInt(1)
-	repsBytes := arwen.PadBytesLeft(reps.Bytes(), 8)
-	delta := big.NewInt(16000)
-	deltaBytes := arwen.PadBytesLeft(delta.Bytes(), 8)
+	maxAllowedDelta := int64(config.MakeGasMapForTests()["WASMOpcodeCost"]["MaxMemoryGrowDelta"])
+	runWASMOpcodeTestMemGrow(t, 1, maxAllowedDelta-1, vmcommon.Ok)
+	runWASMOpcodeTestMemGrow(t, 1, maxAllowedDelta, vmcommon.Ok)
+	runWASMOpcodeTestMemGrow(t, 1, maxAllowedDelta+1, vmcommon.ExecutionFailed)
+}
 
-	test.BuildInstanceCallTest(t).
+func runWASMOpcodeTestMemGrow(tb testing.TB, reps int64, memGrowDelta int64, expectedRetCode vmcommon.ReturnCode) {
+	repsBigInt := big.NewInt(reps)
+	repsBytes := arwen.PadBytesLeft(repsBigInt.Bytes(), 8)
+
+	deltaBigInt := big.NewInt(memGrowDelta)
+	deltaBytes := arwen.PadBytesLeft(deltaBigInt.Bytes(), 8)
+
+	test.BuildInstanceCallTest(tb).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(codeOpcodes)).
@@ -2847,7 +2840,27 @@ func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
 			WithArguments(repsBytes, deltaBytes).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.ReturnMessage("").Ok()
+			verify.ReturnCode(expectedRetCode)
+		})
+}
+
+func TestExecution_Opcodes_MemGrowWrongIndex(t *testing.T) {
+	code := test.GetTestSCCode("memgrow-wrong", "../../")
+	reps := int64(1)
+	repsBigInt := big.NewInt(reps)
+	repsBytes := arwen.PadBytesLeft(repsBigInt.Bytes(), 8)
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(code)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(80000).
+			WithFunction("memGrowWrongIndex").
+			WithArguments(repsBytes).
+			Build()).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
 		})
 }
 
