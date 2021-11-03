@@ -36,6 +36,4 @@ void memGrowDelta() {
 		);
 		int64finish(i);
 	}
-
-	int64finish((i64)delta);
 }
