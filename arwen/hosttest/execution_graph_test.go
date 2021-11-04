@@ -328,137 +328,137 @@ func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
 }
 
 func TestGraph_AsyncCallsAsync_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsync()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallback()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallback()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFail()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailLocalCross()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
@@ -467,7 +467,7 @@ func TestGraph_AsyncCallsAsyncFirstCallbackFail_LocalCross_CallGraph(t *testing.
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_LocalCross_CallGraph(t *testing.T) {
 	// TODO matei-p activate in R2 - this fails in R1 due gas usage missmatch error that
 	// prevents storage cleanup taking place
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -475,55 +475,55 @@ func TestGraph_AsyncCallsAsyncSecondCallbackFail_LocalCross_CallGraph(t *testing
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_LocalCross_CallGraph(t *testing.T) {
 	// TODO matei-p activate in R2 - this fails in R1 due gas usage missmatch error that
 	// prevents storage cleanup taking place
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallbackCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallbackCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFailCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFailCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFailCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFailCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFailCrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossShard()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -559,73 +559,73 @@ func TestGraph_CallbackCallsSync_CallGraph(t *testing.T) {
 }
 
 func TestGraph_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_LocalLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_LocalLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_LocalCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_CrossLocal_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossLocal()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_CrossCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncFailCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_CrossCross_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossCross()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -646,13 +646,13 @@ func TestGraph_SyncAndAsync3_CallGraph(t *testing.T) {
 }
 
 func TestGraph_SyncAndAsync4_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestSyncAndAsync4()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync5_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestSyncAndAsync5()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -673,13 +673,13 @@ func TestGraph_SyncAndAsync8_CallGraph(t *testing.T) {
 }
 
 func TestGraph_SyncAndAsync9_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestSyncAndAsync9()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync10_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestSyncAndAsync10()
 	runGraphCallTestTemplate(t, callGraph)
 }
@@ -690,53 +690,53 @@ func TestGraph_SyncAndAsync11_CallGraph(t *testing.T) {
 }
 
 func TestGraph_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard2()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard3()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard4()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall5_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard5()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard6()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard7()
 	runGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard8()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
 }
 
 func TestGraph_AsyncCall9_CrossShard_CallGraph(t *testing.T) {
-	t.Skip()
+	t.Skip("multi-level only")
 	callGraph := test.CreateGraphTestAsyncCallsCrossShard9()
 	// TODO this is temp until R2
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, assertsConfigForR1MultiLevel)
