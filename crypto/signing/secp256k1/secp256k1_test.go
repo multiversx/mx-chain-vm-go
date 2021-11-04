@@ -32,3 +32,20 @@ func TestBitcoinSig(t *testing.T) {
 
 	assert.Nil(t, err)
 }
+
+func TestEthereumSig2(t *testing.T) {
+	msg, _ := hex.DecodeString("616161")
+	key, _ := hex.DecodeString("044338845e8308b819bf33a43dc7f47713f92d8d377dfde399831e9d8da23446be32cef60a7c923332ab06c768242d11017a6bcf419c17b8b184fc19ea603b07d6")
+	sig, _ := hex.DecodeString("3046022100da0db89620513df9a90cf8c97edf227e07182d1c91b3cab55a472122d639daee022100d5b9cf4a02274cf5b606df7b4fa73bff1190f54e0c6ef8cd362e63dc1dbecce1")
+	verifier := NewSecp256k1()
+	err := verifier.VerifySecp256k1(key, msg, sig, byte(ECDSASha256))
+
+	assert.Nil(t, err)
+}
+
+/*
+04a3fe01e1c6ab5306130d09c1a928bd1598ccce020503ade24d0a5bf7040d5f4cdec9fdcba6497f834641b7908ed04d0b7698bbce6100ff2bbf82e5c52d523b19
+776562656c69676874
+e368f0ab2a13804e63dbc64d4c25175f117d1a5cb2444416f557423730f9da26678d224e7c6952eea2b99dff14546538b8d3dfb4abe37177b85d0abaa6677935
+
+*/
