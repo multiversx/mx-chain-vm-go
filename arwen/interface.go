@@ -356,7 +356,6 @@ type AsyncContext interface {
 	UpdateCurrentAsyncCallStatus(
 		address []byte,
 		callID []byte,
-		asyncCallIdentifier []byte,
 		vmInput *vmcommon.VMInput) (*AsyncCall, error)
 	SendCrossShardCallback(
 		returnCode vmcommon.ReturnCode,

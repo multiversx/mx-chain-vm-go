@@ -395,7 +395,7 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
 // extracts the ReturnCode from data provided by the destination call, and updates
 // the status of the AsyncCall with its value.
-func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*arwen.AsyncCall, error) {
+func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID []byte, vmInput *vmcommon.VMInput) (*arwen.AsyncCall, error) {
 	if vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
@@ -412,7 +412,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 		return nil, err
 	}
 
-	call, _, _, err := deserializedContext.GetCallByAsyncIdentifier(asyncCallIdentifier)
+	call, _, _, err := deserializedContext.GetCallByAsyncIdentifier(callID)
 	if err != nil {
 		return nil, err
 	}

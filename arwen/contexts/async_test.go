@@ -424,14 +424,14 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err := async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err := async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
 	vmInput.CallType = vm.AsynchronousCall
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
@@ -440,7 +440,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrCannotInterpretCallbackArgs))
 
@@ -449,13 +449,14 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrNoStoredAsyncContextFound))
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
 	// but it's not the expected one.
 	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+		CallID:      []byte("callID_1"),
 		Destination: []byte("some_address"),
 		Data:        []byte("function"),
 	})
@@ -465,7 +466,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
@@ -495,7 +496,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
@@ -506,7 +507,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, []byte{}, &vmInput.VMInput)
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallRejected, asyncCall.Status)
@@ -641,7 +642,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 
-	async := makeAsyncContext(t, host, nil)
+	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.GasLimit = 200
@@ -741,7 +742,7 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host, nil)
+	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallResolved
@@ -767,7 +768,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host, nil)
+	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallRejected
