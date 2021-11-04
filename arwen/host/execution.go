@@ -935,7 +935,6 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	asyncCall, err := async.UpdateCurrentAsyncCallStatus(
 		runtime.GetSCAddress(),
 		callerCallCallID,
-		async.GetCallerCallID(),
 		runtime.GetVMInput())
 	if err != nil {
 		log.Trace("UpdateCurrentCallStatus failed", "error", err)

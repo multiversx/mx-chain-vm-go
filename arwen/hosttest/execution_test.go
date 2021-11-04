@@ -335,7 +335,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 }
 
 func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.T) {
-
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -991,9 +990,6 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 			WithFunction(parentFunctionChildCall).
 			WithGasProvided(test.GasProvided).
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
-		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				BalanceDelta(test.ParentAddress, -198).
@@ -2279,6 +2275,9 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithGasProvided(2000).
 			//WithArguments([]byte{}, []byte{}).
 			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
+		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				GasUsed(test.ParentAddress, 762).
@@ -2315,6 +2314,7 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 			WithArguments([]byte{0}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 			stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 				if bytes.Equal(scAddress, test.ParentAddress) {
 					return &contextmock.StubAccount{
@@ -2477,7 +2477,6 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -2531,6 +2530,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
 				if bytes.Equal(address, test.ParentAddress) {
 					if bytes.Equal(key, []byte{'A'}) {
