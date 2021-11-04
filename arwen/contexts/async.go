@@ -396,17 +396,20 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 // extracts the ReturnCode from data provided by the destination call, and updates
 // the status of the AsyncCall with its value.
 func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID []byte, asyncCallIdentifier []byte, vmInput *vmcommon.VMInput) (*arwen.AsyncCall, error) {
-	deserializedContext, err := newSerializedAsyncContextFromStore(context.host.Storage(), address, context.callbackAsyncInitiatorCallID)
-	if err != nil {
-		return nil, err
-	}
-
 	if vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
 
 	if len(vmInput.Arguments) == 0 {
 		return nil, arwen.ErrCannotInterpretCallbackArgs
+	}
+
+	deserializedContext, err := newSerializedAsyncContextFromStore(
+		context.host.Storage(),
+		address,
+		context.callbackAsyncInitiatorCallID)
+	if err != nil {
+		return nil, err
 	}
 
 	call, _, _, err := deserializedContext.GetCallByAsyncIdentifier(asyncCallIdentifier)

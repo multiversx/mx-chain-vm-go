@@ -2254,7 +2254,6 @@ func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
-	arwen.SetLoggingForTestsWithLogger("arwen/metering:TRACE,arwen/async")
 	// The child contract is designed to send some tokens back to its caller, as
 	// many as requested. The parent calls the child using
 	// executeOnDestContextByCaller(), which means that the child will not see
@@ -2345,7 +2344,6 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 }
 
 func TestExecution_AsyncCall(t *testing.T) {
-	arwen.SetLoggingForTestsWithLogger("arwen/metering:TRACE,arwen/async")
 	// Scenario
 	// Parent SC calls Child SC
 	// Before asyncCall, Parent sets storage, makes a value transfer to ThirdParty and finishes some data
@@ -2656,7 +2654,6 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
-	arwen.SetLoggingForTests()
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
 	newAddr := "newAddr_"
