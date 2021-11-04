@@ -420,6 +420,11 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 			log.Trace("VMOutput", "| OutputTransfers["+fmt.Sprint(i)+"].Value", transfer.Value)
 			log.Trace("VMOutput", "└ OutputTransfers["+fmt.Sprint(i)+"].Data", transfer.Data)
 		}
+		for i, storage := range account.StorageUpdates {
+			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Offset", string(storage.Offset), "len", len(storage.Offset))
+			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Data", storage.Data, "len", len(storage.Data))
+			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Written", storage.Written)
+		}
 	}
 	return v
 }

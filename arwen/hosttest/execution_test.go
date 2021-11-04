@@ -2273,14 +2273,10 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction("call_child").
 			WithGasProvided(2000).
-			//WithArguments([]byte{}, []byte{}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
-		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 762).
+				GasUsed(test.ParentAddress, 834).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, -transferValue).
 				GasUsed(test.ChildAddress, 667).
@@ -2314,7 +2310,6 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 			WithArguments([]byte{0}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 			stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
 				if bytes.Equal(scAddress, test.ParentAddress) {
 					return &contextmock.StubAccount{
