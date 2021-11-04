@@ -543,7 +543,7 @@ func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error)
 }
 
 //export v1_4_bigFloatFloor
-func v1_4_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandleint32 int32) {
+func v1_4_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)

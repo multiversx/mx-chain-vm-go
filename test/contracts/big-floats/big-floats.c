@@ -183,7 +183,7 @@ void BigFloatFloorTest() {
     int resultbigFloatHandle = bigIntNew(0);
     for (int i = 0; i < reps; i++) {
         bigFloatGetArgument(i+1,bigFloatHandle);
-        bigFloatFloor(bigFloatHandle,resultbigFloatHandle);
+        bigFloatFloor(resultbigFloatHandle, bigFloatHandle);
     }
     bigIntFinishUnsigned(resultbigFloatHandle);
 }
@@ -194,7 +194,7 @@ void BigFloatCeilTest() {
     int resultbigFloatHandle = bigIntNew(0);
     for (int i = 0; i < reps; i++) {
         bigFloatGetArgument(i+1,bigFloatHandle);
-        bigFloatCeil(bigFloatHandle,resultbigFloatHandle);
+        bigFloatCeil(resultbigFloatHandle, bigFloatHandle);
     }
     bigIntFinishUnsigned(resultbigFloatHandle);
 }
