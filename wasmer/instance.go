@@ -94,6 +94,7 @@ type Instance struct {
 type CompilationOptions struct {
 	GasLimit           uint64
 	UnmeteredLocals    uint64
+	MaxMemoryGrowDelta uint64
 	OpcodeTrace        bool
 	Metering           bool
 	RuntimeBreakpoints bool
