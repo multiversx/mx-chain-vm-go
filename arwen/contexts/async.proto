@@ -62,7 +62,7 @@ message SerializableLogEntry {
     bytes Data = 4;
 }
 
-message SerializableAsyncContextProto {
+message SerializableAsyncContext {
     bytes Address = 1;
     bytes CallID = 2;
     SerializableCallType CallType = 3;

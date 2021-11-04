@@ -17,8 +17,8 @@ func (context *asyncContext) Serialize() ([]byte, error) {
 	return marshalizer.Marshal(serializableContext)
 }
 
-func deserializeAsyncContext(data []byte) (*SerializableAsyncContextProto, error) {
-	deserializedContext := &SerializableAsyncContextProto{}
+func deserializeAsyncContext(data []byte) (*SerializableAsyncContext, error) {
+	deserializedContext := &SerializableAsyncContext{}
 	err := marshalizer.Unmarshal(deserializedContext, data)
 	if err != nil {
 		return nil, err
@@ -26,8 +26,8 @@ func deserializeAsyncContext(data []byte) (*SerializableAsyncContextProto, error
 	return deserializedContext, nil
 }
 
-func (context *asyncContext) toSerializable() *SerializableAsyncContextProto {
-	return &SerializableAsyncContextProto{
+func (context *asyncContext) toSerializable() *SerializableAsyncContext {
+	return &SerializableAsyncContext{
 		Address:                      context.address,
 		CallID:                       context.callID,
 		CallType:                     SerializableCallType(context.callType),
@@ -58,7 +58,7 @@ func toSerializableVMOutput(vmOutput *vmcommon.VMOutput) *SerializableVMOutput {
 	}
 }
 
-func fromSerializable(serializedContext *SerializableAsyncContextProto) *asyncContext {
+func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext {
 	return &asyncContext{
 		host:                         nil,
 		stateStack:                   nil,

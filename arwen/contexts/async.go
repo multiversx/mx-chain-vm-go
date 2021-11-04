@@ -422,7 +422,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 }
 
 // GetCallByAsyncIdentifier -
-func (context *SerializableAsyncContextProto) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
+func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	return getCallByAsyncIdentifierSer(context.AsyncCallGroups, asyncCallIdentifier)
 }
 
@@ -700,7 +700,7 @@ func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier []by
 }
 
 // IsComplete -
-func (context *SerializableAsyncContextProto) IsComplete() bool {
+func (context *SerializableAsyncContext) IsComplete() bool {
 	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
 }
 
