@@ -12,12 +12,15 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
+
+// Defined as a constant here, not present in gasSchedule V1, V2, V3
+const MaxMemoryGrowDelta = uint64(10)
 
 type runtimeContext struct {
 	host         arwen.VMHost
@@ -161,6 +164,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrowDelta: MaxMemoryGrowDelta,
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -186,6 +190,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrowDelta: MaxMemoryGrowDelta,
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
