@@ -2290,10 +2290,59 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 		})
 }
 
-func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
+func TestExecution_AsyncCall_GasLimitConsumed_NoGasLeftForAsyncSave(t *testing.T) {
 	parentCode := test.GetTestSCCode("async-call-parent", "../../")
 	childCode := test.GetTestSCCode("async-call-child", "../../")
 
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(parentCode).
+				WithBalance(1000),
+			test.CreateInstanceContract(test.ChildAddress).
+				WithCode(childCode).
+				WithBalance(1000),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithFunction(parentPerformAsyncCall).
+			WithGasProvided(1000000).
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+				if bytes.Equal(scAddress, test.ParentAddress) {
+					return &contextmock.StubAccount{
+						Address: test.ParentAddress,
+						Balance: big.NewInt(1000),
+					}, nil
+				}
+				return nil, test.ErrAccountNotFound
+			}
+			stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+				if bytes.Equal(test.ParentAddress, account.AddressBytes()) {
+					return parentCode
+				}
+				return nil
+			}
+			stubBlockchainHook.GetShardOfAddressCalled = func(address []byte) uint32 {
+				if bytes.Equal(address, test.ParentAddress) {
+					return 0
+				}
+				return 1
+			}
+		}).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.OutOfGas().
+				GasRemaining(0)
+		})
+}
+
+func TestExecution_AsyncCall_GasLimitConsumed_Ok(t *testing.T) {
+	parentCode := test.GetTestSCCode("async-call-parent", "../../")
+	childCode := test.GetTestSCCode("async-call-child", "../../")
+
+	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
