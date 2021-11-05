@@ -83,7 +83,7 @@
                                     "attributes": "0x808080"
                                 }
                             ],
-                            "lastNonce": "0",
+                            "lastNonce": "1",
                             "roles": [
                                 "ESDTRoleNFTCreate"
                             ]
