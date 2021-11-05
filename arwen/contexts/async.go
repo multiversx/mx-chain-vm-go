@@ -791,6 +791,13 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 }
 
 func (context *asyncContext) CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error {
+	return context.CompleteChildConditional(true, asyncCallIdentifier, gasToAccumulate)
+}
+
+func (context *asyncContext) CompleteChildConditional(isComplete bool, asyncCallIdentifier []byte, gasToAccumulate uint64) error {
+	if !isComplete {
+		return nil
+	}
 	context.DecrementCallsCounter()
 	context.accumulateGas(gasToAccumulate)
 	if asyncCallIdentifier != nil {
