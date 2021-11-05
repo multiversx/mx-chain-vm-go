@@ -2511,6 +2511,8 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childAddress := []byte("newAddress")
 	l := len(childCode)
 
+	arwen.SetLoggingForTests()
+
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2525,7 +2527,6 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
 				if bytes.Equal(address, test.ParentAddress) {
 					if bytes.Equal(key, []byte{'A'}) {
@@ -2537,9 +2538,9 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.Print().Ok().
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 885).
+				GasUsed(test.ParentAddress, 965).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
