@@ -541,10 +541,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	if err != nil {
 		return
 	}
-
-	if isComplete {
-		host.Async().CompleteChild(nil, 0)
-	}
+	host.Async().CompleteChildConditional(isComplete, nil, 0)
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 

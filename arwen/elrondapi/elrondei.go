@@ -1452,7 +1452,8 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
 		_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
-		_, _, executeErr = host.ExecuteOnDestContext(contractCallInput)
+		_, isComplete, executeErr := host.ExecuteOnDestContext(contractCallInput)
+		host.Async().CompleteChildConditional(isComplete, nil, 0)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
@@ -2806,14 +2807,9 @@ func ExecuteOnDestContextWithTypedArgs(
 	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 
 	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
+	host.Async().CompleteChildConditional(isComplete, nil, 0)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
-	}
-
-	if isComplete {
-		// completion of a sync child
-		// accumulated gas si merged during pop
-		host.Async().CompleteChild(nil, 0)
 	}
 
 	return 0
@@ -2916,7 +2912,8 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	// send callID and callerCallID to a sync call
 	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
+	host.Async().CompleteChildConditional(isComplete, nil, 0)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}

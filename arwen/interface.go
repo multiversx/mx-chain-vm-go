@@ -363,6 +363,7 @@ type AsyncContext interface {
 		returnMessage string) error
 
 	CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error
+	CompleteChildConditional(isComplete bool, asyncCallIdentifier []byte, gasToAccumulate uint64) error
 	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (AsyncContext, error)
 
 	AccumulateGasFromPreviousState()
