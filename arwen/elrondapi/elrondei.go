@@ -2766,6 +2766,9 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 			}
 			return -1
 		}
+
+		contractCallInput.CallType = vm.ExecOnDestByCaller
+		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
 	}
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
