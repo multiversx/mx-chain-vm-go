@@ -284,7 +284,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	if bytes.Equal(oldValue, zero) {
 		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
 		metering.UseGas(useGas)
-		logStorage.Trace("storage added", "key", key, "value", value)
+		logStorage.Trace("storage added", "key", key, "value", value, "len", len(value))
 		return arwen.StorageAdded, nil
 	}
 	if bytes.Equal(value, zero) {

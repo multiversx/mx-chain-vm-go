@@ -2342,7 +2342,6 @@ func TestExecution_AsyncCall_GasLimitConsumed_Ok(t *testing.T) {
 	parentCode := test.GetTestSCCode("async-call-parent", "../../")
 	childCode := test.GetTestSCCode("async-call-child", "../../")
 
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2559,8 +2558,6 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 	childCode := test.GetTestSCCode("init-correct", "../../")
 	childAddress := []byte("newAddress")
 	l := len(childCode)
-
-	arwen.SetLoggingForTests()
 
 	test.BuildInstanceCallTest(t).
 		WithContracts(
