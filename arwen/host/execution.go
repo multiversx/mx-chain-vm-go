@@ -537,9 +537,13 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, _, err = host.ExecuteOnDestContext(initCallInput)
+	_, isComplete, err := host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return
+	}
+
+	if isComplete {
+		host.Async().CompleteChild(nil, 0)
 	}
 
 	blockchain.IncreaseNonce(input.CallerAddr)

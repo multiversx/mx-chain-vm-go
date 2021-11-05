@@ -246,7 +246,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	extraBytes := len(key) - arwen.AddressLen
 	if extraBytes > 0 {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		metering.UseGas(gasToUse)
+		metering.UseGasBounded(gasToUse)
 	}
 
 	var zero []byte
@@ -268,7 +268,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	lengthOldValue := len(oldValue)
 	if bytes.Equal(oldValue, value) {
 		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
-		metering.UseGas(useGas)
+		metering.UseGasBounded(useGas)
 		logStorage.Trace("storage set to identical value")
 		return arwen.StorageUnchanged, nil
 	}
@@ -283,7 +283,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 
 	if bytes.Equal(oldValue, zero) {
 		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
-		metering.UseGas(useGas)
+		metering.UseGasBounded(useGas)
 		logStorage.Trace("storage added", "key", key, "value", value)
 		return arwen.StorageAdded, nil
 	}
@@ -301,14 +301,14 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 		newValStoreUseGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(newValueExtraLength))
 		gasUsed := math.AddUint64(useGas, newValStoreUseGas)
 
-		metering.UseGas(gasUsed)
+		metering.UseGasBounded(gasUsed)
 	}
 
 	if newValueExtraLength < 0 {
 		newValueExtraLength = -newValueExtraLength
 
 		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
-		metering.UseGas(useGas)
+		metering.UseGasBounded(useGas)
 
 		freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
 		metering.FreeGas(freeGas)
