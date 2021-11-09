@@ -335,7 +335,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 }
 
 func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.T) {
-
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -991,9 +990,6 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 			WithFunction(parentFunctionChildCall).
 			WithGasProvided(test.GasProvided).
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
-		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				BalanceDelta(test.ParentAddress, -198).
@@ -2254,7 +2250,6 @@ func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
-	arwen.SetLoggingForTestsWithLogger("arwen/metering:TRACE,arwen/async")
 	// The child contract is designed to send some tokens back to its caller, as
 	// many as requested. The parent calls the child using
 	// executeOnDestContextByCaller(), which means that the child will not see
@@ -2278,11 +2273,10 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction("call_child").
 			WithGasProvided(2000).
-			//WithArguments([]byte{}, []byte{}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 762).
+				GasUsed(test.ParentAddress, 834).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, -transferValue).
 				GasUsed(test.ChildAddress, 667).
@@ -2296,7 +2290,55 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 		})
 }
 
-func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
+func TestExecution_AsyncCall_GasLimitConsumed_NoGasLeftForAsyncSave(t *testing.T) {
+	parentCode := test.GetTestSCCode("async-call-parent", "../../")
+	childCode := test.GetTestSCCode("async-call-child", "../../")
+
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(parentCode).
+				WithBalance(1000),
+			test.CreateInstanceContract(test.ChildAddress).
+				WithCode(childCode).
+				WithBalance(1000),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithFunction(parentPerformAsyncCall).
+			WithGasProvided(1000000).
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+				if bytes.Equal(scAddress, test.ParentAddress) {
+					return &contextmock.StubAccount{
+						Address: test.ParentAddress,
+						Balance: big.NewInt(1000),
+					}, nil
+				}
+				return nil, test.ErrAccountNotFound
+			}
+			stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+				if bytes.Equal(test.ParentAddress, account.AddressBytes()) {
+					return parentCode
+				}
+				return nil
+			}
+			stubBlockchainHook.GetShardOfAddressCalled = func(address []byte) uint32 {
+				if bytes.Equal(address, test.ParentAddress) {
+					return 0
+				}
+				return 1
+			}
+		}).
+		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.OutOfGas().
+				GasRemaining(0)
+		})
+}
+
+func TestExecution_AsyncCall_GasLimitConsumed_Ok(t *testing.T) {
 	parentCode := test.GetTestSCCode("async-call-parent", "../../")
 	childCode := test.GetTestSCCode("async-call-child", "../../")
 
@@ -2345,7 +2387,6 @@ func TestExecution_AsyncCall_GasLimitConsumed(t *testing.T) {
 }
 
 func TestExecution_AsyncCall(t *testing.T) {
-	arwen.SetLoggingForTestsWithLogger("arwen/metering:TRACE,arwen/async")
 	// Scenario
 	// Parent SC calls Child SC
 	// Before asyncCall, Parent sets storage, makes a value transfer to ThirdParty and finishes some data
@@ -2479,7 +2520,6 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -2544,9 +2584,9 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok().
+			verify.Print().Ok().
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 885).
+				GasUsed(test.ParentAddress, 965).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
@@ -2656,7 +2696,6 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 }
 
 func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
-	arwen.SetLoggingForTests()
 	childCode := test.GetTestSCCode("deployer-child", "../../")
 
 	newAddr := "newAddr_"
