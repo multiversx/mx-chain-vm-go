@@ -517,6 +517,12 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	metering := context.host.Metering()
 	gasLimit := math.SubUint64(metering.GasLeft(), gasToLock)
 
+	gasUseForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
+	if err != nil {
+		return err
+	}
+	gasLimit = math.SubUint64(gasLimit, gasUseForLegacyContextSerialization)
+
 	callbackFunction := ""
 	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
 		callbackFunction = arwen.CallbackFunctionName
@@ -539,6 +545,19 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
 	return nil
+}
+
+func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
+	metering := context.host.Metering()
+	serializedContext := context.toSerializable()
+	serializedContext.CallsCounter = 1
+	serializedContext.TotalCallsCounter = 1
+	serializedData, err := marshalizer.Marshal(serializedContext)
+	if err != nil {
+		return 0, err
+	}
+	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(serializedData)))
+	return gasUseForSerialization, nil
 }
 
 func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
