@@ -667,6 +667,7 @@ const (
     I16x8RoundingAverageU = 200
     LocalAllocate = 2
     LocalsUnmetered = 100
+    MaxMemoryGrow = 8
     MaxMemoryGrowDelta = 10
 `
 	gasScheduleV4 = `[BuiltInCost]
@@ -1329,6 +1330,7 @@ const (
     I16x8RoundingAverageU = 200
     LocalAllocate = 5
     LocalsUnmetered = 100
+    MaxMemoryGrow = 8
     MaxMemoryGrowDelta = 10
 `
 )
