@@ -85,7 +85,7 @@
                     "balance": "789,000,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "str:stake@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+                    "asyncCallData": "str:stake@6108555c9fef18e532d10ecfa558d8f36e2ea7acbbeace72acc48b3c347106b7@312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e@02@626c735f6b65795f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f315f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@626c735f6b65795f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f@7369676e61747572655f325f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
                 },
                 "sc:delegation": {
                     "nonce": "0",
@@ -114,7 +114,8 @@
                         "''u_uncl|0x00000003": "0",
                         "''u_stak|0x00000003": "222,000,000,000",
                         "''u_sale|0x00000003": "0",
-                        "''tx_hash_________________________": "''auction_stake_callback"
+                        "''tx_hash_________________________": "''auction_stake_callback",
+												"''ARWEN@ASYNC1...............................": "0x0a20000000000000000064656c65676174696f6e5f5f5f5f5f5f5f5f5f5f5f5f5f5f1220312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e22206e6f64655f616464726573735f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f7331480168017001"
                     },
                     "code": "file:../delegation.wasm"
                 },
