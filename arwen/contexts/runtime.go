@@ -20,6 +20,7 @@ var logRuntime = logger.GetOrCreate("arwen/runtime")
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 // Defined as a constant here, not present in gasSchedule V1, V2, V3
+const MaxMemoryGrow = uint64(10)
 const MaxMemoryGrowDelta = uint64(10)
 
 type runtimeContext struct {
@@ -164,6 +165,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      MaxMemoryGrow,
 		MaxMemoryGrowDelta: MaxMemoryGrowDelta,
 		OpcodeTrace:        false,
 		Metering:           true,
@@ -190,6 +192,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      MaxMemoryGrow,
 		MaxMemoryGrowDelta: MaxMemoryGrowDelta,
 		OpcodeTrace:        false,
 		Metering:           true,
