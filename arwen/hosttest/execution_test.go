@@ -2813,10 +2813,11 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
+	reps := int64(100)
 	maxMemGrow := uint32(math.MaxUint32)
 	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, 10, vmcommon.Ok)
+	argMemGrowDelta := int64(1)
+	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, reps, vmcommon.Ok)
 }
 
 func TestExecution_Opcodes_MemoryGrow_Limit(t *testing.T) {
@@ -2835,10 +2836,59 @@ func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
 	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta+1), 1, vmcommon.ExecutionFailed)
 }
 
+func BenchmarkOpcodeMemoryGrowOpReps_01_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 1)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_10_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 10)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_20_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 20)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_40_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 40)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_80_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 80)
+}
+
+func runBenchmarkOpcodeMemoryGrowOpReps(b *testing.B, opReps int64) {
+	maxMemGrow := uint32(math.MaxUint32)
+	maxMemGrowDelta := uint32(1)
+	argMemGrowDelta := int64(1)
+
+	repsBigInt := big.NewInt(int64(b.N))
+	repsBytes := arwen.PadBytesLeft(repsBigInt.Bytes(), 8)
+
+	deltaBigInt := big.NewInt(argMemGrowDelta)
+	deltaBytes := arwen.PadBytesLeft(deltaBigInt.Bytes(), 8)
+
+	opRepsBigInt := big.NewInt(opReps)
+	opRepsBytes := arwen.PadBytesLeft(opRepsBigInt.Bytes(), 8)
+
+	test.BuildInstanceCallTest(b).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(codeOpcodes)).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(80000).
+			WithFunction("memGrowDeltaOpReps").
+			WithArguments(repsBytes, deltaBytes, opRepsBytes).
+			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			gasSchedule := host.Metering().GasSchedule()
+			gasSchedule.WASMOpcodeCost.MaxMemoryGrow = maxMemGrow
+			gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta = maxMemGrowDelta
+		}).
+		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+		})
+}
+
 func BenchmarkOpcodeMemoryGrow(b *testing.B) {
 	maxMemGrow := uint32(math.MaxUint32)
 	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(10)
+	argMemGrowDelta := int64(1)
 	runWASMOpcodeTestMemGrow(b, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, int64(b.N), vmcommon.Ok)
 }
 
