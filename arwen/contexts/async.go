@@ -521,6 +521,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	if err != nil {
 		return err
 	}
+	logAsync.Trace("Async legacy serialization", "gas", gasUseForLegacyContextSerialization)
 	gasLimit = math.SubUint64(gasLimit, gasUseForLegacyContextSerialization)
 
 	callbackFunction := ""
