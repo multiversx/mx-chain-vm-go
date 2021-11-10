@@ -2836,6 +2836,8 @@ func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
 	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta+1), 1, vmcommon.ExecutionFailed)
 }
 
+// Run all these benchmarks in isolation with the command
+// go test -count=1 -run '^BenchmarkOpcodeMemoryGrowOpReps' -bench='_Ops$' ./arwen/hosttest
 func BenchmarkOpcodeMemoryGrowOpReps_01_Ops(b *testing.B) {
 	runBenchmarkOpcodeMemoryGrowOpReps(b, 1)
 }
@@ -2845,11 +2847,29 @@ func BenchmarkOpcodeMemoryGrowOpReps_10_Ops(b *testing.B) {
 func BenchmarkOpcodeMemoryGrowOpReps_20_Ops(b *testing.B) {
 	runBenchmarkOpcodeMemoryGrowOpReps(b, 20)
 }
+func BenchmarkOpcodeMemoryGrowOpReps_30_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 30)
+}
 func BenchmarkOpcodeMemoryGrowOpReps_40_Ops(b *testing.B) {
 	runBenchmarkOpcodeMemoryGrowOpReps(b, 40)
 }
+func BenchmarkOpcodeMemoryGrowOpReps_50_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 50)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_60_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 60)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_70_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 70)
+}
 func BenchmarkOpcodeMemoryGrowOpReps_80_Ops(b *testing.B) {
 	runBenchmarkOpcodeMemoryGrowOpReps(b, 80)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_90_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 90)
+}
+func BenchmarkOpcodeMemoryGrowOpReps_100_Ops(b *testing.B) {
+	runBenchmarkOpcodeMemoryGrowOpReps(b, 100)
 }
 
 func runBenchmarkOpcodeMemoryGrowOpReps(b *testing.B, opReps int64) {
