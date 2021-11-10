@@ -63,7 +63,9 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
+                    "storage": {
+												"''ARWEN@ASYNC11..............................": "0x0a200000000000000000666f727761726465725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f122031312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2220615f757365725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f68017001"
+										},
                     "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
@@ -110,7 +112,9 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
+                    "storage": {
+												"''ARWEN@ASYNC11..............................": "0x0a200000000000000000666f727761726465725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f122031312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2220615f757365725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f68017001"
+										},
                     "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }

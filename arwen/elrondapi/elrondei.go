@@ -1192,6 +1192,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
+		_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
@@ -3010,6 +3011,7 @@ func ExecuteReadOnlyWithTypedArguments(
 		return 1
 	}
 
+	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 	runtime.SetReadOnly(true)
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	runtime.SetReadOnly(false)
