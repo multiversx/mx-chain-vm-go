@@ -1004,8 +1004,8 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 
 		if !async.IsComplete() {
 			async.SetResults(host.Output().GetVMOutput())
-			async.Save()
-			return false, nil
+			err := async.Save()
+			return false, err
 		}
 	}
 

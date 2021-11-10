@@ -2276,7 +2276,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 834).
+				GasUsed(test.ParentAddress, 762).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, -transferValue).
 				GasUsed(test.ChildAddress, 667).
@@ -2291,6 +2291,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 }
 
 func TestExecution_AsyncCall_GasLimitConsumed_NoGasLeftForAsyncSave(t *testing.T) {
+	arwen.SetLoggingForTests()
 	parentCode := test.GetTestSCCode("async-call-parent", "../../")
 	childCode := test.GetTestSCCode("async-call-child", "../../")
 
@@ -2306,7 +2307,7 @@ func TestExecution_AsyncCall_GasLimitConsumed_NoGasLeftForAsyncSave(t *testing.T
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(parentPerformAsyncCall).
-			WithGasProvided(1000000).
+			WithGasProvided(103945).
 			WithArguments([]byte{0}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
