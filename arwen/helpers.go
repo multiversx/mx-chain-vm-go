@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"path/filepath"
 	"unsafe"
 
@@ -95,6 +96,11 @@ func InverseBytes(data []byte) []byte {
 func GetSCCode(fileName string) []byte {
 	code, _ := ioutil.ReadFile(filepath.Clean(fileName))
 	return code
+}
+
+func SetPlainLoggerFormatter() {
+	logger.ClearLogObservers()
+	logger.AddLogObserver(os.Stdout, &logger.PlainFormatter{})
 }
 
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
