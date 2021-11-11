@@ -222,13 +222,6 @@ func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.Contr
 
 }
 
-func (host *vmHost) ExecuteOnDestContextFromAPI(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	_, input.Arguments = host.Async().PrependArgumentsForAsyncContext(input.Arguments)
-	vmOutput, isComplete, err := host.ExecuteOnDestContext(input)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
-	return vmOutput, err
-}
-
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isComplete bool, err error) {
@@ -545,7 +538,9 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		VMInput:           input.VMInput,
 	}
 
-	_, err = host.ExecuteOnDestContextFromAPI(initCallInput)
+	_, initCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(initCallInput.Arguments)
+	_, isComplete, err := host.ExecuteOnDestContext(initCallInput)
+	host.Async().CompleteChildConditional(isComplete, nil, 0)
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 

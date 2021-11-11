@@ -44,7 +44,6 @@ type VMHost interface {
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
-	ExecuteOnDestContextFromAPI(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
