@@ -2502,6 +2502,9 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 
+	arwen.SetPlainLoggerFormatter()
+	arwen.SetLoggingForTests()
+	logger.ToggleLoggerName(false)
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2519,6 +2522,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.

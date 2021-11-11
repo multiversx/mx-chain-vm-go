@@ -160,6 +160,12 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
+// SetPlainLoggerFormatter configures the logger to output only ASCII characters
+func SetPlainLoggerFormatter() {
+	logger.ClearLogObservers()
+	logger.AddLogObserver(os.Stdout, &logger.PlainFormatter{})
+}
+
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
 	SetLoggingForTestsWithLogger("*")
