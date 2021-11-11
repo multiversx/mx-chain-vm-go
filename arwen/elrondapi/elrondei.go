@@ -3013,7 +3013,8 @@ func ExecuteReadOnlyWithTypedArguments(
 
 	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 	runtime.SetReadOnly(true)
-	_, _, err = host.ExecuteOnDestContext(contractCallInput)
+	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
+	host.Async().CompleteChildConditional(isComplete, nil, 0)
 	runtime.SetReadOnly(false)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
