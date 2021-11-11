@@ -29,14 +29,15 @@ type VMHostStub struct {
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
-	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
-	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
-	GetAPIMethodsCalled         func() *wasmer.Imports
-	IsBuiltinFunctionNameCalled func(functionName string) bool
-	IsBuiltinFunctionCallCalled func(data []byte) bool
-	AreInSameShardCalled        func(left []byte, right []byte) bool
+	ExecuteESDTTransferCalled         func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
+	CreateNewContractCalled           func(input *vmcommon.ContractCreateInput) ([]byte, error)
+	ExecuteOnSameContextCalled        func(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContextCalled        func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
+	ExecuteOnDestContextFromAPICalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	GetAPIMethodsCalled               func() *wasmer.Imports
+	IsBuiltinFunctionNameCalled       func(functionName string) bool
+	IsBuiltinFunctionCallCalled       func(data []byte) bool
+	AreInSameShardCalled              func(left []byte, right []byte) bool
 
 	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
 	RunSmartContractCreateCalled func(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -197,6 +198,14 @@ func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
 	return nil, true, nil
+}
+
+// ExecuteOnDestContext mocked method
+func (vhs *VMHostStub) ExecuteOnDestContextFromAPI(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	if vhs.ExecuteOnDestContextCalled != nil {
+		return vhs.ExecuteOnDestContextFromAPICalled(input)
+	}
+	return nil, nil
 }
 
 // AreInSameShard mocked method

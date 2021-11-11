@@ -122,6 +122,12 @@ func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) 
 	return host.GetNextVMOutput(), true, nil
 }
 
+// ExecuteOnDestContextFromAPI mocked method
+func (host *VMHostMock) ExecuteOnDestContextFromAPI(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	output, _, err := host.ExecuteOnDestContext(input)
+	return output, err
+}
+
 // InitState mocked method
 func (host *VMHostMock) InitState() {
 }

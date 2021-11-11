@@ -1192,8 +1192,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
-		_, _, err = host.ExecuteOnDestContext(contractCallInput)
+		_, err = host.ExecuteOnDestContextFromAPI(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
@@ -1452,9 +1451,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
-		_, isComplete, executeErr := host.ExecuteOnDestContext(contractCallInput)
-		host.Async().CompleteChildConditional(isComplete, nil, 0)
+		_, executeErr := host.ExecuteOnDestContextFromAPI(contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
@@ -2804,11 +2801,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	// send callID and callerCallID to a sync call
-	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
-
-	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
+	_, err = host.ExecuteOnDestContextFromAPI(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2910,11 +2903,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		return 1
 	}
 
-	// send callID and callerCallID to a sync call
-	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
-
-	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
+	_, err = host.ExecuteOnDestContextFromAPI(contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -3011,10 +3000,8 @@ func ExecuteReadOnlyWithTypedArguments(
 		return 1
 	}
 
-	_, contractCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCallInput.Arguments)
 	runtime.SetReadOnly(true)
-	_, isComplete, err := host.ExecuteOnDestContext(contractCallInput)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
+	host.ExecuteOnDestContextFromAPI(contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
@@ -3230,9 +3217,6 @@ func createContract(
 		ContractCode:         code,
 		ContractCodeMetadata: codeMetadata,
 	}
-
-	// send callID and callerCallID to a sync call
-	_, contractCreate.Arguments = host.Async().PrependArgumentsForAsyncContext(contractCreate.Arguments)
 
 	return host.CreateNewContract(contractCreate)
 }
