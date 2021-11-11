@@ -27,7 +27,7 @@ var addressBob = []byte("bob_____________________________")
 var addressDeployedAdder = []byte("deployedAdder___________________")
 
 func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
-	accounts, deployedAccounts, transactions, deployTxs, benchmarkTxPos, err := mge.GetAccountsAndTransactionsFromMandos("adder.scen.json")
+	sbi, err := mge.GetAccountsAndTransactionsFromMandos("adder.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedDeployedAccs := make([]*mge.TestAccount, 0)
@@ -41,19 +41,19 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 	expectedAccs = append(expectedAccs, ownerAccount, scAccount)
 	expectedDeployedAccs = append(expectedDeployedAccs, deployedScAccount)
 
-	transaction := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
+	transaction := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), sbi.Accs[0].GetAddress(), sbi.Accs[1].GetAddress(), 5000000, 1)
 	expectedTxs = append(expectedTxs, transaction, transaction)
 
 	require.Nil(t, err)
-	require.Equal(t, expectedBenchmarkTxPos, benchmarkTxPos)
-	require.Equal(t, expectedAccs, accounts)
-	require.Equal(t, expectedDeployedAccs, deployedAccounts)
-	require.Equal(t, expectedDeployTxs, deployTxs)
-	require.Equal(t, expectedTxs, transactions)
+	require.Equal(t, expectedBenchmarkTxPos, sbi.BenchmarkTxPos)
+	require.Equal(t, expectedAccs, sbi.Accs)
+	require.Equal(t, expectedDeployedAccs, sbi.DeployedAccs)
+	require.Equal(t, expectedDeployTxs, sbi.DeployTxs)
+	require.Equal(t, expectedTxs, sbi.Txs)
 }
 
 func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
-	accounts, _, transactions, deployTxs, benchmarkTxPos, err := mge.GetAccountsAndTransactionsFromMandos("adder_with_external_steps.scen.json")
+	sbi, err := mge.GetAccountsAndTransactionsFromMandos("adder_with_external_steps.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedTxs := make([]*mge.Transaction, 0)
@@ -65,13 +65,13 @@ func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
 	aliceAccount := mge.SetNewAccount(5, addressAlice, big.NewInt(284), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	bobAccount := mge.SetNewAccount(3, addressBob, big.NewInt(11), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	expectedAccs = append(expectedAccs, aliceAccount, scAccount, bobAccount, ownerAccount)
-	require.Equal(t, expectedAccs, accounts)
+	require.Equal(t, expectedAccs, sbi.Accs)
 
-	transactionAlice := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[0].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
-	transactionBob := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[2].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
-	transactionOwner := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), accounts[3].GetAddress(), accounts[1].GetAddress(), 5000000, 1)
+	transactionAlice := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), sbi.Accs[0].GetAddress(), sbi.Accs[1].GetAddress(), 5000000, 1)
+	transactionBob := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), sbi.Accs[2].GetAddress(), sbi.Accs[1].GetAddress(), 5000000, 1)
+	transactionOwner := mge.CreateTransaction("add", [][]byte{{3}}, 0, big.NewInt(0), make([]*mj.ESDTTxData, 0), sbi.Accs[3].GetAddress(), sbi.Accs[1].GetAddress(), 5000000, 1)
 	expectedTxs = append(expectedTxs, transactionBob, transactionAlice, transactionOwner)
-	require.Equal(t, expectedBenchmarkTxPos, benchmarkTxPos)
-	require.Equal(t, expectedTxs, transactions)
-	require.Equal(t, expectedDeployTxs, deployTxs)
+	require.Equal(t, expectedBenchmarkTxPos, sbi.BenchmarkTxPos)
+	require.Equal(t, expectedTxs, sbi.Txs)
+	require.Equal(t, expectedDeployTxs, sbi.DeployTxs)
 }

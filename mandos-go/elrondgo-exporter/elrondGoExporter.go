@@ -27,17 +27,35 @@ var InvalidBenchmarkTxPos = -1
 
 var minimumAcceptedGasPrice = uint64(1)
 
-func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (accounts []*TestAccount, deployedAccounts []*TestAccount, txs []*Transaction, deployTxs []*Transaction, benchmarkTxPos int, err error) {
+type ScenarioWithBenchmark struct {
+	Accs           []*TestAccount
+	DeployedAccs   []*TestAccount
+	Txs            []*Transaction
+	DeployTxs      []*Transaction
+	BenchmarkTxPos int
+}
+
+func getInvalidScenarioWithBenchmark() ScenarioWithBenchmark {
+	return ScenarioWithBenchmark{
+		Accs:           nil,
+		DeployedAccs:   nil,
+		Txs:            nil,
+		DeployTxs:      nil,
+		BenchmarkTxPos: -1,
+	}
+}
+
+func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
-		return nil, nil, nil, nil, -1, err
+		return getInvalidScenarioWithBenchmark(), err
 	}
 	steps := scenario.Steps
-	accounts, deployedAccounts, txs, deployTxs, benchmarkTxPos, err = getAccountsAndTransactionsFromSteps(steps)
+	stateAndBenchmarkInfo, err = getAccountsAndTransactionsFromSteps(steps)
 	if err != nil {
-		return nil, nil, nil, nil, -1, err
+		return getInvalidScenarioWithBenchmark(), err
 	}
-	return accounts, deployedAccounts, txs, deployTxs, benchmarkTxPos, nil
+	return stateAndBenchmarkInfo, nil
 }
 
 func getScenario(testPath string) (scenario *mj.Scenario, err error) {
@@ -48,31 +66,30 @@ func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 	return scenario, err
 }
 
-func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccount, deployedAccounts []*TestAccount, txs []*Transaction, deployTxs []*Transaction, benchmarkTxPos int, err error) {
-	benchmarkTxPos = -1
+func getAccountsAndTransactionsFromSteps(steps []mj.Step) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
+	stateAndBenchmarkInfo.BenchmarkTxPos = -1
 
 	if len(steps) == 0 {
-		return nil, nil, nil, nil, InvalidBenchmarkTxPos, errNoStepsProvided
+		return getInvalidScenarioWithBenchmark(), errNoStepsProvided
 	}
 	if !stepIsSetState(steps[0]) && !stepIsExternalStep(steps[0]) {
-		return nil, nil, nil, nil, InvalidBenchmarkTxPos, errFirstStepMustSetState
+		return getInvalidScenarioWithBenchmark(), errFirstStepMustSetState
 	}
 
-	txs = make([]*Transaction, 0)
-	deployTxs = make([]*Transaction, 0)
-	accounts = make([]*TestAccount, 0)
-	deployedAccounts = make([]*TestAccount, 0)
+	stateAndBenchmarkInfo.Txs = make([]*Transaction, 0)
+	stateAndBenchmarkInfo.DeployTxs = make([]*Transaction, 0)
+	stateAndBenchmarkInfo.Accs = make([]*TestAccount, 0)
+	stateAndBenchmarkInfo.DeployedAccs = make([]*TestAccount, 0)
 
 	for i := 0; i < len(steps); i++ {
 		switch step := steps[i].(type) {
 		case *mj.SetStateStep:
-
-			setStepAccounts, setStepDeployedAccounts, err := setAccounts(step)
+			setStepAccounts, setStepDeployedAccounts, err := getAccountsFromSetStateStep(step)
 			if err != nil {
-				return nil, nil, nil, nil, InvalidBenchmarkTxPos, err
+				return getInvalidScenarioWithBenchmark(), err
 			}
-			accounts = append(accounts, setStepAccounts...)
-			deployedAccounts = append(deployedAccounts, setStepDeployedAccounts...)
+			stateAndBenchmarkInfo.Accs = append(stateAndBenchmarkInfo.Accs, setStepAccounts...)
+			stateAndBenchmarkInfo.DeployedAccs = append(stateAndBenchmarkInfo.DeployedAccs, setStepDeployedAccounts...)
 
 		case *mj.TxStep:
 			if step.ExpectedResult.Status.Value.Cmp(okStatus) == 0 {
@@ -83,8 +100,8 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 				arguments := getArguments(step.Tx.Arguments)
 				switch step.StepTypeName() {
 				case "scCall":
-					if txIdRequieresBenchmark(step.TxIdent) && benchmarkTxPosIsNotSet(benchmarkTxPos) {
-						benchmarkTxPos = len(txs)
+					if txIdRequiresBenchmark(step.TxIdent) && benchmarkTxPosIsNotSet(stateAndBenchmarkInfo.BenchmarkTxPos) {
+						stateAndBenchmarkInfo.BenchmarkTxPos = len(stateAndBenchmarkInfo.Txs)
 					}
 					tx := CreateTransaction(
 						step.Tx.Function,
@@ -97,7 +114,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 						step.Tx.GasLimit.Value,
 						step.Tx.GasPrice.Value,
 					)
-					txs = append(txs, tx)
+					stateAndBenchmarkInfo.Txs = append(stateAndBenchmarkInfo.Txs, tx)
 				case "scDeploy":
 					deployTx := CreateDeployTransaction(
 						arguments,
@@ -106,37 +123,37 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (accounts []*TestAccou
 						step.Tx.GasLimit.Value,
 						step.Tx.GasPrice.Value,
 					)
-					deployTxs = append(deployTxs, deployTx)
+					stateAndBenchmarkInfo.DeployTxs = append(stateAndBenchmarkInfo.DeployTxs, deployTx)
 				default:
 					steps = append(steps[:i], steps[i+1:]...)
 					i--
 				}
 			}
 		case *mj.ExternalStepsStep:
-			externalStepAccounts, externalStepDeployedAccounts, externalStepTransactions, externalDeployTransactions, externalBenchmarkTxPos, err := GetAccountsAndTransactionsFromMandos(step.Path)
+			externalStateAndBenchmarkInfo, err := GetAccountsAndTransactionsFromMandos(step.Path)
 			if err != nil {
-				return nil, nil, nil, nil, InvalidBenchmarkTxPos, err
+				return getInvalidScenarioWithBenchmark(), err
 			}
-			if benchmarkTxPosIsNotSet(benchmarkTxPos) {
-				benchmarkTxPos = externalBenchmarkTxPos
+			if benchmarkTxPosIsNotSet(stateAndBenchmarkInfo.BenchmarkTxPos) {
+				stateAndBenchmarkInfo.BenchmarkTxPos = externalStateAndBenchmarkInfo.BenchmarkTxPos
 			}
-			accounts = append(accounts, externalStepAccounts...)
-			deployedAccounts = append(deployedAccounts, externalStepDeployedAccounts...)
-			txs = append(txs, externalStepTransactions...)
-			deployTxs = append(deployTxs, externalDeployTransactions...)
+			stateAndBenchmarkInfo.Accs = append(stateAndBenchmarkInfo.Accs, externalStateAndBenchmarkInfo.Accs...)
+			stateAndBenchmarkInfo.DeployedAccs = append(stateAndBenchmarkInfo.DeployedAccs, externalStateAndBenchmarkInfo.DeployedAccs...)
+			stateAndBenchmarkInfo.Txs = append(stateAndBenchmarkInfo.Txs, externalStateAndBenchmarkInfo.Txs...)
+			stateAndBenchmarkInfo.DeployTxs = append(stateAndBenchmarkInfo.DeployTxs, externalStateAndBenchmarkInfo.DeployTxs...)
 		default:
 			steps = append(steps[:i], steps[i+1:]...)
 			i--
 		}
 	}
-	return accounts, deployedAccounts, txs, deployTxs, benchmarkTxPos, nil
+	return stateAndBenchmarkInfo, nil
 }
 
-func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, deployedAccounts []*TestAccount, err error) {
+func getAccountsFromSetStateStep(setStateStep *mj.SetStateStep) (accounts []*TestAccount, deployedAccounts []*TestAccount, err error) {
 	accounts = make([]*TestAccount, 0)
 	deployedAccounts = make([]*TestAccount, 0)
 	for _, mandosAccount := range setStateStep.Accounts {
-		account, err := convertMandosToTestAccount(mandosAccount)
+		account, err := convertMandosAccountToTestAccount(mandosAccount)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -155,7 +172,7 @@ func setAccounts(setStateStep *mj.SetStateStep) (accounts []*TestAccount, deploy
 	return accounts, deployedAccounts, nil
 }
 
-func convertMandosToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
+func convertMandosAccountToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
 	if len(mandosAcc.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
 	}
@@ -194,6 +211,6 @@ func benchmarkTxPosIsNotSet(benchmarkTxPos int) bool {
 	return benchmarkTxPos == -1
 }
 
-func txIdRequieresBenchmark(txIdent string) bool {
+func txIdRequiresBenchmark(txIdent string) bool {
 	return txIdent == benchmarkTxIdent
 }

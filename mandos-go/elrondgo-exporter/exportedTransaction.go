@@ -1,12 +1,11 @@
 package elrondgo_exporter
 
 import (
-	"bytes"
-	"encoding/hex"
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	txDataBuilder "github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 const vmTypeHex = "0500"
@@ -86,8 +85,8 @@ func (tx *Transaction) GetCallArguments() [][]byte {
 }
 
 func (tx *Transaction) WithSenderAddress(address []byte) *Transaction {
-	tx.sndAddr = make([]byte, 0)
-	tx.sndAddr = address
+	tx.sndAddr = make([]byte, len(address))
+	copy(tx.sndAddr, address)
 	return tx
 }
 
@@ -96,8 +95,8 @@ func (tx *Transaction) GetSenderAddress() []byte {
 }
 
 func (tx *Transaction) WithReceiverAddress(address []byte) *Transaction {
-	tx.rcvAddr = make([]byte, 0)
-	tx.rcvAddr = address
+	tx.rcvAddr = make([]byte, len(address))
+	copy(tx.rcvAddr, address)
 	return tx
 }
 
@@ -123,16 +122,16 @@ func (tx *Transaction) WithDeployData(scCodePath string, args [][]byte) *Transac
 
 func createDeployTxData(scCodePath string, args [][]byte) []byte {
 	scCode := arwen.GetSCCode(scCodePath[contractCodePrefixLength:])
-	encodedScCode := hex.EncodeToString(scCode)
-	deployData := bytes.Join([][]byte{[]byte(encodedScCode), []byte(vmTypeHex), []byte(dummyCodeMetadataHex)}, []byte("@"))
+	tdb := txDataBuilder.NewBuilder()
+	tdb.Bytes(scCode)
+	tdb.Bytes([]byte(vmTypeHex))
+	tdb.Bytes([]byte(dummyCodeMetadataHex))
 	if args != nil {
 		for i := 0; i < len(args); i++ {
-			encodedArg := hex.EncodeToString(args[i])
-			args[i] = []byte(encodedArg)
+			tdb.Bytes(args[i])
 		}
-		deployData = []byte(string(deployData) + "@" + string(bytes.Join(args, []byte("@"))))
 	}
-	return deployData
+	return tdb.ToBytes()
 }
 
 func (tx *Transaction) GetDeployData() []byte {
