@@ -2356,6 +2356,7 @@ func TestExecution_AsyncCall_GasLimitConsumed_Ok(t *testing.T) {
 			WithFunction(parentPerformAsyncCall).
 			WithGasProvided(1000000).
 			WithArguments([]byte{0}).
+			WithCurrentTxHash(make([]byte, arwen.AddressSize)).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
@@ -2462,6 +2463,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
+	txHash := []byte("txhash..........................")
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2476,7 +2478,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 			WithFunction(parentPerformAsyncCall).
 			WithGasProvided(1000000).
 			WithArguments([]byte{1}).
-			WithCurrentTxHash([]byte("txhash")).
+			WithCurrentTxHash(txHash).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
@@ -2502,6 +2504,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 
+	txHash := []byte("txhash..........................")
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2516,7 +2519,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithFunction(parentPerformAsyncCall).
 			WithGasProvided(200000).
 			WithArguments([]byte{0, 3}).
-			WithCurrentTxHash([]byte("txhash")).
+			WithCurrentTxHash(txHash).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			// host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
@@ -2529,14 +2532,16 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 198390).
+				GasUsed(test.ParentAddress, 198344).
 				GasUsed(test.ChildAddress, 1297).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				GasRemaining(313).
+				GasRemaining(359).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error")).
+				// TODO why was 'user error' expected here?
+				// ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error")).
+				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
