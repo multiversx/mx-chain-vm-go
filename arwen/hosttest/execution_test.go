@@ -2522,7 +2522,9 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
+			// host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
+			// host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
+			// host.Metering().GasSchedule().ElrondAPICost.SetAsyncCallback = 0
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.

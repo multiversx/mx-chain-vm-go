@@ -499,6 +499,8 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.Async
 // call group and informs Wasmer to stop contract execution with
 // BreakpointAsyncCall (adding the AsyncCall consumes its gas entirely).
 func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error {
+	metering := context.host.Metering()
+	logAsync.Trace("RegisterLegacyAsyncCall", "gas left", metering.GasLeft())
 	if !context.canRegisterLegacyAsyncCall() {
 		return arwen.ErrLegacyAsyncCallInvalid
 	}
@@ -514,7 +516,6 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 		return err
 	}
 
-	metering := context.host.Metering()
 	gasLimit := math.SubUint64(metering.GasLeft(), gasToLock)
 
 	gasUseForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
