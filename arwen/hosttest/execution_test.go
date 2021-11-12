@@ -2502,9 +2502,6 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 	// Call parentFunctionChildCall() of the parent SC, which will call the child
 	// SC and pass some arguments using asyncCall().
 
-	arwen.SetPlainLoggerFormatter()
-	arwen.SetLoggingForTests()
-	logger.ToggleLoggerName(false)
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
