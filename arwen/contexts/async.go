@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -559,6 +560,8 @@ func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, e
 		return 0, err
 	}
 	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(serializedData)))
+	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(arwen.AsyncDataPrefix)+arwen.AddressLen))
+	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
 	return gasUseForSerialization, nil
 }
 
@@ -771,7 +774,10 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 
 	if !context.IsComplete() {
 		// store changes in context made by CompleteChild()
-		context.Save()
+		err := context.Save()
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		// There are no more callbacks to return from other shards. The context can
 		// be deleted from storage.
@@ -912,6 +918,10 @@ func (context *asyncContext) Save() error {
 	address := context.address
 	callID := context.callID
 	storage := context.host.Storage()
+
+	if len(callID) > arwen.AddressLen {
+		return errors.New("callID was supposed to be 32 bytes")
+	}
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data, err := marshalizer.Marshal(context.toSerializable())
