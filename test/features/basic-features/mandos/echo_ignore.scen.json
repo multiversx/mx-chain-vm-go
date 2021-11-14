@@ -1,5 +1,4 @@
 {
-    "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
@@ -21,21 +20,16 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_varags_u32",
+                "function": "echo_some_args_ignore_others",
                 "arguments": [
-                    "10",
-                    "20",
-                    "30"
+                    "1"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "3",
-                    "10",
-                    "20",
-                    "30"
+                    "1"
                 ],
                 "status": "",
                 "logs": [],
@@ -49,14 +43,46 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_varags_u32",
-                "arguments": [],
+                "function": "echo_some_args_ignore_others",
+                "arguments": [
+                    "1",
+                    "2"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0"
+                    "1",
+                    "2"
+                ],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "txId": "3",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "echo_some_args_ignore_others",
+                "arguments": [
+                    "1",
+                    "2",
+                    "3",
+                    "str:more",
+                    "str:even more!"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "1",
+                    "2"
                 ],
                 "status": "",
                 "logs": [],
