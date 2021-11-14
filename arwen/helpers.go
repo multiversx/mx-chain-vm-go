@@ -167,6 +167,11 @@ func SetLoggingForTests() {
 	logger.ToggleLoggerName(true)
 }
 
+// DisableLoggingForTests sets log level to *:NONE
+func DisableLoggingForTests() {
+	_ = logger.SetLogLevel("*:NONE")
+}
+
 // U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode
 // See https://en.wikipedia.org/wiki/LEB128
 // Copied from https://github.com/filecoin-project/go-leb128/blob/master/leb128.go

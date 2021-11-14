@@ -743,17 +743,18 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 		return arwen.AsyncUnknown, err
 	}
 
-	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), destination)
+	actualDestination := context.determineDestinationForAsyncCall(destination, data)
+	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
 			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
 				runtime.GetSCAddress(),
-				destination,
+				actualDestination,
 				functionName,
 				args)
 			isAsyncCall := vmInput.CallType == vm.AsynchronousCall
-			isReturningCall := bytes.Equal(vmInput.CallerAddr, destination)
+			isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
 
 			if isESDTTransfer && isAsyncCall && isReturningCall {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -765,12 +766,31 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 		return arwen.AsyncBuiltinFuncCrossShard, nil
 	}
 
-	code, err := blockchain.GetCode(destination)
+	code, err := blockchain.GetCode(actualDestination)
 	if len(code) > 0 && err == nil {
 		return arwen.SyncExecution, nil
 	}
 
 	return arwen.AsyncUnknown, nil
+}
+
+func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) []byte {
+	if !bytes.Equal(context.host.Runtime().GetSCAddress(), destination) {
+		return destination
+	}
+
+	argsParser := context.callArgsParser
+	functionName, args, err := argsParser.ParseData(string(data))
+	if !context.host.IsBuiltinFunctionName(functionName) {
+		return destination
+	}
+
+	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(destination, destination, functionName, args)
+	if err != nil {
+		return destination
+	}
+
+	return parsedTransfer.RcvAddr
 }
 
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall) error {
@@ -794,7 +814,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	return nil
 }
 
-// executeAsyncContextCallback will either execute a sync call (in-shard) to
+// executeContextCallback will either execute a sync call (in-shard) to
 // the original caller by invoking its callback directly, or will dispatch a
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {

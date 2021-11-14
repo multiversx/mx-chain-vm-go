@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"crypto/elliptic"
+	"io"
 	basicMath "math"
 	"math/big"
 
@@ -34,9 +35,10 @@ type bigIntMap map[int32]*big.Int
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type managedTypesContext struct {
-	host               arwen.VMHost
-	managedTypesValues managedTypesState
-	managedTypesStack  []managedTypesState
+	host                arwen.VMHost
+	managedTypesValues  managedTypesState
+	managedTypesStack   []managedTypesState
+	randomnessGenerator math.RandomnessGenerator
 }
 
 type managedTypesState struct {
@@ -45,7 +47,7 @@ type managedTypesState struct {
 	mBufferValues managedBufferMap
 }
 
-// NewBigIntContext creates a new bigIntContext
+// NewManagedTypesContext creates a new managedTypesContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -58,10 +60,32 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 			ecValues:      make(ellipticCurveMap),
 			mBufferValues: make(managedBufferMap),
 		},
-		managedTypesStack: make([]managedTypesState, 0),
+		managedTypesStack:   make([]managedTypesState, 0),
+		randomnessGenerator: nil,
 	}
 
 	return context, nil
+}
+
+func (context *managedTypesContext) initRandomizer() {
+	blockchainContext := context.host.Blockchain()
+	previousRandomSeed := blockchainContext.LastRandomSeed()
+	currentRandomSeed := blockchainContext.CurrentRandomSeed()
+	txHash := context.host.Runtime().GetCurrentTxHash()
+
+	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
+	randomSeed := append(blocksRandomSeed, txHash...)
+
+	randomizer := math.NewSeedRandReader(randomSeed)
+	context.randomnessGenerator = randomizer
+}
+
+// GetRandReader returns pseudo-randomness generator that implements io.Reader interface
+func (context *managedTypesContext) GetRandReader() io.Reader {
+	if check.IfNil(context.randomnessGenerator) {
+		context.initRandomizer()
+	}
+	return context.randomnessGenerator
 }
 
 // InitState initializes the underlying values map
@@ -110,6 +134,7 @@ func (context *managedTypesContext) PopDiscard() {
 // ClearStateStack initializes the state stack
 func (context *managedTypesContext) ClearStateStack() {
 	context.managedTypesStack = make([]managedTypesState, 0)
+	context.randomnessGenerator = nil
 }
 
 func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, managedBufferMap) {
@@ -143,29 +168,37 @@ func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) 
 
 // ConsumeGasForThisIntNumberOfBytes uses gas for the number of bytes given
 func (context *managedTypesContext) ConsumeGasForThisIntNumberOfBytes(byteLen int) {
+	gasToUse := uint64(0)
 	metering := context.host.Metering()
 	if byteLen > maxBigIntByteLenForNormalCost {
-		metering.UseGas(math.MulUint64(uint64(byteLen), metering.GasSchedule().BaseOperationCost.DataCopyPerByte))
+		gasToUse = math.MulUint64(uint64(byteLen), metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)
+		metering.UseAndTraceGas(gasToUse)
 	}
+}
+
+// ConsumeGasForBytes uses gas for the given bytes
+func (context *managedTypesContext) ConsumeGasForBytes(bytes []byte) {
+	metering := context.host.Metering()
+	gasToUse := math.MulUint64(uint64(len(bytes)), metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
+	metering.UseAndTraceGas(gasToUse)
 }
 
 // ConsumeGasForThisBigIntNumberOfBytes uses gas for the number of bytes given that are being copied
 func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int) {
 	metering := context.host.Metering()
-	DataCopyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 
-	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(DataCopyPerByte)))
+	gasToUseBigInt := big.NewInt(0).Mul(byteLen, big.NewInt(int64(metering.GasSchedule().BigIntAPICost.CopyPerByteForTooBig)))
 	maxGasBigInt := big.NewInt(0).SetUint64(basicMath.MaxUint64)
 	gasToUse := uint64(basicMath.MaxUint64)
 	if gasToUseBigInt.Cmp(maxGasBigInt) < 0 {
 		gasToUse = gasToUseBigInt.Uint64()
 	}
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 }
 
 // BIGINT
 
-// GetOneOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
+// GetBigIntOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
 func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
@@ -201,8 +234,7 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	return value1, value2, nil
 }
 
-// PutBigInt adds the given value to the current values map and returns the handle
-func (context *managedTypesContext) PutBigInt(value int64) int32 {
+func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
 	newHandle := int32(len(context.managedTypesValues.bigIntValues))
 	for {
 		if _, ok := context.managedTypesValues.bigIntValues[newHandle]; !ok {
@@ -210,8 +242,18 @@ func (context *managedTypesContext) PutBigInt(value int64) int32 {
 		}
 		newHandle++
 	}
-	context.managedTypesValues.bigIntValues[newHandle] = big.NewInt(value)
+	context.managedTypesValues.bigIntValues[newHandle] = value
 	return newHandle
+}
+
+// NewBigInt adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigInt(value *big.Int) int32 {
+	return context.newBigIntNoCopy(big.NewInt(0).Set(value))
+}
+
+// NewBigIntFromInt64 adds the given value to the current values map and returns the handle
+func (context *managedTypesContext) NewBigIntFromInt64(int64Value int64) int32 {
+	return context.newBigIntNoCopy(big.NewInt(int64Value))
 }
 
 // ELLIPTIC CURVES
@@ -342,7 +384,13 @@ func (context *managedTypesContext) SetBytes(mBufferHandle int32, bytes []byte) 
 	if !ok {
 		context.managedTypesValues.mBufferValues[mBufferHandle] = make([]byte, 0)
 	}
-	context.managedTypesValues.mBufferValues[mBufferHandle] = bytes
+
+	// always performing a copy,
+	// so that changes to the byte buffer in the contract can never leak back into the blockchain
+	bytesCopy := make([]byte, len(bytes))
+	copy(bytesCopy, bytes)
+
+	context.managedTypesValues.mBufferValues[mBufferHandle] = bytesCopy
 }
 
 // GetBytes returns the bytes for the managed buffer. Returns nil as value and error if buffer is non-existent

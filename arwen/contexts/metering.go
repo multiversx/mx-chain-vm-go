@@ -23,6 +23,9 @@ type meteringContext struct {
 	initialCost        uint64
 	gasForExecution    uint64
 	gasUsedByAccounts  map[string]uint64
+
+	gasTracer       arwen.GasTracing
+	traceGasEnabled bool
 }
 
 // NewMeteringContext creates a new meteringContext
@@ -60,6 +63,14 @@ func (context *meteringContext) InitState() {
 	context.initialCost = 0
 	context.gasForExecution = 0
 	context.gasUsedByAccounts = make(map[string]uint64)
+
+	var newGasTracer arwen.GasTracing
+	if context.traceGasEnabled {
+		newGasTracer = NewEnabledGasTracer()
+	} else {
+		newGasTracer = NewDisabledGasTracer()
+	}
+	context.gasTracer = newGasTracer
 }
 
 // InitStateFromContractCallInput initializes the internal state of the
@@ -161,7 +172,7 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 	return nil
 }
 
-// UpdateGasStateOnSuccess performs final gas accounting after a failed execution.
+// UpdateGasStateOnFailure performs final gas accounting after a failed execution.
 func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 	logMetering.Trace("UpdateGasStateOnFailure")
 	runtime := context.host.Runtime()
@@ -285,6 +296,7 @@ func (context *meteringContext) setGasUsedToOutputAccounts(vmOutput *vmcommon.VM
 // ClearStateStack reinitializes the internal state stack to an empty stack
 func (context *meteringContext) ClearStateStack() {
 	context.stateStack = make([]*meteringContext, 0)
+	context.gasTracer = nil
 }
 
 // unlockGasIfAsyncCallback unlocks the locked gas if the call type is async callback
@@ -320,6 +332,23 @@ func (context *meteringContext) UseGas(gas uint64) {
 	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
 	context.host.Runtime().SetPointsUsed(gasUsed)
 	logMetering.Trace("used gas", "gas", gas)
+}
+
+// UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
+func (context *meteringContext) UseAndTraceGas(gas uint64) {
+	context.UseGas(gas)
+	context.traceGas(gas)
+}
+
+// UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
+func (context *meteringContext) UseGasAndAddTracedGas(functionName string, gas uint64) {
+	context.UseGas(gas)
+	context.addToGasTrace(functionName, gas)
+}
+
+// GetGasTrace returns the gasTrace map
+func (context *meteringContext) GetGasTrace() map[string]map[string][]uint64 {
+	return context.gasTracer.GetGasTrace()
 }
 
 // RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance.
@@ -409,6 +438,7 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 		return arwen.ErrNotEnoughGas
 	}
 	context.UseGas(gasToUse)
+	context.traceGas(gasToUse)
 	return nil
 }
 
@@ -487,6 +517,39 @@ func (context *meteringContext) deductInitialGas(
 	context.initialCost = initialCost
 	context.gasForExecution = input.GasProvided - initialCost
 	return nil
+}
+
+// SetGasTracing enables/disables gas tracing
+func (context *meteringContext) SetGasTracing(enableGasTracing bool) {
+	context.traceGasEnabled = enableGasTracing
+	if context.traceGasEnabled {
+		context.gasTracer = NewEnabledGasTracer()
+	} else {
+		context.gasTracer = NewDisabledGasTracer()
+	}
+}
+
+// StartGasTracing sets initial trace for the upcoming gas usage.
+func (context *meteringContext) StartGasTracing(functionName string) {
+	if context.traceGasEnabled {
+		scAddress := context.getSCAddress()
+		if len(scAddress) != 0 {
+			context.gasTracer.BeginTrace(scAddress, functionName)
+		}
+	}
+}
+
+func (context *meteringContext) traceGas(usedGas uint64) {
+	context.gasTracer.AddToCurrentTrace(usedGas)
+}
+
+func (context *meteringContext) addToGasTrace(functionName string, usedGas uint64) {
+	scAddress := context.getSCAddress()
+	context.gasTracer.AddTracedGas(scAddress, functionName, usedGas)
+}
+
+func (context *meteringContext) getSCAddress() string {
+	return string(context.host.Runtime().GetSCAddress())
 }
 
 // PrintState dumps the internal state of the meteringContext to the TRACE output

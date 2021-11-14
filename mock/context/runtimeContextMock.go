@@ -35,6 +35,8 @@ type RuntimeContextMock struct {
 	OriginalTxHash           []byte
 	PrevTxHash               []byte
 	HasFunctionResult        bool
+	TraceGasEnabled          bool
+	GasTrace                 map[string]map[string][]uint64
 }
 
 // InitState mocked method

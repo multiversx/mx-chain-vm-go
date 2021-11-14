@@ -6,8 +6,9 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
@@ -164,7 +165,7 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
-	accountTokens, err := matchingAcct.GetFullMockESDTData()
+	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage)
 	if err != nil {
 		return err
 	}
@@ -191,7 +192,7 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 				Roles:     []string{},
 			}
 		} else if accountToken == nil {
-			accountToken = &worldmock.MockESDTData{
+			accountToken = &esdtconvert.MockESDTData{
 				TokenIdentifier: []byte(tokenName),
 				Instances:       []*esdt.ESDigitalToken{},
 				LastNonce:       0,
@@ -224,7 +225,7 @@ func (ae *ArwenTestExecutor) checkTokenState(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *worldmock.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData) []error {
 
 	var errors []error
 
@@ -247,7 +248,7 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *worldmock.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData) []error {
 
 	var errors []error
 
@@ -366,7 +367,7 @@ func checkTokenRoles(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *worldmock.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData) []error {
 
 	var errors []error
 

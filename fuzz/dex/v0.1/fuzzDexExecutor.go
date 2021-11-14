@@ -3,14 +3,15 @@ package dex
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"io/ioutil"
 )
 
 type fuzzDexExecutorInitArgs struct {
@@ -153,6 +154,12 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 		return nil, err
 	}
 
+	mandosGasSchedule := mj.GasScheduleDummy
+	err = arwenTestExecutor.InitVM(mandosGasSchedule)
+	if err != nil {
+		return nil, err
+	}
+
 	parser := mjparse.NewParser(fileResolver)
 
 	return &fuzzDexExecutor{
@@ -162,7 +169,8 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 		mandosParser:      parser,
 		txIndex:           0,
 		generatedScenario: &mj.Scenario{
-			Name: "fuzz generated",
+			Name:        "fuzz generated",
+			GasSchedule: mandosGasSchedule,
 		},
 	}, nil
 }

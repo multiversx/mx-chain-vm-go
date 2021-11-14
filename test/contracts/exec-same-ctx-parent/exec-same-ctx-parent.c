@@ -128,10 +128,10 @@ void parentFunctionChildCall_BigInts() {
 	);
 	finishResult(result);
 
-	// The parent can access the big integer created by the child.
+	// The parent cannot access the big integer created by the child.
 	result = 0;
 	long long x = bigIntGetInt64(4);
-	if (x != 256) {
+	if (x != 0) {
 		result = 1;
 	}
 	finishResult(result);

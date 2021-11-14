@@ -12,7 +12,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "500",
+                "egldValue": "500",
                 "function": "bid",
                 "arguments": [
                     "str:ANOTHERNFT-123456",
@@ -22,6 +22,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Token is not up for auction",
                 "gas": "*",
@@ -34,7 +35,6 @@
             "tx": {
                 "from": "address:seller",
                 "to": "sc:marketplace",
-                "value": "0",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -44,6 +44,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Can't bid on your own token",
                 "gas": "*",
@@ -63,7 +64,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "500",
+                "egldValue": "500",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -73,6 +74,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Auction ended already",
                 "gas": "*",
@@ -95,8 +97,7 @@
                     "balance": "2000",
                     "esdt": {
                         "str:RANDTOK-123456": "100"
-                    },
-                    "storage": {}
+                    }
                 }
             }
         },
@@ -106,11 +107,12 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:RANDTOK-123456",
-                    "value": "100"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:RANDTOK-123456",
+                        "value": "100"
+                    }
+                ],
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -120,6 +122,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Wrong token used as payment",
                 "gas": "*",
@@ -132,7 +135,7 @@
             "tx": {
                 "from": "address:second_bidder",
                 "to": "sc:marketplace",
-                "value": "300",
+                "egldValue": "300",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -142,6 +145,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Can't outbid yourself",
                 "gas": "*",
@@ -154,7 +158,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "50",
+                "egldValue": "50",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -164,6 +168,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Bid must be higher than or equal to the min bid",
                 "gas": "*",
@@ -176,7 +181,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "150",
+                "egldValue": "150",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -186,6 +191,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Bid must be higher than the current winning bid",
                 "gas": "*",
@@ -198,7 +204,7 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
-                "value": "1500",
+                "egldValue": "1500",
                 "function": "bid",
                 "arguments": [
                     "str:NFT-123456",
@@ -208,6 +214,7 @@
                 "gasPrice": "0x00"
             },
             "expect": {
+                "out": [],
                 "status": "4",
                 "message": "str:Bid must be less than or equal to the max bid",
                 "gas": "*",

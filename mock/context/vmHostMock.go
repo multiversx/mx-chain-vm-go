@@ -76,16 +76,6 @@ func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }
 
-// IsArwenV2Enabled mocked method
-func (host *VMHostMock) IsArwenV2Enabled() bool {
-	return true
-}
-
-// IsArwenV3Enabled mocked method
-func (host *VMHostMock) IsArwenV3Enabled() bool {
-	return true
-}
-
 // IsAheadOfTimeCompileEnabled mocked method
 func (host *VMHostMock) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -243,4 +233,14 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	vmOutput := host.VMOutputQueue[host.VMOutputToReturn]
 	host.VMOutputToReturn += 1
 	return vmOutput
+}
+
+// MultiESDTTransferAsyncCallBackEnabled mocked method
+func (host *VMHostMock) MultiESDTTransferAsyncCallBackEnabled() bool {
+	return true
+}
+
+// FixOOGReturnCodeEnabled mocked method
+func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
+	return true
 }

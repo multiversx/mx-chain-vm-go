@@ -127,6 +127,7 @@
     BigIntGetSignedArgument    = 10
     BigIntGetCallValue         = 10
     BigIntGetExternalBalance   = 10
+    CopyPerByteForTooBig       = 10
 
 [CryptoAPICost]
     SHA256                 = 10
@@ -141,13 +142,18 @@
     UnmarshalECC           = 10
     UnmarshalCompressedECC = 10
     GenerateKeyECC         = 10
+    EncodeDERSig           = 10
 
 [ManagedBufferAPICost]
     MBufferNew                   = 10
     MBufferNewFromBytes          = 10
-    MBufferSetBytes              = 10
     MBufferGetLength             = 10
     MBufferGetBytes              = 10
+    MBufferGetByteSlice          = 10
+    MBufferCopyByteSlice         = 10
+    MBufferSetBytes              = 10
+    MBufferAppend                = 10
+    MBufferAppendBytes           = 10
     MBufferToBigIntUnsigned      = 10
     MBufferToBigIntSigned        = 10
     MBufferFromBigIntUnsigned    = 10
@@ -156,6 +162,7 @@
     MBufferStorageLoad           = 10
     MBufferGetArgument           = 10
     MBufferFinish                = 10
+    MBufferSetRandom             = 10
 
 [WASMOpcodeCost]
     Unreachable = 1
