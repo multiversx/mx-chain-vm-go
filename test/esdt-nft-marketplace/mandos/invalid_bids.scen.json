@@ -96,7 +96,7 @@
                     "nonce": "0",
                     "balance": "2000",
                     "esdt": {
-                        "str:RANDTOK-123456": "100"
+                        "str:RANDTOK-123456456": "100"
                     }
                 }
             }
@@ -109,7 +109,7 @@
                 "to": "sc:marketplace",
                 "esdtValue": [
                     {
-                        "tokenIdentifier": "str:RANDTOK-123456",
+                        "tokenIdentifier": "str:RANDTOK-123456456",
                         "value": "100"
                     }
                 ],

@@ -6,11 +6,11 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type testTemplateConfig struct {
-	t        *testing.T
+	tb       testing.TB
 	input    *vmcommon.ContractCallInput
 	useMocks bool
 }
@@ -24,10 +24,10 @@ type MockInstancesTestTemplate struct {
 }
 
 // BuildMockInstanceCallTest starts the building process for a mock contract call test
-func BuildMockInstanceCallTest(t *testing.T) *MockInstancesTestTemplate {
+func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 	return &MockInstancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
-			t:        t,
+			tb:       tb,
 			useMocks: true,
 		},
 		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
@@ -59,11 +59,10 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func
 }
 
 func (callerTest *MockInstancesTestTemplate) runTest() {
-
-	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.t)
+	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.tb)
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.initialize(callerTest.t, host, imb)
+		mockSC.initialize(callerTest.tb, host, imb)
 	}
 
 	callerTest.setup(host, world)
@@ -73,7 +72,7 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 
 	allErrors := host.Runtime().GetAllErrors()
-	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
 	callerTest.assertResults(world, verify)
 }
 

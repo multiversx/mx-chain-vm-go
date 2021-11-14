@@ -657,3 +657,5 @@
     I16x8RoundingAverageU = 200
     LocalAllocate = 2
     LocalsUnmetered = 100
+    MaxMemoryGrow = 8
+    MaxMemoryGrowDelta = 10

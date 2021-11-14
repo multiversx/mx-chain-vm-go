@@ -181,7 +181,7 @@ func TestESDT_GettersAPI(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			WithFunction("validateGetters").
 			WithESDTValue(big.NewInt(5)).
-			WithESDTTokenName(test.ESDTTestTokenName).
+			WithESDTTokenName([]byte("TT")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
@@ -202,8 +202,9 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	// code of the contract is not important, because the exchange will be called
 	// by the "parent" using a manual call to host.ExecuteOnDestContext().
 	dummyCode := test.GetTestSCCode("init-simple", "../../")
+	testToken := []byte("TT")
 	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, dummyCode, world)
-	_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+	_ = parentAccount.SetTokenBalanceUint64(testToken, 0, initialESDTTokenBalance)
 
 	// Deploy the exchange contract, which will receive ESDT and verify that it
 	// can see the received token amount and token name.
@@ -226,7 +227,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
-		test.ESDTTestTokenName,
+		testToken,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),
 	}
@@ -239,7 +240,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
 
-	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(testToken, 0)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)
 }
 
