@@ -2756,7 +2756,19 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
-		return 1
+		if !host.CreateNFTOnExecByCallerEnabled() {
+			return 1
+		}
+
+		if contractCallInput.Function != core.BuiltInFunctionESDTNFTCreate {
+			if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+				return -1
+			}
+			return -1
+		}
+
+		contractCallInput.CallType = vm.ExecOnDestByCaller
+		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
 	}
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
