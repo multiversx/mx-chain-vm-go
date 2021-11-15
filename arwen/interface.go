@@ -157,6 +157,7 @@ type RuntimeContext interface {
 	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 
+	// TODO camilbancioiu: This method appears to be unused.
 	IsFirstCallACallback() bool
 }
 

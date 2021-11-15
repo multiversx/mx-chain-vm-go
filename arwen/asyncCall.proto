@@ -42,4 +42,4 @@ message SerializableAsyncCallGroup {
     string Identifier = 4;
     repeated SerializableAsyncCall AsyncCalls = 5;
 }
-
+// TODO camilbancioiu: Delete empty line at end.

@@ -4,11 +4,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
-
-var logAsync = logger.GetOrCreate("arwen/async")
 
 var marshalizer = &marshal.GogoProtoMarshalizer{}
 

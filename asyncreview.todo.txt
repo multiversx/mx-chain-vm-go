@@ -1,0 +1,62 @@
+ arwen/contexts/async.go                            |  850 ++--
+ arwen/contexts/asyncLocal.go                       |  154 +-
+ arwen/contexts/asyncSerializeUtils.go              |   94 +
+ arwen/contexts/async_test.go                       |  237 +-
+ arwen/contexts/metering.go                         |   22 +-
+ arwen/contexts/metering_test.go                    |    2 +-
+ arwen/contexts/output.go                           |   10 +-
+ arwen/contexts/output_test.go                      |    4 +-
+ arwen/contexts/runtime.go                          |   17 +
+ arwen/contexts/storage.go                          |   68 +-
+ arwen/elrondapi/elrondei.go                        |  168 +-
+ arwen/host/execution.go                            |  180 +-
+ arwen/hosttest/execution_builtin_test.go           |    3 +-
+ arwen/hosttest/execution_gas_test.go               |  256 +-
+ arwen/hosttest/execution_graph_test.go             | 1115 ++++++
+ arwen/hosttest/execution_test.go                   |  104 +-
+ arwen/hosttest/tools/graphviz_tool.go              |  229 +-
+ arwen/interface.go                                 |   61 +-
+ integrationTests/json/mandosScenarios_test.go      |   17 +
+ mock/context/instanceBuilderMock.go                |   10 +-
+ mock/context/meteringContextMock.go                |   10 +-
+ mock/world/worldCallbacks.go                       |    4 +-
+ testcommon/configurableFormatter.go                |  184 +
+ testcommon/mockSmartContractCallerTest.go          |   35 +-
+ testcommon/queueOfCrossShardCalls.go               |  104 +
+ testcommon/testCallGraph.go                        | 1091 ++++--
+ testcommon/testCallGraphUtils.go                   | 3984 ++++++++++++++++++-
+ testcommon/testCallGraph_test.go                   |   99 -
+ testcommon/testInitializerInputs.go                |   24 +-
+ testcommon/vmOutputVerifier.go                     |   69 +-
+ x 2021-11-15 .../exec-dest-ctx-by-caller/child/elrond.json
+ x 2021-11-15 .../exec-dest-ctx-by-caller/parent/elrond.json
+ x 2021-11-15 .../l_proxy_test_message_otherShard.scen.json
+ x 2021-11-15 .../l_proxy_test_payment_otherShard.scen.json
+ x 2021-11-15 .../mandos/proxy_test_message_otherShard.scen.json
+ x 2021-11-15 .../mandos/proxy_test_payment_otherShard.scen.json
+ x 2021-11-15 .../v0_2/activate/activate_other_shard.scen.json
+ x 2021-11-15 ...roxy_test_message_otherShard_callback.scen.json
+ x 2021-11-15 ...roxy_test_message_otherShard_callback.scen.json
+ x 2021-11-15 ...roxy_test_payment_otherShard_callback.scen.json
+ x 2021-11-15 ...roxy_test_payment_otherShard_callback.scen.json
+ x 2021-11-15 .gitignore
+ x 2021-11-15 arwen/asyncCall.go
+ x 2021-11-15 arwen/asyncCall.pb.go
+ x 2021-11-15 arwen/asyncCall.proto
+ x 2021-11-15 arwen/asyncCallGroup.go
+ x 2021-11-15 arwen/common.go
+ x 2021-11-15 arwen/contexts/async.pb.go
+ x 2021-11-15 arwen/contexts/async.proto
+ x 2021-11-15 arwen/helpers.go
+ x 2021-11-15 arwen/host/executionAsync.go
+ x 2021-11-15 go.mod
+ x 2021-11-15 go.sum
+ x 2021-11-15 mock/context/runtimeContextMock.go                
+ x 2021-11-15 mock/context/runtimeContextWrapper.go             
+ x 2021-11-15 mock/context/vmHostMock.go
+ x 2021-11-15 mock/context/vmHostStub.go
+ x 2021-11-15 mock/contracts/asyncChildSCRecursive.go           
+ x 2021-11-15 mock/contracts/asyncParentSCBuitin.go             
+ x 2021-11-15 mock/contracts/asyncParentSCBuitinMultiContract.go
+ x 2021-11-15 test/contracts/deployer/elrond.json
+ x 2021-11-15 testcommon/mockTestSmartContract.go

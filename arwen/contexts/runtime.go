@@ -813,6 +813,7 @@ func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
 	return firstArg
 }
 
+// TODO camilbancioiu: This method seems to be unused.
 func (context *runtimeContext) IsFirstCallACallback() bool {
 	var firstVMInput *vmcommon.VMInput
 	if len(context.stateStack) == 0 {

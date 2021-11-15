@@ -7,14 +7,22 @@ import (
 
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
-	CallID          []byte
-	Status          AsyncCallStatus
-	ExecutionMode   AsyncCallExecutionMode
-	Source          []byte
-	Destination     []byte
-	Data            []byte
-	GasLimit        uint64
-	ExtraGasLocked  uint64
+	CallID        []byte
+	Status        AsyncCallStatus
+	ExecutionMode AsyncCallExecutionMode
+
+	// TODO camilbancioiu: Source is the address of the caller contract, right?
+	// Consider renaming this field to Caller or CallerAddress instead.
+	Source      []byte
+	Destination []byte
+	Data        []byte
+	GasLimit    uint64
+
+	// TODO camilbancioiu: This actually is the total GasLocked for the callback
+	// of the AsyncCall, not an extra GasLocked. Is the field rename necessary?
+	// It might be more appropriate to keep it as GasLocked.
+	ExtraGasLocked uint64
+
 	ValueBytes      []byte
 	SuccessCallback string
 	ErrorCallback   string
@@ -49,6 +57,7 @@ func (ac *AsyncCall) GetIdentifier() []byte {
 	return ac.CallID
 }
 
+// TODO camilbancioiu: This comment needs to be updated.
 // GetSource returns the destination of an async call
 func (ac *AsyncCall) GetSource() []byte {
 	return ac.Source
@@ -138,9 +147,13 @@ func (ac *AsyncCall) IsInterfaceNil() bool {
 }
 
 func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
+	// TODO camilbancioiu: It's not required to use ac.Clone() here, right? This
+	// should be safe as it is.
 	return &SerializableAsyncCall{
-		CallID:          ac.CallID,
-		Status:          SearializableAsyncCallStatus(ac.Status),
+		CallID: ac.CallID,
+		// TODO camilbancioiu: Typo, SerializableAsync...
+		Status: SearializableAsyncCallStatus(ac.Status),
+		// TODO camilbancioiu: Typo, SerializableAsync...
 		ExecutionMode:   SearializableAsyncCallExecutionMode(ac.ExecutionMode),
 		Source:          ac.Source,
 		Destination:     ac.Destination,
@@ -154,9 +167,10 @@ func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
 }
 
 func fromSerializableAsyncCalls(serializableAsyncCalls []*SerializableAsyncCall) []*AsyncCall {
-	var asyncCalls = make([]*AsyncCall, 0)
-	for _, serAsyncCall := range serializableAsyncCalls {
-		asyncCalls = append(asyncCalls, serAsyncCall.FromSerializable())
+	// TODO camilbancioiu: Consider the following loop. It should be more efficient.
+	var asyncCalls = make([]*AsyncCall, len(serializableAsyncCalls))
+	for i, serAsyncCall := range serializableAsyncCalls {
+		asyncCalls[i] = serAsyncCall.FromSerializable()
 	}
 	return asyncCalls
 }

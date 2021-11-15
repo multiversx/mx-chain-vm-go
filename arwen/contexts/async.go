@@ -10,39 +10,47 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
 
+// TODO camilbancioiu: logAsync should be in async.go, for consistency with the
+// other contexts.
+var logAsync = logger.GetOrCreate("arwen/async")
+
+// TODO camilbancioiu: Would it be possible to make the asyncContext struct
+// itself serializable with protobuf, to avoid having a separate
+// SerializableAsyncContext struct?
 type asyncContext struct {
-	host                   arwen.VMHost
-	stateStack             []*asyncContext
-	callArgsParser         arwen.CallArgsParser
-	esdtTransferParser     vmcommon.ESDTTransferParser
-	groupCallbacksEnabled  bool
-	contextCallbackEnabled bool
+	host       arwen.VMHost
+	stateStack []*asyncContext
 
-	address  []byte
-	callID   []byte
-	callType vm.CallType
-
-	callerAddr                   []byte
-	callerCallID                 []byte
-	callbackAsyncInitiatorCallID []byte
-
-	callback        string
-	callbackData    []byte
-	gasPrice        uint64
-	gasAccumulated  uint64
-	returnData      []byte
-	asyncCallGroups []*arwen.AsyncCallGroup
+	// TODO camilbancioiu: I reorganized the field order, to reduce the diff.
+	callerAddr         []byte
+	callback           string
+	callbackData       []byte
+	gasPrice           uint64
+	gasAccumulated     uint64
+	returnData         []byte
+	asyncCallGroups    []*arwen.AsyncCallGroup
+	callArgsParser     arwen.CallArgsParser
+	esdtTransferParser vmcommon.ESDTTransferParser
 
 	callsCounter      uint64 // incremented and decremented during run
 	totalCallsCounter uint64 // used for callid generation
 
-	childResults *vmcommon.VMOutput
+	childResults           *vmcommon.VMOutput
+	groupCallbacksEnabled  bool
+	contextCallbackEnabled bool
+
+	address                      []byte
+	callID                       []byte
+	callType                     vm.CallType
+	callerCallID                 []byte
+	callbackAsyncInitiatorCallID []byte
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -102,8 +110,11 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetSCAddress()
 
-	logAsync.Trace("Calling", "function", input.Function)
-	if len(context.stateStack) == 0 && input.CallType != vm.AsynchronousCall && input.CallType != vm.AsynchronousCallBack {
+	emptyStack := len(context.stateStack) == 0
+	isAsyncCall := input.CallType == vm.AsynchronousCall
+	isAsyncCallback := input.CallType == vm.AsynchronousCallBack
+
+	if emptyStack && !isAsyncCall && !isAsyncCallback {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
@@ -114,42 +125,49 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 
-	logAsync.Trace("", "address", string(context.address))
-	logAsync.Trace("", "callID", context.callID)
 	if input.CallType == vm.AsynchronousCallBack {
 		context.callbackAsyncInitiatorCallID = runtime.GetAndEliminateFirstArgumentFromList()
 		context.gasAccumulated = big.NewInt(0).SetBytes(runtime.GetAndEliminateFirstArgumentFromList()).Uint64()
-		logAsync.Trace("", "callerAddr", string(context.callerAddr))
-		logAsync.Trace("", "callerCallID", context.callerCallID)
-		logAsync.Trace("", "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
-		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
 	}
+
+	// TODO camilbancioiu: Moved all the trace calls at the end of the function.
+	// This should be refactored as a single call to logAsync.Trace(), once the
+	// ConfigurableFormatter supports multi-line printing.
+	logAsync.Trace("Calling", "function", input.Function)
+	logAsync.Trace("", "address", string(context.address))
+	logAsync.Trace("", "callID", context.callID)
 	logAsync.Trace("", "input.GasProvided", input.GasProvided)
-	if input.GasLocked != 0 {
-		logAsync.Trace("", "input.GasLocked", input.GasLocked)
-	}
+	logAsync.Trace("", "input.GasLocked", input.GasLocked)
+	logAsync.Trace("", "callerAddr", string(context.callerAddr))
+	logAsync.Trace("", "callerCallID", context.callerCallID)
+	logAsync.Trace("", "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
+	logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
 }
 
 // PushState creates a deep clone of the internal state and pushes it onto the
 // internal state stack.
 func (context *asyncContext) PushState() {
 	newState := &asyncContext{
-		address:                      context.address,
-		callerAddr:                   context.callerAddr,
-		callerCallID:                 context.callerCallID,
+		callID:          context.callID,
+		callerCallID:    context.callerCallID,
+		callerAddr:      context.callerAddr,
+		callback:        context.callback,
+		callbackData:    context.callbackData,
+		gasPrice:        context.gasPrice,
+		gasAccumulated:  context.gasAccumulated,
+		returnData:      context.returnData,
+		asyncCallGroups: context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
+
 		callType:                     context.callType,
 		callbackAsyncInitiatorCallID: context.callbackAsyncInitiatorCallID,
-		callback:                     context.callback,
-		callbackData:                 context.callbackData,
-		gasPrice:                     context.gasPrice,
-		gasAccumulated:               context.gasAccumulated,
-		returnData:                   context.returnData,
-		asyncCallGroups:              context.asyncCallGroups, // TODO matei-p use cloneCallGroups()?
-		callID:                       context.callID,
+		address:                      context.address,
 		callsCounter:                 context.callsCounter,
 		totalCallsCounter:            context.totalCallsCounter,
 		childResults:                 context.childResults,
-		stateStack:                   context.stateStack,
+
+		// TODO camilbancioiu: The pointer to the stateStack itself must not be part of
+		// the state on the stack.
+		// stateStack: context.stateStack,
 	}
 
 	context.stateStack = append(context.stateStack, newState)
@@ -205,6 +223,13 @@ func (context *asyncContext) getPrevAsyncState() (*asyncContext, int) {
 }
 
 func (context *asyncContext) AccumulateGasFromPreviousState() {
+	// TODO camilbancioiu: These lines should most probably be part of
+	// PopSetActiveState(), right? AccumulateGasFromPreviousState() is only called
+	// once, in finishExecuteOnDestContext(), just before calling PopSetActiveState().
+
+	// TODO camilbancioiu: If these lines are indeed moved into
+	// PopSetActiveState(), please consider deleting the method getPrevAsyncState()
+	// and moving its code back into PopSetActiveState() as well.
 	prevState, _ := context.getPrevAsyncState()
 	context.gasAccumulated += prevState.gasAccumulated
 }
@@ -238,6 +263,7 @@ func (context *asyncContext) ClearStateStack() {
 	context.stateStack = make([]*asyncContext, 0)
 }
 
+// TODO camilbancioiu: This method appears to be unused.
 // GetAddress returns the address of the context.
 func (context *asyncContext) GetAddress() []byte {
 	return context.address
@@ -425,6 +451,9 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 	return call, nil
 }
 
+// TODO camilbancioiu: We really need to find out if it's possible to remove
+// SerializableAsyncContext and apply protobuf to the original asyncContext.
+
 // GetCallByAsyncIdentifier -
 func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	return getCallByAsyncIdentifierSer(context.AsyncCallGroups, asyncCallIdentifier)
@@ -432,9 +461,9 @@ func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdent
 
 func getCallByAsyncIdentifierSer(groups []*arwen.SerializableAsyncCallGroup, asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	for groupIndex, group := range groups {
-		for call1Index, callInGroup := range group.AsyncCalls {
+		for callIndex, callInGroup := range group.AsyncCalls {
 			if bytes.Equal(callInGroup.CallID, asyncCallIdentifier) {
-				return callInGroup.FromSerializable(), groupIndex, call1Index, nil
+				return callInGroup.FromSerializable(), groupIndex, callIndex, nil
 			}
 		}
 	}
@@ -448,9 +477,9 @@ func (context *asyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte
 
 func getCallByAsyncIdentifier(groups []*arwen.AsyncCallGroup, asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
 	for groupIndex, group := range groups {
-		for call1Index, callInGroup := range group.AsyncCalls {
+		for callIndex, callInGroup := range group.AsyncCalls {
 			if bytes.Equal(callInGroup.CallID, asyncCallIdentifier) {
-				return callInGroup, groupIndex, call1Index, nil
+				return callInGroup, groupIndex, callIndex, nil
 			}
 		}
 	}
@@ -482,6 +511,10 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.Async
 	}
 
 	if shouldLockGas {
+		// TODO camilbancioiu: Maybe we should rewrite metering.ComputeGasLockedForAsync()
+		// so that its name fits better. In fact, the gas computed by
+		// ComputeGasLockedForAsync is the 'extra gas' added on top of what the
+		// contract wanted. We will discuss this anyway.
 		call.ExtraGasLocked = metering.ComputeGasLockedForAsync(call.ExtraGasLocked)
 	}
 
@@ -550,6 +583,13 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	return nil
 }
 
+// getGasCostForLegacyAsyncContextStorage computes the gas that should be
+// reserved for the call to async.Save() when a legacy asyncCall() is made.
+// This is required because the legacy asyncCall() immediately consumes all the
+// remaining gas, causing the subsequent async.Save() to fail with
+// ErrNotEnoughGas. This method computes the amount that should be deducted
+// from the total remaining gas before consuming it, allowing async.Save() to
+// work correctly.
 func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
 	metering := context.host.Metering()
 	serializedContext := context.toSerializable()
@@ -648,7 +688,6 @@ func (context *asyncContext) Execute() error {
 	gasLeft := metering.GasLeft()
 
 	if context.HasPendingCallGroups() {
-		// context.accumulateGas(gasLeft)
 		logAsync.Trace("async.Execute() begin", "gas left", gasLeft, "gas acc", context.gasAccumulated)
 		logAsync.Trace("async.Execute() execute locals")
 
@@ -684,6 +723,9 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
+// TODO camilbancioiu: The result of this method is only used in a nil check.
+// It might be clearer to make it return a boolean and to rename it to
+// something like isAnyAsyncCallOnStack().
 func (context *asyncContext) getFirstUpstreamAsyncCallContext() arwen.AsyncContext {
 	for index := range context.stateStack {
 		index = len(context.stateStack) - 1 - index
@@ -906,10 +948,9 @@ func (context *asyncContext) HasPendingCallGroups() bool {
 	return len(context.asyncCallGroups) > 0
 }
 
-// IsComplete returns true if there are no more AsyncCallGroups contained in the AsyncContext.
+// IsComplete returns true if the calls counter is 0 and if there are no more
+// AsyncCallGroups contained in the AsyncContext.
 func (context *asyncContext) IsComplete() bool {
-	// it's possible that the counter is 0, but further async calls will follow so
-	// the context is not finished yet
 	return context.callsCounter == 0 && len(context.asyncCallGroups) == 0
 }
 
@@ -929,6 +970,9 @@ func (context *asyncContext) Save() error {
 		return err
 	}
 
+	// TODO camilbancioiu: async.Save() is only called when async.address equals
+	// storage.address, so it can simply call storage.SetProtectedStorage() here,
+	// right? Without ToAddress()?
 	_, err = storage.SetProtectedStorageToAddress(address, storageKey, data)
 	if err != nil {
 		return err
@@ -1010,6 +1054,10 @@ func (context *asyncContext) Delete() error {
 }
 
 // Delete deletes the persisted state of the AsyncContext from the contract storage.
+// TODO camilbancioiu: This method seems to be called only when address is equal to
+// async.address, which should also be equal to storage.address. It can simply
+// be named async.Delete(), and it can use storage.SetProtectedStorage()
+// without ToAddress.
 func (context *asyncContext) DeleteFromAddress(address []byte) error {
 	storage := context.host.Storage()
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, context.callID)
@@ -1133,7 +1181,6 @@ func (context *asyncContext) executeContextCallback() error {
 	return nil
 }
 
-// TODO compare with host.sendAsyncCallbackToCaller()
 func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte, data []byte) error {
 	runtime := host.Runtime()
 	output := host.Output()
@@ -1141,7 +1188,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 	currentCall := runtime.GetVMInput()
 
 	gasLeft := metering.GasLeft()
-
+	metering.UseGas(gasLeft)
 	err := output.Transfer(
 		destination,
 		sender,
@@ -1151,7 +1198,6 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 		data,
 		vm.AsynchronousCallBack,
 	)
-	metering.UseGas(gasLeft)
 	if err != nil {
 		runtime.FailExecution(err)
 		return err
@@ -1191,11 +1237,7 @@ func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 }
 
 func (context *asyncContext) findGroupByID(groupID string) (int, bool) {
-	return findGroupByIDInAsyncCallGroups(context.asyncCallGroups, groupID)
-}
-
-func findGroupByIDInAsyncCallGroups(asyncCallGroups []*arwen.AsyncCallGroup, groupID string) (int, bool) {
-	for index, group := range asyncCallGroups {
+	for index, group := range context.asyncCallGroups {
 		if group.Identifier == groupID {
 			return index, true
 		}

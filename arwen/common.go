@@ -104,6 +104,7 @@ const TimeLockKeyPrefix = ProtectedStoragePrefix + "TIMELOCK"
 // AsyncDataPrefix is the storage key prefix used for AsyncContext-related storage.
 const AsyncDataPrefix = ProtectedStoragePrefix + "ASYNC"
 
+// TODO camilbancioiu: This constant doesn't seem to be used at the moment.
 // AsyncRootDataPrefix is the storage key prefix used for rootAsyncContextInfo-related storage.
 const AsyncRootDataPrefix = ProtectedStoragePrefix + "ASYNCROOT"
 

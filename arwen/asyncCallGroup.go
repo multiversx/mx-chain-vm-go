@@ -4,6 +4,9 @@ import (
 	"bytes"
 )
 
+// TODO camilbancioiu: Make AsyncCallGroup a serializable struct using
+// protobuf? Instead of having an extra SerializableAsyncCallGroup.
+
 // AsyncCallGroup is a structure containing a group of async calls and a callback
 // that should be called when all these async calls are resolved
 type AsyncCallGroup struct {
@@ -46,6 +49,7 @@ func (acg *AsyncCallGroup) Clone() *AsyncCallGroup {
 
 // AddAsyncCall adds a given AsyncCall to the AsyncCallGroup
 func (acg *AsyncCallGroup) AddAsyncCall(call *AsyncCall) {
+	// TODO camilbancioiu: Remove commented code?
 	// call.Identifier = &AsyncCallIdentifier{
 	// 	GroupIdentifier: acg.Identifier,
 	// 	IndexInGroup:    len(acg.AsyncCalls),
@@ -120,11 +124,10 @@ func (acg *AsyncCallGroup) IsInterfaceNil() bool {
 }
 
 func (acg *AsyncCallGroup) toSerializable() *SerializableAsyncCallGroup {
-
-	var serializableAsyncCalls = make([]*SerializableAsyncCall, 0)
-
-	for _, ac := range acg.AsyncCalls {
-		serializableAsyncCalls = append(serializableAsyncCalls, ac.toSerializable())
+	// TODO camilbancioiu: Consider the following loop. It should be more efficient.
+	var serializableAsyncCalls = make([]*SerializableAsyncCall, len(acg.AsyncCalls))
+	for i, ac := range acg.AsyncCalls {
+		serializableAsyncCalls[i] = ac.toSerializable()
 	}
 
 	return &SerializableAsyncCallGroup{
@@ -138,18 +141,20 @@ func (acg *AsyncCallGroup) toSerializable() *SerializableAsyncCallGroup {
 
 // ToSerializableAsyncCallGroups -
 func ToSerializableAsyncCallGroups(asyncCallGroups []*AsyncCallGroup) []*SerializableAsyncCallGroup {
-	var serializableGroups = make([]*SerializableAsyncCallGroup, 0)
-	for _, acg := range asyncCallGroups {
-		serializableGroups = append(serializableGroups, acg.toSerializable())
+	// TODO camilbancioiu: Consider the following loop. It should be more efficient.
+	var serializableGroups = make([]*SerializableAsyncCallGroup, len(asyncCallGroups))
+	for i, acg := range asyncCallGroups {
+		serializableGroups[i] = acg.toSerializable()
 	}
 	return serializableGroups
 }
 
 // FromSerializableAsyncCallGroups -
 func FromSerializableAsyncCallGroups(serializableAsyncCallGroups []*SerializableAsyncCallGroup) []*AsyncCallGroup {
-	var asyncCallGroups = make([]*AsyncCallGroup, 0)
-	for _, serCallGroup := range serializableAsyncCallGroups {
-		asyncCallGroups = append(asyncCallGroups, serCallGroup.fromSerializable())
+	// TODO camilbancioiu: Consider the following loop. It should be more efficient.
+	var asyncCallGroups = make([]*AsyncCallGroup, len(serializableAsyncCallGroups))
+	for i, serCallGroup := range serializableAsyncCallGroups {
+		asyncCallGroups[i] = serCallGroup.fromSerializable()
 	}
 	return asyncCallGroups
 }

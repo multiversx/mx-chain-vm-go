@@ -309,11 +309,3 @@ func (vhs *VMHostStub) MultiESDTTransferAsyncCallBackEnabled() bool {
 func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 	return true
 }
-
-// UpdateCurrentAsyncCallStatus mock method
-func (vhs *VMHostStub) UpdateCurrentAsyncCallStatus(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error) {
-	if vhs.UpdateCurrentAsyncCallStatusCalled != nil {
-		return vhs.UpdateCurrentAsyncCallStatusCalled(vmInput, prevPrevTxHash)
-	}
-	return nil, nil
-}
