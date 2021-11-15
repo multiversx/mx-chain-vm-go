@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
@@ -2813,11 +2814,40 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
-	reps := int64(100)
+	reps := int64(10)
 	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(10)
+	maxMemGrowDelta := uint32(1)
 	argMemGrowDelta := int64(1)
 	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, reps, vmcommon.Ok)
+}
+
+func TestExecution_Opcodes_MemoryGrow_Timed(t *testing.T) {
+	t.Skip("this is a benchmark")
+	maxMemGrow := uint32(math.MaxUint32)
+	maxMemGrowDelta := uint32(1)
+	argMemGrowDelta := int64(1)
+
+	for reps := int64(1); reps <= 40; reps++ {
+		start := time.Now()
+		runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, reps, vmcommon.Ok)
+		elapsedTime := time.Since(start)
+		fmt.Printf("Executing %d memory.grow: %s\n", reps, elapsedTime.String())
+	}
+}
+
+func TestExecution_Opcodes_MemoryGrowDelta_Timed(t *testing.T) {
+	t.Skip("this is a benchmark")
+	maxMemGrow := uint32(math.MaxUint32)
+	maxMemGrowDelta := uint32(10)
+
+	for delta := int64(1); delta < 10; delta++ {
+		for reps := int64(1); reps <= 40; reps++ {
+			start := time.Now()
+			runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, delta, reps, vmcommon.Ok)
+			elapsedTime := time.Since(start)
+			fmt.Printf("Executing %2d memory.grow, delta %2d: %s\n", reps, delta, elapsedTime.String())
+		}
+	}
 }
 
 func TestExecution_Opcodes_MemoryGrow_Limit(t *testing.T) {
@@ -2834,82 +2864,6 @@ func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
 	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta-1), 1, vmcommon.Ok)
 	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), 1, vmcommon.Ok)
 	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta+1), 1, vmcommon.ExecutionFailed)
-}
-
-// Run all these benchmarks in isolation with the command
-// go test -count=1 -run '^BenchmarkOpcodeMemoryGrowOpReps' -bench='_Ops$' ./arwen/hosttest
-func BenchmarkOpcodeMemoryGrowOpReps_01_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 1)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_10_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 10)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_20_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 20)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_30_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 30)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_40_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 40)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_50_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 50)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_60_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 60)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_70_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 70)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_80_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 80)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_90_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 90)
-}
-func BenchmarkOpcodeMemoryGrowOpReps_100_Ops(b *testing.B) {
-	runBenchmarkOpcodeMemoryGrowOpReps(b, 100)
-}
-
-func runBenchmarkOpcodeMemoryGrowOpReps(b *testing.B, opReps int64) {
-	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(1)
-	argMemGrowDelta := int64(1)
-
-	repsBigInt := big.NewInt(int64(b.N))
-	repsBytes := arwen.PadBytesLeft(repsBigInt.Bytes(), 8)
-
-	deltaBigInt := big.NewInt(argMemGrowDelta)
-	deltaBytes := arwen.PadBytesLeft(deltaBigInt.Bytes(), 8)
-
-	opRepsBigInt := big.NewInt(opReps)
-	opRepsBytes := arwen.PadBytesLeft(opRepsBigInt.Bytes(), 8)
-
-	test.BuildInstanceCallTest(b).
-		WithContracts(
-			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(codeOpcodes)).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(80000).
-			WithFunction("memGrowDeltaOpReps").
-			WithArguments(repsBytes, deltaBytes, opRepsBytes).
-			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			gasSchedule := host.Metering().GasSchedule()
-			gasSchedule.WASMOpcodeCost.MaxMemoryGrow = maxMemGrow
-			gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta = maxMemGrowDelta
-		}).
-		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok()
-		})
-}
-
-func BenchmarkOpcodeMemoryGrow(b *testing.B) {
-	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(1)
-	runWASMOpcodeTestMemGrow(b, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, int64(b.N), vmcommon.Ok)
 }
 
 func runWASMOpcodeTestMemGrow(
