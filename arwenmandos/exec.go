@@ -100,7 +100,7 @@ func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
 func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
-		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	case mj.GasScheduleDummy:
 		return config.MakeGasMapForTests(), nil
 	case mj.GasScheduleV3:
