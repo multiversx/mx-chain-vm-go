@@ -12,7 +12,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -811,15 +810,4 @@ func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
 	firstArg := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]
 	return firstArg
-}
-
-// TODO camilbancioiu: This method seems to be unused.
-func (context *runtimeContext) IsFirstCallACallback() bool {
-	var firstVMInput *vmcommon.VMInput
-	if len(context.stateStack) == 0 {
-		firstVMInput = context.vmInput
-	} else {
-		firstVMInput = context.stateStack[0].vmInput
-	}
-	return firstVMInput.CallType == vm.AsynchronousCallBack
 }

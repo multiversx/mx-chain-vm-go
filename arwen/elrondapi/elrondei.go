@@ -1563,14 +1563,13 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 
 	asyncCall := &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,
-		Source:          runtime.GetSCAddress(),
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
 		GasLimit:        uint64(gas),
 		SuccessCallback: string(successFunc),
 		ErrorCallback:   string(errorFunc),
-		ExtraGasLocked:  uint64(extraGasForCallback),
+		GasLocked:       uint64(extraGasForCallback),
 	}
 
 	if asyncCall.HasDefinedAnyCallback() {

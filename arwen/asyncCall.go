@@ -11,17 +11,11 @@ type AsyncCall struct {
 	Status        AsyncCallStatus
 	ExecutionMode AsyncCallExecutionMode
 
-	// TODO camilbancioiu: Source is the address of the caller contract, right?
-	// Consider renaming this field to Caller or CallerAddress instead.
-	Source      []byte
 	Destination []byte
 	Data        []byte
 	GasLimit    uint64
 
-	// TODO camilbancioiu: This actually is the total GasLocked for the callback
-	// of the AsyncCall, not an extra GasLocked. Is the field rename necessary?
-	// It might be more appropriate to keep it as GasLocked.
-	ExtraGasLocked uint64
+	GasLocked uint64
 
 	ValueBytes      []byte
 	SuccessCallback string
@@ -34,17 +28,15 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 		CallID:          ac.CallID,
 		Status:          ac.Status,
 		ExecutionMode:   ac.ExecutionMode,
-		Source:          make([]byte, len(ac.Source)),
 		Destination:     make([]byte, len(ac.Destination)),
 		Data:            make([]byte, len(ac.Data)),
 		GasLimit:        ac.GasLimit,
-		ExtraGasLocked:  ac.ExtraGasLocked,
+		GasLocked:       ac.GasLocked,
 		ValueBytes:      make([]byte, len(ac.ValueBytes)),
 		SuccessCallback: ac.SuccessCallback,
 		ErrorCallback:   ac.ErrorCallback,
 	}
 
-	copy(clone.Source, ac.Source)
 	copy(clone.Destination, ac.Destination)
 	copy(clone.Data, ac.Data)
 	copy(clone.ValueBytes, ac.ValueBytes)
@@ -55,12 +47,6 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 // GetIdentifier returns the identifier of an async call
 func (ac *AsyncCall) GetIdentifier() []byte {
 	return ac.CallID
-}
-
-// TODO camilbancioiu: This comment needs to be updated.
-// GetSource returns the destination of an async call
-func (ac *AsyncCall) GetSource() []byte {
-	return ac.Source
 }
 
 // GetDestination returns the destination of an async call
@@ -80,12 +66,12 @@ func (ac *AsyncCall) GetGasLimit() uint64 {
 
 // GetGasLocked returns the gas locked for the async callback
 func (ac *AsyncCall) GetGasLocked() uint64 {
-	return ac.ExtraGasLocked
+	return ac.GasLocked
 }
 
 // GetTotalGas returns the sum of the gas limit and gas locked
 func (ac *AsyncCall) GetTotalGas() uint64 {
-	return math.AddUint64(ac.GasLimit, ac.ExtraGasLocked)
+	return math.AddUint64(ac.GasLimit, ac.GasLocked)
 }
 
 // GetValue returns the byte representation of the value of the async call
@@ -147,19 +133,14 @@ func (ac *AsyncCall) IsInterfaceNil() bool {
 }
 
 func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
-	// TODO camilbancioiu: It's not required to use ac.Clone() here, right? This
-	// should be safe as it is.
 	return &SerializableAsyncCall{
-		CallID: ac.CallID,
-		// TODO camilbancioiu: Typo, SerializableAsync...
-		Status: SearializableAsyncCallStatus(ac.Status),
-		// TODO camilbancioiu: Typo, SerializableAsync...
-		ExecutionMode:   SearializableAsyncCallExecutionMode(ac.ExecutionMode),
-		Source:          ac.Source,
+		CallID:          ac.CallID,
+		Status:          SerializableAsyncCallStatus(ac.Status),
+		ExecutionMode:   SerializableAsyncCallExecutionMode(ac.ExecutionMode),
 		Destination:     ac.Destination,
 		Data:            ac.Data,
 		GasLimit:        ac.GasLimit,
-		ExtraGasLocked:  ac.ExtraGasLocked,
+		GasLocked:       ac.GasLocked,
 		ValueBytes:      ac.ValueBytes,
 		SuccessCallback: ac.SuccessCallback,
 		ErrorCallback:   ac.ErrorCallback,
@@ -167,7 +148,6 @@ func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
 }
 
 func fromSerializableAsyncCalls(serializableAsyncCalls []*SerializableAsyncCall) []*AsyncCall {
-	// TODO camilbancioiu: Consider the following loop. It should be more efficient.
 	var asyncCalls = make([]*AsyncCall, len(serializableAsyncCalls))
 	for i, serAsyncCall := range serializableAsyncCalls {
 		asyncCalls[i] = serAsyncCall.FromSerializable()
@@ -181,11 +161,10 @@ func (serAsyncCall *SerializableAsyncCall) FromSerializable() *AsyncCall {
 		CallID:          serAsyncCall.CallID,
 		Status:          AsyncCallStatus(serAsyncCall.Status),
 		ExecutionMode:   AsyncCallExecutionMode(serAsyncCall.ExecutionMode),
-		Source:          serAsyncCall.Source,
 		Destination:     serAsyncCall.Destination,
 		Data:            serAsyncCall.Data,
 		GasLimit:        serAsyncCall.GasLimit,
-		ExtraGasLocked:  serAsyncCall.ExtraGasLocked,
+		GasLocked:       serAsyncCall.GasLocked,
 		ValueBytes:      serAsyncCall.ValueBytes,
 		SuccessCallback: serAsyncCall.SuccessCallback,
 		ErrorCallback:   serAsyncCall.ErrorCallback,

@@ -156,9 +156,6 @@ type RuntimeContext interface {
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
-
-	// TODO camilbancioiu: This method appears to be unused.
-	IsFirstCallACallback() bool
 }
 
 // AddressAndCallID holds info from a runtime stack
@@ -257,7 +254,7 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	ComputeGasLockedForAsync(extraGasForCallback uint64) uint64
+	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
@@ -330,7 +327,6 @@ type AsyncContext interface {
 	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
-	GetAddress() []byte
 	GetCallerAddress() []byte
 	GetCallerCallID() []byte
 	GetReturnData() []byte
@@ -367,7 +363,6 @@ type AsyncContext interface {
 	CompleteChildConditional(isComplete bool, asyncCallIdentifier []byte, gasToAccumulate uint64) error
 	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (AsyncContext, error)
 
-	AccumulateGasFromPreviousState()
 	SetResults(vmOutput *vmcommon.VMOutput)
 	GetGasAccumulated() uint64
 

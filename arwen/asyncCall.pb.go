@@ -27,72 +27,72 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type SearializableAsyncCallStatus int32
+type SerializableAsyncCallStatus int32
 
 const (
-	SearializableAsyncCallPending  SearializableAsyncCallStatus = 0
-	SearializableAsyncCallResolved SearializableAsyncCallStatus = 1
-	SearializableAsyncCallRejected SearializableAsyncCallStatus = 2
+	SerializableAsyncCallPending  SerializableAsyncCallStatus = 0
+	SerializableAsyncCallResolved SerializableAsyncCallStatus = 1
+	SerializableAsyncCallRejected SerializableAsyncCallStatus = 2
 )
 
-var SearializableAsyncCallStatus_name = map[int32]string{
-	0: "SearializableAsyncCallPending",
-	1: "SearializableAsyncCallResolved",
-	2: "SearializableAsyncCallRejected",
+var SerializableAsyncCallStatus_name = map[int32]string{
+	0: "SerializableAsyncCallPending",
+	1: "SerializableAsyncCallResolved",
+	2: "SerializableAsyncCallRejected",
 }
 
-var SearializableAsyncCallStatus_value = map[string]int32{
-	"SearializableAsyncCallPending":  0,
-	"SearializableAsyncCallResolved": 1,
-	"SearializableAsyncCallRejected": 2,
+var SerializableAsyncCallStatus_value = map[string]int32{
+	"SerializableAsyncCallPending":  0,
+	"SerializableAsyncCallResolved": 1,
+	"SerializableAsyncCallRejected": 2,
 }
 
-func (SearializableAsyncCallStatus) EnumDescriptor() ([]byte, []int) {
+func (SerializableAsyncCallStatus) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a0e9b586d6e1f667, []int{0}
 }
 
-type SearializableAsyncCallExecutionMode int32
+type SerializableAsyncCallExecutionMode int32
 
 const (
-	SearializableSyncExecution              SearializableAsyncCallExecutionMode = 0
-	SearializableAsyncBuiltinFuncIntraShard SearializableAsyncCallExecutionMode = 1
-	SearializableAsyncBuiltinFuncCrossShard SearializableAsyncCallExecutionMode = 2
-	SearializableESDTTransferOnCallBack     SearializableAsyncCallExecutionMode = 3
-	SearializableAsyncUnknown               SearializableAsyncCallExecutionMode = 4
+	SerializableSyncExecution              SerializableAsyncCallExecutionMode = 0
+	SerializableAsyncBuiltinFuncIntraShard SerializableAsyncCallExecutionMode = 1
+	SerializableAsyncBuiltinFuncCrossShard SerializableAsyncCallExecutionMode = 2
+	SerializableESDTTransferOnCallBack     SerializableAsyncCallExecutionMode = 3
+	SerializableAsyncUnknown               SerializableAsyncCallExecutionMode = 4
 )
 
-var SearializableAsyncCallExecutionMode_name = map[int32]string{
-	0: "SearializableSyncExecution",
-	1: "SearializableAsyncBuiltinFuncIntraShard",
-	2: "SearializableAsyncBuiltinFuncCrossShard",
-	3: "SearializableESDTTransferOnCallBack",
-	4: "SearializableAsyncUnknown",
+var SerializableAsyncCallExecutionMode_name = map[int32]string{
+	0: "SerializableSyncExecution",
+	1: "SerializableAsyncBuiltinFuncIntraShard",
+	2: "SerializableAsyncBuiltinFuncCrossShard",
+	3: "SerializableESDTTransferOnCallBack",
+	4: "SerializableAsyncUnknown",
 }
 
-var SearializableAsyncCallExecutionMode_value = map[string]int32{
-	"SearializableSyncExecution":              0,
-	"SearializableAsyncBuiltinFuncIntraShard": 1,
-	"SearializableAsyncBuiltinFuncCrossShard": 2,
-	"SearializableESDTTransferOnCallBack":     3,
-	"SearializableAsyncUnknown":               4,
+var SerializableAsyncCallExecutionMode_value = map[string]int32{
+	"SerializableSyncExecution":              0,
+	"SerializableAsyncBuiltinFuncIntraShard": 1,
+	"SerializableAsyncBuiltinFuncCrossShard": 2,
+	"SerializableESDTTransferOnCallBack":     3,
+	"SerializableAsyncUnknown":               4,
 }
 
-func (SearializableAsyncCallExecutionMode) EnumDescriptor() ([]byte, []int) {
+func (SerializableAsyncCallExecutionMode) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_a0e9b586d6e1f667, []int{1}
 }
 
 type SerializableAsyncCall struct {
-	CallID          []byte                              `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
-	Status          SearializableAsyncCallStatus        `protobuf:"varint,2,opt,name=Status,proto3,enum=arwen.SearializableAsyncCallStatus" json:"Status,omitempty"`
-	ExecutionMode   SearializableAsyncCallExecutionMode `protobuf:"varint,3,opt,name=ExecutionMode,proto3,enum=arwen.SearializableAsyncCallExecutionMode" json:"ExecutionMode,omitempty"`
-	Source          []byte                              `protobuf:"bytes,4,opt,name=Source,proto3" json:"Source,omitempty"`
-	Destination     []byte                              `protobuf:"bytes,5,opt,name=Destination,proto3" json:"Destination,omitempty"`
-	Data            []byte                              `protobuf:"bytes,6,opt,name=Data,proto3" json:"Data,omitempty"`
-	GasLimit        uint64                              `protobuf:"varint,7,opt,name=GasLimit,proto3" json:"GasLimit,omitempty"`
-	ExtraGasLocked  uint64                              `protobuf:"varint,8,opt,name=ExtraGasLocked,proto3" json:"ExtraGasLocked,omitempty"`
-	ValueBytes      []byte                              `protobuf:"bytes,9,opt,name=ValueBytes,proto3" json:"ValueBytes,omitempty"`
-	SuccessCallback string                              `protobuf:"bytes,10,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
-	ErrorCallback   string                              `protobuf:"bytes,11,opt,name=ErrorCallback,proto3" json:"ErrorCallback,omitempty"`
+	CallID          []byte                             `protobuf:"bytes,1,opt,name=CallID,proto3" json:"CallID,omitempty"`
+	Status          SerializableAsyncCallStatus        `protobuf:"varint,2,opt,name=Status,proto3,enum=arwen.SerializableAsyncCallStatus" json:"Status,omitempty"`
+	ExecutionMode   SerializableAsyncCallExecutionMode `protobuf:"varint,3,opt,name=ExecutionMode,proto3,enum=arwen.SerializableAsyncCallExecutionMode" json:"ExecutionMode,omitempty"`
+	Source          []byte                             `protobuf:"bytes,4,opt,name=Source,proto3" json:"Source,omitempty"`
+	Destination     []byte                             `protobuf:"bytes,5,opt,name=Destination,proto3" json:"Destination,omitempty"`
+	Data            []byte                             `protobuf:"bytes,6,opt,name=Data,proto3" json:"Data,omitempty"`
+	GasLimit        uint64                             `protobuf:"varint,7,opt,name=GasLimit,proto3" json:"GasLimit,omitempty"`
+	GasLocked       uint64                             `protobuf:"varint,8,opt,name=GasLocked,proto3" json:"GasLocked,omitempty"`
+	ValueBytes      []byte                             `protobuf:"bytes,9,opt,name=ValueBytes,proto3" json:"ValueBytes,omitempty"`
+	SuccessCallback string                             `protobuf:"bytes,10,opt,name=SuccessCallback,proto3" json:"SuccessCallback,omitempty"`
+	ErrorCallback   string                             `protobuf:"bytes,11,opt,name=ErrorCallback,proto3" json:"ErrorCallback,omitempty"`
 }
 
 func (m *SerializableAsyncCall) Reset()      { *m = SerializableAsyncCall{} }
@@ -130,18 +130,18 @@ func (m *SerializableAsyncCall) GetCallID() []byte {
 	return nil
 }
 
-func (m *SerializableAsyncCall) GetStatus() SearializableAsyncCallStatus {
+func (m *SerializableAsyncCall) GetStatus() SerializableAsyncCallStatus {
 	if m != nil {
 		return m.Status
 	}
-	return SearializableAsyncCallPending
+	return SerializableAsyncCallPending
 }
 
-func (m *SerializableAsyncCall) GetExecutionMode() SearializableAsyncCallExecutionMode {
+func (m *SerializableAsyncCall) GetExecutionMode() SerializableAsyncCallExecutionMode {
 	if m != nil {
 		return m.ExecutionMode
 	}
-	return SearializableSyncExecution
+	return SerializableSyncExecution
 }
 
 func (m *SerializableAsyncCall) GetSource() []byte {
@@ -172,9 +172,9 @@ func (m *SerializableAsyncCall) GetGasLimit() uint64 {
 	return 0
 }
 
-func (m *SerializableAsyncCall) GetExtraGasLocked() uint64 {
+func (m *SerializableAsyncCall) GetGasLocked() uint64 {
 	if m != nil {
-		return m.ExtraGasLocked
+		return m.GasLocked
 	}
 	return 0
 }
@@ -272,8 +272,8 @@ func (m *SerializableAsyncCallGroup) GetAsyncCalls() []*SerializableAsyncCall {
 }
 
 func init() {
-	proto.RegisterEnum("arwen.SearializableAsyncCallStatus", SearializableAsyncCallStatus_name, SearializableAsyncCallStatus_value)
-	proto.RegisterEnum("arwen.SearializableAsyncCallExecutionMode", SearializableAsyncCallExecutionMode_name, SearializableAsyncCallExecutionMode_value)
+	proto.RegisterEnum("arwen.SerializableAsyncCallStatus", SerializableAsyncCallStatus_name, SerializableAsyncCallStatus_value)
+	proto.RegisterEnum("arwen.SerializableAsyncCallExecutionMode", SerializableAsyncCallExecutionMode_name, SerializableAsyncCallExecutionMode_value)
 	proto.RegisterType((*SerializableAsyncCall)(nil), "arwen.SerializableAsyncCall")
 	proto.RegisterType((*SerializableAsyncCallGroup)(nil), "arwen.SerializableAsyncCallGroup")
 }
@@ -322,15 +322,15 @@ var fileDescriptor_a0e9b586d6e1f667 = []byte{
 	0xa4, 0x04, 0x00, 0x00,
 }
 
-func (x SearializableAsyncCallStatus) String() string {
-	s, ok := SearializableAsyncCallStatus_name[int32(x)]
+func (x SerializableAsyncCallStatus) String() string {
+	s, ok := SerializableAsyncCallStatus_name[int32(x)]
 	if ok {
 		return s
 	}
 	return strconv.Itoa(int(x))
 }
-func (x SearializableAsyncCallExecutionMode) String() string {
-	s, ok := SearializableAsyncCallExecutionMode_name[int32(x)]
+func (x SerializableAsyncCallExecutionMode) String() string {
+	s, ok := SerializableAsyncCallExecutionMode_name[int32(x)]
 	if ok {
 		return s
 	}
@@ -376,7 +376,7 @@ func (this *SerializableAsyncCall) Equal(that interface{}) bool {
 	if this.GasLimit != that1.GasLimit {
 		return false
 	}
-	if this.ExtraGasLocked != that1.ExtraGasLocked {
+	if this.GasLocked != that1.GasLocked {
 		return false
 	}
 	if !bytes.Equal(this.ValueBytes, that1.ValueBytes) {
@@ -444,7 +444,7 @@ func (this *SerializableAsyncCall) GoString() string {
 	s = append(s, "Destination: "+fmt.Sprintf("%#v", this.Destination)+",\n")
 	s = append(s, "Data: "+fmt.Sprintf("%#v", this.Data)+",\n")
 	s = append(s, "GasLimit: "+fmt.Sprintf("%#v", this.GasLimit)+",\n")
-	s = append(s, "ExtraGasLocked: "+fmt.Sprintf("%#v", this.ExtraGasLocked)+",\n")
+	s = append(s, "GasLocked: "+fmt.Sprintf("%#v", this.GasLocked)+",\n")
 	s = append(s, "ValueBytes: "+fmt.Sprintf("%#v", this.ValueBytes)+",\n")
 	s = append(s, "SuccessCallback: "+fmt.Sprintf("%#v", this.SuccessCallback)+",\n")
 	s = append(s, "ErrorCallback: "+fmt.Sprintf("%#v", this.ErrorCallback)+",\n")
@@ -516,8 +516,8 @@ func (m *SerializableAsyncCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x4a
 	}
-	if m.ExtraGasLocked != 0 {
-		i = encodeVarintAsyncCall(dAtA, i, uint64(m.ExtraGasLocked))
+	if m.GasLocked != 0 {
+		i = encodeVarintAsyncCall(dAtA, i, uint64(m.GasLocked))
 		i--
 		dAtA[i] = 0x40
 	}
@@ -672,8 +672,8 @@ func (m *SerializableAsyncCall) Size() (n int) {
 	if m.GasLimit != 0 {
 		n += 1 + sovAsyncCall(uint64(m.GasLimit))
 	}
-	if m.ExtraGasLocked != 0 {
-		n += 1 + sovAsyncCall(uint64(m.ExtraGasLocked))
+	if m.GasLocked != 0 {
+		n += 1 + sovAsyncCall(uint64(m.GasLocked))
 	}
 	l = len(m.ValueBytes)
 	if l > 0 {
@@ -738,7 +738,7 @@ func (this *SerializableAsyncCall) String() string {
 		`Destination:` + fmt.Sprintf("%v", this.Destination) + `,`,
 		`Data:` + fmt.Sprintf("%v", this.Data) + `,`,
 		`GasLimit:` + fmt.Sprintf("%v", this.GasLimit) + `,`,
-		`ExtraGasLocked:` + fmt.Sprintf("%v", this.ExtraGasLocked) + `,`,
+		`GasLocked:` + fmt.Sprintf("%v", this.GasLocked) + `,`,
 		`ValueBytes:` + fmt.Sprintf("%v", this.ValueBytes) + `,`,
 		`SuccessCallback:` + fmt.Sprintf("%v", this.SuccessCallback) + `,`,
 		`ErrorCallback:` + fmt.Sprintf("%v", this.ErrorCallback) + `,`,
@@ -850,7 +850,7 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Status |= SearializableAsyncCallStatus(b&0x7F) << shift
+				m.Status |= SerializableAsyncCallStatus(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -869,7 +869,7 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ExecutionMode |= SearializableAsyncCallExecutionMode(b&0x7F) << shift
+				m.ExecutionMode |= SerializableAsyncCallExecutionMode(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -997,9 +997,9 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 			}
 		case 8:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExtraGasLocked", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field GasLocked", wireType)
 			}
-			m.ExtraGasLocked = 0
+			m.GasLocked = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowAsyncCall
@@ -1009,7 +1009,7 @@ func (m *SerializableAsyncCall) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ExtraGasLocked |= uint64(b&0x7F) << shift
+				m.GasLocked |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

@@ -265,9 +265,9 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		callbackName = ""
 	}
 
-	extraGasLocked := uint64(0)
+	gasLocked := uint64(0)
 	if callbackName != "" {
-		extraGasLocked = edge.GasLocked - DefaultCallGraphLockedGas
+		gasLocked = edge.GasLocked - DefaultCallGraphLockedGas
 	}
 
 	elrondapi.CreateAsyncCallWithTypedArgs(host,
@@ -277,7 +277,7 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		[]byte(callbackName),
 		[]byte(callbackName),
 		int64(edge.GasLimit),
-		int64(extraGasLocked))
+		int64(gasLocked))
 }
 
 func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte) ([]byte, string) {

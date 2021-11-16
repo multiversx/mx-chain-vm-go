@@ -7,29 +7,28 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 package arwen;
 
-enum SearializableAsyncCallStatus {
-    SearializableAsyncCallPending = 0;
-    SearializableAsyncCallResolved = 1;
-    SearializableAsyncCallRejected = 2;
+enum SerializableAsyncCallStatus {
+    SerializableAsyncCallPending = 0;
+    SerializableAsyncCallResolved = 1;
+    SerializableAsyncCallRejected = 2;
 }
 
-enum SearializableAsyncCallExecutionMode {
-    SearializableSyncExecution = 0;
-    SearializableAsyncBuiltinFuncIntraShard = 1;
-    SearializableAsyncBuiltinFuncCrossShard = 2;
-    SearializableESDTTransferOnCallBack = 3;
-    SearializableAsyncUnknown = 4;
+enum SerializableAsyncCallExecutionMode {
+    SerializableSyncExecution = 0;
+    SerializableAsyncBuiltinFuncIntraShard = 1;
+    SerializableAsyncBuiltinFuncCrossShard = 2;
+    SerializableESDTTransferOnCallBack = 3;
+    SerializableAsyncUnknown = 4;
 }
 
 message SerializableAsyncCall {
     bytes CallID = 1;
-    SearializableAsyncCallStatus Status = 2;
-    SearializableAsyncCallExecutionMode ExecutionMode = 3;
-    bytes Source = 4;
+    SerializableAsyncCallStatus Status = 2;
+    SerializableAsyncCallExecutionMode ExecutionMode = 3;
     bytes Destination = 5;
     bytes Data = 6;
     uint64 GasLimit = 7;
-    uint64 ExtraGasLocked = 8;
+    uint64 GasLocked = 8;
     bytes ValueBytes = 9;
     string SuccessCallback = 10;
     string ErrorCallback = 11;
@@ -42,4 +41,3 @@ message SerializableAsyncCallGroup {
     string Identifier = 4;
     repeated SerializableAsyncCall AsyncCalls = 5;
 }
-// TODO camilbancioiu: Delete empty line at end.

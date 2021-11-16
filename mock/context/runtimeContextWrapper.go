@@ -597,8 +597,3 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 func (contextWrapper *RuntimeContextWrapper) GetAndEliminateFirstArgumentFromList() []byte {
 	return contextWrapper.GetAndEliminateFirstArgumentFromList()
 }
-
-// IsFirstCallACallback calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) IsFirstCallACallback() bool {
-	return contextWrapper.IsFirstCallACallback()
-}

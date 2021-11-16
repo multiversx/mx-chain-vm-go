@@ -221,7 +221,6 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 }
 
 // SetProtectedStorageToAddress sets the given value at the given key, for the specified address. This is only used internaly by arwen!
-// TODO camilbancioiu: This method might be removed if its dependents are refactored.
 func (context *storageContext) SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
 	context.disableStorageProtection()
 	defer context.enableStorageProtection()

@@ -38,7 +38,7 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConf
 				SuccessCallback: "callBack",
 				ErrorCallback:   "callBack",
 				GasLimit:        testConfig.GasProvidedToChild,
-				ExtraGasLocked:  150,
+				GasLocked:       150,
 			})
 		}
 		require.Nil(instance.T, err)
