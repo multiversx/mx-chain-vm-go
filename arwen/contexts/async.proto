@@ -18,19 +18,19 @@ enum SerializableCallType {
 message SerializableVMOutput {
     repeated bytes ReturnData = 1;
     uint64 ReturnCode = 2;
-    string ReturnMessage = 3; 
-    uint64 GasRemaining = 4; 
+    string ReturnMessage = 3;
+    uint64 GasRemaining = 4;
     bytes  GasRefund = 5 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
     map<string, SerializableOutputAccount> OutputAccounts = 6;
-	repeated bytes DeletedAccounts = 7;
-	repeated bytes TouchedAccounts = 8;
-	SerializableLogEntry Logs = 9;
+    repeated bytes DeletedAccounts = 7;
+    repeated bytes TouchedAccounts = 8;
+    SerializableLogEntry Logs = 9;
 }
 
 message SerializableOutputTransfer {
     bytes Value = 1 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
     uint64 GasLimit = 2;
-    uint64 GasLocked = 3; 
+    uint64 GasLocked = 3;
     bytes Data = 4;
     SerializableCallType CallType = 5;
     bytes SenderAddress = 6;
@@ -67,15 +67,15 @@ message SerializableAsyncContext {
     bytes CallID = 2;
     SerializableCallType CallType = 3;
     bytes CallerAddr = 4;
-	bytes CallerCallID = 5;
-	bytes CallbackAsyncInitiatorCallID = 6;
-	string Callback = 7;
-	bytes CallbackData = 8;  
-	uint64 GasPrice = 9;
-	uint64 GasAccumulated = 10;
-	bytes ReturnData = 11;     
+    bytes CallerCallID = 5;
+    bytes CallbackAsyncInitiatorCallID = 6;
+    string Callback = 7;
+    bytes CallbackData = 8;
+    uint64 GasPrice = 9;
+    uint64 GasAccumulated = 10;
+    bytes ReturnData = 11;
     repeated arwen.SerializableAsyncCallGroup asyncCallGroups = 12;
     uint64 CallsCounter = 13;
-	uint64 TotalCallsCounter = 14;
+    uint64 TotalCallsCounter = 14;
     SerializableVMOutput ChildResults = 15;
 }

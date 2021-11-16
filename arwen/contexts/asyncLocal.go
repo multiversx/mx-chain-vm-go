@@ -155,7 +155,6 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
-	// context.accumulateGas(vmOutput.GasRemaining)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested

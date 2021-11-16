@@ -389,7 +389,11 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 // UpdateCurrentAsyncCallStatus detects the AsyncCall returning as callback,
 // extracts the ReturnCode from data provided by the destination call, and updates
 // the status of the AsyncCall with its value.
-func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID []byte, vmInput *vmcommon.VMInput) (*arwen.AsyncCall, error) {
+func (context *asyncContext) UpdateCurrentAsyncCallStatus(
+	address []byte,
+	callID []byte,
+	vmInput *vmcommon.VMInput,
+) (*arwen.AsyncCall, error) {
 	if vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
@@ -398,7 +402,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 		return nil, arwen.ErrCannotInterpretCallbackArgs
 	}
 
-	deserializedContext, err := newSerializedAsyncContextFromStore(
+	loadedContext, err := readAsyncContextFromStorage(
 		context.host.Storage(),
 		address,
 		context.callbackAsyncInitiatorCallID)
@@ -406,7 +410,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 		return nil, err
 	}
 
-	call, _, _, err := deserializedContext.GetCallByAsyncIdentifier(callID)
+	call, _, _, err := loadedContext.GetCallByAsyncIdentifier(callID)
 	if err != nil {
 		return nil, err
 	}
@@ -418,29 +422,8 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(address []byte, callID
 	return call, nil
 }
 
-// GetCallByAsyncIdentifier -
-func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
-	return getCallByAsyncIdentifierSer(context.AsyncCallGroups, asyncCallIdentifier)
-}
-
-func getCallByAsyncIdentifierSer(groups []*arwen.SerializableAsyncCallGroup, asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
-	for groupIndex, group := range groups {
-		for callIndex, callInGroup := range group.AsyncCalls {
-			if bytes.Equal(callInGroup.CallID, asyncCallIdentifier) {
-				return callInGroup.FromSerializable(), groupIndex, callIndex, nil
-			}
-		}
-	}
-
-	return nil, -1, -1, arwen.ErrAsyncCallNotFound
-}
-
 func (context *asyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
-	return getCallByAsyncIdentifier(context.asyncCallGroups, asyncCallIdentifier)
-}
-
-func getCallByAsyncIdentifier(groups []*arwen.AsyncCallGroup, asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
-	for groupIndex, group := range groups {
+	for groupIndex, group := range context.asyncCallGroups {
 		for callIndex, callInGroup := range group.AsyncCalls {
 			if bytes.Equal(callInGroup.CallID, asyncCallIdentifier) {
 				return callInGroup, groupIndex, callIndex, nil
@@ -510,14 +493,10 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 		return err
 	}
 
-	gasLimit := math.SubUint64(metering.GasLeft(), gasToLock)
-
-	gasUseForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
+	gasLimit, err := context.computeGasLimitForLegacyAsyncCall(gasToLock)
 	if err != nil {
 		return err
 	}
-	logAsync.Trace("Async legacy serialization", "gas", gasUseForLegacyContextSerialization)
-	gasLimit = math.SubUint64(gasLimit, gasUseForLegacyContextSerialization)
 
 	callbackFunction := ""
 	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
@@ -541,28 +520,6 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
 
 	return nil
-}
-
-// getGasCostForLegacyAsyncContextStorage computes the gas that should be
-// reserved for the call to async.Save() when a legacy asyncCall() is made.
-// This is required because the legacy asyncCall() immediately consumes all the
-// remaining gas, causing the subsequent async.Save() to fail with
-// ErrNotEnoughGas. This method computes the amount that should be deducted
-// from the total remaining gas before consuming it, allowing async.Save() to
-// work correctly.
-func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
-	metering := context.host.Metering()
-	serializedContext := context.toSerializable()
-	serializedContext.CallsCounter = 1
-	serializedContext.TotalCallsCounter = 1
-	serializedData, err := marshalizer.Marshal(serializedContext)
-	if err != nil {
-		return 0, err
-	}
-	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(serializedData)))
-	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(arwen.AsyncDataPrefix)))
-	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
-	return gasUseForSerialization, nil
 }
 
 func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
@@ -617,12 +574,6 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	)
 
 	return nil
-}
-
-func (context *asyncContext) isMultiLevelAsync(call *arwen.AsyncCall) bool {
-	// ESDTTransferOnCallback must be allowed as an exception, even if it appears
-	// to be a 2-level async call.
-	return context.isCallAsyncOnStack() && call.ExecutionMode != arwen.ESDTTransferOnCallBack
 }
 
 // Execute is the entry-point of the async calling mechanism; it is called by
@@ -683,6 +634,12 @@ func (context *asyncContext) Execute() error {
 	return nil
 }
 
+func (context *asyncContext) isMultiLevelAsync(call *arwen.AsyncCall) bool {
+	// ESDTTransferOnCallback must be allowed as an exception, even if it appears
+	// to be a 2-level async call.
+	return context.isCallAsyncOnStack() && call.ExecutionMode != arwen.ESDTTransferOnCallBack
+}
+
 func (context *asyncContext) isCallAsyncOnStack() bool {
 	if context.isCallAsync() {
 		return true
@@ -729,11 +686,6 @@ func (context *asyncContext) removeAsyncCallIfCompleted(asyncCallIdentifier []by
 	return nil
 }
 
-// IsComplete -
-func (context *SerializableAsyncContext) IsComplete() bool {
-	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
-}
-
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
 	// Cross-shard calls to built-in functions have two halves: an intra-shard
 	// half, followed by sending the call across shards.
@@ -764,14 +716,51 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	return gasToLock, nil
 }
 
+func (context *asyncContext) computeGasLimitForLegacyAsyncCall(gasToLock uint64) (uint64, error) {
+	gasLimit := math.SubUint64(context.host.Metering().GasLeft(), gasToLock)
+
+	gasReservedForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
+	if err != nil {
+		return 0, err
+	}
+	logAsync.Trace("Async legacy serialization", "gas", gasReservedForLegacyContextSerialization)
+	gasLimit = math.SubUint64(gasLimit, gasReservedForLegacyContextSerialization)
+
+	return gasLimit, nil
+}
+
+// getGasCostForLegacyAsyncContextStorage computes the gas that should be
+// reserved for the call to async.Save() when a legacy asyncCall() is made.
+// This is required because the legacy asyncCall() immediately consumes all the
+// remaining gas, causing the subsequent async.Save() to fail with
+// ErrNotEnoughGas. This method computes the amount that should be deducted
+// from the total remaining gas before consuming it, allowing async.Save() to
+// work correctly.
+func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
+	metering := context.host.Metering()
+	serializedContext := context.toSerializable()
+	serializedContext.CallsCounter = 1
+	serializedContext.TotalCallsCounter = 1
+	serializedData, err := marshalizer.Marshal(serializedContext)
+	if err != nil {
+		return 0, err
+	}
+	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(serializedData)))
+	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(arwen.AsyncDataPrefix)))
+	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
+	return gasUseForSerialization, nil
+}
+
 func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (arwen.AsyncContext, error) {
-	logAsync.Trace("NofityChildIsComplete")
-	logAsync.Trace("", "address", string(context.address))
-	logAsync.Trace("", "callID", context.callID) // DebugCallIDAsString
-	logAsync.Trace("", "callerAddr", string(context.callerAddr))
-	logAsync.Trace("", "callerCallID", context.callerCallID)
-	logAsync.Trace("", "asyncCallIdentifier", asyncCallIdentifier)
-	logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
+	if logAsync.GetLevel() == logger.LogTrace {
+		logAsync.Trace("NofityChildIsComplete")
+		logAsync.Trace("", "address", string(context.address))
+		logAsync.Trace("", "callID", context.callID) // DebugCallIDAsString
+		logAsync.Trace("", "callerAddr", string(context.callerAddr))
+		logAsync.Trace("", "callerCallID", context.callerCallID)
+		logAsync.Trace("", "asyncCallIdentifier", asyncCallIdentifier)
+		logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
+	}
 
 	context.CompleteChild(asyncCallIdentifier, gasToAccumulate)
 
@@ -799,7 +788,6 @@ func (context *asyncContext) NotifyChildIsComplete(asyncCallIdentifier []byte, g
 		gasAccumulatedInNotifingContext := context.gasAccumulated
 		if context.callType == vm.AsynchronousCall {
 			vmOutput := context.childResults
-			// fmt.Println("###get vm output for contract ->", string(context.address), "callID", context.callID, "gas remaining", context.childResults.GasRemaining)
 			isComplete, _, err := context.callCallback(currentAsyncCallIdentifier, vmOutput, nil)
 			if err != nil {
 				return nil, err
@@ -956,7 +944,7 @@ func (context *asyncContext) loadParentContextFromStackOrStore() (*asyncContext,
 // Load restores the internal state of the AsyncContext from the storage of the contract.
 func (context *asyncContext) LoadSpecifiedContext(address []byte, callID []byte) error {
 	// fmt.Println("loaded address", string(address), "callID", DebugPartialArrayToString(callID), "callsCounter", context.callsCounter)
-	loadedContext, err := newSerializedAsyncContextFromStore(context.host.Storage(), address, callID)
+	loadedContext, err := readAsyncContextFromStorage(context.host.Storage(), address, callID)
 	if err != nil {
 		return err
 	}
@@ -989,18 +977,22 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 	return loadedContext
 }
 
-func newSerializedAsyncContextFromStore(storage arwen.StorageContext, address []byte, callID []byte) (*asyncContext, error) {
+func readAsyncContextFromStorage(
+	storage arwen.StorageContext,
+	address []byte,
+	callID []byte,
+) (*asyncContext, error) {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}
 
-	deserializedContext, err := deserializeAsyncContext(data)
+	async, err := deserializeAsyncContext(data)
 	if err != nil {
 		return nil, err
 	}
-	return fromSerializable(deserializedContext), nil
+	return async, nil
 }
 
 // Delete deletes the persisted state of the AsyncContext from the contract storage.
@@ -1123,8 +1115,6 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 // cross-shard callback to it.
 func (context *asyncContext) executeContextCallback() error {
 	if !context.HasCallback() {
-		// TODO decide whether context.gasAccumulated should be restored here to
-		// mark it as available for VMOutput.GasRemaining
 		return nil
 	}
 
@@ -1173,7 +1163,9 @@ func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 ) []byte {
 	transferData := txDataBuilder.NewBuilder()
 
-	transferData.Func("<callback>") // this is just a placeholder, necessary not to break decoding, it's not used anywhere
+	// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
+	transferData.Func("<callback>")
+
 	transferData.Bytes(context.GenerateNewCallbackID())
 	transferData.Bytes(context.callID)
 	transferData.Bytes(context.callerCallID)

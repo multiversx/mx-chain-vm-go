@@ -1,6 +1,8 @@
 package contexts
 
 import (
+	"bytes"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -9,18 +11,14 @@ import (
 
 var marshalizer = &marshal.GogoProtoMarshalizer{}
 
-func (context *asyncContext) Serialize() ([]byte, error) {
-	serializableContext := context.toSerializable()
-	return marshalizer.Marshal(serializableContext)
-}
-
-func deserializeAsyncContext(data []byte) (*SerializableAsyncContext, error) {
-	deserializedContext := &SerializableAsyncContext{}
-	err := marshalizer.Unmarshal(deserializedContext, data)
+func deserializeAsyncContext(data []byte) (*asyncContext, error) {
+	deserializedAsyncContext := &SerializableAsyncContext{}
+	err := marshalizer.Unmarshal(deserializedAsyncContext, data)
 	if err != nil {
 		return nil, err
 	}
-	return deserializedContext, nil
+
+	return fromSerializable(deserializedAsyncContext), nil
 }
 
 func (context *asyncContext) toSerializable() *SerializableAsyncContext {
@@ -43,18 +41,6 @@ func (context *asyncContext) toSerializable() *SerializableAsyncContext {
 	}
 }
 
-func toSerializableVMOutput(vmOutput *vmcommon.VMOutput) *SerializableVMOutput {
-	if vmOutput == nil {
-		return nil
-	}
-	return &SerializableVMOutput{
-		ReturnData:    vmOutput.ReturnData,
-		ReturnCode:    uint64(vmOutput.ReturnCode),
-		ReturnMessage: vmOutput.ReturnMessage,
-		GasRemaining:  vmOutput.GasRemaining,
-	}
-}
-
 func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext {
 	return &asyncContext{
 		host:                         nil,
@@ -74,6 +60,37 @@ func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext
 		returnData:                   serializedContext.ReturnData,
 		asyncCallGroups:              arwen.FromSerializableAsyncCallGroups(serializedContext.AsyncCallGroups),
 		childResults:                 fromSerializableVMOutput(serializedContext.ChildResults),
+	}
+}
+
+// GetCallByAsyncIdentifier -
+func (context *SerializableAsyncContext) GetCallByAsyncIdentifier(asyncCallIdentifier []byte) (*arwen.AsyncCall, int, int, error) {
+	for groupIndex, group := range context.AsyncCallGroups {
+		for callIndex, callInGroup := range group.AsyncCalls {
+			if bytes.Equal(callInGroup.CallID, asyncCallIdentifier) {
+				return callInGroup.FromSerializable(), groupIndex, callIndex, nil
+			}
+		}
+	}
+
+	return nil, -1, -1, arwen.ErrAsyncCallNotFound
+}
+
+// IsComplete -
+func (context *SerializableAsyncContext) IsComplete() bool {
+	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
+}
+
+func toSerializableVMOutput(vmOutput *vmcommon.VMOutput) *SerializableVMOutput {
+	if vmOutput == nil {
+		return nil
+	}
+
+	return &SerializableVMOutput{
+		ReturnData:    vmOutput.ReturnData,
+		ReturnCode:    uint64(vmOutput.ReturnCode),
+		ReturnMessage: vmOutput.ReturnMessage,
+		GasRemaining:  vmOutput.GasRemaining,
 	}
 }
 
