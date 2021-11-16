@@ -3,6 +3,8 @@ package testcommon
 import (
 	"fmt"
 	"math/big"
+	"runtime"
+	"strings"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
@@ -11,6 +13,9 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
+
+const generateGraphs = false
+const graphsFolder = "/home/bogdan/graphs/"
 
 // LogGraph -
 var LogGraph = logger.GetOrCreate("arwen/graph")
@@ -387,6 +392,23 @@ func addFunctionToTempList(contract *MockTestSmartContract, functionName string,
 	if !functionPresent {
 		contract.tempFunctionsList[functionName] = isCallBack
 	}
+}
+
+// MakeGraphAndImage -
+func MakeGraphAndImage(graph *TestCallGraph) *TestCallGraph {
+	if generateGraphs {
+		GenerateSVGforGraph(graph, graphsFolder, getTestFunctionName())
+	}
+	return graph
+}
+
+func getTestFunctionName() string {
+	pc := make([]uintptr, 10)
+	runtime.Callers(3, pc)
+	f := runtime.FuncForPC(pc[0])
+	fullFunctionName := f.Name()
+	lastIndexOfDot := strings.LastIndex(fullFunctionName, ".")
+	return fullFunctionName[lastIndexOfDot+1:]
 }
 
 // CreateGraphTestSyncAndAsync8 -
