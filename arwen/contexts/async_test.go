@@ -125,7 +125,6 @@ func TestAsyncContext_InitState(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
-	async.gasPrice = 1000
 	async.returnData = []byte("some return data")
 	async.asyncCallGroups = nil
 
@@ -133,7 +132,6 @@ func TestAsyncContext_InitState(t *testing.T) {
 
 	require.NotNil(t, async.callerAddr)
 	require.Empty(t, async.callerAddr)
-	require.Zero(t, async.gasPrice)
 	require.NotNil(t, async.returnData)
 	require.Empty(t, async.returnData)
 	require.NotNil(t, async.asyncCallGroups)
@@ -146,7 +144,6 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
-	async.gasPrice = 1000
 	async.returnData = []byte("some return data")
 	async.asyncCallGroups = nil
 
@@ -162,7 +159,6 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 	async.InitStateFromInput(input)
 
 	require.Equal(t, input.CallerAddr, async.callerAddr)
-	require.Equal(t, uint64(42), async.gasPrice)
 	require.NotNil(t, async.returnData)
 	require.Empty(t, async.returnData)
 	require.NotNil(t, async.asyncCallGroups)
@@ -175,7 +171,6 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
-	async.gasPrice = 1000
 	async.returnData = []byte("some return data")
 
 	require.Equal(t, []byte("some address"), async.GetCallerAddress())
