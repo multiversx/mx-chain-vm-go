@@ -170,6 +170,7 @@ const (
 	esdtOnCallbackSuccess int = iota
 	esdtOnCallbackWrongNumOfArgs
 	esdtOnCallbackFail
+	esdtOnCallbackNewAsync
 )
 
 // ESDTTransferToParentMock is an exposed mock contract method
@@ -185,6 +186,11 @@ func ESDTTransferToParentWrongESDTArgsNumberMock(instanceMock *mock.InstanceMock
 // ESDTTransferToParentCallbackWillFail is an exposed mock contract method
 func ESDTTransferToParentCallbackWillFail(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
 	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackFail)
+}
+
+// ESDTTransferToParentAndNewAsyncFromCallbackMock is an exposed mock contract method
+func ESDTTransferToParentAndNewAsyncFromCallbackMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackNewAsync)
 }
 
 func esdtTransferToParentMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig, behavior int) {
@@ -205,6 +211,10 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, testConfig *test.
 			callData.Bytes([]byte{})
 		case esdtOnCallbackFail:
 			host.Output().Finish([]byte("fail"))
+		case esdtOnCallbackNewAsync:
+			host.Output().Finish([]byte("new_async"))
+			host.Output().Finish(host.Runtime().GetSCAddress())
+			host.Output().Finish([]byte("wasteGas"))
 		}
 
 		value := big.NewInt(0).Bytes()
