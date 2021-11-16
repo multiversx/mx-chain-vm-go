@@ -331,7 +331,6 @@ type AsyncContext interface {
 	GetCallerCallID() []byte
 	GetReturnData() []byte
 	SetReturnData(data []byte)
-	GetGasPrice() uint64
 
 	Execute() error
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
@@ -359,9 +358,9 @@ type AsyncContext interface {
 		returnData [][]byte,
 		returnMessage string) error
 
-	CompleteChild(asyncCallIdentifier []byte, gasToAccumulate uint64) error
-	CompleteChildConditional(isComplete bool, asyncCallIdentifier []byte, gasToAccumulate uint64) error
-	NotifyChildIsComplete(asyncCallIdentifier []byte, gasToAccumulate uint64) (AsyncContext, error)
+	CompleteChild(callID []byte, gasToAccumulate uint64) error
+	CompleteChildConditional(isComplete bool, callID []byte, gasToAccumulate uint64) error
+	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) (AsyncContext, error)
 
 	SetResults(vmOutput *vmcommon.VMOutput)
 	GetGasAccumulated() uint64

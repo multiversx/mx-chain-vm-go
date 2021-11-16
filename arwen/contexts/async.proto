@@ -71,11 +71,10 @@ message SerializableAsyncContext {
     bytes CallbackAsyncInitiatorCallID = 6;
     string Callback = 7;
     bytes CallbackData = 8;
-    uint64 GasPrice = 9;
-    uint64 GasAccumulated = 10;
-    bytes ReturnData = 11;
-    repeated arwen.SerializableAsyncCallGroup asyncCallGroups = 12;
-    uint64 CallsCounter = 13;
-    uint64 TotalCallsCounter = 14;
-    SerializableVMOutput ChildResults = 15;
+    uint64 GasAccumulated = 9;
+    bytes ReturnData = 10;
+    repeated arwen.SerializableAsyncCallGroup asyncCallGroups = 11;
+    uint64 CallsCounter = 12;
+    uint64 TotalCallsCounter = 13;
+    SerializableVMOutput ChildResults = 14;
 }

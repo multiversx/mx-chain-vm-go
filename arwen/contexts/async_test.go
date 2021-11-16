@@ -179,7 +179,6 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 	async.returnData = []byte("some return data")
 
 	require.Equal(t, []byte("some address"), async.GetCallerAddress())
-	require.Equal(t, uint64(1000), async.GetGasPrice())
 	require.Equal(t, []byte("some return data"), async.GetReturnData())
 
 	async.SetReturnData([]byte("rockets"))

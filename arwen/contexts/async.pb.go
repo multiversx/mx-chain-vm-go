@@ -478,7 +478,6 @@ type SerializableAsyncContext struct {
 	CallbackAsyncInitiatorCallID []byte                              `protobuf:"bytes,6,opt,name=CallbackAsyncInitiatorCallID,proto3" json:"CallbackAsyncInitiatorCallID,omitempty"`
 	Callback                     string                              `protobuf:"bytes,7,opt,name=Callback,proto3" json:"Callback,omitempty"`
 	CallbackData                 []byte                              `protobuf:"bytes,8,opt,name=CallbackData,proto3" json:"CallbackData,omitempty"`
-	GasPrice                     uint64                              `protobuf:"varint,9,opt,name=GasPrice,proto3" json:"GasPrice,omitempty"`
 	GasAccumulated               uint64                              `protobuf:"varint,10,opt,name=GasAccumulated,proto3" json:"GasAccumulated,omitempty"`
 	ReturnData                   []byte                              `protobuf:"bytes,11,opt,name=ReturnData,proto3" json:"ReturnData,omitempty"`
 	AsyncCallGroups              []*arwen.SerializableAsyncCallGroup `protobuf:"bytes,12,rep,name=asyncCallGroups,proto3" json:"asyncCallGroups,omitempty"`
@@ -569,13 +568,6 @@ func (m *SerializableAsyncContext) GetCallbackData() []byte {
 		return m.CallbackData
 	}
 	return nil
-}
-
-func (m *SerializableAsyncContext) GetGasPrice() uint64 {
-	if m != nil {
-		return m.GasPrice
-	}
-	return 0
 }
 
 func (m *SerializableAsyncContext) GetGasAccumulated() uint64 {
@@ -1006,9 +998,6 @@ func (this *SerializableAsyncContext) Equal(that interface{}) bool {
 	if !bytes.Equal(this.CallbackData, that1.CallbackData) {
 		return false
 	}
-	if this.GasPrice != that1.GasPrice {
-		return false
-	}
 	if this.GasAccumulated != that1.GasAccumulated {
 		return false
 	}
@@ -1153,7 +1142,6 @@ func (this *SerializableAsyncContext) GoString() string {
 	s = append(s, "CallbackAsyncInitiatorCallID: "+fmt.Sprintf("%#v", this.CallbackAsyncInitiatorCallID)+",\n")
 	s = append(s, "Callback: "+fmt.Sprintf("%#v", this.Callback)+",\n")
 	s = append(s, "CallbackData: "+fmt.Sprintf("%#v", this.CallbackData)+",\n")
-	s = append(s, "GasPrice: "+fmt.Sprintf("%#v", this.GasPrice)+",\n")
 	s = append(s, "GasAccumulated: "+fmt.Sprintf("%#v", this.GasAccumulated)+",\n")
 	s = append(s, "ReturnData: "+fmt.Sprintf("%#v", this.ReturnData)+",\n")
 	if this.AsyncCallGroups != nil {
@@ -1654,11 +1642,6 @@ func (m *SerializableAsyncContext) MarshalToSizedBuffer(dAtA []byte) (int, error
 		i = encodeVarintAsync(dAtA, i, uint64(m.GasAccumulated))
 		i--
 		dAtA[i] = 0x50
-	}
-	if m.GasPrice != 0 {
-		i = encodeVarintAsync(dAtA, i, uint64(m.GasPrice))
-		i--
-		dAtA[i] = 0x48
 	}
 	if len(m.CallbackData) > 0 {
 		i -= len(m.CallbackData)
