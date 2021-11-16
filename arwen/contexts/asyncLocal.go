@@ -155,7 +155,6 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
 	context.finishAsyncLocalExecution(vmOutput, err)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
-	// context.accumulateGas(vmOutput.GasRemaining)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -338,7 +337,7 @@ func (context *asyncContext) createCallbackInput(
 		if context.isSameShardNFTTransfer(contractCallInput) {
 			contractCallInput.RecipientAddr = contractCallInput.CallerAddr
 		}
-		contractCallInput.Arguments = context.PrependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
+		contractCallInput.Arguments = context.prependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
 
 		context.host.Output().DeleteFirstReturnData()
 	}
@@ -361,7 +360,7 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 	}
 
-	return context.PrependCallbackArgumentsForAsyncContext(arguments, asyncCall, gasAccumulated)
+	return context.prependCallbackArgumentsForAsyncContext(arguments, asyncCall, gasAccumulated)
 }
 
 func (context *asyncContext) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractCallInput) bool {
@@ -382,7 +381,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 			CallerAddr:     context.callerAddr,
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
-			GasPrice:       context.gasPrice,
+			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    group.GasLocked + context.gasAccumulated,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
