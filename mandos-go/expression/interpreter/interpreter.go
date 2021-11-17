@@ -29,6 +29,7 @@ const i32Prefix = "i32:"
 const i16Prefix = "i16:"
 const i8Prefix = "i8:"
 
+const bigFloatPrefix = "bigfloat:"
 const biguintPrefix = "biguint:"
 const nestedPrefix = "nested:"
 
@@ -180,6 +181,32 @@ func (ei *ExprInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	return ei.interpretNumber(strRaw, 0)
 }
 
+func (ei *ExprInterpreter) interpretFloatingPointNumber(strRaw string) ([]byte, error) {
+	str := strings.ReplaceAll(strRaw, "_", "")
+	strRaw = strings.ReplaceAll(str, ",", "")
+
+	// hex, the usual representation
+	if strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X") {
+		str := strRaw[2:]
+		if len(str)%2 == 1 {
+			str = "0" + str
+		}
+		return hex.DecodeString(str)
+	} else {
+		returnFloatValue := big.NewFloat(0)
+		mandosBigFloatVal, ok := big.NewFloat(0).SetString(strRaw)
+		if !ok {
+			return make([]byte, 0), fmt.Errorf("could not parse %s to big float", strRaw)
+		}
+		_ = returnFloatValue.Add(returnFloatValue, mandosBigFloatVal)
+		encodedFloatValue, err := returnFloatValue.GobEncode()
+		if err != nil {
+			return make([]byte, 0), fmt.Errorf("could not parse %s to big float", strRaw)
+		}
+		return encodedFloatValue, nil
+	}
+}
+
 // targetWidth = 0 means minimum length that can contain the result
 func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]byte, error) {
 	// signed numbers
@@ -209,7 +236,7 @@ func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]by
 
 func (ei *ExprInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
-	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
+	strRaw = strings.ReplaceAll(str, ",", "")  // also allow commas to group digits
 
 	// hex, the usual representation
 	if strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X") {
@@ -302,6 +329,14 @@ func (ei *ExprInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte, 
 		lengthBytes := big.NewInt(int64(len(biBytes))).Bytes()
 		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
 		return true, append(encodedLength, biBytes...), err
+	}
+
+	if strings.HasPrefix(strRaw, bigFloatPrefix) {
+		bfBytes, err := ei.interpretFloatingPointNumber(strRaw[len(bigFloatPrefix):])
+		// lengthBytes := big.NewInt(int64(len(bfBytes))).Bytes()
+		// encodedLength := twos.CopyAlignRight(lengthBytes, 1)
+		// return true, append(encodedLength, bfBytes...), err
+		return true, bfBytes, err
 	}
 
 	if strings.HasPrefix(strRaw, nestedPrefix) {
