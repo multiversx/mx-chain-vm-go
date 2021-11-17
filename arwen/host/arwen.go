@@ -161,7 +161,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.outputContext, err = contexts.NewOutputContext(host)
+	host.outputContext, err = contexts.NewOutputContext(host, hostParameters.EpochNotifier, hostParameters.CleanReturnDataEnableEpoch)
 	if err != nil {
 		return nil, err
 	}

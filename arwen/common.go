@@ -122,6 +122,7 @@ type VMHostParameters struct {
 	FixOOGReturnCodeEnableEpoch               uint32
 	RemoveNonUpdatedStorageEnableEpoch        uint32
 	CreateNFTThroughExecByCallerEnableEpoch   uint32
+	CleanReturnDataEnableEpoch                uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

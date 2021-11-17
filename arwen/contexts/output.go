@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -22,17 +23,27 @@ type outputContext struct {
 	stateStack         []*vmcommon.VMOutput
 	returnDataFromExec [][]byte
 	codeUpdates        map[string]struct{}
+
+	flagCleanReturnData        atomic.Flag
+	cleanReturnDataEnableEpoch uint32
 }
 
 // NewOutputContext creates a new outputContext
-func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
+func NewOutputContext(
+	host arwen.VMHost,
+	epochNotifier vmcommon.EpochNotifier,
+	cleanReturnDataEnableEpoch uint32,
+) (*outputContext, error) {
 	context := &outputContext{
-		host:               host,
-		stateStack:         make([]*vmcommon.VMOutput, 0),
-		returnDataFromExec: make([][]byte, 0),
+		host:                       host,
+		stateStack:                 make([]*vmcommon.VMOutput, 0),
+		returnDataFromExec:         make([][]byte, 0),
+		cleanReturnDataEnableEpoch: cleanReturnDataEnableEpoch,
 	}
 
 	context.InitState()
+
+	epochNotifier.RegisterNotifyHandler(context)
 
 	return context, nil
 }
@@ -79,6 +90,7 @@ func (context *outputContext) PushState() {
 // PopSetActiveState removes the latest entry from the state stack and sets it as the current vm output
 func (context *outputContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
+	context.returnDataFromExec = make([][]byte, 0)
 	if stateStackLen == 0 {
 		return
 	}
@@ -111,6 +123,8 @@ func (context *outputContext) PopMergeActiveState() {
 // all GasUsed values.
 func (context *outputContext) PopDiscard() {
 	stateStackLen := len(context.stateStack)
+	context.returnDataFromExec = make([][]byte, len(context.outputState.ReturnData))
+	copy(context.returnDataFromExec, context.outputState.ReturnData)
 	if stateStackLen == 0 {
 		return
 	}
@@ -121,6 +135,7 @@ func (context *outputContext) PopDiscard() {
 // ClearStateStack reinitializes the state stack.
 func (context *outputContext) ClearStateStack() {
 	context.stateStack = make([]*vmcommon.VMOutput, 0)
+	context.returnDataFromExec = make([][]byte, 0)
 }
 
 // CensorVMOutput will cause the next executed SC to appear isolated, as if
@@ -569,6 +584,17 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
+}
+
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (context *outputContext) EpochConfirmed(epoch uint32, timestamp uint64) {
+	context.flagCleanReturnData.Toggle(epoch >= context.cleanReturnDataEnableEpoch)
+	log.Debug("Arwen VM output context: clean return data", "enabled", context.flagCleanReturnData.IsSet())
+}
+
+// IsInterfaceNil returns true if the underlying object is nil
+func (context *outputContext) IsInterfaceNil() bool {
+	return context == nil
 }
 
 func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutput) {

@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
@@ -50,7 +51,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
 	host.BlockchainContext, _ = NewBlockchainContext(host, worldmock.NewMockWorld())
-	host.OutputContext, _ = NewOutputContext(host)
+	host.OutputContext, _ = NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	host.CryptoHook = factory.NewVMCrypto()
 	return host
 }

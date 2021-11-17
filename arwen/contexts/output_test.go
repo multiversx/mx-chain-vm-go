@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
@@ -16,7 +17,7 @@ func TestNewOutputContext(t *testing.T) {
 
 	host := &contextmock.VMHostStub{}
 
-	outputContext, err := NewOutputContext(host)
+	outputContext, err := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	require.Nil(t, err)
 	require.NotNil(t, outputContext)
 
@@ -47,7 +48,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	host.RuntimeCalled = func() arwen.RuntimeContext {
 		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
 	}
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 
 	address1 := []byte("address1")
 	address2 := []byte("address2")
@@ -110,7 +111,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	t.Parallel()
 
 	host := &contextmock.VMHostStub{}
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	require.Zero(t, len(outputContext.outputState.OutputAccounts))
 
 	// Request an account that is missing from OutputAccounts
@@ -138,7 +139,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 
 func TestOutputContext_GettersAndSetters(t *testing.T) {
 	host := &contextmock.VMHostStub{}
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 
 	outputContext.SetRefund(24)
 	require.Equal(t, uint64(24), outputContext.GetRefund())
@@ -152,7 +153,7 @@ func TestOutputContext_GettersAndSetters(t *testing.T) {
 
 func TestOutputContext_FinishReturnData(t *testing.T) {
 	host := &contextmock.VMHostStub{}
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 
 	require.Zero(t, len(outputContext.ReturnData()))
 
@@ -371,7 +372,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 		},
 	}
 
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 
 	returnCode := vmcommon.ContractNotFound
 	returnMessage := arwen.ErrContractNotFound.Error()
@@ -404,7 +405,7 @@ func TestOutputContext_Transfer(t *testing.T) {
 	})
 
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 
 	host.OutputContext = outputContext
 	host.BlockchainContext = blockchainContext
@@ -437,7 +438,7 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	})
 
 	host := &contextmock.VMHostMock{}
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
 	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
@@ -504,7 +505,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 	})
 
 	host := &contextmock.VMHostMock{}
-	oc, _ := NewOutputContext(host)
+	oc, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	bc, _ := NewBlockchainContext(host, mockWorld)
 
 	host.OutputContext = oc
@@ -535,7 +536,7 @@ func TestOutputContext_WriteLog(t *testing.T) {
 			CallFunction: "function",
 		},
 	}
-	outputContext, _ := NewOutputContext(host)
+	outputContext, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 
 	address := []byte("address")
 	data := []byte("data")
@@ -564,7 +565,7 @@ func TestOutputContext_WriteLog(t *testing.T) {
 func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{}, &mock.EpochNotifierStub{}, 0)
 	outputContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(outputContext.stateStack))
@@ -573,7 +574,7 @@ func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.
 func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{}, &mock.EpochNotifierStub{}, 0)
 	outputContext.PopMergeActiveState()
 
 	require.Equal(t, 0, len(outputContext.stateStack))
@@ -582,7 +583,7 @@ func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testin
 func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{}, &mock.EpochNotifierStub{}, 0)
 	outputContext.PopDiscard()
 
 	require.Equal(t, 0, len(outputContext.stateStack))

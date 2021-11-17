@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
@@ -368,7 +369,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	host, mockRuntime, parentPointsBeforeStacking := setUpStackOneLevel(t, parentInput, childInput)
 
 	metering := host.MeteringContext
-	output, _ := NewOutputContext(host)
+	output, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	host.OutputContext = output
 
 	childExecutionGas := uint64(100)
@@ -434,7 +435,7 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	host, mockRuntime, parentPointsBeforeStacking := setUpStackOneLevel(t, parentInput, childInput)
 
 	metering := host.MeteringContext
-	output, _ := NewOutputContext(host)
+	output, _ := NewOutputContext(host, &mock.EpochNotifierStub{}, 0)
 	host.OutputContext = output
 
 	childExecutionGas := uint64(600)
