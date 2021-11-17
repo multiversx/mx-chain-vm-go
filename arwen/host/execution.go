@@ -929,11 +929,11 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	runtime := host.Runtime()
 	async := host.Async()
 
-	callerCallCallID := async.GetCallerCallID()
+	callerCallID := async.GetCallerCallID()
 
 	asyncCall, err := async.UpdateCurrentAsyncCallStatus(
 		runtime.GetSCAddress(),
-		callerCallCallID,
+		callerCallID,
 		runtime.GetVMInput())
 	if err != nil {
 		log.Trace("UpdateCurrentCallStatus failed", "error", err)
@@ -948,7 +948,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	}
 
 	async.LoadParentContext()
-	async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
+	err = async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
 
 	// TODO matei-p for R2 we need to return the callback error, but we also
 	// need to keep in the vmoutput the storage cleaning of the async contexts

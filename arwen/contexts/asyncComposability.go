@@ -1,13 +1,11 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) (arwen.AsyncContext, error) {
+func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error {
 	if logAsync.GetLevel() == logger.LogTrace {
 		logAsync.Trace("NofityChildIsComplete")
 		logAsync.Trace("", "address", string(context.address))
@@ -18,7 +16,7 @@ func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulat
 		logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
 	}
 
-	context.CompleteChild(callID, gasToAccumulate)
+	context.completeChild(callID, gasToAccumulate)
 
 	if !context.IsComplete() {
 		// store changes in context made by CompleteChild()
@@ -64,7 +62,7 @@ func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulat
 	return context, nil
 }
 
-func (context *asyncContext) CompleteChild(callID []byte, gasToAccumulate uint64) error {
+func (context *asyncContext) completeChild(callID []byte, gasToAccumulate uint64) error {
 	return context.CompleteChildConditional(true, callID, gasToAccumulate)
 }
 
