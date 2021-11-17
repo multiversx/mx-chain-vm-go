@@ -107,12 +107,18 @@ func (context *outputContext) PopSetActiveState() {
 // later merging the output of the two SCs in chronological order.
 func (context *outputContext) PopMergeActiveState() {
 	stateStackLen := len(context.stateStack)
+	context.returnDataFromExec = make([][]byte, len(context.outputState.ReturnData))
+	copy(context.returnDataFromExec, context.outputState.ReturnData)
 	if stateStackLen == 0 {
 		return
 	}
 
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
+
+	if context.flagCleanReturnData.IsSet() {
+		context.outputState.ReturnData = make([][]byte, 0)
+	}
 
 	mergeVMOutputs(prevState, context.outputState)
 	context.outputState = newVMOutput()
@@ -587,7 +593,7 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
-func (context *outputContext) EpochConfirmed(epoch uint32, timestamp uint64) {
+func (context *outputContext) EpochConfirmed(epoch uint32, _ uint64) {
 	context.flagCleanReturnData.Toggle(epoch >= context.cleanReturnDataEnableEpoch)
 	log.Debug("Arwen VM output context: clean return data", "enabled", context.flagCleanReturnData.IsSet())
 }
