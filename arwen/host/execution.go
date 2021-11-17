@@ -20,7 +20,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
+			log.Trace("doRunSmartContractCreate full error list", "error", errs)
 		}
 		host.Clean()
 	}()
@@ -100,7 +100,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
+			log.Trace("doRunSmartContractUpgrade full error list", "error", errs)
 		}
 		host.Clean()
 	}()
@@ -224,7 +224,7 @@ func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.Contr
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isComplete bool, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
 	scExecutionInput := input
@@ -244,7 +244,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
-			isComplete = true
+			isChildComplete = true
 			return
 		}
 		if scExecutionInput != nil {
@@ -253,9 +253,9 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	if scExecutionInput != nil {
-		vmOutput, err, isComplete = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 	} else {
-		isComplete = true
+		isChildComplete = true
 	}
 
 	if err != nil {
@@ -280,7 +280,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	return postBuiltinInput, builtinOutput, nil
 }
 
-func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error, isComplete bool) {
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
@@ -317,19 +317,19 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
-			return vmOutput, err, true
+			return vmOutput, true, err
 		}
 	}
 
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
-		return vmOutput, err, true
+		return vmOutput, true, err
 	}
 
 	err = async.Execute()
 
-	return vmOutput, err, async.IsComplete()
+	return vmOutput, async.IsComplete(), err
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
@@ -348,6 +348,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	async.SetResults(vmOutput)
 	if !async.IsComplete() {
+		// TODO camilbancioiu: Returned error must be handled.
 		async.Save()
 	}
 
@@ -459,11 +460,6 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
-func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
-	functionName := host.Runtime().Function()
-	return host.IsBuiltinFunctionName(functionName)
-}
-
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	function, err := host.builtInFuncContainer.Get(functionName)
@@ -538,8 +534,8 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	}
 
 	_, initCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(initCallInput.Arguments)
-	_, isComplete, err := host.ExecuteOnDestContext(initCallInput)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
+	_, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
+	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 
@@ -889,13 +885,10 @@ func (host *vmHost) callSCMethod() error {
 	switch callType {
 	case vm.DirectCall:
 		err = host.callSCMethodDirectCall()
-		break
 	case vm.AsynchronousCall:
 		err = host.callSCMethodAsynchronousCall()
-		break
 	case vm.AsynchronousCallBack:
 		err = host.callSCMethodAsynchronousCallBack()
-		break
 	default:
 		err = arwen.ErrUnknownCallType
 	}

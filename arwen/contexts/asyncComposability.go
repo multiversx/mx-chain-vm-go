@@ -16,7 +16,10 @@ func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulat
 		logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
 	}
 
-	context.completeChild(callID, gasToAccumulate)
+	err := context.completeChild(callID, gasToAccumulate)
+	if err != nil {
+		return err
+	}
 
 	if !context.IsComplete() {
 		return context.Save()
@@ -29,8 +32,8 @@ func (context *asyncContext) completeChild(callID []byte, gasToAccumulate uint64
 	return context.CompleteChildConditional(true, callID, gasToAccumulate)
 }
 
-func (context *asyncContext) CompleteChildConditional(isComplete bool, callID []byte, gasToAccumulate uint64) error {
-	if !isComplete {
+func (context *asyncContext) CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error {
+	if !isChildComplete {
 		return nil
 	}
 	context.DecrementCallsCounter()
@@ -60,11 +63,11 @@ func (context *asyncContext) complete() error {
 	currentCallID := context.GetCallID()
 	if context.callType == vm.AsynchronousCall {
 		vmOutput := context.childResults
-		isComplete, _, err := context.callCallback(currentCallID, vmOutput, nil)
+		isCallbackComplete, _, err := context.callCallback(currentCallID, vmOutput, nil)
 		if err != nil {
 			return err
 		}
-		if isComplete {
+		if isCallbackComplete {
 			return context.NotifyChildIsComplete(currentCallID, 0)
 		}
 	} else if context.callType == vm.AsynchronousCallBack {

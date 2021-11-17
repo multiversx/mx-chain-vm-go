@@ -358,7 +358,7 @@ type AsyncContext interface {
 		returnData [][]byte,
 		returnMessage string) error
 
-	CompleteChildConditional(isComplete bool, callID []byte, gasToAccumulate uint64) error
+	CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error
 	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error
 
 	SetResults(vmOutput *vmcommon.VMOutput)
