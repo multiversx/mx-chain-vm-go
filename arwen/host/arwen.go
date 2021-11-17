@@ -58,6 +58,9 @@ type vmHost struct {
 
 	removeNonUpdatedStorageEnableEpoch uint32
 	flagRemoveNonUpdatedStorage        atomic.Flag
+
+	createNFTThroughExecByCallerEnableEpoch uint32
+	flagCreateNFTThroughExecByCaller        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -97,6 +100,7 @@ func NewArwenVM(
 		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
 		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
+		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
 	}
 
 	var err error
@@ -422,9 +426,17 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagRemoveNonUpdatedStorage.Toggle(epoch >= host.removeNonUpdatedStorageEnableEpoch)
 	log.Debug("Arwen VM: remove non updated storage", "enabled", host.flagRemoveNonUpdatedStorage.IsSet())
+
+	host.flagCreateNFTThroughExecByCaller.Toggle(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
+	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.flagFixOOGReturnCode.IsSet()
+}
+
+//CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
+func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
+	return host.flagCreateNFTThroughExecByCaller.IsSet()
 }

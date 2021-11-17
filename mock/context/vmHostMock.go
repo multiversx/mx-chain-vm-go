@@ -194,3 +194,8 @@ func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 	return true
 }
+
+// CreateNFTOnExecByCallerEnabled mocked method
+func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
+	return true
+}

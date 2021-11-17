@@ -36,6 +36,13 @@ func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestExecOnDestByCallerAndNFTCreate(t *testing.T) {
+	err := runSingleTestReturnError(
+		"features/composability/mandos",
+		"forwarder_builtin_nft_create_by_caller.scen.json")
+	require.Nil(t, err)
+}
+
 func TestDnsContract(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
