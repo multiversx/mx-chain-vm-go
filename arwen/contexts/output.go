@@ -17,17 +17,19 @@ var _ arwen.OutputContext = (*outputContext)(nil)
 var logOutput = logger.GetOrCreate("arwen/output")
 
 type outputContext struct {
-	host        arwen.VMHost
-	outputState *vmcommon.VMOutput
-	stateStack  []*vmcommon.VMOutput
-	codeUpdates map[string]struct{}
+	host               arwen.VMHost
+	outputState        *vmcommon.VMOutput
+	stateStack         []*vmcommon.VMOutput
+	returnDataFromExec [][]byte
+	codeUpdates        map[string]struct{}
 }
 
 // NewOutputContext creates a new outputContext
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 	context := &outputContext{
-		host:       host,
-		stateStack: make([]*vmcommon.VMOutput, 0),
+		host:               host,
+		stateStack:         make([]*vmcommon.VMOutput, 0),
+		returnDataFromExec: make([][]byte, 0),
 	}
 
 	context.InitState()
@@ -39,6 +41,7 @@ func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
 func (context *outputContext) InitState() {
 	context.outputState = newVMOutput()
 	context.codeUpdates = make(map[string]struct{})
+	context.returnDataFromExec = make([][]byte, 0)
 }
 
 func newVMOutput() *vmcommon.VMOutput {
