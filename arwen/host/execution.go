@@ -947,7 +947,15 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		return err
 	}
 
-	async.LoadParentContext()
+	err = async.LoadParentContext()
+	if err != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+		// TODO camilbancioiu: this `return err` breaks tests, but below, the next
+		// if != err does not return the error.
+		return err
+	}
+
 	err = async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
 
 	// TODO matei-p for R2 we need to return the callback error, but we also
@@ -958,6 +966,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
 	}
+
 	return nil
 }
 
