@@ -1,4 +1,4 @@
-.PHONY: test test-short build arwen arwendebug clean
+.PHONY: test test-short build arwendebug clean t ts
 
 ARWEN_VERSION := $(shell git describe --tags --long --dirty --always)
 
@@ -15,11 +15,15 @@ endif
 	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
 	cp ./cmd/arwendebug/arwendebug ${ARWENDEBUG_PATH}
 
-test: clean arwen
+test: clean
 	go test -count=1 ./...
 
-test-short: arwen
+test-short:
 	go test -short -count=1 ./...
+
+t: test
+
+ts: test-short
 
 build-test-contracts:
 	erdpy contract build --no-optimization ./test/contracts/answer

@@ -947,6 +947,13 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
 	}
+
+	// TODO matei-p R2 Returning an error here will cause the VMOutput to be
+	// empty (due to CreateVMOutputInCaseOfError()). But in release 2 of
+	// Promises, CreateVMOutputInCaseOfError() should still contain storage
+	// deletions caused by AsyncContext cleanup, even if callbackErr != nil and
+	// was returned here. The storage deletions MUST be persisted in the data
+	// trie once R2 goes live.
 	if !isCallComplete {
 		return callbackErr
 	}
@@ -960,10 +967,6 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	if err != nil {
 		return err
 	}
-
-	// TODO matei-p for R2 we need to return the callback error, but we also
-	// need to keep in the vmoutput the storage cleaning of the async contexts
-	// return err
 
 	return nil
 }
