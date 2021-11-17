@@ -108,11 +108,7 @@ func readAsyncContextFromStorage(
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}
 
-	async, err := deserializeAsyncContext(data)
-	if err != nil {
-		return nil, err
-	}
-	return async, nil
+	return deserializeAsyncContext(data)
 }
 
 func deserializeAsyncContext(data []byte) (*asyncContext, error) {

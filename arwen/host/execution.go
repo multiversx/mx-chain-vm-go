@@ -942,30 +942,28 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 
 	runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 
-	isCallComplete, err := host.callFunctionAndExecuteAsync()
+	isCallComplete, callbackErr := host.callFunctionAndExecuteAsync()
+	if callbackErr != nil {
+		metering := host.Metering()
+		metering.UseGas(metering.GasLeft())
+	}
 	if !isCallComplete {
-		return err
+		return callbackErr
 	}
 
 	err = async.LoadParentContext()
 	if err != nil {
-		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
-		// TODO camilbancioiu: this `return err` breaks tests, but below, the next
-		// if != err does not return the error.
 		return err
 	}
 
 	err = async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
+	if err != nil {
+		return err
+	}
 
 	// TODO matei-p for R2 we need to return the callback error, but we also
 	// need to keep in the vmoutput the storage cleaning of the async contexts
 	// return err
-
-	if err != nil {
-		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
-	}
 
 	return nil
 }
