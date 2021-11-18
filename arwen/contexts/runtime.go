@@ -123,6 +123,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -148,6 +150,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,

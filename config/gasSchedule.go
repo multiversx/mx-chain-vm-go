@@ -839,6 +839,8 @@ func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["I16x8RoundingAverageU"] = value
 	gasMap["LocalAllocate"] = value
 	gasMap["LocalsUnmetered"] = 100
+	gasMap["MaxMemoryGrow"] = 8
+	gasMap["MaxMemoryGrowDelta"] = 10
 
 	return gasMap
 }

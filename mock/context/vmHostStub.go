@@ -292,3 +292,8 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 	return true
 }
+
+// CreateNFTOnExecByCallerEnabled mocked method
+func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
+	return true
+}
