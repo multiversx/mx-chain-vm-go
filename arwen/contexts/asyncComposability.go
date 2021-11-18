@@ -71,11 +71,19 @@ func (context *asyncContext) complete() error {
 			return context.NotifyChildIsComplete(currentCallID, 0)
 		}
 	} else if context.callType == vm.AsynchronousCallBack {
+		err = context.LoadParentContext()
+		if err != nil {
+			return err
+		}
+
 		currentCallID := context.GetCallerCallID()
-		context.LoadParentContext()
 		return context.NotifyChildIsComplete(currentCallID, context.gasAccumulated)
 	} else if context.callType == vm.DirectCall {
-		context.LoadParentContext()
+		err = context.LoadParentContext()
+		if err != nil {
+			return err
+		}
+
 		return context.NotifyChildIsComplete(nil, context.gasAccumulated)
 	}
 

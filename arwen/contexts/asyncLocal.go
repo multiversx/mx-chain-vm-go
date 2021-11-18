@@ -85,11 +85,17 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, err)
 			if isCallbackComplete && callbackVMOutput != nil {
 				callbackVMOutput.GasRemaining = 0
-				context.completeChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
+				err = context.completeChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
+				if err != nil {
+					return err
+				}
 			}
 		} else {
 			metering.UseGas(vmOutput.GasRemaining)
-			context.completeChild(asyncCall.CallID, 0)
+			err = context.completeChild(asyncCall.CallID, 0)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
