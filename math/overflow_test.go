@@ -22,5 +22,5 @@ func TestAddUint64(t *testing.T) {
 	d := uint64(0)
 	sum, err = AddUint64WithErr(b, d)
 	require.Nil(t, err)
-	require.Equal(t, b+d, sum)
+	require.Equal(t, uint64(math.MaxUint64-2), sum)
 }

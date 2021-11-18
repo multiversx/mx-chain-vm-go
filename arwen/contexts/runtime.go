@@ -93,7 +93,7 @@ func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuil
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
-		logRuntime.Error("create instance", "error", arwen.ErrMaxInstancesReached)
+		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
 
@@ -123,6 +123,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -148,6 +150,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
+		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
+		MaxMemoryGrowDelta: uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrowDelta),
 		OpcodeTrace:        false,
 		Metering:           true,
 		RuntimeBreakpoints: true,
@@ -466,16 +470,21 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
 	var message string
+	breakpoint := arwen.BreakpointExecutionFailed
+
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
+		if errors.Is(err, arwen.ErrNotEnoughGas) && context.host.FixOOGReturnCodeEnabled() {
+			breakpoint = arwen.BreakpointOutOfGas
+		}
 	} else {
 		message = "execution failed"
 		context.AddError(errors.New(message))
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+	context.SetRuntimeBreakpointValue(breakpoint)
 
 	traceMessage := message
 	if err != nil {
@@ -628,7 +637,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 	if context.callFunction == arwen.CallbackFunctionName {
 		// TODO rewrite this condition, until the AsyncContext is merged
-		logRuntime.Error("get function to call", "error", arwen.ErrNilCallbackFunction)
+		logRuntime.Trace("get function to call", "error", arwen.ErrNilCallbackFunction)
 		return nil, arwen.ErrNilCallbackFunction
 	}
 

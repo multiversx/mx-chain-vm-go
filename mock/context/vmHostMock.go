@@ -6,7 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -188,4 +188,14 @@ func (host *VMHostMock) GetContexts() (
 // SetRuntimeContext mocked method
 func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.RuntimeContext = runtime
+}
+
+// FixOOGReturnCodeEnabled mocked method
+func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
+	return true
+}
+
+// CreateNFTOnExecByCallerEnabled mocked method
+func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
+	return true
 }

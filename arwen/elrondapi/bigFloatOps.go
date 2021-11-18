@@ -23,9 +23,9 @@ package elrondapi
 // extern void		v1_4_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
 //
-// extern void		v1_4_bigFloatFloor(void* context, int32_t opHandle, int32_t destBigIntHandle);
-// extern void		v1_4_bigFloatCeil(void* context, int32_t opHandle, int32_t destBigIntHandle);
-// extern void		v1_4_bigFloatTruncate(void* context, int32_t opHandle, int32_t destBigIntHandle);
+// extern void		v1_4_bigFloatFloor(void* context,int32_t destBigIntHandle, int32_t opHandle);
+// extern void		v1_4_bigFloatCeil(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void		v1_4_bigFloatTruncate(void* context, int32_t destBigIntHandle, int32_t opHandle);
 //
 // extern int32_t	v1_4_bigFloatIsInt(void* context, int32_t opHandle);
 // extern void		v1_4_bigFloatSetInt64(void* context, int32_t destinationHandle, long long value);
@@ -537,18 +537,17 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error) {
 	result := big.NewFloat(1)
 	result.SetPrec(base.Prec())
-	runtime := arwen.GetRuntimeContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	minExponent, maxExponent := managedType.GetMinAndMaxExponent()
 
 	for i := 0; i < int(exp); i++ {
 		resultMul, err := arwenMath.MulBigFloat(result, base)
 		exponent := resultMul.MantExp(nil)
+		if err != nil {
+			return nil, err
+		}
 		if exponent > maxExponent && exponent < minExponent {
 			return nil, arwen.ErrExponentTooBigOrTooSmall
-		}
-		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
-			return nil, err
 		}
 		result.Set(resultMul)
 	}
@@ -556,7 +555,7 @@ func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error)
 }
 
 //export v1_4_bigFloatFloor
-func v1_4_bigFloatFloor(context unsafe.Pointer, opHandle, destBigIntHandle int32) {
+func v1_4_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -582,7 +581,7 @@ func v1_4_bigFloatFloor(context unsafe.Pointer, opHandle, destBigIntHandle int32
 }
 
 //export v1_4_bigFloatCeil
-func v1_4_bigFloatCeil(context unsafe.Pointer, opHandle, destBigIntHandle int32) {
+func v1_4_bigFloatCeil(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -608,7 +607,7 @@ func v1_4_bigFloatCeil(context unsafe.Pointer, opHandle, destBigIntHandle int32)
 }
 
 //export v1_4_bigFloatTruncate
-func v1_4_bigFloatTruncate(context unsafe.Pointer, opHandle, destBigIntHandle int32) {
+func v1_4_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)

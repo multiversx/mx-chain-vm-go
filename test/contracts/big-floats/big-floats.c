@@ -145,7 +145,6 @@ void BigFloatSignTest() {
 }
 
 void BigFloatCloneTest() {
-    int result;
     int reps = int64getArgument(0);
     int bigFloatHandle = bigFloatNewFromFrac(0,1);
     int copybigFloatHandle = bigFloatNewFromFrac(0,1);
@@ -184,7 +183,7 @@ void BigFloatFloorTest() {
     int resultbigFloatHandle = bigIntNew(0);
     for (int i = 0; i < reps; i++) {
         bigFloatGetArgument(i+1,bigFloatHandle);
-        bigFloatFloor(bigFloatHandle,resultbigFloatHandle);
+        bigFloatFloor(resultbigFloatHandle, bigFloatHandle);
     }
     bigIntFinishUnsigned(resultbigFloatHandle);
 }
@@ -195,7 +194,7 @@ void BigFloatCeilTest() {
     int resultbigFloatHandle = bigIntNew(0);
     for (int i = 0; i < reps; i++) {
         bigFloatGetArgument(i+1,bigFloatHandle);
-        bigFloatCeil(bigFloatHandle,resultbigFloatHandle);
+        bigFloatCeil(resultbigFloatHandle, bigFloatHandle);
     }
     bigIntFinishUnsigned(resultbigFloatHandle);
 }

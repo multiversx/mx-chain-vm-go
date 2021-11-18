@@ -8,17 +8,14 @@
                 "sc:basic-features": {
                     "nonce": "1000",
                     "balance": "0",
-                    "storage": {},
                     "esdt": {
-                        "str:BASIC-FEATURES-TOKEN": "1,000"
+                        "str:BASIC-FEATUR": "1,000"
                     },
                     "code": "file:../forwarder/output/forwarder.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -28,11 +25,10 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "send_esdt",
                 "arguments": [
                     "address:an_account",
-                    "str:BASIC-FEATURES-TOKEN",
+                    "str:BASIC-FEATUR",
                     "10000"
                 ],
                 "gasLimit": "50,000,000",
@@ -51,11 +47,10 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "send_esdt",
                 "arguments": [
                     "address:an_account",
-                    "str:BASIC-FEATURES-TOKEN",
+                    "str:BASIC-FEATUR",
                     "100"
                 ],
                 "gasLimit": "50,000,000",
@@ -69,7 +64,7 @@
                         "address": "sc:basic-features",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:BASIC-FEATURES-TOKEN",
+                            "str:BASIC-FEATUR",
                             "",
                             "100",
                             "address:an_account"
@@ -85,11 +80,10 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "send_esdt",
                 "arguments": [
                     "address:an_account",
-                    "str:BASIC-FEATURES-TOKEN",
+                    "str:BASIC-FEATUR",
                     "100",
                     "str:send tx message here"
                 ],
@@ -104,7 +98,7 @@
                         "address": "sc:basic-features",
                         "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:BASIC-FEATURES-TOKEN",
+                            "str:BASIC-FEATUR",
                             "",
                             "100",
                             "address:an_account"
@@ -120,19 +114,19 @@
                 "sc:basic-features": {
                     "nonce": "1000",
                     "balance": "0",
-                    "storage": {},
                     "esdt": {
-                        "str:BASIC-FEATURES-TOKEN": "800"
+                        "str:BASIC-FEATUR": "800"
                     },
+                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 },
                 "address:an_account": {
                     "nonce": "*",
                     "balance": "0",
-                    "storage": {},
                     "esdt": {
-                        "str:BASIC-FEATURES-TOKEN": "200"
+                        "str:BASIC-FEATUR": "200"
                     },
+                    "storage": {},
                     "code": ""
                 }
             }

@@ -4,48 +4,34 @@ import (
 	"fmt"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-// ESDTTokenKeyPrefix is the prefix of storage keys belonging to ESDT tokens.
-var ESDTTokenKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
-
-// ESDTRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles.
-var ESDTRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
-
-// ESDTNonceKeyPrefix is the prefix of storage keys belonging to ESDT nonces.
-var ESDTNonceKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
-
 // GetTokenBalance returns the ESDT balance of an account for the given token
 // key (token keys are built from the token identifier using MakeTokenKey).
-func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenKey []byte) (*big.Int, error) {
+func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenIdentifier []byte, nonce uint64) (*big.Int, error) {
 	account := bf.World.AcctMap.GetAccount(address)
-	return account.GetTokenBalance(tokenKey)
-}
-
-// SetTokenBalance sets the ESDT balance of an account for the given token
-// key (token keys are built from the token identifier using MakeTokenKey).
-func (bf *BuiltinFunctionsWrapper) SetTokenBalance(address []byte, tokenKey []byte, balance *big.Int) error {
-	account := bf.World.AcctMap.GetAccount(address)
-	return account.SetTokenBalance(tokenKey, balance)
+	return esdtconvert.GetTokenBalance(tokenIdentifier, nonce, account.Storage)
 }
 
 // GetTokenData gets the ESDT information related to a token from the storage of an account
 // (token keys are built from the token identifier using MakeTokenKey).
-func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenKey []byte) (*esdt.ESDigitalToken, error) {
+func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenIdentifier []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	account := bf.World.AcctMap.GetAccount(address)
-	return account.GetTokenData(tokenKey)
+	systemAcc := bf.World.AcctMap.GetAccount(vmcommon.SystemAccountAddress)
+	return account.GetTokenData(tokenIdentifier, nonce, systemAcc.Storage)
 }
 
 // SetTokenData sets the ESDT information related to a token from the storage of an account
 // (token keys are built from the token identifier using MakeTokenKey).
-func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenKey []byte, tokenData *esdt.ESDigitalToken) error {
+func (bf *BuiltinFunctionsWrapper) SetTokenData(address []byte, tokenIdentifier []byte, nonce uint64, tokenData *esdt.ESDigitalToken) error {
 	account := bf.World.AcctMap.GetAccount(address)
-	return account.SetTokenData(tokenKey, tokenData)
+	return account.SetTokenData(tokenIdentifier, nonce, tokenData)
 }
 
 // PerformDirectESDTTransfer calls the real ESDTTransfer function immediately;

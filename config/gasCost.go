@@ -30,6 +30,7 @@ type ElrondAPICost struct {
 	GetShardOfAddress    uint64
 	GetExternalBalance   uint64
 	GetBlockHash         uint64
+	GetOriginalTxHash    uint64
 	TransferValue        uint64
 	GetArgument          uint64
 	GetFunction          uint64
@@ -139,6 +140,7 @@ type BigIntAPICost struct {
 	BigIntGetSignedArgument    uint64
 	BigIntGetCallValue         uint64
 	BigIntGetExternalBalance   uint64
+	CopyPerByteForTooBig       uint64
 }
 
 type BigFloatAPICost struct {
@@ -653,6 +655,8 @@ type WASMOpcodeCost struct {
 	I16x8RoundingAverageU  uint32
 	LocalAllocate          uint32
 	LocalsUnmetered        uint32
+	MaxMemoryGrow          uint32
+	MaxMemoryGrowDelta     uint32
 }
 
 func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_COUNT]uint32 {
@@ -1106,8 +1110,9 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI8x16RoundingAverageU] = opcode_costs_struct.I8x16RoundingAverageU
 	opcode_costs[wasmer.OpcodeI16x8RoundingAverageU] = opcode_costs_struct.I16x8RoundingAverageU
 	opcode_costs[wasmer.OpcodeLocalAllocate] = opcode_costs_struct.LocalAllocate
-	// opcode_costs_struct.LocalsUnmetered is not added to the opcode_costs
-	// array; the value will be sent to Wasmer as a compilation option instead
+	// LocalsUnmetered, MaxMemoryGrow and MaxMemoryGrowDelta are not added to the
+	// opcode_costs array; the values will be sent to Wasmer as compilation
+	// options instead
 
 	return opcode_costs
 }

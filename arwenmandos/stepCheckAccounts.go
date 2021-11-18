@@ -6,12 +6,14 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -27,7 +29,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 	if !checkAccounts.MoreAccountsAllowed {
 		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
-			if postAcctMatch == nil {
+			if postAcctMatch == nil && !bytes.Equal([]byte(worldAcctAddr), vmcommon.SystemAccountAddress) {
 				return fmt.Errorf("unexpected account address: %s",
 					ae.exprReconstructor.Reconstruct(
 						[]byte(worldAcctAddr),
@@ -80,6 +82,15 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 				ae.exprReconstructor.Reconstruct(
 					matchingAcct.Code,
 					er.CodeHint))
+		}
+
+		if !expectedAcct.Owner.IsUnspecified() && !bytes.Equal(matchingAcct.OwnerAddress, expectedAcct.Owner.Value) {
+			return fmt.Errorf("bad account owner. Account: %s. Want: %s. Have: \"%s\"",
+				expectedAcct.Address.Original,
+				oj.JSONString(expectedAcct.Owner.Original),
+				ae.exprReconstructor.Reconstruct(
+					matchingAcct.OwnerAddress,
+					er.AddressHint))
 		}
 
 		// currently ignoring asyncCallData that is unspecified in the json
@@ -162,9 +173,15 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 		return nil
 	}
 
+	systemAccStorage := make(map[string][]byte)
+	systemAcc, exists := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
+	if exists {
+		systemAccStorage = systemAcc.Storage
+	}
+
 	accountAddress := expectedAcct.Address.Original
 	expectedTokens := getExpectedTokens(expectedAcct)
-	accountTokens, err := matchingAcct.GetFullMockESDTData()
+	accountTokens, err := esdtconvert.GetFullMockESDTData(matchingAcct.Storage, systemAccStorage)
 	if err != nil {
 		return err
 	}
@@ -176,7 +193,7 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 	for tokenName := range accountTokens {
 		allTokenNames[tokenName] = true
 	}
-	var errors []error
+	var errs []error
 	for tokenName := range allTokenNames {
 		expectedToken := expectedTokens[tokenName]
 		accountToken := accountTokens[tokenName]
@@ -191,7 +208,7 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 				Roles:     []string{},
 			}
 		} else if accountToken == nil {
-			accountToken = &worldmock.MockESDTData{
+			accountToken = &esdtconvert.MockESDTData{
 				TokenIdentifier: []byte(tokenName),
 				Instances:       []*esdt.ESDigitalToken{},
 				LastNonce:       0,
@@ -199,10 +216,10 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 			}
 		}
 
-		errors = append(errors, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
+		errs = append(errs, ae.checkTokenState(accountAddress, tokenName, expectedToken, accountToken)...)
 	}
 
-	errorString := makeErrorString(errors)
+	errorString := makeErrorString(errs)
 	if len(errorString) > 0 {
 		return fmt.Errorf("mismatch for account \"%s\":%s", accountAddress, errorString)
 	}
@@ -224,7 +241,8 @@ func (ae *ArwenTestExecutor) checkTokenState(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *worldmock.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData,
+) []error {
 
 	var errors []error
 
@@ -244,10 +262,11 @@ func (ae *ArwenTestExecutor) checkTokenState(
 }
 
 func (ae *ArwenTestExecutor) checkTokenInstances(
-	accountAddress string,
+	_ string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *worldmock.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData,
+) []error {
 
 	var errors []error
 
@@ -366,7 +385,7 @@ func checkTokenRoles(
 	accountAddress string,
 	tokenName string,
 	expectedToken *mj.CheckESDTData,
-	accountToken *worldmock.MockESDTData) []error {
+	accountToken *esdtconvert.MockESDTData) []error {
 
 	var errors []error
 

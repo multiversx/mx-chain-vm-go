@@ -1,14 +1,18 @@
 package worldmock
 
 import (
+	"bytes"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of
 // the BuiltinFunctionsWrapper.
-var WorldMarshalizer = &GogoProtoMarshalizer{}
+var WorldMarshalizer = &marshal.GogoProtoMarshalizer{}
 
 // BuiltinFunctionsWrapper manages and initializes a BuiltInFunctionContainer
 // along with its dependencies
@@ -37,7 +41,7 @@ func NewBuiltinFunctionsWrapper(
 		EpochNotifier:    &EpochNotifierStub{},
 	}
 
-	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsFactory(argsBuiltIn)
+	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +76,26 @@ func (bf *BuiltinFunctionsWrapper) ProcessBuiltInFunction(input *vmcommon.Contra
 		return nil, err
 	}
 
-	return function.ProcessBuiltinFunction(caller, recipient, input)
+	vmOutput, err := function.ProcessBuiltinFunction(caller, recipient, input)
+	if err != nil {
+		return nil, err
+	}
+
+	if !check.IfNil(caller) {
+		err = bf.World.AccountsAdapter.SaveAccount(caller)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if !check.IfNil(recipient) && !bytes.Equal(input.CallerAddr, input.RecipientAddr) {
+		err = bf.World.AccountsAdapter.SaveAccount(recipient)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return vmOutput, nil
 }
 
 // GetBuiltinFunctionNames returns the list of defined builtin-in functions.

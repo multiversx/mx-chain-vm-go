@@ -196,6 +196,7 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetShardOfAddress"] = value
 	gasMap["GetExternalBalance"] = value
 	gasMap["GetBlockHash"] = value
+	gasMap["GetOriginalTxHash"] = value
 	gasMap["TransferValue"] = value
 	gasMap["GetArgument"] = value
 	gasMap["GetFunction"] = value
@@ -311,6 +312,7 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigIntGetSignedArgument"] = value
 	gasMap["BigIntGetCallValue"] = value
 	gasMap["BigIntGetExternalBalance"] = value
+	gasMap["CopyPerByteForTooBig"] = value
 
 	return gasMap
 }
@@ -837,6 +839,8 @@ func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["I16x8RoundingAverageU"] = value
 	gasMap["LocalAllocate"] = value
 	gasMap["LocalsUnmetered"] = 100
+	gasMap["MaxMemoryGrow"] = 8
+	gasMap["MaxMemoryGrowDelta"] = 10
 
 	return gasMap
 }

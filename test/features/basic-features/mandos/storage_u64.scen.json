@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "store_u64",
                 "arguments": [
                     "123"
@@ -48,7 +44,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``u64": "123"
+                        "str:u64": "123"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -66,14 +62,15 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_u64",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "123" ],
+                "out": [
+                    "123"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",
@@ -86,7 +83,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "store_u64",
                 "arguments": [
                     "0"
@@ -109,7 +105,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``u64": "0"
+                        "str:u64": "0"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -127,14 +123,15 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_u64",
                 "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "0" ],
+                "out": [
+                    "0"
+                ],
                 "status": "",
                 "logs": [],
                 "gas": "*",

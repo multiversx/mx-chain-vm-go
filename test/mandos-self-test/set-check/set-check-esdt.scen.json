@@ -59,11 +59,7 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1",
-                                    "creator": "*",
-                                    "royalties": "*",
-                                    "hash": "*",
-                                    "uri": "*",
-                                    "attributes": "*"
+                                    "royalties": "*"
                                 }
                             ]
                         }

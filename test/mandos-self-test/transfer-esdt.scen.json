@@ -8,16 +8,12 @@
                     "nonce": "0",
                     "balance": "0x1000000000",
                     "esdt": {
-                        "str:TOK-123": "150"
-                    },
-                    "storage": {},
-                    "code": ""
+                        "str:TOK-123456": "150"
+                    }
                 },
                 "address:B": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -27,10 +23,12 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "esdt": {
-                    "tokenIdentifier": "str:TOK-123",
-                    "value": "100"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:TOK-123456",
+                        "value": "100"
+                    }
+                ],
                 "gasLimit": "0x100000000",
                 "gasPrice": "0x01"
             }
@@ -43,7 +41,7 @@
                     "nonce": "1",
                     "balance": "0xf00000000",
                     "esdt": {
-                        "str:TOK-123": "50"
+                        "str:TOK-123456": "50"
                     },
                     "storage": {},
                     "code": ""
@@ -51,7 +49,7 @@
                 "address:B": {
                     "nonce": "0",
                     "esdt": {
-                        "str:TOK-123": "100"
+                        "str:TOK-123456": "100"
                     },
                     "storage": {},
                     "code": ""
@@ -64,10 +62,12 @@
             "tx": {
                 "from": "address:A",
                 "to": "address:B",
-                "esdt": {
-                    "tokenIdentifier": "str:TOK-123",
-                    "value": "50"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:TOK-123456",
+                        "value": "50"
+                    }
+                ],
                 "gasLimit": "0x100000000",
                 "gasPrice": "0x01"
             }
@@ -80,7 +80,7 @@
                     "nonce": "2",
                     "balance": "0xe00000000",
                     "esdt": {
-                        "str:TOK-123": "0"
+                        "str:TOK-123456": "0"
                     },
                     "storage": {},
                     "code": ""
@@ -88,7 +88,7 @@
                 "address:B": {
                     "nonce": "0",
                     "esdt": {
-                        "str:TOK-123": "150"
+                        "str:TOK-123456": "150"
                     },
                     "storage": {},
                     "code": ""
