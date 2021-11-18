@@ -65,6 +65,7 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	mockWasmerInstance = &wasmer.Instance{
 		Exports: make(wasmer.ExportsMap),
 	}
+
 	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
@@ -636,6 +637,9 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 
+	mockWasmerInstance.Exports["successCallback"] = nil
+	mockWasmerInstance.Exports["errorCallback"] = nil
+
 	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
@@ -668,6 +672,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host.EnqueueVMOutput(destOutput)
 	host.EnqueueVMOutput(callbackOutput)
 
+	async.RegisterAsyncCall("test", asyncCall)
 	err := async.executeAsyncLocalCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
