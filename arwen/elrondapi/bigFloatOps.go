@@ -531,10 +531,9 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error) {
 	result := big.NewFloat(1)
 	result.SetPrec(base.Prec())
-	runtime := arwen.GetRuntimeContext(context)
 	for i := 0; i < int(exp); i++ {
 		resultMul, err := arwenMath.MulBigFloat(result, base)
-		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		if err != nil {
 			return nil, err
 		}
 		result.Set(resultMul)
