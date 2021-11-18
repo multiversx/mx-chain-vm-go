@@ -262,7 +262,7 @@ func (ei *ExprInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error
 	// default: parse as BigInt, base 10
 	result := new(big.Int)
 	var parseOk bool
-	result, parseOk = result.SetString(str, 10)
+	result, parseOk = result.SetString(strRaw, 10)
 	if !parseOk {
 		return []byte{}, fmt.Errorf("could not parse base 10 value: %s", strRaw)
 	}

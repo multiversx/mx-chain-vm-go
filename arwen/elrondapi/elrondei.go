@@ -1933,7 +1933,7 @@ func v1_4_setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
-	metering.UseGasAndAddTracedGas(setStorageLockName,gasToUse)
+	metering.UseGasAndAddTracedGas(setStorageLockName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1956,7 +1956,7 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	storage := arwen.GetStorageContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(getStorageLockName,gasToUse)
+	metering.UseGasAndAddTracedGas(getStorageLockName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2062,7 +2062,7 @@ func v1_4_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index 
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTValueByIndexName,gasToUse)
+	metering.UseGasAndAddTracedGas(getESDTValueByIndexName, gasToUse)
 
 	var value []byte
 
@@ -2095,7 +2095,7 @@ func v1_4_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, in
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTTokenNameByIndexName,gasToUse)
+	metering.UseGasAndAddTracedGas(getESDTTokenNameByIndexName, gasToUse)
 
 	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
 	var tokenName []byte
@@ -2126,7 +2126,7 @@ func v1_4_getESDTTokenNonceByIndex(context unsafe.Pointer, index int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTTokenNonceByIndexName,gasToUse)
+	metering.UseGasAndAddTracedGas(getESDTTokenNonceByIndexName, gasToUse)
 
 	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
 	nonce := uint64(0)
@@ -2177,7 +2177,7 @@ func v1_4_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getESDTTokenTypeByIndexName,gasToUse)
+	metering.UseGasAndAddTracedGas(getESDTTokenTypeByIndexName, gasToUse)
 
 	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
 	if esdtTransfer != nil {
@@ -2212,7 +2212,7 @@ func v1_4_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset i
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
-	metering.UseGasAndAddTracedGas(getCallValueTokenNameByIndexName,gasToUse)
+	metering.UseGasAndAddTracedGas(getCallValueTokenNameByIndexName, gasToUse)
 
 	callValue := runtime.GetVMInput().CallValue.Bytes()
 	tokenName := make([]byte, 0)
@@ -2305,7 +2305,7 @@ func v1_4_writeEventLog(
 		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
 		uint64(topicDataTotalLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gasForData)
-	metering.UseGasAndAddTracedGas(writeEventLogName,gasToUse)
+	metering.UseGasAndAddTracedGas(writeEventLogName, gasToUse)
 
 	output.WriteLog(runtime.GetSCAddress(), topics, data)
 }
@@ -2316,7 +2316,7 @@ func v1_4_getBlockTimestamp(context unsafe.Pointer) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockTimeStamp
-	metering.UseGasAndAddTracedGas(getBlockTimestampName,gasToUse)
+	metering.UseGasAndAddTracedGas(getBlockTimestampName, gasToUse)
 
 	return int64(blockchain.CurrentTimeStamp())
 }
@@ -2756,7 +2756,19 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
-		return 1
+		if !host.CreateNFTOnExecByCallerEnabled() {
+			return 1
+		}
+
+		if contractCallInput.Function != core.BuiltInFunctionESDTNFTCreate {
+			if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+				return -1
+			}
+			return -1
+		}
+
+		contractCallInput.CallType = vm.ExecOnDestByCaller
+		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
 	}
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)

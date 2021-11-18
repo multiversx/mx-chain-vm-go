@@ -420,6 +420,14 @@ func TestBigUint(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x01, 0x01}, result)
 
+	result, err = ei.InterpretString("biguint:27,80")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x02, 0x0A, 0xDC}, result)
+
+	result, err = ei.InterpretString("biguint:27_80_86")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x03, 0x04, 0x3E, 0x46}, result)
+
 	result, err = ei.InterpretString("biguint:1")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x01, 0x01}, result)
@@ -428,9 +436,13 @@ func TestBigUint(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x02, 0x01, 0xFF}, result)
 
-	result, err = ei.InterpretString("biguint:0x01,FF")
+	result, err = ei.InterpretString("biguint:0x01,FF,CB")
 	require.Nil(t, err)
-	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x02, 0x01, 0xFF}, result)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x03, 0x01, 0xFF, 0xCB}, result)
+
+	result, err = ei.InterpretString("biguint:0x01_FF_CB")
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x03, 0x01, 0xFF, 0xCB}, result)
 
 	// should be positive
 	_, err = ei.InterpretString("biguint:-0x01")
