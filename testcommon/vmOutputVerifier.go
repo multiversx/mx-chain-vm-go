@@ -335,6 +335,53 @@ func (transferEntry *TransferEntry) WithValue(value *big.Int) TransferEntry {
 
 // Transfers verifies if OutputTransfer(s) for the speficied accounts are the same as the provided ones
 func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifier {
+	transfersMap, ignoredDataFieldsForTransfersMap := createTransferMapsFromEntries(transfers)
+	for _, outputAccount := range v.VmOutput.OutputAccounts {
+		transfersForAccount := transfersMap[string(outputAccount.Address)]
+		ignoredDataFieldsForAccount := ignoredDataFieldsForTransfersMap[string(outputAccount.Address)]
+		errMsg := formatErrorForAccount("Transfers to ", outputAccount.Address)
+		require.Equal(v.T, len(transfersForAccount), len(outputAccount.OutputTransfers), errMsg)
+		for idx := range transfersForAccount {
+			errMsg := formatErrorForAccount("Transfers from / to ",
+				outputAccount.OutputTransfers[idx].SenderAddress,
+				outputAccount.Address)
+			requireEqualTransfersWithoutData(outputAccount, idx, transfersForAccount, v, errMsg)
+			expectedFunction, expectedArgs := extractFunctionAndArgsFromTransfer(transfersForAccount, idx)
+			actualFunction, actualArgs := extractFunctionAndArgsFromTransfer(outputAccount.OutputTransfers, idx)
+			require.Equal(v.T, expectedFunction, actualFunction, errMsg)
+			requireEqualArgumentsInTransfers(ignoredDataFieldsForAccount, idx, expectedArgs, v, actualArgs, errMsg)
+		}
+		delete(transfersMap, string(outputAccount.Address))
+	}
+	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
+
+	return v
+}
+
+func requireEqualArgumentsInTransfers(ignoredDataFieldsForAccount [][]int, idx int, expectedArgs [][]byte, v *VMOutputVerifier, actualArgs [][]byte, errMsg string) {
+	ignoredFieldsForTransfer := ignoredDataFieldsForAccount[idx]
+	for a := 0; a < len(expectedArgs); a++ {
+		// a + 1 because we consider func name previously compared
+		if linearIntSearch(ignoredFieldsForTransfer, a+1) == -1 {
+			require.Equal(v.T, expectedArgs[a], actualArgs[a], errMsg)
+		}
+	}
+}
+
+func extractFunctionAndArgsFromTransfer(transfersForAccount []vmcommon.OutputTransfer, idx int) (string, [][]byte) {
+	callArgsParser := parsers.NewCallArgsParser()
+	expectedTransferData := transfersForAccount[idx].Data
+	expectedFunction, expectedArgs, _ := callArgsParser.ParseData(string(expectedTransferData))
+	return expectedFunction, expectedArgs
+}
+
+func requireEqualTransfersWithoutData(outputAccount *vmcommon.OutputAccount, idx int, transfersForAccount []vmcommon.OutputTransfer, v *VMOutputVerifier, errMsg string) {
+	transfersForAccount[idx].Data = nil
+	outputAccount.OutputTransfers[idx].Data = nil
+	require.Equal(v.T, transfersForAccount[idx], outputAccount.OutputTransfers[idx], errMsg)
+}
+
+func createTransferMapsFromEntries(transfers []TransferEntry) (map[string][]vmcommon.OutputTransfer, map[string][][]int) {
 	transfersMap := make(map[string][]vmcommon.OutputTransfer)
 	ignoredDataFieldsForTransfersMap := make(map[string][][]int)
 	for _, transferEntry := range transfers {
@@ -347,40 +394,7 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 		ignoredDataFieldsForTransfersMap[account] =
 			append(ignoredDataFieldsForTransfersMap[account], transferEntry.ignoredDataArguments)
 	}
-
-	callArgsParser := parsers.NewCallArgsParser()
-	for _, outputAccount := range v.VmOutput.OutputAccounts {
-		transfersForAccount := transfersMap[string(outputAccount.Address)]
-		ignoredDataFieldsForAccount := ignoredDataFieldsForTransfersMap[string(outputAccount.Address)]
-		errMsg := formatErrorForAccount("Transfers to ", outputAccount.Address)
-		require.Equal(v.T, len(transfersForAccount), len(outputAccount.OutputTransfers), errMsg)
-		for idx := range transfersForAccount {
-			errMsg = formatErrorForAccount("Transfers from / to ",
-				outputAccount.OutputTransfers[idx].SenderAddress,
-				outputAccount.Address)
-			expectedTransferData := transfersForAccount[idx].Data
-			transfersForAccount[idx].Data = nil
-			actualTransferData := outputAccount.OutputTransfers[idx].Data
-			outputAccount.OutputTransfers[idx].Data = nil
-			// compare transfers without data
-			require.Equal(v.T, transfersForAccount[idx], outputAccount.OutputTransfers[idx], errMsg)
-
-			expectedFunction, expectedArgs, _ := callArgsParser.ParseData(string(expectedTransferData))
-			actualFunction, actualArgs, _ := callArgsParser.ParseData(string(actualTransferData))
-			require.Equal(v.T, expectedFunction, actualFunction, errMsg)
-			ignoredFieldsForTransfer := ignoredDataFieldsForAccount[idx]
-			for a := 0; a < len(expectedArgs); a++ {
-				// a + 1 because we consider func name previously compared
-				if linearIntSearch(ignoredFieldsForTransfer, a+1) == -1 {
-					require.Equal(v.T, expectedArgs[a], actualArgs[a], errMsg)
-				}
-			}
-		}
-		delete(transfersMap, string(outputAccount.Address))
-	}
-	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
-
-	return v
+	return transfersMap, ignoredDataFieldsForTransfersMap
 }
 
 func linearIntSearch(array []int, i int) int {

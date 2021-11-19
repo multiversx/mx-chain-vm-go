@@ -12,6 +12,8 @@ import (
 
 var logMock = logger.GetOrCreate("arwen/mock")
 
+type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
+
 type testTemplateConfig struct {
 	t        *testing.T
 	input    *vmcommon.ContractCallInput
@@ -22,7 +24,7 @@ type testTemplateConfig struct {
 type MockInstancesTestTemplate struct {
 	testTemplateConfig
 	contracts     *[]MockTestSmartContract
-	setup         func(arwen.VMHost, *worldmock.MockWorld)
+	setup         SetupFunction
 	assertResults func(*TestCallNode, *worldmock.MockWorld, *VMOutputVerifier, []string)
 }
 
@@ -50,17 +52,21 @@ func (callerTest *MockInstancesTestTemplate) WithInput(input *vmcommon.ContractC
 }
 
 // WithSetup provides the setup function to be used by the mock contract call test
-func (callerTest *MockInstancesTestTemplate) WithSetup(setup func(arwen.VMHost, *worldmock.MockWorld)) *MockInstancesTestTemplate {
+func (callerTest *MockInstancesTestTemplate) WithSetup(setup SetupFunction) *MockInstancesTestTemplate {
 	callerTest.setup = setup
 	return callerTest
 }
 
+type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
+
 // AndAssertResults provides the function that will aserts the results
-func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) (*vmcommon.VMOutput, error) {
+func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults AssertResultsFunc) (*vmcommon.VMOutput, error) {
 	return callerTest.AndAssertResultsWithWorld(nil, true, nil, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
 		assertResults(world, verify)
 	})
 }
+
+type AssertResultsWithStartNodeFunc func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)
 
 // AndAssertResultsWithWorld provides the function that will aserts the results
 func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
@@ -68,7 +74,7 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
 	createContractAccounts bool,
 	startNode *TestCallNode,
 	expectedErrorsForRound []string,
-	assertResults func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)) (*vmcommon.VMOutput, error) {
+	assertResults AssertResultsWithStartNodeFunc) (*vmcommon.VMOutput, error) {
 	callerTest.assertResults = assertResults
 	if world == nil {
 		world = worldmock.NewMockWorld()
