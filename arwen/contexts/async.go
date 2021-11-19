@@ -344,11 +344,10 @@ func (context *asyncContext) SetContextCallback(callbackName string, data []byte
 func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte) {
 	newCallID := context.generateNewCallID()
 	context.incrementCallsCounter()
-	return newCallID, arwen.PrependToArguments(
-		args,
+	return newCallID, append([][]byte{
 		newCallID,
 		context.GetCallID(),
-	)
+	}, args...)
 }
 
 func (context *asyncContext) GetAsyncCallByCallID(callID []byte) (*arwen.AsyncCall, int, int, error) {
@@ -971,13 +970,12 @@ func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arw
 }
 
 func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {
-	return arwen.PrependToArguments(
-		args,
+	return append([][]byte{
 		context.generateNewCallID(), // new callback id
 		asyncCall.CallID,            // caller call id (original async call destination)
 		context.callID,              // async initiator call id (original async call source)
 		big.NewInt(int64(gasAccumulated)).Bytes(),
-	)
+	}, args...)
 }
 
 // DebugCallIDAsString - just for debug purposes

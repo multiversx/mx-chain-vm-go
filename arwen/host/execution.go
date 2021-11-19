@@ -261,12 +261,7 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	output := host.Output()
 
-	var asyncPrefixArgs [][]byte
-	asyncPrefixArgsNumber := 2
-	if input.CallType == vm.AsynchronousCallBack {
-		asyncPrefixArgsNumber = 4
-	}
-	asyncPrefixArgs, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
+	asyncPrefixArgs := arwen.PopCallIDsFromArguments(input)
 
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
@@ -275,7 +270,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	}
 
 	if postBuiltinInput != nil {
-		postBuiltinInput.Arguments = arwen.PrependToArguments(postBuiltinInput.Arguments, asyncPrefixArgs...)
+		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
 	}
 
 	output.AddToActiveState(builtinOutput)
