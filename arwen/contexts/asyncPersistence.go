@@ -35,6 +35,8 @@ func (context *asyncContext) Save() error {
 	return nil
 }
 
+// TODO camilbancioiu: Loading the 'Parent' AsyncContext from two different
+// addresses based on the calltype is ambiguous, this needs clarification.
 func (context *asyncContext) LoadParentContext() error {
 	if context.callType != vm.AsynchronousCallBack {
 		return context.loadSpecificContext(context.callerAddr, context.callerCallID)
@@ -108,11 +110,7 @@ func readAsyncContextFromStorage(
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}
 
-	async, err := deserializeAsyncContext(data)
-	if err != nil {
-		return nil, err
-	}
-	return async, nil
+	return deserializeAsyncContext(data)
 }
 
 func deserializeAsyncContext(data []byte) (*asyncContext, error) {

@@ -31,7 +31,8 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		return err
 	}
 
-	newCallID := context.GenerateNewCallIDAndIncrementCounter()
+	context.incrementCallsCounter()
+	newCallID := context.generateNewCallID()
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(function)
 	callData.Bytes(newCallID)
@@ -100,7 +101,7 @@ func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 	// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
 	transferData.Func("<callback>")
 
-	transferData.Bytes(context.GenerateNewCallbackID())
+	transferData.Bytes(context.generateNewCallID())
 	transferData.Bytes(context.callID)
 	transferData.Bytes(context.callerCallID)
 	transferData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())

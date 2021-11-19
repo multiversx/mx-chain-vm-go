@@ -54,7 +54,7 @@
                     "storage": {
                         "str:other_contract": "sc:proxy-second",
                         "str:CB_CLOSURE|str:1...............................": "nested:str:payCallback|nested:",
-                        "str:ARWEN@ASYNC1...............................": "0x0a20000000000000000070726f78792d66697273745f5f5f5f5f5f5f5f5f5f5f5f5f1220312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2220615f757365725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f480168017001"
+                        "str:ARWEN@ASYNC1...............................": "0x0a20000000000000000070726f78792d66697273745f5f5f5f5f5f5f5f5f5f5f5f5f1220312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2220615f757365725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f60016801"
                     },
                     "code": "file:../proxy-test-first/output/proxy-test-first-unmanaged.wasm"
                 },

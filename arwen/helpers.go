@@ -11,7 +11,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
 )
 
@@ -279,11 +281,23 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 }
 
 // PrependToArguments -
-func PrependToArguments(arguments [][]byte, toPrepend ...[]byte) [][]byte {
-	return append(toPrepend, arguments...)
+func PrependToArguments(input *vmcommon.ContractCallInput, toPrepend ...[]byte) {
+	input.Arguments = append(toPrepend, input.Arguments...)
 }
 
 // SplitPrefixArguments -
 func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
 	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
+}
+
+// PopCallIDsFromArguments -
+func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
+	asyncPrefixArgsNumber := 2
+	if input.CallType == vm.AsynchronousCallBack {
+		asyncPrefixArgsNumber = 4
+	}
+
+	var asyncPrefixArgs [][]byte
+	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
+	return asyncPrefixArgs
 }

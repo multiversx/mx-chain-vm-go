@@ -151,10 +151,8 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-	GetAndEliminateFirstArgumentFromList() []byte
+	PopFirstArgumentFromVMInput() []byte
 
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
@@ -290,7 +288,6 @@ type StorageContext interface {
 	StateStack
 
 	SetAddress(address []byte)
-	GetAddress() []byte
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) []byte
 	GetStorageFromAddressNoChecks(address []byte, key []byte) []byte
@@ -344,8 +341,6 @@ type AsyncContext interface {
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte
 	IsCrossShard() bool
-	GenerateNewCallIDAndIncrementCounter() []byte
-	GenerateNewCallbackID() []byte
 
 	Clone() AsyncContext
 
@@ -358,16 +353,13 @@ type AsyncContext interface {
 		returnData [][]byte,
 		returnMessage string) error
 
-	CompleteChild(callID []byte, gasToAccumulate uint64) error
-	CompleteChildConditional(isComplete bool, callID []byte, gasToAccumulate uint64) error
-	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) (AsyncContext, error)
+	CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error
+	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error
 
 	SetResults(vmOutput *vmcommon.VMOutput)
 	GetGasAccumulated() uint64
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
-
-	DecrementCallsCounter()
 
 	/*
 		for tests / test framework usage

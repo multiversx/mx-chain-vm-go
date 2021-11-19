@@ -92,98 +92,18 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 	callGraph.DfsGraph(func(path []*TestCallNode, parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		contractAddressAsString := string(node.Call.ContractAddress)
 		if contracts[contractAddressAsString] == nil {
-			var shardID uint32
-			if node.ShardID == 0 {
-				if incomingEdge == nil {
-					shardID = 1
-				} else if incomingEdge.Type == Sync || incomingEdge.Type == Async {
-					shardID = parent.ShardID
-				} else if incomingEdge.Type == AsyncCrossShard {
-					shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
-				}
-				node.ShardID = shardID
-				// fmt.Println("-> shard of ", string(node.Call.ContractAddress), "is", node.ShardID)
-			} else {
-				shardID = node.ShardID
-			}
-
+			setShardIdForNode(node, incomingEdge, parent, contracts)
 			newContract := CreateMockContract(node.Call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithShardID(shardID).
+				WithShardID(node.ShardID).
 				WithMethods(func(instanceMock *mock.InstanceMock, testConfig *TestConfig) {
 					for functionName := range contracts[contractAddressAsString].tempFunctionsList {
 						if functionName == FakeCallbackName {
 							continue
 						}
-						instanceMock.AddMockMethod(functionName, func() *mock.InstanceMock {
-							host := instanceMock.Host
-							instance := mock.GetMockInstance(host)
-							//t := instance.T
-
-							crtFunctionCalled := host.Runtime().Function()
-							LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
-
-							crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
-							var runtimeConfig *RuntimeConfigOfCall
-							if crtNode.IsStartNode {
-								runtimeConfig = &RuntimeConfigOfCall{
-									gasUsed: crtNode.GasUsed,
-								}
-							} else {
-								runtimeConfig = readRuntimeConfigFromArguments(host, runtimeConfigsForCalls)
-							}
-							runtimeConfigsForCalls[string(host.Async().GetCallID())] = runtimeConfig
-
-							var err error
-							defer func() {
-								if err != nil {
-									host.Runtime().FailExecution(err)
-								}
-
-								callFinishData := computeReturnDataForTestFramework(crtFunctionCalled, host, err)
-								callsFinishData.Data = append(callsFinishData.Data, callFinishData)
-							}()
-
-							if runtimeConfig.edgeType == Async || runtimeConfig.edgeType == AsyncCrossShard {
-								// prepare arguments for callback (in current's call ReturnData)
-								arguments := callbackArgumentsFromRuntimeConfig(runtimeConfig)
-								if !runtimeConfig.willFail || runtimeConfig.willFailExpected {
-									createFinishDataFromArguments(host.Output(), arguments)
-								} else {
-									err = ErrAsyncCallFail
-									return instance
-								}
-							} else if runtimeConfig.edgeType == Sync && runtimeConfig.willFail {
-								err = ErrSyncCallFail
-								return instance
-							} else if runtimeConfig.willFail {
-								err = ErrAsyncCallbackFail
-								return instance
-							}
-
-							// burn gas for function
-							logAsync.Trace("Burning", "gas", runtimeConfig.gasUsed, "function", crtFunctionCalled)
-							host.Metering().UseGasBounded(uint64(runtimeConfig.gasUsed))
-
-							for _, edge := range crtNode.AdjacentEdges {
-								if edge.Type == Sync {
-									breakPointValue := makeSyncCallFromEdge(host, edge, testConfig)
-									if breakPointValue == arwen.BreakpointExecutionFailed {
-										err = ErrSyncCallFail
-										return instance
-									}
-								} else {
-									makeAsyncCallFromEdge(host, edge, testConfig)
-									if host.Runtime().GetRuntimeBreakpointValue() == arwen.BreakpointExecutionFailed {
-										err = ErrAsyncRegisterFail
-										return instance
-									}
-								}
-							}
-
-							return instance
-						})
+						instanceMock.AddMockMethod(functionName,
+							createGraphContractMockMethod(instanceMock, callGraph, callsFinishData, runtimeConfigsForCalls, testConfig))
 					}
 				})
 			contracts[contractAddressAsString] = &newContract
@@ -199,6 +119,103 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 		contractsList = append(contractsList, *contract)
 	}
 	return contractsList
+}
+
+func setShardIdForNode(node *TestCallNode, incomingEdge *TestCallEdge, parent *TestCallNode, contracts map[string]*MockTestSmartContract) {
+	var shardID uint32
+	if node.ShardID == 0 {
+		if incomingEdge == nil {
+			shardID = 1
+		} else if incomingEdge.Type == Sync || incomingEdge.Type == Async {
+			shardID = parent.ShardID
+		} else if incomingEdge.Type == AsyncCrossShard {
+			shardID = contracts[string(parent.Call.ContractAddress)].shardID + 1
+		}
+		node.ShardID = shardID
+	}
+}
+
+func createGraphContractMockMethod(
+	instanceMock *mock.InstanceMock,
+	callGraph *TestCallGraph,
+	callsFinishData *CallsFinishData,
+	runtimeConfigsForCalls map[string]*RuntimeConfigOfCall,
+	testConfig *TestConfig) func() *mock.InstanceMock {
+	return func() *mock.InstanceMock {
+		host := instanceMock.Host
+		crtFunctionCalled := host.Runtime().Function()
+		LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
+
+		crtNode, runtimeConfig := getGraphNodeAndItsRuntimeConfig(callGraph, host, crtFunctionCalled, runtimeConfigsForCalls)
+
+		var err error
+		defer func() {
+			if err != nil {
+				host.Runtime().FailExecution(err)
+			}
+			callFinishData := computeReturnDataForTestFramework(crtFunctionCalled, host, err)
+			callsFinishData.Data = append(callsFinishData.Data, callFinishData)
+		}()
+
+		instance := mock.GetMockInstance(host)
+		err = produceErrorForPreconfiguredFailure(runtimeConfig, host)
+		if err != nil {
+			return instance
+		}
+
+		// burn gas for function
+		logAsync.Trace("Burning", "gas", runtimeConfig.gasUsed, "function", crtFunctionCalled)
+		host.Metering().UseGasBounded(uint64(runtimeConfig.gasUsed))
+
+		for _, edge := range crtNode.AdjacentEdges {
+			if edge.Type == Sync {
+				breakPointValue := makeSyncCallFromEdge(host, edge, testConfig)
+				if breakPointValue == arwen.BreakpointExecutionFailed {
+					err = ErrSyncCallFail
+					return instance
+				}
+			} else {
+				makeAsyncCallFromEdge(host, edge, testConfig)
+				if host.Runtime().GetRuntimeBreakpointValue() == arwen.BreakpointExecutionFailed {
+					err = ErrAsyncRegisterFail
+					return instance
+				}
+			}
+		}
+
+		return instance
+	}
+}
+
+func produceErrorForPreconfiguredFailure(runtimeConfig *RuntimeConfigOfCall, host arwen.VMHost) error {
+	if runtimeConfig.edgeType == Async || runtimeConfig.edgeType == AsyncCrossShard {
+		// prepare arguments for callback (in current's call ReturnData)
+		arguments := callbackArgumentsFromRuntimeConfig(runtimeConfig)
+		if !runtimeConfig.willFail || runtimeConfig.willFailExpected {
+			createFinishDataFromArguments(host.Output(), arguments)
+		} else {
+			return ErrAsyncCallFail
+		}
+	} else if runtimeConfig.edgeType == Sync && runtimeConfig.willFail {
+		return ErrSyncCallFail
+	} else if runtimeConfig.willFail {
+		return ErrAsyncCallbackFail
+	}
+	return nil
+}
+
+func getGraphNodeAndItsRuntimeConfig(callGraph *TestCallGraph, host arwen.VMHost, crtFunctionCalled string, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) (*TestCallNode, *RuntimeConfigOfCall) {
+	crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
+	var runtimeConfig *RuntimeConfigOfCall
+	if crtNode.IsStartNode {
+		runtimeConfig = &RuntimeConfigOfCall{
+			gasUsed: crtNode.GasUsed,
+		}
+	} else {
+		runtimeConfig = readRuntimeConfigFromArguments(host, runtimeConfigsForCalls)
+	}
+	runtimeConfigsForCalls[string(host.Async().GetCallID())] = runtimeConfig
+	return crtNode, runtimeConfig
 }
 
 func callbackArgumentsFromRuntimeConfig(runtimeConfig *RuntimeConfigOfCall) [][]byte {

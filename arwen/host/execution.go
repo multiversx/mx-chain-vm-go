@@ -20,7 +20,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
+			log.Trace("doRunSmartContractCreate full error list", "error", errs)
 		}
 		host.Clean()
 	}()
@@ -100,7 +100,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
+			log.Trace("doRunSmartContractUpgrade full error list", "error", errs)
 		}
 		host.Clean()
 	}()
@@ -224,7 +224,7 @@ func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.Contr
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isComplete bool, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
 	scExecutionInput := input
@@ -233,29 +233,20 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
-		var asyncPrefixArgs [][]byte
-		asyncPrefixArgsNumber := 2
-		if input.CallType == vm.AsynchronousCallBack {
-			asyncPrefixArgsNumber = 4
-		}
-		asyncPrefixArgs, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
-			isComplete = true
+			isChildComplete = true
 			return
-		}
-		if scExecutionInput != nil {
-			scExecutionInput.Arguments = arwen.PrependToArguments(scExecutionInput.Arguments, asyncPrefixArgs...)
 		}
 	}
 
 	if scExecutionInput != nil {
-		vmOutput, err, isComplete = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 	} else {
-		isComplete = true
+		isChildComplete = true
 	}
 
 	if err != nil {
@@ -269,10 +260,17 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	output := host.Output()
+
+	asyncPrefixArgs := arwen.PopCallIDsFromArguments(input)
+
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
 		return nil, nil, err
+	}
+
+	if postBuiltinInput != nil {
+		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
 	}
 
 	output.AddToActiveState(builtinOutput)
@@ -280,7 +278,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	return postBuiltinInput, builtinOutput, nil
 }
 
-func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error, isComplete bool) {
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
@@ -292,8 +290,6 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
-	// TODO async.LoadOrInit(), not just Init; the contract invoked here likely has a
-	// persisted AsyncContext of its own.
 	async.PushState()
 	async.InitStateFromInput(input)
 
@@ -317,19 +313,19 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
-			return vmOutput, err, true
+			return vmOutput, true, err
 		}
 	}
 
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
-		return vmOutput, err, true
+		return vmOutput, true, err
 	}
 
 	err = async.Execute()
 
-	return vmOutput, err, async.IsComplete()
+	return vmOutput, async.IsComplete(), err
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
@@ -348,6 +344,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	async.SetResults(vmOutput)
 	if !async.IsComplete() {
+		// TODO camilbancioiu: Returned error must be handled.
 		async.Save()
 	}
 
@@ -459,11 +456,6 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
-func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
-	functionName := host.Runtime().Function()
-	return host.IsBuiltinFunctionName(functionName)
-}
-
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	function, err := host.builtInFuncContainer.Get(functionName)
@@ -538,8 +530,8 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	}
 
 	_, initCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(initCallInput.Arguments)
-	_, isComplete, err := host.ExecuteOnDestContext(initCallInput)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
+	_, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
+	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 
@@ -889,13 +881,10 @@ func (host *vmHost) callSCMethod() error {
 	switch callType {
 	case vm.DirectCall:
 		err = host.callSCMethodDirectCall()
-		break
 	case vm.AsynchronousCall:
 		err = host.callSCMethodAsynchronousCall()
-		break
 	case vm.AsynchronousCallBack:
 		err = host.callSCMethodAsynchronousCallBack()
-		break
 	default:
 		err = arwen.ErrUnknownCallType
 	}
@@ -929,11 +918,11 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	runtime := host.Runtime()
 	async := host.Async()
 
-	callerCallCallID := async.GetCallerCallID()
+	callerCallID := async.GetCallerCallID()
 
 	asyncCall, err := async.UpdateCurrentAsyncCallStatus(
 		runtime.GetSCAddress(),
-		callerCallCallID,
+		callerCallID,
 		runtime.GetVMInput())
 	if err != nil {
 		log.Trace("UpdateCurrentCallStatus failed", "error", err)
@@ -942,22 +931,32 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 
 	runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
 
-	isCallComplete, err := host.callFunctionAndExecuteAsync()
-	if !isCallComplete {
-		return err
-	}
-
-	async.LoadParentContext()
-	async.NotifyChildIsComplete(callerCallCallID, host.Metering().GasLeft())
-
-	// TODO matei-p for R2 we need to return the callback error, but we also
-	// need to keep in the vmoutput the storage cleaning of the async contexts
-	// return err
-
-	if err != nil {
+	isCallComplete, callbackErr := host.callFunctionAndExecuteAsync()
+	if callbackErr != nil {
 		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
 	}
+
+	// TODO matei-p R2 Returning an error here will cause the VMOutput to be
+	// empty (due to CreateVMOutputInCaseOfError()). But in release 2 of
+	// Promises, CreateVMOutputInCaseOfError() should still contain storage
+	// deletions caused by AsyncContext cleanup, even if callbackErr != nil and
+	// was returned here. The storage deletions MUST be persisted in the data
+	// trie once R2 goes live.
+	if !isCallComplete {
+		return callbackErr
+	}
+
+	err = async.LoadParentContext()
+	if err != nil {
+		return err
+	}
+
+	err = async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

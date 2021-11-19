@@ -129,7 +129,6 @@ func TestGraph_AsyncCallbackIndirectFailCrossShard_CallGraph(t *testing.T) {
 }
 
 func TestGraph_TwoAsyncCalls_CallGraph(t *testing.T) {
-	// arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCalls())
 	runGraphCallTestTemplate(t, callGraph)
 }

@@ -74,8 +74,6 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 		return arwen.ErrNilDestinationCallVMOutput
 	}
 
-	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
-	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
 	if isComplete {
@@ -85,11 +83,17 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, 0, err)
 			if isCallbackComplete && callbackVMOutput != nil {
 				callbackVMOutput.GasRemaining = 0
-				context.CompleteChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
+				err = context.completeChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
+				if err != nil {
+					return err
+				}
 			}
 		} else {
 			metering.UseGas(vmOutput.GasRemaining)
-			context.CompleteChild(asyncCall.CallID, 0)
+			err = context.completeChild(asyncCall.CallID, 0)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -200,7 +204,6 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	return nil
 }
 
-// TODO return values are never used by code that calls finishAsyncLocalExecution
 func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutput, err error) {
 	if err == nil {
 		return

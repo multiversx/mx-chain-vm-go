@@ -3385,7 +3385,7 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 
 func ExecuteOnDestContextFromAPI(host arwen.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	_, input.Arguments = host.Async().PrependArgumentsForAsyncContext(input.Arguments)
-	vmOutput, isComplete, err := host.ExecuteOnDestContext(input)
-	host.Async().CompleteChildConditional(isComplete, nil, 0)
+	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
+	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 	return vmOutput, err
 }

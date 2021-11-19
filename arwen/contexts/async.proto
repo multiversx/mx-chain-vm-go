@@ -45,12 +45,12 @@ message SerializableStorageUpdate {
 message SerializableOutputAccount {
     bytes Address = 1;
     uint64 Nonce= 2;
-    bytes Balance = 3 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    bytes Balance = 3 [(gogoproto.jsontag) = "Balance", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
     map<string, SerializableStorageUpdate>  StorageUpdates = 4;
     bytes Code = 5;
     bytes CodeMetadata = 6;
     bytes CodeDeployerAddress = 7;
-    bytes BalanceDelta = 8 [(gogoproto.jsontag) = "Value", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
+    bytes BalanceDelta = 8 [(gogoproto.jsontag) = "BalanceDelta", (gogoproto.casttypewith) = "math/big.Int;github.com/ElrondNetwork/elrond-go-core/data.BigIntCaster"];
     repeated SerializableOutputTransfer OutputTransfers = 9;
     uint64 GasUsed = 10;
 }
