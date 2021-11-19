@@ -187,6 +187,16 @@ func (b *MockWorld) GetESDTToken(address []byte, tokenIdentifier []byte, nonce u
 	return b.BuiltinFuncs.GetTokenData(address, tokenIdentifier, nonce)
 }
 
+// GetESDTToken -
+func (b *MockWorld) GetESDTLocalRoles(tokenIdentifier []byte) (uint64, error) {
+	// custom error
+	if b.Err != nil {
+		return 0, b.Err
+	}
+
+	return b.BuiltinFuncs.World.GetESDTLocalRoles(tokenIdentifier)
+}
+
 // GetBuiltinFunctionNames -
 func (b *MockWorld) GetBuiltinFunctionNames() vmcommon.FunctionNames {
 	return b.BuiltinFuncs.GetBuiltinFunctionNames()

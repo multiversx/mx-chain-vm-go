@@ -4,7 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookStub)(nil)
@@ -36,6 +36,7 @@ type BlockchainHookStub struct {
 	SaveCompiledCodeCalled        func(codeHash []byte, code []byte)
 	GetCodeCalled                 func(account vmcommon.UserAccountHandler) []byte
 	GetESDTTokenCalled            func(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetESDTLocalRolesCalled       func(tokenID []byte) (uint64, error)
 	GetSnapshotCalled             func() int
 	RevertToSnapshotCalled        func(snapshot int) error
 }
@@ -190,6 +191,14 @@ func (b *BlockchainHookStub) GetESDTToken(address []byte, tokenID []byte, nonce 
 		return b.GetESDTTokenCalled(address, tokenID, nonce)
 	}
 	return &esdt.ESDigitalToken{Value: big.NewInt(0)}, nil
+}
+
+// GetESDTToken mocked method
+func (b *BlockchainHookStub) GetESDTLocalRoles(tokenID []byte) (uint64, error) {
+	if b.GetESDTLocalRolesCalled != nil {
+		return b.GetESDTLocalRolesCalled(tokenID)
+	}
+	return 0, nil
 }
 
 // GetCode mocked method

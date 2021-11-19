@@ -170,6 +170,11 @@ func (b *BlockchainContextMock) GetESDTToken(_ []byte, _ []byte, _ uint64) (*esd
 	return &esdt.ESDigitalToken{Value: big.NewInt(0)}, nil
 }
 
+// GetESDTToken -
+func (b *BlockchainContextMock) GetESDTLocalRoles(_ []byte) (uint64, error) {
+	return 0, nil
+}
+
 // GetUserAccount -
 func (b *BlockchainContextMock) GetUserAccount(_ []byte) (vmcommon.UserAccountHandler, error) {
 	return nil, nil

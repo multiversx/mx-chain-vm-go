@@ -6,7 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var log = logger.GetOrCreate("arwen/blockchainContext")
@@ -125,6 +125,10 @@ func (context *blockchainContext) IncreaseNonce(address []byte) {
 // GetESDTToken returns the unmarshalled esdt token for the given address and nonce for NFTs
 func (context *blockchainContext) GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	return context.blockChainHook.GetESDTToken(address, tokenID, nonce)
+}
+
+func (context *blockchainContext) GetESDTLocalRoles(tokenID []byte) (uint64, error) {
+	return context.blockChainHook.GetESDTLocalRoles(tokenID)
 }
 
 // GetCodeHash returns the code hash that is set tho the given account

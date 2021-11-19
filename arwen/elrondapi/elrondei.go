@@ -50,6 +50,7 @@ package elrondapi
 // extern int32_t	v1_4_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
+// extern int32_t	v1_4_getESDTLocalRoles(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
 //
 // extern int32_t	v1_4_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_4_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -149,6 +150,7 @@ const (
 	getESDTNFTAttributeLengthName    = "getESDTNFTAttributeLength"
 	getESDTNFTURILengthName          = "getESDTNFTURILength"
 	getESDTTokenDataName             = "getESDTTokenData"
+	getESDTLocalRolesName            = "getESDTLocalRoles"
 	executeOnDestContextName         = "executeOnDestContext"
 	executeOnDestContextByCallerName = "executeOnDestContextByCaller"
 	executeOnSameContextName         = "executeOnSameContext"
@@ -547,6 +549,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("getESDTLocalRoles", v1_4_getESDTLocalRoles, C.v1_4_getESDTLocalRoles)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("getESDTNFTNameLength", v1_4_getESDTNFTNameLength, C.v1_4_getESDTNFTNameLength)
 	if err != nil {
 		return nil, err
@@ -912,6 +919,61 @@ func v1_4_getESDTTokenData(
 		}
 	}
 	return int32(len(esdtData.Value.Bytes()))
+}
+
+//export v1_4_getESDTLocalRoles
+func v1_4_getESDTLocalRoles(
+	context unsafe.Pointer,
+	addressOffset int32,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+	nonce int64,
+	valueHandle int32,
+	propertiesOffset int32,
+	hashOffset int32,
+	nameOffset int32,
+	attributesOffset int32,
+	creatorOffset int32,
+	royaltiesHandle int32,
+	urisOffset int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	metering.StartGasTracing(getESDTLocalRolesName)
+
+	blockchain := arwen.GetBlockchainContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	metering.UseAndTraceGas(gasToUse)
+
+	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+	if err != nil {
+		return 0
+	}
+
+	esdtLocalRoles, err := blockchain.GetESDTLocalRoles(tokenID)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
+	}
+
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	return int32(esdtLocalRoles)
+}
+
+func uint64fromByteArray(bytes []byte) uint64 {
+	newInt := ((int(bytes[0]) & 0xFF) << 56) |
+		((int(bytes[1]) & 0xFF) << 48) |
+		((int(bytes[2]) & 0xFF) << 40) |
+		((int(bytes[3]) & 0xFF) << 32) |
+		((int(bytes[4]) & 0xFF) << 24) |
+		((int(bytes[5]) & 0xFF) << 16) |
+		((int(bytes[6]) & 0xFF) << 8) |
+		((int(bytes[7]) & 0xFF) << 0)
+	return uint64(newInt)
 }
 
 //export v1_4_transferValue
