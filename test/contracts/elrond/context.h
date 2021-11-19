@@ -9,6 +9,7 @@ int getShardOfAddress(byte *address);
 int isSmartContract(byte *address);
 
 // EllipticCurve-Related functions
+
 void addEC(int xResultHandle, int yResultHandle, int ecHandle, int fstPointXHandle, int fstPointYHandle, int sndPointXHandle, int sndPointYHandle);
 void doubleEC(int xResultHandle, int yResultHandle, int ecHandle, int pointXHandle, int pointYHandle);
 int isOnCurveEC(int ecHandle, int pointXHandle, int pointYHandle);
@@ -21,6 +22,7 @@ int unmarshalCompressedEC(int xResultHandle, int yResultHandle, int ecHandle, by
 int generateKeyEC(int xPubKeyHandle, int yPubKeyHandle, int ecHandle, byte *resultOffset);
 int getCurveLengthEC(int ecHandle);
 int getPrivKeyByteLengthEC(int ecHandle);
+int createEC(byte *dataOffset, int dataLength);
 int ellipticCurveGetValues(int ecHandle, int fieldOrderHandle, int basePointOrderHandle, int eqConstantHandle, int xBasePointHandle, int yBasePointHandle);
 
 // Managed Buffers

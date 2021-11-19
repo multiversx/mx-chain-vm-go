@@ -366,10 +366,15 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 		})
 }
 
+func TestMultipleTimes(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t)
+	}
+}
+
 func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
-
 	testConfig := simpleGasTestConfig
 	testConfig.ESDTTokensToTransfer = 10
 
