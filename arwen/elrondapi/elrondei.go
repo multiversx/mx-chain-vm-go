@@ -50,6 +50,7 @@ package elrondapi
 // extern int32_t	v1_4_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
+// extern int32_t	v1_4_getESDTLocalRoles(void *context, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset);
 //
 // extern int32_t	v1_4_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_4_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -912,6 +913,26 @@ func v1_4_getESDTTokenData(
 		}
 	}
 	return int32(len(esdtData.Value.Bytes()))
+}
+
+func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIDOffset int32, tokenIDLen int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGasAndAddTracedGas(storageLoadLengthName, gasToUse)
+
+	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+	if err != nil {
+		return 0
+	}
+
+	key := []byte("ELRONDroleesdt" + string(tokenID))
+
+	data := storage.GetStorage(key)
+
+	return int32(len(data))
 }
 
 //export v1_4_transferValue
