@@ -347,7 +347,7 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 
-// GetAndEliminateFirstArgumentFromList mocked method
-func (r *RuntimeContextMock) GetAndEliminateFirstArgumentFromList() []byte {
+// PopFirstArgumentFromVMInput mocked method
+func (r *RuntimeContextMock) PopFirstArgumentFromVMInput() []byte {
 	return nil
 }

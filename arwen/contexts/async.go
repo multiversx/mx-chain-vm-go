@@ -106,8 +106,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
-		context.callID = runtime.GetAndEliminateFirstArgumentFromList()
-		context.callerCallID = runtime.GetAndEliminateFirstArgumentFromList()
+		context.callID = runtime.PopFirstArgumentFromVMInput()
+		context.callerCallID = runtime.PopFirstArgumentFromVMInput()
 	}
 
 	context.callType = input.CallType
@@ -115,8 +115,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.totalCallsCounter = 0
 
 	if input.CallType == vm.AsynchronousCallBack {
-		context.callbackAsyncInitiatorCallID = runtime.GetAndEliminateFirstArgumentFromList()
-		context.gasAccumulated = big.NewInt(0).SetBytes(runtime.GetAndEliminateFirstArgumentFromList()).Uint64()
+		context.callbackAsyncInitiatorCallID = runtime.PopFirstArgumentFromVMInput()
+		context.gasAccumulated = big.NewInt(0).SetBytes(runtime.PopFirstArgumentFromVMInput()).Uint64()
 	}
 
 	if logAsync.GetLevel() == logger.LogTrace {

@@ -593,7 +593,7 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 	return contextWrapper.GetPrevTxHash()
 }
 
-// GetAndEliminateFirstArgumentFromList calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetAndEliminateFirstArgumentFromList() []byte {
-	return contextWrapper.GetAndEliminateFirstArgumentFromList()
+// PopFirstArgumentFromVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) PopFirstArgumentFromVMInput() []byte {
+	return contextWrapper.PopFirstArgumentFromVMInput()
 }

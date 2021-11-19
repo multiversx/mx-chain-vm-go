@@ -90,11 +90,6 @@ func (context *storageContext) SetAddress(address []byte) {
 	logStorage.Trace("storage under address set", "address", address)
 }
 
-// GetAddress gets the given address for the current context.
-func (context *storageContext) GetAddress() []byte {
-	return context.address
-}
-
 // GetStorageUpdates returns the storage updates for the account mapped to the given address.
 func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate {
 	account, _ := context.host.Output().GetOutputAccount(address)

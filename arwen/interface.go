@@ -151,10 +151,8 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-	GetAndEliminateFirstArgumentFromList() []byte
+	PopFirstArgumentFromVMInput() []byte
 
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
@@ -290,7 +288,6 @@ type StorageContext interface {
 	StateStack
 
 	SetAddress(address []byte)
-	GetAddress() []byte
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) []byte
 	GetStorageFromAddressNoChecks(address []byte, key []byte) []byte

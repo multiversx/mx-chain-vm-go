@@ -806,7 +806,7 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	return ok
 }
 
-func (context *runtimeContext) GetAndEliminateFirstArgumentFromList() []byte {
+func (context *runtimeContext) PopFirstArgumentFromVMInput() []byte {
 	firstArg := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]
 	return firstArg

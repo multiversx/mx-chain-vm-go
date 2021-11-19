@@ -370,6 +370,16 @@ func (context *meteringContext) RestoreGas(gas uint64) {
 	logMetering.Trace("restored gas", "gas", gas)
 }
 
+// DisableRestoreGas disables the RestoreGas() method; needed for gas management of async calls.
+func (context *meteringContext) DisableRestoreGas() {
+	context.restoreGasEnabled = false
+}
+
+// EnableRestoreGas enables the RestoreGas() method; needed for gas management of async calls.
+func (context *meteringContext) EnableRestoreGas() {
+	context.restoreGasEnabled = true
+}
+
 // FreeGas refunds the specified amount of gas to the caller.
 func (context *meteringContext) FreeGas(gas uint64) {
 	refund := math.AddUint64(context.host.Output().GetRefund(), gas)
@@ -526,16 +536,6 @@ func (context *meteringContext) deductInitialGas(
 	context.initialCost = initialCost
 	context.gasForExecution = input.GasProvided - initialCost
 	return nil
-}
-
-// DisableRestoreGas disables the restore gas mechanism
-func (context *meteringContext) DisableRestoreGas() {
-	context.restoreGasEnabled = false
-}
-
-// DisableRestoreGas enables the restore gas mechanism
-func (context *meteringContext) EnableRestoreGas() {
-	context.restoreGasEnabled = true
 }
 
 // SetGasTracing enables/disables gas tracing
