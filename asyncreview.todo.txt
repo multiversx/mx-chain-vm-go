@@ -3,7 +3,6 @@ Review file arwen/contexts/async.go
 Review file arwen/contexts/asyncLocal.go
 Review file arwen/contexts/asyncSerializeUtils.go
 Review file arwen/contexts/async_test.go
-Review file arwen/elrondapi/elrondei.go
 Review file arwen/host/execution.go
 Review file arwen/hosttest/execution_gas_test.go
 Review file arwen/hosttest/execution_graph_test.go
@@ -61,3 +60,4 @@ x 2021-11-18 mock/context/meteringContextMock.go
 x 2021-11-18 mock/world/worldCallbacks.go
 x 2021-11-18 testcommon/configurableFormatter.go
 x 2021-11-18 testcommon/testInitializerInputs.go
+x 2021-11-19 Review file arwen/elrondapi/elrondei.go

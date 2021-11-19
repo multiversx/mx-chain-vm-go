@@ -36,7 +36,7 @@ func (context *asyncContext) CompleteChildConditional(isChildComplete bool, call
 	if !isChildComplete {
 		return nil
 	}
-	context.DecrementCallsCounter()
+	context.decrementCallsCounter()
 	context.accumulateGas(gasToAccumulate)
 	if callID != nil {
 		err := context.DeleteAsyncCallAndCleanGroup(callID)

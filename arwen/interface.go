@@ -341,8 +341,6 @@ type AsyncContext interface {
 	GetCallID() []byte
 	GetCallbackAsyncInitiatorCallID() []byte
 	IsCrossShard() bool
-	GenerateNewCallIDAndIncrementCounter() []byte
-	GenerateNewCallbackID() []byte
 
 	Clone() AsyncContext
 
@@ -362,8 +360,6 @@ type AsyncContext interface {
 	GetGasAccumulated() uint64
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
-
-	DecrementCallsCounter()
 
 	/*
 		for tests / test framework usage

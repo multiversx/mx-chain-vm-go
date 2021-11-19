@@ -233,12 +233,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	blockchain.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
-		var asyncPrefixArgs [][]byte
-		asyncPrefixArgsNumber := 2
-		if input.CallType == vm.AsynchronousCallBack {
-			asyncPrefixArgsNumber = 4
-		}
-		asyncPrefixArgs, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
 		if err != nil {
 			blockchain.PopSetActiveState()
@@ -246,9 +240,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			isChildComplete = true
 			return
-		}
-		if scExecutionInput != nil {
-			scExecutionInput.Arguments = arwen.PrependToArguments(scExecutionInput.Arguments, asyncPrefixArgs...)
 		}
 	}
 
@@ -269,10 +260,22 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	output := host.Output()
+
+	var asyncPrefixArgs [][]byte
+	asyncPrefixArgsNumber := 2
+	if input.CallType == vm.AsynchronousCallBack {
+		asyncPrefixArgsNumber = 4
+	}
+	asyncPrefixArgs, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
+
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
 		return nil, nil, err
+	}
+
+	if postBuiltinInput != nil {
+		postBuiltinInput.Arguments = arwen.PrependToArguments(postBuiltinInput.Arguments, asyncPrefixArgs...)
 	}
 
 	output.AddToActiveState(builtinOutput)
@@ -292,8 +295,6 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
-	// TODO async.LoadOrInit(), not just Init; the contract invoked here likely has a
-	// persisted AsyncContext of its own.
 	async.PushState()
 	async.InitStateFromInput(input)
 

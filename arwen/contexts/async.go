@@ -80,12 +80,16 @@ func NewAsyncContext(
 
 // InitState initializes the internal state of the AsyncContext.
 func (context *asyncContext) InitState() {
+	// TODO camilbancioiu: ensure the AsyncContext is thoroughly reset here.
+	context.callID = nil
 	context.callerAddr = make([]byte, 0)
 	context.gasAccumulated = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 	context.callback = ""
 	context.callbackAsyncInitiatorCallID = nil
+	context.callsCounter = 0
+	context.totalCallsCounter = 0
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
@@ -93,26 +97,19 @@ func (context *asyncContext) InitState() {
 func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
 	context.InitState()
 	context.callerAddr = input.CallerAddr
-	context.gasAccumulated = 0
+	context.callType = input.CallType
 
 	runtime := context.host.Runtime()
 	context.address = runtime.GetSCAddress()
 
 	emptyStack := len(context.stateStack) == 0
-	isAsyncCall := input.CallType == vm.AsynchronousCall
-	isAsyncCallback := input.CallType == vm.AsynchronousCallBack
-
-	if emptyStack && !isAsyncCall && !isAsyncCallback {
+	if emptyStack && !context.isCallAsync() {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
 		context.callID = runtime.PopFirstArgumentFromVMInput()
 		context.callerCallID = runtime.PopFirstArgumentFromVMInput()
 	}
-
-	context.callType = input.CallType
-	context.callsCounter = 0
-	context.totalCallsCounter = 0
 
 	if input.CallType == vm.AsynchronousCallBack {
 		context.callbackAsyncInitiatorCallID = runtime.PopFirstArgumentFromVMInput()
@@ -345,7 +342,8 @@ func (context *asyncContext) SetContextCallback(callbackName string, data []byte
 	return nil
 }
 func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte) {
-	newCallID := context.GenerateNewCallIDAndIncrementCounter()
+	newCallID := context.generateNewCallID()
+	context.incrementCallsCounter()
 	return newCallID, arwen.PrependToArguments(
 		args,
 		newCallID,
@@ -365,25 +363,18 @@ func (context *asyncContext) GetAsyncCallByCallID(callID []byte) (*arwen.AsyncCa
 	return nil, -1, -1, arwen.ErrAsyncCallNotFound
 }
 
-func (context *asyncContext) GenerateNewCallIDAndIncrementCounter() []byte {
-	return context.generateNewCallID(false)
-}
-
-func (context *asyncContext) GenerateNewCallbackID() []byte {
-	return context.generateNewCallID(true)
-}
-
-func (context *asyncContext) generateNewCallID(isCallback bool) []byte {
-	if !isCallback {
-		context.callsCounter++
-	}
+func (context *asyncContext) generateNewCallID() []byte {
 	context.totalCallsCounter++
 	newCallID := append(context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes()...)
 	newCallID, _ = context.host.Crypto().Sha256(newCallID)
 	return newCallID
 }
 
-func (context *asyncContext) DecrementCallsCounter() {
+func (context *asyncContext) incrementCallsCounter() {
+	context.callsCounter++
+}
+
+func (context *asyncContext) decrementCallsCounter() {
 	context.callsCounter--
 }
 
@@ -982,9 +973,9 @@ func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arw
 func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {
 	return arwen.PrependToArguments(
 		args,
-		context.GenerateNewCallbackID(), // new callback id
-		asyncCall.CallID,                // caller call id (original async call destination)
-		context.callID,                  // async initiator call id (original async call source)
+		context.generateNewCallID(), // new callback id
+		asyncCall.CallID,            // caller call id (original async call destination)
+		context.callID,              // async initiator call id (original async call source)
 		big.NewInt(int64(gasAccumulated)).Bytes(),
 	)
 }
