@@ -50,7 +50,7 @@ package elrondapi
 // extern int32_t	v1_4_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
-// extern int32_t	v1_4_getESDTLocalRoles(void *context, int32_t tokenIDOffset, int32_t tokenIDLen, int32_t valueOffset);
+// extern int64_t	v1_4_getESDTLocalRoles(void *context, int32_t tokenIdHandle);
 //
 // extern int32_t	v1_4_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_4_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -920,6 +920,7 @@ func v1_4_getESDTTokenData(
 	return int32(len(esdtData.Value.Bytes()))
 }
 
+//export v1_4_getESDTLocalRoles
 func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
