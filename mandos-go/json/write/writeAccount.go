@@ -13,6 +13,9 @@ func AccountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		if len(account.Comment) > 0 {
 			acctOJ.Put("comment", stringToOJ(account.Comment))
 		}
+		if len(account.Shard.Original) > 0 {
+			acctOJ.Put("shard", uint64ToOJ(account.Shard))
+		}
 		if len(account.Nonce.Original) > 0 {
 			acctOJ.Put("nonce", uint64ToOJ(account.Nonce))
 		}
