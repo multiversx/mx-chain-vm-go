@@ -548,6 +548,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("getESDTLocalRoles", v1_4_getESDTLocalRoles, C.v1_4_getESDTLocalRoles)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("getESDTNFTNameLength", v1_4_getESDTNFTNameLength, C.v1_4_getESDTNFTNameLength)
 	if err != nil {
 		return nil, err
@@ -915,7 +920,8 @@ func v1_4_getESDTTokenData(
 	return int32(len(esdtData.Value.Bytes()))
 }
 
-func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIDOffset int32, tokenIDLen int32) int32 {
+func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -923,8 +929,8 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIDOffset int32, tokenID
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
 	metering.UseGasAndAddTracedGas(storageLoadLengthName, gasToUse)
 
-	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
-	if err != nil {
+	tokenID, err := managedType.GetBytes(tokenIdHandle)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
@@ -932,7 +938,7 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIDOffset int32, tokenID
 
 	data := storage.GetStorage(key)
 
-	return int32(len(data))
+	return int64(len(data))
 }
 
 //export v1_4_transferValue
