@@ -29,7 +29,7 @@ type ESDTData struct {
 
 // CheckESDTInstance checks an instance of an NFT/SFT, with its own nonce
 type CheckESDTInstance struct {
-	Nonce      JSONCheckUint64
+	Nonce      JSONUint64
 	Balance    JSONCheckBigInt
 	Creator    JSONCheckBytes
 	Royalties  JSONCheckUint64
@@ -41,7 +41,7 @@ type CheckESDTInstance struct {
 // NewCheckESDTInstance creates an instance with all fields unspecified.
 func NewCheckESDTInstance() *CheckESDTInstance {
 	return &CheckESDTInstance{
-		Nonce:      JSONCheckUint64Unspecified(),
+		Nonce:      JSONUint64Zero(),
 		Balance:    JSONCheckBigIntUnspecified(),
 		Creator:    JSONCheckBytesUnspecified(),
 		Royalties:  JSONCheckUint64Unspecified(),
