@@ -403,7 +403,7 @@
                         "str:5-SeveralNFTs": {
                             "instances": [
                                 {
-                                    "nonce": "*"
+                                    "nonce": "0"
                                 },
                                 {
                                     "nonce": "1",
