@@ -209,6 +209,11 @@ func (ei *ExprInterpreter) interpretFloatingPointNumber(strRaw string) ([]byte, 
 
 // targetWidth = 0 means minimum length that can contain the result
 func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]byte, error) {
+	if strings.Contains(strRaw, ".") {
+		bfBytes, err := ei.interpretFloatingPointNumber(strRaw[:])
+		return bfBytes, err
+	}
+
 	// signed numbers
 	if strRaw[0] == '-' || strRaw[0] == '+' {
 		numberBytes, err := ei.interpretUnsignedNumber(strRaw[1:])
@@ -333,10 +338,9 @@ func (ei *ExprInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte, 
 
 	if strings.HasPrefix(strRaw, bigFloatPrefix) {
 		bfBytes, err := ei.interpretFloatingPointNumber(strRaw[len(bigFloatPrefix):])
-		// lengthBytes := big.NewInt(int64(len(bfBytes))).Bytes()
-		// encodedLength := twos.CopyAlignRight(lengthBytes, 1)
-		// return true, append(encodedLength, bfBytes...), err
-		return true, bfBytes, err
+		lengthBytes := big.NewInt(int64(len(bfBytes))).Bytes()
+		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+		return true, append(encodedLength, bfBytes...), err
 	}
 
 	if strings.HasPrefix(strRaw, nestedPrefix) {
