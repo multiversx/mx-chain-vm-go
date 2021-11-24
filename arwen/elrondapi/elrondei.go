@@ -51,6 +51,7 @@ package elrondapi
 // extern int32_t	v1_4_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
 // extern long long	v1_4_getESDTLocalRoles(void *context, int32_t tokenIdHandle);
+// extern int32_t	v1_4_validateTokenIdentifier(void *context, int32_t tokenIDOffset, int32_t tokenIDLen);
 //
 // extern int32_t	v1_4_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_4_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -104,6 +105,12 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
+
+const tickerMinLength = 3
+const tickerMaxLength = 10
+const additionalRandomCharsLength = 6
+const identifierMinLength = tickerMinLength + additionalRandomCharsLength
+const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength
 
 const (
 	getSCAddressName                 = "getSCAddress"
@@ -394,6 +401,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getCurrentESDTNFTNonce", v1_4_getCurrentESDTNFTNonce, C.v1_4_getCurrentESDTNFTNonce)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("validateTokenIdentifier", v1_4_validateTokenIdentifier, C.v1_4_validateTokenIdentifier)
 	if err != nil {
 		return nil, err
 	}
@@ -940,6 +952,43 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	data := storage.GetStorage(key)
 
 	return int64(len(data))
+}
+
+//export v1_4_validateTokenIdentifier
+func v1_4_validateTokenIdentifier(
+	context unsafe.Pointer,
+	tokenIDOffset int32,
+	tokenIDLen int32,
+) int32 {
+	runtime := arwen.GetRuntimeContext(context)
+	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
+		return 0
+	}
+	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	// ticker must be all uppercase alphanumeric
+	tickerLen := tokenIDLen - additionalRandomCharsLength
+	for i := int32(0); i < tickerLen; i++ {
+		if (tokenID[i] < 'A' || tokenID[i] > 'Z') && (tokenID[i] < '0' || tokenID[i] > '9') {
+			return 0
+		}
+	}
+
+	// dash char between the random chars and the ticker
+	if tokenID[tickerLen] != '-' {
+		return 0
+	}
+
+	// random chars are alphanumeric lowercase
+	for i := tickerLen + 1; i < tokenIDLen; i++ {
+		if (tokenID[i] < 'a' || tokenID[i] > 'z') && (tokenID[i] < '0' || tokenID[i] > '9') {
+			return 0
+		}
+	}
+	return 1
 }
 
 //export v1_4_transferValue
