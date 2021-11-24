@@ -36,6 +36,7 @@ type ElrondAPICost struct {
 	GetNumArguments      uint64
 	StorageStore         uint64
 	StorageLoad          uint64
+	CachedStorageLoad    uint64
 	GetCaller            uint64
 	GetCallValue         uint64
 	Log                  uint64

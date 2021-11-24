@@ -525,15 +525,18 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad
-	metering.UseGasAndAddTracedGas(mBufferStorageLoadName, gasToUse)
-
 	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	managedType.SetBytes(destinationHandle, storage.GetStorage(key))
+	bytes, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorage(
+		mBufferStorageLoadName,
+		metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad,
+		[]byte{} /* 0 data copy cost */, usedCache)
+
+	managedType.SetBytes(destinationHandle, bytes)
 
 	return 0
 }

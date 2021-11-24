@@ -393,15 +393,16 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned
-	metering.UseGasAndAddTracedGas(bigIntStorageLoadUnsignedName, gasToUse)
-
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	bytes := storage.GetStorage(key)
+	bytes, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorage(
+		bigIntStorageLoadUnsignedName,
+		metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned,
+		bytes, usedCache)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.SetBytes(bytes)

@@ -61,6 +61,9 @@ type vmHost struct {
 
 	createNFTThroughExecByCallerEnableEpoch uint32
 	flagCreateNFTThroughExecByCaller        atomic.Flag
+
+	useDifferentGasCostForReadingCachedStorage     uint32
+	flagUseDifferentGasCostForReadingCachedStorage atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -97,10 +100,11 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
-		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
-		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
-		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		multiESDTTransferAsyncCallBackEnableEpoch:  hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:                hostParameters.FixOOGReturnCodeEnableEpoch,
+		removeNonUpdatedStorageEnableEpoch:         hostParameters.RemoveNonUpdatedStorageEnableEpoch,
+		createNFTThroughExecByCallerEnableEpoch:    hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		useDifferentGasCostForReadingCachedStorage: hostParameters.UseDifferentGasCostForReadingCachedStorage,
 	}
 
 	var err error

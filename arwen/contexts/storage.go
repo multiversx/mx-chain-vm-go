@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logStorage = logger.GetOrCreate("arwen/storage")
@@ -92,7 +92,7 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 // GetStorage returns the storage data mapped to the given key.
-func (context *storageContext) GetStorage(key []byte) []byte {
+func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
 	metering := context.host.Metering()
 
 	extraBytes := len(key) - arwen.AddressLen
@@ -101,18 +101,15 @@ func (context *storageContext) GetStorage(key []byte) []byte {
 		metering.UseGas(gasToUse)
 	}
 
-	value := context.GetStorageUnmetered(key)
-
-	gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(value)))
-	metering.UseGas(gasToUse)
+	value, usedCache := context.GetStorageUnmetered(key)
 
 	logStorage.Trace("get", "key", key, "value", value)
 
-	return value
+	return value, usedCache
 }
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
-func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) []byte {
+func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool) {
 	metering := context.host.Metering()
 
 	extraBytes := len(key) - arwen.AddressLen
@@ -124,12 +121,12 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
-			return nil
+			return nil, false
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
-			return nil
+			return nil, false
 		}
 	}
 
@@ -139,24 +136,23 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
 	var value []byte
+	var usedCache bool
 	if context.isElrondReservedKey(key) {
 		value, _ = context.blockChainHook.GetStorageData(address, key)
+		usedCache = false
 	} else {
-		value = context.getStorageFromAddressUnmetered(address, key)
+		value, usedCache = context.getStorageFromAddressUnmetered(address, key)
 	}
 
-	costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
-	gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
-	metering.UseGas(gasToUse)
-
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
-	return value
+	return value, usedCache
 }
 
-func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) []byte {
+func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
 
 	storageUpdates := context.GetStorageUpdates(address)
+	usedCache := true
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		value = storageUpdate.Data
 	} else {
@@ -165,13 +161,14 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 			Offset: key,
 			Data:   value,
 		}
+		usedCache = false
 	}
 
-	return value
+	return value, usedCache
 }
 
 // GetStorageUnmetered returns the data under the given key.
-func (context *storageContext) GetStorageUnmetered(key []byte) []byte {
+func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool) {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
@@ -231,7 +228,8 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	var oldValue []byte
 	storageUpdates := context.GetStorageUpdates(context.address)
 	if update, ok := storageUpdates[strKey]; !ok {
-		oldValue = context.GetStorageUnmetered(key)
+		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
+		oldValue, _ = context.GetStorageUnmetered(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,
@@ -291,4 +289,19 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	logStorage.Trace("storage modified", "key", key, "value", value, "lengthDelta", newValueExtraLength)
 	return arwen.StorageModified, nil
+}
+
+func (context *storageContext) UseGasForStorage(tracedFunctionName string, loadCost uint64, value []byte, usedCache bool) {
+	// TODO use flag
+	metering := context.host.Metering()
+	if usedCache {
+		metering.UseGasAndAddTracedGas(tracedFunctionName, metering.GasSchedule().ElrondAPICost.CachedStorageLoad)
+		return
+	}
+
+	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)
+
+	costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+	gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
+	metering.UseGas(gasToUse)
 }

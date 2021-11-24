@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -78,7 +78,8 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	storageStatus, err := storageContext.SetStorage(keyA, valueA)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	require.Equal(t, valueA, storageContext.GetStorage(keyA))
+	foundValueA, _ := storageContext.GetStorage(keyA)
+	require.Equal(t, valueA, foundValueA)
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 0)
 
@@ -88,10 +89,12 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(keyB, valueB)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	require.Equal(t, valueB, storageContext.GetStorage(keyB))
+	foundValueB, _ := storageContext.GetStorage(keyB)
+	require.Equal(t, valueB, foundValueB)
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 1)
-	require.Equal(t, []byte(nil), storageContext.GetStorage(keyA))
+	foundValueA, _ = storageContext.GetStorage(keyA)
+	require.Equal(t, []byte(nil), foundValueA)
 }
 
 func TestStorageContext_GetStorageUpdates(t *testing.T) {
@@ -150,28 +153,32 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err := storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	require.Equal(t, value, storageContext.GetStorage(key))
+	foundValue, _ := storageContext.GetStorage(key)
+	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	value = []byte("newValue")
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
-	require.Equal(t, value, storageContext.GetStorage(key))
+	foundValue, _ = storageContext.GetStorage(key)
+	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	value = []byte("newValue")
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
-	require.Equal(t, value, storageContext.GetStorage(key))
+	foundValue, _ = storageContext.GetStorage(key)
+	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	value = nil
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageDeleted, storageStatus)
-	require.Equal(t, []byte{}, storageContext.GetStorage(key))
+	foundValue, _ = storageContext.GetStorage(key)
+	require.Equal(t, []byte{}, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	mockRuntime.SetReadOnly(true)
@@ -179,7 +186,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
-	require.Equal(t, []byte{}, storageContext.GetStorage(key))
+	foundValue, _ = storageContext.GetStorage(key)
+	require.Equal(t, []byte{}, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
 	mockRuntime.SetReadOnly(false)
@@ -188,7 +196,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	require.Equal(t, value, storageContext.GetStorage(key))
+	foundValue, _ = storageContext.GetStorage(key)
+	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 2)
 
 	key = []byte("RESERVEDkey")
@@ -288,13 +297,13 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	storageContext.SetAddress(scAddress)
 
 	key := []byte("key")
-	data := storageContext.GetStorageFromAddress(scAddress, key)
+	data, _ := storageContext.GetStorageFromAddress(scAddress, key)
 	require.Equal(t, data, internalData)
 
-	data = storageContext.GetStorageFromAddress(readable, key)
+	data, _ = storageContext.GetStorageFromAddress(readable, key)
 	require.Equal(t, data, internalData)
 
-	data = storageContext.GetStorageFromAddress(nonreadable, key)
+	data, _ = storageContext.GetStorageFromAddress(nonreadable, key)
 	require.Nil(t, data)
 }
 
