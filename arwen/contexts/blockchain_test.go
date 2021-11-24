@@ -390,7 +390,7 @@ func TestBlockchainContext_IsPayable(t *testing.T) {
 
 	bc, _ := NewBlockchainContext(host, mockWorld)
 
-	isPayable, err := bc.IsPayable([]byte("test"))
+	isPayable, err := bc.IsPayable(nil, []byte("test"))
 	require.Nil(t, err)
 	require.True(t, isPayable)
 }

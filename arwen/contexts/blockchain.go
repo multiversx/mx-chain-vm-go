@@ -270,8 +270,8 @@ func (context *blockchainContext) IsSmartContract(addr []byte) bool {
 }
 
 // IsPayable returns true if the SC at the given address is payable
-func (context *blockchainContext) IsPayable(addr []byte) (bool, error) {
-	return context.blockChainHook.IsPayable(addr)
+func (context *blockchainContext) IsPayable(sndAddress []byte, rcvAddress []byte) (bool, error) {
+	return context.blockChainHook.IsPayable(sndAddress, rcvAddress)
 }
 
 // SaveCompiledCode saves the compiled code to cache and storage.
