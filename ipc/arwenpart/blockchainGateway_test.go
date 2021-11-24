@@ -120,7 +120,7 @@ func TestGateway_IsSmartContract(t *testing.T) {
 
 func TestGateway_IsPayable(t *testing.T) {
 	callHook := func(gateway *BlockchainHookGateway) {
-		result, err := gateway.IsPayable([]byte("contract"))
+		result, err := gateway.IsPayable(nil, []byte("contract"))
 		require.True(t, result)
 		require.Nil(t, err)
 	}
