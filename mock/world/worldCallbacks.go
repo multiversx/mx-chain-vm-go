@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -247,8 +248,8 @@ func (b *MockWorld) IsSmartContract(address []byte) bool {
 }
 
 // IsPayable -
-func (b *MockWorld) IsPayable(address []byte) (bool, error) {
-	account := b.AcctMap.GetAccount(address)
+func (b *MockWorld) IsPayable(sndAddress []byte, rcvAddress []byte) (bool, error) {
+	account := b.AcctMap.GetAccount(rcvAddress)
 	if account == nil {
 		return true, nil
 	}
@@ -258,6 +259,10 @@ func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	}
 
 	metadata := vmcommon.CodeMetadataFromBytes(account.CodeMetadata)
+	if core.IsSmartContractAddress(sndAddress) {
+		return metadata.PayableBySC || metadata.Payable, nil
+	}
+
 	return metadata.Payable, nil
 }
 

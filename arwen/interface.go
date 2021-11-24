@@ -86,7 +86,7 @@ type BlockchainContext interface {
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
-	IsPayable(address []byte) (bool, error)
+	IsPayable(sndAddress, rcvAddress []byte) (bool, error)
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
