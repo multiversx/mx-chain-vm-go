@@ -217,7 +217,7 @@ func (b *BlockchainHookStub) IsSmartContract(address []byte) bool {
 }
 
 // IsPayable mocked method
-func (b *BlockchainHookStub) IsPayable(address []byte) (bool, error) {
+func (b *BlockchainHookStub) IsPayable(_, address []byte) (bool, error) {
 	if b.IsPayableCalled != nil {
 		return b.IsPayableCalled(address)
 	}

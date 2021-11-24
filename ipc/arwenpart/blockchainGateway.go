@@ -398,8 +398,8 @@ func (blockchain *BlockchainHookGateway) IsSmartContract(address []byte) bool {
 }
 
 // IsPayable forwards a message to the actual hook
-func (blockchain *BlockchainHookGateway) IsPayable(address []byte) (bool, error) {
-	request := common.NewMessageBlockchainIsPayableRequest(address)
+func (blockchain *BlockchainHookGateway) IsPayable(_ []byte, rcvAddress []byte) (bool, error) {
+	request := common.NewMessageBlockchainIsPayableRequest(rcvAddress)
 	rawResponse, err := blockchain.messenger.SendHookCallRequest(request)
 	if err != nil {
 		return false, err
@@ -457,6 +457,6 @@ func (blockchain *BlockchainHookGateway) GetSnapshot() int {
 }
 
 // RevertToSnapshot - not used in v1.2
-func (blockchain *BlockchainHookGateway) RevertToSnapshot(snapshot int) error {
+func (blockchain *BlockchainHookGateway) RevertToSnapshot(_ int) error {
 	return nil
 }

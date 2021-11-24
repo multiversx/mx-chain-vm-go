@@ -248,7 +248,7 @@ func (b *MockWorld) IsSmartContract(address []byte) bool {
 }
 
 // IsPayable -
-func (b *MockWorld) IsPayable(address []byte) (bool, error) {
+func (b *MockWorld) IsPayable(_, address []byte) (bool, error) {
 	account := b.AcctMap.GetAccount(address)
 	if account == nil {
 		return true, nil
