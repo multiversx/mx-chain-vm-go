@@ -976,21 +976,25 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 //export v1_4_validateTokenIdentifier
 func v1_4_validateTokenIdentifier(
 	context unsafe.Pointer,
-	tokenIDOffset int32,
-	tokenIDLen int32,
+	tokenIdHandle int32,
 ) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
-	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
-		return 0
-	}
-	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
+
+	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
+	tokenIDLen := len(tokenID)
 	// ticker must be all uppercase alphanumeric
 	tickerLen := tokenIDLen - additionalRandomCharsLength
-	for i := int32(0); i < tickerLen; i++ {
+
+	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
+		return 0
+	}
+
+	for i := 0; i < tickerLen; i++ {
 		if (tokenID[i] < 'A' || tokenID[i] > 'Z') && (tokenID[i] < '0' || tokenID[i] > '9') {
 			return 0
 		}
