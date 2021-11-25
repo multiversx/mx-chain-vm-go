@@ -16,6 +16,7 @@ package elrondapi
 // extern int32_t	v1_4_mBufferEq(void* context, int32_t mBufferHandle1, int32_t mBufferHandle2);
 //
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t v1_4_mBufferSetByteSlice(void* context, int32_t mBufferHandle, int32_t startingPosition, int32_t dataLength, int32_t dataOffset);
 // extern int32_t	v1_4_mBufferAppend(void* context, int32_t accumulatorHandle, int32_t dataHandle);
 // extern int32_t	v1_4_mBufferAppendBytes(void* context, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
 //
@@ -83,6 +84,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferSetBytes", v1_4_mBufferSetBytes, C.v1_4_mBufferSetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferSetByteSlice", v1_4_mBufferSetByteSlice, C.v1_4_mBufferSetByteSlice)
 	if err != nil {
 		return nil, err
 	}
@@ -374,17 +380,22 @@ func v1_4_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, start
 	}
 	managedType.ConsumeGasForBytes(data)
 
-	destinationBytes, err := managedType.GetBytes(mBufferHandle)
+	bufferBytes, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(destinationBytes) {
+	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
+		// does not fail execution if slice exceeds bounds
 		return 1
 	}
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
-	metering.UseAndTraceGas(gasToUse)
+	//TODO this loop should be faster than append() on slices, but needs benchmarking
+	for i, value := range data {
+		bufferBytes[int(startingPosition)+i] = value
+	}
+
+	managedType.SetBytes(mBufferHandle, bufferBytes)
 
 	return 0
 }
