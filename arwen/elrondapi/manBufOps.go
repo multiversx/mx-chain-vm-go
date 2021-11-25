@@ -237,8 +237,11 @@ func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOff
 		return 1
 	}
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(mBufferBytes)))
-	metering.UseAndTraceGas(gasToUse)
+	storage := arwen.GetStorageContext(context)
+	if !storage.IsUseDifferentGasCostFalgSet() {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(mBufferBytes)))
+		metering.UseAndTraceGas(gasToUse)
+	}
 
 	return 0
 }
@@ -270,8 +273,11 @@ func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, starti
 		return 1
 	}
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
-	metering.UseAndTraceGas(gasToUse)
+	storage := arwen.GetStorageContext(context)
+	if !storage.IsUseDifferentGasCostFalgSet() {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
+		metering.UseAndTraceGas(gasToUse)
+	}
 
 	return 0
 }
@@ -352,8 +358,11 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 	managedType.ConsumeGasForBytes(data)
 	managedType.SetBytes(mBufferHandle, data)
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
-	metering.UseAndTraceGas(gasToUse)
+	storage := arwen.GetStorageContext(context)
+	if !storage.IsUseDifferentGasCostFalgSet() {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
+		metering.UseAndTraceGas(gasToUse)
+	}
 
 	return 0
 }
@@ -380,8 +389,11 @@ func v1_4_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHan
 		return 1
 	}
 
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(dataBufferBytes)))
-	metering.UseAndTraceGas(gasToUse)
+	storage := arwen.GetStorageContext(context)
+	if !storage.IsUseDifferentGasCostFalgSet() {
+		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(dataBufferBytes)))
+		metering.UseAndTraceGas(gasToUse)
+	}
 
 	return 0
 }
@@ -531,10 +543,10 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	}
 
 	bytes, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorage(
+	storage.UseGasForStorageLoad(
 		mBufferStorageLoadName,
 		metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad,
-		[]byte{} /* 0 data copy cost */, usedCache)
+		0, usedCache)
 
 	managedType.SetBytes(destinationHandle, bytes)
 

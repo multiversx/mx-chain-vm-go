@@ -46,6 +46,9 @@ func NewStorageContext(
 		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
+	if check.IfNil(epochNotifier) {
+		return nil, arwen.ErrNilEpochNotifier
+	}
 	epochNotifier.RegisterNotifyHandler(context)
 
 	return context, nil
@@ -144,14 +147,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	// contracts themselves cannot change protected values. Values stored under
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
-	var value []byte
-	var usedCache bool
-	if context.isElrondReservedKey(key) {
-		value, _ = context.blockChainHook.GetStorageData(address, key)
-		usedCache = false
-	} else {
-		value, usedCache = context.getStorageFromAddressUnmetered(address, key)
-	}
+	value, usedCache := context.getStorageFromAddressUnmetered(address, key)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, usedCache
@@ -159,6 +155,11 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
+
+	if context.isElrondReservedKey(key) {
+		value, _ = context.blockChainHook.GetStorageData(address, key)
+		return value, false
+	}
 
 	storageUpdates := context.GetStorageUpdates(address)
 	usedCache := true
@@ -225,9 +226,9 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	metering := context.host.Metering()
 
 	extraBytes := len(key) - arwen.AddressLen
+	var extraKeyLenGas uint64
 	if extraBytes > 0 {
-		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		metering.UseGas(gasToUse)
+		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 	}
 
 	var zero []byte
@@ -236,21 +237,26 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	var oldValue []byte
 	storageUpdates := context.GetStorageUpdates(context.address)
+	usedCache := true
 	if update, ok := storageUpdates[strKey]; !ok {
 		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
 		oldValue, _ = context.GetStorageUnmetered(key)
+		metering.UseGas(extraKeyLenGas)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,
 		}
+		usedCache = false
 	} else {
 		oldValue = update.Data
 	}
 
 	lengthOldValue := len(oldValue)
 	if bytes.Equal(oldValue, value) {
-		useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
-		metering.UseGas(useGas)
+		if !usedCache || !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+			useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
+			metering.UseGas(useGas)
+		}
 		logStorage.Trace("storage set to identical value")
 		return arwen.StorageUnchanged, nil
 	}
@@ -300,18 +306,8 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	return arwen.StorageModified, nil
 }
 
-// EpochConfirmed is called whenever a new epoch is confirmed
-func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
-}
-
-// IsInterfaceNil returns true if there is no value under the interface
-func (context *storageContext) IsInterfaceNil() bool {
-	return context == nil
-}
-
-func (context *storageContext) UseGasForStorage(tracedFunctionName string, loadCost uint64, value []byte, usedCache bool) {
+// UseGasForStorageLoad - single spot of gas consumption for storage load
+func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, valueLength int, usedCache bool) {
 	if !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
 		usedCache = false
 	}
@@ -325,6 +321,27 @@ func (context *storageContext) UseGasForStorage(tracedFunctionName string, loadC
 	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)
 
 	costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
-	gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
+	gasToUse := math.MulUint64(costPerByte, uint64(valueLength))
 	metering.UseGas(gasToUse)
+}
+
+// IsUseDifferentGasCostFalgSet - getter for flag
+func (context *storageContext) IsUseDifferentGasCostFalgSet() bool {
+	return context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
+}
+
+// DisableUseDifferentGasCostFalg - for tests
+func (context *storageContext) DisableUseDifferentGasCostFalg() {
+	context.flagUseDifferentGasCostForReadingCachedStorage.Unset()
+}
+
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
+	context.flagUseDifferentGasCostForReadingCachedStorage.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (context *storageContext) IsInterfaceNil() bool {
+	return context == nil
 }

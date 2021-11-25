@@ -1842,10 +1842,6 @@ func v1_4_storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32,
 // StorageStoreWithHost - storageStore with host instead of pointer context
 func StorageStoreWithHost(host arwen.VMHost, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	runtime := host.Runtime()
-	metering := host.Metering()
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
-	metering.UseGasAndAddTracedGas(storageStoreName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1864,6 +1860,10 @@ func StorageStoreWithHost(host arwen.VMHost, keyOffset int32, keyLength int32, d
 func StorageStoreWithTypedArgs(host arwen.VMHost, key []byte, data []byte) int32 {
 	runtime := host.Runtime()
 	storage := host.Storage()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageStore
+	metering.UseGasAndAddTracedGas(storageStoreName, gasToUse)
 
 	storageStatus, err := storage.SetStorage(key, data)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1885,10 +1885,10 @@ func v1_4_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength i
 	}
 
 	data, usedCache := storage.GetStorageUnmetered(key)
-	storage.UseGasForStorage(
+	storage.UseGasForStorageLoad(
 		storageLoadLengthName,
 		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		[]byte{} /* 0 data copy cost */, usedCache)
+		0, usedCache)
 
 	return int32(len(data))
 }
@@ -1934,10 +1934,10 @@ func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key 
 	storage := host.Storage()
 	metering := host.Metering()
 	data, usedCache := storage.GetStorageFromAddress(address, key)
-	storage.UseGasForStorage(
+	storage.UseGasForStorageLoad(
 		storageLoadFromAddressName,
 		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		data, usedCache)
+		len(data), usedCache)
 	return data
 }
 
@@ -1976,10 +1976,10 @@ func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) []byte {
 	storage := host.Storage()
 	metering := host.Metering()
 	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorage(
+	storage.UseGasForStorageLoad(
 		storageLoadName,
 		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		data, usedCache)
+		len(data), usedCache)
 	return data
 }
 
@@ -2036,10 +2036,10 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 
 	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
 	data, usedCache := storage.GetStorage(timeLockKey)
-	storage.UseGasForStorage(
+	storage.UseGasForStorageLoad(
 		getStorageLockName,
 		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		data, usedCache)
+		len(data), usedCache)
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
@@ -2233,10 +2233,10 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 
 	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data, usedCache := storage.GetStorageFromAddress(destination, key)
-	storage.UseGasForStorage(
+	storage.UseGasForStorageLoad(
 		getCurrentESDTNFTNonceName,
 		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		data, usedCache)
+		len(data), usedCache)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
 	return int64(nonce)

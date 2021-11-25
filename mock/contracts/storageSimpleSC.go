@@ -65,6 +65,7 @@ func SetStore(instanceMock *mock.InstanceMock, config interface{}) {
 		value := arguments[1]
 
 		elrondapi.StorageStoreWithTypedArgs(host, key, value)
+		elrondapi.StorageStoreWithTypedArgs(host, key, value)
 
 		return instance
 	})
