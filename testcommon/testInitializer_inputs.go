@@ -313,6 +313,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

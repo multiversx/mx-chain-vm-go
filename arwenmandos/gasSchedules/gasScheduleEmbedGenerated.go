@@ -1,4 +1,4 @@
-package gasschedules
+package gasschedules 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
@@ -71,6 +71,7 @@ const (
     GetNumArguments    = 100
     StorageStore       = 250000
     StorageLoad        = 100000
+    CachedStorageLoad  = 100
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -733,6 +734,7 @@ const (
     GetNumArguments    = 100
     StorageStore       = 75000
     StorageLoad        = 50000
+    CachedStorageLoad  = 100    
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750

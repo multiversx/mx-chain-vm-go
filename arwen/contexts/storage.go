@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var logStorage = logger.GetOrCreate("arwen/storage")
@@ -20,13 +21,18 @@ type storageContext struct {
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
 	arwenStorageProtectionEnabled bool
+
+	useDifferentGasCostForReadingCachedStorageEpoch uint32
+	flagUseDifferentGasCostForReadingCachedStorage  atomic.Flag
 }
 
 // NewStorageContext creates a new storageContext
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
+	epochNotifier vmcommon.EpochNotifier,
 	elrondProtectedKeyPrefix []byte,
+	useDifferentGasCostForReadingCachedStorageEpoch uint32,
 ) (*storageContext, error) {
 	if len(elrondProtectedKeyPrefix) == 0 {
 		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
@@ -37,7 +43,10 @@ func NewStorageContext(
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
 		arwenStorageProtectionEnabled: true,
+		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
+
+	epochNotifier.RegisterNotifyHandler(context)
 
 	return context, nil
 }
@@ -291,8 +300,19 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	return arwen.StorageModified, nil
 }
 
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
+	context.flagUseDifferentGasCostForReadingCachedStorage.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (context *storageContext) IsInterfaceNil() bool {
+	return context == nil
+}
+
 func (context *storageContext) UseGasForStorage(tracedFunctionName string, loadCost uint64, value []byte, usedCache bool) {
-	if context.host.UseDifferentGasCostForReadingCachedEnabled() {
+	if !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
 		usedCache = false
 	}
 
