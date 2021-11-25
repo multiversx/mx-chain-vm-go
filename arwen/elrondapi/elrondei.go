@@ -944,14 +944,33 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
-
 	key := []byte("ELRONDroleesdt" + string(tokenID))
 
-	data := storage.GetStorage(key)
+	data_buffer := storage.GetStorage(key)
 
-	return int64(len(data))
+	result := int64(0)
+	current_index := 0
+	value_len := len(data_buffer)
+
+	for current_index < value_len {
+		// first character before each role is a \n, so we skip it
+		current_index += 1
+
+		// next is the length of the role as string
+		role_len := int(data_buffer[current_index])
+		current_index += 1
+
+		// next is role's ASCII string representation
+		end_index := current_index + role_len
+		role_name := data_buffer[current_index:end_index]
+		current_index = end_index
+
+		result |= 1 << binary.LittleEndian.Uint64(role_name)
+	}
+
+	return result
 }
 
 //export v1_4_validateTokenIdentifier
@@ -966,7 +985,7 @@ func v1_4_validateTokenIdentifier(
 	}
 	tokenID, err := runtime.MemLoad(tokenIDOffset, tokenIDLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
+		return -1
 	}
 
 	// ticker must be all uppercase alphanumeric
