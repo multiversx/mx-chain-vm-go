@@ -199,3 +199,8 @@ func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
+
+// UseDifferentGasCostForReadingCachedEnabled mocked method
+func (host *VMHostMock) UseDifferentGasCostForReadingCachedEnabled() bool {
+	return true
+}

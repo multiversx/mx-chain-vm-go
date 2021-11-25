@@ -292,7 +292,10 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 }
 
 func (context *storageContext) UseGasForStorage(tracedFunctionName string, loadCost uint64, value []byte, usedCache bool) {
-	// TODO use flag
+	if context.host.UseDifferentGasCostForReadingCachedEnabled() {
+		usedCache = false
+	}
+
 	metering := context.host.Metering()
 	if usedCache {
 		metering.UseGasAndAddTracedGas(tracedFunctionName, metering.GasSchedule().ElrondAPICost.CachedStorageLoad)

@@ -297,3 +297,8 @@ func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
+
+// UseDifferentGasCostForReadingCachedEnabled mocked method
+func (vhs *VMHostStub) UseDifferentGasCostForReadingCachedEnabled() bool {
+	return true
+}
