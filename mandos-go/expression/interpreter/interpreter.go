@@ -216,19 +216,7 @@ func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]by
 
 	// signed numbers
 	if strRaw[0] == '-' || strRaw[0] == '+' {
-		numberBytes, err := ei.interpretUnsignedNumber(strRaw[1:])
-		if err != nil {
-			return []byte{}, err
-		}
-		number := big.NewInt(0).SetBytes(numberBytes)
-		if strRaw[0] == '-' {
-			number = number.Neg(number)
-		}
-		if targetWidth == 0 {
-			return twos.ToBytes(number), nil
-		}
-
-		return twos.ToBytesOfLength(number, targetWidth)
+		return ei.interpretNumberWithSign(strRaw, targetWidth)
 	}
 
 	// unsigned numbers
@@ -237,6 +225,22 @@ func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]by
 	}
 
 	return ei.interpretUnsignedNumberFixedWidth(strRaw, targetWidth)
+}
+
+func (ei *ExprInterpreter) interpretNumberWithSign(strRaw string, targetWidth int) ([]byte, error) {
+	numberBytes, err := ei.interpretUnsignedNumber(strRaw[1:])
+	if err != nil {
+		return []byte{}, err
+	}
+	number := big.NewInt(0).SetBytes(numberBytes)
+	if strRaw[0] == '-' {
+		number = number.Neg(number)
+	}
+	if targetWidth == 0 {
+		return twos.ToBytes(number), nil
+	}
+
+	return twos.ToBytesOfLength(number, targetWidth)
 }
 
 func (ei *ExprInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error) {
@@ -330,25 +334,37 @@ func (ei *ExprInterpreter) tryInterpretFixedWidth(strRaw string) (bool, []byte, 
 	}
 
 	if strings.HasPrefix(strRaw, biguintPrefix) {
-		biBytes, err := ei.interpretUnsignedNumber(strRaw[len(biguintPrefix):])
-		lengthBytes := big.NewInt(int64(len(biBytes))).Bytes()
-		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
-		return true, append(encodedLength, biBytes...), err
+		return ei.interpretExplicitBigUintNumber(strRaw)
 	}
 
 	if strings.HasPrefix(strRaw, bigFloatPrefix) {
-		bfBytes, err := ei.interpretFloatingPointNumber(strRaw[len(bigFloatPrefix):])
-		lengthBytes := big.NewInt(int64(len(bfBytes))).Bytes()
-		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
-		return true, append(encodedLength, bfBytes...), err
+		return ei.interpretExplicitFloatingPointNumber(strRaw)
 	}
 
 	if strings.HasPrefix(strRaw, nestedPrefix) {
-		nestedBytes, err := ei.InterpretString(strRaw[len(nestedPrefix):])
-		lengthBytes := big.NewInt(int64(len(nestedBytes))).Bytes()
-		encodedLength := twos.CopyAlignRight(lengthBytes, 4)
-		return true, append(encodedLength, nestedBytes...), err
+		return ei.interpretNestedBytes(strRaw)
 	}
 
 	return false, []byte{}, nil
+}
+
+func (ei *ExprInterpreter) interpretExplicitFloatingPointNumber(strRaw string) (bool, []byte, error) {
+	bfBytes, err := ei.interpretFloatingPointNumber(strRaw[len(bigFloatPrefix):])
+	lengthBytes := big.NewInt(int64(len(bfBytes))).Bytes()
+	encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+	return true, append(encodedLength, bfBytes...), err
+}
+
+func (ei *ExprInterpreter) interpretExplicitBigUintNumber(strRaw string) (bool, []byte, error) {
+	biBytes, err := ei.interpretUnsignedNumber(strRaw[len(biguintPrefix):])
+	lengthBytes := big.NewInt(int64(len(biBytes))).Bytes()
+	encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+	return true, append(encodedLength, biBytes...), err
+}
+
+func (ei *ExprInterpreter) interpretNestedBytes(strRaw string) (bool, []byte, error) {
+	nestedBytes, err := ei.InterpretString(strRaw[len(nestedPrefix):])
+	lengthBytes := big.NewInt(int64(len(nestedBytes))).Bytes()
+	encodedLength := twos.CopyAlignRight(lengthBytes, 4)
+	return true, append(encodedLength, nestedBytes...), err
 }
