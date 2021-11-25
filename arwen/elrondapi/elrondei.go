@@ -985,19 +985,19 @@ func validateToken(tokenID []byte) int32 {
 	// ticker must be all uppercase alphanumeric
 	tickerLen := tokenIDLen - additionalRandomCharsLength
 
-	for i := 0; i < tickerLen; i++ {
+	for i := 0; i < tickerLen-1; i++ {
 		if (tokenID[i] < 'A' || tokenID[i] > 'Z') && (tokenID[i] < '0' || tokenID[i] > '9') {
 			return 0
 		}
 	}
 
 	// dash char between the random chars and the ticker
-	if tokenID[tickerLen] != '-' {
+	if tokenID[tickerLen-1] != '-' {
 		return 0
 	}
 
 	// random chars are alphanumeric lowercase
-	for i := tickerLen + 1; i < tokenIDLen; i++ {
+	for i := tickerLen; i < tokenIDLen; i++ {
 		if (tokenID[i] < 'a' || tokenID[i] > 'z') && (tokenID[i] < '0' || tokenID[i] > '9') {
 			return 0
 		}
