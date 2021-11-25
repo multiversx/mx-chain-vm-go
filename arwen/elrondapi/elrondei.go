@@ -157,6 +157,8 @@ const (
 	getESDTNFTAttributeLengthName    = "getESDTNFTAttributeLength"
 	getESDTNFTURILengthName          = "getESDTNFTURILength"
 	getESDTTokenDataName             = "getESDTTokenData"
+	getESDTLocalRolesName            = "getESDTLocalRoles"
+	validateTokenIdentifierName      = "validateTokenIdentifier"
 	executeOnDestContextName         = "executeOnDestContext"
 	executeOnDestContextByCallerName = "executeOnDestContextByCaller"
 	executeOnSameContextName         = "executeOnSameContext"
@@ -940,7 +942,7 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(storageLoadLengthName, gasToUse)
+	metering.UseGasAndAddTracedGas(getESDTLocalRolesName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -973,26 +975,15 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	return result
 }
 
-//export v1_4_validateTokenIdentifier
-func v1_4_validateTokenIdentifier(
-	context unsafe.Pointer,
-	tokenIdHandle int32,
-) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-
-	tokenID, err := managedType.GetBytes(tokenIdHandle)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
+func validateToken(tokenID []byte) int32 {
 	tokenIDLen := len(tokenID)
-	// ticker must be all uppercase alphanumeric
-	tickerLen := tokenIDLen - additionalRandomCharsLength
 
 	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
 		return 0
 	}
+
+	// ticker must be all uppercase alphanumeric
+	tickerLen := tokenIDLen - additionalRandomCharsLength
 
 	for i := 0; i < tickerLen; i++ {
 		if (tokenID[i] < 'A' || tokenID[i] > 'Z') && (tokenID[i] < '0' || tokenID[i] > '9') {
@@ -1012,6 +1003,27 @@ func v1_4_validateTokenIdentifier(
 		}
 	}
 	return 1
+}
+
+//export v1_4_validateTokenIdentifier
+func v1_4_validateTokenIdentifier(
+	context unsafe.Pointer,
+	tokenIdHandle int32,
+) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGasAndAddTracedGas(validateTokenIdentifierName, gasToUse)
+
+	tokenID, err := managedType.GetBytes(tokenIdHandle)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return validateToken(tokenID)
+
 }
 
 //export v1_4_transferValue
