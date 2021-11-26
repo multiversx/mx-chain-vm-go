@@ -78,7 +78,6 @@ func validateToken(tokenID []byte) int32 {
 		return 0
 	}
 
-	// random chars are alphanumeric lowercase
 	if !randomCharsAreValid(tokenID[tickerLen:tokenIDLen]) {
 		return 0
 	}
@@ -103,7 +102,7 @@ func isTickerValid(tickerName []byte) bool {
 	return true
 }
 
-// ticker must be all uppercase alphanumeric
+// random chars are alphanumeric lowercase
 func randomCharsAreValid(chars []byte) bool {
 	if len(chars) != additionalRandomCharsLength {
 		return false
