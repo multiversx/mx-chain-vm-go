@@ -44,7 +44,7 @@ type runtimeContext struct {
 	errors          arwen.WrappableError
 
 	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagUseDifferentGasCostForReadingCachedStorage  atomic.Flag
+	flagEnableNewAPIMethods                         atomic.Flag
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -546,7 +546,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	if !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if !context.flagEnableNewAPIMethods.IsSet() {
 		err = context.checkBackwardCompatibility()
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
@@ -880,13 +880,13 @@ func (context *runtimeContext) GetAllErrors() error {
 
 // DisableUseDifferentGasCostFlag - for tests
 func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Unset()
+	context.flagEnableNewAPIMethods.Unset()
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
+	context.flagEnableNewAPIMethods.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagEnableNewAPIMethods.IsSet())
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
