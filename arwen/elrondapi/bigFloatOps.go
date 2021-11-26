@@ -177,9 +177,9 @@ func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHan
 		_ = arwen.WithFaultAndHost(host, arwen.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	minExponent, maxExponent := managedType.GetMinAndMaxExponent()
+
 	exponent := result.MantExp(nil)
-	if exponent > maxExponent || exponent < minExponent {
+	if managedType.BigFloatExpIsNotValid(exponent) {
 		_ = arwen.WithFaultAndHost(host, arwen.ErrExponentTooBigOrTooSmall, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
@@ -538,15 +538,14 @@ func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error)
 	result := big.NewFloat(1)
 	result.SetPrec(base.Prec())
 	managedType := arwen.GetManagedTypesContext(context)
-	minExponent, maxExponent := managedType.GetMinAndMaxExponent()
 
 	for i := 0; i < int(exp); i++ {
 		resultMul, err := arwenMath.MulBigFloat(result, base)
-		exponent := resultMul.MantExp(nil)
 		if err != nil {
 			return nil, err
 		}
-		if exponent > maxExponent && exponent < minExponent {
+		exponent := resultMul.MantExp(nil)
+		if managedType.BigFloatExpIsNotValid(exponent) {
 			return nil, arwen.ErrExponentTooBigOrTooSmall
 		}
 		result.Set(resultMul)

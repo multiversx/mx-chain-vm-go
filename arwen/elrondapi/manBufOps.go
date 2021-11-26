@@ -517,6 +517,11 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 		return 1
 	}
 
+	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
+		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return 1
+	}
+
 	value, err := managedType.GetBigFloatOrCreate(bigFloatHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
@@ -525,10 +530,6 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	bigFloat := new(big.Float)
 	err = bigFloat.GobDecode(managedBuffer)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
-		return 1
-	}
-	if bigFloat.Prec() != managedType.GetBigFloatPrecision() {
-		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
 	}
 	if bigFloat.IsInf() {

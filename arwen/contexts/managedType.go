@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"crypto/elliptic"
 	"io"
 	basicMath "math"
@@ -15,6 +16,9 @@ const bigFloatPrecision = 53
 const encodedBigFloatMaxByteLen = 18
 const bigFloatMaxExponent = 65025
 const bigFloatMinExponent = -65025
+
+var positiveEncodedBigFloatPrefix = [...]byte{1, 10, 0, 0, 0, 53}
+var negativeEncodedBigFloatPrefix = [...]byte{1, 11, 0, 0, 0, 53}
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -261,12 +265,20 @@ func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
 
 // BIG FLOAT
 
-func (context *managedTypesContext) GetBigFloatPrecision() uint {
-	return bigFloatPrecision
+func (context *managedTypesContext) BigFloatPrecIsNotValid(precision uint) bool {
+	return precision != bigFloatPrecision
 }
 
-func (context *managedTypesContext) GetMinAndMaxExponent() (int, int) {
-	return bigFloatMinExponent, bigFloatMaxExponent
+func (context *managedTypesContext) BigFloatExpIsNotValid(exponent int) bool {
+	return exponent < bigFloatMinExponent || exponent > bigFloatMaxExponent
+}
+
+func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool {
+	return !bytes.Equal(encodedBigFloat[:6], positiveEncodedBigFloatPrefix[:]) && !bytes.Equal(encodedBigFloat[:6], negativeEncodedBigFloatPrefix[:])
+}
+
+func (context *managedTypesContext) GetValidEncodedBigFloatPrefixes() ([]byte, []byte) {
+	return positiveEncodedBigFloatPrefix[:], negativeEncodedBigFloatPrefix[:]
 }
 
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
