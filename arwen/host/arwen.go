@@ -151,6 +151,8 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		hostParameters.EpochNotifier,
+		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	)
 	if err != nil {
 		return nil, err

@@ -11,8 +11,10 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -40,6 +42,9 @@ type runtimeContext struct {
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
 	errors          arwen.WrappableError
+
+	useDifferentGasCostForReadingCachedStorageEpoch uint32
+	flagEnableNewAPIMethods                         atomic.Flag
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -47,6 +52,8 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	epochNotifier vmcommon.EpochNotifier,
+	useDifferentGasCostForReadingCachedStorageEpoch uint32,
 ) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
 
@@ -57,7 +64,13 @@ func NewRuntimeContext(
 		instanceStack: make([]wasmer.InstanceHandler, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
+		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
+
+	if check.IfNil(epochNotifier) {
+		return nil, arwen.ErrNilEpochNotifier
+	}
+	epochNotifier.RegisterNotifyHandler(context)
 
 	context.instanceBuilder = &wasmerInstanceBuilder{}
 	context.InitState()
@@ -533,7 +546,29 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
+	if !context.flagEnableNewAPIMethods.IsSet() {
+		err = context.checkBackwardCompatibility()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
+
+	return nil
+}
+
+func (context *runtimeContext) checkBackwardCompatibility() error {
+	if context.instance.IsFunctionImported("mBufferSetByteSlice") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("getESDTLocalRoles") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("validateTokenIdentifier") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
@@ -838,11 +873,23 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 	context.errors = context.errors.WrapWithError(err, otherInfo...)
 }
 
+// GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
 
-// SetWarmInstance overwrites the warm Wasmer instance with the provided one.
-// TODO remove after implementing proper mocking of Wasmer instances; this is
-// used for tests only
-// func (context *runtimeContext) SetWarmInstance(address []byte, instanc e
+// DisableUseDifferentGasCostFlag - for tests
+func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
+	context.flagEnableNewAPIMethods.Unset()
+}
+
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
+	context.flagEnableNewAPIMethods.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagEnableNewAPIMethods.IsSet())
+}
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (context *runtimeContext) IsInterfaceNil() bool {
+	return context == nil
+}

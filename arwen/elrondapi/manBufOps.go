@@ -16,6 +16,7 @@ package elrondapi
 // extern int32_t	v1_4_mBufferEq(void* context, int32_t mBufferHandle1, int32_t mBufferHandle2);
 //
 // extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t v1_4_mBufferSetByteSlice(void* context, int32_t mBufferHandle, int32_t startingPosition, int32_t dataLength, int32_t dataOffset);
 // extern int32_t	v1_4_mBufferAppend(void* context, int32_t accumulatorHandle, int32_t dataHandle);
 // extern int32_t	v1_4_mBufferAppendBytes(void* context, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
 //
@@ -83,6 +84,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferSetBytes", v1_4_mBufferSetBytes, C.v1_4_mBufferSetBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferSetByteSlice", v1_4_mBufferSetByteSlice, C.v1_4_mBufferSetByteSlice)
 	if err != nil {
 		return nil, err
 	}
@@ -363,6 +369,43 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 		metering.UseAndTraceGas(gasToUse)
 	}
+
+	return 0
+}
+
+//export v1_4_mBufferSetByteSlice
+func v1_4_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	metering.StartGasTracing(mBufferGetByteSliceName)
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
+	metering.UseAndTraceGas(gasToUse)
+
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(data)
+
+	bufferBytes, err := managedType.GetBytes(mBufferHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	if startingPosition < 0 || dataLength < 0 || int(startingPosition+dataLength) > len(bufferBytes) {
+		// does not fail execution if slice exceeds bounds
+		return 1
+	}
+
+	start := int(startingPosition)
+	length := int(dataLength)
+	destination := bufferBytes[start : start+length]
+
+	copy(destination, data)
+
+	managedType.SetBytes(mBufferHandle, bufferBytes)
 
 	return 0
 }
