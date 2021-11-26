@@ -94,7 +94,6 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
 
-	// append accounts
 	for _, mandosAccount := range step.Accounts {
 		worldAccount, err := convertAccount(mandosAccount, ae.World)
 		if err != nil {
@@ -105,7 +104,12 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 			return err
 		}
 
-		ae.World.AcctMap.PutAccount(worldAccount)
+		existingAccount := ae.World.AcctMap.GetAccount(worldAccount.Address)
+		if existingAccount != nil {
+			ae.World.AcctMap.UpdateAccountStorage(worldAccount)
+		} else {
+			ae.World.AcctMap.PutAccount(worldAccount)
+		}
 	}
 
 	// replace block info

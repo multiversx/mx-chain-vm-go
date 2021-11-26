@@ -52,6 +52,15 @@ func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, co
 	return newAccount
 }
 
+// UpdateAccountStorage updates an account storage.
+func (am AccountMap) UpdateAccountStorage(account *Account) {
+	if existingAccount, ok := am[string(account.Address)]; ok {
+		for k, v := range account.Storage {
+			existingAccount.Storage[k] = v
+		}
+	}
+}
+
 // PutAccount inserts account based on address.
 func (am AccountMap) PutAccount(account *Account) {
 	am[string(account.Address)] = account
