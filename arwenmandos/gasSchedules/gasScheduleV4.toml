@@ -61,6 +61,7 @@
     GetNumArguments    = 100
     StorageStore       = 75000
     StorageLoad        = 50000
+    CachedStorageLoad  = 100    
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750

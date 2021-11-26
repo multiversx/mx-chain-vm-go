@@ -166,7 +166,13 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.storageContext, err = contexts.NewStorageContext(host, blockChainHook, hostParameters.ElrondProtectedKeyPrefix)
+	host.storageContext, err = contexts.NewStorageContext(
+		host,
+		blockChainHook,
+		hostParameters.EpochNotifier,
+		hostParameters.ElrondProtectedKeyPrefix,
+		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+	)
 	if err != nil {
 		return nil, err
 	}
