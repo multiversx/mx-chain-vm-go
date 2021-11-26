@@ -8,6 +8,7 @@ package cryptoapi
 //
 // extern int32_t v1_4_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t v1_4_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_4_managedKeccak256(void *context, int32_t inputHanle, int32_t outputHandle);
 // extern int32_t v1_4_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t v1_4_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
 // extern int32_t v1_4_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
@@ -83,6 +84,11 @@ func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("keccak256", v1_4_keccak256, C.v1_4_keccak256)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedKeccak256", v1_4_managedKeccak256, C.v1_4_managedKeccak256)
 	if err != nil {
 		return nil, err
 	}
@@ -241,6 +247,31 @@ func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resu
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
+
+	return 0
+}
+
+//export v1_4_managedKeccak256
+func v1_4_managedKeccak256(context unsafe.Pointer, inputHandle, outputHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	metering.UseGasAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.Keccak256)
+
+	inputBytes, err := managedType.GetBytes(inputHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(inputBytes)
+
+	resultBytes, err := crypto.Keccak256(inputBytes)
+	if err != nil {
+		return 1
+	}
+
+	managedType.SetBytes(outputHandle, resultBytes)
 
 	return 0
 }
