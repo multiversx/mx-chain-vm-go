@@ -867,8 +867,14 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 	context.errors = context.errors.WrapWithError(err, otherInfo...)
 }
 
+// GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
+}
+
+// DisableUseDifferentGasCostFlag - for tests
+func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
+	context.flagUseDifferentGasCostForReadingCachedStorage.Unset()
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed

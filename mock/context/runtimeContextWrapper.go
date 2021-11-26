@@ -648,3 +648,8 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 	contextWrapper.ClearStateStackFunc()
 }
+
+// DisableUseDifferentGasCostFlag calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
+	contextWrapper.DisableUseDifferentGasCostFlag()
+}

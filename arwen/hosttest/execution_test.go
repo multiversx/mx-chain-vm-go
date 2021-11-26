@@ -879,24 +879,62 @@ func TestExecution_ManagedBuffers(t *testing.T) {
 		})
 }
 
+func buildRandomizer(host arwen.VMHost) io.Reader {
+	// building the randomizer
+	blockchainContext := host.Blockchain()
+	previousRandomSeed := blockchainContext.LastRandomSeed()
+	currentRandomSeed := blockchainContext.CurrentRandomSeed()
+	txHash := host.Runtime().GetCurrentTxHash()
+
+	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
+	randomSeed := append(blocksRandomSeed, txHash...)
+	randReader := arwenMath.NewSeedRandReader(randomSeed)
+	return randReader
+}
+
 func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
+	// mByteSetByteSlice not yet enabled
+	runTestMBufferSetByteSlice_Deploy(t, false, vmcommon.ContractInvalid)
+	runTestMBufferSetByteSlice_Deploy(t, true, vmcommon.Ok)
+
 	// Correct copying from "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" over "abcdefghijklmnopqrstuvwxyz"
-	runTestMBufferSetByteSlice(t, 0, 4, vmcommon.Ok, []byte("ABCDefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, 0, 8, vmcommon.Ok, []byte("ABCDEFGHijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, 18, 8, vmcommon.Ok, []byte("abcdefghijklmnopqrABCDEFGH"))
-	runTestMBufferSetByteSlice(t, 10, 12, vmcommon.Ok, []byte("abcdefghijABCDEFGHIJKLwxyz"))
-	runTestMBufferSetByteSlice(t, 25, 1, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyA"))
-	runTestMBufferSetByteSlice(t, 0, 26, vmcommon.Ok, []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+	runTestMBufferSetByteSlice(t, true, 0, 4, vmcommon.Ok, []byte("ABCDefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 0, 8, vmcommon.Ok, []byte("ABCDEFGHijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 18, 8, vmcommon.Ok, []byte("abcdefghijklmnopqrABCDEFGH"))
+	runTestMBufferSetByteSlice(t, true, 10, 12, vmcommon.Ok, []byte("abcdefghijABCDEFGHIJKLwxyz"))
+	runTestMBufferSetByteSlice(t, true, 25, 1, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyA"))
+	runTestMBufferSetByteSlice(t, true, 0, 26, vmcommon.Ok, []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 
 	// Bounds exceeded, source remains unchanged lowercase.
-	runTestMBufferSetByteSlice(t, 18, 9, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, -1, 2, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, 25, 2, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
-	runTestMBufferSetByteSlice(t, 0, 27, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 18, 9, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, -1, 2, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 25, 2, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
+	runTestMBufferSetByteSlice(t, true, 0, 27, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
+}
+
+func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
+	input := test.CreateTestContractCreateInputBuilder().
+		WithCallValue(1000).
+		WithGasProvided(100_000).
+		WithContractCode(test.GetTestSCCode("managed-buffers", "../../")).
+		Build()
+
+	test.BuildInstanceCreatorTest(t).
+		WithInput(input).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			if !enabled {
+				host.Runtime().DisableUseDifferentGasCostFlag()
+			}
+		}).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ReturnCode(retCode)
+		})
+
 }
 
 func runTestMBufferSetByteSlice(
 	tb testing.TB,
+	enabled bool,
 	startPos int,
 	copyLen int,
 	retCode vmcommon.ReturnCode,
@@ -911,25 +949,17 @@ func runTestMBufferSetByteSlice(
 			WithFunction("mBufferSetByteSliceTest").
 			WithArguments([]byte{byte(startPos)}, []byte{byte(copyLen)}).
 			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			if !enabled {
+				host.Runtime().DisableUseDifferentGasCostFlag()
+			}
+		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(retCode)
 			if retCode == vmcommon.Ok {
 				verify.ReturnData(expectedReturn)
 			}
 		})
-}
-
-func buildRandomizer(host arwen.VMHost) io.Reader {
-	// building the randomizer
-	blockchainContext := host.Blockchain()
-	previousRandomSeed := blockchainContext.LastRandomSeed()
-	currentRandomSeed := blockchainContext.CurrentRandomSeed()
-	txHash := host.Runtime().GetCurrentTxHash()
-
-	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
-	randomSeed := append(blocksRandomSeed, txHash...)
-	randReader := arwenMath.NewSeedRandReader(randomSeed)
-	return randReader
 }
 
 func TestExecution_Call_GasConsumptionOnLocals(t *testing.T) {
