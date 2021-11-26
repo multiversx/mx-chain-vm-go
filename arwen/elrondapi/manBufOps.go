@@ -238,7 +238,7 @@ func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOff
 	}
 
 	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFalgSet() {
+	if !storage.IsUseDifferentGasCostFlagSet() {
 		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(mBufferBytes)))
 		metering.UseAndTraceGas(gasToUse)
 	}
@@ -274,7 +274,7 @@ func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, starti
 	}
 
 	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFalgSet() {
+	if !storage.IsUseDifferentGasCostFlagSet() {
 		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
 		metering.UseAndTraceGas(gasToUse)
 	}
@@ -359,7 +359,7 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 	managedType.SetBytes(mBufferHandle, data)
 
 	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFalgSet() {
+	if !storage.IsUseDifferentGasCostFlagSet() {
 		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 		metering.UseAndTraceGas(gasToUse)
 	}
@@ -390,7 +390,7 @@ func v1_4_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHan
 	}
 
 	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFalgSet() {
+	if !storage.IsUseDifferentGasCostFlagSet() {
 		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(dataBufferBytes)))
 		metering.UseAndTraceGas(gasToUse)
 	}

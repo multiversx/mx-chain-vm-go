@@ -287,8 +287,8 @@ type StorageContext interface {
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, valueLength int, usedCache bool)
-	DisableUseDifferentGasCostFalg()
-	IsUseDifferentGasCostFalgSet() bool
+	DisableUseDifferentGasCostFlag()
+	IsUseDifferentGasCostFlagSet() bool
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo

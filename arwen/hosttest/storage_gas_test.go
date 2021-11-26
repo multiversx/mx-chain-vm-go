@@ -10,27 +10,41 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-func TestGasUsed_LoadStorage_FlagEnabled(t *testing.T) {
-	loadStorage(t, true)
+var smallKey = []byte("testKey")
+var bigKey = make([]byte, 50)
+
+func TestGasUsed_LoadStorage_SmallKey_FlagEnabled(t *testing.T) {
+	loadStorage(t, smallKey, true)
 }
 
-func TestGasUsed_LoadStorage_FlagDisabled(t *testing.T) {
-	loadStorage(t, false)
+func TestGasUsed_LoadStorage_SmallKey_FlagDisabled(t *testing.T) {
+	loadStorage(t, smallKey, false)
 }
 
-func loadStorage(t *testing.T, flagEnabled bool) {
-	key := []byte("testKey")
+func TestGasUsed_LoadStorage_BigKey_FlagEnabled(t *testing.T) {
+	loadStorage(t, bigKey, true)
+}
+
+func TestGasUsed_LoadStorage_BigKey_FlagDisabled(t *testing.T) {
+	loadStorage(t, bigKey, false)
+}
+
+func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 	value := []byte("testValue")
 
 	storageLoadGas := uint64(10)
 	cachedStorageLoadGas := uint64(5)
 	dataCopyGas := uint64(1)
 
+	extraBytesForKey := len(key) - arwen.AddressLen
+	if extraBytesForKey < 0 {
+		extraBytesForKey = 0
+	}
 	var expectedUsedGas uint64
 	if flagEnabled {
-		expectedUsedGas = storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas
+		expectedUsedGas = storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
 	} else {
-		expectedUsedGas = 2 * (storageLoadGas + uint64(len(value))*dataCopyGas)
+		expectedUsedGas = 2 * (storageLoadGas + uint64(len(value))*dataCopyGas + uint64(extraBytesForKey)*dataCopyGas)
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -53,7 +67,7 @@ func loadStorage(t *testing.T, flagEnabled bool) {
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
 			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFalg()
+				host.Storage().DisableUseDifferentGasCostFlag()
 			}
 
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
@@ -119,7 +133,7 @@ func loadStorageFromAddress(t *testing.T, flagEnabled bool) {
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
 
 			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFalg()
+				host.Storage().DisableUseDifferentGasCostFlag()
 			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -180,7 +194,7 @@ func setStorage(t *testing.T, flagEnabled bool) {
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
 
 			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFalg()
+				host.Storage().DisableUseDifferentGasCostFlag()
 			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
