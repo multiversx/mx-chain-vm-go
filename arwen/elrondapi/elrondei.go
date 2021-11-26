@@ -50,6 +50,8 @@ package elrondapi
 // extern int32_t	v1_4_getESDTNFTAttributeLength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTNFTURILength(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t	v1_4_getESDTTokenData(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t valueOffset, int32_t propertiesOffset, int32_t hashOffset, int32_t nameOffset, int32_t attributesOffset, int32_t creatorOffset, int32_t royaltiesOffset, int32_t urisOffset);
+// extern long long	v1_4_getESDTLocalRoles(void *context, int32_t tokenIdHandle);
+// extern int32_t	v1_4_validateTokenIdentifier(void *context, int32_t tokenIdHandle);
 //
 // extern int32_t	v1_4_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_4_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -104,6 +106,12 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
+const tickerMinLength = 3
+const tickerMaxLength = 10
+const additionalRandomCharsLength = 6
+const identifierMinLength = tickerMinLength + additionalRandomCharsLength
+const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength
+
 const (
 	getSCAddressName                 = "getSCAddress"
 	getOwnerAddressName              = "getOwnerAddress"
@@ -149,6 +157,8 @@ const (
 	getESDTNFTAttributeLengthName    = "getESDTNFTAttributeLength"
 	getESDTNFTURILengthName          = "getESDTNFTURILength"
 	getESDTTokenDataName             = "getESDTTokenData"
+	getESDTLocalRolesName            = "getESDTLocalRoles"
+	validateTokenIdentifierName      = "validateTokenIdentifier"
 	executeOnDestContextName         = "executeOnDestContext"
 	executeOnDestContextByCallerName = "executeOnDestContextByCaller"
 	executeOnSameContextName         = "executeOnSameContext"
@@ -397,6 +407,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
+	imports, err = imports.Append("validateTokenIdentifier", v1_4_validateTokenIdentifier, C.v1_4_validateTokenIdentifier)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = imports.Append("writeLog", v1_4_writeLog, C.v1_4_writeLog)
 	if err != nil {
 		return nil, err
@@ -543,6 +558,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getESDTTokenData", v1_4_getESDTTokenData, C.v1_4_getESDTTokenData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("getESDTLocalRoles", v1_4_getESDTLocalRoles, C.v1_4_getESDTLocalRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -912,6 +932,98 @@ func v1_4_getESDTTokenData(
 		}
 	}
 	return int32(len(esdtData.Value.Bytes()))
+}
+
+//export v1_4_getESDTLocalRoles
+func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	storage := arwen.GetStorageContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGasAndAddTracedGas(getESDTLocalRolesName, gasToUse)
+
+	tokenID, err := managedType.GetBytes(tokenIdHandle)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	key := []byte("ELRONDroleesdt" + string(tokenID))
+
+	data_buffer := storage.GetStorage(key)
+
+	result := int64(0)
+	current_index := 0
+	value_len := len(data_buffer)
+
+	for current_index < value_len {
+		// first character before each role is a \n, so we skip it
+		current_index += 1
+
+		// next is the length of the role as string
+		role_len := int(data_buffer[current_index])
+		current_index += 1
+
+		// next is role's ASCII string representation
+		end_index := current_index + role_len
+		role_name := data_buffer[current_index:end_index]
+		current_index = end_index
+
+		result |= 1 << binary.LittleEndian.Uint64(role_name)
+	}
+
+	return result
+}
+
+func validateToken(tokenID []byte) int32 {
+	tokenIDLen := len(tokenID)
+
+	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
+		return 0
+	}
+
+	// ticker must be all uppercase alphanumeric
+	tickerLen := tokenIDLen - additionalRandomCharsLength
+
+	for i := 0; i < tickerLen-1; i++ {
+		if (tokenID[i] < 'A' || tokenID[i] > 'Z') && (tokenID[i] < '0' || tokenID[i] > '9') {
+			return 0
+		}
+	}
+
+	// dash char between the random chars and the ticker
+	if tokenID[tickerLen-1] != '-' {
+		return 0
+	}
+
+	// random chars are alphanumeric lowercase
+	for i := tickerLen; i < tokenIDLen; i++ {
+		if (tokenID[i] < 'a' || tokenID[i] > 'z') && (tokenID[i] < '0' || tokenID[i] > '9') {
+			return 0
+		}
+	}
+	return 1
+}
+
+//export v1_4_validateTokenIdentifier
+func v1_4_validateTokenIdentifier(
+	context unsafe.Pointer,
+	tokenIdHandle int32,
+) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
+	metering.UseGasAndAddTracedGas(validateTokenIdentifierName, gasToUse)
+
+	tokenID, err := managedType.GetBytes(tokenIdHandle)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	return validateToken(tokenID)
+
 }
 
 //export v1_4_transferValue
