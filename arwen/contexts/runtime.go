@@ -563,6 +563,12 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 	if context.instance.IsFunctionImported("mBufferSetByteSlice") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("getESDTLocalRoles") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("validateTokenIdentifier") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
