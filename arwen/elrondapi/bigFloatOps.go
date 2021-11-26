@@ -23,7 +23,7 @@ package elrondapi
 // extern void		v1_4_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
 //
-// extern void		v1_4_bigFloatFloor(void* context,int32_t destBigIntHandle, int32_t opHandle);
+// extern void		v1_4_bigFloatFloor(void* context, int32_t destBigIntHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatCeil(void* context, int32_t destBigIntHandle, int32_t opHandle);
 // extern void		v1_4_bigFloatTruncate(void* context, int32_t destBigIntHandle, int32_t opHandle);
 //
