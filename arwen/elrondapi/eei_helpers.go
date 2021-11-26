@@ -6,6 +6,12 @@ const esdtRoleNFTCreate = "ESDTRoleNFTCreate"
 const esdtRoleNFTAddQuantity = "ESDTRoleNFTAddQuantity"
 const esdtRoleNFTBurn = "ESDTRoleNFTBurn"
 
+const tickerMinLength = 3
+const tickerMaxLength = 10
+const additionalRandomCharsLength = 6
+const identifierMinLength = tickerMinLength + additionalRandomCharsLength
+const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength
+
 const (
 	RoleMint = 1 << iota
 	RoleBurn
@@ -57,18 +63,14 @@ func getESDTRoles(data_buffer []byte) int64 {
 
 func validateToken(tokenID []byte) int32 {
 	tokenIDLen := len(tokenID)
-
 	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
 		return 0
 	}
 
-	// ticker must be all uppercase alphanumeric
 	tickerLen := tokenIDLen - additionalRandomCharsLength
 
-	for i := 0; i < tickerLen-1; i++ {
-		if (tokenID[i] < 'A' || tokenID[i] > 'Z') && (tokenID[i] < '0' || tokenID[i] > '9') {
-			return 0
-		}
+	if !isTickerValid(tokenID[0 : tickerLen-1]) {
+		return 0
 	}
 
 	// dash char between the random chars and the ticker
@@ -77,10 +79,43 @@ func validateToken(tokenID []byte) int32 {
 	}
 
 	// random chars are alphanumeric lowercase
-	for i := tickerLen; i < tokenIDLen; i++ {
-		if (tokenID[i] < 'a' || tokenID[i] > 'z') && (tokenID[i] < '0' || tokenID[i] > '9') {
-			return 0
+	if !randomCharsAreValid(tokenID[tickerLen:tokenIDLen]) {
+		return 0
+	}
+
+	return 1
+}
+
+// ticker must be all uppercase alphanumeric
+func isTickerValid(tickerName []byte) bool {
+	if len(tickerName) < tickerMinLength || len(tickerName) > tickerMaxLength {
+		return false
+	}
+	for _, ch := range tickerName {
+		isBigCharacter := ch >= 'A' && ch <= 'Z'
+		isNumber := ch >= '0' && ch <= '9'
+		isReadable := isBigCharacter || isNumber
+		if !isReadable {
+			return false
 		}
 	}
-	return 1
+
+	return true
+}
+
+// ticker must be all uppercase alphanumeric
+func randomCharsAreValid(chars []byte) bool {
+	if len(chars) != additionalRandomCharsLength {
+		return false
+	}
+	for _, ch := range chars {
+		isSmallCharacter := ch >= 'a' && ch <= 'f'
+		isNumber := ch >= '0' && ch <= '9'
+		isReadable := isSmallCharacter || isNumber
+		if !isReadable {
+			return false
+		}
+	}
+
+	return true
 }

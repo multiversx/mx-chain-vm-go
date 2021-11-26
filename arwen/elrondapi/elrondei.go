@@ -106,12 +106,6 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
-const tickerMinLength = 3
-const tickerMaxLength = 10
-const additionalRandomCharsLength = 6
-const identifierMinLength = tickerMinLength + additionalRandomCharsLength
-const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength
-
 const (
 	getSCAddressName                 = "getSCAddress"
 	getOwnerAddressName              = "getOwnerAddress"
