@@ -13,6 +13,10 @@ import (
 var smallKey = []byte("testKey")
 var bigKey = make([]byte, 50)
 
+const storageLoadGas = uint64(10)
+const cachedStorageLoadGas = uint64(5)
+const dataCopyGas = uint64(1)
+
 func TestGasUsed_LoadStorage_SmallKey_FlagEnabled(t *testing.T) {
 	loadStorage(t, smallKey, true)
 }
@@ -32,20 +36,7 @@ func TestGasUsed_LoadStorage_BigKey_FlagDisabled(t *testing.T) {
 func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 	value := []byte("testValue")
 
-	storageLoadGas := uint64(10)
-	cachedStorageLoadGas := uint64(5)
-	dataCopyGas := uint64(1)
-
-	extraBytesForKey := len(key) - arwen.AddressLen
-	if extraBytesForKey < 0 {
-		extraBytesForKey = 0
-	}
-	var expectedUsedGas uint64
-	if flagEnabled {
-		expectedUsedGas = storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
-	} else {
-		expectedUsedGas = 2 * (storageLoadGas + uint64(len(value))*dataCopyGas + uint64(extraBytesForKey)*dataCopyGas)
-	}
+	expectedUsedGas := computeExpectedGasForGetStorage(key, value, flagEnabled)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -82,28 +73,26 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 		})
 }
 
-func TestGasUsed_LoadStorageFromAddress_FlagEnabled(t *testing.T) {
-	loadStorageFromAddress(t, true)
+func TestGasUsed_LoadStorageFromAddress_SmallKey_FlagEnabled(t *testing.T) {
+	loadStorageFromAddress(t, smallKey, true)
 }
 
-func TestGasUsed_LoadStorageFromAddress_FlagDisabled(t *testing.T) {
-	loadStorageFromAddress(t, false)
+func TestGasUsed_LoadStorageFromAddress_SmallKey_FlagDisabled(t *testing.T) {
+	loadStorageFromAddress(t, smallKey, false)
 }
 
-func loadStorageFromAddress(t *testing.T, flagEnabled bool) {
-	key := []byte("testKey")
+func TestGasUsed_LoadStorageFromAddress_BigKey_FlagEnabled(t *testing.T) {
+	loadStorageFromAddress(t, bigKey, true)
+}
+
+func TestGasUsed_LoadStorageFromAddress_BigKey_FlagDisabled(t *testing.T) {
+	loadStorageFromAddress(t, bigKey, false)
+}
+
+func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 	value := []byte("testValue")
 
-	storageLoadGas := uint64(10)
-	cachedStorageLoadGas := uint64(5)
-	dataCopyGas := uint64(1)
-
-	var expectedUsedGas uint64
-	if flagEnabled {
-		expectedUsedGas = storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas
-	} else {
-		expectedUsedGas = 2 * (storageLoadGas + uint64(len(value))*dataCopyGas)
-	}
+	expectedUsedGas := computeExpectedGasForGetStorage(key, value, flagEnabled)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -143,6 +132,20 @@ func loadStorageFromAddress(t *testing.T, flagEnabled bool) {
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				ReturnData(value)
 		})
+}
+
+func computeExpectedGasForGetStorage(key []byte, value []byte, flagEnabled bool) uint64 {
+	extraBytesForKey := len(key) - arwen.AddressLen
+	if extraBytesForKey < 0 {
+		extraBytesForKey = 0
+	}
+	var expectedUsedGas uint64
+	if flagEnabled {
+		expectedUsedGas = storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
+	} else {
+		expectedUsedGas = 2 * (storageLoadGas + uint64(len(value))*dataCopyGas + uint64(extraBytesForKey)*dataCopyGas)
+	}
+	return expectedUsedGas
 }
 
 func TestGasUsed_SetStorage_FlagEnabled(t *testing.T) {
