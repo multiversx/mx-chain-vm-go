@@ -107,13 +107,14 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
 	metering := context.host.Metering()
 
+	value, usedCache := context.GetStorageUnmetered(key)
+
 	extraBytes := len(key) - arwen.AddressLen
-	if extraBytes > 0 {
+	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
+	if extraBytes > 0 && (!gasFlagSet || (gasFlagSet && !usedCache)) {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		metering.UseGas(gasToUse)
 	}
-
-	value, usedCache := context.GetStorageUnmetered(key)
 
 	logStorage.Trace("get", "key", key, "value", value)
 
