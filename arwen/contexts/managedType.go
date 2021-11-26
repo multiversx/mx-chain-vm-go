@@ -332,8 +332,9 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 	} else {
 		exponent1 := value1.MantExp(nil)
 		exponent2 := value2.MantExp(nil)
-		if exponent1 > bigFloatMaxExponent || exponent2 > bigFloatMaxExponent || exponent1 < bigFloatMinExponent || exponent2 < bigFloatMinExponent {
+		if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
 			return nil, nil, arwen.ErrExponentTooBigOrTooSmall
+
 		}
 	}
 	return value1, value2, nil
