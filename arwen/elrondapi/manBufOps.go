@@ -399,9 +399,11 @@ func v1_4_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, start
 		return 1
 	}
 
-	for i, value := range data {
-		bufferBytes[int(startingPosition)+i] = value
-	}
+	start := int(startingPosition)
+	length := int(dataLength)
+	destination := bufferBytes[start : start+length]
+
+	copy(destination, data)
 
 	managedType.SetBytes(mBufferHandle, bufferBytes)
 
