@@ -390,7 +390,6 @@ func v1_4_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, start
 		return 1
 	}
 
-	//TODO this loop should be faster than append() on slices, but needs benchmarking
 	for i, value := range data {
 		bufferBytes[int(startingPosition)+i] = value
 	}
