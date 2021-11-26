@@ -171,7 +171,6 @@ type ManagedBufferAPICost struct {
 	MBufferGetByteSlice       uint64
 	MBufferCopyByteSlice      uint64
 	MBufferSetBytes           uint64
-	MBufferSetByteSlice       uint64
 	MBufferAppend             uint64
 	MBufferAppendBytes        uint64
 	MBufferToBigIntUnsigned   uint64

@@ -941,16 +941,17 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(getESDTLocalRolesName, gasToUse)
-
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	key := []byte("ELRONDroleesdt" + string(tokenID))
 
-	data_buffer := storage.GetStorage(key)
+	data_buffer, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorageLoad(
+		storageLoadName,
+		metering.GasSchedule().ElrondAPICost.StorageLoad,
+		len(data_buffer), usedCache)
 
 	result := int64(0)
 	current_index := 0

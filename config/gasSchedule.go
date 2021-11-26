@@ -337,7 +337,6 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap["MBufferGetByteSlice"] = value
 	gasMap["MBufferCopyByteSlice"] = value
 	gasMap["MBufferSetBytes"] = value
-	gasMap["MBufferSetByteSlice"] = value
 	gasMap["MBufferAppend"] = value
 	gasMap["MBufferAppendBytes"] = value
 	gasMap["MBufferToBigIntUnsigned"] = value

@@ -146,7 +146,6 @@
     MBufferGetByteSlice          = 10
     MBufferCopyByteSlice         = 10
     MBufferSetBytes              = 10
-    MBufferSetByteSlice          = 10
     MBufferAppend                = 10
     MBufferAppendBytes           = 10
     MBufferToBigIntUnsigned      = 10

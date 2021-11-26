@@ -380,7 +380,7 @@ func v1_4_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, start
 	metering := arwen.GetMeteringContext(context)
 	metering.StartGasTracing(mBufferGetByteSliceName)
 
-	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetByteSlice
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
 	metering.UseAndTraceGas(gasToUse)
 
 	data, err := runtime.MemLoad(dataOffset, dataLength)
