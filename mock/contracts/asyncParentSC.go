@@ -93,7 +93,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _ := host.Storage().GetStorage(test.ParentKeyB)
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {

@@ -281,11 +281,14 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorageFromAddress(address []byte, key []byte) []byte
-	GetStorage(key []byte) []byte
-	GetStorageUnmetered(key []byte) []byte
+	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
+	GetStorage(key []byte) ([]byte, bool)
+	GetStorageUnmetered(key []byte) ([]byte, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
+	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, valueLength int, usedCache bool)
+	DisableUseDifferentGasCostFlag()
+	IsUseDifferentGasCostFlagSet() bool
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
