@@ -24,7 +24,7 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 var ErrExecutionFailed = errors.New("execution failed")
 
 // ErrExecutionFailedWithTimeout signals that the execution failed with timeout
-var ErrExecutionFailedWithTimeout = errors.New("execution failed")
+var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
 
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")

@@ -26,6 +26,8 @@ var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
+const executionTimeout = time.Second
+
 // vmHost implements HostContext interface.
 type vmHost struct {
 	cryptoHook   crypto.VMCrypto
@@ -306,15 +308,15 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
-	done := make(chan interface{}, 1)
+	done := make(chan struct{})
 	go func() {
 		vmOutput = host.doRunSmartContractCreate(input)
-		done <- 1
+		close(done)
 	}()
 
 	select {
@@ -331,12 +333,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
-	done := make(chan interface{}, 1)
+	done := make(chan struct{})
 	go func() {
 		isUpgrade := input.Function == arwen.UpgradeFunctionName
 		if isUpgrade {
@@ -345,7 +347,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			vmOutput = host.doRunSmartContractCall(input)
 		}
 
-		done <- 1
+		close(done)
 	}()
 
 	select {
