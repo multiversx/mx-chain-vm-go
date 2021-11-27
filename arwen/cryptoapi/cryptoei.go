@@ -236,7 +236,7 @@ func v1_4_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	metering.UseGasAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.SHA256)
+	metering.UseGasAndAddTracedGas(sha256Name, metering.GasSchedule().CryptoAPICost.SHA256)
 
 	inputBytes, err := managedType.GetBytes(inputHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
