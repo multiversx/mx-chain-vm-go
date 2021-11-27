@@ -569,6 +569,12 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 	if context.instance.IsFunctionImported("validateTokenIdentifier") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("managedSha256") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedKeccak256") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
