@@ -7,6 +7,7 @@ package cryptoapi
 // typedef int int32_t;
 //
 // extern int32_t v1_4_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_4_managedSha256(void *context, int32_t inputHanle, int32_t outputHandle);
 // extern int32_t v1_4_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
 // extern int32_t v1_4_managedKeccak256(void *context, int32_t inputHanle, int32_t outputHandle);
 // extern int32_t v1_4_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
@@ -79,6 +80,11 @@ const (
 func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
 	imports, err := imports.Append("sha256", v1_4_sha256, C.v1_4_sha256)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedSha256", v1_4_managedSha256, C.v1_4_managedSha256)
 	if err != nil {
 		return nil, err
 	}
@@ -219,6 +225,31 @@ func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultO
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
+
+	return 0
+}
+
+//export v1_4_managedSha256
+func v1_4_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	crypto := arwen.GetCryptoContext(context)
+	metering := arwen.GetMeteringContext(context)
+
+	metering.UseGasAndAddTracedGas(keccak256Name, metering.GasSchedule().CryptoAPICost.SHA256)
+
+	inputBytes, err := managedType.GetBytes(inputHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(inputBytes)
+
+	resultBytes, err := crypto.Sha256(inputBytes)
+	if err != nil {
+		return 1
+	}
+
+	managedType.SetBytes(outputHandle, resultBytes)
 
 	return 0
 }
