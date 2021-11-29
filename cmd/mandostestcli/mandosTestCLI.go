@@ -1,4 +1,4 @@
-package main
+package mandostestcli
 
 import (
 	"fmt"
@@ -23,7 +23,8 @@ func resolveArgument(exeDir string, arg string) (string, bool, error) {
 	return arg, fi.IsDir(), nil
 }
 
-func main() {
+// MandosTestCLI provides the functionality for any mandos-go test executor.
+func MandosTestCLI() {
 	// directory of this executable
 	exeDir, err := os.Getwd()
 	if err != nil {
