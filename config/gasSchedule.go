@@ -126,7 +126,7 @@ func checkForZeroUint64Fields(arg interface{}) error {
 		}
 		if field.Uint() == 0 {
 			name := v.Type().Field(i).Name
-			return fmt.Errorf("Gas cost for operation %s has been set to 0 or is not set.", name)
+			return fmt.Errorf("gas cost for operation %s has been set to 0 or is not set", name)
 		}
 	}
 
@@ -330,11 +330,13 @@ func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap["BigFloatCmp"] = value
 	gasMap["BigFloatAbs"] = value
 	gasMap["BigFloatSqrt"] = value
+	gasMap["BigFloatPow"] = value
 	gasMap["BigFloatFloor"] = value
 	gasMap["BigFloatCeil"] = value
 	gasMap["BigFloatIsInt"] = value
 	gasMap["BigFloatSetBigInt"] = value
 	gasMap["BigFloatSetInt64"] = value
+	gasMap["BigFloatGetConst"] = value
 
 	return gasMap
 }

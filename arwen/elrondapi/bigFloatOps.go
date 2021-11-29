@@ -542,7 +542,7 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigFloatPowName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatPow
 	metering.UseAndTraceGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
@@ -724,7 +724,7 @@ func v1_4_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetConst
 	metering.UseGasAndAddTracedGas(bigFloatGetConstPiName, gasToUse)
 
 	pi, err := managedType.GetBigFloatOrCreate(destinationHandle)
@@ -740,7 +740,7 @@ func v1_4_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
-	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
+	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatGetConst
 	metering.UseGasAndAddTracedGas(bigFloatGetConstEName, gasToUse)
 
 	e, err := managedType.GetBigFloatOrCreate(destinationHandle)

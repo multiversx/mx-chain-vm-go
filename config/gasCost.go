@@ -155,11 +155,13 @@ type BigFloatAPICost struct {
 	BigFloatCmp          uint64
 	BigFloatAbs          uint64
 	BigFloatSqrt         uint64
+	BigFloatPow          uint64
 	BigFloatFloor        uint64
 	BigFloatCeil         uint64
 	BigFloatIsInt        uint64
 	BigFloatSetBigInt    uint64
 	BigFloatSetInt64     uint64
+	BigFloatGetConst     uint64
 }
 
 type CryptoAPICost struct {
