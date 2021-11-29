@@ -152,8 +152,7 @@ type RuntimeContext interface {
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
+	DisableUseDifferentGasCostFlag()
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 

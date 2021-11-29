@@ -1,5 +1,5 @@
 {
-    "name": "crypto",
+    "name": "echo_arrayvec",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -22,16 +22,24 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "compute_keccak256",
+                "function": "echo_arrayvec",
                 "arguments": [
-                    "0x61"
+                    [
+                        "u32:5",
+                        "u32:6",
+                        "u32:7"
+                    ]
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb"
+                    [
+                        "u32:5",
+                        "u32:6",
+                        "u32:7"
+                    ]
                 ],
                 "status": "",
                 "logs": [],
@@ -45,18 +53,22 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "compute_keccak256",
+                "function": "echo_arrayvec",
                 "arguments": [
-                    "0x0102030405060708"
+                    [
+                        "u32:5",
+                        "u32:6",
+                        "u32:7",
+                        "u32:8"
+                    ]
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "keccak256:0x0102030405060708"
-                ],
-                "status": "",
+                "out": [],
+                "status": "4",
+                "message": "str:argument decode error (av): capacity exceeded",
                 "logs": [],
                 "gas": "*",
                 "refund": "*"
