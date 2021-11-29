@@ -190,7 +190,7 @@ func (ae *ArwenTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
 		return errors.New("account not found. could not update")
 	}
 
-	for k, v := range existingAccount.Storage {
+	for k, v := range worldAccount.Storage {
 		existingAccount.Storage[k] = v
 	}
 	if !mandosAccount.Nonce.Unspecified {
