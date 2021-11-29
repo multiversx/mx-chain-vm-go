@@ -44,6 +44,31 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
+const (
+	bigFloatNewFromPartsName = "bigFloatNewFromParts"
+	bigFloatNewFromFracName  = "bigFloatNewFromFrac"
+	bigFloatNewFromSciName   = "bigFloatNewFromSci"
+	bigFloatAddName          = "bigFloatAdd"
+	bigFloatSubName          = "bigFloatSub"
+	bigFloatMulName          = "bigFloatMul"
+	bigFloatDivName          = "bigFloatDiv"
+	bigFloatAbsName          = "bigFloatAbs"
+	bigFloatNegName          = "bigFloatNeg"
+	bigFloatCmpName          = "bigFloatCmp"
+	bigFloatSignName         = "bigFloatSign"
+	bigFloatCloneName        = "bigFloatClone"
+	bigFloatSqrtName         = "bigFloatSqrt"
+	bigFloatPowName          = "bigFloatPow"
+	bigFloatFloorName        = "bigFloatFloor"
+	bigFloatCeilName         = "bigFloatCeil"
+	bigFloatTruncateName     = "bigFloatTruncate"
+	bigFloatIsIntName        = "bigFloatIsInt"
+	bigFloatSetInt64Name     = "bigFloatSetInt64"
+	bigFloatSetBigIntName    = "bigFloatSetBigInt"
+	bigFloatGetConstPiName   = "bigFloatGetConstPi"
+	bigFloatGetConstEName    = "bigFloatGetConstE"
+)
+
 // BigFloatImports creates a new wasmer.Imports populated with the BigFloat API methods
 func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	imports = imports.Namespace("env")
@@ -200,7 +225,7 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatNewFromPartsName, gasToUse)
 
 	if exponent > 0 {
 		_ = arwen.WithFault(arwen.ErrPositiveExponent, context, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -241,7 +266,7 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatNewFromFracName, gasToUse)
 
 	if denominator == 0 {
 		_ = arwen.WithFault(arwen.ErrDivZero, context, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -264,7 +289,7 @@ func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatNewFromSciName, gasToUse)
 
 	if exponent > 0 {
 		_ = arwen.WithFault(arwen.ErrPositiveExponent, context, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -288,9 +313,10 @@ func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext((context))
+	metering.StartGasTracing(bigFloatAddName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAdd
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatAddName, gasToUse)
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	managedType.ConsumeGasForBigFloatCopy(op1, op2)
@@ -311,9 +337,10 @@ func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatSubName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSub
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	managedType.ConsumeGasForBigFloatCopy(op1, op2)
@@ -333,9 +360,10 @@ func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatMulName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatMul
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	managedType.ConsumeGasForBigFloatCopy(op1, op2)
@@ -355,9 +383,10 @@ func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatDivName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatDiv
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	managedType.ConsumeGasForBigFloatCopy(op1, op2)
@@ -381,9 +410,10 @@ func v1_4_bigFloatNeg(context unsafe.Pointer, destinationHandle, opHandle int32)
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatNegName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNeg
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -402,9 +432,10 @@ func v1_4_bigFloatClone(context unsafe.Pointer, destinationHandle, opHandle int3
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatCloneName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatClone
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -423,9 +454,10 @@ func v1_4_bigFloatCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatCmpName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCmp
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op1, op2, err := managedType.GetTwoBigFloats(op1Handle, op2Handle)
 	managedType.ConsumeGasForBigFloatCopy(op1, op2)
@@ -440,9 +472,10 @@ func v1_4_bigFloatAbs(context unsafe.Pointer, destinationHandle, opHandle int32)
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatAbsName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -463,7 +496,7 @@ func v1_4_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatAbs
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatSignName, gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -477,9 +510,10 @@ func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatSqrtName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSqrt
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -506,9 +540,10 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatPowName)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntPow
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(op)
@@ -558,9 +593,10 @@ func v1_4_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandle int32
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatFloorName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatFloor
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(op)
@@ -584,9 +620,10 @@ func v1_4_bigFloatCeil(context unsafe.Pointer, destBigIntHandle, opHandle int32)
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatCeilName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatCeil
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(op)
@@ -610,9 +647,10 @@ func v1_4_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle, opHandle in
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatTruncateName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatTruncate
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(op)
@@ -632,7 +670,7 @@ func v1_4_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, valu
 	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetInt64
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatSetInt64Name, gasToUse)
 
 	dest, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -646,9 +684,10 @@ func v1_4_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatIsIntName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatIsInt
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 	op, err := managedType.GetBigFloat(opHandle)
 	managedType.ConsumeGasForBigFloatCopy(op)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -665,9 +704,10 @@ func v1_4_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle, bigIntHan
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
+	metering.StartGasTracing(bigFloatSetBigIntName)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatSetBigInt
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	bigIntValue, err := managedType.GetBigInt(bigIntHandle)
 	managedType.ConsumeGasForBigIntCopy(bigIntValue)
@@ -685,7 +725,7 @@ func v1_4_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatGetConstPiName, gasToUse)
 
 	pi, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -701,7 +741,7 @@ func v1_4_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 
 	gasToUse := metering.GasSchedule().BigFloatAPICost.BigFloatNewFromParts
-	metering.UseGas(gasToUse)
+	metering.UseGasAndAddTracedGas(bigFloatGetConstEName, gasToUse)
 
 	e, err := managedType.GetBigFloatOrCreate(destinationHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {

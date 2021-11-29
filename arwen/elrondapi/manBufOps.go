@@ -64,6 +64,8 @@ const (
 	mBufferGetArgumentName        = "mBufferGetArgument"
 	mBufferFinishName             = "mBufferFinish"
 	mBufferSetRandomName          = "mBufferSetRandom"
+	mBufferToBigFloatName         = "mBufferToBigFloat"
+	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
 // ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
@@ -508,14 +510,17 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
+	metering.StartGasTracing(mBufferToBigFloatName)
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigFloat
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	managedBuffer, err := managedType.GetBytes(mBufferHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
+
+	managedType.ConsumeGasForBytes(managedBuffer)
 
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
 		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
@@ -546,9 +551,10 @@ func v1_4_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHan
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
+	metering.StartGasTracing(mBufferFromBigFloatName)
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromBigFloat
-	metering.UseGas(gasToUse)
+	metering.UseAndTraceGas(gasToUse)
 
 	value, err := managedType.GetBigFloat(bigFloatHandle)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
@@ -559,6 +565,7 @@ func v1_4_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHan
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
+	managedType.ConsumeGasForBytes(encodedFloat)
 
 	managedType.SetBytes(mBufferHandle, encodedFloat)
 
