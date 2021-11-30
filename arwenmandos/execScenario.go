@@ -78,7 +78,7 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 	extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
 	setExternalStepGasTracing(ae, step)
 
-	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth)
+	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth, mc.DefaultRunScenarioOptions())
 	if err != nil {
 		return err
 	}

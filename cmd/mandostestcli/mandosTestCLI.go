@@ -1,6 +1,7 @@
 package mandostestcli
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -23,8 +24,19 @@ func resolveArgument(exeDir string, arg string) (string, bool, error) {
 	return arg, fi.IsDir(), nil
 }
 
+func parseOptionFlags() *mc.RunScenarioOptions {
+	forceTraceGas := flag.Bool("force-trace-gas", false, "overrides the traceGas option in the scenarios")
+	flag.Parse()
+
+	return &mc.RunScenarioOptions{
+		ForceTraceGas: *forceTraceGas,
+	}
+}
+
 // MandosTestCLI provides the functionality for any mandos-go test executor.
 func MandosTestCLI() {
+	options := parseOptionFlags()
+
 	// directory of this executable
 	exeDir, err := os.Getwd()
 	if err != nil {
@@ -59,13 +71,14 @@ func MandosTestCLI() {
 			jsonFilePath,
 			"",
 			".scen.json",
-			[]string{})
+			[]string{},
+			options)
 	case strings.HasSuffix(jsonFilePath, ".scen.json"):
 		runner := mc.NewScenarioRunner(
 			executor,
 			mc.NewDefaultFileResolver(),
 		)
-		err = runner.RunSingleJSONScenario(jsonFilePath)
+		err = runner.RunSingleJSONScenario(jsonFilePath, options)
 	default:
 		runner := mc.NewTestRunner(
 			executor,
