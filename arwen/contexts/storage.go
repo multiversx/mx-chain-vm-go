@@ -228,7 +228,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	metering := context.host.Metering()
 
 	extraBytes := len(key) - arwen.AddressLen
-	var extraKeyLenGas uint64
+	extraKeyLenGas := uint64(0)
 	if extraBytes > 0 {
 		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 	}
@@ -243,7 +243,6 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	if update, ok := storageUpdates[strKey]; !ok {
 		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
 		oldValue, _ = context.GetStorageUnmetered(key)
-		metering.UseGas(extraKeyLenGas)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,
@@ -251,6 +250,10 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		usedCache = false
 	} else {
 		oldValue = update.Data
+	}
+
+	if !usedCache || !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+		metering.UseGas(extraKeyLenGas)
 	}
 
 	lengthOldValue := len(oldValue)

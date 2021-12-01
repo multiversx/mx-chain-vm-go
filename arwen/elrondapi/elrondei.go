@@ -943,13 +943,13 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	esdtRoleKeyPrefix := []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
-	data_buffer, usedCache := storage.GetStorage(key)
+	data, usedCache := storage.GetStorage(key)
 	storage.UseGasForStorageLoad(
 		storageLoadName,
 		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		len(data_buffer), usedCache)
+		len(data), usedCache)
 
-	return getESDTRoles(data_buffer)
+	return getESDTRoles(data)
 }
 
 //export v1_4_validateTokenIdentifier
