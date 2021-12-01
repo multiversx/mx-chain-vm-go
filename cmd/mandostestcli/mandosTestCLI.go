@@ -45,10 +45,11 @@ func MandosTestCLI() {
 	}
 
 	// argument
-	if len(os.Args) != 2 {
-		panic("One argument expected - the path to the json test.")
+	args := flag.Args()
+	if len(args) != 1 {
+		panic("One argument expected - the path to the json test or directory.")
 	}
-	jsonFilePath, isDir, err := resolveArgument(exeDir, os.Args[1])
+	jsonFilePath, isDir, err := resolveArgument(exeDir, args[0])
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
