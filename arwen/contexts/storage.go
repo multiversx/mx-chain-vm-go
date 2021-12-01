@@ -105,45 +105,39 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 
 // GetStorage returns the storage data mapped to the given key.
 func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
-	metering := context.host.Metering()
-
 	value, usedCache := context.GetStorageUnmetered(key)
-
-	extraBytes := len(key) - arwen.AddressLen
-	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
-	if (extraBytes > 0) && (!gasFlagSet || !usedCache) {
-		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		metering.UseGas(gasToUse)
-	}
+	context.useExtraGasForKeyIfNeeded(key, usedCache)
 
 	logStorage.Trace("get", "key", key, "value", value)
 
 	return value, usedCache
 }
 
+func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache bool) {
+	metering := context.host.Metering()
+	extraBytes := len(key) - arwen.AddressLen
+	if extraBytes <= 0 {
+		return
+	}
+	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
+	if !gasFlagSet || !usedCache {
+		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		metering.UseGas(gasToUse)
+	}
+}
+
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
 func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool) {
-	metering := context.host.Metering()
-
-	usedCache := false
-
-	defer func() {
-		extraBytes := len(key) - arwen.AddressLen
-		gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
-		if (extraBytes > 0) && (!gasFlagSet || !usedCache) {
-			gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-			metering.UseGas(gasToUse)
-		}
-	}()
-
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
+			context.useExtraGasForKeyIfNeeded(key, false)
 			return nil, false
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
+			context.useExtraGasForKeyIfNeeded(key, false)
 			return nil, false
 		}
 	}
@@ -154,6 +148,8 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
 	value, usedCache := context.getStorageFromAddressUnmetered(address, key)
+
+	context.useExtraGasForKeyIfNeeded(key, usedCache)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, usedCache
