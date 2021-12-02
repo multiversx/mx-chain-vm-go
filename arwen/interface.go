@@ -285,7 +285,7 @@ type StorageContext interface {
 	GetStorageUnmetered(key []byte) ([]byte, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
-	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, valueLength int, usedCache bool)
+	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
 	DisableUseDifferentGasCostFlag()
 	IsUseDifferentGasCostFlagSet() bool
 }

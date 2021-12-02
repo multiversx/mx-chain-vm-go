@@ -107,10 +107,20 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
 	value, usedCache := context.GetStorageUnmetered(key)
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
-
+	context.useGasForValueIfNeeded(value, usedCache)
 	logStorage.Trace("get", "key", key, "value", value)
 
 	return value, usedCache
+}
+
+func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
+	metering := context.host.Metering()
+	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
+	if !usedCache || !gasFlagSet {
+		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
+		metering.UseGas(gasToUse)
+	}
 }
 
 func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache bool) {
@@ -150,6 +160,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	value, usedCache := context.getStorageFromAddressUnmetered(address, key)
 
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
+	context.useGasForValueIfNeeded(value, usedCache)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
 	return value, usedCache
@@ -312,22 +323,13 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 }
 
 // UseGasForStorageLoad - single spot of gas consumption for storage load
-func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, valueLength int, usedCache bool) {
-	if !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
-		usedCache = false
-	}
-
+func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, usedCache bool) {
 	metering := context.host.Metering()
-	if usedCache {
-		metering.UseGasAndAddTracedGas(tracedFunctionName, metering.GasSchedule().ElrondAPICost.CachedStorageLoad)
-		return
+	if context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() && usedCache {
+		loadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
 	}
 
 	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)
-
-	costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
-	gasToUse := math.MulUint64(costPerByte, uint64(valueLength))
-	metering.UseGas(gasToUse)
 }
 
 // IsUseDifferentGasCostFlagSet - getter for flag

@@ -586,10 +586,7 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	}
 
 	storageBytes, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(
-		mBufferStorageLoadName,
-		metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad,
-		len(storageBytes), usedCache)
+	storage.UseGasForStorageLoad(mBufferStorageLoadName, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
 
