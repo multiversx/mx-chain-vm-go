@@ -41,7 +41,8 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 		getTestRoot(),
 		folder,
 		".scen.json",
-		exclusions)
+		exclusions,
+		mc.DefaultRunScenarioOptions())
 
 	if err != nil {
 		t.Error(err)
@@ -62,5 +63,7 @@ func runSingleTestReturnError(folder string, filename string) error {
 	fullPath := path.Join(getTestRoot(), folder)
 	fullPath = path.Join(fullPath, filename)
 
-	return runner.RunSingleJSONScenario(fullPath)
+	return runner.RunSingleJSONScenario(
+		fullPath,
+		mc.DefaultRunScenarioOptions())
 }
