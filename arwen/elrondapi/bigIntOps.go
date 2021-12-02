@@ -399,10 +399,7 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	}
 
 	bytes, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(
-		bigIntStorageLoadUnsignedName,
-		metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned,
-		len(bytes), usedCache)
+	storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.SetBytes(bytes)
