@@ -544,6 +544,7 @@ func TestGraph_SameContractWithDifferentSubCalls_LocalLocal_CallGraph(t *testing
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_LocalCross_CallGraph(t *testing.T) {
+	//arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsLocalCross())
 	runGraphCallTestTemplate(t, callGraph)
 }

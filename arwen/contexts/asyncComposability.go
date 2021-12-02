@@ -12,7 +12,7 @@ func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulat
 		logAsync.Trace("", "callID", context.callID) // DebugCallIDAsString
 		logAsync.Trace("", "callerAddr", string(context.callerAddr))
 		logAsync.Trace("", "callerCallID", context.callerCallID)
-		logAsync.Trace("", "callID", callID)
+		logAsync.Trace("", "notifier callID", callID)
 		logAsync.Trace("", "gasToAccumulate", gasToAccumulate)
 	}
 
