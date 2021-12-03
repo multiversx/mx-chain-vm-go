@@ -119,6 +119,7 @@ func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bo
 	if !usedCache || !gasFlagSet {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
+		logStorage.Debug("useGasForValueIfNeeded", "length", len(value))
 		metering.UseGas(gasToUse)
 	}
 }
@@ -131,6 +132,7 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 	}
 	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
 	if !gasFlagSet || !usedCache {
+		logStorage.Debug("useExtraGasForKeyIfNeeded", "length", len(key))
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		metering.UseGas(gasToUse)
 	}
