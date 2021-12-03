@@ -320,6 +320,7 @@ func (context *meteringContext) SetGasSchedule(gasMap config.GasScheduleMap) {
 
 // UseGas sets in the runtime context the given gas as gas used
 func (context *meteringContext) UseGas(gas uint64) {
+	logMetering.Debug("UseGas", "value", gas)
 	gasUsed := math.AddUint64(context.host.Runtime().GetPointsUsed(), gas)
 	context.host.Runtime().SetPointsUsed(gasUsed)
 }
@@ -332,6 +333,7 @@ func (context *meteringContext) UseAndTraceGas(gas uint64) {
 
 // UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
 func (context *meteringContext) UseGasAndAddTracedGas(functionName string, gas uint64) {
+	logMetering.Debug("UseGasAndTracedGas", "function", functionName)
 	context.UseGas(gas)
 	context.addToGasTrace(functionName, gas)
 }
