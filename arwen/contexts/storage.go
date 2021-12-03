@@ -169,7 +169,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
 
-	if context.isElrondReservedKey(key) {
+	if context.isElrondReservedKey(key) && context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
 		value, _ = context.blockChainHook.GetStorageData(address, key)
 		return value, false
 	}
