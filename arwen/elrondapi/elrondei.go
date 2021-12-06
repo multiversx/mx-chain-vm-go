@@ -1776,6 +1776,11 @@ func upgradeContract(
 		value,
 	)
 	logEEI.Trace("upgradeContract", "error", err)
+
+	storage := host.Storage()
+	if storage.IsUseDifferentGasCostFlagSet() && arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
 }
 
 //export v1_4_asyncCall
