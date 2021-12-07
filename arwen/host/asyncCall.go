@@ -470,7 +470,11 @@ func (host *vmHost) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractC
 		contractCallInput.Function == core.BuiltInFunctionESDTNFTTransfer
 }
 
-func (host *vmHost) processCallbackVMOutput(callbackVMOutput *vmcommon.VMOutput, callBackErr error, destinationReturnCode vmcommon.ReturnCode, setReturnCode bool) error {
+func (host *vmHost) processCallbackVMOutput(
+	callbackVMOutput *vmcommon.VMOutput,
+	callBackErr error,
+	destinationReturnCode vmcommon.ReturnCode,
+	setReturnCode bool) error {
 	output := host.Output()
 	if callBackErr == nil {
 		if setReturnCode {
