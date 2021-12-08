@@ -1,5 +1,6 @@
 {
     "gasSchedule": "v3",
+    "traceGas": true,
     "steps": [
         {
             "step": "setState",
