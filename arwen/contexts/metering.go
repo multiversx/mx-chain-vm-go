@@ -360,6 +360,7 @@ func (context *meteringContext) GetGasTrace() map[string]map[string][]uint64 {
 // RestoreGas deducts the specified amount of gas from the gas currently spent on the running Wasmer instance.
 func (context *meteringContext) RestoreGas(gas uint64) {
 	if !context.restoreGasEnabled {
+		logMetering.Trace("restore gas disabled", "gas not restored", gas)
 		return
 	}
 	gasUsed := context.host.Runtime().GetPointsUsed()
