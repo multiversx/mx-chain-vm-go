@@ -252,7 +252,7 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 
 	storage := make(map[string]map[string]vmcommon.StorageUpdate)
 
-	ignoredValuesForKeys := make(map[string]bool)
+	ignoredKeys := make(map[string]bool)
 
 	for _, storeEntry := range expectedEntries {
 		account := string(storeEntry.address)
@@ -263,7 +263,7 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 		}
 		accountStorageMap[string(storeEntry.key)] = vmcommon.StorageUpdate{Offset: storeEntry.key, Data: storeEntry.value, Written: storeEntry.written}
 		if storeEntry.ignoreValue {
-			ignoredValuesForKeys[string(storeEntry.key)] = true
+			ignoredKeys[string(storeEntry.key)] = true
 		}
 	}
 
@@ -271,7 +271,7 @@ func (v *VMOutputVerifier) Storage(expectedEntries ...StoreEntry) *VMOutputVerif
 		accountStorageMap := storage[string(outputAccount.Address)]
 		require.Equal(v.T, len(accountStorageMap), len(outputAccount.StorageUpdates), "Storage")
 		for key, value := range accountStorageMap {
-			if ignore := ignoredValuesForKeys[key]; !ignore {
+			if ignore := ignoredKeys[key]; !ignore {
 				require.Equal(v.T, value, *outputAccount.StorageUpdates[key], "Storage")
 			}
 		}

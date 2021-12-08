@@ -156,13 +156,6 @@ type RuntimeContext interface {
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
-// AddressAndCallID holds info from a runtime stack
-type AddressAndCallID struct {
-	Address      []byte
-	CallID       []byte
-	IndexOnStack int
-}
-
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
 type ManagedTypesContext interface {
 	StateStack
