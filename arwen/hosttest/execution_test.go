@@ -2591,7 +2591,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Print().Ok().
+			verify.Ok().
 				Balance(test.ParentAddress, 1000).
 				GasUsed(test.ParentAddress, 885).
 				GasRemaining(998643).
