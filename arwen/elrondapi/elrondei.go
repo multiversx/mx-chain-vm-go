@@ -1776,6 +1776,17 @@ func upgradeContract(
 		value,
 	)
 	logEEI.Trace("upgradeContract", "error", err)
+
+	storage := host.Storage()
+	if storage.IsUseDifferentGasCostFlagSet() {
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
+			runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return
+		}
+		if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return
+		}
+	}
 }
 
 //export v1_4_asyncCall
@@ -3122,7 +3133,7 @@ func v1_4_deployFromSourceContract(
 		gasLimit,
 	)
 
-	if err != nil {
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 

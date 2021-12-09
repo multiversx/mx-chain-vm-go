@@ -1278,6 +1278,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 			test.CreateMockContractOnShard(contracts.GetChildAddressForTransfer(transfer), uint32(startShard+transfer)).
 				WithBalance(0).
 				WithConfig(testConfig).
+				WithCodeMetadata([]byte{0, vmcommon.MetadataPayable}).
 				WithMethods(contracts.WasteGasChildMock))
 	}
 
