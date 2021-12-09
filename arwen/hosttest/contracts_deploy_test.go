@@ -92,6 +92,7 @@ func TestDeployFromSource_Success(t *testing.T) {
 func TestDeployFromSource_NoGasForInit(t *testing.T) {
 	testConfig := getDeployFromSourceTestConfig()
 	testConfig.gasProvidedForInit = uint64(100)
+	// TODO investigate why the ReturnCode is ExecutionFailed instead of OutOfGas
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			ExecutionFailed().
