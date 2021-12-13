@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -35,13 +36,16 @@ func (context *asyncContext) Save() error {
 	return nil
 }
 
-// TODO camilbancioiu: Loading the 'Parent' AsyncContext from two different
-// addresses based on the calltype is ambiguous, this needs clarification.
 func (context *asyncContext) LoadParentContext() error {
-	if context.callType != vm.AsynchronousCallBack {
+	switch context.callType {
+	case vm.DirectCall:
 		return context.loadSpecificContext(context.callerAddr, context.callerCallID)
+	case vm.AsynchronousCallBack:
+		// parent is the same as the callback, and the id is callbackAsyncInitiatorCallID
+		return context.loadSpecificContext(context.address, context.callbackAsyncInitiatorCallID)
+	default:
+		return fmt.Errorf("This should not be called for async calls (only callbacks and direct calls)")
 	}
-	return context.loadSpecificContext(context.address, context.callbackAsyncInitiatorCallID)
 }
 
 // Delete deletes the persisted state of the AsyncContext from the contract storage.

@@ -344,8 +344,10 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 
 	async.SetResults(vmOutput)
 	if !async.IsComplete() {
-		// TODO camilbancioiu: Returned error must be handled.
-		async.Save()
+		saveErr := async.Save()
+		if saveErr != nil {
+			vmOutput = output.CreateVMOutputInCaseOfError(executeErr)
+		}
 	}
 
 	gasSpentByChildContract := metering.GasSpentByContract()

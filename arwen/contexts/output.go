@@ -210,11 +210,6 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
-// SelfDestruct does nothing
-// TODO change comment when the function is implemented
-func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
-}
-
 // Finish appends the given data to the return data of the current output state.
 func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)

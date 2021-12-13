@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -298,14 +298,6 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 
 	data = storageContext.GetStorageFromAddress(nonreadable, key)
 	require.Nil(t, data)
-}
-
-func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
-	// TODO
-}
-
-func TestStorageContext_StoreGasPerKey(t *testing.T) {
-	// TODO
 }
 
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {

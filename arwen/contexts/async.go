@@ -80,16 +80,19 @@ func NewAsyncContext(
 
 // InitState initializes the internal state of the AsyncContext.
 func (context *asyncContext) InitState() {
-	// TODO camilbancioiu: ensure the AsyncContext is thoroughly reset here.
+	context.address = nil
 	context.callID = nil
+	context.callerCallID = nil
 	context.callerAddr = make([]byte, 0)
 	context.gasAccumulated = 0
 	context.returnData = make([]byte, 0)
 	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
 	context.callback = ""
+	context.callbackData = make([]byte, 0)
 	context.callbackAsyncInitiatorCallID = nil
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
+	context.childResults = nil
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with

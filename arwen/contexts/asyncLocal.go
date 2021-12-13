@@ -210,13 +210,13 @@ func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutp
 	}
 
 	runtime := context.host.Runtime()
-	output := context.host.Output()
+	// output := context.host.Output()
 
 	runtime.GetVMInput().GasProvided = 0
 
-	if vmOutput == nil {
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
-	}
+	// if vmOutput == nil {
+	// 	vmOutput = output.CreateVMOutputInCaseOfError(err)
+	// }
 
 	// output.SetReturnCode(vmOutput.ReturnCode)
 	// output.SetReturnMessage(vmOutput.ReturnMessage)
@@ -270,7 +270,6 @@ func (context *asyncContext) createCallbackInput(
 	gasAccumulated uint64,
 	destinationErr error,
 ) (*vmcommon.ContractCallInput, error) {
-	metering := context.host.Metering()
 	runtime := context.host.Runtime()
 
 	actualCallbackInitiator := asyncCall.GetDestination()
@@ -297,17 +296,11 @@ func (context *asyncContext) createCallbackInput(
 
 	callbackFunction := asyncCall.GetCallbackName()
 
-	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
 	dataLength := computeDataLengthFromArguments(callbackFunction, arguments)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
-	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
-	gas := math.MulUint64(copyPerByte, uint64(dataLength))
-	gasToUse = math.AddUint64(gasToUse, gas)
-	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
+	gasLimit, err := context.computeGasLimitForCallback(asyncCall, vmOutput, dataLength)
+	if err != nil {
+		return nil, err
 	}
-	gasLimit -= gasToUse
 
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -329,23 +322,53 @@ func (context *asyncContext) createCallbackInput(
 	}
 
 	if isESDTOnCallBack {
-		contractCallInput.Function = esdtFunction
-		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
-		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
-		if len(vmOutput.ReturnData) > 1 {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
-		}
-		if context.isSameShardNFTTransfer(contractCallInput) {
-			contractCallInput.RecipientAddr = contractCallInput.CallerAddr
-		}
-		contractCallInput.Arguments = context.prependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
-
-		context.host.Output().DeleteFirstReturnData()
+		context.updateContractInputForESDTOnCallback(contractCallInput, esdtFunction, esdtArgs, vmOutput, asyncCall, gasAccumulated)
 	}
 
 	return contractCallInput, nil
+}
+
+func (context *asyncContext) updateContractInputForESDTOnCallback(
+	contractCallInput *vmcommon.ContractCallInput,
+	esdtFunction string,
+	esdtArgs [][]byte,
+	vmOutput *vmcommon.VMOutput,
+	asyncCall *arwen.AsyncCall,
+	gasAccumulated uint64) {
+
+	oldArgLen := len(contractCallInput.Arguments)
+	oldFunction := contractCallInput.Function
+
+	contractCallInput.Function = esdtFunction
+	contractCallInput.Arguments = make([][]byte, 0, oldArgLen)
+	contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
+	contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(oldFunction))
+	contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
+	if len(vmOutput.ReturnData) > 1 {
+		contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
+	}
+	if context.isSameShardNFTTransfer(contractCallInput) {
+		contractCallInput.RecipientAddr = contractCallInput.CallerAddr
+	}
+	contractCallInput.Arguments = context.prependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
+
+	context.host.Output().DeleteFirstReturnData()
+}
+
+func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, dataLength int) (uint64, error) {
+	metering := context.host.Metering()
+	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
+	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+	gas := math.MulUint64(copyPerByte, uint64(dataLength))
+	gasToUse = math.AddUint64(gasToUse, gas)
+	if gasLimit <= gasToUse {
+		return 0, arwen.ErrNotEnoughGas
+	}
+	gasLimit -= gasToUse
+
+	return gasLimit, nil
 }
 
 func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) [][]byte {

@@ -81,8 +81,6 @@ func (context *runtimeContext) InitState() {
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances
-// TODO remove after implementing proper mocking of
-// Wasmer instances; this is used for tests only
 func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
@@ -776,11 +774,6 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
-
-// SetWarmInstance overwrites the warm Wasmer instance with the provided one.
-// TODO remove after implementing proper mocking of Wasmer instances; this is
-// used for tests only
-// func (context *runtimeContext) SetWarmInstance(address []byte, instanc e
 
 // ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
 func (context *runtimeContext) ValidateCallbackName(callbackName string) error {

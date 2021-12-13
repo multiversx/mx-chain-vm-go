@@ -2539,7 +2539,8 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				GasRemaining(359).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				// TODO why was 'user error' expected here?
+				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
+				// (return code and return message are no longet set from callbackVMOutput, in order to keep local/cross-shard responses consistent)
 				// ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error")).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
