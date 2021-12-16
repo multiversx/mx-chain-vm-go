@@ -1,13 +1,14 @@
 {
     "name": "deploy",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "setState",
             "accounts": {
                 "address:owner": {
                     "nonce": "0",
-                    "balance": "0"
+                    "balance": "0",
+                    "storage": {}
                 },
                 "address:nft_creator": {
                     "nonce": "0",
@@ -18,7 +19,8 @@
                                 "ESDTRoleNFTCreate"
                             ]
                         }
-                    }
+                    },
+                    "storage": {}
                 },
                 "address:seller": {
                     "nonce": "0",
@@ -33,16 +35,29 @@
                                     "royalties": "2000"
                                 }
                             ]
+                        },
+                        "str:SFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "10",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
                         }
-                    }
+                    },
+                    "storage": {}
                 },
                 "address:first_bidder": {
                     "nonce": "0",
-                    "balance": "1,000"
+                    "balance": "1,000",
+                    "storage": {}
                 },
                 "address:second_bidder": {
                     "nonce": "0",
-                    "balance": "1,000"
+                    "balance": "1,000",
+                    "storage": {}
                 }
             },
             "newAddresses": [
@@ -59,15 +74,15 @@
             "comment": "10% cut for the marketplace",
             "tx": {
                 "from": "address:owner",
+                "value": "0",
                 "contractCode": "file:../output/esdt-nft-marketplace.wasm",
                 "arguments": [
                     "1000"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x00"
+                "gasLimit": "9,000,000",
+                "gasPrice": "0"
             },
             "expect": {
-                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -86,11 +101,11 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:bidCutPerecentage": "1000"
+                        "str:bidCutPercentage": "1000"
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": ""
+                "+": {}
             }
         }
     ]

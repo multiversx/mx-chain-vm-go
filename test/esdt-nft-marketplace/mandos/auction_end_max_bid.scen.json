@@ -1,6 +1,6 @@
 {
     "name": "end auction by reaching max bid",
-    "gasSchedule": "dummy",
+    "gasSchedule": "v4",
     "steps": [
         {
             "step": "externalSteps",
@@ -13,16 +13,15 @@
             "tx": {
                 "from": "address:first_bidder",
                 "to": "sc:marketplace",
+                "value": "0",
                 "function": "endAuction",
                 "arguments": [
-                    "str:NFT-123456",
                     "1"
                 ],
-                "gasLimit": "0x100000",
-                "gasPrice": "0x00"
+                "gasLimit": "12,000,000",
+                "gasPrice": "0"
             },
             "expect": {
-                "out": [],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -52,6 +51,18 @@
                 "address:seller": {
                     "nonce": "1",
                     "balance": "700",
+                    "esdt": {
+                        "str:SFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "10",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
+                        }
+                    },
                     "storage": {}
                 },
                 "address:first_bidder": {
@@ -80,12 +91,13 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:bidCutPerecentage": "1000",
-                        "str:auctionForToken|nested:str:NFT-123456|u64:1": ""
+                        "str:bidCutPercentage": "1000",
+                        "str:lastValidAuctionId": "1",
+                        "str:auctionById|nested:str:NFT-123456|u64:1": ""
                     },
                     "code": "file:../output/esdt-nft-marketplace.wasm"
                 },
-                "+": ""
+                "+": {}
             }
         }
     ]

@@ -1,5 +1,5 @@
 {
-    "name": "auction token",
+    "name": "auction sft sell all",
     "gasSchedule": "v4",
     "steps": [
         {
@@ -22,9 +22,9 @@
                 "to": "sc:marketplace",
                 "value": "0",
                 "esdt": {
-                    "tokenIdentifier": "str:NFT-123456",
+                    "tokenIdentifier": "str:SFT-123456",
                     "nonce": "1",
-                    "value": "1"
+                    "value": "10"
                 },
                 "function": "auctionToken",
                 "arguments": [
@@ -54,8 +54,25 @@
                     "balance": "0",
                     "esdt": {
                         "str:NFT-123456": {
-                            "instances": []
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "creator": "address:nft_creator",
+                                    "royalties": "2000"
+                                }
+                            ]
                         },
+                        "str:SFT-123456": {
+                            "instances": []
+                        }
+                    },
+                    "storage": {}
+                },
+                "sc:marketplace": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "esdt": {
                         "str:SFT-123456": {
                             "instances": [
                                 {
@@ -67,30 +84,13 @@
                             ]
                         }
                     },
-                    "storage": {}
-                },
-                "sc:marketplace": {
-                    "nonce": "0",
-                    "balance": "0",
-                    "esdt": {
-                        "str:NFT-123456": {
-                            "instances": [
-                                {
-                                    "nonce": "1",
-                                    "balance": "1",
-                                    "creator": "address:nft_creator",
-                                    "royalties": "2000"
-                                }
-                            ]
-                        }
-                    },
                     "storage": {
                         "str:bidCutPercentage": "1000",
                         "str:lastValidAuctionId": "1",
                         "str:auctionById|u64:1": {
-                            "00-auctioned_token": "nested:str:NFT-123456|u64:1",
-                            "01-nr_auctioned_tokens": "biguint:1",
-                            "02-auction_type": "u8:1",
+                            "00-auctioned_token": "nested:str:SFT-123456|u64:1",
+                            "01-nr_auctioned_tokens": "biguint:10",
+                            "02-auction_type": "u8:2",
                             "04-payment_token": "nested:str:EGLD|u64:0",
                             "05-min_bid": "biguint:100",
                             "06-max_bid": "u8:1|biguint:1000",
