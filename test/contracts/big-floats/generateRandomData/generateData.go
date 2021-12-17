@@ -78,23 +78,23 @@ func main() {
 	generateBigFloatFromPartsData()
 	generateBigFloatsFromFracData()
 	generateBigFloatsFromSciData()
-	generateDataForEndpoint(1, bfToManagedBufferName, 55000)
-	generateDataForEndpoint(2, bfAddName, 55000)
-	generateDataForEndpoint(2, bfSubName, 55000)
-	generateDataForEndpoint(2, bfMulName, 55000)
-	generateDataForEndpoint(2, bfDivName, 55000)
-	generateDataForEndpoint(1, bfTruncName, 30000)
-	generateDataForEndpoint(1, bfAbsName, 30000)
-	generateDataForEndpoint(1, bfNegName, 30000)
-	generateDataForEndpoint(2, bfCmpName, 55000)
-	generateDataForEndpoint(1, bfSignName, 30000)
-	generateDataForEndpoint(1, bfCloneName, 30000)
-	generateDataForEndpoint(1, bfSqrtName, 30000)
+	generateDataForEndpoint(1, bfToManagedBufferName, 4000000)
+	generateDataForEndpoint(2, bfAddName, 4000000)
+	generateDataForEndpoint(2, bfSubName, 4000000)
+	generateDataForEndpoint(2, bfMulName, 4000000)
+	generateDataForEndpoint(2, bfDivName, 4000000)
+	generateDataForEndpoint(1, bfTruncName, 4000000)
+	generateDataForEndpoint(1, bfAbsName, 1367000)
+	generateDataForEndpoint(1, bfNegName, 1367000)
+	generateDataForEndpoint(2, bfCmpName, 4000000)
+	generateDataForEndpoint(1, bfSignName, 1368000)
+	generateDataForEndpoint(1, bfCloneName, 1370000)
+	generateDataForEndpoint(1, bfSqrtName, 4000000)
 	generateDataForBigFloatPow()
-	generateDataForEndpoint(1, bfFloorName, 30000)
-	generateDataForEndpoint(1, bfCeilName, 30000)
-	generateDataForEndpoint(1, bfIsIntName, 30000)
-	generateDataForEndpoint(1, bfSetInt64Name, 30000)
+	generateDataForEndpoint(1, bfFloorName, 1370000)
+	generateDataForEndpoint(1, bfCeilName, 1370000)
+	generateDataForEndpoint(1, bfIsIntName, 4000000)
+	generateDataForEndpoint(1, bfSetInt64Name, 4000000)
 
 }
 
@@ -121,7 +121,7 @@ func generateBigFloatFromPartsData() {
 		bigExponent := big.NewInt(0).SetInt64(int64(exponent))
 		validExponent := big.NewInt(0).Neg(bigExponent)
 		hexEncodedExponent := hex.EncodeToString(validExponent.Bytes())
-		file.WriteString(hexEncodedExponent + ":30000" + "\n")
+		file.WriteString(hexEncodedExponent + ":4000000" + "\n")
 
 	}
 	defer file.Close()
@@ -145,7 +145,7 @@ func generateBigFloatsFromFracData() {
 		denominatorPart := rand.Intn(math.MaxInt64 - 1)
 		bigDenominatorPart := big.NewInt(0).SetInt64(int64(denominatorPart))
 		hexEncodedDenominator := hex.EncodeToString(bigDenominatorPart.Bytes())
-		file.WriteString(hexEncodedDenominator + ":30000" + "\n")
+		file.WriteString(hexEncodedDenominator + ":4000000" + "\n")
 
 	}
 	defer file.Close()
@@ -169,7 +169,7 @@ func generateBigFloatsFromSciData() {
 		exponentPart := rand.Intn(400)
 		bigExponentPart := big.NewInt(0).SetInt64(int64(exponentPart))
 		hexEncodedExponent := hex.EncodeToString(bigExponentPart.Bytes())
-		file.WriteString(hexEncodedExponent + ":30000" + "\n")
+		file.WriteString(hexEncodedExponent + ":4000000" + "\n")
 	}
 
 	defer file.Close()
@@ -234,21 +234,30 @@ func generateHexEncodedBigFloat() string {
 	} else {
 		encodedBigFloat = append(encodedBigFloat, negativeEncodedBigFloatPrefix[:]...)
 	}
-	randomExponentAndMantissa := make([]byte, 12)
+	if rand.Intn(2) == 1 {
+		encodedBigFloat = append(encodedBigFloat, []byte{255, 255}...)
+	} else {
+		encodedBigFloat = append(encodedBigFloat, []byte{0, 0}...)
+	}
+	randomExponentAndMantissa := make([]byte, 10)
 	rand.Read(randomExponentAndMantissa)
 	encodedBigFloat = append(encodedBigFloat, randomExponentAndMantissa...)
+	bigFloatVal := big.NewFloat(0)
+	_ = bigFloatVal.GobDecode(encodedBigFloat)
 	hexEncodedBigFloat := hex.EncodeToString(encodedBigFloat)
 	return hexEncodedBigFloat
 }
 
 func generateHexEncodedBigFloatForPow() string {
 	encodedBigFloat := make([]byte, 0)
+
 	if rand.Intn(2) == 1 {
 		encodedBigFloat = append(encodedBigFloat, positiveEncodedBigFloatForPowPrefix[:]...)
 	} else {
 		encodedBigFloat = append(encodedBigFloat, negativeEncodedBigFloatForPowPrefix[:]...)
 	}
-	randomExponentAndMantissa := make([]byte, 9)
+
+	randomExponentAndMantissa := make([]byte, 10)
 	rand.Read(randomExponentAndMantissa)
 	encodedBigFloat = append(encodedBigFloat, randomExponentAndMantissa...)
 	hexEncodedBigFloat := hex.EncodeToString(encodedBigFloat)
