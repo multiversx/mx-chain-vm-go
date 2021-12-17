@@ -102,7 +102,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
-	context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr)
 	return isComplete, callbackVMOutput
 }
 
@@ -157,7 +157,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	input := context.createGroupCallbackInput(group)
 	context.gasAccumulated = 0
 	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
-	context.finishAsyncLocalExecution(vmOutput, err)
+	context.finishAsyncLocalCallbackExecution(vmOutput, err)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
 }
 
@@ -194,7 +194,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
 		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
-		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+		context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr)
 	}
 
 	// The gas that remains after executing the in-shard half of the built-in
@@ -204,7 +204,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	return nil
 }
 
-func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutput, err error) {
+func (context *asyncContext) finishAsyncLocalCallbackExecution(vmOutput *vmcommon.VMOutput, err error) {
 	if err == nil {
 		return
 	}

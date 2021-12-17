@@ -819,7 +819,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
-	async.finishAsyncLocalExecution(nil, nil)
+	async.finishAsyncLocalCallbackExecution(nil, nil)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -838,7 +838,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	syncExecErr := arwen.ErrNotEnoughGas
-	async.finishAsyncLocalExecution(nil, syncExecErr)
+	async.finishAsyncLocalCallbackExecution(nil, syncExecErr)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.OutOfGas
@@ -864,7 +864,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
-	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr)
+	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.UserError

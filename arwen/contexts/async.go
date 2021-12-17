@@ -908,7 +908,7 @@ func (context *asyncContext) executeContextCallback() error {
 
 	callbackCallInput := context.createContextCallbackInput()
 	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr)
+	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callBackErr)
 
 	return nil
 }
