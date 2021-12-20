@@ -214,7 +214,6 @@ func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHan
 		return
 	}
 
-	//managedType.ConsumeGasForBigFloatCopy(result)
 	dest.Set(result)
 }
 
