@@ -12,7 +12,7 @@ import (
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
-const numberOfDataSets = 5000
+const numberOfDataSets = 10000
 
 var positiveEncodedBigFloatPrefix = [...]byte{1, 10, 0, 0, 0, 53}
 var negativeEncodedBigFloatPrefix = [...]byte{1, 11, 0, 0, 0, 53}
@@ -84,17 +84,19 @@ func main() {
 	generateDataForEndpoint(2, bfMulName, 4000000)
 	generateDataForEndpoint(2, bfDivName, 4000000)
 	generateDataForEndpoint(1, bfTruncName, 4000000)
-	generateDataForEndpoint(1, bfAbsName, 1367000)
-	generateDataForEndpoint(1, bfNegName, 1367000)
+	generateDataForEndpoint(1, bfAbsName, 1390000)
+	generateDataForEndpoint(1, bfNegName, 1390000)
 	generateDataForEndpoint(2, bfCmpName, 4000000)
-	generateDataForEndpoint(1, bfSignName, 1368000)
-	generateDataForEndpoint(1, bfCloneName, 1370000)
+	generateDataForEndpoint(1, bfSignName, 1390000)
+	generateDataForEndpoint(1, bfCloneName, 1390000)
 	generateDataForEndpoint(1, bfSqrtName, 4000000)
 	generateDataForBigFloatPow()
-	generateDataForEndpoint(1, bfFloorName, 1370000)
-	generateDataForEndpoint(1, bfCeilName, 1370000)
+	generateDataForEndpoint(1, bfFloorName, 1390000)
+	generateDataForEndpoint(1, bfCeilName, 1390000)
 	generateDataForEndpoint(1, bfIsIntName, 4000000)
 	generateDataForEndpoint(1, bfSetInt64Name, 4000000)
+	generateBigFloatsSetBigInt()
+	generateBigFloatsSetInt64()
 
 }
 
@@ -175,9 +177,41 @@ func generateBigFloatsFromSciData() {
 	defer file.Close()
 }
 
+func generateBigFloatsSetBigInt() {
+	file, _ := os.Create(bfSetIntName + ".data")
+
+	for i := 0; i < numberOfDataSets; i++ {
+		file.WriteString("BigFloatSetBigIntTest@")
+		numberOfBytes := rand.Intn(200)
+		bigIntBytes := make([]byte, numberOfBytes)
+		rand.Read(bigIntBytes)
+
+		hexEncodedBytes := hex.EncodeToString(bigIntBytes)
+		file.WriteString(hexEncodedBytes + ":4000000" + "\n")
+	}
+	defer file.Close()
+}
+
+func generateBigFloatsSetInt64() {
+	file, _ := os.Create(bfSetInt64Name + ".data")
+
+	for i := 0; i < numberOfDataSets; i++ {
+		file.WriteString("BigFloatSetInt64Test@")
+		smallValue := rand.Intn(math.MaxInt64 - 1)
+		bigIntVal := big.NewInt(int64(smallValue))
+		if rand.Intn(2) == 1 {
+			bigIntVal.Neg(bigIntVal)
+		}
+		argumentBytes := twos.ToBytes(bigIntVal)
+		hexEncodedArgument := hex.EncodeToString(argumentBytes)
+		file.WriteString(hexEncodedArgument + ":4000000" + "\n")
+	}
+	defer file.Close()
+}
+
 func generateDataForBigFloatPow() {
 	file, _ := os.Create(bfPowName + ".data")
-	for i := 0; i < numberOfDataSets/10; i++ {
+	for i := 0; i < 1000; i++ {
 		file.WriteString("BigFloatPowTest@")
 		hexEncodedFloat := generateHexEncodedBigFloatForPow()
 		file.WriteString(hexEncodedFloat + "@")
