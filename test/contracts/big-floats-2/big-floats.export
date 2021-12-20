@@ -1,4 +1,5 @@
-init 
+init
+BigFloatToManagedBufferTest
 BigFloatNewFromPartsTest
 BigFloatNewFromFracTest
 BigFloatNewFromSciTest
