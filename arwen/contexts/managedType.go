@@ -17,8 +17,8 @@ const encodedBigFloatMaxByteLen = 18
 const bigFloatMaxExponent = 65025
 const bigFloatMinExponent = -65025
 
-var positiveEncodedBigFloatPrefix = [...]byte{0, 0, 0, 53}
-var negativeEncodedBigFloatPrefix = [...]byte{0, 0, 0, 53}
+var positiveEncodedBigFloatPrefix = [...]byte{1, 10, 0, 0, 0, 53}
+var negativeEncodedBigFloatPrefix = [...]byte{1, 11, 0, 0, 0, 53}
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -274,7 +274,7 @@ func (context *managedTypesContext) BigFloatExpIsNotValid(exponent int) bool {
 }
 
 func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool {
-	return !bytes.Equal(encodedBigFloat[2:6], positiveEncodedBigFloatPrefix[:]) && !bytes.Equal(encodedBigFloat[2:6], negativeEncodedBigFloatPrefix[:])
+	return !bytes.Equal(encodedBigFloat[:6], positiveEncodedBigFloatPrefix[:]) && !bytes.Equal(encodedBigFloat[:6], negativeEncodedBigFloatPrefix[:])
 }
 
 func (context *managedTypesContext) GetValidEncodedBigFloatPrefixes() ([]byte, []byte) {
