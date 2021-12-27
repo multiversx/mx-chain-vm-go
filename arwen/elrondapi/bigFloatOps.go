@@ -255,7 +255,11 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 			return -1
 		}
 	}
-	return managedType.PutBigFloat(value)
+	handle, err := managedType.PutBigFloat(value)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	return handle
 }
 
 //export v1_4_bigFloatNewFromFrac
@@ -278,7 +282,11 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	return managedType.PutBigFloat(value)
+	handle, err := managedType.PutBigFloat(value)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	return handle
 }
 
 //export v1_4_bigFloatNewFromSci
@@ -295,7 +303,11 @@ func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64
 		return -1
 	}
 	if exponent < -322 {
-		return managedType.PutBigFloat(big.NewFloat(0))
+		handle, err := managedType.PutBigFloat(big.NewFloat(0))
+		if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+			return -1
+		}
+		return handle
 	}
 
 	bigSignificand := big.NewFloat(float64(significand))
@@ -304,7 +316,11 @@ func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	return managedType.PutBigFloat(value)
+	handle, err := managedType.PutBigFloat(value)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	return handle
 }
 
 //export v1_4_bigFloatAdd
@@ -556,7 +572,7 @@ func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, expon
 
 	//this calculates the length of the result in bytes
 	lengthOfResult := big.NewInt(0).Div(big.NewInt(0).Mul(op2BigInt, big.NewInt(int64(opBigInt.BitLen()))), big.NewInt(8))
-	managedType.ConsumeGasForThisBigIntNumberOfBytes(new(big.Int).Abs(lengthOfResult))
+	managedType.ConsumeGasForThisBigIntNumberOfBytes(lengthOfResult)
 
 	powResult, err := pow(context, op, exponent)
 	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {

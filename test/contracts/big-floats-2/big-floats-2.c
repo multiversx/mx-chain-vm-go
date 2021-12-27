@@ -4,9 +4,6 @@
 #include "../elrond/test_utils.h"
 #include "../elrond/bigFloat.h"
 
-// byte gobEncodedFloat1[] = {1, 10, 0, 0, 0, 100, 0, 0, 0, 108, 136, 217, 65, 19, 144, 71, 160, 0};
-// // = 173476272346174583562347456134583.6134671346713451345
-
 void init() {}
 
 void BigFloatToManagedBufferTest()

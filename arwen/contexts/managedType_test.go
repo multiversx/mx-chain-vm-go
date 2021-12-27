@@ -95,12 +95,12 @@ func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 
 	bigIntHandle1 := managedTypesContext.NewBigIntFromInt64(intValue1)
 	bigIntHandle2 := managedTypesContext.NewBigIntFromInt64(intValue2)
-	bigFloatHandle1 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue1))
-	bigFloatHandle2 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue2))
+	bigFloatHandle1, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue1))
+	bigFloatHandle2, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue2))
 	ecHandle1 := managedTypesContext.PutEllipticCurve(p224ec)
 	ecHandle2 := managedTypesContext.PutEllipticCurve(p256ec)
 
-	bigFloatHandle3 := managedTypesContext.PutBigFloat(nil)
+	bigFloatHandle3, _ := managedTypesContext.PutBigFloat(nil)
 	bigFloat3, _ := managedTypesContext.GetBigFloat(bigFloatHandle3)
 	require.Equal(t, big.NewFloat(0), bigFloat3)
 
@@ -175,9 +175,9 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, big.NewInt(intValue2), bigInt2)
 	require.Nil(t, err)
 
-	bigFloatHandle1 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue1))
+	bigFloatHandle1, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue1))
 	require.Equal(t, int32(0), bigFloatHandle1)
-	bigFloatHandle2 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue2))
+	bigFloatHandle2, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue2))
 	require.Equal(t, int32(1), bigFloatHandle2)
 
 	bigFloat1, err := managedTypesContext.GetBigFloat(bigFloatHandle1)
@@ -273,7 +273,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, big.NewInt(intValue3), bigInt3)
 	require.Nil(t, err)
 
-	bigFloatHandle3 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue3))
+	bigFloatHandle3, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue3))
 	require.Equal(t, int32(0), bigFloatHandle3)
 	bigFloat3, err := managedTypesContext.GetBigFloat(bigFloatHandle3)
 	require.Equal(t, big.NewFloat(floatValue3), bigFloat3)
@@ -340,7 +340,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
 
 	floatValue4 := float64(89.3823)
-	bigFloatHandle4 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue4))
+	bigFloatHandle4, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue4))
 	require.Equal(t, int32(0), bigFloatHandle4)
 	bigFloat4, err := managedTypesContext.GetBigFloat(bigFloatHandle4)
 	require.Equal(t, big.NewFloat(floatValue4), bigFloat4)
@@ -472,11 +472,11 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 	floatValue1, floatValue2, floatValue3, floatValue4 := float64(23.56), float64(62.8453), float64(-8234.6512), float64(-0.0001)
 	managedTypesContext, _ := NewManagedTypesContext(host)
 
-	bigFloatHandle1 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue1))
+	bigFloatHandle1, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue1))
 	require.Equal(t, int32(0), bigFloatHandle1)
-	bigFloatHandle2 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue2))
+	bigFloatHandle2, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue2))
 	require.Equal(t, int32(1), bigFloatHandle2)
-	bigFloatHandle3 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue3))
+	bigFloatHandle3, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue3))
 	require.Equal(t, int32(2), bigFloatHandle3)
 
 	bigFloat1, err := managedTypesContext.GetBigFloat(bigFloatHandle1)
@@ -492,7 +492,7 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 	require.Equal(t, big.NewFloat(0), bigFloat4)
 	require.Nil(t, err)
 
-	bigFloatHandle4 := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue4))
+	bigFloatHandle4, _ := managedTypesContext.PutBigFloat(new(big.Float).SetFloat64(floatValue4))
 	require.Equal(t, int32(4), bigFloatHandle4)
 	bigFloat4, err = managedTypesContext.GetBigFloatOrCreate(4)
 	require.Equal(t, big.NewFloat(floatValue4), bigFloat4)

@@ -173,7 +173,7 @@ type ManagedTypesContext interface {
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
-	PutBigFloat(value *big.Float) int32
+	PutBigFloat(value *big.Float) (int32, error)
 	BigFloatPrecIsNotValid(precision uint) bool
 	BigFloatExpIsNotValid(exponent int) bool
 	EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool

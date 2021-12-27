@@ -19,6 +19,7 @@ const bigFloatMinExponent = -65025
 
 var positiveEncodedBigFloatPrefix = [...]byte{1, 10, 0, 0, 0, 53}
 var negativeEncodedBigFloatPrefix = [...]byte{1, 11, 0, 0, 0, 53}
+var encodedZeroBigFloat = [...]byte{1, 8, 0, 0, 0, 53}
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -265,20 +266,26 @@ func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
 
 // BIG FLOAT
 
+// BigFloatPrecIsNotValid checks if the precision of a big float is not valid (not equal to 53)
 func (context *managedTypesContext) BigFloatPrecIsNotValid(precision uint) bool {
 	return precision != bigFloatPrecision
 }
 
+// BigFloatExpIsNotValid checks if the exponent of a big float is not valid (smaller than -65025 or bigger than 65025)
 func (context *managedTypesContext) BigFloatExpIsNotValid(exponent int) bool {
 	return exponent < bigFloatMinExponent || exponent > bigFloatMaxExponent
 }
 
+// EncodedBigFloatIsNotValid checks if an encoded big float is not valid
 func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool {
-	return !bytes.Equal(encodedBigFloat[:6], positiveEncodedBigFloatPrefix[:]) && !bytes.Equal(encodedBigFloat[:6], negativeEncodedBigFloatPrefix[:])
-}
+	length := len(encodedBigFloat)
+	if length < 6 {
+		return true
+	} else if length == 6 && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
+		return true
+	}
 
-func (context *managedTypesContext) GetValidEncodedBigFloatPrefixes() ([]byte, []byte) {
-	return positiveEncodedBigFloatPrefix[:], negativeEncodedBigFloatPrefix[:]
+	return !bytes.Equal(encodedBigFloat[:6], positiveEncodedBigFloatPrefix[:]) && !bytes.Equal(encodedBigFloat[:6], negativeEncodedBigFloatPrefix[:])
 }
 
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
@@ -340,8 +347,12 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 	return value1, value2, nil
 }
 
-// PutBigFloat adds the given value to the current values map and returns the handle
-func (context *managedTypesContext) PutBigFloat(value *big.Float) int32 {
+// PutBigFloat adds the given value to the current values map and returns the handle. Returns error if exponent is incorrect
+func (context *managedTypesContext) PutBigFloat(value *big.Float) (int32, error) {
+	exponent := value.MantExp(nil)
+	if exponent > 65025 || exponent < -65025 {
+		return 0, arwen.ErrExponentTooBigOrTooSmall
+	}
 	newHandle := int32(len(context.managedTypesValues.bigFloatValues))
 	for {
 		if _, ok := context.managedTypesValues.bigFloatValues[newHandle]; !ok {
@@ -352,12 +363,8 @@ func (context *managedTypesContext) PutBigFloat(value *big.Float) int32 {
 	if value == nil {
 		value = big.NewFloat(0)
 	}
-	exponent := value.MantExp(nil)
-	if exponent > 65025 || exponent < -65025 {
-		value = big.NewFloat(0)
-	}
 	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)
-	return newHandle
+	return newHandle, nil
 }
 
 // NewBigInt adds the given value to the current values map and returns the handle

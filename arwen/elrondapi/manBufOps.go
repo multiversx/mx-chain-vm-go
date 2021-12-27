@@ -521,7 +521,6 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	}
 
 	managedType.ConsumeGasForBytes(managedBuffer)
-
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
 		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
