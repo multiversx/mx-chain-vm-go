@@ -349,6 +349,9 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 
 // PutBigFloat adds the given value to the current values map and returns the handle. Returns error if exponent is incorrect
 func (context *managedTypesContext) PutBigFloat(value *big.Float) (int32, error) {
+	if value == nil {
+		value = big.NewFloat(0)
+	}
 	exponent := value.MantExp(nil)
 	if exponent > 65025 || exponent < -65025 {
 		return 0, arwen.ErrExponentTooBigOrTooSmall
@@ -360,9 +363,7 @@ func (context *managedTypesContext) PutBigFloat(value *big.Float) (int32, error)
 		}
 		newHandle++
 	}
-	if value == nil {
-		value = big.NewFloat(0)
-	}
+
 	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)
 	return newHandle, nil
 }
