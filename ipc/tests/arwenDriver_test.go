@@ -26,6 +26,7 @@ func TestArwenDriver_DiagnoseWait(t *testing.T) {
 }
 
 func TestArwenDriver_DiagnoseWaitWithTimeout(t *testing.T) {
+	t.Skip("driver not supported anymore: requires standalone binary")
 	blockchain := &contextmock.BlockchainHookStub{}
 	driver := newDriver(t, blockchain)
 
