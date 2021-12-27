@@ -11,10 +11,10 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -886,12 +886,12 @@ func (context *runtimeContext) GetAllErrors() error {
 
 // DisableUseDifferentGasCostFlag - for tests
 func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
-	context.flagEnableNewAPIMethods.Unset()
+	context.flagEnableNewAPIMethods.Reset()
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagEnableNewAPIMethods.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
+	context.flagEnableNewAPIMethods.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
 	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagEnableNewAPIMethods.IsSet())
 }
 
