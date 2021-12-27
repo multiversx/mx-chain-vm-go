@@ -350,3 +350,7 @@ func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
 func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
+
+// DisableUseDifferentGasCostFlag mocked method
+func (r *RuntimeContextMock) DisableUseDifferentGasCostFlag() {
+}

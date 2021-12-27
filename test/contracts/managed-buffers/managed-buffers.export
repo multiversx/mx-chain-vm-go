@@ -5,6 +5,7 @@ mBufferNewFromBytesTest
 mBufferSetRandomTest
 mBufferGetLengthTest
 mBufferGetBytesTest
+mBufferSetByteSliceTest
 mBufferAppendTest
 mBufferToBigIntUnsignedTest
 mBufferToBigIntSignedTest

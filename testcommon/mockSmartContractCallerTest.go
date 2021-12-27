@@ -85,3 +85,12 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 		return instance
 	}
 }
+
+// Empty
+func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
+	return func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		return instance
+	}
+}
