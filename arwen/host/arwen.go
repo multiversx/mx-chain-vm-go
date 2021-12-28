@@ -12,9 +12,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -252,19 +252,19 @@ func (host *vmHost) GetContexts() (
 func (host *vmHost) InitState() {
 	host.initContexts()
 	currentEpoch := host.blockChainHook.CurrentEpoch()
-	host.flagArwenV2.Toggle(currentEpoch >= host.arwenV2EnableEpoch)
+	host.flagArwenV2.SetValue(currentEpoch >= host.arwenV2EnableEpoch)
 	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
 
-	host.flagAheadOfTime.Toggle(currentEpoch >= host.aotEnableEpoch)
+	host.flagAheadOfTime.SetValue(currentEpoch >= host.aotEnableEpoch)
 	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
 
-	host.flagDynGasLock.Toggle(currentEpoch >= host.dynGasLockEnableEpoch)
+	host.flagDynGasLock.SetValue(currentEpoch >= host.dynGasLockEnableEpoch)
 	log.Trace("dynamic gas locking", "enabled", host.flagDynGasLock.IsSet())
 
-	host.flagArwenV3.Toggle(currentEpoch >= host.arwenV3EnableEpoch)
+	host.flagArwenV3.SetValue(currentEpoch >= host.arwenV3EnableEpoch)
 	log.Trace("arwen v3 improvement", "enabled", host.flagArwenV3.IsSet())
 
-	host.flagESDTFunctions.Toggle(currentEpoch >= host.eSDTFunctionsEnableEpoch)
+	host.flagESDTFunctions.SetValue(currentEpoch >= host.eSDTFunctionsEnableEpoch)
 	log.Trace("esdt functions", "enabled", host.flagESDTFunctions.IsSet())
 }
 
