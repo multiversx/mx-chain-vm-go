@@ -27,6 +27,7 @@ package elrondapi
 //
 // extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
+// extern int32_t	v1_4_mBufferStorageLoadFromAddress(void* context, int32_t addressHandle, int32_t keyHandle, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferFinish(void* context, int32_t mBufferHandle);
 //
@@ -154,6 +155,11 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferStorageLoad", v1_4_mBufferStorageLoad, C.v1_4_mBufferStorageLoad)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferStorageLoadFromAddress", v1_4_mBufferStorageLoadFromAddress, C.v1_4_mBufferStorageLoadFromAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -587,6 +593,30 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 
 	storageBytes, usedCache := storage.GetStorage(key)
 	storage.UseGasForStorageLoad(mBufferStorageLoadName, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
+
+	managedType.SetBytes(destinationHandle, storageBytes)
+
+	return 0
+}
+
+//export v1_4_mBufferStorageLoadFromAddress
+func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, keyHandle, destinationHandle int32) int32 {
+	host := arwen.GetVMHost(context)
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	key, err := managedType.GetBytes(keyHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	address, err := managedType.GetBytes(addressHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return -1
+	}
+
+	storageBytes := StorageLoadFromAddressWithTypedArgs(host, address, key)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
 
