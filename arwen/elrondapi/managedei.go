@@ -23,6 +23,7 @@ package elrondapi
 // extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t	v1_4_createManagedAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 //
 // extern void		v1_4_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
 // extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
@@ -62,6 +63,8 @@ const (
 	managedUpgradeContractName              = "managedUpgradeContract"
 	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
 	managedAsyncCallName                    = "managedAsyncCall"
+	createManagedAsyncCallName              = "createManagedAsyncCall"
+	setManagedAsyncContextCallbackName      = "setManagedAsyncContextCallback"
 	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
 	managedGetESDTBalanceName               = "managedGetESDTBalance"
 	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
@@ -505,6 +508,91 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
+}
+
+//export v1_4_createManagedAsyncCall
+func v1_4_createManagedAsyncCall(
+	context unsafe.Pointer,
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	successOffset int32,
+	successLength int32,
+	errorOffset int32,
+	errorLength int32,
+	gas int64,
+	extraGasForCallback int64,
+) int32 {
+
+	return CreateManagedAsyncCallWithHost(
+		context,
+		destHandle,
+		valueHandle,
+		functionHandle,
+		argumentsHandle,
+		successOffset,
+		successLength,
+		errorOffset,
+		errorLength,
+		gas,
+		extraGasForCallback)
+}
+
+// CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
+func CreateManagedAsyncCallWithHost(
+	context unsafe.Pointer,
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	successOffset int32,
+	successLength int32,
+	errorOffset int32,
+	errorLength int32,
+	gas int64,
+	extraGasForCallback int64,
+) int32 {
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
+
+	calledSCAddress, err := runtime.MemLoad(destHandle, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	data := makeCrossShardCallFromInput(vmInput.function, vmInput.arguments)
+
+	value, err := managedType.GetBigInt(valueHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	successFunc, err := runtime.MemLoad(successOffset, successLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	errorFunc, err := runtime.MemLoad(errorOffset, errorLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return CreateAsyncCallWithTypedArgs(host,
+		calledSCAddress,
+		[]byte(data),
+		value.Bytes(),
+		successFunc,
+		errorFunc,
+		gas,
+		extraGasForCallback)
 }
 
 //export v1_4_managedUpgradeFromSourceContract
