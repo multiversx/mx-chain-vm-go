@@ -23,7 +23,7 @@ package elrondapi
 // extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t	v1_4_createManagedAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
+// extern int32_t	v1_4_managedCreateAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 //
 // extern void		v1_4_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
 // extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
@@ -63,7 +63,7 @@ const (
 	managedUpgradeContractName              = "managedUpgradeContract"
 	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
 	managedAsyncCallName                    = "managedAsyncCall"
-	createManagedAsyncCallName              = "createManagedAsyncCall"
+	managedCreateAsyncCallName              = "managedCreateAsyncCall"
 	setManagedAsyncContextCallbackName      = "setManagedAsyncContextCallback"
 	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
 	managedGetESDTBalanceName               = "managedGetESDTBalance"
@@ -510,8 +510,8 @@ func v1_4_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 	}
 }
 
-//export v1_4_createManagedAsyncCall
-func v1_4_createManagedAsyncCall(
+//export v1_4_managedCreateAsyncCall
+func v1_4_managedCreateAsyncCall(
 	context unsafe.Pointer,
 	destHandle int32,
 	valueHandle int32,
@@ -525,7 +525,7 @@ func v1_4_createManagedAsyncCall(
 	extraGasForCallback int64,
 ) int32 {
 
-	return CreateManagedAsyncCallWithHost(
+	return managedCreateAsyncCallWithHost(
 		context,
 		destHandle,
 		valueHandle,
@@ -540,7 +540,7 @@ func v1_4_createManagedAsyncCall(
 }
 
 // CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
-func CreateManagedAsyncCallWithHost(
+func managedCreateAsyncCallWithHost(
 	context unsafe.Pointer,
 	destHandle int32,
 	valueHandle int32,
