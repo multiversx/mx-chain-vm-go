@@ -16,7 +16,6 @@
             "txId": "deploy-1",
             "tx": {
                 "from": "address:node_address",
-                "value": "0",
                 "contractCode": "file:../../output/delegation_latest_full.wasm",
                 "arguments": [
                     "sc:auction",
@@ -43,9 +42,10 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setMinimumStake",
-                "arguments": ["1,000,000,000"],
+                "arguments": [
+                    "1,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
