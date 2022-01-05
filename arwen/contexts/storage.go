@@ -6,10 +6,10 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 )
 
 var logStorage = logger.GetOrCreate("arwen/storage")
@@ -339,12 +339,12 @@ func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
 
 // DisableUseDifferentGasCostFlag - for tests
 func (context *storageContext) DisableUseDifferentGasCostFlag() {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Unset()
+	context.flagUseDifferentGasCostForReadingCachedStorage.Reset()
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Toggle(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
+	context.flagUseDifferentGasCostForReadingCachedStorage.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
 	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
 }
 
