@@ -27,7 +27,7 @@ package elrondapi
 //
 // extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferStorageLoadFromAddress(void* context, int32_t addressHandle, int32_t keyHandle, int32_t mBufferHandle);
+// extern void  	v1_4_mBufferStorageLoadFromAddress(void* context, int32_t addressHandle, int32_t keyHandle, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferFinish(void* context, int32_t mBufferHandle);
 //
@@ -600,27 +600,25 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 }
 
 //export v1_4_mBufferStorageLoadFromAddress
-func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, keyHandle, destinationHandle int32) int32 {
+func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, keyHandle, destinationHandle int32) {
 	host := arwen.GetVMHost(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 
 	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
-		return 1
+		return
 	}
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
 		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return -1
+		return
 	}
 
 	storageBytes := StorageLoadFromAddressWithTypedArgs(host, address, key)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
-
-	return 0
 }
 
 //export v1_4_mBufferGetArgument
