@@ -52,8 +52,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:other_contract": "sc:proxy-second",
-                        "str:ARWEN@ASYNC1...............................": "0x0a20000000000000000070726f78792d66697273745f5f5f5f5f5f5f5f5f5f5f5f5f1220312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2220615f757365725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f60016801"
+                        "str:other_contract": "sc:proxy-second"
                     },
                     "code": "file:../proxy-test-first/output/proxy-test-first-unmanaged.wasm"
                 },
@@ -62,7 +61,7 @@
                     "balance": "0x123400",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "str:payMe@6108555c9fef18e532d10ecfa558d8f36e2ea7acbbeace72acc48b3c347106b7@312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e@56"
+                    "asyncCallData": "str:payMe@56"
                 }
             }
         }
