@@ -159,11 +159,6 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("managedCreateAsyncCall", v1_4_managedCreateAsyncCall, C.v1_4_managedCreateAsyncCall)
-	if err != nil {
-		return nil, err
-	}
-
 	imports, err = imports.Append("managedGetMultiESDTCallValue", v1_4_managedGetMultiESDTCallValue, C.v1_4_managedGetMultiESDTCallValue)
 	if err != nil {
 		return nil, err
@@ -529,9 +524,43 @@ func v1_4_managedCreateAsyncCall(
 	gas int64,
 	extraGasForCallback int64,
 ) int32 {
+
+	return managedCreateAsyncCallWithHost(
+		context,
+		destHandle,
+		valueHandle,
+		functionHandle,
+		argumentsHandle,
+		successOffset,
+		successLength,
+		errorOffset,
+		errorLength,
+		gas,
+		extraGasForCallback)
+}
+
+// CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
+func managedCreateAsyncCallWithHost(
+	context unsafe.Pointer,
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	successOffset int32,
+	successLength int32,
+	errorOffset int32,
+	errorLength int32,
+	gas int64,
+	extraGasForCallback int64,
+) int32 {
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	managedType := host.ManagedTypes()
+
+	calledSCAddress, err := runtime.MemLoad(destHandle, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
 
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
@@ -557,14 +586,13 @@ func v1_4_managedCreateAsyncCall(
 	}
 
 	return CreateAsyncCallWithTypedArgs(host,
-		vmInput.destination,
-		value.Bytes(),
+		calledSCAddress,
 		[]byte(data),
+		value.Bytes(),
 		successFunc,
 		errorFunc,
 		gas,
 		extraGasForCallback)
-
 }
 
 //export v1_4_managedUpgradeFromSourceContract

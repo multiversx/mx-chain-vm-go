@@ -1,4 +1,5 @@
 {
+    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",
@@ -23,11 +24,13 @@
             "tx": {
                 "from": "address:paul",
                 "to": "sc:multisig",
-                "function": "proposeSCDeployFromSource",
+                "function": "proposeSCDeploy",
                 "arguments": [
                     "0",
-                    "sc:adder-code",
-                    "0x0000"
+                    "file:../test-contracts/adder.wasm",
+                    "false",
+                    "false",
+                    "false"
                 ],
                 "gasLimit": "200,000,000",
                 "gasPrice": "0"
@@ -96,7 +99,7 @@
         },
         {
             "step": "scCall",
-            "txId": "sc-deploy-perform-err",
+            "txId": "sc-deploy-perform",
             "tx": {
                 "from": "address:paul",
                 "to": "sc:multisig",
@@ -104,7 +107,7 @@
                 "arguments": [
                     "3"
                 ],
-                "gasLimit": "90,000,000",
+                "gasLimit": "70,000,000",
                 "gasPrice": "0"
             },
             "expect": {

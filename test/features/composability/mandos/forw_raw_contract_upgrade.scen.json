@@ -43,23 +43,20 @@
         },
         {
             "step": "scCall",
-            "txId": "upgrade-back-to-vault-with-args",
+            "txId": "upgrade-back-to-vault",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
                 "function": "upgrade",
                 "arguments": [
                     "sc:child",
-                    "file:../vault/output/vault.wasm",
-                    "str:upgrade-init-arg"
+                    "file:../vault/output/vault.wasm"
                 ],
                 "gasLimit": "500,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "str:upgrade-init-arg"
-                ]
+                "out": []
             }
         },
         {

@@ -29,13 +29,6 @@ func TestESDTMultiTransferOnCallback(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestCreateAsyncCall(t *testing.T) {
-	err := runSingleTestReturnError(
-		"features/composability/mandos",
-		"forw_raw_create_async_call.scen.json")
-	require.Nil(t, err)
-}
-
 func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
 	err := runSingleTestReturnError(
 		"features/composability/mandos",

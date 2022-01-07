@@ -8,7 +8,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-000001": {
+                        "str:NFT-0001": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -22,7 +22,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-000001": {
+                        "str:NFT-0001": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -48,7 +48,7 @@
                 "to": "sc:forwarder",
                 "function": "nft_create",
                 "arguments": [
-                    "str:NFT-000001",
+                    "str:NFT-0001",
                     "1",
                     "str:nft-create-name",
                     "0",
@@ -65,30 +65,6 @@
                     "2"
                 ],
                 "status": "0",
-                "logs": [
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:ESDTNFTCreate",
-                        "topics": [
-                            "str:NFT-000001",
-                            "2",
-                            "1",
-                            "*"
-                        ],
-                        "data": ""
-                    },
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:nft_create",
-                        "topics": [
-                            "str:create",
-                            "str:NFT-000001",
-                            "2",
-                            "1"
-                        ],
-                        "data": ""
-                    }
-                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -100,7 +76,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-000001": {
+                        "str:NFT-0001": {
                             "instances": [
                                 {
                                     "nonce": "1",
@@ -116,7 +92,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:NFT-000001": {
+                        "str:NFT-0001": {
                             "instances": [
                                 {
                                     "nonce": "1",

@@ -1,4 +1,5 @@
 {
+    "name": "echo_varags_u32",
     "gasSchedule": "v3",
     "steps": [
         {
