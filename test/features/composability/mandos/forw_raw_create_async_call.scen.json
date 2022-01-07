@@ -6,10 +6,7 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKENA": "1000"
-                    }
+                    "balance": "1000"
                 },
                 "sc:vault": {
                     "nonce": "0",
@@ -29,42 +26,37 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "esdtValue": [
-                    {
-                        "tokenIdentifier": "str:TEST-TOKENA",
-                        "value": "1000"
-                    }
-                ],
-                "function": "forward_payment",
+                "function": "forward_create_async_call",
                 "arguments": [
-                    "sc:vault"
+                    "sc:vault",
+                    "str:echo_arguments",
+                    "300,000,000",
+                    "100,000,000",
+                    "1",
+                    "2"
                 ],
-                "gasLimit": "50,000,000",
+                "gasLimit": "500,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [
+                    "1",
+                    "2"
+                ],
                 "status": "0",
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "endpoint": "str:ESDTTransfer",
+                        "endpoint": "str:success_callback",
                         "topics": [
-                            "str:TEST-TOKENA",
-                            "",
-                            "1000",
-                            "sc:vault"
-                        ],
-                        "data": ""
-                    },
-                    {
-                        "address": "sc:forwarder",
-                        "endpoint": "str:callBack",
-                        "topics": [
-                            "str:callback_raw"
+                            "str:async_call_event_callback"
                         ],
                         "data": {
-                            "0-status": "biguint:0"
+                            "0-status": "biguint:0",
+                            "1-echoed-args": [
+                                "biguint:1",
+                                "biguint:2"
+                            ]
                         }
                     }
                 ],
@@ -76,31 +68,19 @@
             "step": "checkState",
             "accounts": {
                 "address:a_user": {
-                    "nonce": "*",
-                    "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKENA": "0"
-                    },
-                    "storage": {},
-                    "code": ""
+                    "nonce": "1",
+                    "balance": "1000"
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "esdt": {
-                        "str:TEST-TOKENA": "1000"
-                    },
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:callback_data.len": "1",
-                        "str:callback_data.item|u32:1": [
-                            "u32:0"
-                        ]
+                        "str:async_call_callback_data": "true"
                     },
                     "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
