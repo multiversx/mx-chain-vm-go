@@ -13,6 +13,8 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/storage"
+	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -20,6 +22,8 @@ import (
 var logRuntime = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
+
+const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
@@ -32,6 +36,8 @@ type runtimeContext struct {
 	readOnly           bool
 	verifyCode         bool
 	maxWasmerInstances uint64
+
+	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
 	instanceStack []wasmer.InstanceHandler
@@ -67,6 +73,11 @@ func NewRuntimeContext(
 		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
+	var err error
+	context.warmInstanceCache, err = lrucache.NewCache(warmCacheSize)
+	if err != nil {
+		return nil, err
+	}
 	if check.IfNil(epochNotifier) {
 		return nil, arwen.ErrNilEpochNotifier
 	}
@@ -94,6 +105,11 @@ func (context *runtimeContext) InitState() {
 	logRuntime.Trace("init state")
 }
 
+// ClearWarmInstanceCache clears all elements from warm instance cache
+func (context *runtimeContext) ClearWarmInstanceCache() {
+	context.warmInstanceCache.Clear()
+}
+
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances
 // TODO remove after implementing proper mocking of
@@ -112,6 +128,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.GetSCAddress())
+	warmInstanceUsed := context.setWarmInstanceIfExists(gasLimit, codeHash)
+	if warmInstanceUsed {
+		return nil
+	}
+
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(codeHash, gasLimit, newCode)
 	if compiledCodeUsed {
 		return nil
@@ -206,6 +227,25 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	return nil
 }
 
+func (context *runtimeContext) setWarmInstanceIfExists(gasLimit uint64, codeHash []byte) bool {
+	cachedObject, ok := context.warmInstanceCache.Get(codeHash)
+	if !ok {
+		return false
+	}
+
+	warmInstance, ok := cachedObject.(wasmer.InstanceHandler)
+	if !ok {
+		return false
+	}
+
+	context.instance = warmInstance
+	context.SetPointsUsed(0)
+	context.instance.SetGasLimit(gasLimit)
+
+	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	return true
+}
+
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
@@ -232,6 +272,8 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 
 	blockchain := context.host.Blockchain()
 	blockchain.SaveCompiledCode(codeHash, compiledCode)
+
+	context.warmInstanceCache.Put(codeHash, context.instance, 1)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
