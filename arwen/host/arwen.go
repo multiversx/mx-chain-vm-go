@@ -2,6 +2,7 @@ package host
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"time"
 
@@ -322,7 +323,16 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
 	done := make(chan struct{})
+	errChan := make(chan error, 1)
 	go func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				log.Error("VM execution panicked", "error", r)
+				errChan <- errors.New("VM execution panicked")
+			}
+		}()
+
 		vmOutput = host.doRunSmartContractCreate(input)
 		close(done)
 	}()
@@ -332,6 +342,9 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		return
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
+		return
+	case err = <-errChan:
 		host.Runtime().FailExecution(err)
 		return
 	}
@@ -348,7 +361,16 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
 	done := make(chan struct{})
+	errChan := make(chan error, 1)
 	go func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				log.Error("VM execution panicked", "error", r)
+				errChan <- errors.New("VM execution panicked")
+			}
+		}()
+
 		isUpgrade := input.Function == arwen.UpgradeFunctionName
 		if isUpgrade {
 			vmOutput = host.doRunSmartContractUpgrade(input)
@@ -364,6 +386,9 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		return
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
+		return
+	case err = <-errChan:
 		host.Runtime().FailExecution(err)
 		return
 	}
