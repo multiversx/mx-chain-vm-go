@@ -239,15 +239,14 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
-	metering.UseGasAndAddTracedGas(smallIntStorageLoadUnsignedName, gasToUse)
-
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	data := storage.GetStorage(key)
+	data, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
+
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
 		_ = arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
@@ -263,15 +262,14 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageLoad
-	metering.UseGasAndAddTracedGas(smallIntStorageLoadSignedName, gasToUse)
-
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	data := storage.GetStorage(key)
+	data, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
+
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
 		_ = arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())

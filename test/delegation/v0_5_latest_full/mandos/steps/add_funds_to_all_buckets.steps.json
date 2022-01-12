@@ -7,9 +7,10 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
-                "arguments": ["6,000,000,000"],
+                "arguments": [
+                    "6,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
@@ -27,7 +28,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator2",
-                "value": "3,000,000,000"
+                "egldValue": "3,000,000,000"
             }
         },
         {
@@ -36,7 +37,7 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "3,000,000,000",
+                "egldValue": "3,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
