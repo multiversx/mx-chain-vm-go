@@ -131,6 +131,7 @@ type RuntimeContext interface {
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
 	CleanWasmerInstance()
+	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	GetInstance() wasmer.InstanceHandler

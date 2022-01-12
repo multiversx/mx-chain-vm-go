@@ -28,7 +28,7 @@ func Test_RunERC20Benchmark(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runERC20Benchmark(t, 1000, 4)
+	runERC20Benchmark(t, 100000, 4)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {

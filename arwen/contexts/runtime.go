@@ -38,6 +38,7 @@ type runtimeContext struct {
 	maxWasmerInstances uint64
 
 	warmInstanceCache storage.Cacher
+	localDataCache    storage.Cacher
 
 	stateStack    []*runtimeContext
 	instanceStack []wasmer.InstanceHandler
@@ -74,10 +75,15 @@ func NewRuntimeContext(
 	}
 
 	var err error
-	context.warmInstanceCache, err = lrucache.NewCache(warmCacheSize)
+	context.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvicted)
 	if err != nil {
 		return nil, err
 	}
+	context.localDataCache, err = lrucache.NewCacheWithEviction(warmCacheSize, localDataEvicted)
+	if err != nil {
+		return nil, err
+	}
+
 	if check.IfNil(epochNotifier) {
 		return nil, arwen.ErrNilEpochNotifier
 	}
@@ -87,6 +93,19 @@ func NewRuntimeContext(
 	context.InitState()
 
 	return context, nil
+}
+
+func instanceEvicted(_ interface{}, value interface{}) {
+	instance, ok := value.(wasmer.InstanceHandler)
+	if !ok {
+		return
+	}
+
+	instance.Clean()
+}
+
+func localDataEvicted(_ interface{}, value interface{}) {
+	value = nil
 }
 
 // InitState initializes all the contexts fields with default data.
@@ -108,6 +127,8 @@ func (context *runtimeContext) InitState() {
 // ClearWarmInstanceCache clears all elements from warm instance cache
 func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.warmInstanceCache.Clear()
+	context.localDataCache.Clear()
+	context.instance = nil
 }
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
@@ -233,7 +254,17 @@ func (context *runtimeContext) setWarmInstanceIfExists(gasLimit uint64, codeHash
 		return false
 	}
 
+	cachedMemoryObject, ok := context.localDataCache.Get(codeHash)
+	if !ok {
+		return false
+	}
+
 	warmInstance, ok := cachedObject.(wasmer.InstanceHandler)
+	if !ok {
+		return false
+	}
+
+	localMemory, ok := cachedMemoryObject.([]byte)
 	if !ok {
 		return false
 	}
@@ -241,6 +272,9 @@ func (context *runtimeContext) setWarmInstanceIfExists(gasLimit uint64, codeHash
 	context.instance = warmInstance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
+	instanceMemory := context.instance.GetMemory().Data()
+	instanceMemory = make([]byte, len(localMemory))
+	copy(instanceMemory, localMemory)
 
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return true
@@ -274,6 +308,12 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	blockchain.SaveCompiledCode(codeHash, compiledCode)
 
 	context.warmInstanceCache.Put(codeHash, context.instance, 1)
+
+	instanceMemory := context.instance.GetMemory().Data()
+	localMemory := make([]byte, len(instanceMemory))
+	copy(localMemory, instanceMemory)
+
+	context.localDataCache.Put(codeHash, localMemory, 1)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -685,16 +725,9 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.GetExports()
 }
 
-// CleanWasmerInstance cleans the current wasmer instance.
+// CleanWasmerInstance cleans the current wasmer instance. it does nothing as cache and eviction are cleaning
 func (context *runtimeContext) CleanWasmerInstance() {
-	if context.instance == nil {
-		return
-	}
-
-	context.instance.Clean()
-	context.instance = nil
-
-	logRuntime.Trace("instance cleaned")
+	return
 }
 
 // IsContractOnTheStack iterates over the state stack to find whether the

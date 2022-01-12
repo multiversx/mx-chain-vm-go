@@ -200,7 +200,7 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 }
 
 // ExecuteAsyncCall mocked method
-func (r *RuntimeContextMock) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+func (r *RuntimeContextMock) ExecuteAsyncCall(_ []byte, _ []byte, _ []byte) error {
 	return r.Err
 }
 
@@ -241,6 +241,10 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 
 // CleanWasmerInstance mocked method
 func (r *RuntimeContextMock) CleanWasmerInstance() {
+}
+
+// ClearWarmInstanceCache mocked method
+func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
 
 // GetFunctionToCall mocked method
@@ -343,7 +347,7 @@ func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
 }
 
 // AddError mocked method
-func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
+func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 }
 
 // GetAllErrors mocked method

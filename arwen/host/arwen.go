@@ -262,6 +262,11 @@ func (host *vmHost) InitState() {
 	host.initContexts()
 }
 
+// Close will close all underlying processes
+func (host *vmHost) Close() {
+	host.runtimeContext.ClearWarmInstanceCache()
+}
+
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.managedTypesContext.InitState()
@@ -307,6 +312,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
+	host.runtimeContext.ClearWarmInstanceCache()
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule

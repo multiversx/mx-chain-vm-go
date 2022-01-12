@@ -329,6 +329,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	require.NotNil(t, initFunc)
 
 	runtimeContext.CleanWasmerInstance()
+	runtimeContext.ClearWarmInstanceCache()
 	require.Nil(t, runtimeContext.instance)
 }
 

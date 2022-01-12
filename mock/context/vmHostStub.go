@@ -297,3 +297,7 @@ func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
+
+// Close -
+func (vhs *VMHostStub) Close() {
+}
