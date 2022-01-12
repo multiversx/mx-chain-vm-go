@@ -332,6 +332,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		return
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
 		return
 	}
 }
@@ -363,6 +364,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		return
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
 		return
 	}
 }
