@@ -60,6 +60,7 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func
 
 func (callerTest *MockInstancesTestTemplate) runTest() {
 	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.tb)
+	defer host.Close()
 
 	for _, mockSC := range *callerTest.contracts {
 		mockSC.initialize(callerTest.tb, host, imb)
