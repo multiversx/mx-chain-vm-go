@@ -53,6 +53,7 @@ type VMHost interface {
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+	Close()
 
 	FixOOGReturnCodeEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
