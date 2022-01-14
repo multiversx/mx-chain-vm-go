@@ -279,6 +279,14 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash
 		return false
 	}
 
+	warmInstanceMemory := warmInstance.GetMemory().Data()
+	if len(warmInstanceMemory) != len(localMemory) {
+		// TODO shrink the instance memory instead and return true
+		return false
+	}
+
+	copy(warmInstanceMemory, localMemory)
+
 	context.instance = warmInstance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
@@ -287,10 +295,6 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
-
-	instanceMemory := context.instance.GetMemory().Data()
-	instanceMemory = make([]byte, len(localMemory))
-	copy(instanceMemory, localMemory)
 
 	return true
 }
