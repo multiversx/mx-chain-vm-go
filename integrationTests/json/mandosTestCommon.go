@@ -56,7 +56,7 @@ func runSingleTestReturnError(folder string, filename string) error {
 	if err != nil {
 		return err
 	}
-	defer executor.GetVM().Close()
+	defer executor.Close()
 
 	runner := mc.NewScenarioRunner(
 		executor,
