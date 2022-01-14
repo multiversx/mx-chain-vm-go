@@ -278,11 +278,16 @@ func (context *runtimeContext) setWarmInstanceIfExists(gasLimit uint64, codeHash
 	context.instance = warmInstance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
+	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
+	hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
+	context.verifyCode = false
+
 	instanceMemory := context.instance.GetMemory().Data()
 	instanceMemory = make([]byte, len(localMemory))
 	copy(instanceMemory, localMemory)
 
-	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	return true
 }
 
