@@ -196,6 +196,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
+	context.saveWarmInstance(codeHash)
+
 	logRuntime.Trace("new instance created", "code", "cached compilation")
 	return true
 }
@@ -307,12 +309,20 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	blockchain := context.host.Blockchain()
 	blockchain.SaveCompiledCode(codeHash, compiledCode)
 
-	context.warmInstanceCache.Put(codeHash, context.instance, 1)
+	context.saveWarmInstance(codeHash)
+}
+
+func (context *runtimeContext) saveWarmInstance(codeHash []byte) {
+	if check.IfNil(context.instance.GetMemory()) {
+		return
+	}
 
 	instanceMemory := context.instance.GetMemory().Data()
+
 	localMemory := make([]byte, len(instanceMemory))
 	copy(localMemory, instanceMemory)
 
+	context.warmInstanceCache.Put(codeHash, context.instance, 1)
 	context.localDataCache.Put(codeHash, localMemory, 1)
 }
 

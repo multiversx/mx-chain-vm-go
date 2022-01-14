@@ -66,7 +66,7 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 
 	// add nodes
 	numNodesAtGenesis := 10 + r.Intn(190)
-	pfe.addNodes(numNodesAtGenesis)
+	_ = pfe.addNodes(numNodesAtGenesis)
 
 	// stake genesis
 	genesisStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(int64(numNodesAtGenesis)))
@@ -93,7 +93,7 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 	require.Nil(t, err)
 
 	// after genesis
-	pfe.increaseBlockNonce(r.Intn(10000))
+	_ = pfe.increaseBlockNonce(r.Intn(10000))
 	re := fuzzutil.NewRandomEventProvider(r)
 
 	for stepIndex := 0; stepIndex < 500; stepIndex++ {

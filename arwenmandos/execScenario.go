@@ -12,6 +12,12 @@ import (
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
 	ae.World.Clear()
+	ae.vm.Close()
+}
+
+// Close will simply close the VM
+func (ae *ArwenTestExecutor) Close() {
+	ae.vm.Close()
 }
 
 // ExecuteScenario executes an individual test.

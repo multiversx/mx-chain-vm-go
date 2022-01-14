@@ -320,3 +320,8 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
 }
+
+// IsInterfaceNil returns true if underlying object is nil
+func (instance *Instance) IsInterfaceNil() bool {
+	return instance == nil
+}
