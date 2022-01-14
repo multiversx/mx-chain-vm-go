@@ -5,19 +5,24 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
+	if !check.IfNil(ae.vm) {
+		ae.vm.Close()
+	}
 	ae.World.Clear()
-	ae.vm.Close()
 }
 
 // Close will simply close the VM
 func (ae *ArwenTestExecutor) Close() {
-	ae.vm.Close()
+	if !check.IfNil(ae.vm) {
+		ae.vm.Close()
+	}
 }
 
 // ExecuteScenario executes an individual test.

@@ -32,7 +32,7 @@ func runAllTestsInFolder(t *testing.T, folder string) {
 func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
-	defer executor.GetVM().Close()
+	defer executor.Close()
 
 	runner := mc.NewScenarioRunner(
 		executor,
