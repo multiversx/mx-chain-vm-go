@@ -255,6 +255,10 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash
 		return false
 	}
 
+	if context.IsContractOnTheStack(context.scAddress) {
+		return false
+	}
+
 	cachedObject, ok := context.warmInstanceCache.Get(codeHash)
 	if !ok {
 		return false
