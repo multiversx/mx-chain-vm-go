@@ -300,7 +300,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	defer host1.Close()
 	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
-	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	host1.SetRuntimeContext(runtimeContextMock)
 
 	for i := 0; i < 5; i++ {
@@ -318,7 +317,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	defer host2.Close()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
 		return code, nil
 	}

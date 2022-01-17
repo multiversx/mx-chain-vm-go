@@ -286,11 +286,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.storageContext.ClearStateStack()
 }
 
-// Clean closes the currently running Wasmer instance
-func (host *vmHost) Clean() {
-	host.runtimeContext.CleanWasmerInstance()
-}
-
 // GetAPIMethods returns the EEI as a set of imports for Wasmer
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods

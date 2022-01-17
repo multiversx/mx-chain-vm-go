@@ -239,10 +239,6 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
 }
 
-// CleanWasmerInstance mocked method
-func (r *RuntimeContextMock) CleanWasmerInstance() {
-}
-
 // ClearWarmInstanceCache mocked method
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
