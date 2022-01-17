@@ -1,8 +1,10 @@
 package host
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"sync"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
@@ -23,13 +25,9 @@ var log = logger.GetOrCreate("arwen/host")
 // MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
 var MaximumWasmerInstanceCount = uint64(10)
 
-// TryFunction corresponds to the try() part of a try / catch block
-type TryFunction func()
-
-// CatchFunction corresponds to the catch() part of a try / catch block
-type CatchFunction func(error)
-
 var _ arwen.VMHost = (*vmHost)(nil)
+
+const executionTimeout = time.Second
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -319,23 +317,37 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	defer cancel()
+
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
-	try := func() {
+	done := make(chan struct{})
+	errChan := make(chan error, 1)
+	go func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				log.Error("VM execution panicked", "error", r)
+				errChan <- errors.New("VM execution panicked")
+			}
+		}()
+
 		vmOutput = host.doRunSmartContractCreate(input)
-	}
+		close(done)
+	}()
 
-	catch := func(caught error) {
-		err = caught
-		log.Error("RunSmartContractCreate", "error", err)
+	select {
+	case <-done:
+		return
+	case <-ctx.Done():
+		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
+		return
+	case err = <-errChan:
+		host.Runtime().FailExecution(err)
+		return
 	}
-
-	TryCatch(try, catch, "arwen.RunSmartContractCreate")
-	if vmOutput != nil {
-		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
-	}
-
-	return
 }
 
 // RunSmartContractCall executes the call of an existing contract
@@ -343,45 +355,43 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	defer cancel()
+
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
-	tryUpgrade := func() {
-		vmOutput = host.doRunSmartContractUpgrade(input)
-	}
-
-	tryCall := func() {
-		vmOutput = host.doRunSmartContractCall(input)
-	}
-
-	catch := func(caught error) {
-		err = caught
-		log.Error("RunSmartContractCall", "error", err)
-	}
-
-	isUpgrade := input.Function == arwen.UpgradeFunctionName
-	if isUpgrade {
-		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
-	} else {
-		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
-	}
-
-	return
-}
-
-// TryCatch simulates a try/catch block using golang's recover() functionality
-func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) {
-	defer func() {
-		if r := recover(); r != nil {
-			err, ok := r.(error)
-			if !ok {
-				err = fmt.Errorf("%s, panic: %v", catchFallbackMessage, r)
+	done := make(chan struct{})
+	errChan := make(chan error, 1)
+	go func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				log.Error("VM execution panicked", "error", r)
+				errChan <- errors.New("VM execution panicked")
 			}
+		}()
 
-			catch(err)
+		isUpgrade := input.Function == arwen.UpgradeFunctionName
+		if isUpgrade {
+			vmOutput = host.doRunSmartContractUpgrade(input)
+		} else {
+			vmOutput = host.doRunSmartContractCall(input)
 		}
+
+		close(done)
 	}()
 
-	try()
+	select {
+	case <-done:
+		return
+	case <-ctx.Done():
+		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
+		return
+	case err = <-errChan:
+		host.Runtime().FailExecution(err)
+		return
+	}
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard
