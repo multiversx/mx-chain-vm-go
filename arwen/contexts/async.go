@@ -196,7 +196,7 @@ func (context *asyncContext) PopSetActiveState() {
 	context.childResults = prevState.childResults
 	context.callsCounter = prevState.callsCounter
 	context.totalCallsCounter = prevState.totalCallsCounter
-	context.gasAccumulated += prevState.gasAccumulated
+	context.gasAccumulated = math.AddUint64(context.gasAccumulated, prevState.gasAccumulated)
 }
 
 func (context *asyncContext) Clone() arwen.AsyncContext {

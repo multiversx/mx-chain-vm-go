@@ -144,7 +144,7 @@ func createGraphContractMockMethod(
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
 		crtFunctionCalled := host.Runtime().Function()
-		LogGraph.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
+		logAsync.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
 
 		crtNode, runtimeConfig := getGraphNodeAndItsRuntimeConfig(callGraph, host, crtFunctionCalled, runtimeConfigsForCalls)
 
@@ -163,10 +163,6 @@ func createGraphContractMockMethod(
 			return instance
 		}
 
-		// burn gas for function
-		logAsync.Trace("Burning", "gas", runtimeConfig.gasUsed, "function", crtFunctionCalled)
-		host.Metering().UseGasBounded(uint64(runtimeConfig.gasUsed))
-
 		for _, edge := range crtNode.AdjacentEdges {
 			if edge.Type == Sync {
 				breakPointValue := makeSyncCallFromEdge(host, edge, testConfig)
@@ -182,6 +178,14 @@ func createGraphContractMockMethod(
 				}
 			}
 		}
+
+		// burn gas for function
+		gasUsed := uint64(runtimeConfig.gasUsed)
+		logAsync.Trace("Burning", "gas", gasUsed, "function", crtFunctionCalled)
+		err = host.Metering().UseGasBounded(gasUsed)
+
+		logAsync.Trace("End of call", "gas left", host.Metering().GasLeft(),
+			"function", crtFunctionCalled, "contract", string(host.Runtime().GetSCAddress()))
 
 		return instance
 	}

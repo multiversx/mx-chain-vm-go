@@ -35,277 +35,277 @@ var logAsync = logger.GetOrCreate("arwen/async")
 
 func TestGraph_SyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncCalls())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncCalls2_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncCalls2())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncCalls_FailPropagation_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncCallsFailPropagation())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCall_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCall())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallCustomGasLocked_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallCustomGasLocked())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallNoCallback_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallNoCallback())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallNoCallbackFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallNoCallbackFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallIndirectFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallIndirectFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallbackFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallbackFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallbackIndirectFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallbackIndirectFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallNoCallbackCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallNoCallbackCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallCrossShard2_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallCrossShard2())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallFailNoCallbackCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallFailNoCallbackCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallIndirectFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallIndirectFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_OneAsyncCallbackFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestOneAsyncCallbackFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallbackIndirectFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallbackIndirectFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCalls())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstNoCallback_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstNoCallback())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondNoCallback_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondNoCallback())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstCallbackFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstCallbackFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondCallbackFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondCallbackFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothCallbacksFail_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothCallbacksFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCalls_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstNoCallback_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncFirstNoCallbackCallsLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondNoCallback_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncSecondNoCallbackCallsLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstFail_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondFail_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothFail_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstCallbackFail_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstCallbackFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondCallbackFail_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondCallbackFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothCallbacksFail_LocalCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothCallbacksFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCalls_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstNoCallback_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstNoCallbackCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondNoCallback_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondNoCallbackCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstFail_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondFail_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothFail_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstCallbackFail_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstCallbackFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondCallbackFail_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondCallbackFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothCallbacksFail_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothCallbacksFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstNoCallback_CrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstNoCallbackCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondNoCallback_CrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondNoCallbackCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsFirstCallbackFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsFirstCallbackFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsSecondCallbackFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsSecondCallbackFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_TwoAsyncCallsBothCallbacksFailCrossShard_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestTwoAsyncCallsBothCallbacksFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncsOnMultiLevelFail1_CallGraph(t *testing.T) {
@@ -335,97 +335,97 @@ func TestGraph_AsyncsOnMultiLevelFail2_CallGraph(t *testing.T) {
 func TestGraph_AsyncCallsAsync_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsync())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstNoCallback())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondNoCallback())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstCallbackFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondCallbackFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncBothCallbacksFail())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsync_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallback_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallback_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsync_LocalCross_CallGraph(t *testing.T) {
@@ -452,7 +452,7 @@ func TestGraph_AsyncCallsAsyncSecondNoCallback_LocalCross_CallGraph(t *testing.T
 func TestGraph_AsyncCallsAsyncFirstFail_LocalCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFail_LocalCross_CallGraph(t *testing.T) {
@@ -474,7 +474,7 @@ func TestGraph_AsyncCallsAsyncSecondCallbackFail_LocalCross_CallGraph(t *testing
 	// prevents storage cleanup taking place
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFail_LocalCross_CallGraph(t *testing.T) {
@@ -482,229 +482,230 @@ func TestGraph_AsyncCallsAsyncBothCallbacksFail_LocalCross_CallGraph(t *testing.
 	// prevents storage cleanup taking place
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstNoCallbackCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstNoCallbackCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondNoCallbackCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondNoCallbackCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstFailCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondFailCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncFirstCallbackFailCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncFirstCallbackFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncSecondCallbackFailCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncSecondCallbackFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCallsAsyncBothCallbacksFailCrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsAsyncBothCallbacksFailCrossShard())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestDifferentTypeOfCallsToSameFunction())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_LocalLocal_CallGraph(t *testing.T) {
+	arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsLocalLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_LocalCross_CallGraph(t *testing.T) {
 	//arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_CrossLocal_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_CrossCross_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsCrossCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsSync_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsSync())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_LocalLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncLocalLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_LocalLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncFailLocalLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_LocalLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_LocalCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_LocalCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_LocalCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncCallbackFailLocalCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_CrossLocal_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossLocal())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsync_CrossCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncCrossCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncFail_CrossCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncFailCrossCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_CallbackCallsAsyncCallbackFail_CrossCross_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestCallbackCallsAsyncCallbackFailCrossCross())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync1_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync1())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync2_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync2())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync3_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync3())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync4_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync4())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync5_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync5())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync6_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync6())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync7_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync7())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync8_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync8())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync9_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync9())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync10_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync10())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SyncAndAsync11_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncAndAsync11())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall2_CrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsCrossShard2())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall3_CrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsCrossShard3())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall4_CrossShard_CallGraph(t *testing.T) {
@@ -731,7 +732,7 @@ func TestGraph_AsyncCall6_CrossShard_CallGraph(t *testing.T) {
 func TestGraph_AsyncCall7_CrossShard_CallGraph(t *testing.T) {
 	t.Skip("multi-level only")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestAsyncCallsCrossShard7())
-	runGraphCallTestTemplate(t, callGraph)
+	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_AsyncCall8_CrossShard_CallGraph(t *testing.T) {
@@ -762,7 +763,7 @@ var assertsConfigForR1MultiLevel = &assertsConfig{
 	},
 }
 
-func runGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
+func RunGraphCallTestTemplate(t *testing.T, callGraph *test.TestCallGraph) {
 	// regular tests, with full asserts
 	runGraphCallTestTemplateWithCustomAssertsConfig(t, callGraph, &assertsConfig{
 		assertsAfterEachRootCall: func(startNode *test.TestCallNode, world *worldmock.MockWorld, verify *test.VMOutputVerifier, expectedErrorsForRound []string) {
@@ -1002,7 +1003,6 @@ func computeExpectedValues(gasGraph *test.TestCallGraph) []*test.CallFinishDataI
 		}
 
 		expectedCallsFinishData = append(expectedCallsFinishData, expectedCallFinishData)
-		return
 	})
 
 	return expectedCallsFinishData

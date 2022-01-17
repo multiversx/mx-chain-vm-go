@@ -1141,27 +1141,22 @@ func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks(t *testing.T) {
 		} else {
 			nodeGasRemaining := int64(node.GasLimit)
 			for _, edge := range node.AdjacentEdges {
+				if edge.To.IsLeaf() {
+					continue
+				}
 				if edge.Type != Callback && edge.Type != CallbackCrossShard {
-					nodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
-					if nodeGasRemaining < 0 {
-						var incomingEdgeLabel string
-						if incomingEdge != nil {
-							incomingEdgeLabel = incomingEdge.Label
-						}
-						err := fmt.Errorf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel)
-						if t != nil {
-							t.Error(err)
-						} else {
-							panic(err)
-						}
+					nodeGasRemaining = nodeGasRemaining -
+						int64(edge.To.GasLimit+edge.To.GasLocked)
+					if !edge.To.IsAsync() {
+						nodeGasRemaining = nodeGasRemaining + int64(edge.To.GasRemaining)
 					}
+					// if nodeGasRemaining < 0 {
+					// 	badGasConfigError(node, incomingEdge, t)
+					// }
 				}
 			}
 
-			node.GasRemaining += uint64(nodeGasRemaining)
-			if parent != nil && incomingEdge.Type != Async && incomingEdge.Type != AsyncCrossShard {
-				parent.GasRemaining += uint64(node.GasRemaining)
-			}
+			node.GasRemaining = uint64(nodeGasRemaining) - node.GasUsed
 		}
 
 		if node.IsAsync() && !node.HasCallback() {
@@ -1187,16 +1182,20 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 
 		nodeGasRemaining := int64(node.GasLimit)
 		for _, edge := range node.AdjacentEdges {
-			nodeGasRemaining -= int64(edge.To.GasLimit + edge.To.GasLocked)
+			if edge.To.IsLeaf() {
+				continue
+			}
+			nodeGasRemaining = nodeGasRemaining -
+				int64(edge.To.GasLimit+edge.To.GasLocked)
+			if !edge.To.IsAsync() {
+				nodeGasRemaining = nodeGasRemaining + int64(edge.To.GasRemaining)
+			}
 			if nodeGasRemaining < 0 {
-				var incomingEdgeLabel string
-				if incomingEdge != nil {
-					incomingEdgeLabel = incomingEdge.Label
-				}
-				panic(fmt.Sprintf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel))
+				badGasConfigError(node, incomingEdge, nil)
 			}
 		}
-		node.GasRemaining += uint64(nodeGasRemaining)
+
+		node.GasRemaining = uint64(nodeGasRemaining) - node.GasUsed
 
 		// propagate remaining gas
 		asyncInitiator := node.Parent.Parent
@@ -1219,7 +1218,6 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 						crtParent.GasRemaining += node.GasRemaining
 					}
 
-					crtEdgeType = crtParent.GetIncomingEdgeType()
 					if crtEdgeType == Async || crtEdgeType == AsyncCrossShard {
 						for _, edge := range crtParent.AdjacentEdges {
 							if edge.Type == Callback || edge.Type == CallbackCrossShard {
@@ -1227,6 +1225,7 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 							}
 						}
 					}
+
 					if crtEdgeType == Async || crtEdgeType == AsyncCrossShard ||
 						crtEdgeType == Callback || crtEdgeType == CallbackCrossShard {
 						break
@@ -1239,4 +1238,17 @@ func (graph *TestCallGraph) ComputeRemainingGasAfterCallbacks() {
 
 		return node
 	})
+}
+
+func badGasConfigError(node *TestCallNode, incomingEdge *TestCallEdge, t *testing.T) {
+	var incomingEdgeLabel string
+	if incomingEdge != nil {
+		incomingEdgeLabel = incomingEdge.Label
+	}
+	err := fmt.Errorf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel)
+	if t != nil {
+		t.Error(err)
+	} else {
+		panic(err)
+	}
 }
