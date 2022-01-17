@@ -382,6 +382,11 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
+// Close closes all internal instances of the vm
+func (host *vmHost) Close() error {
+	return nil
+}
+
 // TryCatch simulates a try/catch block using golang's recover() functionality
 func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) {
 	defer func() {

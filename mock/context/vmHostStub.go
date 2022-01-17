@@ -238,6 +238,11 @@ func (vhs *VMHostStub) RunSmartContractCall(input *vmcommon.ContractCallInput) (
 	return nil, nil
 }
 
+// Close -
+func (vhs *VMHostStub) Close() error {
+	return nil
+}
+
 // RunSmartContractCreate mocked method
 func (vhs *VMHostStub) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	if vhs.RunSmartContractCreateCalled != nil {
