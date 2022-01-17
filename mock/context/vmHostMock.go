@@ -157,6 +157,11 @@ func (host *VMHostMock) RunSmartContractCall(_ *vmcommon.ContractCallInput) (vmO
 	return nil, nil
 }
 
+// Close -
+func (host *VMHostMock) Close() error {
+	return nil
+}
+
 // RunSmartContractCreate mocked method
 func (host *VMHostMock) RunSmartContractCreate(_ *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	return nil, nil
