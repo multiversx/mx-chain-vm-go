@@ -299,5 +299,6 @@ func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 }
 
 // Close -
-func (vhs *VMHostStub) Close() {
+func (vhs *VMHostStub) Close() error {
+	return nil
 }

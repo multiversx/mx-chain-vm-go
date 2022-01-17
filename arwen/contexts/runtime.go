@@ -227,8 +227,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	context.saveCompiledCode(codeHash)
-
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 
@@ -241,6 +239,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
+	context.saveCompiledCode(codeHash)
 	logRuntime.Trace("new instance created", "code", "bytecode")
 
 	return nil

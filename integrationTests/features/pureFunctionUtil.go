@@ -158,6 +158,6 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
 
-		pfe.vm.Close()
+		_ = pfe.vm.Close()
 	}
 }

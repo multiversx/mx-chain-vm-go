@@ -263,8 +263,9 @@ func (host *vmHost) InitState() {
 }
 
 // Close will close all underlying processes
-func (host *vmHost) Close() {
+func (host *vmHost) Close() error {
 	host.runtimeContext.ClearWarmInstanceCache()
+	return nil
 }
 
 func (host *vmHost) initContexts() {

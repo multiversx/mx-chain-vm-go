@@ -51,7 +51,9 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(
 
 func (callerTest *TestCreateTemplateConfig) runTest() {
 	host, stubBlockchainHook := DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
-	defer host.Close()
+	defer func() {
+		_ = host.Close()
+	}()
 
 	callerTest.setup(host, stubBlockchainHook)
 

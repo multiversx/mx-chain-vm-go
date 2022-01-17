@@ -13,7 +13,7 @@ import (
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
 	if !check.IfNil(ae.vm) {
-		ae.vm.Close()
+		_ = ae.vm.Close()
 	}
 	ae.World.Clear()
 }
@@ -21,7 +21,7 @@ func (ae *ArwenTestExecutor) Reset() {
 // Close will simply close the VM
 func (ae *ArwenTestExecutor) Close() {
 	if !check.IfNil(ae.vm) {
-		ae.vm.Close()
+		_ = ae.vm.Close()
 	}
 }
 
