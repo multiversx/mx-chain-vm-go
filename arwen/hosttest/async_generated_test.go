@@ -14,6 +14,7 @@ import (
 )
 
 func TestGraph_Generated(t *testing.T) {
+	t.Skip("needs trace input")
 	// arwen.SetLoggingForTestsWithLogger("arwen/async")
 	// path := "/home/bogdan/_-calls-trace.txt"
 
