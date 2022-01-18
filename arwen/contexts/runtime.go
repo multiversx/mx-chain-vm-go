@@ -264,13 +264,10 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash
 		return false
 	}
 
-	warmInstanceMemory := localContract.instance.GetMemory().Data()
-	if len(warmInstanceMemory) != len(localContract.memory) {
-		// TODO shrink the instance memory instead and return true
+	success := localContract.instance.SetMemory(localContract.memory)
+	if !success {
 		return false
 	}
-
-	copy(warmInstanceMemory, localContract.memory)
 
 	context.instance = localContract.instance
 	context.SetPointsUsed(0)

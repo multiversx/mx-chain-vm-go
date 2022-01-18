@@ -16,6 +16,7 @@ type InstanceHandler interface {
 	GetData() uintptr
 	GetInstanceCtxMemory() MemoryHandler
 	GetMemory() MemoryHandler
+	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 }

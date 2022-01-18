@@ -150,6 +150,11 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
+// SetMemory -
+func (instance *InstanceMock) SetMemory(_ []byte) bool {
+	return false
+}
+
 // IsInterfaceNil -
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
