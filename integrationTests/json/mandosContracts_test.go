@@ -16,6 +16,10 @@ func TestCErc20(t *testing.T) {
 	runAllTestsInFolder(t, "erc20-c")
 }
 
+func TestDigitalCash(t *testing.T) {
+	runAllTestsInFolder(t, "digital-cash")
+}
+
 func TestMultisig(t *testing.T) {
 	runAllTestsInFolder(t, "multisig/mandos")
 }
