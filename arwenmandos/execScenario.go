@@ -120,8 +120,8 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	}
 
 	// replace block info
-	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo)
-	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo)
+	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo, ae.World.PreviousBlockInfo)
+	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo, ae.World.CurrentBlockInfo)
 	ae.World.Blockhashes = mj.JSONBytesFromStringValues(step.BlockHashes)
 
 	// append NewAddressMocks
