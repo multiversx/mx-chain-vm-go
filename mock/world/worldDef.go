@@ -23,6 +23,7 @@ type BlockInfo struct {
 	RandomSeed     *[48]byte
 }
 
+// GetRandomSeedSlice returns the random seed
 func (bi *BlockInfo) GetRandomSeedSlice() []byte {
 	if bi.RandomSeed == nil {
 		bi.RandomSeed = &[48]byte{}
