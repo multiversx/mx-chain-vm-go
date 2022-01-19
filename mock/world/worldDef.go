@@ -23,6 +23,14 @@ type BlockInfo struct {
 	RandomSeed     *[48]byte
 }
 
+// GetRandomSeedSlice returns the random seed
+func (bi *BlockInfo) GetRandomSeedSlice() []byte {
+	if bi.RandomSeed == nil {
+		bi.RandomSeed = &[48]byte{}
+	}
+	return bi.RandomSeed[:]
+}
+
 // MockWorld provides a mock representation of the blockchain to be used in VM tests.
 type MockWorld struct {
 	SelfShardID                uint32
@@ -47,7 +55,7 @@ func NewMockWorld() *MockWorld {
 		AcctMap:           accountMap,
 		AccountsAdapter:   nil,
 		PreviousBlockInfo: nil,
-		CurrentBlockInfo:  &BlockInfo{},
+		CurrentBlockInfo:  nil,
 		Blockhashes:       nil,
 		NewAddressMocks:   nil,
 		CompiledCode:      make(map[string][]byte),
