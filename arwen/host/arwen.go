@@ -345,11 +345,12 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
-		return
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
-		return
 	}
+
+	<-done
+	return
 }
 
 // RunSmartContractCall executes the call of an existing contract
@@ -389,11 +390,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
-		return
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
-		return
 	}
+
+	<-done
+	return
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard
