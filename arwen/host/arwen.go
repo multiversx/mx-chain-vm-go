@@ -362,17 +362,14 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
-	done := make(chan struct{})
-	errChan := make(chan error, 1)
-	go func() {
-		defer func() {
-			r := recover()
-			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				errChan <- errors.New("VM execution panicked")
-			}
-		}()
+	defer func() {
+		r := recover()
+		if r != nil {
+			log.Error("VM execution panicked", "error", r)
+		}
+	}()
 
+	for {
 		isUpgrade := input.Function == arwen.UpgradeFunctionName
 		if isUpgrade {
 			vmOutput = host.doRunSmartContractUpgrade(input)
@@ -380,20 +377,18 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			vmOutput = host.doRunSmartContractCall(input)
 		}
 
-		close(done)
-	}()
+		if vmOutput != nil {
+			break
+		}
 
-	select {
-	case <-done:
-		return
-	case <-ctx.Done():
-		err = arwen.ErrExecutionFailedWithTimeout
-		host.Runtime().FailExecution(err)
-		return
-	case err = <-errChan:
-		host.Runtime().FailExecution(err)
-		return
+		select {
+		case <-ctx.Done():
+			err = arwen.ErrExecutionFailedWithTimeout
+			host.Runtime().FailExecution(err)
+		}
 	}
+
+	return
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard
