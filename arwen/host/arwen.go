@@ -378,7 +378,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		}
 
 		if vmOutput != nil {
-			break
+			return
 		}
 
 		select {
@@ -387,8 +387,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			host.Runtime().FailExecution(err)
 		}
 	}
-
-	return
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard
