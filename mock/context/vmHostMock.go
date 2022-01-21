@@ -199,3 +199,8 @@ func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
+
+// Close -
+func (host *VMHostMock) Close() error {
+	return nil
+}

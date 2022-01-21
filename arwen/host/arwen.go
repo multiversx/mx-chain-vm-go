@@ -260,6 +260,12 @@ func (host *vmHost) InitState() {
 	host.initContexts()
 }
 
+// Close will close all underlying processes
+func (host *vmHost) Close() error {
+	host.runtimeContext.ClearWarmInstanceCache()
+	return nil
+}
+
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.managedTypesContext.InitState()
@@ -277,11 +283,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
-}
-
-// Clean closes the currently running Wasmer instance
-func (host *vmHost) Clean() {
-	host.runtimeContext.CleanWasmerInstance()
 }
 
 // GetAPIMethods returns the EEI as a set of imports for Wasmer
@@ -305,6 +306,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
+	host.runtimeContext.ClearWarmInstanceCache()
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
@@ -343,11 +345,12 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
-		return
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
-		return
 	}
+
+	<-done
+	return
 }
 
 // RunSmartContractCall executes the call of an existing contract
@@ -387,11 +390,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
-		return
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
-		return
 	}
+
+	<-done
+	return
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard

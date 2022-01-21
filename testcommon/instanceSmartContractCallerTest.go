@@ -86,6 +86,9 @@ func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arw
 
 func runTestWithInstances(callerTest *InstancesTestTemplate) {
 	host, blockchainHookStub := defaultTestArwenForContracts(callerTest.tb, callerTest.contracts)
+	defer func() {
+		_ = host.Close()
+	}()
 
 	callerTest.setup(host, blockchainHookStub)
 
