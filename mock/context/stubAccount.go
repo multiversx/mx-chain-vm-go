@@ -37,6 +37,11 @@ func (a *StubAccount) GetCodeMetadata() []byte {
 	return a.CodeMetadata
 }
 
+// SetCodeMetadata -
+func (a *StubAccount) SetCodeMetadata(codeMetadata []byte) {
+	a.CodeMetadata = codeMetadata
+}
+
 // GetCodeHash -
 func (a *StubAccount) GetCodeHash() []byte {
 	return a.CodeHash
@@ -70,7 +75,7 @@ func (a *StubAccount) GetUserName() []byte {
 	return a.UserName
 }
 
-// DataTrieTracker -
+// AccountDataHandler -
 func (a *StubAccount) AccountDataHandler() vmcommon.AccountDataHandler {
 	panic("implement me")
 }

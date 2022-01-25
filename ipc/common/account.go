@@ -34,6 +34,11 @@ func (a *Account) GetCodeMetadata() []byte {
 	return a.CodeMetadata
 }
 
+// SetCodeMetadata -
+func (a *Account) SetCodeMetadata(codeMetadata []byte) {
+	a.CodeMetadata = codeMetadata
+}
+
 // GetCodeHash gets the code hash
 func (a *Account) GetCodeHash() []byte {
 	return a.CodeHash
@@ -65,12 +70,12 @@ func (a *Account) GetOwnerAddress() []byte {
 	return a.OwnerAddress
 }
 
-// GetOwnerAddress gets the username
+// GetUserName gets the username
 func (a *Account) GetUserName() []byte {
 	return a.UserName
 }
 
-// DataTrieTracker -
+// AccountDataHandler -
 func (a *Account) AccountDataHandler() vmcommon.AccountDataHandler {
 	return nil
 }
