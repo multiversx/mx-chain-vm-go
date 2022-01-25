@@ -283,11 +283,12 @@ func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []
 	length := len(encodedBigFloat)
 	if length < minEncodedBigFloatNumArgs {
 		return true
-	} else if length == 6 && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
+	} else if length == minEncodedBigFloatNumArgs && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
 		return true
 	}
 
-	return !bytes.Equal(encodedBigFloat[:6], positiveEncodedBigFloatPrefix[:]) && !bytes.Equal(encodedBigFloat[:6], negativeEncodedBigFloatPrefix[:])
+	return !bytes.Equal(encodedBigFloat[:minEncodedBigFloatNumArgs], positiveEncodedBigFloatPrefix[:]) &&
+		!bytes.Equal(encodedBigFloat[:minEncodedBigFloatNumArgs], negativeEncodedBigFloatPrefix[:])
 }
 
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
