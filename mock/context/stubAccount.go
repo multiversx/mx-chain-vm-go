@@ -32,6 +32,11 @@ func (a *StubAccount) GetNonce() uint64 {
 	return a.Nonce
 }
 
+// SetCodeMetaData -
+func (a *StubAccount) SetCodeMetaData(codeMetaData []byte) {
+	a.CodeMetadata = codeMetaData
+}
+
 // GetCodeMetadata -
 func (a *StubAccount) GetCodeMetadata() []byte {
 	return a.CodeMetadata
