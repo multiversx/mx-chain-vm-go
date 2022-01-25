@@ -281,14 +281,14 @@ func (context *managedTypesContext) BigFloatExpIsNotValid(exponent int) bool {
 // EncodedBigFloatIsNotValid checks if an encoded big float is not valid
 func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool {
 	length := len(encodedBigFloat)
-	if length < minEncodedBigFloatNumArgs {
+	if length < minEncodedBigFloatLength {
 		return true
-	} else if length == minEncodedBigFloatNumArgs && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
+	} else if length == minEncodedBigFloatLength && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
 		return true
 	}
 
-	return !bytes.Equal(encodedBigFloat[:minEncodedBigFloatNumArgs], positiveEncodedBigFloatPrefix[:]) &&
-		!bytes.Equal(encodedBigFloat[:minEncodedBigFloatNumArgs], negativeEncodedBigFloatPrefix[:])
+	return !bytes.Equal(encodedBigFloat[:minEncodedBigFloatLength], positiveEncodedBigFloatPrefix[:]) &&
+		!bytes.Equal(encodedBigFloat[:minEncodedBigFloatLength], negativeEncodedBigFloatPrefix[:])
 }
 
 // GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
