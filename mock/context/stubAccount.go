@@ -72,6 +72,10 @@ func (a *StubAccount) GetCodeMetadata() []byte {
 	return a.CodeMetadata
 }
 
+func (a *StubAccount) SetCodeMetadata(codeMetadata []byte) {
+	a.CodeMetadata = codeMetadata
+}
+
 // GetCodeHash -
 func (a *StubAccount) GetCodeHash() []byte {
 	return a.CodeHash
