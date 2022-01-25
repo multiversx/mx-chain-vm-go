@@ -37,6 +37,8 @@ const p256CurveUnmarshalCompressedMultiplier = 100
 const p384CurveUnmarshalCompressedMultiplier = 200
 const p521CurveUnmarshalCompressedMultiplier = 400
 
+const minEncodedBigFloatNumArgs = 6
+
 type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
 type bigFloatMap map[int32]*big.Float
@@ -214,7 +216,7 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 // ConsumeGasForBigFloatCopy
 func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
 	// TODO THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
-	context.ConsumeGasForThisIntNumberOfBytes(int(encodedBigFloatMaxByteLen) * len(values))
+	context.ConsumeGasForThisIntNumberOfBytes(encodedBigFloatMaxByteLen * len(values))
 }
 
 // BIGINT
@@ -279,7 +281,7 @@ func (context *managedTypesContext) BigFloatExpIsNotValid(exponent int) bool {
 // EncodedBigFloatIsNotValid checks if an encoded big float is not valid
 func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool {
 	length := len(encodedBigFloat)
-	if length < 6 {
+	if length < minEncodedBigFloatNumArgs {
 		return true
 	} else if length == 6 && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
 		return true
