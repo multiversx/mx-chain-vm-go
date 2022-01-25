@@ -37,7 +37,7 @@ const p256CurveUnmarshalCompressedMultiplier = 100
 const p384CurveUnmarshalCompressedMultiplier = 200
 const p521CurveUnmarshalCompressedMultiplier = 400
 
-const minEncodedBigFloatNumArgs = 6
+const minEncodedBigFloatLength = 6
 
 type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
