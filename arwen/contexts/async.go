@@ -705,7 +705,7 @@ func (context *asyncContext) Load() error {
 	storage := context.host.Storage()
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetPrevTxHash())
-	data := storage.GetStorage(storageKey)
+	data, _ := storage.GetStorage(storageKey)
 	if len(data) == 0 {
 		return arwen.ErrNoStoredAsyncContextFound
 	}
