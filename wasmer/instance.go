@@ -194,6 +194,8 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+const USE_RKYV = true
+
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options CompilationOptions,
@@ -205,8 +207,13 @@ func NewInstanceFromCompiledCodeWithOptions(
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
+	var instance_deserializer = cWasmerInstanceFromCache
+	if USE_RKYV {
+		instance_deserializer = cWasmerInstanceFromCacheRkyv
+	}
+
 	cOptions := unsafe.Pointer(&options)
-	var instantiateResult = cWasmerInstanceFromCache(
+	var instantiateResult = instance_deserializer(
 		&c_instance,
 		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
 		cUint32T(len(compiledCode)),
@@ -273,7 +280,12 @@ func (instance *Instance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar
 	var cacheLen cUint32T
 
-	var cacheResult = cWasmerInstanceCache(
+	var instance_serializer = cWasmerInstanceCache
+	if USE_RKYV {
+		instance_serializer = cWasmerInstanceCacheRkyv
+	}
+
+	var cacheResult = instance_serializer(
 		instance.instance,
 		&cacheBytes,
 		&cacheLen,
