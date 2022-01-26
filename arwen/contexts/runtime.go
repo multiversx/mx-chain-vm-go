@@ -225,7 +225,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode || len(codeHash) == 0 {
 		codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
-			context.cleanInstanceWhenError()
+			context.CleanWasmerInstance()
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -237,7 +237,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
-			context.cleanInstanceWhenError()
+			context.CleanWasmerInstance()
 			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -754,7 +754,8 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.GetExports()
 }
 
-func (context *runtimeContext) cleanInstanceWhenError() {
+// CleanWasmerInstance cleans the current wasmer instance.
+func (context *runtimeContext) CleanWasmerInstance() {
 	if context.instance == nil {
 		return
 	}
@@ -763,7 +764,17 @@ func (context *runtimeContext) cleanInstanceWhenError() {
 	context.instance = nil
 
 	logRuntime.Trace("instance cleaned")
-	return
+}
+
+// IsContractOnTheStack iterates over the state stack to find whether the
+// provided SC address is already in execution, below the current instance.
+func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
+	for _, state := range context.stateStack {
+		if bytes.Equal(address, state.scAddress) {
+			return true
+		}
+	}
+	return false
 }
 
 // CountSameContractInstancesOnStack returns the number of times the given contract
