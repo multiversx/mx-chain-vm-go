@@ -7,7 +7,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "stakeNodes",
                 "arguments": [
                     "300,000,000,000,000",
@@ -33,7 +32,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStakeNodes",
                 "arguments": [
                     "''bls_key_2_______________________________________________________________________________________"
@@ -56,7 +54,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBondNodes",
                 "arguments": [
                     "''bls_key_2_______________________________________________________________________________________"
@@ -79,7 +76,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unBondAllPossibleNodes",
                 "arguments": [],
                 "gasLimit": "100,000,000",

@@ -17,8 +17,9 @@ var TransferAndExecuteFuncName = "transferAndExecute"
 var TransferAndExecuteReturnData = []byte{1, 2, 3}
 
 // TransferAndExecute is an exposed mock contract method
-func TransferAndExecute(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod(TransferAndExecuteFuncName, func() *mock.InstanceMock {
+		testConfig := config.(test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 

@@ -14,12 +14,23 @@ func main() {
 		panic("One argument expected - the root path where to search.")
 	}
 
-	convertAllInFolder(os.Args[1])
+	_ = convertAllInFolder(os.Args[1])
+}
+
+var suffixes = []string{".scen.json", ".step.json", ".steps.json"}
+
+func shouldFormatFile(path string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(path, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 func convertAllInFolder(path string) error {
 	err := filepath.Walk(path, func(mandosFilePath string, info os.FileInfo, err error) error {
-		if strings.HasSuffix(mandosFilePath, ".scen.json") {
+		if shouldFormatFile(mandosFilePath) {
 			fmt.Printf("Upgrade: %s\n ", mandosFilePath)
 			upgradeMandosFile(mandosFilePath)
 		}
@@ -31,7 +42,7 @@ func convertAllInFolder(path string) error {
 func upgradeMandosFile(mandosFilePath string) {
 	scenario, err := mc.ParseMandosScenarioDefaultParser(mandosFilePath)
 	if err == nil {
-		mc.WriteMandosScenario(scenario, mandosFilePath)
+		_ = mc.WriteMandosScenario(scenario, mandosFilePath)
 	} else {
 		fmt.Printf("Error upgrading: %s\n", err.Error())
 	}

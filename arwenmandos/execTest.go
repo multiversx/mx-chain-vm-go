@@ -41,5 +41,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 		}
 	}
 
-	return ae.checkAccounts(test.PostState)
+	err := ae.checkAccounts(test.PostState)
+	ae.Close()
+	return err
 }

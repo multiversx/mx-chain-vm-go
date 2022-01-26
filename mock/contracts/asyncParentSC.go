@@ -17,8 +17,9 @@ var AsyncChildFunction = "transferToThirdParty"
 var AsyncChildData = " there"
 
 // PerformAsyncCallParentMock is an exposed mock contract method
-func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
+		testConfig := config.(test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -48,7 +49,8 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, testConfig *tes
 }
 
 // RegisterAsyncCallToChild is resued also in some tests before async context serialization
-func RegisterAsyncCallToChild(host arwen.VMHost, testConfig *test.TestConfig, arguments [][]byte) error {
+func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [][]byte) error {
+	testConfig := config.(test.TestConfig)
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(AsyncChildFunction)
 	callData.Int64(testConfig.TransferToThirdParty)
@@ -61,8 +63,9 @@ func RegisterAsyncCallToChild(host arwen.VMHost, testConfig *test.TestConfig, ar
 }
 
 // SimpleCallbackMock is an exposed mock contract method
-func SimpleCallbackMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		testConfig := config.(test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
@@ -83,8 +86,9 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, testConfig *test.TestCo
 }
 
 // CallBackParentMock is an exposed mock contract method
-func CallBackParentMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		testConfig := config.(test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -101,7 +105,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, testConfig *test.TestCo
 			return instance
 		}
 
-		loadedData := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _ := host.Storage().GetStorage(test.ParentKeyB)
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {

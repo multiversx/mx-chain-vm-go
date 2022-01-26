@@ -63,6 +63,7 @@
     GetNumArguments    = 100
     StorageStore       = 250000
     StorageLoad        = 100000
+    CachedStorageLoad  = 100
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -663,3 +664,5 @@
     I16x8RoundingAverageU = 200
     LocalAllocate = 2
     LocalsUnmetered = 100
+    MaxMemoryGrow = 8
+    MaxMemoryGrowDelta = 10

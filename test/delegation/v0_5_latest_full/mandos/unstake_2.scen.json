@@ -56,7 +56,7 @@
                         "address": "sc:delegation",
                         "endpoint": "str:stake",
                         "topics": [
-                            "0x0000000000000000000000000000000000000000000000000000000000000001",
+                            "str:userStake",
                             "address:delegator3"
                         ],
                         "data": "200,000,000,000,000"

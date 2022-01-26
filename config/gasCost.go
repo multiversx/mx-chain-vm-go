@@ -23,51 +23,46 @@ type BaseOperationCost struct {
 }
 
 type ElrondAPICost struct {
-	GetSCAddress            uint64
-	GetOwnerAddress         uint64
-	IsSmartContract         uint64
-	GetShardOfAddress       uint64
-	GetExternalBalance      uint64
-	GetBlockHash            uint64
-	GetOriginalTxHash       uint64
-	GetCurrentTxHash        uint64
-	GetPrevTxHash           uint64
-	TransferValue           uint64
-	GetArgument             uint64
-	GetFunction             uint64
-	GetNumArguments         uint64
-	StorageStore            uint64
-	StorageLoad             uint64
-	GetCaller               uint64
-	GetCallValue            uint64
-	Log                     uint64
-	Finish                  uint64
-	SignalError             uint64
-	GetBlockTimeStamp       uint64
-	GetGasLeft              uint64
-	Int64GetArgument        uint64
-	Int64StorageStore       uint64
-	Int64StorageLoad        uint64
-	Int64Finish             uint64
-	GetStateRootHash        uint64
-	GetBlockNonce           uint64
-	GetBlockEpoch           uint64
-	GetBlockRound           uint64
-	GetBlockRandomSeed      uint64
-	ExecuteOnSameContext    uint64
-	ExecuteOnDestContext    uint64
-	DelegateExecution       uint64
-	ExecuteReadOnly         uint64
-	AsyncCallStep           uint64
-	AsyncCallbackGasLock    uint64
-	CreateAsyncCall         uint64
-	SetAsyncCallback        uint64
-	SetAsyncGroupCallback   uint64
-	SetAsyncContextCallback uint64
-	CreateContract          uint64
-	GetReturnData           uint64
-	GetNumReturnData        uint64
-	GetReturnDataSize       uint64
+	GetSCAddress         uint64
+	GetOwnerAddress      uint64
+	IsSmartContract      uint64
+	GetShardOfAddress    uint64
+	GetExternalBalance   uint64
+	GetBlockHash         uint64
+	GetOriginalTxHash    uint64
+	TransferValue        uint64
+	GetArgument          uint64
+	GetFunction          uint64
+	GetNumArguments      uint64
+	StorageStore         uint64
+	StorageLoad          uint64
+	CachedStorageLoad    uint64
+	GetCaller            uint64
+	GetCallValue         uint64
+	Log                  uint64
+	Finish               uint64
+	SignalError          uint64
+	GetBlockTimeStamp    uint64
+	GetGasLeft           uint64
+	Int64GetArgument     uint64
+	Int64StorageStore    uint64
+	Int64StorageLoad     uint64
+	Int64Finish          uint64
+	GetStateRootHash     uint64
+	GetBlockNonce        uint64
+	GetBlockEpoch        uint64
+	GetBlockRound        uint64
+	GetBlockRandomSeed   uint64
+	ExecuteOnSameContext uint64
+	ExecuteOnDestContext uint64
+	DelegateExecution    uint64
+	ExecuteReadOnly      uint64
+	AsyncCallStep        uint64
+	AsyncCallbackGasLock uint64
+	CreateContract       uint64
+	GetReturnData        uint64
+	GetNumReturnData     uint64
+	GetReturnDataSize    uint64
 }
 
 // TODO remove this struct
@@ -640,6 +635,8 @@ type WASMOpcodeCost struct {
 	I16x8RoundingAverageU  uint32
 	LocalAllocate          uint32
 	LocalsUnmetered        uint32
+	MaxMemoryGrow          uint32
+	MaxMemoryGrowDelta     uint32
 }
 
 func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_COUNT]uint32 {
@@ -1093,8 +1090,9 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI8x16RoundingAverageU] = opcode_costs_struct.I8x16RoundingAverageU
 	opcode_costs[wasmer.OpcodeI16x8RoundingAverageU] = opcode_costs_struct.I16x8RoundingAverageU
 	opcode_costs[wasmer.OpcodeLocalAllocate] = opcode_costs_struct.LocalAllocate
-	// opcode_costs_struct.LocalsUnmetered is not added to the opcode_costs
-	// array; the value will be sent to Wasmer as a compilation option instead
+	// LocalsUnmetered, MaxMemoryGrow and MaxMemoryGrowDelta are not added to the
+	// opcode_costs array; the values will be sent to Wasmer as compilation
+	// options instead
 
 	return opcode_costs
 }

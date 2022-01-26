@@ -63,7 +63,12 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	mockWasmerInstance = &wasmer.Instance{
 		Exports: make(wasmer.ExportsMap),
 	}
-	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(
+		host,
+		vmType,
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		epochNotifier,
+		0)
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 
@@ -819,7 +824,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host)
-	async.finishAsyncLocalExecution(nil, nil)
+	async.finishAsyncLocalExecution(nil, nil, 0, false)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -838,7 +843,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async := makeAsyncContext(t, host)
 
 	syncExecErr := arwen.ErrNotEnoughGas
-	async.finishAsyncLocalExecution(nil, syncExecErr)
+	async.finishAsyncLocalExecution(nil, syncExecErr, 0, false)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.OutOfGas
@@ -865,7 +870,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
-	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr)
+	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr, 0, false)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.UserError

@@ -43,3 +43,8 @@ func (memory *MemoryMock) Destroy() {
 func (memory *MemoryMock) initMemory() {
 	memory.Contents = make([]byte, memory.Pages*memory.PageSize)
 }
+
+// IsInterfaceNil returns true if underlying object is nil
+func (memory *MemoryMock) IsInterfaceNil() bool {
+	return memory == nil
+}
