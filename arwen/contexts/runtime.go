@@ -217,7 +217,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	context.MustVerifyNextContractCode()
 	err = context.VerifyContractCode()
 	if err != nil {
-		context.CleanWasmerInstance()
+		context.cleanInstanceWhenError()
 		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 		return err
 	}
