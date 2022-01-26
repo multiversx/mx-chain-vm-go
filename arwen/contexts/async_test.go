@@ -72,6 +72,9 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 
+	storageContext, _ := NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix, 0)
+	host.StorageContext = storageContext
+
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = factory.NewVMCrypto()
 	return host, world

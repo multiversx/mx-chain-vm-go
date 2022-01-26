@@ -34,6 +34,7 @@ func TestGasUsed_LoadStorage_BigKey_FlagDisabled(t *testing.T) {
 }
 
 func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
+	testConfig := makeTestConfig()
 	value := []byte("testValue")
 
 	expectedUsedGas := computeExpectedGasForGetStorage(key, value, flagEnabled)
@@ -46,7 +47,7 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 				WithMethods(contracts.LoadStore)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithGasProvided(testConfig.GasProvided).
 			WithFunction("loadStore").
 			WithArguments(key).
 			Build()).
@@ -67,7 +68,7 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				GasRemaining(simpleGasTestConfig.GasProvided-expectedUsedGas).
+				GasRemaining(testConfig.GasProvided-expectedUsedGas).
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				ReturnData(value)
 		})
@@ -90,6 +91,7 @@ func TestGasUsed_LoadStorageFromAddress_BigKey_FlagDisabled(t *testing.T) {
 }
 
 func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
+	testConfig := makeTestConfig()
 	value := []byte("testValue")
 
 	expectedUsedGas := computeExpectedGasForGetStorage(key, value, flagEnabled)
@@ -106,7 +108,7 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 				WithMethods(contracts.LoadStoreFromAddress)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithGasProvided(testConfig.GasProvided).
 			WithFunction("loadStoreFromAddress").
 			WithArguments(test.UserAddress, key).
 			Build()).
@@ -128,7 +130,7 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				GasRemaining(simpleGasTestConfig.GasProvided-expectedUsedGas).
+				GasRemaining(testConfig.GasProvided-expectedUsedGas).
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				ReturnData(value)
 		})
@@ -157,6 +159,7 @@ func TestGasUsed_SetStorage_FlagDisabled(t *testing.T) {
 }
 
 func setStorage(t *testing.T, flagEnabled bool) {
+	testConfig := makeTestConfig()
 	key := []byte("testKey")
 	value := []byte("testValue")
 
@@ -182,7 +185,7 @@ func setStorage(t *testing.T, flagEnabled bool) {
 				WithMethods(contracts.SetStore)).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithGasProvided(testConfig.GasProvided).
 			WithFunction("setStore").
 			WithArguments(key, value).
 			Build()).
@@ -204,6 +207,6 @@ func setStorage(t *testing.T, flagEnabled bool) {
 			verify.
 				Ok().
 				GasUsed(test.ParentAddress, expectedUsedGas).
-				GasRemaining(simpleGasTestConfig.GasProvided - expectedUsedGas)
+				GasRemaining(testConfig.GasProvided - expectedUsedGas)
 		})
 }
