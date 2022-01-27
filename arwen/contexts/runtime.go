@@ -270,6 +270,8 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash
 
 	success := localContract.instance.SetMemory(localContract.memory)
 	if !success {
+		// we must remove instance, which cleans it to free the memory
+		context.warmInstanceCache.Remove(codeHash)
 		return false
 	}
 

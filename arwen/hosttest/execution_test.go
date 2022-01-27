@@ -2533,9 +2533,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 997169).
+				GasUsed(test.ParentAddress, 997158).
 				GasUsed(test.ChildAddress, 0).
-				GasRemaining(2831).
+				GasRemaining(2842).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2569,17 +2569,22 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("callBack error").
-				// TODO matei-p enable gas checks
-				// GasUsed(test.ParentAddress, 197437).
-				// GasUsed(test.ChildAddress, 2534).
+			verify.
+				Ok().
+				// TODO matei-p enable this for R2
+				//UserError().
+				//ReturnMessage("callBack error").
+				GasUsed(test.ParentAddress, 198657).
+				GasUsed(test.ChildAddress, 1297).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				// GasRemaining(29).
+				GasRemaining(46).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
-				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).
+				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
+				// (return code and return message are no longet set from callbackVMOutput, in order to keep local/cross-shard responses consistent)
+				// ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error")).
+				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
