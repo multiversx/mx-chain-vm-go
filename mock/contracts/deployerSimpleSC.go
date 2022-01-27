@@ -52,7 +52,7 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, config interf
 
 // InitMockMethod
 func InitMockMethod(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(testcommon.TestConfig)
+	testConfig := config.(*testcommon.TestConfig)
 	instanceMock.AddMockMethod("init", testcommon.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByChild))
 }
 
@@ -62,11 +62,11 @@ type CallbackTestConfig interface {
 
 // CallbackMockMethodThatCouldFail
 func CallbackMockMethodThatCouldFail(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(CallbackTestConfig)
+	testConfig := config.(*testcommon.TestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		if testConfig.CallbackFails() {
+		if testConfig.CallbackFails {
 			host.Runtime().SignalUserError("fail")
 			return instance
 		}

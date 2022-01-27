@@ -167,7 +167,7 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 
 // WasteGasParentMock is an exposed mock contract method
 func WasteGasParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByParent))
 }
 
