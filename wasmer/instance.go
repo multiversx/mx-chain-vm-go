@@ -8,6 +8,7 @@ import (
 )
 
 const OPCODE_COUNT = 448
+const USE_RKYV_SERIALIZATION = true
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -194,8 +195,6 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
-const USE_RKYV = true
-
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options CompilationOptions,
@@ -208,7 +207,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 	}
 
 	var instance_deserializer = cWasmerInstanceFromCache
-	if USE_RKYV {
+	if USE_RKYV_SERIALIZATION {
 		instance_deserializer = cWasmerInstanceFromCacheRkyv
 	}
 
@@ -281,7 +280,7 @@ func (instance *Instance) Cache() ([]byte, error) {
 	var cacheLen cUint32T
 
 	var instance_serializer = cWasmerInstanceCache
-	if USE_RKYV {
+	if USE_RKYV_SERIALIZATION {
 		instance_serializer = cWasmerInstanceCacheRkyv
 	}
 
