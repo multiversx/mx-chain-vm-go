@@ -888,15 +888,14 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("callBack error").
+			verify.Ok().
 				HasRuntimeErrors("callBack error").
 				BalanceDelta(test.ParentAddress, -(2*testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, expectedGasUsedByChild).
 				GasRemaining(0).
-				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).
+				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
@@ -1123,8 +1122,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("wrong num of arguments")
+			verify.Ok()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1212,7 +1210,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.ExecutionFailed().
+			verify.Ok().
 				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
@@ -1257,9 +1255,8 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				HasRuntimeErrors("callback failed intentionally").
-				Print()
+			verify.Ok().
+				HasRuntimeErrors("callback failed intentionally")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)

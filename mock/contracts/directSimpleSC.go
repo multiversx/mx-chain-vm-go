@@ -13,7 +13,7 @@ import (
 
 // WasteGasChildMock is an exposed mock contract method
 func WasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("wasteGas", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByChild))
 }
 
@@ -58,7 +58,7 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{
 // ExecOnSameCtxParentMock is an exposed mock contract method
 func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("execOnSameCtx", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
@@ -98,7 +98,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 // ExecOnDestCtxParentMock is an exposed mock contract method
 func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("execOnDestCtx", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
@@ -138,7 +138,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 // ExecOnDestCtxSingleCallParentMock is an exposed mock contract method
 func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("execOnDestCtxSingleCall", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		host.Metering().UseGas(testConfig.GasUsedByParent)
@@ -179,25 +179,25 @@ const (
 
 // ESDTTransferToParentMock is an exposed mock contract method
 func ESDTTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackSuccess)
 }
 
 // ESDTTransferToParentWrongESDTArgsNumberMock is an exposed mock contract method
 func ESDTTransferToParentWrongESDTArgsNumberMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackWrongNumOfArgs)
 }
 
 // ESDTTransferToParentCallbackWillFail is an exposed mock contract method
 func ESDTTransferToParentCallbackWillFail(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	esdtTransferToParentMock(instanceMock, testConfig, esdtOnCallbackFail)
 }
 
 func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{}, behavior int) {
 	instanceMock.AddMockMethod("transferESDTToParent", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		host.Metering().UseGas(testConfig.GasUsedByChild)

@@ -19,7 +19,7 @@ var AsyncChildData = " there"
 // PerformAsyncCallParentMock is an exposed mock contract method
 func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("performAsyncCall", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -50,7 +50,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 // RegisterAsyncCallToChild is resued also in some tests before async context serialization
 func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [][]byte) error {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	callData := txDataBuilder.NewBuilder()
 	callData.Func(AsyncChildFunction)
 	callData.Int64(testConfig.TransferToThirdParty)
@@ -65,7 +65,7 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 // SimpleCallbackMock is an exposed mock contract method
 func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
@@ -88,7 +88,7 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 // CallBackParentMock is an exposed mock contract method
 func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T

@@ -19,7 +19,7 @@ var AsyncGroupsConfig = [][]string{
 // ForwardAsyncCallMultiGroupsMock is an exposed mock contract method
 func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("forwardMultiGroupAsyncCall", func() *mock.InstanceMock {
-		testConfig := config.(test.TestConfig)
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -74,7 +74,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 
 // CallBackMultiGroupsMock is an exposed mock contract method
 func CallBackMultiGroupsMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(test.TestConfig)
+	testConfig := config.(*test.TestConfig)
 	for _, groupConfig := range AsyncGroupsConfig {
 		groupName := groupConfig[0]
 		for g := 1; g < len(groupConfig); g++ {
