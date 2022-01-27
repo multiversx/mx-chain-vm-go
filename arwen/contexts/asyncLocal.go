@@ -210,33 +210,33 @@ func (context *asyncContext) finishAsyncLocalExecution(
 	err error,
 	destinationReturnCode vmcommon.ReturnCode,
 	setReturnCode bool) {
-	output := context.host.Output()
-	if err == nil {
-		if setReturnCode {
-			output.SetReturnCode(destinationReturnCode)
-		}
-		return
-	}
+	// output := context.host.Output()
+	// if err == nil {
+	// 	if setReturnCode {
+	// 		output.SetReturnCode(destinationReturnCode)
+	// 	}
+	// 	return
+	// }
 
 	runtime := context.host.Runtime()
 
 	runtime.GetVMInput().GasProvided = 0
 
-	if vmOutput == nil {
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
-	}
+	// if vmOutput == nil {
+	// 	vmOutput = output.CreateVMOutputInCaseOfError(err)
+	// }
 
-	if setReturnCode {
-		if vmOutput.ReturnCode != vmcommon.Ok {
-			output.SetReturnCode(vmOutput.ReturnCode)
-		} else {
-			output.SetReturnCode(destinationReturnCode)
-		}
-	}
+	// if setReturnCode {
+	// 	if vmOutput.ReturnCode != vmcommon.Ok {
+	// 		output.SetReturnCode(vmOutput.ReturnCode)
+	// 	} else {
+	// 		output.SetReturnCode(destinationReturnCode)
+	// 	}
+	// }
 
-	output.SetReturnMessage(vmOutput.ReturnMessage)
-	output.Finish([]byte(vmOutput.ReturnCode.String()))
-	output.Finish(runtime.GetCurrentTxHash())
+	// output.SetReturnMessage(vmOutput.ReturnMessage)
+	// output.Finish([]byte(vmOutput.ReturnCode.String()))
+	// output.Finish(runtime.GetCurrentTxHash())
 }
 
 func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {

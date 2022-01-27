@@ -17,25 +17,6 @@ import (
 var sc1Address = testcommon.MakeTestSCAddress("sc1")
 var sc2Address = testcommon.MakeTestSCAddress("sc2")
 
-type deployFromSourceTestConfig struct {
-	deployedContractAddress []byte
-	gasUsedByInit           uint64
-	gasProvided             uint64
-	gasProvidedForInit      uint64
-	asyncCallStepCost       uint64
-	aoTPreparePerByteCost   uint64
-	compilePerByteCost      uint64
-}
-
-type updateFromSourceTestConfig struct {
-	deployFromSourceTestConfig
-	contractToBeUpdatedAddress []byte
-	owner                      []byte
-	isFlagEnabled              bool
-	hasCallback                bool
-	callbackFails              bool
-}
-
 func getDeployFromSourceTestConfig() testcommon.TestConfig {
 	return test.TestConfig{
 		DeployedContractAddress: sc1Address,
@@ -55,21 +36,6 @@ func getUpdateFromSourceTestConfig() testcommon.TestConfig {
 	config.HasCallback = true
 	config.CallbackFails = false
 	return config
-}
-
-// GetGasUsedByChild
-func (config deployFromSourceTestConfig) GetGasUsedByChild() uint64 {
-	return config.gasUsedByInit
-}
-
-// GetGasUsedByChild
-func (config updateFromSourceTestConfig) GetGasUsedByChild() uint64 {
-	return config.gasUsedByInit
-}
-
-// CallbackFails
-func (config updateFromSourceTestConfig) CallbackFails() bool {
-	return config.callbackFails
 }
 
 func TestDeployFromSource_Success(t *testing.T) {
