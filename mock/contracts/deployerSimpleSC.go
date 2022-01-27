@@ -53,7 +53,7 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, config interf
 // InitMockMethod
 func InitMockMethod(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*testcommon.TestConfig)
-	instanceMock.AddMockMethod("init", testcommon.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByChild))
+	instanceMock.AddMockMethod("init", testcommon.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByInit))
 }
 
 type CallbackTestConfig interface {
