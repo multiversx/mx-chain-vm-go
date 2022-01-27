@@ -21,6 +21,7 @@ func getDeployFromSourceTestConfig() testcommon.TestConfig {
 	return test.TestConfig{
 		DeployedContractAddress: sc1Address,
 		GasUsedByInit:           uint64(200),
+		GasUsedByChild:          uint64(200),
 		GasProvidedForInit:      uint64(300),
 		GasProvided:             uint64(1000),
 		AoTPreparePerByteCost:   uint64(1),
