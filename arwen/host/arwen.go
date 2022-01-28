@@ -31,8 +31,9 @@ const executionTimeout = time.Second
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	cryptoHook   crypto.VMCrypto
-	mutExecution sync.RWMutex
+	cryptoHook      crypto.VMCrypto
+	mutExecution    sync.RWMutex
+	instanceInClose bool
 
 	ethInput []byte
 
@@ -262,7 +263,10 @@ func (host *vmHost) InitState() {
 
 // Close will close all underlying processes
 func (host *vmHost) Close() error {
+	host.mutExecution.Lock()
+	host.instanceInClose = true
 	host.runtimeContext.ClearWarmInstanceCache()
+	host.mutExecution.Unlock()
 	return nil
 }
 
@@ -319,6 +323,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	if host.instanceInClose {
+		return nil, arwen.ErrVMIsClosing
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
@@ -357,6 +365,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
+
+	if host.instanceInClose {
+		return nil, arwen.ErrVMIsClosing
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
