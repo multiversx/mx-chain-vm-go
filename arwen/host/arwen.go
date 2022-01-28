@@ -270,6 +270,12 @@ func (host *vmHost) Close() error {
 	return nil
 }
 
+// Reset is a function which closes the VM and resets the instanceInClose variable
+func (host *vmHost) Reset() {
+	_ = host.Close()
+	host.instanceInClose = false
+}
+
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.managedTypesContext.InitState()
