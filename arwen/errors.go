@@ -185,3 +185,6 @@ var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
 
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
+
+// ErrVMIsClosing signals that vm is closing
+var ErrVMIsClosing = errors.New("vm is closing")

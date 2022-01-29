@@ -302,3 +302,7 @@ func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 func (vhs *VMHostStub) Close() error {
 	return nil
 }
+
+// Reset -
+func (vhs *VMHostStub) Reset() {
+}

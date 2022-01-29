@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
@@ -176,7 +177,9 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 }
 
 func (pfe *fuzzDexExecutor) saveGeneratedScenario() {
-	_ = pfe.vm.Close()
+	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost.Reset()
+
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)

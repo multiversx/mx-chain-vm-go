@@ -56,6 +56,7 @@ type VMHost interface {
 
 	FixOOGReturnCodeEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
+	Reset()
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context

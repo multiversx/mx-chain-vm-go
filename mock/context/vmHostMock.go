@@ -204,3 +204,7 @@ func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
 func (host *VMHostMock) Close() error {
 	return nil
 }
+
+// Reset -
+func (host *VMHostMock) Reset() {
+}
