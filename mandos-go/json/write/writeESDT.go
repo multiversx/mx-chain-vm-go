@@ -80,9 +80,8 @@ func esdtItemToOJ(esdtItem *mj.ESDTData) oj.OJsonObject {
 }
 
 func appendESDTInstanceToOJ(esdtInstance *mj.ESDTInstance, targetOj *oj.OJsonMap) {
-	if len(esdtInstance.Nonce.Original) > 0 {
-		targetOj.Put("nonce", uint64ToOJ(esdtInstance.Nonce))
-	}
+	targetOj.Put("nonce", uint64ToOJ(esdtInstance.Nonce))
+
 	if len(esdtInstance.Balance.Original) > 0 {
 		targetOj.Put("balance", bigIntToOJ(esdtInstance.Balance))
 	}

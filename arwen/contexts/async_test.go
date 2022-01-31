@@ -65,14 +65,21 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	mockWasmerInstance = &wasmer.Instance{
 		Exports: make(wasmer.ExportsMap),
 	}
-
-	runtimeContext, _ := NewRuntimeContext(host, vmType, builtInFunctions.NewBuiltInFunctionContainer())
+	runtimeContext, _ := NewRuntimeContext(
+		host,
+		vmType,
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		epochNotifier,
+		0)
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 
+	storageContext, _ := NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix, 0)
+	host.StorageContext = storageContext
+
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = factory.NewVMCrypto()
-	host.StorageContext, _ = NewStorageContext(host, world, elrondReservedTestPrefix)
+	host.StorageContext, _ = NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix, 0)
 
 	return host, world
 }
@@ -616,6 +623,7 @@ func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.
 	// expectedOutput.ReturnMessage = "not enough gas"
 	// expectedOutput.GasRemaining = 0
 	// arwen.AddFinishData(expectedOutput, []byte("out of gas"))
+	// arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -819,7 +827,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
-	async.finishAsyncLocalCallbackExecution(nil, nil)
+	async.finishAsyncLocalCallbackExecution(nil, nil, 0, false)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -838,12 +846,13 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	syncExecErr := arwen.ErrNotEnoughGas
-	async.finishAsyncLocalCallbackExecution(nil, syncExecErr)
+	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0, false)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.OutOfGas
 	// expectedOutput.ReturnMessage = syncExecErr.Error()
 	// arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
+	// arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -864,12 +873,13 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
-	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr)
+	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0, false)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.UserError
 	// expectedOutput.ReturnMessage = "user made an error"
 	// arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
+	// arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in

@@ -779,7 +779,7 @@ func (context *asyncContext) callCallback(callID []byte, vmOutput *vmcommon.VMOu
 	}
 
 	context.host.Metering().DisableRestoreGas()
-	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, gasAccumulated, err)
+	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, nil, gasAccumulated, err)
 	context.host.Metering().EnableRestoreGas()
 	return isComplete, callbackVMOutput, nil
 }
@@ -908,7 +908,7 @@ func (context *asyncContext) executeContextCallback() error {
 
 	callbackCallInput := context.createContextCallbackInput()
 	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callBackErr)
+	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callBackErr, 0, false)
 
 	return nil
 }

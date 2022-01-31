@@ -12,6 +12,7 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const includeElrondProtectedStorage = false
@@ -41,7 +42,12 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		}
 	}
 
-	tokenData, err := esdtconvert.GetFullMockESDTData(account.Storage)
+	systemAccStorage := make(map[string][]byte)
+	systemAcc, exists := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
+	if exists {
+		systemAccStorage = systemAcc.Storage
+	}
+	tokenData, err := esdtconvert.GetFullMockESDTData(account.Storage, systemAccStorage)
 	if err != nil {
 		return nil, err
 	}
@@ -147,6 +153,10 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		},
 		Storage:  storageKvps,
 		ESDTData: mandosESDT,
+		Owner: mj.JSONBytesFromString{
+			Value:    account.OwnerAddress,
+			Original: ae.exprReconstructor.Reconstruct(account.OwnerAddress, er.AddressHint),
+		},
 	}, nil
 }
 

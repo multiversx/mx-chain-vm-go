@@ -45,7 +45,7 @@ func TestParseBool(t *testing.T) {
 	objBool := oj.OJsonBool(false)
 	valueBool, err := p.parseBool(&objBool)
 	require.Nil(t, err)
-	require.Equal(t, false,valueBool)
+	require.Equal(t, false, valueBool)
 
 	objBool = true
 	valueBool, err = p.parseBool(&objBool)

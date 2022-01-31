@@ -309,3 +309,13 @@ func (vhs *VMHostStub) MultiESDTTransferAsyncCallBackEnabled() bool {
 func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 	return true
 }
+
+// CreateNFTOnExecByCallerEnabled mocked method
+func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
+	return true
+}
+
+// Close -
+func (vhs *VMHostStub) Close() error {
+	return nil
+}

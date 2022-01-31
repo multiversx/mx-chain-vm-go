@@ -15,7 +15,7 @@ var logMock = logger.GetOrCreate("arwen/mock")
 type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
 
 type testTemplateConfig struct {
-	t        *testing.T
+	tb       testing.TB
 	input    *vmcommon.ContractCallInput
 	useMocks bool
 }
@@ -29,10 +29,10 @@ type MockInstancesTestTemplate struct {
 }
 
 // BuildMockInstanceCallTest starts the building process for a mock contract call test
-func BuildMockInstanceCallTest(t *testing.T) *MockInstancesTestTemplate {
+func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 	return &MockInstancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
-			t:        t,
+			tb:       tb,
 			useMocks: true,
 		},
 		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
@@ -83,10 +83,14 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
 }
 
 func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, world *worldmock.MockWorld, createAccount bool, expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
-	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.t, world)
+	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.tb, world)
+
+	defer func() {
+		_ = host.Close()
+	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.initialize(callerTest.t, host, imb, createAccount)
+		mockSC.initialize(callerTest.tb, host, imb, createAccount)
 	}
 
 	callerTest.setup(host, world)
@@ -95,7 +99,7 @@ func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, wo
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 	allErrors := host.Runtime().GetAllErrors()
-	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
 	if callerTest.assertResults != nil {
 		callerTest.assertResults(startNode, world, verify, expectedErrorsForRound)
 	}
@@ -132,6 +136,15 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		}
 
 		host.Output().Finish(returnData)
+		return instance
+	}
+}
+
+// Empty
+func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
+	return func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
 		return instance
 	}
 }

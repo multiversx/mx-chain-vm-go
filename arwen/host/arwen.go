@@ -1,8 +1,10 @@
 package host
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"sync"
+	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
@@ -12,10 +14,10 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -25,13 +27,9 @@ var log = logger.GetOrCreate("arwen/host")
 // instances on the InstanceStack of the RuntimeContext
 var MaximumWasmerInstanceCount = uint64(10)
 
-// TryFunction corresponds to the try() part of a try / catch block
-type TryFunction func()
-
-// CatchFunction corresponds to the catch() part of a try / catch block
-type CatchFunction func(error)
-
 var _ arwen.VMHost = (*vmHost)(nil)
+
+const executionTimeout = 60 * time.Second
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -62,6 +60,9 @@ type vmHost struct {
 
 	removeNonUpdatedStorageEnableEpoch uint32
 	flagRemoveNonUpdatedStorage        atomic.Flag
+
+	createNFTThroughExecByCallerEnableEpoch uint32
+	flagCreateNFTThroughExecByCaller        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -103,6 +104,7 @@ func NewArwenVM(
 		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
 		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
+		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
 	}
 
 	var err error
@@ -149,12 +151,16 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext, err = contexts.NewRuntimeContext(host, hostParameters.VMType, host.builtInFuncContainer)
-	if err != nil {
-		return nil, err
-	}
+	host.runtimeContext, err = contexts.NewRuntimeContext(
+		host,
+		hostParameters.VMType,
+		host.builtInFuncContainer,
+		hostParameters.EpochNotifier,
+		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+	)
 
 	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser)
+
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +175,13 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.storageContext, err = contexts.NewStorageContext(host, blockChainHook, hostParameters.ElrondProtectedKeyPrefix)
+	host.storageContext, err = contexts.NewStorageContext(
+		host,
+		blockChainHook,
+		hostParameters.EpochNotifier,
+		hostParameters.ElrondProtectedKeyPrefix,
+		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -264,6 +276,12 @@ func (host *vmHost) InitState() {
 	host.initContexts()
 }
 
+// Close will close all underlying processes
+func (host *vmHost) Close() error {
+	host.runtimeContext.ClearWarmInstanceCache()
+	return nil
+}
+
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.managedTypesContext.InitState()
@@ -287,11 +305,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.blockchainContext.ClearStateStack()
 }
 
-// Clean closes the currently running Wasmer instance
-func (host *vmHost) Clean() {
-	host.runtimeContext.CleanWasmerInstance()
-}
-
 // GetAPIMethods returns the EEI as a set of imports for Wasmer
 func (host *vmHost) GetAPIMethods() *wasmer.Imports {
 	return host.scAPIMethods
@@ -313,6 +326,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
+	host.runtimeContext.ClearWarmInstanceCache()
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
@@ -325,22 +339,37 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	defer cancel()
+
 	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
 
-	try := func() {
+	done := make(chan struct{})
+	errChan := make(chan error, 1)
+	go func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				log.Error("VM execution panicked", "error", r)
+				errChan <- errors.New("VM execution panicked")
+			}
+		}()
+
 		vmOutput = host.doRunSmartContractCreate(input)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return
+	case <-ctx.Done():
+		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
+	case err = <-errChan:
+		host.Runtime().FailExecution(err)
 	}
 
-	catch := func(caught error) {
-		err = caught
-		log.Error("RunSmartContractCreate", "error", err)
-	}
-
-	TryCatch(try, catch, "arwen.RunSmartContractCreate")
-	if vmOutput != nil {
-		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
-	}
-
+	<-done
 	return
 }
 
@@ -349,45 +378,44 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	defer cancel()
+
 	log.Trace("RunSmartContractCall begin", "function", input.Function)
 
-	tryUpgrade := func() {
-		vmOutput = host.doRunSmartContractUpgrade(input)
-	}
-
-	tryCall := func() {
-		vmOutput = host.doRunSmartContractCall(input)
-	}
-
-	catch := func(caught error) {
-		err = caught
-		log.Error("RunSmartContractCall", "error", err)
-	}
-
-	isUpgrade := input.Function == arwen.UpgradeFunctionName
-	if isUpgrade {
-		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
-	} else {
-		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
-	}
-
-	return
-}
-
-// TryCatch simulates a try/catch block using golang's recover() functionality
-func TryCatch(try TryFunction, catch CatchFunction, catchFallbackMessage string) {
-	defer func() {
-		if r := recover(); r != nil {
-			err, ok := r.(error)
-			if !ok {
-				err = fmt.Errorf("%s, panic: %v", catchFallbackMessage, r)
+	done := make(chan struct{})
+	errChan := make(chan error, 1)
+	go func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				log.Error("VM execution panicked", "error", r)
+				errChan <- errors.New("VM execution panicked")
 			}
+		}()
 
-			catch(err)
+		isUpgrade := input.Function == arwen.UpgradeFunctionName
+		if isUpgrade {
+			vmOutput = host.doRunSmartContractUpgrade(input)
+		} else {
+			vmOutput = host.doRunSmartContractCall(input)
 		}
+
+		close(done)
 	}()
 
-	try()
+	select {
+	case <-done:
+		return
+	case <-ctx.Done():
+		err = arwen.ErrExecutionFailedWithTimeout
+		host.Runtime().FailExecution(err)
+	case err = <-errChan:
+		host.Runtime().FailExecution(err)
+	}
+
+	<-done
+	return
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard
@@ -427,14 +455,17 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
-	host.flagMultiESDTTransferAsyncCallBack.Toggle(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
+	host.flagMultiESDTTransferAsyncCallBack.SetValue(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
 	log.Debug("Arwen VM: multi esdt transfer on async callback intra shard", "enabled", host.flagMultiESDTTransferAsyncCallBack.IsSet())
 
-	host.flagFixOOGReturnCode.Toggle(epoch >= host.fixOOGReturnCodeEnableEpoch)
+	host.flagFixOOGReturnCode.SetValue(epoch >= host.fixOOGReturnCodeEnableEpoch)
 	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
 
-	host.flagRemoveNonUpdatedStorage.Toggle(epoch >= host.removeNonUpdatedStorageEnableEpoch)
+	host.flagRemoveNonUpdatedStorage.SetValue(epoch >= host.removeNonUpdatedStorageEnableEpoch)
 	log.Debug("Arwen VM: remove non updated storage", "enabled", host.flagRemoveNonUpdatedStorage.IsSet())
+
+	host.flagCreateNFTThroughExecByCaller.SetValue(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
+	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
 }
 
 // MultiESDTTransferAsyncCallBackEnabled returns true if the corresponding flag is set
@@ -445,4 +476,9 @@ func (host *vmHost) MultiESDTTransferAsyncCallBackEnabled() bool {
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.flagFixOOGReturnCode.IsSet()
+}
+
+//CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
+func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
+	return host.flagCreateNFTThroughExecByCaller.IsSet()
 }

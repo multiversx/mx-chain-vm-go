@@ -17,7 +17,36 @@ func makeESDTUserMetadataBytes(frozen bool) []byte {
 	return metadata.ToBytes()
 }
 
-func WriteESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
+func WriteMockESDTToStorage(esdtData map[string]*MockESDTData, destination map[string][]byte) error {
+	for _, token := range esdtData {
+		tokenIdentifier := token.TokenIdentifier
+		for _, instance := range token.Instances {
+			tokenNonce := instance.TokenMetaData.Nonce
+			tokenKey := makeTokenKey(tokenIdentifier, tokenNonce)
+			err := setTokenDataByKey(tokenKey, instance, destination)
+			if err != nil {
+				return err
+			}
+		}
+		err := SetLastNonce(tokenIdentifier, token.LastNonce, destination)
+		if err != nil {
+			return err
+		}
+
+		rolesAsStrings := make([]string, len(token.Roles))
+		for i, roleBytes := range token.Roles {
+			rolesAsStrings[i] = string(roleBytes)
+		}
+		err = SetTokenRolesAsStrings(tokenIdentifier, rolesAsStrings, destination)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
 	for _, mandosESDTData := range esdtData {
 		tokenIdentifier := mandosESDTData.TokenIdentifier.Value
 		isFrozen := mandosESDTData.Frozen.Value > 0
@@ -110,7 +139,7 @@ func SetLastNonce(tokenIdentifier []byte, lastNonce uint64, destination map[stri
 // key.
 func SetTokenBalance(tokenIdentifier []byte, nonce uint64, balance *big.Int, destination map[string][]byte) error {
 	tokenKey := makeTokenKey(tokenIdentifier, nonce)
-	tokenData, err := getTokenDataByKey(tokenKey, destination)
+	tokenData, err := getTokenDataByKey(tokenKey, destination, make(map[string][]byte))
 	if err != nil {
 		return err
 	}

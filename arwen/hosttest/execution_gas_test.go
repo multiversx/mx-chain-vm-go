@@ -372,6 +372,12 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 		})
 }
 
+func TestMultipleTimes(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t)
+	}
+}
+
 func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
@@ -506,6 +512,9 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 0
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -564,6 +573,9 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 1
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -622,6 +634,9 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 2
 
 			// Mock the storage as if the parent was already executed
@@ -1329,7 +1344,6 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				HasRuntimeErrors("callback failed intentionally")
-				//.Print()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1390,6 +1404,64 @@ func TestGasUsed_AsyncCall_Groups(t *testing.T) {
 				Print().
 				ReturnDataDoesNotContain([]byte("out of gas")).
 				ReturnData(expectedReturnData...)
+		})
+}
+
+func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	noOfTransfers := 3
+
+	childContracts := []test.MockTestSmartContract{
+		test.CreateMockContractOnShard(test.ParentAddress, 0).
+			WithBalance(testConfig.ParentBalance).
+			WithConfig(testConfig).
+			WithMethods(contracts.TransferAndExecute),
+	}
+
+	startShard := 1
+	for transfer := 0; transfer < noOfTransfers; transfer++ {
+		childContracts = append(childContracts,
+			test.CreateMockContractOnShard(contracts.GetChildAddressForTransfer(transfer), uint32(startShard+transfer)).
+				WithBalance(0).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{0, vmcommon.MetadataPayable}).
+				WithMethods(contracts.WasteGasChildMock))
+	}
+
+	expectedTransfers := make([]test.TransferEntry, 0)
+	for transfer := 0; transfer < noOfTransfers; transfer++ {
+		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer)).
+			WithData(big.NewInt(int64(transfer)).Bytes()).
+			WithGasLimit(testConfig.GasProvidedToChild).
+			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
+		expectedTransfers = append(expectedTransfers, expectedTransfer)
+	}
+
+	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasProvidedToChild
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			childContracts...,
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.UserAddress).
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction(contracts.TransferAndExecuteFuncName).
+			WithArguments(big.NewInt(int64(noOfTransfers)).Bytes()).
+			WithCallType(vm.DirectCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
+				GasRemaining(gasRemaining).
+				ReturnData(contracts.TransferAndExecuteReturnData).
+				Transfers(expectedTransfers...)
 		})
 }
 

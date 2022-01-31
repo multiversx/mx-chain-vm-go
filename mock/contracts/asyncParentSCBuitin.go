@@ -10,8 +10,9 @@ import (
 )
 
 // ForwardAsyncCallParentBuiltinMock is an exposed mock contract method
-func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 
@@ -48,6 +49,7 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, testConf
 }
 
 // CallBackParentBuiltinMock is an exposed mock contract method
-func CallBackParentBuiltinMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func CallBackParentBuiltinMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

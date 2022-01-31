@@ -48,6 +48,28 @@ func TestRustComposability(t *testing.T) {
 	})
 }
 
+// For debugging:
+// func TestESDTMultiTransferOnCallback(t *testing.T) {
+// 	err := runSingleTestReturnError(
+// 		"features/composability/mandos",
+// 		"forw_raw_call_async_retrieve_multi_transfer.scen.json")
+// 	require.Nil(t, err)
+// }
+
+// func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
+// 	err := runSingleTestReturnError(
+// 		"features/composability/mandos",
+// 		"forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json")
+// 	require.Nil(t, err)
+// }
+
+// func TestExecOnDestByCallerAndNFTCreate(t *testing.T) {
+// 	err := runSingleTestReturnError(
+// 		"features/composability/mandos",
+// 		"forwarder_builtin_nft_create_by_caller.scen.json")
+// 	require.Nil(t, err)
+// }
+
 func TestRustLegacyComposability(t *testing.T) {
 	// TODO The two excluded tests perform async calls from within async calls,
 	// which are unsupported by the legacy async calls on which the forwarder is

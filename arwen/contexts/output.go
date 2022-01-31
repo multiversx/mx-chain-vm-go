@@ -266,7 +266,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return arwen.ErrTransferInsufficientFunds
 	}
 
-	payable, err := context.host.Blockchain().IsPayable(destination)
+	payable, err := context.host.Blockchain().IsPayable(sender, destination)
 	if err != nil {
 		logOutput.Trace("transfer value", "error", err)
 		return err

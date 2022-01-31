@@ -1,4 +1,4 @@
-package gasschedules
+package gasschedules 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
@@ -73,6 +73,7 @@ const (
     GetNumArguments    = 100
     StorageStore       = 250000
     StorageLoad        = 100000
+    CachedStorageLoad  = 100
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -673,6 +674,8 @@ const (
     I16x8RoundingAverageU = 200
     LocalAllocate = 2
     LocalsUnmetered = 100
+    MaxMemoryGrow = 8
+    MaxMemoryGrowDelta = 10
 `
 	gasScheduleV4 = `[BuiltInCost]
     ChangeOwnerAddress       = 5000000
@@ -714,6 +717,7 @@ const (
     GetAllNodeStates      = 20000000
     UnstakeTokens         = 5000000
     UnbondTokens          = 5000000
+    FixWaitingListSize    = 500000000
 
 [BaseOperationCost]
     StorePerByte      = 10000
@@ -721,7 +725,7 @@ const (
     DataCopyPerByte   = 100
     PersistPerByte    = 1000
     CompilePerByte    = 300
-    AoTPreparePerByte = 300
+    AoTPreparePerByte = 100
     GetCode           = 1000000
 
 [ElrondAPICost]
@@ -731,12 +735,16 @@ const (
     GetShardOfAddress  = 5000
     GetExternalBalance = 7000
     GetBlockHash       = 10000
+    GetOriginalTxHash    = 10000
+    GetPrevTxHash      = 10000
+    GetCurrentTxHash   = 10000
     TransferValue      = 100000
     GetArgument        = 100
     GetFunction        = 100
     GetNumArguments    = 100
     StorageStore       = 75000
     StorageLoad        = 50000
+    CachedStorageLoad  = 100    
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -758,12 +766,15 @@ const (
     DelegateExecution    = 100000
     AsyncCallStep        = 100000
     AsyncCallbackGasLock = 4000000
+    CreateAsyncCall      = 200000
+    SetAsyncCallback     = 100000
+    SetAsyncGroupCallback   = 100000
+    SetAsyncContextCallback = 100000
     ExecuteReadOnly      = 160000
     CreateContract       = 300000
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
-    GetOriginalTxHash    = 10000
 
 [EthAPICost]
     UseGas              = 100
@@ -866,7 +877,7 @@ const (
 
 [ManagedBufferAPICost]
     MBufferNew                   = 2000
-    MBufferNewFromBytes          = 4000
+    MBufferNewFromBytes          = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
     MBufferGetByteSlice          = 2000
@@ -874,10 +885,10 @@ const (
     MBufferSetBytes              = 2000
     MBufferAppend                = 2000
     MBufferAppendBytes           = 2000
-    MBufferToBigIntUnsigned      = 4000
-    MBufferToBigIntSigned        = 10000
-    MBufferFromBigIntUnsigned    = 4000
-    MBufferFromBigIntSigned      = 10000
+    MBufferToBigIntUnsigned      = 2000
+    MBufferToBigIntSigned        = 5000
+    MBufferFromBigIntUnsigned    = 2000
+    MBufferFromBigIntSigned      = 5000
     MBufferStorageStore          = 75000
     MBufferStorageLoad           = 50000
     MBufferGetArgument           = 1000
@@ -1334,5 +1345,7 @@ const (
     I16x8RoundingAverageU = 200
     LocalAllocate = 5
     LocalsUnmetered = 100
+    MaxMemoryGrowDelta = 1
+    MaxMemoryGrow = 100
 `
 )

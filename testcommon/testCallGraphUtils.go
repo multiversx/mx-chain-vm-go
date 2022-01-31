@@ -11,6 +11,7 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
@@ -97,7 +98,8 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, callsFi
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
 				WithShardID(node.ShardID).
-				WithMethods(func(instanceMock *mock.InstanceMock, testConfig *TestConfig) {
+				WithCodeMetadata([]byte{0, vmcommon.MetadataPayable}).
+				WithMethods(func(instanceMock *mock.InstanceMock, config interface{}) {
 					for functionName := range contracts[contractAddressAsString].tempFunctionsList {
 						if functionName == FakeCallbackName {
 							continue

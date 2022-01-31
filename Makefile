@@ -1,4 +1,4 @@
-.PHONY: test test-short build arwendebug clean t ts
+.PHONY: test test-short build arwendebug clean
 
 ARWEN_VERSION := $(shell git describe --tags --long --dirty --always)
 
@@ -21,9 +21,22 @@ test: clean
 test-short:
 	go test -short -count=1 ./...
 
-t: test
+print-api-costs:
+	@echo "bigIntOps.go:"
+	@grep "func v1_4\|GasSchedule" arwen/elrondapi/bigIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@echo "----------------"
+	@echo "elrondei.go:"
+	@grep "func v1_4\|GasSchedule" arwen/elrondapi/elrondei.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@echo "----------------"
+	@echo "managedei.go:"
+	@grep "func v1_4\|GasSchedule" arwen/elrondapi/managedei.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@echo "----------------"
+	@echo "manBufOps.go:"
+	@grep "func v1_4\|GasSchedule" arwen/elrondapi/manBufOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@echo "----------------"
+	@echo "smallIntOps.go:"
+	@grep "func v1_4\|GasSchedule" arwen/elrondapi/smallIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 
-ts: test-short
 
 build-test-contracts:
 	erdpy contract build --no-optimization ./test/contracts/answer

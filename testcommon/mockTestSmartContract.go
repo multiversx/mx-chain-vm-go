@@ -30,19 +30,34 @@ type TestConfig struct {
 
 	ChildCalls          int
 	RecursiveChildCalls int
+
+	DeployedContractAddress []byte
+	GasUsedByInit           uint64
+	GasProvidedForInit      uint64
+	AsyncCallStepCost       uint64
+	AoTPreparePerByteCost   uint64
+	CompilePerByteCost      uint64
+
+	ContractToBeUpdatedAddress []byte
+	Owner                      []byte
+	IsFlagEnabled              bool
+	HasCallback                bool
+	CallbackFails              bool
 }
 
 type testSmartContract struct {
-	address []byte
-	balance int64
-	config  *TestConfig
-	shardID uint32
+	address      []byte
+	balance      int64
+	config       *TestConfig
+	shardID      uint32
+	codeMetadata []byte
+	ownerAddress []byte
 }
 
 // MockTestSmartContract represents the config data for the mock smart contract instance to be tested
 type MockTestSmartContract struct {
 	testSmartContract
-	initMethods []func(*mock.InstanceMock, *TestConfig)
+	initMethods []func(*mock.InstanceMock, interface{})
 	// used only temporarly for call graph building
 	tempFunctionsList map[string]bool
 }
@@ -81,8 +96,20 @@ func (mockSC *MockTestSmartContract) WithConfig(config *TestConfig) *MockTestSma
 	return mockSC
 }
 
+// WithCodeMetadata provides the code metadata for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithCodeMetadata(codeMetadata []byte) *MockTestSmartContract {
+	mockSC.codeMetadata = codeMetadata
+	return mockSC
+}
+
+// WithOwnerAddress provides the owner address for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithOwnerAddress(ownerAddress []byte) *MockTestSmartContract {
+	mockSC.ownerAddress = ownerAddress
+	return mockSC
+}
+
 // WithMethods provides the methods for the MockTestSmartContract
-func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.InstanceMock, *TestConfig)) MockTestSmartContract {
+func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.InstanceMock, interface{})) MockTestSmartContract {
 	mockSC.initMethods = initMethods
 	return *mockSC
 }
@@ -93,13 +120,7 @@ func (mockSC *MockTestSmartContract) initialize(
 	imb *mock.InstanceBuilderMock,
 	createContractAccounts bool,
 ) {
-	instance := imb.CreateAndStoreInstanceMock(
-		t,
-		host,
-		mockSC.address,
-		mockSC.shardID,
-		mockSC.balance,
-		createContractAccounts)
+	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.codeMetadata, mockSC.ownerAddress, mockSC.shardID, mockSC.balance, createContractAccounts)
 	for _, initMethod := range mockSC.initMethods {
 		initMethod(instance, mockSC.config)
 	}

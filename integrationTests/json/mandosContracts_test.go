@@ -18,8 +18,8 @@ func TestCErc20(t *testing.T) {
 	runAllTestsInFolder(t, "erc20-c")
 }
 
-func TestMultisig(t *testing.T) {
-	runAllTestsInFolder(t, "multisig/mandos")
+func TestDigitalCash(t *testing.T) {
+	runAllTestsInFolder(t, "digital-cash")
 }
 
 func TestESDTMultiTransferOnCallback(t *testing.T) {
@@ -41,6 +41,10 @@ func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
 		"features/composability/mandos",
 		"forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json")
 	require.Nil(t, err)
+}
+
+func TestMultisig(t *testing.T) {
+	runAllTestsInFolder(t, "multisig/mandos")
 }
 
 func TestDnsContract(t *testing.T) {

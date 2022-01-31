@@ -25,14 +25,7 @@ func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
-func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(
-	t testing.TB,
-	host arwen.VMHost,
-	code []byte,
-	shardID uint32,
-	balance int64,
-	createAccount bool,
-) *InstanceMock {
+func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
 	instance := NewInstanceMock(code)
 	instance.Address = code
 	instance.T = t
@@ -43,6 +36,8 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(
 		account := builder.World.AcctMap.CreateSmartContractAccount(nil, code, code, builder.World)
 		account.SetBalance(balance)
 		account.ShardID = shardID
+		account.CodeMetadata = codeMetadata
+		account.OwnerAddress = ownerAddress
 	}
 
 	return instance

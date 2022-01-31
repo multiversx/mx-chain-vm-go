@@ -109,7 +109,7 @@ func readAsyncContextFromStorage(
 	callID []byte,
 ) (*asyncContext, error) {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
-	data := storage.GetStorageFromAddressNoChecks(address, storageKey)
+	data, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}
