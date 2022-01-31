@@ -31,8 +31,9 @@ const executionTimeout = time.Second
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	cryptoHook   crypto.VMCrypto
-	mutExecution sync.RWMutex
+	cryptoHook      crypto.VMCrypto
+	mutExecution    sync.RWMutex
+	closingInstance bool
 
 	ethInput []byte
 
@@ -260,6 +261,28 @@ func (host *vmHost) InitState() {
 	host.initContexts()
 }
 
+func (host *vmHost) close() {
+	host.runtimeContext.ClearWarmInstanceCache()
+}
+
+// Close will close all underlying processes
+func (host *vmHost) Close() error {
+	host.mutExecution.Lock()
+	host.close()
+	host.closingInstance = true
+	host.mutExecution.Unlock()
+
+	return nil
+}
+
+// Reset is a function which closes the VM and resets the closingInstance variable
+func (host *vmHost) Reset() {
+	host.mutExecution.Lock()
+	host.close()
+	// keep closingInstance flag to false
+	host.mutExecution.Unlock()
+}
+
 func (host *vmHost) initContexts() {
 	host.ClearContextStateStack()
 	host.managedTypesContext.InitState()
@@ -277,11 +300,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
-}
-
-// Clean closes the currently running Wasmer instance
-func (host *vmHost) Clean() {
-	host.runtimeContext.CleanWasmerInstance()
 }
 
 // GetAPIMethods returns the EEI as a set of imports for Wasmer
@@ -305,6 +323,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
+	host.runtimeContext.ClearWarmInstanceCache()
 }
 
 // GetGasScheduleMap returns the currently stored gas schedule
@@ -316,6 +335,10 @@ func (host *vmHost) GetGasScheduleMap() config.GasScheduleMap {
 func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
+
+	if host.closingInstance {
+		return nil, arwen.ErrVMIsClosing
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
@@ -343,17 +366,22 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
-		return
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
-		return
 	}
+
+	<-done
+	return
 }
 
 // RunSmartContractCall executes the call of an existing contract
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
+
+	if host.closingInstance {
+		return nil, arwen.ErrVMIsClosing
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
@@ -387,11 +415,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
-		return
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
-		return
 	}
+
+	<-done
+	return
 }
 
 // AreInSameShard returns true if the provided addresses are part of the same shard

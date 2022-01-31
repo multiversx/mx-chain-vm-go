@@ -87,8 +87,14 @@ func (memory *Memory) Grow(numberOfPages uint32) error {
 	return nil
 }
 
+// Destroy destroys inner memory
 func (memory *Memory) Destroy() {
 	if memory.memory != nil {
 		cWasmerMemoryDestroy(memory.memory)
 	}
+}
+
+// IsInterfaceNil returns true if underlying object is nil
+func (memory *Memory) IsInterfaceNil() bool {
+	return memory == nil
 }

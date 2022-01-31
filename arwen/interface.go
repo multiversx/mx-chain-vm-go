@@ -56,6 +56,7 @@ type VMHost interface {
 
 	FixOOGReturnCodeEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
+	Reset()
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -130,7 +131,7 @@ type RuntimeContext interface {
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
-	CleanWasmerInstance()
+	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	GetInstance() wasmer.InstanceHandler
