@@ -612,3 +612,4 @@
     I64x2Load32x2U = 1
     I8x16RoundingAverageU = 1
     I16x8RoundingAverageU = 1
+    LocalsUnmetered = 100

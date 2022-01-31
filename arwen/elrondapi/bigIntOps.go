@@ -393,15 +393,13 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned
-	metering.UseGasAndAddTracedGas(bigIntStorageLoadUnsignedName, gasToUse)
-
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	bytes := storage.GetStorage(key)
+	bytes, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.SetBytes(bytes)
@@ -673,7 +671,10 @@ func v1_4_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value 
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetInt64
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseGasAndAddTracedGas(bigIntSetInt64Name, gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -687,7 +688,10 @@ func v1_4_bigIntAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntAddName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAdd
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -768,7 +772,10 @@ func v1_4_bigIntTMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntTModName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntTMod
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -791,7 +798,10 @@ func v1_4_bigIntEDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntEDivName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEDiv
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -814,7 +824,10 @@ func v1_4_bigIntEMod(context unsafe.Pointer, destinationHandle, op1Handle, op2Ha
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntEModName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntEMod
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -913,7 +926,10 @@ func v1_4_bigIntAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntAbsName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAbs
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -932,7 +948,10 @@ func v1_4_bigIntNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntNegName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNeg
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -987,7 +1006,10 @@ func v1_4_bigIntNot(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntNotName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntNot
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -1010,7 +1032,10 @@ func v1_4_bigIntAnd(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntAndName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntAnd
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -1033,7 +1058,10 @@ func v1_4_bigIntOr(context unsafe.Pointer, destinationHandle, op1Handle, op2Hand
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntOrName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntOr
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -1056,7 +1084,10 @@ func v1_4_bigIntXor(context unsafe.Pointer, destinationHandle, op1Handle, op2Han
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntXorName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntXor
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -1079,7 +1110,10 @@ func v1_4_bigIntShr(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntShrName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShr
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)
@@ -1103,7 +1137,10 @@ func v1_4_bigIntShl(context unsafe.Pointer, destinationHandle, opHandle, bits in
 	runtime := arwen.GetRuntimeContext(context)
 	metering.StartGasTracing(bigIntShlName)
 
-	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSub
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntShl
+	if !arwen.GetStorageContext(context).IsUseDifferentGasCostFlagSet() {
+		gasToUse = metering.GasSchedule().BigIntAPICost.BigIntSub
+	}
 	metering.UseAndTraceGas(gasToUse)
 
 	dest := managedType.GetBigIntOrCreate(destinationHandle)

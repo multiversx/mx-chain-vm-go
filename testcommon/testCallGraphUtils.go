@@ -29,7 +29,7 @@ func CreateMockContractsFromAsyncTestCallGraph(callGraph *TestCallGraph, testCon
 			newContract := CreateMockContract(node.Call.ContractAddress).
 				WithBalance(testConfig.ParentBalance).
 				WithConfig(testConfig).
-				WithMethods(func(instanceMock *mock.InstanceMock, testConfig *TestConfig) {
+				WithMethods(func(instanceMock *mock.InstanceMock, config interface{}) {
 					for functionName := range contracts[contractAddressAsString].tempFunctionsList {
 						instanceMock.AddMockMethod(functionName, func() *mock.InstanceMock {
 							host := instanceMock.Host

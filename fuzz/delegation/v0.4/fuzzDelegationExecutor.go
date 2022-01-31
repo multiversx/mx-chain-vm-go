@@ -82,6 +82,7 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
+	_ = pfe.vm.Close()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)

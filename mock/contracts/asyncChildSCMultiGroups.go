@@ -6,7 +6,8 @@ import (
 )
 
 // ChildAsyncMultiGroupsMock is an exposed mock contract method
-func ChildAsyncMultiGroupsMock(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func ChildAsyncMultiGroupsMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*test.TestConfig)
 	for _, groupConfig := range AsyncGroupsConfig {
 		for g := 1; g < len(groupConfig); g++ {
 			functionName := groupConfig[g]

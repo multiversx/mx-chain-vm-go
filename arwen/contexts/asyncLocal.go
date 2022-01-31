@@ -78,7 +78,8 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	if asyncCall.HasCallback() {
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+		isUpgradeCall := context.isUpgradeCall(destinationCallInput.Function)
+		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode, isUpgradeCall)
 		context.gasAccumulated = 0
 		if callbackVMOutput != nil {
 			context.accumulateGas(callbackVMOutput.GasRemaining)
@@ -91,6 +92,13 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	}
 
 	return nil
+}
+
+func (context *asyncContext) isUpgradeCall(function string) bool {
+	if !context.host.Storage().IsUseDifferentGasCostFlagSet() {
+		return false
+	}
+	return function == arwen.UpgradeFunctionName
 }
 
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
@@ -140,7 +148,7 @@ func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGrou
 	input := context.createGroupCallbackInput(group)
 	context.gasAccumulated = 0
 	vmOutput, err := context.host.ExecuteOnDestContext(input)
-	context.finishAsyncLocalExecution(vmOutput, err)
+	context.finishAsyncLocalExecution(vmOutput, err, 0, false)
 	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
 	context.accumulateGas(vmOutput.GasRemaining)
 }
@@ -178,7 +186,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
 		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr)
+		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr, 0, false)
 	}
 
 	// The gas that remains after executing the in-shard half of the built-in
@@ -193,29 +201,42 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 func (context *asyncContext) executeSyncContextCallback() {
 	callbackCallInput := context.createContextCallbackInput()
 	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr)
+	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr, 0, false)
 }
 
 // TODO return values are never used by code that calls finishAsyncLocalExecution
-func (context *asyncContext) finishAsyncLocalExecution(vmOutput *vmcommon.VMOutput, err error) {
-	if err == nil {
-		return
-	}
+func (context *asyncContext) finishAsyncLocalExecution(
+	vmOutput *vmcommon.VMOutput,
+	err error,
+	destinationReturnCode vmcommon.ReturnCode,
+	setReturnCode bool) {
+	// output := context.host.Output()
+	// if err == nil {
+	// 	if setReturnCode {
+	// 		output.SetReturnCode(destinationReturnCode)
+	// 	}
+	// 	return
+	// }
 
 	runtime := context.host.Runtime()
-	output := context.host.Output()
 
 	runtime.GetVMInput().GasProvided = 0
 
-	if vmOutput == nil {
-		vmOutput = output.CreateVMOutputInCaseOfError(err)
-	}
+	// if vmOutput == nil {
+	// 	vmOutput = output.CreateVMOutputInCaseOfError(err)
+	// }
 
-	output.SetReturnCode(vmOutput.ReturnCode)
+	// if setReturnCode {
+	// 	if vmOutput.ReturnCode != vmcommon.Ok {
+	// 		output.SetReturnCode(vmOutput.ReturnCode)
+	// 	} else {
+	// 		output.SetReturnCode(destinationReturnCode)
+	// 	}
+	// }
 
-	output.SetReturnMessage(vmOutput.ReturnMessage)
-	output.Finish([]byte(vmOutput.ReturnCode.String()))
-	output.Finish(runtime.GetCurrentTxHash())
+	// output.SetReturnMessage(vmOutput.ReturnMessage)
+	// output.Finish([]byte(vmOutput.ReturnCode.String()))
+	// output.Finish(runtime.GetCurrentTxHash())
 }
 
 func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {

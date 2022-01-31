@@ -373,6 +373,12 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 		})
 }
 
+func TestMultipleTimes(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t)
+	}
+}
+
 func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 	var parentAccount *worldmock.Account
 	initialESDTTokenBalance := uint64(100)
@@ -505,6 +511,9 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 0
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -559,6 +568,9 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 1
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -612,6 +624,9 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 2
 
 			// Mock the storage as if the parent was already executed
@@ -873,15 +888,14 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("callBack error").
+			verify.Ok().
 				HasRuntimeErrors("callBack error").
 				BalanceDelta(test.ParentAddress, -(2*testConfig.TransferToThirdParty+testConfig.TransferToVault)).
 				BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, expectedGasUsedByChild).
 				GasRemaining(0).
-				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault"), []byte("user error"), []byte("txhash")).
+				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB),
@@ -1108,8 +1122,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				ReturnMessage("wrong num of arguments")
+			verify.Ok()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1197,7 +1210,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.ExecutionFailed().
+			verify.Ok().
 				HasRuntimeErrors("tokenize failed")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
@@ -1242,9 +1255,8 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.UserError().
-				HasRuntimeErrors("callback failed intentionally").
-				Print()
+			verify.Ok().
+				HasRuntimeErrors("callback failed intentionally")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1389,6 +1401,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 			test.CreateMockContractOnShard(contracts.GetChildAddressForTransfer(transfer), uint32(startShard+transfer)).
 				WithBalance(0).
 				WithConfig(testConfig).
+				WithCodeMetadata([]byte{0, vmcommon.MetadataPayable}).
 				WithMethods(contracts.WasteGasChildMock))
 	}
 

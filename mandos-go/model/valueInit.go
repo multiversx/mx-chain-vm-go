@@ -57,6 +57,11 @@ type JSONUint64 struct {
 	Original string
 }
 
+// OriginalEmpty returns true if the object originates from "".
+func (ju *JSONUint64) OriginalEmpty() bool {
+	return len(ju.Original) == 0
+}
+
 // JSONUint64Zero provides an unitialized zero value.
 func JSONUint64Zero() JSONUint64 {
 	return JSONUint64{

@@ -192,6 +192,7 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetNumArguments"] = value
 	gasMap["StorageStore"] = value
 	gasMap["StorageLoad"] = value
+	gasMap["CachedStorageLoad"] = value
 	gasMap["GetCaller"] = value
 	gasMap["GetCallValue"] = value
 	gasMap["Log"] = value
@@ -808,6 +809,8 @@ func FillGasMap_WASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["I16x8RoundingAverageU"] = value
 	gasMap["LocalAllocate"] = value
 	gasMap["LocalsUnmetered"] = 100
+	gasMap["MaxMemoryGrow"] = 8
+	gasMap["MaxMemoryGrowDelta"] = 10
 
 	return gasMap
 }

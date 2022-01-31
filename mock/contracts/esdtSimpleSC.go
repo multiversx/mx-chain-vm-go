@@ -13,8 +13,9 @@ import (
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
-func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
@@ -50,8 +51,9 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, testConfig *t
 }
 
 // ExecESDTTransferWithAPICall is an exposed mock contract method
-func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("execESDTTransferWithAPICall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
@@ -99,8 +101,9 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, testConfig *te
 }
 
 // ExecESDTTransferAndAsyncCallChild is an exposed mock contract method
-func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, testConfig *test.TestConfig) {
+func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("execESDTTransferAndAsyncCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
