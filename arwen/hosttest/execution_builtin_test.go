@@ -227,7 +227,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
 		{}, {},
-		test.ESDTTestTokenName,
+		testToken,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),
 	}
