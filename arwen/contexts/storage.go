@@ -162,14 +162,6 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 // GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by arwen, so no permissions checks are necessary
 func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool) {
-	metering := context.host.Metering()
-
-	extraBytes := len(key) - arwen.AddressLen
-	if extraBytes > 0 {
-		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		metering.UseGas(gasToUse)
-	}
-
 	// If the requested key is protected by the Elrond node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
 	// contracts themselves cannot change protected values. Values stored under
