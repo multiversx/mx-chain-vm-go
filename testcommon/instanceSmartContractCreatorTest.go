@@ -50,8 +50,11 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(
 }
 
 func (callerTest *TestCreateTemplateConfig) runTest() {
-
 	host, stubBlockchainHook := DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+	defer func() {
+		host.Reset()
+	}()
+
 	callerTest.setup(host, stubBlockchainHook)
 
 	vmOutput, err := host.RunSmartContractCreate(callerTest.input)

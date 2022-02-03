@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
@@ -81,6 +82,8 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
+	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)

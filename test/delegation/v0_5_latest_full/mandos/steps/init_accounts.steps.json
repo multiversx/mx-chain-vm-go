@@ -6,9 +6,7 @@
             "accounts": {
                 "address:node_address": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:auction": {
                     "nonce": "0",
@@ -20,34 +18,24 @@
                 },
                 "address:someone": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "address:endless_sack_of_erd": {
                     "nonce": "0",
-                    "balance":  "1,000,000,000,000,000,000,000,000,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000"
                 },
                 "address:delegator1": {
                     "comment": "starting with 0 balance, transferring funds only when needed to make it easier to keep track of rewards",
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "address:delegator2": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "address:delegator3": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -76,7 +64,7 @@
                 },
                 "address:endless_sack_of_erd": {
                     "nonce": "0",
-                    "balance":  "1,000,000,000,000,000,000,000,000,000,000",
+                    "balance": "1,000,000,000,000,000,000,000,000,000,000",
                     "storage": {},
                     "code": ""
                 },

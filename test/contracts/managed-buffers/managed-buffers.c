@@ -153,6 +153,26 @@ void mBufferGetBytesTest() {
     finish(returnDataBuffer,reps);
 }
 
+void mBufferSetByteSliceTest() {
+		int startPos = int64getArgument(0);
+		int copyLen = int64getArgument(1);
+
+		if (copyLen > 36) {
+			byte msg[] = "max 36 bytes to copy";
+			signalError(msg, 20);
+		}
+
+		byte sourceBytes[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		byte destBytes[] = "abcdefghijklmnopqrstuvwxyz";
+
+		int buffer = mBufferNew();
+		mBufferSetBytes(buffer, destBytes, 26);
+
+		int result;
+		result = mBufferSetByteSlice(buffer, startPos, copyLen, sourceBytes);
+		mBufferFinish(buffer);
+}
+
 void mBufferAppendTest() {
     int reps, result;
     reps = int64getArgument(0);

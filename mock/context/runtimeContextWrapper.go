@@ -74,7 +74,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	StartWasmerInstanceFunc func(contract []byte, gasLimit uint64, newCode bool) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	CleanWasmerInstanceFunc func()
+	ClearWarmInstanceCacheFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetMaxInstanceCountFunc func(maxInstances uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -259,8 +259,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.StartWasmerInstance(contract, gasLimit, newCode)
 	}
 
-	runtimeWrapper.CleanWasmerInstanceFunc = func() {
-		runtimeWrapper.runtimeContext.CleanWasmerInstance()
+	runtimeWrapper.ClearWarmInstanceCacheFunc = func() {
+		runtimeWrapper.runtimeContext.ClearWarmInstanceCache()
 	}
 
 	runtimeWrapper.SetMaxInstanceCountFunc = func(maxInstances uint64) {
@@ -525,9 +525,9 @@ func (contextWrapper *RuntimeContextWrapper) StartWasmerInstance(contract []byte
 	return contextWrapper.StartWasmerInstanceFunc(contract, gasLimit, newCode)
 }
 
-// CleanWasmerInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) CleanWasmerInstance() {
-	contextWrapper.CleanWasmerInstanceFunc()
+// ClearWarmInstanceCache calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ClearWarmInstanceCache() {
+	contextWrapper.ClearWarmInstanceCacheFunc()
 }
 
 // SetMaxInstanceCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -658,4 +658,9 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 	contextWrapper.ClearStateStackFunc()
+}
+
+// DisableUseDifferentGasCostFlag calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
+	contextWrapper.DisableUseDifferentGasCostFlag()
 }

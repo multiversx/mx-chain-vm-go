@@ -32,6 +32,9 @@ func (f *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRespons
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = world.vm.Close()
+	}()
 
 	response := world.deploySmartContract(request)
 
@@ -68,6 +71,9 @@ func (f *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResp
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = world.vm.Close()
+	}()
 
 	response := world.upgradeSmartContract(request)
 
@@ -82,6 +88,7 @@ func (f *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResp
 	}
 
 	dumpOutcome(&response)
+
 	return response, err
 }
 
@@ -99,6 +106,9 @@ func (f *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = world.vm.Close()
+	}()
 
 	response := world.runSmartContract(request)
 
@@ -130,6 +140,9 @@ func (f *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, 
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = world.vm.Close()
+	}()
 
 	response := world.querySmartContract(request)
 
@@ -156,6 +169,9 @@ func (f *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccoun
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = world.vm.Close()
+	}()
 
 	response := world.createAccount(request)
 
@@ -170,6 +186,7 @@ func (f *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccoun
 	}
 
 	dumpOutcome(&response)
+
 	return response, err
 }
 

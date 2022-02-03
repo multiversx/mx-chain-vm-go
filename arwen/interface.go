@@ -56,6 +56,7 @@ type VMHost interface {
 
 	FixOOGReturnCodeEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
+	Reset()
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -86,7 +87,7 @@ type BlockchainContext interface {
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
-	IsPayable(address []byte) (bool, error)
+	IsPayable(sndAddress, rcvAddress []byte) (bool, error)
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
@@ -130,7 +131,7 @@ type RuntimeContext interface {
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
-	CleanWasmerInstance()
+	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	GetInstance() wasmer.InstanceHandler
@@ -153,8 +154,7 @@ type RuntimeContext interface {
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
+	DisableUseDifferentGasCostFlag()
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
@@ -290,11 +290,14 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorageFromAddress(address []byte, key []byte) []byte
-	GetStorage(key []byte) []byte
-	GetStorageUnmetered(key []byte) []byte
+	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
+	GetStorage(key []byte) ([]byte, bool)
+	GetStorageUnmetered(key []byte) ([]byte, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
+	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
+	DisableUseDifferentGasCostFlag()
+	IsUseDifferentGasCostFlagSet() bool
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo

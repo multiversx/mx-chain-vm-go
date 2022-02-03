@@ -203,6 +203,7 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetNumArguments"] = value
 	gasMap["StorageStore"] = value
 	gasMap["StorageLoad"] = value
+	gasMap["CachedStorageLoad"] = value
 	gasMap["GetCaller"] = value
 	gasMap["GetCallValue"] = value
 	gasMap["Log"] = value
