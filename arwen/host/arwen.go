@@ -29,7 +29,8 @@ var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
-const executionTimeout = 60 * time.Second
+// TODO restore default time.Second
+const executionTimeout = 86400 * time.Second
 
 // vmHost implements HostContext interface.
 type vmHost struct {
