@@ -734,7 +734,7 @@ func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, e
 		return 0, err
 	}
 	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(serializedData)))
-	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(arwen.AsyncDataPrefix)))
+	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(len(arwen.AsyncDataPrefix)+arwen.AddressLen))
 	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
 	return gasUseForSerialization, nil
 }

@@ -2,9 +2,6 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
-
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRustBasicFeaturesLatest(t *testing.T) {
@@ -89,7 +86,7 @@ func TestTimelocks(t *testing.T) {
 }
 
 func TestSingleJson(t *testing.T) {
-	arwen.SetLoggingForTests()
-	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
-	require.Nil(t, err)
+	// arwen.SetLoggingForTests()
+	// err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
+	// require.Nil(t, err)
 }
