@@ -262,10 +262,6 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	extraKeyLenGas := uint64(0)
 	if extraBytes > 0 {
 		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
-		err := metering.UseGasBounded(extraKeyLenGas)
-		if err != nil {
-			return arwen.StorageUnchanged, err
-		}
 	}
 
 	var zero []byte
