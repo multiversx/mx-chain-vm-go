@@ -31,8 +31,9 @@ const executionTimeout = time.Second
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	cryptoHook   crypto.VMCrypto
-	mutExecution sync.RWMutex
+	cryptoHook      crypto.VMCrypto
+	mutExecution    sync.RWMutex
+	closingInstance bool
 
 	ethInput []byte
 
@@ -260,10 +261,26 @@ func (host *vmHost) InitState() {
 	host.initContexts()
 }
 
+func (host *vmHost) close() {
+	host.runtimeContext.ClearWarmInstanceCache()
+}
+
 // Close will close all underlying processes
 func (host *vmHost) Close() error {
-	host.runtimeContext.ClearWarmInstanceCache()
+	host.mutExecution.Lock()
+	host.close()
+	host.closingInstance = true
+	host.mutExecution.Unlock()
+
 	return nil
+}
+
+// Reset is a function which closes the VM and resets the closingInstance variable
+func (host *vmHost) Reset() {
+	host.mutExecution.Lock()
+	host.close()
+	// keep closingInstance flag to false
+	host.mutExecution.Unlock()
 }
 
 func (host *vmHost) initContexts() {
@@ -319,6 +336,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
 
+	if host.closingInstance {
+		return nil, arwen.ErrVMIsClosing
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
@@ -369,6 +390,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.mutExecution.RLock()
 	defer host.mutExecution.RUnlock()
+
+	if host.closingInstance {
+		return nil, arwen.ErrVMIsClosing
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
