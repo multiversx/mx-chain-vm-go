@@ -193,8 +193,8 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 			"retCode", destinationVMOutput.ReturnCode,
 			"message", destinationVMOutput.ReturnMessage,
 			"data", destinationVMOutput.ReturnData,
-			"error", err,
-			"gas remaining", destinationVMOutput.GasRemaining)
+			"gas remaining", destinationVMOutput.GasRemaining,
+			"error", err)
 	}
 
 	return destinationCallInput, destinationVMOutput, err
