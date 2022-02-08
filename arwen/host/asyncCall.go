@@ -239,8 +239,8 @@ func (host *vmHost) executeSyncCallbackCall(
 			"retCode", callbackVMOutput.ReturnCode,
 			"message", callbackVMOutput.ReturnMessage,
 			"data", callbackVMOutput.ReturnData,
-			"error", callBackErr,
-			"gasRemaining", callbackVMOutput.GasRemaining)
+			"gasRemaining", callbackVMOutput.GasRemaining,
+			"error", callBackErr)
 	}
 
 	return callbackVMOutput, callBackErr
