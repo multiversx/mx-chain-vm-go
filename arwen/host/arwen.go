@@ -358,7 +358,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
-		logsFromErrors := host.createLogEntriesFromErrors(input.CallerAddr, input.CallerAddr, "_init")
+		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 		}
@@ -411,7 +411,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			vmOutput = host.doRunSmartContractCall(input)
 		}
 
-		logsFromErrors := host.createLogEntriesFromErrors(input.CallerAddr, input.RecipientAddr, input.Function)
+		logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.RecipientAddr, input.Function)
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 		}
@@ -433,7 +433,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	return
 }
 
-func (host *vmHost) createLogEntriesFromErrors(sndAddress, rcvAddress []byte, function string) *vmcommon.LogEntry {
+func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, function string) *vmcommon.LogEntry {
 	formattedErrors := host.runtimeContext.GetAllErrors()
 	if formattedErrors == nil {
 		return nil
