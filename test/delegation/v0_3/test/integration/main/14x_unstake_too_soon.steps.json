@@ -24,7 +24,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:no stake eligible for unStake",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

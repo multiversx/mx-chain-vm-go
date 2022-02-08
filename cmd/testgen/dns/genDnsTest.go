@@ -93,7 +93,7 @@ func main() {
 				"expect": {
 					"out": [],
 					"status": "",
-					"logs": [],
+					"logs": "*",
 					"gas": "*",
 					"refund": "*"
 				}
@@ -118,7 +118,7 @@ func main() {
 				"expect": {
 					"out": [],
 					"status": "",
-					"logs": [],
+					"logs": "*",
 					"gas": "*",
 					"refund": "*"
 				}
