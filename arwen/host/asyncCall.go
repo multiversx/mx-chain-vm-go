@@ -183,7 +183,9 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 		"caller", destinationCallInput.CallerAddr,
 		"dest", destinationCallInput.RecipientAddr,
 		"func", destinationCallInput.Function,
-		"args", destinationCallInput.Arguments)
+		"args", destinationCallInput.Arguments,
+		"gas provided", destinationCallInput.GasProvided,
+		"gas locked", destinationCallInput.GasLocked)
 
 	destinationVMOutput, _, err := host.ExecuteOnDestContext(destinationCallInput)
 	if destinationVMOutput != nil {
@@ -191,7 +193,8 @@ func (host *vmHost) executeSyncDestinationCall(asyncCallInfo arwen.AsyncCallInfo
 			"retCode", destinationVMOutput.ReturnCode,
 			"message", destinationVMOutput.ReturnMessage,
 			"data", destinationVMOutput.ReturnData,
-			"error", err)
+			"error", err,
+			"gas remaining", destinationVMOutput.GasRemaining)
 	}
 
 	return destinationCallInput, destinationVMOutput, err
@@ -222,7 +225,9 @@ func (host *vmHost) executeSyncCallbackCall(
 		"caller", callbackCallInput.CallerAddr,
 		"dest", callbackCallInput.RecipientAddr,
 		"func", callbackCallInput.Function,
-		"args", callbackCallInput.Arguments)
+		"args", callbackCallInput.Arguments,
+		"gas provided", callbackCallInput.GasProvided,
+		"gas locked", callbackCallInput.GasLocked)
 
 	// Restore gas locked while still on the caller instance; otherwise, the
 	// locked gas will appear to have been used twice by the caller instance.
@@ -234,7 +239,8 @@ func (host *vmHost) executeSyncCallbackCall(
 			"retCode", callbackVMOutput.ReturnCode,
 			"message", callbackVMOutput.ReturnMessage,
 			"data", callbackVMOutput.ReturnData,
-			"error", callBackErr)
+			"error", callBackErr,
+			"gas remaining", callbackVMOutput.GasRemaining)
 	}
 
 	return callbackVMOutput, callBackErr

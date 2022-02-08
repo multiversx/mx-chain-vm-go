@@ -800,6 +800,8 @@ func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, val
 	gasToLock := uint64(0)
 	if context.HasCallbackMethod() {
 		gasToLock = metering.ComputeGasLockedForAsync()
+		log.Trace("ExecuteAsyncCall", "gasToLock", gasToLock)
+
 		err = metering.UseGasBounded(gasToLock)
 		if err != nil {
 			return err
