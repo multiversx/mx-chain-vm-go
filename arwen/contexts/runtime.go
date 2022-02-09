@@ -23,7 +23,7 @@ var logRuntime = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
-const warmCacheSize = 99
+const warmCacheSize = 100
 const warmInstancesEnabled = true
 
 type runtimeContext struct {
@@ -334,7 +334,6 @@ func (context *runtimeContext) saveWarmInstance(codeHash []byte) {
 	}
 
 	context.warmInstanceCache.Put(codeHash, localContract, 1)
-	context.warmInstanceCache.Clear()
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
