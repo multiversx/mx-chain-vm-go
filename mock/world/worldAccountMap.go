@@ -44,10 +44,13 @@ func (am AccountMap) CreateAccount(address []byte, world *MockWorld) *Account {
 // the given address and WASM bytecode.
 func (am AccountMap) CreateSmartContractAccount(owner []byte, address []byte, code []byte, world *MockWorld) *Account {
 	newAccount := am.CreateAccount(address, world)
-	newAccount.Code = code
-	newAccount.IsSmartContract = true
 	newAccount.OwnerAddress = owner
-	newAccount.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
+
+	metadata := &vmcommon.CodeMetadata{
+		Payable: true,
+	}
+
+	newAccount.SetCodeAndMetadata(code, metadata)
 
 	return newAccount
 }

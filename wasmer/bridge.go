@@ -100,6 +100,14 @@ func cWasmerInstanceIsFunctionImported(instance *cWasmerInstanceT, name string) 
 	))
 }
 
+func cWasmerInstanceEnableRkyv() {
+	C.wasmer_instance_enable_rkyv()
+}
+
+func cWasmerInstanceDisableRkyv() {
+	C.wasmer_instance_disable_rkyv()
+}
+
 func cWasmerInstanceCache(
 	instance *cWasmerInstanceT,
 	cacheBytes **cUchar,
@@ -119,32 +127,6 @@ func cWasmerInstanceFromCache(
 	options *cWasmerCompilationOptions,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.wasmer_instance_from_cache(
-		(**C.wasmer_instance_t)(unsafe.Pointer(instance)),
-		(*C.uchar)(cacheBytes),
-		(C.uint32_t)(cacheLen),
-		(*C.wasmer_compilation_options_t)(options),
-	))
-}
-
-func cWasmerInstanceCacheRkyv(
-	instance *cWasmerInstanceT,
-	cacheBytes **cUchar,
-	cacheLen *cUint32T,
-) cWasmerResultT {
-	return (cWasmerResultT)(C.wasmer_instance_cache_rkyv(
-		(*C.wasmer_instance_t)(instance),
-		(**C.uchar)(unsafe.Pointer(cacheBytes)),
-		(*C.uint32_t)(cacheLen),
-	))
-}
-
-func cWasmerInstanceFromCacheRkyv(
-	instance **cWasmerInstanceT,
-	cacheBytes *cUchar,
-	cacheLen cUint32T,
-	options *cWasmerCompilationOptions,
-) cWasmerResultT {
-	return (cWasmerResultT)(C.wasmer_instance_from_cache_rkyv(
 		(**C.wasmer_instance_t)(unsafe.Pointer(instance)),
 		(*C.uchar)(cacheBytes),
 		(C.uint32_t)(cacheLen),

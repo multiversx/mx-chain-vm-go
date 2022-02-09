@@ -4,12 +4,12 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
-type wasmerInstanceBuilder struct {
+type WasmerInstanceBuilder struct {
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,
 // respecting the provided options
-func (builder *wasmerInstanceBuilder) NewInstanceWithOptions(
+func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 	contractCode []byte,
 	options wasmer.CompilationOptions,
 ) (wasmer.InstanceHandler, error) {
@@ -18,7 +18,7 @@ func (builder *wasmerInstanceBuilder) NewInstanceWithOptions(
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
 // precompiled machine code, respecting the provided options
-func (builder *wasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
+func (builder *WasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
 ) (wasmer.InstanceHandler, error) {

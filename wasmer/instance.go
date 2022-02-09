@@ -8,7 +8,6 @@ import (
 )
 
 const OPCODE_COUNT = 448
-const USE_RKYV_SERIALIZATION = true
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -41,6 +40,14 @@ type ExportedFunctionError struct {
 type ExportedFunctionSignature struct {
 	InputArity  int
 	OutputArity int
+}
+
+func SetRkyvSerializationEnabled(enabled bool) {
+	if enabled {
+		cWasmerInstanceEnableRkyv()
+	} else {
+		cWasmerInstanceDisableRkyv()
+	}
 }
 
 // NewExportedFunctionError constructs a new `ExportedFunctionError`,
@@ -206,13 +213,8 @@ func NewInstanceFromCompiledCodeWithOptions(
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
-	var instance_deserializer = cWasmerInstanceFromCache
-	if USE_RKYV_SERIALIZATION {
-		instance_deserializer = cWasmerInstanceFromCacheRkyv
-	}
-
 	cOptions := unsafe.Pointer(&options)
-	var instantiateResult = instance_deserializer(
+	var instantiateResult = cWasmerInstanceFromCache(
 		&c_instance,
 		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
 		cUint32T(len(compiledCode)),
@@ -279,12 +281,7 @@ func (instance *Instance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar
 	var cacheLen cUint32T
 
-	var instance_serializer = cWasmerInstanceCache
-	if USE_RKYV_SERIALIZATION {
-		instance_serializer = cWasmerInstanceCacheRkyv
-	}
-
-	var cacheResult = instance_serializer(
+	var cacheResult = cWasmerInstanceCache(
 		instance.instance,
 		&cacheBytes,
 		&cacheLen,
