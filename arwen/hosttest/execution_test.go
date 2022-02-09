@@ -600,6 +600,36 @@ func TestExecution_Call_Successful(t *testing.T) {
 		})
 }
 
+func TestExecution_CachingCompiledCode(t *testing.T) {
+	scAddress := test.MakeTestSCAddress("counter")
+	code := test.GetTestSCCode("counter", "../../")
+
+	host, world := test.DefaultTestArwenWithWorldMock(t)
+	defer func() {
+		_ = host.Close()
+	}()
+
+	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(100000).
+		WithFunction(increment).
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+	require.NotEqual(t, vmOutput.GasRemaining, 100000)
+
+	for i := 0; i < 3; i++ {
+		vmOutput, err = host.RunSmartContractCall(input)
+		require.Nil(t, err)
+		require.Zero(t, vmOutput.ReturnCode)
+		require.NotEqual(t, vmOutput.GasRemaining, 100000)
+	}
+}
+
 func TestExecution_ManagedBuffers(t *testing.T) {
 	var functionNumber = 0
 	var mBuffer = [...]string{"mBufferMethod", "mBufferNewTest", "mBufferNewFromBytesTest", "mBufferSetRandomTest",

@@ -24,7 +24,7 @@ var logRuntime = logger.GetOrCreate("arwen/runtime")
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 99
-const warmInstancesEnabled = false
+const warmInstancesEnabled = true
 
 type runtimeContext struct {
 	host               arwen.VMHost
