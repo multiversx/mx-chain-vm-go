@@ -68,7 +68,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:cannot activate with no nodes",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
