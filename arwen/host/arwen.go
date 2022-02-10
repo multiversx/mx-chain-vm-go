@@ -28,7 +28,7 @@ var MaximumWasmerInstanceCount = uint64(10)
 var _ arwen.VMHost = (*vmHost)(nil)
 
 const executionTimeout = time.Second
-const signalErrorName = "signalError"
+const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -440,7 +440,7 @@ func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, func
 	}
 
 	logFromError := &vmcommon.LogEntry{
-		Identifier: []byte(signalErrorName),
+		Identifier: []byte(internalVMErrors),
 		Address:    sndAddress,
 		Topics:     [][]byte{rcvAddress, []byte(function)},
 		Data:       []byte(formattedErrors.Error()),
