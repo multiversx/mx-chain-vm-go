@@ -344,7 +344,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
-	log.Trace("RunSmartContractCreate begin", "len(code)", len(input.ContractCode), "metadata", input.ContractCodeMetadata)
+	log.Trace("RunSmartContractCreate begin",
+		"len(code)", len(input.ContractCode),
+		"metadata", input.ContractCodeMetadata,
+		"gasProvided", input.GasProvided,
+		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
 	errChan := make(chan error, 1)
@@ -362,6 +366,12 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 		}
+
+		log.Trace("RunSmartContractCreate end",
+			"returnCode", vmOutput.ReturnCode,
+			"returnMessage", vmOutput.ReturnMessage,
+			"gasRemaining", vmOutput.GasRemaining)
+
 		close(done)
 	}()
 
@@ -391,7 +401,10 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
-	log.Trace("RunSmartContractCall begin", "function", input.Function)
+	log.Trace("RunSmartContractCall begin",
+		"function", input.Function,
+		"gasProvided", input.GasProvided,
+		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
 	errChan := make(chan error, 1)
@@ -415,6 +428,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		if logsFromErrors != nil {
 			vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 		}
+
+		log.Trace("RunSmartContractCall end",
+			"function", input.Function,
+			"returnCode", vmOutput.ReturnCode,
+			"returnMessage", vmOutput.ReturnMessage,
+			"gasRemaining", vmOutput.GasRemaining)
 
 		close(done)
 	}()
