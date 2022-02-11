@@ -16,7 +16,7 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
         },
@@ -30,7 +30,7 @@
                 "function": "forward_transf_exec_egld",
                 "arguments": [
                     "sc:vault",
-                    "str:just_accept_funds"
+                    "str:accept_funds"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -64,7 +64,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
         },
@@ -77,7 +77,7 @@
                 "function": "forward_transf_exec_egld",
                 "arguments": [
                     "sc:vault",
-                    "str:just_accept_funds"
+                    "str:accept_funds"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -111,7 +111,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
         }
