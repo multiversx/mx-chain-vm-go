@@ -2,6 +2,8 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRustBasicFeaturesLatest(t *testing.T) {
@@ -88,3 +90,13 @@ func TestTimelocks(t *testing.T) {
 // 		t.Error(err)
 // 	}
 // }
+
+func TestForwarderTransfExec(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_nft_reject.scen.json")
+	require.Nil(t, err)
+}
+
+func TestForwarderTransfExecMultiReject(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_multi_transfer_reject.scen.json")
+	require.Nil(t, err)
+}
