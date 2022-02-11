@@ -432,14 +432,13 @@ func v1_4_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
 //export v1_4_bigIntGetESDTCallValueByIndex
 func v1_4_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandle int32, index int32) {
 	managedType := arwen.GetManagedTypesContext(context)
-	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetCallValue
 	metering.UseGasAndAddTracedGas(bigIntGetESDTCallValueByIndexName, gasToUse)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
-	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(arwen.GetVMHost(context), index)
 	if esdtTransfer != nil {
 		value.Set(esdtTransfer.ESDTValue)
 	} else {

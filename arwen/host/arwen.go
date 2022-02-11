@@ -61,6 +61,9 @@ type vmHost struct {
 
 	createNFTThroughExecByCallerEnableEpoch uint32
 	flagCreateNFTThroughExecByCaller        atomic.Flag
+
+	fixFailExecutionOnErrorEnableEpoch uint32
+	flagFixFailExecutionOnError        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -101,6 +104,7 @@ func NewArwenVM(
 		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
 		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		fixFailExecutionOnErrorEnableEpoch:        hostParameters.FixFailExecutionOnErrorEnableEpoch,
 	}
 
 	var err error
@@ -516,11 +520,19 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagCreateNFTThroughExecByCaller.SetValue(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
 	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
+
+	host.flagFixFailExecutionOnError.SetValue(epoch >= host.fixFailExecutionOnErrorEnableEpoch)
+	log.Debug("Arwen VM: fix fail execution on error", "enabled", host.flagFixFailExecutionOnError.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.flagFixOOGReturnCode.IsSet()
+}
+
+// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
+func (host *vmHost) FixFailExecutionEnabled() bool {
+	return host.flagFixFailExecutionOnError.IsSet()
 }
 
 //CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set

@@ -185,9 +185,10 @@ const (
 
 var logEEI = logger.GetOrCreate("arwen/eei")
 
-func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.ESDTTransfer {
-	esdtTransfers := vmInput.ESDTTransfers
+func getESDTTransferFromInputFailIfWrongIndex(host arwen.VMHost, index int32) *vmcommon.ESDTTransfer {
+	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index {
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 	return esdtTransfers[index]
@@ -805,6 +806,7 @@ func v1_4_getESDTNFTNameLength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
+		arwen.WithFaultIfFailAlwaysActive(arwen.ErrNilESDTData, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -829,6 +831,7 @@ func v1_4_getESDTNFTAttributeLength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
+		arwen.WithFaultIfFailAlwaysActive(arwen.ErrNilESDTData, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -853,6 +856,7 @@ func v1_4_getESDTNFTURILength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
+		arwen.WithFaultIfFailAlwaysActive(arwen.ErrNilESDTData, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
@@ -1001,6 +1005,7 @@ func v1_4_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 	}
 
 	if isBuiltInCall(string(data), host) {
+		arwen.WithFaultIfFailAlwaysActive(arwen.ErrTransferValueOnESDTCall, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -1222,6 +1227,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if contractCallInput != nil {
 		if host.IsBuiltinFunctionName(contractCallInput.Function) {
+			arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrNilESDTData, host, runtime.ElrondAPIErrorShouldFailExecution())
 			return 1
 		}
 	}
@@ -1231,6 +1237,7 @@ func TransferValueExecuteWithTypedArgs(
 		_, _, err = host.ExecuteOnDestContext(contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
+			arwen.WithFaultAndHostIfFailAlwaysActive(err, host, runtime.ElrondAPIErrorShouldFailExecution())
 			return 1
 		}
 
@@ -1491,6 +1498,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
+			arwen.WithFaultAndHostIfFailAlwaysActive(executeErr, host, runtime.ElrondAPIErrorShouldFailExecution())
 			return 1
 		}
 
@@ -1838,6 +1846,7 @@ func v1_4_getArgumentLength(context unsafe.Pointer, id int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
+		arwen.WithFaultIfFailAlwaysActive(arwen.ErrInvalidArgument, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1854,6 +1863,7 @@ func v1_4_getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
+		arwen.WithFaultIfFailAlwaysActive(arwen.ErrInvalidArgument, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -2197,7 +2207,7 @@ func v1_4_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index 
 
 	var value []byte
 
-	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(arwen.GetVMHost(context), index)
 	if esdtTransfer != nil && esdtTransfer.ESDTValue.Cmp(arwen.Zero) > 0 {
 		value = esdtTransfer.ESDTValue.Bytes()
 		value = arwen.PadBytesLeft(value, arwen.BalanceLen)
@@ -2228,7 +2238,7 @@ func v1_4_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, in
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGasAndAddTracedGas(getESDTTokenNameByIndexName, gasToUse)
 
-	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(arwen.GetVMHost(context), index)
 	var tokenName []byte
 	if esdtTransfer != nil {
 		tokenName = esdtTransfer.ESDTTokenName
@@ -2253,13 +2263,12 @@ func v1_4_getESDTTokenNonce(context unsafe.Pointer) int64 {
 
 //export v1_4_getESDTTokenNonceByIndex
 func v1_4_getESDTTokenNonceByIndex(context unsafe.Pointer, index int32) int64 {
-	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGasAndAddTracedGas(getESDTTokenNonceByIndexName, gasToUse)
 
-	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(arwen.GetVMHost(context), index)
 	nonce := uint64(0)
 	if esdtTransfer != nil {
 		nonce = esdtTransfer.ESDTTokenNonce
@@ -2304,13 +2313,12 @@ func v1_4_getESDTTokenType(context unsafe.Pointer) int32 {
 
 //export v1_4_getESDTTokenTypeByIndex
 func v1_4_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
-	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGasAndAddTracedGas(getESDTTokenTypeByIndexName, gasToUse)
 
-	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(arwen.GetVMHost(context), index)
 	if esdtTransfer != nil {
 		return int32(esdtTransfer.ESDTTokenType)
 	}
@@ -2347,7 +2355,7 @@ func v1_4_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset i
 
 	callValue := runtime.GetVMInput().CallValue.Bytes()
 	tokenName := make([]byte, 0)
-	esdtTransfer := getESDTTransferFromInput(runtime.GetVMInput(), index)
+	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(arwen.GetVMHost(context), index)
 
 	if esdtTransfer != nil {
 		tokenName = make([]byte, len(esdtTransfer.ESDTTokenName))
@@ -2687,6 +2695,7 @@ func ExecuteOnSameContextWithTypedArgs(
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidBuiltInFunctionCall, host, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -2996,6 +3005,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidBuiltInFunctionCall, host, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -3207,6 +3217,7 @@ func v1_4_getNumReturnData(context unsafe.Pointer) int32 {
 
 //export v1_4_getReturnDataSize
 func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
+	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -3215,6 +3226,7 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) {
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -3232,6 +3244,7 @@ func v1_4_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) {
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
