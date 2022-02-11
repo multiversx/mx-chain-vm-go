@@ -343,27 +343,17 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					accountInstance.TokenMetaData.Hash,
 					er.NoHint)))
 		}
-		if len(accountInstance.TokenMetaData.URIs) > 1 {
+		/*if len(accountInstance.TokenMetaData.URIs) > 1 {
 			errors = append(errors, fmt.Errorf(
 				"for token: %s, nonce: %d: More than one URI currently not supported",
 				tokenName,
 				nonce))
-		}
-		var actualUri []byte
-		if len(accountInstance.TokenMetaData.URIs) == 1 {
-			actualUri = accountInstance.TokenMetaData.URIs[0]
-		}
+		}*/
 		if !expectedInstance.Uri.IsUnspecified() &&
-			!expectedInstance.Uri.Check(actualUri) {
-			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
-				tokenName,
-				nonce,
-				objectStringOrDefault(expectedInstance.Uri.Original),
-				ae.exprReconstructor.Reconstruct(
-					actualUri,
-					er.StrHint)))
+			!expectedInstance.Uri.CheckList(accountInstance.TokenMetaData.URIs) {
+			checkInstanceURIs(tokenName, nonce, expectedInstance, accountInstance.TokenMetaData.URIs)
 		}
+
 		if !expectedInstance.Attributes.IsUnspecified() &&
 			!expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
 			errors = append(errors, fmt.Errorf(
@@ -376,6 +366,50 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					er.StrHint)))
 		}
 
+	}
+
+	return errors
+}
+
+func checkInstanceURIs(
+	tokenName string,
+	nonce uint64,
+	expectedTokens *mj.CheckESDTInstance,
+	accountURIsAsBytes [][]byte) []error {
+
+	var errors []error
+
+	allURIs := make(map[string]bool)
+	expectedURIs := make(map[string]bool)
+	accountURIs := make(map[string]bool)
+
+	if list, isList := expectedTokens.Uri.Original.(*oj.OJsonList); isList {
+		for _, expectedURI := range list.AsList() {
+			uri := objectStringOrDefault(expectedURI)
+			allURIs[uri] = true
+			expectedURIs[uri] = true
+		}
+	}
+
+	for _, accountURI := range accountURIsAsBytes {
+		allURIs[string(accountURI)] = true
+		accountURIs[string(accountURI)] = true
+	}
+
+	for URI := range allURIs {
+		if !expectedURIs[URI] {
+			errors = append(errors, fmt.Errorf(
+				"unexpected URI for token: %s, nonce: %d: URI: %s",
+				tokenName,
+				nonce,
+				URI))
+		}
+		if !accountURIs[URI] {
+			errors = append(errors, fmt.Errorf("missing URI for token: %s, nonce: %d: URI: %s",
+				tokenName,
+				nonce,
+				URI))
+		}
 	}
 
 	return errors

@@ -46,7 +46,7 @@ func NewCheckESDTInstance() *CheckESDTInstance {
 		Creator:    JSONCheckBytesUnspecified(),
 		Royalties:  JSONCheckUint64Unspecified(),
 		Hash:       JSONCheckBytesUnspecified(),
-		Uri:        JSONCheckBytesUnspecified(),
+		Uri:        JSONCheckListStar(),
 		Attributes: JSONCheckBytesUnspecified(),
 	}
 }

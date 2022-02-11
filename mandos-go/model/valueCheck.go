@@ -37,6 +37,16 @@ func JSONCheckBytesStar() JSONCheckBytes {
 	}
 }
 
+// JSONCheckBytesStar yields JSONCheckBytes explicit "*" value.
+func JSONCheckListStar() JSONCheckBytes {
+	return JSONCheckBytes{
+		Value:       []byte{},
+		IsStar:      false,
+		Original:    &oj.OJsonList{&oj.OJsonString{Value: "*"}},
+		Unspecified: false,
+	}
+}
+
 // JSONCheckBytesReconstructed creates a JSONCheckBytes without an original JSON source.
 func JSONCheckBytesReconstructed(value []byte, originalString string) JSONCheckBytes {
 	return JSONCheckBytes{
@@ -67,6 +77,20 @@ func (jcbytes JSONCheckBytes) Check(other []byte) bool {
 		return true
 	}
 	return bytes.Equal(jcbytes.Value, other)
+}
+
+// Check returns true if condition expressed in object holds for another value.
+// Explicit values are interpreted as equals assertion.
+func (jcbytes JSONCheckBytes) CheckList(other [][]byte) bool {
+	if jcbytes.IsStar {
+		return true
+	}
+	for _, elem := range other {
+		if bytes.Equal(jcbytes.Value, elem) {
+			return true
+		}
+	}
+	return false
 }
 
 // JSONCheckBigInt holds a big int condition.
