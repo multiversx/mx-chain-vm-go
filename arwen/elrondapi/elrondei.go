@@ -188,7 +188,8 @@ var logEEI = logger.GetOrCreate("arwen/eei")
 func getESDTTransferFromInputFailIfWrongIndex(host arwen.VMHost, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index {
-		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		// TODO: rust framework
+		// arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 	return esdtTransfers[index]
@@ -1846,7 +1847,8 @@ func v1_4_getArgumentLength(context unsafe.Pointer, id int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		arwen.WithFaultIfFailAlwaysActive(arwen.ErrInvalidArgument, context, runtime.ElrondAPIErrorShouldFailExecution())
+		// TODO: Rust framework
+		// arwen.WithFaultIfFailAlwaysActive(arwen.ErrInvalidArgument, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1863,7 +1865,8 @@ func v1_4_getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		arwen.WithFaultIfFailAlwaysActive(arwen.ErrInvalidArgument, context, runtime.ElrondAPIErrorShouldFailExecution())
+		// TODO - RUST framework change
+		// arwen.WithFaultIfFailAlwaysActive(arwen.ErrInvalidArgument, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -3217,7 +3220,7 @@ func v1_4_getNumReturnData(context unsafe.Pointer) int32 {
 
 //export v1_4_getReturnDataSize
 func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
-	runtime := arwen.GetRuntimeContext(context)
+	//runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -3226,7 +3229,8 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) {
-		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
+		// TODO: rust framework
+		// arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -3244,7 +3248,8 @@ func v1_4_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) {
-		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
+		// TODO: rust framework
+		// arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
