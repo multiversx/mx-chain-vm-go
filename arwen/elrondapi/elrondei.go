@@ -188,7 +188,7 @@ var logEEI = logger.GetOrCreate("arwen/eei")
 func getESDTTransferFromInputFailIfWrongIndex(host arwen.VMHost, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index {
-		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidTokenIndex, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 	return esdtTransfers[index]
