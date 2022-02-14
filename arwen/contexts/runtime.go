@@ -96,7 +96,7 @@ func NewRuntimeContext(
 }
 
 func instanceEvicted(key interface{}, value interface{}) {
-	log.Error("instanceEvicted", "key", key.([]byte))
+	log.Error("instanceEvicted", "key", key.(string))
 	localContract, ok := value.(instanceAndMemory)
 	if !ok {
 		return
@@ -322,6 +322,10 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 }
 
 func (context *runtimeContext) saveWarmInstance(codeHash []byte) {
+	if context.IsContractOnTheStack(context.GetSCAddress()) {
+		return
+	}
+
 	if check.IfNil(context.instance.GetMemory()) {
 		return
 	}
