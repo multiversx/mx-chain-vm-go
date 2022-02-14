@@ -378,7 +378,7 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
-	metering.UseAndTraceGas(gasToUse)
+	metering.UseGasAndAddTracedGas(managedGetMultiESDTCallValueName, gasToUse)
 
 	esdtTransfers := runtime.GetVMInput().ESDTTransfers
 	multiCallBytes := writeESDTTransfersToBytes(managedType, esdtTransfers)
@@ -425,7 +425,7 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 	metering := arwen.GetMeteringContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
-	metering.StartGasTracing(getESDTTokenDataName)
+	metering.StartGasTracing(managedGetESDTTokenDataName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseAndTraceGas(gasToUse)
@@ -730,7 +730,7 @@ func v1_4_managedExecuteReadOnly(
 ) int32 {
 	host := arwen.GetVMHost(context)
 	metering := host.Metering()
-	metering.StartGasTracing(executeReadOnlyName)
+	metering.StartGasTracing(managedExecuteReadOnlyName)
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
@@ -891,7 +891,7 @@ func v1_4_managedTransferValueExecute(
 ) int32 {
 	host := arwen.GetVMHost(context)
 	metering := host.Metering()
-	metering.StartGasTracing(transferValueExecuteName)
+	metering.StartGasTracing(managedTransferValueExecuteName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
 	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
