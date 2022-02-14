@@ -349,9 +349,22 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				tokenName,
 				nonce))
 		}*/
+
+		var actualUri []byte
+		if len(accountInstance.TokenMetaData.URIs) == 1 {
+			actualUri = accountInstance.TokenMetaData.URIs[0]
+		}
+
 		if !expectedInstance.Uri.IsUnspecified() &&
-			!expectedInstance.Uri.CheckList(accountInstance.TokenMetaData.URIs) {
-			checkInstanceURIs(tokenName, nonce, expectedInstance, accountInstance.TokenMetaData.URIs)
+			!expectedInstance.Uri.Check(actualUri) {
+			errors = append(errors, fmt.Errorf(
+				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
+				tokenName,
+				nonce,
+				objectStringOrDefault(expectedInstance.Uri.Original),
+				ae.exprReconstructor.Reconstruct(
+					actualUri,
+					er.StrHint)))
 		}
 
 		if !expectedInstance.Attributes.IsUnspecified() &&
@@ -366,50 +379,6 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					er.StrHint)))
 		}
 
-	}
-
-	return errors
-}
-
-func checkInstanceURIs(
-	tokenName string,
-	nonce uint64,
-	expectedTokens *mj.CheckESDTInstance,
-	accountURIsAsBytes [][]byte) []error {
-
-	var errors []error
-
-	allURIs := make(map[string]bool)
-	expectedURIs := make(map[string]bool)
-	accountURIs := make(map[string]bool)
-
-	if list, isList := expectedTokens.Uri.Original.(*oj.OJsonList); isList {
-		for _, expectedURI := range list.AsList() {
-			uri := objectStringOrDefault(expectedURI)
-			allURIs[uri] = true
-			expectedURIs[uri] = true
-		}
-	}
-
-	for _, accountURI := range accountURIsAsBytes {
-		allURIs[string(accountURI)] = true
-		accountURIs[string(accountURI)] = true
-	}
-
-	for URI := range allURIs {
-		if !expectedURIs[URI] {
-			errors = append(errors, fmt.Errorf(
-				"unexpected URI for token: %s, nonce: %d: URI: %s",
-				tokenName,
-				nonce,
-				URI))
-		}
-		if !accountURIs[URI] {
-			errors = append(errors, fmt.Errorf("missing URI for token: %s, nonce: %d: URI: %s",
-				tokenName,
-				nonce,
-				URI))
-		}
 	}
 
 	return errors
