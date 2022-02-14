@@ -253,7 +253,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	if context.isContractOnTheStack() {
+	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
 
@@ -317,7 +317,7 @@ func (context *runtimeContext) saveCompiledCode() {
 }
 
 func (context *runtimeContext) saveWarmInstance() {
-	if context.isContractOnTheStack() {
+	if context.isContractOrCodeHashOnTheStack() {
 		return
 	}
 
@@ -402,6 +402,9 @@ func (context *runtimeContext) PopSetActiveState() {
 		return
 	}
 
+	lastCodeHash := make([]byte, len(context.codeHash))
+	copy(lastCodeHash, context.codeHash)
+
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
@@ -412,7 +415,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
 	context.asyncContextInfo = prevState.asyncContextInfo
-	context.popInstance()
+	context.popInstance(lastCodeHash)
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -422,8 +425,11 @@ func (context *runtimeContext) PopDiscard() {
 		return
 	}
 
+	lastCodeHash := make([]byte, len(context.codeHash))
+	copy(lastCodeHash, context.codeHash)
+
 	context.stateStack = context.stateStack[:stateStackLen-1]
-	context.popInstance()
+	context.popInstance(lastCodeHash)
 }
 
 // ClearStateStack reinitializes the state stack.
@@ -438,7 +444,7 @@ func (context *runtimeContext) pushInstance() {
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) popInstance() {
+func (context *runtimeContext) popInstance(codeHash []byte) {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -455,6 +461,11 @@ func (context *runtimeContext) popInstance() {
 		// resume on it. Popping will therefore only remove the top of the stack,
 		// without cleaning anything.
 		return
+	}
+
+	if !check.IfNil(context.instance) && context.isCodeHashOnTheStack(codeHash) {
+		context.instance.Clean()
+		context.instance = nil
 	}
 
 	context.instance = prevInstance
@@ -760,14 +771,27 @@ func (context *runtimeContext) cleanInstanceWhenError() {
 	return
 }
 
-// isContractOnTheStack iterates over the state stack to find whether the
+// isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
 // provided SC address is already in execution, below the current instance.
-func (context *runtimeContext) isContractOnTheStack() bool {
+func (context *runtimeContext) isContractOrCodeHashOnTheStack() bool {
+	if context.isScAddressOnTheStack(context.scAddress) {
+		return true
+	}
+	return context.isCodeHashOnTheStack(context.codeHash)
+}
+
+func (context *runtimeContext) isCodeHashOnTheStack(codeHash []byte) bool {
 	for _, state := range context.stateStack {
-		if bytes.Equal(context.scAddress, state.scAddress) {
+		if bytes.Equal(codeHash, state.codeHash) {
 			return true
 		}
-		if bytes.Equal(context.codeHash, state.codeHash) {
+	}
+	return false
+}
+
+func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
+	for _, state := range context.stateStack {
+		if bytes.Equal(scAddress, state.scAddress) {
 			return true
 		}
 	}
