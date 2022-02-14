@@ -33,6 +33,7 @@ func (gt *gasTracer) BeginTrace(scAddress string, functionName string) {
 // AddToCurrentTrace ads the usedGas passed at the current trace value
 func (gt *gasTracer) AddToCurrentTrace(usedGas uint64) {
 	log.Trace("GasTrace AddToCurrentTrace", "function", gt.functionNameTraced)
+	gt.createGasTraceIfNil(gt.scAddress, gt.functionNameTraced)
 	length := len(gt.gasTrace[gt.scAddress][gt.functionNameTraced])
 	gt.gasTrace[gt.scAddress][gt.functionNameTraced][length-1] += usedGas
 }
