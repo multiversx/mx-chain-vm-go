@@ -30,6 +30,7 @@ type runtimeContext struct {
 	instance           wasmer.InstanceHandler
 	vmInput            *vmcommon.VMInput
 	scAddress          []byte
+	codeHash           []byte
 	codeSize           uint64
 	callFunction       string
 	vmType             []byte
@@ -95,8 +96,7 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(key interface{}, value interface{}) {
-	log.Error("instanceEvicted", "key", key.(string))
+func instanceEvicted(_ interface{}, value interface{}) {
 	localContract, ok := value.(instanceAndMemory)
 	if !ok {
 		return
@@ -110,6 +110,7 @@ func instanceEvicted(key interface{}, value interface{}) {
 func (context *runtimeContext) InitState() {
 	context.vmInput = &vmcommon.VMInput{}
 	context.scAddress = make([]byte, 0)
+	context.codeHash = make([]byte, 0)
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
@@ -146,26 +147,27 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.GetSCAddress())
-	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, codeHash, newCode)
+	context.codeHash = codeHash
+	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		return nil
 	}
 
-	compiledCodeUsed := context.makeInstanceFromCompiledCode(codeHash, gasLimit, newCode)
+	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
 		return nil
 	}
 
-	return context.makeInstanceFromContractByteCode(contract, codeHash, gasLimit, newCode)
+	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
 }
 
-func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gasLimit uint64, newCode bool) bool {
-	if newCode || len(codeHash) == 0 {
+func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) bool {
+	if newCode || len(context.codeHash) == 0 {
 		return false
 	}
 
 	blockchain := context.host.Blockchain()
-	found, compiledCode := blockchain.GetCompiledCode(codeHash)
+	found, compiledCode := blockchain.GetCompiledCode(context.codeHash)
 	if !found {
 		logRuntime.Trace("instance creation", "code", "cached compilation", "error", "compiled code was not found")
 		return false
@@ -193,13 +195,13 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(codeHash []byte, gas
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
-	context.saveWarmInstance(codeHash)
+	context.saveWarmInstance()
 
 	logRuntime.Trace("new instance created", "code", "cached compilation")
 	return true
 }
 
-func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, codeHash []byte, gasLimit uint64, newCode bool) error {
+func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
 	gasSchedule := context.host.Metering().GasSchedule()
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
@@ -219,8 +221,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	context.instance = newInstance
 
-	if newCode || len(codeHash) == 0 {
-		codeHash, err = context.host.Crypto().Sha256(contract)
+	if newCode || len(context.codeHash) == 0 {
+		context.codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
 			context.cleanInstanceWhenError()
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
@@ -240,22 +242,22 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	context.saveCompiledCode(codeHash)
+	context.saveCompiledCode()
 	logRuntime.Trace("new instance created", "code", "bytecode")
 
 	return nil
 }
 
-func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash []byte, newCode bool) bool {
-	if newCode || len(codeHash) == 0 {
+func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
+	if newCode || len(context.codeHash) == 0 {
 		return false
 	}
 
-	if context.IsContractOnTheStack(context.scAddress) {
+	if context.isContractOnTheStack() {
 		return false
 	}
 
-	cachedObject, ok := context.warmInstanceCache.Get(codeHash)
+	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
 	if !ok {
 		return false
 	}
@@ -268,7 +270,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, codeHash
 	success := localContract.instance.SetMemory(localContract.memory)
 	if !success {
 		// we must remove instance, which cleans it to free the memory
-		context.warmInstanceCache.Remove(codeHash)
+		context.warmInstanceCache.Remove(context.codeHash)
 		return false
 	}
 
@@ -301,7 +303,7 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 	return context.codeSize
 }
 
-func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
+func (context *runtimeContext) saveCompiledCode() {
 	compiledCode, err := context.instance.Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
@@ -309,13 +311,13 @@ func (context *runtimeContext) saveCompiledCode(codeHash []byte) {
 	}
 
 	blockchain := context.host.Blockchain()
-	blockchain.SaveCompiledCode(codeHash, compiledCode)
+	blockchain.SaveCompiledCode(context.codeHash, compiledCode)
 
-	context.saveWarmInstance(codeHash)
+	context.saveWarmInstance()
 }
 
-func (context *runtimeContext) saveWarmInstance(codeHash []byte) {
-	if context.IsContractOnTheStack(context.GetSCAddress()) {
+func (context *runtimeContext) saveWarmInstance() {
+	if context.isContractOnTheStack() {
 		return
 	}
 
@@ -333,7 +335,7 @@ func (context *runtimeContext) saveWarmInstance(codeHash []byte) {
 		memory:   localMemory,
 	}
 
-	context.warmInstanceCache.Put(codeHash, localContract, 1)
+	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -375,6 +377,7 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
 		scAddress:        context.scAddress,
+		codeHash:         context.codeHash,
 		callFunction:     context.callFunction,
 		readOnly:         context.readOnly,
 		asyncCallInfo:    context.asyncCallInfo,
@@ -404,6 +407,7 @@ func (context *runtimeContext) PopSetActiveState() {
 
 	context.SetVMInput(prevState.vmInput)
 	context.scAddress = prevState.scAddress
+	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
@@ -756,11 +760,14 @@ func (context *runtimeContext) cleanInstanceWhenError() {
 	return
 }
 
-// IsContractOnTheStack iterates over the state stack to find whether the
+// isContractOnTheStack iterates over the state stack to find whether the
 // provided SC address is already in execution, below the current instance.
-func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
+func (context *runtimeContext) isContractOnTheStack() bool {
 	for _, state := range context.stateStack {
-		if bytes.Equal(address, state.scAddress) {
+		if bytes.Equal(context.scAddress, state.scAddress) {
+			return true
+		}
+		if bytes.Equal(context.codeHash, state.codeHash) {
 			return true
 		}
 	}
