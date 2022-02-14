@@ -149,6 +149,7 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
+	CleanInstance()
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
