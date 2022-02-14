@@ -1,5 +1,7 @@
 package contexts
 
+import "runtime/debug"
+
 // GasTraceMap is the map that holds gas traces for all API functions, depending on SCAddress and functionName
 type gasTraceMap map[string]map[string][]uint64
 
@@ -32,6 +34,9 @@ func (gt *gasTracer) BeginTrace(scAddress string, functionName string) {
 
 // AddToCurrentTrace ads the usedGas passed at the current trace value
 func (gt *gasTracer) AddToCurrentTrace(usedGas uint64) {
+	if len(gt.functionNameTraced) == 0 {
+		debug.PrintStack()
+	}
 	log.Trace("GasTrace AddToCurrentTrace", "function", gt.functionNameTraced)
 	gt.createGasTraceIfNil(gt.scAddress, gt.functionNameTraced)
 	length := len(gt.gasTrace[gt.scAddress][gt.functionNameTraced])
