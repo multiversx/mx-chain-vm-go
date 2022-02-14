@@ -2857,6 +2857,44 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		})
 }
 
+func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ParentAddress
+						childInput.CallValue = big.NewInt(4)
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						_, _, err := host.ExecuteOnDestContext(childInput)
+						require.NotNil(t, err)
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+						return instance
+					})
+					parentInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Runtime().FailExecution(errors.New("forced fail"))
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.OutOfGas()
+		})
+}
+
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
