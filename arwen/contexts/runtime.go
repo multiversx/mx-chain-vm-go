@@ -95,7 +95,8 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(_ interface{}, value interface{}) {
+func instanceEvicted(key interface{}, value interface{}) {
+	log.Error("instanceEvicted", "key", key.([]byte))
 	localContract, ok := value.(instanceAndMemory)
 	if !ok {
 		return
