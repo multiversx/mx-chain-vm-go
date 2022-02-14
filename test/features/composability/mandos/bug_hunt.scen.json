@@ -1,0 +1,89 @@
+{
+    "name": "bug hunt",
+    "traceGas": true,
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {}
+                }
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "0",
+                    "newAddress": "sc:multisig"
+                }
+            ]
+        },
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:multisig": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:esdtSafeAddress": "sc:esdt_safe",
+                        "str:multiTransferEsdtAddress": "sc:multi_transfer",
+                        "str:quorum": "2",
+                        "str:requiredStakeAmount": "1000",
+                        "str:slashAmount": "500"
+                    },
+                    "code": "file:../multisig.wasm"
+                }
+            }
+        },
+        {
+            "step": "scQuery",
+            "txId": "get-with-sc-query",
+            "displayLogs": true,
+            "tx": {
+                "to": "sc:multisig",
+                "function": "wasTransferActionProposed",
+                "arguments": [
+                    "0x0f",
+                    "0x4b8c4d3b79f4e44d9c053c2eed6b5d59c28dfef5",
+                    "0x3cdc70d0f7fccd66b02afaf6ed430fb90e95e83b83d270bf63e9edbd12552af2",
+                    "0x57555344432d633163616337",
+                    "0x017d7840",
+                    "0x0290",
+                    "0x4b8c4d3b79f4e44d9c053c2eed6b5d59c28dfef5",
+                    "0x3cdc70d0f7fccd66b02afaf6ed430fb90e95e83b83d270bf63e9edbd12552af2",
+                    "0x57555344432d633163616337",
+                    "0x017d7840",
+                    "0x0291",
+                    "0x4b8c4d3b79f4e44d9c053c2eed6b5d59c28dfef5",
+                    "0x3cdc70d0f7fccd66b02afaf6ed430fb90e95e83b83d270bf63e9edbd12552af2",
+                    "0x57555344432d633163616337",
+                    "0x017d7840",
+                    "0x0292",
+                    "0x4b8c4d3b79f4e44d9c053c2eed6b5d59c28dfef5",
+                    "0x3cdc70d0f7fccd66b02afaf6ed430fb90e95e83b83d270bf63e9edbd12552af2",
+                    "0x57555344432d633163616337",
+                    "0x017d7840",
+                    "0x0293",
+                    "0x4b8c4d3b79f4e44d9c053c2eed6b5d59c28dfef5",
+                    "0x3cdc70d0f7fccd66b02afaf6ed430fb90e95e83b83d270bf63e9edbd12552af2",
+                    "0x57555344432d633163616337",
+                    "0x017d7840",
+                    "0x0294",
+                    "0x4b8c4d3b79f4e44d9c053c2eed6b5d59c28dfef5",
+                    "0x3cdc70d0f7fccd66b02afaf6ed430fb90e95e83b83d270bf63e9edbd12552af2",
+                    "0x57555344432d633163616337",
+                    "0x017d7840",
+                    "0x0295"
+                ]
+            },
+            "expect": {
+                "status": "0",
+                "message": "",
+                "out": [
+                    ""
+                ]
+            }
+        }
+    ]
+}

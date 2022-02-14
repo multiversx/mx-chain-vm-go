@@ -100,3 +100,8 @@ func TestForwarderTransfExecMultiReject(t *testing.T) {
 	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_multi_transfer_reject.scen.json")
 	require.Nil(t, err)
 }
+
+func TestMultisigBughunt(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "bug_hunt.scen.json")
+	require.Nil(t, err)
+}
