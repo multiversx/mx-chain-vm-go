@@ -251,7 +251,16 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": "*",
+                "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:callBack",
+                        "topics": [
+                            "str:nodeUnbondOk"
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }

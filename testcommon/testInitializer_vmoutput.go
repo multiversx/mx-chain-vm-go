@@ -3,6 +3,7 @@ package testcommon
 import (
 	"fmt"
 	"math/big"
+	"strings"
 	"testing"
 	"unicode"
 
@@ -100,7 +101,7 @@ func (v *VMOutputVerifier) HasRuntimeErrors(messages ...string) *VMOutputVerifie
 		errorFound := false
 		require.NotNil(v.T, v.AllErrors)
 		for _, err := range v.AllErrors.GetAllErrors() {
-			if err.Error() == message {
+			if strings.HasPrefix(err.Error(), message) {
 				errorFound = true
 			}
 		}

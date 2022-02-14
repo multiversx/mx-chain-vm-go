@@ -42,8 +42,12 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		}
 	}
 
-	systemAcc := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
-	tokenData, err := esdtconvert.GetFullMockESDTData(account.Storage, systemAcc.Storage)
+	systemAccStorage := make(map[string][]byte)
+	systemAcc, exists := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
+	if exists {
+		systemAccStorage = systemAcc.Storage
+	}
+	tokenData, err := esdtconvert.GetFullMockESDTData(account.Storage, systemAccStorage)
 	if err != nil {
 		return nil, err
 	}

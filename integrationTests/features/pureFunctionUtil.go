@@ -157,5 +157,8 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
+
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}
 }

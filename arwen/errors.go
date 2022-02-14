@@ -23,6 +23,9 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 // ErrExecutionFailed signals that the execution failed
 var ErrExecutionFailed = errors.New("execution failed")
 
+// ErrExecutionFailedWithTimeout signals that the execution failed with timeout
+var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
+
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")
 
@@ -200,3 +203,6 @@ var ErrExponentTooBigOrTooSmall = errors.New("exponent is either too small or to
 
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
+
+// ErrVMIsClosing signals that vm is closing
+var ErrVMIsClosing = errors.New("vm is closing")

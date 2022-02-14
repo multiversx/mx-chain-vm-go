@@ -71,6 +71,7 @@ const (
     GetNumArguments    = 100
     StorageStore       = 250000
     StorageLoad        = 100000
+    CachedStorageLoad  = 100
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -732,6 +733,7 @@ const (
     GetAllNodeStates      = 20000000
     UnstakeTokens         = 5000000
     UnbondTokens          = 5000000
+    FixWaitingListSize    = 500000000
 
 [BaseOperationCost]
     StorePerByte      = 10000
@@ -739,7 +741,7 @@ const (
     DataCopyPerByte   = 100
     PersistPerByte    = 1000
     CompilePerByte    = 300
-    AoTPreparePerByte = 300
+    AoTPreparePerByte = 100
     GetCode           = 1000000
 
 [ElrondAPICost]
@@ -755,6 +757,7 @@ const (
     GetNumArguments    = 100
     StorageStore       = 75000
     StorageLoad        = 50000
+    CachedStorageLoad  = 100    
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -904,7 +907,7 @@ const (
 
 [ManagedBufferAPICost]
     MBufferNew                   = 2000
-    MBufferNewFromBytes          = 4000
+    MBufferNewFromBytes          = 2000
     MBufferGetLength             = 2000
     MBufferGetBytes              = 2000
     MBufferGetByteSlice          = 2000
@@ -912,10 +915,10 @@ const (
     MBufferSetBytes              = 2000
     MBufferAppend                = 2000
     MBufferAppendBytes           = 2000
-    MBufferToBigIntUnsigned      = 4000
-    MBufferToBigIntSigned        = 10000
-    MBufferFromBigIntUnsigned    = 4000
-    MBufferFromBigIntSigned      = 10000
+    MBufferToBigIntUnsigned      = 2000
+    MBufferToBigIntSigned        = 5000
+    MBufferFromBigIntUnsigned    = 2000
+    MBufferFromBigIntSigned      = 5000
     MBufferToBigFloat            = 2000
     MBufferFromBigFloat          = 2000
     MBufferStorageStore          = 75000
@@ -1374,7 +1377,7 @@ const (
     I16x8RoundingAverageU = 200
     LocalAllocate = 5
     LocalsUnmetered = 100
-    MaxMemoryGrow = 8
-    MaxMemoryGrowDelta = 10
+    MaxMemoryGrowDelta = 1
+    MaxMemoryGrow = 100
 `
 )

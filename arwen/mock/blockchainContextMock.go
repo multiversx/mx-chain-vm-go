@@ -152,7 +152,7 @@ func (b *BlockchainContextMock) IsSmartContract(_ []byte) bool {
 }
 
 // IsPayable -
-func (b *BlockchainContextMock) IsPayable(_ []byte) (bool, error) {
+func (b *BlockchainContextMock) IsPayable(_, _ []byte) (bool, error) {
 	return true, nil
 }
 

@@ -19,7 +19,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+	_ = esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
 
 	if len(testAcct.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
@@ -83,25 +83,46 @@ func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldmock.NewAddre
 	return result
 }
 
-func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldmock.BlockInfo {
+func convertBlockInfo(testBlockInfo *mj.BlockInfo, currentInfo *worldmock.BlockInfo) *worldmock.BlockInfo {
 	if testBlockInfo == nil {
-		return nil
+		return currentInfo
 	}
 
-	var randomsSeed [48]byte
-	if testBlockInfo.BlockRandomSeed != nil {
+	if currentInfo == nil {
+		currentInfo = &worldmock.BlockInfo{
+			BlockTimestamp: 0,
+			BlockNonce:     0,
+			BlockRound:     0,
+			BlockEpoch:     0,
+			RandomSeed:     nil,
+		}
+	}
+
+	if !testBlockInfo.BlockTimestamp.OriginalEmpty() {
+		currentInfo.BlockTimestamp = testBlockInfo.BlockTimestamp.Value
+
+	}
+
+	if !testBlockInfo.BlockNonce.OriginalEmpty() {
+		currentInfo.BlockNonce = testBlockInfo.BlockNonce.Value
+	}
+
+	if !testBlockInfo.BlockRound.OriginalEmpty() {
+		currentInfo.BlockRound = testBlockInfo.BlockRound.Value
+	}
+
+	if !testBlockInfo.BlockEpoch.OriginalEmpty() {
+		currentInfo.BlockEpoch = uint32(testBlockInfo.BlockEpoch.Value)
+	}
+
+	if testBlockInfo.BlockRandomSeed != nil && !testBlockInfo.BlockRandomSeed.OriginalEmpty() {
+		var randomsSeed [48]byte
 		copy(randomsSeed[:], testBlockInfo.BlockRandomSeed.Value)
+		currentInfo.RandomSeed = &randomsSeed
+
 	}
 
-	result := &worldmock.BlockInfo{
-		BlockTimestamp: testBlockInfo.BlockTimestamp.Value,
-		BlockNonce:     testBlockInfo.BlockNonce.Value,
-		BlockRound:     testBlockInfo.BlockRound.Value,
-		BlockEpoch:     uint32(testBlockInfo.BlockEpoch.Value),
-		RandomSeed:     &randomsSeed,
-	}
-
-	return result
+	return currentInfo
 }
 
 // this is a small hack, so we can reuse mandos's JSON printing in error messages

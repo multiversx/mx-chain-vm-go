@@ -60,6 +60,9 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func
 
 func (callerTest *MockInstancesTestTemplate) runTest() {
 	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.tb)
+	defer func() {
+		host.Reset()
+	}()
 
 	for _, mockSC := range *callerTest.contracts {
 		mockSC.initialize(callerTest.tb, host, imb)
@@ -81,6 +84,15 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
 		host.Metering().UseGas(gas)
+		instance := mock.GetMockInstance(host)
+		return instance
+	}
+}
+
+// Empty
+func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
+	return func() *mock.InstanceMock {
+		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		return instance
 	}
