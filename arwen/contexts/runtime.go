@@ -128,13 +128,6 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.instance = nil
 }
 
-// CleanInstance try this
-func (context *runtimeContext) CleanInstance() {
-	blockchain := context.host.Blockchain()
-	codeHash := blockchain.GetCodeHash(context.GetSCAddress())
-	context.warmInstanceCache.Remove(codeHash)
-}
-
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances
 // TODO remove after implementing proper mocking of
