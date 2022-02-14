@@ -141,15 +141,3 @@ endif
 	erdpy contract test ${SANDBOX}/sc-examples-rs/simple-coin
 	cp ${SANDBOX}/sc-examples-rs/adder/output/adder.wasm ./test/adder/adder.wasm
 	cp ${SANDBOX}/sc-examples-rs/simple-coin/output/simple-coin.wasm ./test/erc20/contracts/simple-coin.wasm
-
-print-gastrace-calls:
-    @echo "bigIntOps.go:"
-    @grep "func v1_4\|StartGasTracing\|UseAndTraceGas" arwen/elrondapi/bigIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:"
-    @echo "elrondei.go:"
-    @grep "func v1_4\|StartGasTracing\|UseAndTraceGas" arwen/elrondapi/elrondei.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:"
-    @echo "managedei.go:"
-    @grep "func v1_4\|StartGasTracing\|UseAndTraceGas" arwen/elrondapi/managedei.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:"
-    @echo "manBufOps.go:"
-    @grep "func v1_4\|StartGasTracing\|UseAndTraceGas" arwen/elrondapi/manBufOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:"
-    @echo "smallIntOps.go:"
-    @grep "func v1_4\|StartGasTracing\|UseAndTraceGas" arwen/elrondapi/smallIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:"
