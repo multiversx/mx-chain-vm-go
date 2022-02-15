@@ -41,7 +41,7 @@ func JSONCheckBytesStar() JSONCheckBytes {
 func JSONCheckListStar() JSONCheckBytes {
 	return JSONCheckBytes{
 		Value:       []byte{},
-		IsStar:      false,
+		IsStar:      true,
 		Original:    &oj.OJsonList{&oj.OJsonString{Value: "*"}},
 		Unspecified: false,
 	}
@@ -85,12 +85,10 @@ func (jcbytes JSONCheckBytes) CheckList(other [][]byte) bool {
 	if jcbytes.IsStar {
 		return true
 	}
-	for _, elem := range other {
-		if bytes.Equal(jcbytes.Value, elem) {
-			return true
-		}
-	}
-	return false
+
+	otherSlice := bytes.Join(other, []byte("\n\t"))
+
+	return bytes.Equal(jcbytes.Value, otherSlice)
 }
 
 // JSONCheckBigInt holds a big int condition.
