@@ -54,6 +54,15 @@ func (er *ExprReconstructor) ReconstructFromBigInt(value *big.Int) string {
 	return er.Reconstruct(value.Bytes(), NumberHint)
 }
 
+func (er *ExprReconstructor) ReconstructFromSlice(values [][]byte) string {
+	var strs []string
+	for _, value := range values {
+		strs = append(strs, fmt.Sprintf("str:%s", string(value)))
+	}
+
+	return strings.Join(strs, "\n")
+}
+
 func (er *ExprReconstructor) ReconstructFromUint64(value uint64) string {
 	return er.Reconstruct(big.NewInt(0).SetUint64(value).Bytes(), NumberHint)
 }

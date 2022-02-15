@@ -350,21 +350,15 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 				nonce))
 		}*/
 
-		var actualUri []byte
-		if len(accountInstance.TokenMetaData.URIs) == 1 {
-			actualUri = accountInstance.TokenMetaData.URIs[0]
-		}
-
 		if !expectedInstance.Uri.IsUnspecified() &&
-			!expectedInstance.Uri.Check(actualUri) {
+			!expectedInstance.Uri.CheckList(accountInstance.TokenMetaData.URIs) {
 			errors = append(errors, fmt.Errorf(
 				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
 				tokenName,
 				nonce,
 				objectStringOrDefault(expectedInstance.Uri.Original),
-				ae.exprReconstructor.Reconstruct(
-					actualUri,
-					er.StrHint)))
+				ae.exprReconstructor.ReconstructFromSlice(
+					accountInstance.TokenMetaData.URIs)))
 		}
 
 		if !expectedInstance.Attributes.IsUnspecified() &&
