@@ -762,6 +762,8 @@ const (
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100
     GetOriginalTxHash    = 10000
 
 [EthAPICost]
