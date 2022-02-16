@@ -343,22 +343,14 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					accountInstance.TokenMetaData.Hash,
 					er.NoHint)))
 		}
-		/*if len(accountInstance.TokenMetaData.URIs) > 1 {
-			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: More than one URI currently not supported",
-				tokenName,
-				nonce))
-		}*/
 
-		if !expectedInstance.Uri.IsUnspecified() &&
-			!expectedInstance.Uri.CheckList(accountInstance.TokenMetaData.URIs) {
+		if !expectedInstance.Uris.CheckList(accountInstance.TokenMetaData.URIs) {
 			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
+				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: %s",
 				tokenName,
 				nonce,
-				objectStringOrDefault(expectedInstance.Uri.Original),
-				ae.exprReconstructor.ReconstructFromSlice(
-					accountInstance.TokenMetaData.URIs)))
+				checkBytesListPretty(expectedInstance.Uris),
+				ae.exprReconstructor.ReconstructList(accountInstance.TokenMetaData.URIs, er.StrHint)))
 		}
 
 		if !expectedInstance.Attributes.IsUnspecified() &&

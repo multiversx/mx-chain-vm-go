@@ -59,7 +59,10 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1",
-                                    "royalties": "*"
+                                    "royalties": "*",
+                                    "uri": [
+                                        "*"
+                                    ]
                                 }
                             ]
                         }
@@ -76,7 +79,10 @@
                             "instances": [
                                 {
                                     "nonce": "1",
-                                    "balance": "1"
+                                    "balance": "1",
+                                    "uri": [
+                                        "*"
+                                    ]
                                 }
                             ]
                         }

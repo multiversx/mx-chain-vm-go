@@ -79,18 +79,6 @@ func (jcbytes JSONCheckBytes) Check(other []byte) bool {
 	return bytes.Equal(jcbytes.Value, other)
 }
 
-// Check returns true if condition expressed in object holds for another value.
-// Explicit values are interpreted as equals assertion.
-func (jcbytes JSONCheckBytes) CheckList(other [][]byte) bool {
-	if jcbytes.IsStar {
-		return true
-	}
-
-	otherSlice := bytes.Join(other, []byte("\n\t"))
-
-	return bytes.Equal(jcbytes.Value, otherSlice)
-}
-
 // JSONCheckBigInt holds a big int condition.
 // Values are checked for equality.
 // "*" allows all values.
@@ -166,4 +154,35 @@ func (jcu JSONCheckUint64) CheckBool(other bool) bool {
 		return true
 	}
 	return jcu.Value > 0 == other
+}
+
+// JSONCheckValueList represents a list of value checks, as expressed in JSON.
+// TODO: add star for all values
+type JSONCheckValueList struct {
+	Values []JSONCheckBytes
+}
+
+// JSONCheckValueListUnspecified yields JSONCheckBytesList empty value.
+func JSONCheckValueListUnspecified() JSONCheckValueList {
+	return JSONCheckValueList{
+		Values: nil,
+	}
+}
+
+// IsUnspecified yields true if the field was originally unspecified.
+func (jcbl JSONCheckValueList) IsUnspecified() bool {
+	return len(jcbl.Values) == 0
+}
+
+// CheckList compares expected value with a list of values.
+func (jcbl JSONCheckValueList) CheckList(other [][]byte) bool {
+	if len(jcbl.Values) != len(other) {
+		return false
+	}
+	for i, expected := range jcbl.Values {
+		if !expected.Check(other[i]) {
+			return false
+		}
+	}
+	return true
 }

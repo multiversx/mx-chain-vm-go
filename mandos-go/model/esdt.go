@@ -14,7 +14,7 @@ type ESDTInstance struct {
 	Creator    JSONBytesFromString
 	Royalties  JSONUint64
 	Hash       JSONBytesFromString
-	Uri        JSONBytesFromTree
+	Uris       JSONValueList
 	Attributes JSONBytesFromString
 }
 
@@ -34,7 +34,7 @@ type CheckESDTInstance struct {
 	Creator    JSONCheckBytes
 	Royalties  JSONCheckUint64
 	Hash       JSONCheckBytes
-	Uri        JSONCheckBytes
+	Uris       JSONCheckValueList
 	Attributes JSONCheckBytes
 }
 
@@ -46,7 +46,7 @@ func NewCheckESDTInstance() *CheckESDTInstance {
 		Creator:    JSONCheckBytesUnspecified(),
 		Royalties:  JSONCheckUint64Unspecified(),
 		Hash:       JSONCheckBytesUnspecified(),
-		Uri:        JSONCheckListStar(),
+		Uris:       JSONCheckValueListUnspecified(),
 		Attributes: JSONCheckBytesUnspecified(),
 	}
 }

@@ -26,7 +26,7 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 	for _, kvp := range blrMap.OrderedKV {
 		switch kvp.Key {
 		case "out":
-			blr.Out, err = p.parseCheckBytesList(kvp.Value)
+			blr.Out, err = p.parseCheckValueList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result out: %w", err)
 			}

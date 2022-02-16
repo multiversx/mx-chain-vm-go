@@ -195,7 +195,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 					return nil, fmt.Errorf("error parsing currentBlockInfo: %w", err)
 				}
 			case "blockHashes":
-				step.BlockHashes, err = p.parseByteArrayList(kvp.Value)
+				step.BlockHashes, err = p.parseValueList(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing block hashes: %w", err)
 				}

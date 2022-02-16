@@ -53,7 +53,7 @@ func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtD
 		Creator:    mj.JSONCheckBytesUnspecified(),
 		Royalties:  mj.JSONCheckUint64Unspecified(),
 		Hash:       mj.JSONCheckBytesUnspecified(),
-		Uri:        mj.JSONCheckBytesUnspecified(),
+		Uris:       mj.JSONCheckValueListUnspecified(),
 		Attributes: mj.JSONCheckBytesUnspecified(),
 	}
 	firstInstanceLoaded := false
@@ -138,7 +138,7 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 			return false, fmt.Errorf("invalid ESDT NFT hash: %w", err)
 		}
 	case "uri":
-		targetInstance.Uri, err = p.parseCheckBytes(kvp.Value)
+		targetInstance.Uris, err = p.parseCheckValueList(kvp.Value)
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT NFT URI: %w", err)
 		}
