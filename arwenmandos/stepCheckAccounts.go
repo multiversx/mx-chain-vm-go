@@ -344,7 +344,9 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					er.NoHint)))
 		}
 
-		if !expectedInstance.Uris.CheckList(accountInstance.TokenMetaData.URIs) {
+		if !expectedInstance.Uris.IsUnspecified() &&
+			!expectedInstance.Uris.CheckList(accountInstance.TokenMetaData.URIs) {
+			// in this case unspecified is interpreted as *
 			errors = append(errors, fmt.Errorf(
 				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: %s",
 				tokenName,

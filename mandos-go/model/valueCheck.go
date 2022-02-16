@@ -159,23 +159,39 @@ func (jcu JSONCheckUint64) CheckBool(other bool) bool {
 // JSONCheckValueList represents a list of value checks, as expressed in JSON.
 // TODO: add star for all values
 type JSONCheckValueList struct {
-	Values []JSONCheckBytes
+	Values      []JSONCheckBytes
+	IsStar      bool
+	Unspecified bool
 }
 
 // JSONCheckValueListUnspecified yields JSONCheckBytesList empty value.
 func JSONCheckValueListUnspecified() JSONCheckValueList {
 	return JSONCheckValueList{
-		Values: nil,
+		Values:      nil,
+		IsStar:      false,
+		Unspecified: true,
+	}
+}
+
+// JSONCheckValueListStar yields the "*" value
+func JSONCheckValueListStar() JSONCheckValueList {
+	return JSONCheckValueList{
+		Values:      nil,
+		IsStar:      true,
+		Unspecified: false,
 	}
 }
 
 // IsUnspecified yields true if the field was originally unspecified.
 func (jcbl JSONCheckValueList) IsUnspecified() bool {
-	return len(jcbl.Values) == 0
+	return jcbl.Unspecified
 }
 
 // CheckList compares expected value with a list of values.
 func (jcbl JSONCheckValueList) CheckList(other [][]byte) bool {
+	if jcbl.IsStar {
+		return true
+	}
 	if len(jcbl.Values) != len(other) {
 		return false
 	}

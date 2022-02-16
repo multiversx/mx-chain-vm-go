@@ -261,7 +261,7 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": "*",
                 "status": "",
                 "logs": "*"
             }
@@ -407,7 +407,8 @@
                                 },
                                 {
                                     "nonce": "1",
-                                    "balance": "3"
+                                    "balance": "3",
+                                    "uri": "*"
                                 }
                             ],
                             "lastNonce": "*",

@@ -79,10 +79,7 @@
                             "instances": [
                                 {
                                     "nonce": "1",
-                                    "balance": "1",
-                                    "uri": [
-                                        "*"
-                                    ]
+                                    "balance": "1"
                                 }
                             ]
                         }

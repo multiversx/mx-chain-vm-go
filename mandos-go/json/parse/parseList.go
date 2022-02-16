@@ -57,7 +57,11 @@ func (p *Parser) parseSubTreeList(obj interface{}) ([]mj.JSONBytesFromTree, erro
 	return result, nil
 }
 
-func (p *Parser) parseCheckValueList(obj interface{}) (mj.JSONCheckValueList, error) {
+func (p *Parser) parseCheckValueList(obj oj.OJsonObject) (mj.JSONCheckValueList, error) {
+	if IsStar(obj) {
+		return mj.JSONCheckValueListStar(), nil
+	}
+
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
 		return mj.JSONCheckValueList{}, errors.New("not a JSON list")

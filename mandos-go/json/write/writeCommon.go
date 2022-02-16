@@ -132,6 +132,10 @@ func valueListToOJ(jsonBytesList mj.JSONValueList) oj.OJsonObject {
 }
 
 func checkValueListToOJ(jcbl mj.JSONCheckValueList) oj.OJsonObject {
+	if jcbl.IsStar {
+		return &oj.OJsonString{Value: "*"}
+	}
+
 	var valuesList []oj.OJsonObject
 	for _, jcb := range jcbl.Values {
 		valuesList = append(valuesList, checkBytesToOJ(jcb))
