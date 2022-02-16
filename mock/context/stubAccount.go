@@ -105,6 +105,11 @@ func (a *StubAccount) IncreaseNonce(_ uint64) {
 	panic("implement me")
 }
 
+// SetCodeMetadata -
+func (a *StubAccount) SetCodeMetadata(_ []byte) {
+	panic("implement me")
+}
+
 // IsInterfaceNil -
 func (a *StubAccount) IsInterfaceNil() bool {
 	return a == nil
