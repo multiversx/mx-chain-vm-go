@@ -3260,7 +3260,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 	metering.UseGasAndAddTracedGas(getReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) || resultID < int32(0) {
 		return nil
 	}
 
@@ -3273,7 +3273,7 @@ func v1_4_cleanReturnData(context unsafe.Pointer) {
 	CleanReturnDataWithHost(host)
 }
 
-// CleanReturnDataWithHost - exposed version of v1_4_cleanReturnData for tests
+// CleanReturnDataWithHost - exposed version of v1_4_deleteFromReturnData for tests
 func CleanReturnDataWithHost(host arwen.VMHost) {
 	output := host.Output()
 	metering := host.Metering()
