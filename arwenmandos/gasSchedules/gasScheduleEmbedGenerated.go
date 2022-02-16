@@ -98,6 +98,8 @@ const (
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100    
 
 [EthAPICost]
     UseGas              = 100
