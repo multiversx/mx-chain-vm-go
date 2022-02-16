@@ -102,6 +102,10 @@ func (a *Account) SetUserName(_ []byte) {
 func (a *Account) IncreaseNonce(_ uint64) {
 }
 
+// SetCodeMetadata -
+func (a *Account) SetCodeMetadata(_ []byte) {
+}
+
 // IsInterfaceNil returns true if there is no value under the interface
 func (a *Account) IsInterfaceNil() bool {
 	return a == nil

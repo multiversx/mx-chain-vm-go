@@ -32,7 +32,7 @@ func (a *StubAccount) AddToBalance(_ *big.Int) error {
 	panic("implement me")
 }
 
-// ClaimDeveloperRewards -
+// ClaimDeveloperRewards -k
 func (a *StubAccount) ClaimDeveloperRewards(_ []byte) (*big.Int, error) {
 	panic("implement me")
 }
@@ -103,6 +103,11 @@ func (a *StubAccount) GetOwnerAddress() []byte {
 // GetUserName -
 func (a *StubAccount) GetUserName() []byte {
 	return a.UserName
+}
+
+// SetCodeMetadata -
+func (a *StubAccount) SetCodeMetadata(_ []byte) {
+	panic("implement me")
 }
 
 // IsInterfaceNil -
