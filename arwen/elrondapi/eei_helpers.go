@@ -9,8 +9,8 @@ const esdtRoleNFTBurn = "ESDTRoleNFTBurn"
 const tickerMinLength = 3
 const tickerMaxLength = 10
 const additionalRandomCharsLength = 6
-const identifierMinLength = tickerMinLength + additionalRandomCharsLength
-const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength
+const identifierMinLength = tickerMinLength + additionalRandomCharsLength + 1
+const identifierMaxLength = tickerMaxLength + additionalRandomCharsLength + 1
 
 const (
 	RoleMint = 1 << iota
@@ -61,7 +61,7 @@ func getESDTRoles(data_buffer []byte) int64 {
 	return result
 }
 
-func validateToken(tokenID []byte) int32 {
+func ValidateToken(tokenID []byte) int32 {
 	tokenIDLen := len(tokenID)
 	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
 		return 0

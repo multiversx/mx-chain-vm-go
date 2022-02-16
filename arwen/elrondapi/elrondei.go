@@ -980,7 +980,7 @@ func v1_4_validateTokenIdentifier(
 		return -1
 	}
 
-	return validateToken(tokenID)
+	return ValidateToken(tokenID)
 
 }
 
