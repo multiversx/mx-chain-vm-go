@@ -201,6 +201,7 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
+// RemoveReturnData removes the return data item located at the specified index
 func (context *outputContext) RemoveReturnData(index uint32) {
 	returnData := context.outputState.ReturnData
 	if index >= uint32(len(returnData)) {

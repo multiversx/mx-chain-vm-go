@@ -2890,9 +2890,11 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						childInput.Function = "doSomething"
 						childInput.GasProvided = 1000
 						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
-
 						require.Equal(t, int32(0), returnValue)
-						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+
+						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, -1)
+						require.Nil(t, returnData)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
 						require.Equal(t, zero, string(returnData))
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
 						require.Equal(t, one, string(returnData))
@@ -2906,6 +2908,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						require.Equal(t, two, string(returnData))
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
 						require.Nil(t, returnData)
+						elrondapi.DeleteFromReturnDataWithHost(host, 0)
+						elrondapi.DeleteFromReturnDataWithHost(host, 0)
+						remainingReturnData := host.Output().ReturnData()
+						require.Equal(t, remainingReturnData, [][]byte{})
 
 						elrondapi.CleanReturnDataWithHost(host)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
