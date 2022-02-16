@@ -61,6 +61,7 @@ func getESDTRoles(data_buffer []byte) int64 {
 	return result
 }
 
+// ValidateToken - validates the token ID
 func ValidateToken(tokenID []byte) int32 {
 	tokenIDLen := len(tokenID)
 	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
