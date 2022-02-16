@@ -201,6 +201,14 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
+func (context *outputContext) RemoveReturnData(index uint32) {
+	returnData := context.outputState.ReturnData
+	if index >= uint32(len(returnData)) {
+		return
+	}
+	context.outputState.ReturnData = append(returnData[:index], returnData[index+1:]...)
+}
+
 // SelfDestruct does nothing
 // TODO change comment when the function is implemented
 func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {

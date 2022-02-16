@@ -10,10 +10,12 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
@@ -2829,6 +2831,113 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey([]byte("parent")).WithValue([]byte("parent storage")),
 					test.CreateStoreEntry(test.ChildAddress).WithKey([]byte("child")).WithValue([]byte("child storage")),
 				)
+		})
+}
+
+func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ParentAddress
+						childInput.CallValue = big.NewInt(4)
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						_, _, err := host.ExecuteOnDestContext(childInput)
+						require.NotNil(t, err)
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+						return instance
+					})
+					parentInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Runtime().FailExecution(errors.New("forced fail"))
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.OutOfGas()
+		})
+}
+
+func TestExecution_Mocked_ClearReturnData(t *testing.T) {
+	zero := "zero"
+	one := "one"
+	two := "two"
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ChildAddress
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
+
+						require.Equal(t, int32(0), returnValue)
+						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, zero, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Equal(t, one, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Equal(t, two, string(returnData))
+
+						elrondapi.DeleteFromReturnDataWithHost(host, 0)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, one, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Equal(t, two, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Nil(t, returnData)
+
+						elrondapi.CleanReturnDataWithHost(host)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Nil(t, returnData)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Nil(t, returnData)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Nil(t, returnData)
+
+						return instance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(0).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Output().Finish([]byte(zero))
+						host.Output().Finish([]byte(one))
+						host.Output().Finish([]byte(two))
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok()
 		})
 }
 

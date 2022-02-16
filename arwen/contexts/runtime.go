@@ -578,6 +578,12 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 	if context.instance.IsFunctionImported("mBufferStorageLoadFromAddress") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("cleanReturnData") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("deleteFromReturnData") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
