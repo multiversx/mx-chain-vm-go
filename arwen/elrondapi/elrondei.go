@@ -3273,6 +3273,7 @@ func v1_4_cleanReturnData(context unsafe.Pointer) {
 	CleanReturnDataWithHost(host)
 }
 
+// CleanReturnDataWithHost - exposed version of v1_4_cleanReturnData for tests
 func CleanReturnDataWithHost(host arwen.VMHost) {
 	output := host.Output()
 	metering := host.Metering()
@@ -3289,6 +3290,7 @@ func v1_4_deleteFromReturnData(context unsafe.Pointer, resultID int32) {
 	DeleteFromReturnDataWithHost(host, resultID)
 }
 
+// DeleteFromReturnDataWithHost - exposed version of v1_4_deleteFromReturnData for tests
 func DeleteFromReturnDataWithHost(host arwen.VMHost, resultID int32) {
 	output := host.Output()
 	metering := host.Metering()
