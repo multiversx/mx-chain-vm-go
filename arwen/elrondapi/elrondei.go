@@ -980,7 +980,11 @@ func v1_4_validateTokenIdentifier(
 		return -1
 	}
 
-	return ValidateToken(tokenID)
+	if ValidateToken(tokenID) {
+		return 1
+	} else {
+		return 0
+	}
 
 }
 

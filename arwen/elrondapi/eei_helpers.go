@@ -62,28 +62,28 @@ func getESDTRoles(data_buffer []byte) int64 {
 }
 
 // ValidateToken - validates the token ID
-func ValidateToken(tokenID []byte) int32 {
+func ValidateToken(tokenID []byte) bool {
 	tokenIDLen := len(tokenID)
 	if tokenIDLen < identifierMinLength || tokenIDLen > identifierMaxLength {
-		return 0
+		return false
 	}
 
 	tickerLen := tokenIDLen - additionalRandomCharsLength
 
 	if !isTickerValid(tokenID[0 : tickerLen-1]) {
-		return 0
+		return false
 	}
 
 	// dash char between the random chars and the ticker
 	if tokenID[tickerLen-1] != '-' {
-		return 0
+		return false
 	}
 
 	if !randomCharsAreValid(tokenID[tickerLen:tokenIDLen]) {
-		return 0
+		return false
 	}
 
-	return 1
+	return true
 }
 
 // ticker must be all uppercase alphanumeric
