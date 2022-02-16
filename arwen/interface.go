@@ -186,6 +186,8 @@ type ManagedTypesContext interface {
 	GetSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
 	DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
 	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
+	ReadManagedVecOfManagedBuffers(managedVecHandle int32) ([][]byte, uint64, error)
+	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
