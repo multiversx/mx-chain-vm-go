@@ -213,6 +213,7 @@ type OutputContext interface {
 	SetReturnMessage(message string)
 	ReturnData() [][]byte
 	ClearReturnData()
+	RemoveReturnData(index uint32)
 	Finish(data []byte)
 	PrependFinish(data []byte)
 	DeleteFirstReturnData()
