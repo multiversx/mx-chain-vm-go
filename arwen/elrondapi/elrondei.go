@@ -966,7 +966,11 @@ func v1_4_validateTokenIdentifier(
 		return -1
 	}
 
-	return validateToken(tokenID)
+	if ValidateToken(tokenID) {
+		return 1
+	} else {
+		return 0
+	}
 
 }
 
@@ -1444,7 +1448,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
-
 	var executeErr error
 
 	runtime := host.Runtime()

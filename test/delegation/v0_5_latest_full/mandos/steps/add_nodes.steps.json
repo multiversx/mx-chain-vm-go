@@ -30,7 +30,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -64,7 +64,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -87,7 +87,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -121,7 +121,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -144,7 +144,7 @@
                     "''signature_3_____________________________________"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -165,7 +165,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -188,7 +188,7 @@
                 "out": [],
                 "status": "4",
                 "message": "''node not registered",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -210,7 +210,7 @@
                 "out": [],
                 "status": "4",
                 "message": "''only inactive nodes can be removed",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

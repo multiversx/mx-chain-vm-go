@@ -262,7 +262,7 @@ func (pfe *fuzzDexExecutor) querySingleResult(from, to, funcName, args string) (
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -299,7 +299,7 @@ func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from string, to string, 
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

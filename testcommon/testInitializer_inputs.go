@@ -48,8 +48,6 @@ var ParentAddress = MakeTestSCAddress("parentSC")
 // ChildAddress is an exposed value to use in tests
 var ChildAddress = MakeTestSCAddress("childSC")
 
-var customGasSchedule = config.GasScheduleMap(nil)
-
 // ESDTTransferGasCost is an exposed value to use in tests
 var ESDTTransferGasCost = uint64(1)
 
@@ -235,6 +233,7 @@ func DefaultTestArwenForTwoSCs(
 func defaultTestArwenForContracts(
 	tb testing.TB,
 	contracts []*InstanceTestSmartContract,
+	gasSchedule config.GasScheduleMap,
 ) (arwen.VMHost, *contextmock.BlockchainHookStub) {
 
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
@@ -267,12 +266,18 @@ func defaultTestArwenForContracts(
 		return nil
 	}
 
-	host := DefaultTestArwen(tb, stubBlockchainHook)
+	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule)
 	return host, stubBlockchainHook
 }
 
 // DefaultTestArwenWithWorldMock creates a host configured with a mock world
 func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.MockWorld) {
+	customGasSchedule := config.GasScheduleMap(nil)
+	return DefaultTestArwenWithWorldMockWithGasSchedule(tb, customGasSchedule)
+}
+
+// DefaultTestArwenWithWorldMockWithGasSchedule creates a host configured with a mock world
+func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedule config.GasScheduleMap) (arwen.VMHost, *worldmock.MockWorld) {
 	world := worldmock.NewMockWorld()
 	gasSchedule := customGasSchedule
 	if gasSchedule == nil {
@@ -299,6 +304,11 @@ func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.Mock
 
 // DefaultTestArwen creates a host configured with a configured blockchain hook
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
+	customGasSchedule := config.GasScheduleMap(nil)
+	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule)
+}
+
+func DefaultTestArwenWithGasSchedule(tb testing.TB, blockchain vmcommon.BlockchainHook, customGasSchedule config.GasScheduleMap) arwen.VMHost {
 	gasSchedule := customGasSchedule
 	if gasSchedule == nil {
 		gasSchedule = config.MakeGasMapForTests()
