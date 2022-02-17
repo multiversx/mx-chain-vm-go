@@ -53,7 +53,8 @@
                         "topics": [
                             "str:NFT-000001",
                             "1",
-                            ""
+                            "",
+                            "str:new-uri-1"
                         ],
                         "data": ""
                     }
@@ -96,7 +97,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "txId": "2",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
@@ -113,7 +114,20 @@
             "expect": {
                 "out": [],
                 "status": "0",
-                "logs": "*",
+                "logs": [
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:ESDTNFTAddURI",
+                        "topics": [
+                            "str:NFT-000001",
+                            "1",
+                            "",
+                            "str:new-uri-2",
+                            "str:new-uri-3"
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
