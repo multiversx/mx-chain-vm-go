@@ -64,8 +64,8 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 			if step.CurrentBlockInfo != nil {
 				stepOJ.Put("currentBlockInfo", blockInfoToOJ(step.CurrentBlockInfo))
 			}
-			if len(step.BlockHashes) > 0 {
-				stepOJ.Put("blockHashes", blockHashesToOJ(step.BlockHashes))
+			if !step.BlockHashes.IsUnspecified() {
+				stepOJ.Put("blockHashes", valueListToOJ(step.BlockHashes))
 			}
 		case *mj.CheckStateStep:
 			if len(step.Comment) > 0 {

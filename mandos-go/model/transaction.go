@@ -79,7 +79,7 @@ type Transaction struct {
 
 // TransactionResult is a json object representing an expected transaction result.
 type TransactionResult struct {
-	Out             []JSONCheckBytes
+	Out             JSONCheckValueList
 	Status          JSONCheckBigInt
 	Message         JSONCheckBytes
 	Gas             JSONCheckUint64
@@ -94,6 +94,6 @@ type TransactionResult struct {
 type LogEntry struct {
 	Address  JSONCheckBytes
 	Endpoint JSONCheckBytes
-	Topics   []JSONCheckBytes
+	Topics   JSONCheckValueList
 	Data     JSONCheckBytes
 }

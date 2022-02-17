@@ -59,7 +59,10 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1",
-                                    "royalties": "*"
+                                    "royalties": "*",
+                                    "uri": [
+                                        "*"
+                                    ]
                                 }
                             ]
                         }

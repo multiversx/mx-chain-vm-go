@@ -54,6 +54,10 @@ func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]
 			tokenNonce := instance.Nonce.Value
 			tokenKey := makeTokenKey(tokenIdentifier, tokenNonce)
 			tokenBalance := instance.Balance.Value
+			var uris [][]byte
+			for _, jsonUri := range instance.Uris.Values {
+				uris = append(uris, jsonUri.Value)
+			}
 			tokenData := &esdt.ESDigitalToken{
 				Value:      tokenBalance,
 				Type:       uint32(core.Fungible),
@@ -64,7 +68,7 @@ func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]
 					Creator:    instance.Creator.Value,
 					Royalties:  uint32(instance.Royalties.Value),
 					Hash:       instance.Hash.Value,
-					URIs:       [][]byte{instance.Uri.Value},
+					URIs:       uris,
 					Attributes: instance.Attributes.Value,
 				},
 			}

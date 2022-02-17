@@ -120,7 +120,6 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	IsContractOnTheStack(address []byte) bool
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
@@ -187,6 +186,8 @@ type ManagedTypesContext interface {
 	GetSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
 	DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
 	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
+	ReadManagedVecOfManagedBuffers(managedVecHandle int32) ([][]byte, uint64, error)
+	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
@@ -212,6 +213,7 @@ type OutputContext interface {
 	SetReturnMessage(message string)
 	ReturnData() [][]byte
 	ClearReturnData()
+	RemoveReturnData(index uint32)
 	Finish(data []byte)
 	PrependFinish(data []byte)
 	DeleteFirstReturnData()

@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*OutputContextStub)(nil)
@@ -35,6 +35,7 @@ type OutputContextStub struct {
 	SetReturnMessageCalled            func(message string)
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
+	RemoveReturnDataCalled            func(index uint32)
 	FinishCalled                      func(data []byte)
 	PrependFinishCalled               func(data []byte)
 	DeleteFirstReturnDataCalled       func()
@@ -231,6 +232,13 @@ func (o *OutputContextStub) ReturnData() [][]byte {
 func (o *OutputContextStub) ClearReturnData() {
 	if o.ClearReturnDataCalled != nil {
 		o.ClearReturnDataCalled()
+	}
+}
+
+// RemoveReturnData mocked method
+func (o *OutputContextStub) RemoveReturnData(index uint32) {
+	if o.RemoveReturnDataCalled != nil {
+		o.RemoveReturnDataCalled(index)
 	}
 }
 

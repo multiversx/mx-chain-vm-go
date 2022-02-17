@@ -34,7 +34,7 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) 
 					return nil, fmt.Errorf("invalid log identifier: %w", err)
 				}
 			case "topics":
-				logEntry.Topics, err = p.parseCheckBytesList(kvp.Value)
+				logEntry.Topics, err = p.parseCheckValueList(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("invalid log entry topics: %w", err)
 				}

@@ -7,7 +7,7 @@ type Test struct {
 	Pre         []*Account
 	Blocks      []*Block
 	Network     string
-	BlockHashes []JSONBytesFromString
+	BlockHashes JSONValueList
 	PostState   *CheckAccounts
 }
 
