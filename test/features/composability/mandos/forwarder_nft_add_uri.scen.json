@@ -46,7 +46,18 @@
             "expect": {
                 "out": [],
                 "status": "0",
-                "logs": "*",
+                "logs": [
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:ESDTNFTAddURI",
+                        "topics": [
+                            "str:NFT-000001",
+                            "1",
+                            ""
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
