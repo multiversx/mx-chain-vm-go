@@ -8,24 +8,10 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
-func blockHashesToOJ(blockHashes []mj.JSONBytesFromString) oj.OJsonObject {
-	var blockhashesList []oj.OJsonObject
-	for _, blh := range blockHashes {
-		blockhashesList = append(blockhashesList, bytesFromStringToOJ(blh))
-	}
-	blockhashesOJ := oj.OJsonList(blockhashesList)
-	return &blockhashesOJ
-}
-
 func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	resultOJ := oj.NewMap()
 
-	var outList []oj.OJsonObject
-	for _, out := range res.Out {
-		outList = append(outList, checkBytesToOJ(out))
-	}
-	outOJ := oj.OJsonList(outList)
-	resultOJ.Put("out", &outOJ)
+	resultOJ.Put("out", checkValueListToOJ(res.Out))
 
 	if !res.Status.IsUnspecified() {
 		resultOJ.Put("status", checkBigIntToOJ(res.Status))
@@ -64,14 +50,7 @@ func logToOJ(logEntry *mj.LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
 	logOJ.Put("address", checkBytesToOJ(logEntry.Address))
 	logOJ.Put("endpoint", checkBytesToOJ(logEntry.Endpoint))
-
-	var topicsList []oj.OJsonObject
-	for _, topic := range logEntry.Topics {
-		topicsList = append(topicsList, checkBytesToOJ(topic))
-	}
-	topicsOJ := oj.OJsonList(topicsList)
-	logOJ.Put("topics", &topicsOJ)
-
+	logOJ.Put("topics", checkValueListToOJ(logEntry.Topics))
 	logOJ.Put("data", checkBytesToOJ(logEntry.Data))
 
 	return logOJ
@@ -141,6 +120,28 @@ func checkBytesToOJ(checkBytes mj.JSONCheckBytes) oj.OJsonObject {
 		checkBytes.Original = &oj.OJsonString{Value: hex.EncodeToString(checkBytes.Value)}
 	}
 	return checkBytes.Original
+}
+
+func valueListToOJ(jsonBytesList mj.JSONValueList) oj.OJsonObject {
+	var valuesList []oj.OJsonObject
+	for _, blh := range jsonBytesList.Values {
+		valuesList = append(valuesList, bytesFromStringToOJ(blh))
+	}
+	ojList := oj.OJsonList(valuesList)
+	return &ojList
+}
+
+func checkValueListToOJ(jcbl mj.JSONCheckValueList) oj.OJsonObject {
+	if jcbl.IsStar {
+		return &oj.OJsonString{Value: "*"}
+	}
+
+	var valuesList []oj.OJsonObject
+	for _, jcb := range jcbl.Values {
+		valuesList = append(valuesList, checkBytesToOJ(jcb))
+	}
+	ojList := oj.OJsonList(valuesList)
+	return &ojList
 }
 
 func uint64ToOJ(i mj.JSONUint64) oj.OJsonObject {

@@ -38,7 +38,7 @@ func testToOJ(test *mj.Test) oj.OJsonObject {
 	blocksOJ := oj.OJsonList(blockList)
 	testOJ.Put("blocks", &blocksOJ)
 	testOJ.Put("network", stringToOJ(test.Network))
-	testOJ.Put("blockHashes", blockHashesToOJ(test.BlockHashes))
+	testOJ.Put("blockHashes", valueListToOJ(test.BlockHashes))
 	testOJ.Put("postState", checkAccountsToOJ(test.PostState))
 	return testOJ
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
@@ -28,19 +29,11 @@ func (ae *ArwenTestExecutor) checkTxResults(
 	}
 
 	// check result
-	if len(output.ReturnData) != len(blResult.Out) {
-		return fmt.Errorf("result length mismatch. Tx %s. Want: %s. Have: %s",
+	if !blResult.Out.CheckList(output.ReturnData) {
+		return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
 			txIndex,
 			checkBytesListPretty(blResult.Out),
-			mj.ResultAsString(output.ReturnData))
-	}
-	for i, expected := range blResult.Out {
-		if !expected.Check(output.ReturnData[i]) {
-			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
-				txIndex,
-				checkBytesListPretty(blResult.Out),
-				mj.ResultAsString(output.ReturnData))
-		}
+			ae.exprReconstructor.ReconstructList(output.ReturnData, er.NoHint))
 	}
 
 	// check refund
@@ -85,19 +78,11 @@ func (ae *ArwenTestExecutor) checkTxResults(
 				mjwrite.LogToString(testLog),
 				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
 		}
-		if len(outLog.Topics) != len(testLog.Topics) {
-			return fmt.Errorf("wrong number of log topics. Tx %s. Want:\n%s\nGot:\n%s",
+		if !testLog.Topics.CheckList(outLog.Topics) {
+			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
 				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-		}
-		for ti := range outLog.Topics {
-			if !testLog.Topics[ti].Check(outLog.Topics[ti]) {
-				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
-					txIndex,
-					mjwrite.LogToString(testLog),
-					mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-			}
+				checkBytesListPretty(testLog.Topics),
+				ae.exprReconstructor.ReconstructList(outLog.Topics, er.NoHint))
 		}
 		if !testLog.Data.Check(outLog.Data) {
 			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
@@ -112,9 +97,9 @@ func (ae *ArwenTestExecutor) checkTxResults(
 
 // JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
 // TODO: move somewhere else
-func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
+func checkBytesListPretty(jcbl mj.JSONCheckValueList) string {
 	str := "["
-	for i, jcb := range jcbs {
+	for i, jcb := range jcbl.Values {
 		if i > 0 {
 			str += ", "
 		}
