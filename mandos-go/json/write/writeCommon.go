@@ -19,15 +19,12 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	if !res.Message.IsUnspecified() {
 		resultOJ.Put("message", checkBytesToOJ(res.Message))
 	}
-	if !res.LogsUnspecified {
-		if res.LogsStar {
+	if !res.Logs.IsUnspecified {
+		if res.Logs.IsStar {
 			resultOJ.Put("logs", stringToOJ("*"))
 		} else {
-			if len(res.LogHash) > 0 {
-				resultOJ.Put("logs", stringToOJ(res.LogHash))
-			} else {
-				resultOJ.Put("logs", logsToOJ(res.Logs))
-			}
+			resultOJ.Put("logs", logsToOJ(res.Logs))
+
 		}
 	}
 	if !res.Gas.IsUnspecified() {
@@ -56,9 +53,9 @@ func logToOJ(logEntry *mj.LogEntry) oj.OJsonObject {
 	return logOJ
 }
 
-func logsToOJ(logEntries []*mj.LogEntry) oj.OJsonObject {
+func logsToOJ(logEntries mj.LogList) oj.OJsonObject {
 	var logList []oj.OJsonObject
-	for _, logEntry := range logEntries {
+	for _, logEntry := range logEntries.List {
 		logOJ := logToOJ(logEntry)
 		logList = append(logList, logOJ)
 	}

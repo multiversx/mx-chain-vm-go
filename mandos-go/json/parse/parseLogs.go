@@ -8,17 +8,24 @@ import (
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
-func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) {
+func (p *Parser) processLogList(logsRaw oj.OJsonObject) (mj.LogList, error) {
+	if IsStar(logsRaw) {
+		return mj.LogList{
+			IsUnspecified: false,
+			IsStar:        true,
+		}, nil
+	}
+
 	logList, isList := logsRaw.(*oj.OJsonList)
 	if !isList {
-		return nil, errors.New("unmarshalled logs list is not a list")
+		return mj.LogList{}, errors.New("unmarshalled logs list is not a list")
 	}
 	var logEntries []*mj.LogEntry
 	var err error
 	for _, logRaw := range logList.AsList() {
 		logMap, isMap := logRaw.(*oj.OJsonMap)
 		if !isMap {
-			return nil, errors.New("unmarshalled log entry is not a map")
+			return mj.LogList{}, errors.New("unmarshalled log entry is not a map")
 		}
 		logEntry := mj.LogEntry{}
 		for _, kvp := range logMap.OrderedKV {
@@ -26,29 +33,33 @@ func (p *Parser) processLogList(logsRaw oj.OJsonObject) ([]*mj.LogEntry, error) 
 			case "address":
 				logEntry.Address, err = p.parseCheckBytes(kvp.Value)
 				if err != nil {
-					return nil, fmt.Errorf("invalid log address: %w", err)
+					return mj.LogList{}, fmt.Errorf("invalid log address: %w", err)
 				}
 			case "endpoint":
 				logEntry.Endpoint, err = p.parseCheckBytes(kvp.Value)
 				if err != nil {
-					return nil, fmt.Errorf("invalid log identifier: %w", err)
+					return mj.LogList{}, fmt.Errorf("invalid log identifier: %w", err)
 				}
 			case "topics":
 				logEntry.Topics, err = p.parseCheckValueList(kvp.Value)
 				if err != nil {
-					return nil, fmt.Errorf("invalid log entry topics: %w", err)
+					return mj.LogList{}, fmt.Errorf("invalid log entry topics: %w", err)
 				}
 			case "data":
 				logEntry.Data, err = p.parseCheckBytes(kvp.Value)
 				if err != nil {
-					return nil, fmt.Errorf("invalid log data: %w", err)
+					return mj.LogList{}, fmt.Errorf("invalid log data: %w", err)
 				}
 			default:
-				return nil, fmt.Errorf("unknown log field: %s", kvp.Key)
+				return mj.LogList{}, fmt.Errorf("unknown log field: %s", kvp.Key)
 			}
 		}
 		logEntries = append(logEntries, &logEntry)
 	}
 
-	return logEntries, nil
+	return mj.LogList{
+		IsUnspecified: false,
+		IsStar:        false,
+		List:          logEntries,
+	}, nil
 }

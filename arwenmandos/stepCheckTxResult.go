@@ -52,20 +52,28 @@ func (ae *ArwenTestExecutor) checkTxResults(
 			output.GasRemaining)
 	}
 
+	return ae.checkTxLogs(txIndex, blResult.Logs, output.Logs)
+}
+
+func (ae *ArwenTestExecutor) checkTxLogs(
+	txIndex string,
+	expectedLogs mj.LogList,
+	actualLogs []*vmi.LogEntry,
+) error {
 	// "logs": "*" means any value is accepted, log check ignored
-	if blResult.LogsStar {
+	if expectedLogs.IsStar {
 		return nil
 	}
 
 	// this is the real log check
-	if len(blResult.Logs) != len(output.Logs) {
+	if len(expectedLogs.List) != len(actualLogs) {
 		return fmt.Errorf("wrong number of logs. Tx %s. Want:%d. Got:%d",
 			txIndex,
-			len(blResult.Logs),
-			len(output.Logs))
+			len(expectedLogs.List),
+			len(actualLogs))
 	}
-	for i, outLog := range output.Logs {
-		testLog := blResult.Logs[i]
+	for i, outLog := range actualLogs {
+		testLog := expectedLogs.List[i]
 		if !testLog.Address.Check(outLog.Address) {
 			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
 				txIndex,

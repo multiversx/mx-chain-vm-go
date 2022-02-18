@@ -79,15 +79,19 @@ type Transaction struct {
 
 // TransactionResult is a json object representing an expected transaction result.
 type TransactionResult struct {
-	Out             JSONCheckValueList
-	Status          JSONCheckBigInt
-	Message         JSONCheckBytes
-	Gas             JSONCheckUint64
-	Refund          JSONCheckBigInt
-	LogsStar        bool
-	LogsUnspecified bool
-	LogHash         string
-	Logs            []*LogEntry
+	Out     JSONCheckValueList
+	Status  JSONCheckBigInt
+	Message JSONCheckBytes
+	Gas     JSONCheckUint64
+	Refund  JSONCheckBigInt
+	Logs    LogList
+}
+
+type LogList struct {
+	IsUnspecified bool
+	IsStar        bool
+	MoreAppended  bool
+	List          []*LogEntry
 }
 
 // LogEntry is a json object representing an expected transaction result log entry.
