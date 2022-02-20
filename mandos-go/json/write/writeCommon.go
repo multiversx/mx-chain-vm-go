@@ -59,6 +59,9 @@ func logsToOJ(logEntries mj.LogList) oj.OJsonObject {
 		logOJ := logToOJ(logEntry)
 		logList = append(logList, logOJ)
 	}
+	if logEntries.MoreAllowedAtEnd {
+		logList = append(logList, stringToOJ("+"))
+	}
 	logOJList := oj.OJsonList(logList)
 	return &logOJList
 }

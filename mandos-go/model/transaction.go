@@ -88,10 +88,10 @@ type TransactionResult struct {
 }
 
 type LogList struct {
-	IsUnspecified bool
-	IsStar        bool
-	MoreAppended  bool
-	List          []*LogEntry
+	IsUnspecified    bool
+	IsStar           bool
+	MoreAllowedAtEnd bool
+	List             []*LogEntry
 }
 
 // LogEntry is a json object representing an expected transaction result log entry.

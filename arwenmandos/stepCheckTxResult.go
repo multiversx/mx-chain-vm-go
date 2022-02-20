@@ -66,40 +66,65 @@ func (ae *ArwenTestExecutor) checkTxLogs(
 	}
 
 	// this is the real log check
-	if len(expectedLogs.List) != len(actualLogs) {
-		return fmt.Errorf("wrong number of logs. Tx %s. Want:%d. Got:%d",
+	if len(actualLogs) < len(expectedLogs.List) {
+		return fmt.Errorf("too few logs. Tx %s. Want:%d. Got:%d",
 			txIndex,
 			len(expectedLogs.List),
 			len(actualLogs))
 	}
-	for i, outLog := range actualLogs {
-		testLog := expectedLogs.List[i]
-		if !testLog.Address.Check(outLog.Address) {
-			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
+
+	for i, actualLog := range actualLogs {
+		if i < len(expectedLogs.List) {
+			testLog := expectedLogs.List[i]
+			err := ae.checkTxLog(txIndex, i, testLog, actualLog)
+			if err != nil {
+				return err
+			}
+		} else if !expectedLogs.MoreAllowedAtEnd {
+			return fmt.Errorf("unexpected log. Tx %s. Log index: %d. Log:%s",
 				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-		}
-		if !testLog.Endpoint.Check(outLog.Identifier) {
-			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
-				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-		}
-		if !testLog.Topics.CheckList(outLog.Topics) {
-			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
-				txIndex,
-				checkBytesListPretty(testLog.Topics),
-				ae.exprReconstructor.ReconstructList(outLog.Topics, er.NoHint))
-		}
-		if !testLog.Data.Check(outLog.Data) {
-			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
-				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
+				i,
+				mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)),
+			)
 		}
 	}
 
+	return nil
+}
+
+func (ae *ArwenTestExecutor) checkTxLog(
+	txIndex string,
+	logIndex int,
+	expectedLog *mj.LogEntry,
+	actualLog *vmi.LogEntry) error {
+	if !expectedLog.Address.Check(actualLog.Address) {
+		return fmt.Errorf("bad log address. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+			txIndex,
+			logIndex,
+			mjwrite.LogToString(expectedLog),
+			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
+	}
+	if !expectedLog.Endpoint.Check(actualLog.Identifier) {
+		return fmt.Errorf("bad log identifier. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+			txIndex,
+			logIndex,
+			mjwrite.LogToString(expectedLog),
+			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
+	}
+	if !expectedLog.Topics.CheckList(actualLog.Topics) {
+		return fmt.Errorf("result mismatch. Tx %s. Log index: %d. Want: %s. Have: %s",
+			txIndex,
+			logIndex,
+			checkBytesListPretty(expectedLog.Topics),
+			ae.exprReconstructor.ReconstructList(actualLog.Topics, er.NoHint))
+	}
+	if !expectedLog.Data.Check(actualLog.Data) {
+		return fmt.Errorf("bad log data. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+			txIndex,
+			logIndex,
+			mjwrite.LogToString(expectedLog),
+			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
+	}
 	return nil
 }
 
