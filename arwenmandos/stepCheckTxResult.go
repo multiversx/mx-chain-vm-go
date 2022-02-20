@@ -112,7 +112,7 @@ func (ae *ArwenTestExecutor) checkTxLog(
 			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
 	}
 	if !expectedLog.Topics.CheckList(actualLog.Topics) {
-		return fmt.Errorf("result mismatch. Tx %s. Log index: %d. Want: %s. Have: %s",
+		return fmt.Errorf("bad log topics. Tx %s. Log index: %d. Want: %s. Have: %s",
 			txIndex,
 			logIndex,
 			checkBytesListPretty(expectedLog.Topics),
