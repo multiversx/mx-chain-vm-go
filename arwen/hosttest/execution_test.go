@@ -39,6 +39,8 @@ var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
 var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 
+var UniqueCodeHash = []byte{1}
+
 const (
 	get                     = "get"
 	increment               = "increment"
@@ -2859,7 +2861,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		})
 }
 
-func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
+func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T) {
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -2868,6 +2870,9 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
+
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ParentAddress
@@ -2876,20 +2881,67 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
 						childInput.GasProvided = 1000
 						_, _, err := host.ExecuteOnDestContext(childInput)
 						require.NotNil(t, err)
-						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
 						return instance
 					})
 					parentInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
-						host.Runtime().FailExecution(errors.New("forced fail"))
+						host.Runtime().SignalUserError("my user error")
 						return instance
 					})
 				}),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(1000).
+			WithGasProvided(2000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.OutOfGas()
+		})
+}
+
+func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithCodeHash(UniqueCodeHash).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ChildAddress
+						childInput.CallValue = big.NewInt(4)
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						_, _, err := host.ExecuteOnDestContext(childInput)
+						require.NotNil(t, err)
+
+						return instance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(1000).
+				WithCodeHash(UniqueCodeHash).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Runtime().SignalUserError("my user error")
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(2000).
 			WithFunction("callChild").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
