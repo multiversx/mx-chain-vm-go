@@ -41,7 +41,7 @@
                                     "hash": "keccak256:str:another_hash",
                                     "uri": [
                                         "str:www.cool_nft.com/another_nft.jpg",
-                                        "str:www.cool_nft.com/another_nft.json"
+                                        "*"
                                     ],
                                     "attributes": "str:other_attributes"
                                 }
