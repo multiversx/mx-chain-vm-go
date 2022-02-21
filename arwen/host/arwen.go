@@ -357,10 +357,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		defer func() {
 			r := recover()
 			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				if log.GetLevel() <= logger.LogDebug {
-					debug.PrintStack()
-				}
+				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
 			}
 		}()
@@ -417,10 +414,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		defer func() {
 			r := recover()
 			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				if log.GetLevel() <= logger.LogDebug {
-					debug.PrintStack()
-				}
+				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
 			}
 		}()
