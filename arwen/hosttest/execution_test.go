@@ -3020,8 +3020,17 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 		WithFunction(increment).
 		Build()
 
-	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
@@ -3043,8 +3052,17 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 		WithFunction(increment).
 		Build()
 
-	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

@@ -2,6 +2,7 @@ package host
 
 import (
 	"context"
+	"fmt"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -360,7 +361,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				if log.GetLevel() <= logger.LogDebug {
 					debug.PrintStack()
 				}
-				errChan <- arwen.ErrExecutionPanicked
+				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
 			}
 		}()
 
@@ -387,6 +388,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		<-done
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
+		panic(err)
 	}
 
 	return
@@ -419,7 +421,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				if log.GetLevel() <= logger.LogDebug {
 					debug.PrintStack()
 				}
-				errChan <- arwen.ErrExecutionPanicked
+				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
 			}
 		}()
 
@@ -462,6 +464,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		// VM, in the EEI or in the blockchain hooks. The `done` channel is not
 		// read again, because the call to `close(done)` will not happen anymore.
 		host.Runtime().FailExecution(err)
+		panic(err)
 	}
 
 	return
