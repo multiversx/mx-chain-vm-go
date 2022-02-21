@@ -357,6 +357,9 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r)
+				if log.GetLevel() <= logger.LogDebug {
+					debug.PrintStack()
+				}
 				errChan <- arwen.ErrExecutionPanicked
 			}
 		}()
