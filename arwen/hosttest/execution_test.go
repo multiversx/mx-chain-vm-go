@@ -2998,6 +2998,55 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		})
 }
 
+func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
+	arwen.SetLoggingForTests()
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		var i *int
+		i = nil
+
+		// dereference a nil pointer
+		*i = *i + 1
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	_, err := host.RunSmartContractCall(input)
+	require.Equal(t, err, arwen.ErrExecutionPanicked)
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		i := 5
+		j := 4
+		i = i / (j - 4)
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	_, err := host.RunSmartContractCall(input)
+	require.Equal(t, err, arwen.ErrExecutionPanicked)
+}
+
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the
 // number of i64 locals it instantiates
 func makeBytecodeWithLocals(numLocals uint64) []byte {
