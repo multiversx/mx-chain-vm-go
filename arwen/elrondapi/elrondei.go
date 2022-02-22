@@ -66,6 +66,8 @@ package elrondapi
 // extern int32_t	v1_4_getNumReturnData(void *context);
 // extern int32_t	v1_4_getReturnDataSize(void *context, int32_t resultID);
 // extern int32_t	v1_4_getReturnData(void *context, int32_t resultID, int32_t dataOffset);
+// extern void		v1_4_cleanReturnData(void *context);
+// extern void		v1_4_deleteFromReturnData(void *context, int32_t resultID);
 //
 // extern int32_t	v1_4_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
 // extern long long v1_4_getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
@@ -165,6 +167,8 @@ const (
 	getNumReturnDataName             = "getNumReturnData"
 	getReturnDataSizeName            = "getReturnDataSize"
 	getReturnDataName                = "getReturnData"
+	cleanReturnDataName              = "cleanReturnData"
+	deleteFromReturnDataName         = "deleteFromReturnData"
 	setStorageLockName               = "setStorageLock"
 	getStorageLockName               = "getStorageLock"
 	isStorageLockedName              = "isStorageLocked"
@@ -544,6 +548,16 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getReturnData", v1_4_getReturnData, C.v1_4_getReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("cleanReturnData", v1_4_cleanReturnData, C.v1_4_cleanReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("deleteFromReturnData", v1_4_deleteFromReturnData, C.v1_4_deleteFromReturnData)
 	if err != nil {
 		return nil, err
 	}
@@ -971,7 +985,11 @@ func v1_4_validateTokenIdentifier(
 		return -1
 	}
 
-	return validateToken(tokenID)
+	if ValidateToken(tokenID) {
+		return 1
+	} else {
+		return 0
+	}
 
 }
 
@@ -1452,7 +1470,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
-
 	var executeErr error
 
 	runtime := host.Runtime()
@@ -3239,9 +3256,25 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 
 //export v1_4_getReturnData
 func v1_4_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
+	host := arwen.GetVMHost(context)
+
+	result := GetReturnDataWithHostAndTypedArgs(host, resultID)
+	if result == nil {
+		return 0
+	}
+
 	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+	err := runtime.MemStore(dataOffset, result)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	return int32(len(result))
+}
+
+func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte {
+	output := host.Output()
+	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnData
 	metering.UseGasAndAddTracedGas(getReturnDataName, gasToUse)
@@ -3250,15 +3283,47 @@ func v1_4_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32
 	if resultID >= int32(len(returnData)) {
 		// TODO: rust framework
 		// arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
-		return 0
+		return nil
 	}
 
-	err := runtime.MemStore(dataOffset, returnData[resultID])
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
-	}
+	return returnData[resultID]
+}
 
-	return int32(len(returnData[resultID]))
+//export v1_4_cleanReturnData
+func v1_4_cleanReturnData(context unsafe.Pointer) {
+	host := arwen.GetVMHost(context)
+	CleanReturnDataWithHost(host)
+}
+
+// CleanReturnDataWithHost - exposed version of v1_4_deleteFromReturnData for tests
+func CleanReturnDataWithHost(host arwen.VMHost) {
+	output := host.Output()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CleanReturnData
+	metering.UseGasAndAddTracedGas(cleanReturnDataName, gasToUse)
+
+	output.ClearReturnData()
+}
+
+//export v1_4_deleteFromReturnData
+func v1_4_deleteFromReturnData(context unsafe.Pointer, resultID int32) {
+	host := arwen.GetVMHost(context)
+	DeleteFromReturnDataWithHost(host, resultID)
+}
+
+// DeleteFromReturnDataWithHost - exposed version of v1_4_deleteFromReturnData for tests
+func DeleteFromReturnDataWithHost(host arwen.VMHost, resultID int32) {
+	output := host.Output()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.DeleteFromReturnData
+	metering.UseGasAndAddTracedGas(deleteFromReturnDataName, gasToUse)
+
+	returnData := output.ReturnData()
+	if resultID < int32(len(returnData)) {
+		output.RemoveReturnData(uint32(resultID))
+	}
 }
 
 //export v1_4_getOriginalTxHash

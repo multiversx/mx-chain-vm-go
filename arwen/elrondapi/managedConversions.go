@@ -11,63 +11,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-const handleLen = 4
 const esdtTransferLen = 16
-
-// Converts a managed buffer of managed buffers to a slice of byte slices.
-func readManagedVecOfManagedBuffers(
-	managedType arwen.ManagedTypesContext,
-	managedVecHandle int32,
-) ([][]byte, uint64, error) {
-	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
-	if err != nil {
-		return nil, 0, err
-	}
-	managedType.ConsumeGasForBytes(managedVecBytes)
-
-	if len(managedVecBytes)%handleLen != 0 {
-		return nil, 0, errors.New("invalid managed vector of managed buffer handles")
-	}
-
-	numBuffers := len(managedVecBytes) / handleLen
-	result := make([][]byte, 0, numBuffers)
-	sumOfItemByteLengths := uint64(0)
-	for i := 0; i < len(managedVecBytes); i += handleLen {
-		itemHandle := int32(binary.BigEndian.Uint32(managedVecBytes[i : i+handleLen]))
-
-		itemBytes, err := managedType.GetBytes(itemHandle)
-		if err != nil {
-			return nil, 0, err
-		}
-		managedType.ConsumeGasForBytes(itemBytes)
-
-		sumOfItemByteLengths += uint64(len(itemBytes))
-		result = append(result, itemBytes)
-	}
-
-	return result, sumOfItemByteLengths, nil
-}
-
-// Converts a slice of byte slices to a managed buffer of managed buffers.
-func writeManagedVecOfManagedBuffers(
-	metering arwen.MeteringContext,
-	managedType arwen.ManagedTypesContext,
-	data [][]byte,
-	destinationHandle int32,
-) {
-	sumOfItemByteLengths := uint64(0)
-	destinationBytes := make([]byte, handleLen*len(data))
-	dataIndex := 0
-	for _, itemBytes := range data {
-		sumOfItemByteLengths += uint64(len(itemBytes))
-		itemHandle := managedType.NewManagedBufferFromBytes(itemBytes)
-		binary.BigEndian.PutUint32(destinationBytes[dataIndex:dataIndex+handleLen], uint32(itemHandle))
-		dataIndex += handleLen
-	}
-
-	managedType.SetBytes(destinationHandle, destinationBytes)
-	metering.UseAndTraceGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
-}
 
 // Deserializes a vmcommon.ESDTTransfer object.
 func readESDTTransfer(
@@ -262,7 +206,7 @@ func readDestinationArguments(
 	}
 
 	vmInput.value = big.NewInt(0)
-	data, actualLen, err := readManagedVecOfManagedBuffers(managedType, argumentsHandle)
+	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
 	if err != nil {
 		return nil, err
 	}

@@ -23,20 +23,22 @@ func (p *Parser) processStringList(obj interface{}) ([]string, error) {
 	return result, nil
 }
 
-func (p *Parser) parseByteArrayList(obj interface{}) ([]mj.JSONBytesFromString, error) {
+func (p *Parser) parseValueList(obj interface{}) (mj.JSONValueList, error) {
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
-		return nil, errors.New("not a JSON list")
+		return mj.JSONValueList{}, errors.New("not a JSON list")
 	}
 	var result []mj.JSONBytesFromString
 	for _, elemRaw := range listRaw.AsList() {
 		ba, err := p.processStringAsByteArray(elemRaw)
 		if err != nil {
-			return nil, err
+			return mj.JSONValueList{}, err
 		}
 		result = append(result, ba)
 	}
-	return result, nil
+	return mj.JSONValueList{
+		Values: result,
+	}, nil
 }
 
 func (p *Parser) parseSubTreeList(obj interface{}) ([]mj.JSONBytesFromTree, error) {
@@ -55,18 +57,24 @@ func (p *Parser) parseSubTreeList(obj interface{}) ([]mj.JSONBytesFromTree, erro
 	return result, nil
 }
 
-func (p *Parser) parseCheckBytesList(obj interface{}) ([]mj.JSONCheckBytes, error) {
+func (p *Parser) parseCheckValueList(obj oj.OJsonObject) (mj.JSONCheckValueList, error) {
+	if IsStar(obj) {
+		return mj.JSONCheckValueListStar(), nil
+	}
+
 	listRaw, listOk := obj.(*oj.OJsonList)
 	if !listOk {
-		return nil, errors.New("not a JSON list")
+		return mj.JSONCheckValueList{}, errors.New("not a JSON list")
 	}
-	var result []mj.JSONCheckBytes
+	var values []mj.JSONCheckBytes
 	for _, elemRaw := range listRaw.AsList() {
 		checkBytes, err := p.parseCheckBytes(elemRaw)
 		if err != nil {
-			return nil, err
+			return mj.JSONCheckValueList{}, err
 		}
-		result = append(result, checkBytes)
+		values = append(values, checkBytes)
 	}
-	return result, nil
+	return mj.JSONCheckValueList{
+		Values: values,
+	}, nil
 }
