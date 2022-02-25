@@ -3214,3 +3214,51 @@ func makeBytecodeWithLocals(numLocals uint64) []byte {
 
 	return result
 }
+
+func TestExecution_DeployerCustom(t *testing.T) {
+	// Deployment
+	code := test.GetTestSCCode("deployer-custom", "../../")
+	childCode := test.GetTestSCCode("counter", "../../")
+	host, world := test.DefaultTestArwenForCallWithWorldMock(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	parent := world.AcctMap.GetAccount(test.ParentAddress)
+	parent.Balance = big.NewInt(84)
+
+	codeMetadata := []byte{0x05, 0x02}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction("deployChild").
+		WithArguments(childCode, codeMetadata).
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	verifier := test.NewVMOutputVerifier(t, vmOutput, err)
+	verifier.ReturnMessage("")
+
+	childAddress := vmOutput.ReturnData[0]
+
+	verifier.Code(childAddress, childCode)
+	verifier.CodeMetadata(childAddress, codeMetadata)
+
+	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+
+	// Upgrade
+	codeMetadata = []byte{0x05, 0xFF}
+	input = test.CreateTestContractCallInputBuilder().
+		WithGasProvided(100000000).
+		WithFunction("upgradeChild").
+		WithArguments(childAddress, childCode, codeMetadata).
+		Build()
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verifier = test.NewVMOutputVerifier(t, vmOutput, err)
+	verifier.ReturnMessage("")
+	verifier.Ok()
+
+	verifier.Code(childAddress, childCode)
+	verifier.CodeMetadata(childAddress, codeMetadata)
+}

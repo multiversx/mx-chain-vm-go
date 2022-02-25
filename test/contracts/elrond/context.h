@@ -94,6 +94,17 @@ int createContract(
 		byte *initArgLengths,
 		byte *initArgs);
 
+void upgradeContract(
+		byte *address,
+		long long gas,
+		byte *value,
+		byte *code,
+		byte *codeMetadata,
+		int codeSize,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);
+
 int deployFromSourceContract(
 		long long gas,
 		byte *value,
