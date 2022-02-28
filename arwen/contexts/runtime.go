@@ -584,6 +584,9 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 	if context.instance.IsFunctionImported("deleteFromReturnData") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("completedTxEvent") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
