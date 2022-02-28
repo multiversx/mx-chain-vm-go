@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
@@ -176,6 +177,9 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 }
 
 func (pfe *fuzzDexExecutor) saveGeneratedScenario() {
+	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost.Reset()
+
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
@@ -258,7 +262,7 @@ func (pfe *fuzzDexExecutor) querySingleResult(from, to, funcName, args string) (
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -295,7 +299,7 @@ func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from string, to string, 
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

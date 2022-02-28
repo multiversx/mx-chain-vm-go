@@ -57,7 +57,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:cannot change BLS keys while active",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -78,7 +78,7 @@
                     "''bls_key_old_____________________________________________________________________________________"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -99,7 +99,7 @@
                     "1"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

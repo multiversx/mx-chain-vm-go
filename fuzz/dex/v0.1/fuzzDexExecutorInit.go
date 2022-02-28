@@ -314,7 +314,7 @@ func (pfe *fuzzDexExecutor) setFeeOn(swapAddress, farmAddress, feeToken, ownerAd
 			"expect": {
 				"out": [],
 				"status": "",
-				"logs": [],
+				"logs": "*",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -346,7 +346,7 @@ func (pfe *fuzzDexExecutor) whitelist(ownerAddress, swapAddressToConfig, swapAdd
 			"expect": {
 				"out": [],
 				"status": "",
-				"logs": [],
+				"logs": "*",
 				"gas": "*",
 				"refund": "*"
 			}
@@ -379,7 +379,7 @@ func (pfe *fuzzDexExecutor) addTrustedSwapPair(ownerAddress, swapAddressToConfig
 			"expect": {
 				"out": [],
 				"status": "",
-				"logs": [],
+				"logs": "*",
 				"gas": "*",
 				"refund": "*"
 			}

@@ -39,6 +39,8 @@ var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
 var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 
+var UniqueCodeHash = []byte{1}
+
 const (
 	get                     = "get"
 	increment               = "increment"
@@ -299,9 +301,11 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	input.Function = get
 
 	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	defer func() {
+		_ = host1.Close()
+	}()
 	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
-	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	host1.SetRuntimeContext(runtimeContextMock)
 
 	for i := 0; i < 5; i++ {
@@ -316,9 +320,11 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	}
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	defer func() {
+		_ = host2.Close()
+	}()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.CleanWasmerInstanceFunc = func() {}
 	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
 		return code, nil
 	}
@@ -347,6 +353,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	host1Chan := make(chan string)
 
 	host1, _ := test.DefaultTestArwenForCall(t, code, nil)
+	defer func() {
+		_ = host1.Close()
+	}()
 	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	runtimeContextMock.FunctionFunc = func() string {
@@ -364,6 +373,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}()
 
 	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
+	defer func() {
+		_ = host2.Close()
+	}()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
 	runtimeContextMock.FunctionFunc = func() string {
@@ -462,6 +474,9 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 	log := logger.GetOrCreate("arwen/test")
 
 	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	defer func() {
+		_ = host.Close()
+	}()
 	gasSchedule := host.GetGasScheduleMap()
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -494,6 +509,9 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	log := logger.GetOrCreate("arwen/test")
 
 	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	defer func() {
+		_ = host.Close()
+	}()
 	gasSchedule := host.GetGasScheduleMap()
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -1945,6 +1963,9 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// executing the parent. The initialization emulates the behavior of
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
 	host, _ := test.DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	defer func() {
+		_ = host.Close()
+	}()
 	host.InitState()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
@@ -2254,6 +2275,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
 	host := test.DefaultTestArwen(t, world)
+	defer func() {
+		_ = host.Close()
+	}()
 
 	alphaCode := test.GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
 	alpha := test.AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
@@ -2293,6 +2317,9 @@ func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
 	host := test.DefaultTestArwen(t, world)
+	defer func() {
+		_ = host.Close()
+	}()
 
 	alphaCode := test.GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
 	alpha := test.AddTestSmartContractToWorld(world, "alphaSC", alphaCode)
@@ -2834,7 +2861,7 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		})
 }
 
-func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
+func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T) {
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -2843,6 +2870,9 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
+
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ParentAddress
@@ -2851,20 +2881,67 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract(t *testing.T) {
 						childInput.GasProvided = 1000
 						_, _, err := host.ExecuteOnDestContext(childInput)
 						require.NotNil(t, err)
-						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
 						return instance
 					})
 					parentInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
-						host.Runtime().FailExecution(errors.New("forced fail"))
+						host.Runtime().SignalUserError("my user error")
 						return instance
 					})
 				}),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(1000).
+			WithGasProvided(2000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.OutOfGas()
+		})
+}
+
+func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithCodeHash(UniqueCodeHash).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ChildAddress
+						childInput.CallValue = big.NewInt(4)
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						_, _, err := host.ExecuteOnDestContext(childInput)
+						require.NotNil(t, err)
+
+						return instance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(1000).
+				WithCodeHash(UniqueCodeHash).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Runtime().SignalUserError("my user error")
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(2000).
 			WithFunction("callChild").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -3048,6 +3125,73 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
 		})
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
+	arwen.SetLoggingForTests()
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		var i *int
+		i = nil
+
+		// dereference a nil pointer
+		*i = *i + 1
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		i := 5
+		j := 4
+		i = i / (j - 4)
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

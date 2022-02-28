@@ -26,7 +26,7 @@
                     "1"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -47,21 +47,18 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "pending-action-data",
             "tx": {
-                "from": "address:bob",
-                "to": "sc:multisig",
+                "to": "sc:multisig-view",
                 "function": "getPendingActionFullInfo",
-                "arguments": [],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
+                "arguments": []
             },
             "expect": {
                 "out": [
@@ -71,10 +68,7 @@
                         "u32:2|address:alice|address:bob"
                     ]
                 ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "status": ""
             }
         },
         {
@@ -93,7 +87,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -114,28 +108,22 @@
                     "3"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "pending-action-data-none",
             "tx": {
-                "from": "address:bob",
-                "to": "sc:multisig",
+                "to": "sc:multisig-view",
                 "function": "getPendingActionFullInfo",
-                "arguments": [],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
+                "arguments": []
             },
             "expect": {
                 "out": [],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "status": ""
             }
         }
     ]

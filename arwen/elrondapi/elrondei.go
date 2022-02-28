@@ -1462,7 +1462,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
-
 	var executeErr error
 
 	runtime := host.Runtime()

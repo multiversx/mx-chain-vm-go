@@ -5,13 +5,24 @@ import (
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
+	}
 	ae.World.Clear()
+}
+
+// Close will simply close the VM
+func (ae *ArwenTestExecutor) Close() {
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
+	}
 }
 
 // ExecuteScenario executes an individual test.
@@ -109,9 +120,9 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	}
 
 	// replace block info
-	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo)
-	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo)
-	ae.World.Blockhashes = mj.JSONBytesFromStringValues(step.BlockHashes)
+	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo, ae.World.PreviousBlockInfo)
+	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo, ae.World.CurrentBlockInfo)
+	ae.World.Blockhashes = step.BlockHashes.ToValues()
 
 	// append NewAddressMocks
 	err := validateNewAddressMocks(step.NewAddressMocks)

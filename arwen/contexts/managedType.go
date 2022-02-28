@@ -2,6 +2,8 @@ package contexts
 
 import (
 	"crypto/elliptic"
+	"encoding/binary"
+	"errors"
 	"io"
 	basicMath "math"
 	"math/big"
@@ -26,6 +28,8 @@ const p224CurveUnmarshalCompressedMultiplier = 2000
 const p256CurveUnmarshalCompressedMultiplier = 100
 const p384CurveUnmarshalCompressedMultiplier = 200
 const p521CurveUnmarshalCompressedMultiplier = 400
+
+const handleLen = 4
 
 type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
@@ -453,4 +457,57 @@ func (context *managedTypesContext) InsertSlice(mBufferHandle int32, startPositi
 	mBuffer = append(mBuffer[:startPosition], append(slice, mBuffer[startPosition:]...)...)
 	context.managedTypesValues.mBufferValues[mBufferHandle] = mBuffer
 	return context.managedTypesValues.mBufferValues[mBufferHandle], nil
+}
+
+// ReadManagedVecOfManagedBuffers converts a managed buffer of managed buffers to a slice of byte slices.
+func (context *managedTypesContext) ReadManagedVecOfManagedBuffers(
+	managedVecHandle int32,
+) ([][]byte, uint64, error) {
+	managedVecBytes, err := context.GetBytes(managedVecHandle)
+	if err != nil {
+		return nil, 0, err
+	}
+	context.ConsumeGasForBytes(managedVecBytes)
+
+	if len(managedVecBytes)%handleLen != 0 {
+		return nil, 0, errors.New("invalid managed vector of managed buffer handles")
+	}
+
+	numBuffers := len(managedVecBytes) / handleLen
+	result := make([][]byte, 0, numBuffers)
+	sumOfItemByteLengths := uint64(0)
+	for i := 0; i < len(managedVecBytes); i += handleLen {
+		itemHandle := int32(binary.BigEndian.Uint32(managedVecBytes[i : i+handleLen]))
+
+		itemBytes, err := context.GetBytes(itemHandle)
+		if err != nil {
+			return nil, 0, err
+		}
+		context.ConsumeGasForBytes(itemBytes)
+
+		sumOfItemByteLengths += uint64(len(itemBytes))
+		result = append(result, itemBytes)
+	}
+
+	return result, sumOfItemByteLengths, nil
+}
+
+// WriteManagedVecOfManagedBuffers converts a slice of byte slices to a managed buffer of managed buffers.
+func (context *managedTypesContext) WriteManagedVecOfManagedBuffers(
+	data [][]byte,
+	destinationHandle int32,
+) {
+	sumOfItemByteLengths := uint64(0)
+	destinationBytes := make([]byte, handleLen*len(data))
+	dataIndex := 0
+	for _, itemBytes := range data {
+		sumOfItemByteLengths += uint64(len(itemBytes))
+		itemHandle := context.NewManagedBufferFromBytes(itemBytes)
+		binary.BigEndian.PutUint32(destinationBytes[dataIndex:dataIndex+handleLen], uint32(itemHandle))
+		dataIndex += handleLen
+	}
+
+	context.SetBytes(destinationHandle, destinationBytes)
+	metering := context.host.Metering()
+	metering.UseAndTraceGas(sumOfItemByteLengths * metering.GasSchedule().BaseOperationCost.DataCopyPerByte)
 }

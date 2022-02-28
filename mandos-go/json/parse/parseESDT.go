@@ -126,7 +126,7 @@ func (p *Parser) tryProcessESDTInstanceField(kvp *oj.OJsonKeyValuePair, targetIn
 			return false, fmt.Errorf("invalid ESDT NFT hash: %w", err)
 		}
 	case "uri":
-		targetInstance.Uri, err = p.processSubTreeAsByteArray(kvp.Value)
+		targetInstance.Uris, err = p.parseValueList(kvp.Value)
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT NFT URI: %w", err)
 		}

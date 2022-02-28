@@ -343,27 +343,18 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					accountInstance.TokenMetaData.Hash,
 					er.NoHint)))
 		}
-		if len(accountInstance.TokenMetaData.URIs) > 1 {
+
+		if !expectedInstance.Uris.IsUnspecified() &&
+			!expectedInstance.Uris.CheckList(accountInstance.TokenMetaData.URIs) {
+			// in this case unspecified is interpreted as *
 			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: More than one URI currently not supported",
-				tokenName,
-				nonce))
-		}
-		var actualUri []byte
-		if len(accountInstance.TokenMetaData.URIs) == 1 {
-			actualUri = accountInstance.TokenMetaData.URIs[0]
-		}
-		if !expectedInstance.Uri.IsUnspecified() &&
-			!expectedInstance.Uri.Check(actualUri) {
-			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
+				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: %s",
 				tokenName,
 				nonce,
-				objectStringOrDefault(expectedInstance.Uri.Original),
-				ae.exprReconstructor.Reconstruct(
-					actualUri,
-					er.StrHint)))
+				checkBytesListPretty(expectedInstance.Uris),
+				ae.exprReconstructor.ReconstructList(accountInstance.TokenMetaData.URIs, er.StrHint)))
 		}
+
 		if !expectedInstance.Attributes.IsUnspecified() &&
 			!expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
 			errors = append(errors, fmt.Errorf(

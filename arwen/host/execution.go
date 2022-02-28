@@ -23,7 +23,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
 		}
-		host.Clean()
 	}()
 
 	_, blockchain, metering, output, runtime, storage := host.GetContexts()
@@ -91,7 +90,6 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	vmOutput := output.GetVMOutput()
-	runtime.CleanWasmerInstance()
 	return vmOutput, nil
 }
 
@@ -103,7 +101,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
 		}
-		host.Clean()
 	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
@@ -150,7 +147,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errs)
 		}
-		host.Clean()
 	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
@@ -199,7 +195,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
 
-	runtime.CleanWasmerInstance()
 	return
 }
 
@@ -816,9 +811,11 @@ func addOutputTransferToVMOutput(
 func (host *vmHost) checkFinalGasAfterExit() error {
 	totalUsedPoints := host.Runtime().GetPointsUsed()
 	if totalUsedPoints > host.Metering().GetGasForExecution() {
+		log.Trace("checkFinalGasAfterExit", "failed")
 		return arwen.ErrNotEnoughGas
 	}
 
+	log.Trace("checkFinalGasAfterExit", "ok")
 	return nil
 }
 
@@ -852,7 +849,7 @@ func (host *vmHost) callSCMethod() error {
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "verifyAllowedFunctionCall")
 		return err
 	}
 
@@ -862,24 +859,25 @@ func (host *vmHost) callSCMethod() error {
 		if callType == vm.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
 			err = host.processCallbackStack()
 			if err != nil {
-				log.Trace("call SC method failed", "error", err)
+				log.Trace("call SC method failed", "error", err, "src", "processCallbackStack")
 			}
 
 			return err
 		}
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "getFunctionByCallType")
 		return err
 	}
 
 	_, err = function()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+		log.Trace("breakpoint detected and handled", "err", err)
 	}
 	if err == nil {
 		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "sc function")
 		return err
 	}
 
@@ -900,7 +898,7 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "async post-process")
 	}
 
 	return err
