@@ -478,28 +478,17 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
-	var message string
-
 	runtime := context.host.Runtime()
 	runtime.AddError(err, runtime.Function())
 
-	if errors.Is(err, arwen.ErrSignalError) {
-		message = context.ReturnMessage()
-	} else {
-		if len(context.outputState.ReturnMessage) > 0 {
-			// another return message was already set previously
-			message = context.outputState.ReturnMessage
-		} else {
-			message = err.Error()
-		}
-	}
-
 	returnCode := context.resolveReturnCodeFromError(err)
+	returnMessage := context.resolveReturnMessageFromError(err)
+
 	vmOutput := &vmcommon.VMOutput{
 		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
-		ReturnMessage: message,
+		ReturnMessage: returnMessage,
 	}
 
 	context.host.Metering().UpdateGasStateOnFailure(vmOutput)
@@ -516,6 +505,21 @@ func (context *outputContext) removeNonUpdatedCode() {
 			account.CodeDeployerAddress = nil
 		}
 	}
+}
+
+func (context *outputContext) resolveReturnMessageFromError(err error) string {
+	if errors.Is(err, arwen.ErrSignalError) {
+		return context.ReturnMessage()
+	}
+	if errors.Is(err, arwen.ErrMemoryLimit) {
+		return arwen.ErrExecutionFailed.Error()
+	}
+	if len(context.outputState.ReturnMessage) > 0 {
+		// another return message was already set previously
+		return context.outputState.ReturnMessage
+	}
+
+	return err.Error()
 }
 
 func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
