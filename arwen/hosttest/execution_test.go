@@ -3030,30 +3030,30 @@ func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
 	maxGrows := uint32(math.MaxUint32)
 	maxDelta := uint32(10)
 	argDelta := int64(10)
-	runMemGrowTest(t, maxGrows, maxDelta, argDelta, 10, vmcommon.Ok, "")
+	runMemGrowTest(t, maxGrows, maxDelta, argDelta, 10, vmcommon.Ok)
 }
 
 func TestExecution_Opcodes_MemoryGrow_Limit(t *testing.T) {
 	maxGrows := uint32(10)
 	maxDelta := uint32(10)
-	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows-1), vmcommon.Ok, "")
-	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows), vmcommon.Ok, "")
-	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows+1), vmcommon.ExecutionFailed, arwen.ErrMemoryLimit.Error())
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows-1), vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows), vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows+1), vmcommon.ExecutionFailed)
 }
 
 func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
 	maxGrows := uint32(10)
 	maxDelta := uint32(10)
-	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta-1), 1, vmcommon.Ok, "")
-	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), 1, vmcommon.Ok, "")
-	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta+1), 1, vmcommon.ExecutionFailed, arwen.ErrMemoryLimit.Error())
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta-1), 1, vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), 1, vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta+1), 1, vmcommon.ExecutionFailed)
 }
 
 func BenchmarkOpcodeMemoryGrow(b *testing.B) {
 	maxGrows := uint32(math.MaxUint32)
 	maxDelta := uint32(10)
 	argDelta := int64(10)
-	runMemGrowTest(b, maxGrows, maxDelta, argDelta, int64(b.N), vmcommon.Ok, "")
+	runMemGrowTest(b, maxGrows, maxDelta, argDelta, int64(b.N), vmcommon.Ok)
 }
 
 func runMemGrowTest(
@@ -3063,7 +3063,6 @@ func runMemGrowTest(
 	argMemGrowDelta int64,
 	reps int64,
 	expectedRetCode vmcommon.ReturnCode,
-	expectedRetMessage string,
 ) {
 	repsBigInt := big.NewInt(reps)
 	repsBytes := arwen.PadBytesLeft(repsBigInt.Bytes(), 8)
@@ -3087,7 +3086,6 @@ func runMemGrowTest(
 		}).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(expectedRetCode)
-			verify.ReturnMessage(expectedRetMessage)
 		})
 }
 
