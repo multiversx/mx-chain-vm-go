@@ -512,10 +512,11 @@ func (context *outputContext) resolveReturnMessageFromError(err error) string {
 		return context.ReturnMessage()
 	}
 	if errors.Is(err, arwen.ErrMemoryLimit) {
+		// ErrMemoryLimit will still produce the 'execution failed' message.
 		return arwen.ErrExecutionFailed.Error()
 	}
 	if len(context.outputState.ReturnMessage) > 0 {
-		// another return message was already set previously
+		// Another return message was already set.
 		return context.outputState.ReturnMessage
 	}
 
