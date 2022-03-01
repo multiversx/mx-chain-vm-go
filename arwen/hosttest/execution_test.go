@@ -3130,7 +3130,6 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
-	arwen.SetLoggingForTests()
 	code := test.GetTestSCCode("counter", "../../")
 	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
 	defer func() {
