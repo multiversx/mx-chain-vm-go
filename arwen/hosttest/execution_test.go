@@ -3086,6 +3086,11 @@ func runMemGrowTest(
 		}).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(expectedRetCode)
+			if expectedRetCode == vmcommon.ExecutionFailed {
+				vmOutput := verify.VmOutput
+				require.Len(tb, vmOutput.Logs, 1)
+				require.Contains(tb, string(vmOutput.Logs[0].Data), arwen.ErrMemoryLimit.Error())
+			}
 		})
 }
 
