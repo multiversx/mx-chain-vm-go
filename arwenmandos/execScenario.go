@@ -12,16 +12,16 @@ import (
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
-	if !check.IfNil(ae.vm) {
-		_ = ae.vm.Close()
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
 	}
 	ae.World.Clear()
 }
 
 // Close will simply close the VM
 func (ae *ArwenTestExecutor) Close() {
-	if !check.IfNil(ae.vm) {
-		_ = ae.vm.Close()
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
 	}
 }
 
@@ -122,7 +122,7 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	// replace block info
 	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo, ae.World.PreviousBlockInfo)
 	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo, ae.World.CurrentBlockInfo)
-	ae.World.Blockhashes = mj.JSONBytesFromStringValues(step.BlockHashes)
+	ae.World.Blockhashes = step.BlockHashes.ToValues()
 
 	// append NewAddressMocks
 	err := validateNewAddressMocks(step.NewAddressMocks)

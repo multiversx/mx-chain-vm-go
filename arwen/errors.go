@@ -23,6 +23,9 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 // ErrExecutionFailed signals that the execution failed
 var ErrExecutionFailed = errors.New("execution failed")
 
+// ErrExecutionPanicked signals that the execution failed irrecoverably
+var ErrExecutionPanicked = errors.New("VM execution panicked")
+
 // ErrExecutionFailedWithTimeout signals that the execution failed with timeout
 var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
 
@@ -185,3 +188,6 @@ var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
 
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
+
+// ErrVMIsClosing signals that vm is closing
+var ErrVMIsClosing = errors.New("vm is closing")

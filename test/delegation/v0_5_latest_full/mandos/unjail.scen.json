@@ -67,7 +67,7 @@
                 "out": [],
                 "status": "4",
                 "message": "''node must be active",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -91,7 +91,7 @@
                 "out": [],
                 "status": "4",
                 "message": "''unknown node provided",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -114,7 +114,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

@@ -1,23 +1,23 @@
 {
-	"comment": "fails when specified owner is incorrect",
-	"steps": [
-		{
-			"step": "setState",
-			"accounts": {
-				"address:parent": {},
-				"address:child": {
-					"owner": "address:parent"
-				}
-			}
-		},
-		{
-			"step": "checkState",
-			"accounts": {
-				"address:parent": {
-					"owner": "address:other"
-				},
-				"address:child": {}
-			}
-		}
-	]
+    "comment": "fails when specified owner is incorrect",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:parent": {},
+                "address:child": {
+                    "owner": "address:parent"
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:parent": {
+                    "owner": "address:other"
+                },
+                "address:child": {}
+            }
+        }
+    ]
 }

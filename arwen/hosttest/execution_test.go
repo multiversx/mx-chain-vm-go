@@ -10,10 +10,12 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
@@ -36,6 +38,8 @@ var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
 var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
+
+var UniqueCodeHash = []byte{1}
 
 const (
 	get                     = "get"
@@ -2887,6 +2891,169 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		})
 }
 
+func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ParentAddress
+						childInput.CallValue = big.NewInt(4)
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						_, _, err := host.ExecuteOnDestContext(childInput)
+						require.NotNil(t, err)
+
+						return instance
+					})
+					parentInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Runtime().SignalUserError("my user error")
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(2000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.OutOfGas()
+		})
+}
+
+func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithCodeHash(UniqueCodeHash).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+
+						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ChildAddress
+						childInput.CallValue = big.NewInt(4)
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						_, _, err := host.ExecuteOnDestContext(childInput)
+						require.NotNil(t, err)
+
+						return instance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(1000).
+				WithCodeHash(UniqueCodeHash).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Runtime().SignalUserError("my user error")
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(2000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.OutOfGas()
+		})
+}
+
+func TestExecution_Mocked_ClearReturnData(t *testing.T) {
+	zero := "zero"
+	one := "one"
+	two := "two"
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						instance := mock.GetMockInstance(host)
+						childInput := test.DefaultTestContractCallInput()
+						childInput.CallerAddr = test.ParentAddress
+						childInput.RecipientAddr = test.ChildAddress
+						childInput.Function = "doSomething"
+						childInput.GasProvided = 1000
+						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
+						require.Equal(t, int32(0), returnValue)
+
+						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, -1)
+						require.Nil(t, returnData)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, zero, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Equal(t, one, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Equal(t, two, string(returnData))
+
+						elrondapi.DeleteFromReturnDataWithHost(host, 0)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, one, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Equal(t, two, string(returnData))
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Nil(t, returnData)
+						elrondapi.DeleteFromReturnDataWithHost(host, 0)
+						elrondapi.DeleteFromReturnDataWithHost(host, 0)
+						remainingReturnData := host.Output().ReturnData()
+						require.Equal(t, remainingReturnData, [][]byte{})
+
+						elrondapi.CleanReturnDataWithHost(host)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Nil(t, returnData)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Nil(t, returnData)
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Nil(t, returnData)
+
+						return instance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(0).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						instance := mock.GetMockInstance(host)
+						host.Output().Finish([]byte(zero))
+						host.Output().Finish([]byte(one))
+						host.Output().Finish([]byte(two))
+						return instance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1000).
+			WithFunction("callChild").
+			Build()).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok()
+		})
+}
+
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
@@ -2988,6 +3155,73 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
 		})
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
+	arwen.SetLoggingForTests()
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		var i *int
+		i = nil
+
+		// dereference a nil pointer
+		*i = *i + 1
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		i := 5
+		j := 4
+		i = i / (j - 4)
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

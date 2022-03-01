@@ -82,7 +82,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -109,7 +109,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:too soon to call forceUnstake",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

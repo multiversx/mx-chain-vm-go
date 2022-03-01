@@ -10,7 +10,7 @@ import (
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
@@ -121,8 +121,10 @@ func (pfe *pureFunctionExecutor) checkTxResults(
 
 	// check result
 	if len(output.ReturnData) != len(testCase.expectedResults) {
+		rec := er.ExprReconstructor{}
 		return fmt.Errorf("result length mismatch. Want: %s. Have: %s",
-			mj.ResultAsString(testCase.expectedResults), mj.ResultAsString(output.ReturnData))
+			rec.ReconstructList(testCase.expectedResults, er.NoHint),
+			rec.ReconstructList(output.ReturnData, er.NoHint))
 	}
 	for i, expected := range testCase.expectedResults {
 		wantNum := resultInterpreter(expected)
@@ -158,6 +160,7 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
 
-		_ = pfe.vm.Close()
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}
 }

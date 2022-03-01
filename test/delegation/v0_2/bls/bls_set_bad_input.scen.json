@@ -55,7 +55,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:wrong number of arguments",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -76,7 +76,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -100,7 +100,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:wrong number of arguments",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -121,7 +121,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -144,7 +144,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:argument deserialization error (BLSKey): input too long",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -167,7 +167,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:argument deserialization error (BLSKey): input too short",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -186,7 +186,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -207,7 +207,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

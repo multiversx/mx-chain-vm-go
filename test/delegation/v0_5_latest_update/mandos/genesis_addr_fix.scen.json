@@ -125,7 +125,7 @@
                     "address:delegator_1", "7,777,000,000", "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

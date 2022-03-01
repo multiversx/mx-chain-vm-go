@@ -28,7 +28,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:name already taken",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -50,7 +50,7 @@
             "expect": {
                 "out": [ "address:cool_address" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
