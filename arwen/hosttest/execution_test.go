@@ -2953,6 +2953,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 	zero := "zero"
 	one := "one"
 	two := "two"
+	_ = logger.SetLogLevel("*:TRACE")
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).

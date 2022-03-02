@@ -3277,7 +3277,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 	metering.UseGasAndAddTracedGas(getReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) || resultID < 0 {
 		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, runtime.ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
