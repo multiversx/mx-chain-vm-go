@@ -363,7 +363,7 @@ func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 	metering.UseGasAndAddTracedGas(managedGetReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) || resultID < 0 {
 		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
