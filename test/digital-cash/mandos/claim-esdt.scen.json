@@ -179,7 +179,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "status": "10",
+                "out": [],
+                "status": "4",
+                "message": "str:argument decode error (signature): bad array length",
                 "gas": "*",
                 "refund": "*",
                 "logs": "*"

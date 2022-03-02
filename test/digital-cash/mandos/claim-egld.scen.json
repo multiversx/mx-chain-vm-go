@@ -172,7 +172,8 @@
             },
             "expect": {
                 "out": [],
-                "status": "10",
+                "status": "4",
+                "message": "str:argument decode error (signature): bad array length",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"

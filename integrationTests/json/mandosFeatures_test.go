@@ -9,7 +9,8 @@ func TestRustBasicFeaturesLatest(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/basic-features/mandos")
+	runTestsInFolder(t, "features/basic-features/mandos", []string{
+		"features/basic-features/mandos/storage_mapper_fungible_token.scen.json"})
 }
 
 func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
