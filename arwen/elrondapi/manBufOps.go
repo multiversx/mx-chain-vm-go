@@ -631,7 +631,7 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle
 	metering.UseGasAndAddTracedGas(mBufferGetArgumentName, gasToUse)
 
 	args := runtime.Arguments()
-	if int32(len(args)) <= id {
+	if int32(len(args)) <= id || id < 0 {
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])
