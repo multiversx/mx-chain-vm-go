@@ -2,7 +2,8 @@ package host
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -360,8 +361,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		defer func() {
 			r := recover()
 			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				errChan <- errors.New("VM execution panicked")
+				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
+				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
 			}
 		}()
 
@@ -385,11 +386,12 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	case <-ctx.Done():
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
+		<-done
 	case err = <-errChan:
 		host.Runtime().FailExecution(err)
+		panic(err)
 	}
 
-	<-done
 	return
 }
 
@@ -416,8 +418,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		defer func() {
 			r := recover()
 			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				errChan <- errors.New("VM execution panicked")
+				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
+				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
 			}
 		}()
 
@@ -444,15 +446,25 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 
 	select {
 	case <-done:
+		// Normal termination.
 		return
 	case <-ctx.Done():
+		// Terminated due to timeout. The VM sets the `ExecutionFailed` breakpoint
+		// in Wasmer. Also, the VM must wait for Wasmer to reach the end of a WASM
+		// basic block in order to close the WASM instance cleanly. This is done by
+		// reading the `done` channel once more, awaiting the call to `close(done)`
+		// from above.
 		err = arwen.ErrExecutionFailedWithTimeout
 		host.Runtime().FailExecution(err)
+		<-done
 	case err = <-errChan:
+		// Terminated due to a panic outside of the SC, namely either in Wasmer, in the
+		// VM, in the EEI or in the blockchain hooks. The `done` channel is not
+		// read again, because the call to `close(done)` will not happen anymore.
 		host.Runtime().FailExecution(err)
+		panic(err)
 	}
 
-	<-done
 	return
 }
 
