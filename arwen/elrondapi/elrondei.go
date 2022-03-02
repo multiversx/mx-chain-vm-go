@@ -2105,9 +2105,6 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(getStorageLockName, gasToUse)
-
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
