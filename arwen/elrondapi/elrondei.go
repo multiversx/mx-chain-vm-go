@@ -3266,7 +3266,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		return 0
+		return nil
 	}
 
 	return returnData[resultID]
