@@ -1390,6 +1390,7 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 				WithRecipientAddr(test.ParentAddress).
 				WithFunction("foo").
 				WithGasProvided(gasLimit).
+				WithArguments(test.ChildAddress).
 				Build()).
 			WithGasSchedule(gasSchedule).
 			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {

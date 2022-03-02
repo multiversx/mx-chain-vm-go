@@ -2953,7 +2953,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 	zero := "zero"
 	one := "one"
 	two := "two"
-	_ = logger.SetLogLevel("*:TRACE")
+	arwen.SetLoggingForTests()
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -2962,6 +2962,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
+						defer func() {
+							instance.BreakpointValue = 0
+						}()
+
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ChildAddress
@@ -2970,33 +2974,61 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
 						require.Equal(t, int32(0), returnValue)
 
+						instance.BreakpointValue = 0
 						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, -1)
+						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
 						require.Nil(t, returnData)
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 						require.Equal(t, zero, string(returnData))
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 						require.Equal(t, one, string(returnData))
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 						require.Equal(t, two, string(returnData))
 
+						instance.BreakpointValue = 0
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 						require.Equal(t, one, string(returnData))
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
 						require.Equal(t, two, string(returnData))
+						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
 						require.Nil(t, returnData)
+
+						instance.BreakpointValue = 0
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						remainingReturnData := host.Output().ReturnData()
 						require.Equal(t, remainingReturnData, [][]byte{})
+						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 
+						instance.BreakpointValue = 0
 						elrondapi.CleanReturnDataWithHost(host)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
 						require.Nil(t, returnData)
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
 						require.Nil(t, returnData)
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
 						require.Nil(t, returnData)
 
 						return instance
@@ -3129,7 +3161,6 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
-	arwen.SetLoggingForTests()
 	code := test.GetTestSCCode("counter", "../../")
 	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
 	defer func() {
