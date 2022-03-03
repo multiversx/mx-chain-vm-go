@@ -35,7 +35,7 @@ func (fe *fuzzExecutor) getBalance(address string) *big.Int {
 
 func (fe *fuzzExecutor) getEsdtBalance(address string, tokenId string) *big.Int {
 	acct := fe.world.AcctMap.GetAccount(fe.interpretExpr(address))
-	balance, err := acct.GetTokenBalanceByName(string(fe.interpretExpr(tokenId)))
+	balance, err := acct.GetTokenBalance(fe.interpretExpr(tokenId), 0)
 
 	if err != nil {
 		return big.NewInt(0)
