@@ -90,7 +90,7 @@ func NewRuntimeContext(
 	}
 	epochNotifier.RegisterNotifyHandler(context)
 
-	context.instanceBuilder = &wasmerInstanceBuilder{}
+	context.instanceBuilder = &WasmerInstanceBuilder{}
 	context.InitState()
 
 	return context, nil
@@ -130,9 +130,7 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 }
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
-// of mocked Wasmer instances
-// TODO remove after implementing proper mocking of
-// Wasmer instances; this is used for tests only
+// of mocked Wasmer instances; this is used for tests only
 func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
