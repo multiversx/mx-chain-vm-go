@@ -24,7 +24,6 @@ var logRuntime = logger.GetOrCreate("arwen/runtime")
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 100
-const warmInstancesEnabled = true
 
 type runtimeContext struct {
 	host               arwen.VMHost
@@ -248,10 +247,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
-	if !warmInstancesEnabled {
-		return false
-	}
-
 	if newCode || len(context.codeHash) == 0 {
 		return false
 	}
@@ -320,10 +315,6 @@ func (context *runtimeContext) saveCompiledCode() {
 }
 
 func (context *runtimeContext) saveWarmInstance() {
-	if !warmInstancesEnabled {
-		return
-	}
-
 	if context.isContractOrCodeHashOnTheStack() {
 		return
 	}
