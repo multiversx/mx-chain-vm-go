@@ -53,7 +53,7 @@ type SetStateStep struct {
 	Accounts          []*Account
 	PreviousBlockInfo *BlockInfo
 	CurrentBlockInfo  *BlockInfo
-	BlockHashes       []JSONBytesFromString
+	BlockHashes       JSONValueList
 	NewAddressMocks   []*NewAddressMock
 }
 

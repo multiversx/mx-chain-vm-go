@@ -320,3 +320,20 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
 }
+
+// SetMemory sets the memory for the instance returns true if success
+func (instance *Instance) SetMemory(cleanMemory []byte) bool {
+	instanceMemory := instance.GetMemory().Data()
+	if len(instanceMemory) != len(cleanMemory) {
+		// TODO shrink the instance memory instead and return true
+		return false
+	}
+
+	copy(instanceMemory, cleanMemory)
+	return true
+}
+
+// IsInterfaceNil returns true if underlying object is nil
+func (instance *Instance) IsInterfaceNil() bool {
+	return instance == nil
+}

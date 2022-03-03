@@ -14,7 +14,7 @@ func main() {
 		panic("One argument expected - the root path where to search.")
 	}
 
-	convertAllInFolder(os.Args[1])
+	_ = convertAllInFolder(os.Args[1])
 }
 
 var suffixes = []string{".scen.json", ".step.json", ".steps.json"}
@@ -42,7 +42,7 @@ func convertAllInFolder(path string) error {
 func upgradeMandosFile(mandosFilePath string) {
 	scenario, err := mc.ParseMandosScenarioDefaultParser(mandosFilePath)
 	if err == nil {
-		mc.WriteMandosScenario(scenario, mandosFilePath)
+		_ = mc.WriteMandosScenario(scenario, mandosFilePath)
 	} else {
 		fmt.Printf("Error upgrading: %s\n", err.Error())
 	}

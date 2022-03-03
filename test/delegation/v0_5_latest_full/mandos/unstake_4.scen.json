@@ -39,7 +39,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -119,7 +119,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -161,7 +161,7 @@
                     "1,000,000,000"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -188,7 +188,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -235,7 +235,7 @@
                         "address": "sc:delegation",
                         "endpoint": "str:stake",
                         "topics": [
-                            "0x0000000000000000000000000000000000000000000000000000000000000001",
+                            "str:userStake",
                             "address:node_address"
                         ],
                         "data": "199,999,000,000,000"
@@ -269,7 +269,7 @@
                     "199,999,000,000,000"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -296,7 +296,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

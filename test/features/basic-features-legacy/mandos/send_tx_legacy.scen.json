@@ -34,7 +34,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:failed transfer (insufficient funds)",
-                "logs": []
+                "logs": "*"
             }
         }
     ]

@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/gasSchedules"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
@@ -536,6 +538,9 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 0
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -593,6 +598,9 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 1
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -645,6 +653,9 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
 			world.CurrentBlockInfo.BlockRound = 2
 			// Mock the storage as if the parent was already executed
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
@@ -1316,6 +1327,83 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 				ReturnData(contracts.TransferAndExecuteReturnData).
 				Transfers(expectedTransfers...)
 		})
+}
+
+func TestGasUsed_AsyncCallManaged_Mocks(t *testing.T) {
+	testConfig := asyncTestConfig
+	startValue := uint64(3000)
+	outOfGasValue := uint64(150)
+	stopValue := uint64(100)
+	decrement := uint64(1)
+
+	for gasLimit := startValue; gasLimit >= stopValue; gasLimit -= decrement {
+		test.BuildMockInstanceCallTest(t).
+			WithContracts(
+				test.CreateMockContract(test.ParentAddress).
+					WithBalance(testConfig.ParentBalance).
+					WithConfig(testConfig).
+					WithMethods(contracts.GasMismatchAsyncCallParentMock, contracts.GasMismatchCallBackParentMock),
+				test.CreateMockContract(test.ChildAddress).
+					WithBalance(testConfig.ChildBalance).
+					WithConfig(testConfig).
+					WithMethods(contracts.GasMismatchAsyncCallChildMock),
+			).
+			WithInput(test.CreateTestContractCallInputBuilder().
+				WithRecipientAddr(test.ParentAddress).
+				WithGasProvided(gasLimit).
+				WithFunction("gasMismatchParent").
+				Build()).
+			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+				setZeroCodeCosts(host)
+				setAsyncCosts(host, testConfig.GasLockCost)
+			}).
+			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+				if gasLimit > outOfGasValue {
+					verify.
+						Ok()
+				} else {
+					verify.
+						OutOfGas()
+				}
+			})
+	}
+}
+
+func TestGasUsed_AsyncCallManaged(t *testing.T) {
+	startValue := uint64(10000000)
+	outOfGasValue := uint64(5400000)
+	stopValue := uint64(5000000)
+	decrement := uint64(1000)
+
+	gasSchedule, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
+	require.Nil(t, err)
+
+	for gasLimit := startValue; gasLimit >= stopValue; gasLimit -= decrement {
+		test.BuildInstanceCallTest(t).
+			WithContracts(
+				test.CreateInstanceContract(test.ParentAddress).
+					WithCode(test.GetTestSCCode("async-call-parent-managed", "../../")).
+					WithBalance(1000),
+				test.CreateInstanceContract(test.ChildAddress).
+					WithCode(test.GetTestSCCode("async-call-child-managed", "../../")).
+					WithBalance(1000),
+			).
+			WithInput(test.CreateTestContractCallInputBuilder().
+				WithRecipientAddr(test.ParentAddress).
+				WithFunction("foo").
+				WithGasProvided(gasLimit).
+				Build()).
+			WithGasSchedule(gasSchedule).
+			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+				if gasLimit > outOfGasValue {
+					verify.
+						Ok()
+				} else {
+					verify.
+						OutOfGas()
+				}
+			})
+	}
 }
 
 type MockClaimBuiltin struct {

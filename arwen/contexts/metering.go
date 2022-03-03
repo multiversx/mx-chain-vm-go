@@ -164,6 +164,9 @@ func (context *meteringContext) UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOut
 		return err
 	}
 
+	logMetering.Trace("UpdateGasStateOnSuccess", "vmOutput.GasRemaining", vmOutput.GasRemaining)
+	logMetering.Trace("UpdateGasStateOnSuccess", "instance gas left", context.GasLeft())
+
 	return nil
 }
 
@@ -174,6 +177,8 @@ func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 
 	account, _ := output.GetOutputAccount(runtime.GetSCAddress())
 	account.GasUsed = math.AddUint64(account.GasUsed, context.GetGasProvided())
+	logMetering.Trace("UpdateGasStateOnFailure", "gas used", account.GasUsed)
+	logMetering.Trace("UpdateGasStateOnFailure", "instance gas left", context.GasLeft())
 }
 
 func (context *meteringContext) updateSCGasUsed() {
