@@ -29,6 +29,9 @@ var ErrExecutionPanicked = errors.New("VM execution panicked")
 // ErrExecutionFailedWithTimeout signals that the execution failed with timeout
 var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
 
+// ErrMemoryLimit signals that too much memory was allocated by the contract
+var ErrMemoryLimit = errors.New("memory limit reached")
+
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")
 

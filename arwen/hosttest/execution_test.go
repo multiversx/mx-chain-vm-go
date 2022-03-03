@@ -3057,36 +3057,36 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
-	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, 10, vmcommon.Ok)
+	maxGrows := uint32(math.MaxUint32)
+	maxDelta := uint32(10)
+	argDelta := int64(10)
+	runMemGrowTest(t, maxGrows, maxDelta, argDelta, 10, vmcommon.Ok)
 }
 
 func TestExecution_Opcodes_MemoryGrow_Limit(t *testing.T) {
-	maxMemGrow := uint32(10)
-	maxMemGrowDelta := uint32(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), int64(maxMemGrow-1), vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), int64(maxMemGrow), vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), int64(maxMemGrow+1), vmcommon.ExecutionFailed)
+	maxGrows := uint32(10)
+	maxDelta := uint32(10)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows-1), vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows), vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows+1), vmcommon.ExecutionFailed)
 }
 
 func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
-	maxMemGrow := uint32(10)
-	maxMemGrowDelta := uint32(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta-1), 1, vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), 1, vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta+1), 1, vmcommon.ExecutionFailed)
+	maxGrows := uint32(10)
+	maxDelta := uint32(10)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta-1), 1, vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), 1, vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta+1), 1, vmcommon.ExecutionFailed)
 }
 
 func BenchmarkOpcodeMemoryGrow(b *testing.B) {
-	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(10)
-	runWASMOpcodeTestMemGrow(b, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, int64(b.N), vmcommon.Ok)
+	maxGrows := uint32(math.MaxUint32)
+	maxDelta := uint32(10)
+	argDelta := int64(10)
+	runMemGrowTest(b, maxGrows, maxDelta, argDelta, int64(b.N), vmcommon.Ok)
 }
 
-func runWASMOpcodeTestMemGrow(
+func runMemGrowTest(
 	tb testing.TB,
 	maxMemGrow uint32,
 	maxMemGrowDelta uint32,
@@ -3116,6 +3116,11 @@ func runWASMOpcodeTestMemGrow(
 		}).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(expectedRetCode)
+			if expectedRetCode == vmcommon.ExecutionFailed {
+				vmOutput := verify.VmOutput
+				require.Len(tb, vmOutput.Logs, 1)
+				require.Contains(tb, string(vmOutput.Logs[0].Data), arwen.ErrMemoryLimit.Error())
+			}
 		})
 }
 
@@ -3158,7 +3163,6 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
-	arwen.SetLoggingForTests()
 	code := test.GetTestSCCode("counter", "../../")
 	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
 	defer func() {
