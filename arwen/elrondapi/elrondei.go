@@ -191,7 +191,7 @@ var logEEI = logger.GetOrCreate("arwen/eei")
 
 func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := vmInput.ESDTTransfers
-	if int32(len(esdtTransfers))-1 < index {
+	if int32(len(esdtTransfers))-1 < index || index < 0 {
 		return nil
 	}
 	return esdtTransfers[index]
@@ -3231,7 +3231,7 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 	metering.UseGasAndAddTracedGas(getReturnDataSizeName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) || resultID < 0 {
 		return 0
 	}
 
@@ -3264,7 +3264,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 	metering.UseGasAndAddTracedGas(getReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) || resultID < int32(0) {
+	if resultID >= int32(len(returnData)) || resultID < 0 {
 		return nil
 	}
 
