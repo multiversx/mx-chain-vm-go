@@ -22,6 +22,7 @@ import (
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -184,7 +185,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte("init successful")).
-				GasRemaining(528).
+				GasRemaining(430).
 				Nonce([]byte("caller"), 24).
 				Code(newAddress, input.ContractCode).
 				BalanceDelta(newAddress, 88)
@@ -2647,13 +2648,13 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 885).
+				GasUsed(test.ParentAddress, 1069).
 				/// test.ChildAddress
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
 				CodeDeployerAddress(childAddress, test.ParentAddress).
-				GasUsed(childAddress, 472).
+				GasUsed(childAddress, 570).
 				// other
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
 				Storage()
@@ -2953,7 +2954,6 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 	zero := "zero"
 	one := "one"
 	two := "two"
-	arwen.SetLoggingForTests()
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -2962,74 +2962,70 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
-						defer func() {
-							instance.BreakpointValue = 0
-						}()
-
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ChildAddress
 						childInput.Function = "doSomething"
 						childInput.GasProvided = 1000
 						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
-						require.Equal(t, int32(0), returnValue)
+						assert.Equal(t, int32(0), returnValue)
 
 						instance.BreakpointValue = 0
 						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, -1)
-						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
-						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
-						require.Equal(t, zero, string(returnData))
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, zero, string(returnData))
 
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
-						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
-						require.Equal(t, one, string(returnData))
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, one, string(returnData))
 
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
-						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
-						require.Equal(t, two, string(returnData))
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
-						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
-						require.Equal(t, one, string(returnData))
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, one, string(returnData))
 
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
-						require.Equal(t, two, string(returnData))
-						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, two, string(returnData))
 
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
-						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 
 						instance.BreakpointValue = 0
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						remainingReturnData := host.Output().ReturnData()
-						require.Equal(t, remainingReturnData, [][]byte{})
-						require.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, remainingReturnData, [][]byte{})
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 
 						instance.BreakpointValue = 0
 						elrondapi.CleanReturnDataWithHost(host)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
-						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
-						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
-						require.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 
 						return instance
 					})
@@ -3053,7 +3049,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 			WithFunction("callChild").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
+			// No assertions here, because they were performed during the instance call
 		})
 }
 
