@@ -6,12 +6,12 @@ import (
 	"io/ioutil"
 	"math/rand"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -40,7 +40,6 @@ func newFuzzExecutor(fileResolver fr.FileResolver) (*fuzzExecutor, error) {
 		return nil, err
 	}
 	mandosGasSchedule := mj.GasScheduleV3
-	arwenTestExecutor.SetMandosGasSchedule(mandosGasSchedule)
 
 	parser := mjparse.NewParser(fileResolver)
 
