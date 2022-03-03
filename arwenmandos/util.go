@@ -19,7 +19,11 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	_ = esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+
+	err := esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(testAcct.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
