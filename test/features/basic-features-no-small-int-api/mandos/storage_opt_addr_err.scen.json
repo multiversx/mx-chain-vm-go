@@ -9,15 +9,16 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``opt_addr": ["1", "``____________address_too_long____________"]
+                        "``opt_addr": [
+                            "1",
+                            "``____________address_too_long____________"
+                        ]
                     },
                     "code": "file:../output/features-no-small-int-api.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "100000000000000000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "100000000000000000"
                 }
             }
         },
@@ -27,7 +28,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_opt_addr",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -37,7 +37,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:storage decode error: input too long",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

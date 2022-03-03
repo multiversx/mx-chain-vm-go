@@ -1,5 +1,4 @@
 {
-    "gasSchedule": "v3",
     "steps": [
         {
             "step": "externalSteps",
@@ -10,7 +9,6 @@
             "txId": "multisig-deploy",
             "tx": {
                 "from": "address:owner",
-                "value": "0",
                 "contractCode": "file:../output/multisig.wasm",
                 "arguments": [
                     "1",
@@ -22,7 +20,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -33,7 +31,6 @@
             "tx": {
                 "from": "address:alice",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "proposeRemoveUser",
                 "arguments": [
                     "address:alice"
@@ -42,9 +39,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["1"],
+                "out": [
+                    "1"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -55,16 +54,17 @@
             "tx": {
                 "from": "address:alice",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "sign",
-                "arguments": ["1"],
+                "arguments": [
+                    "1"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -75,9 +75,10 @@
             "tx": {
                 "from": "address:alice",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "performAction",
-                "arguments": ["1"],
+                "arguments": [
+                    "1"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
@@ -85,7 +86,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:cannot remove all board members and proposers",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

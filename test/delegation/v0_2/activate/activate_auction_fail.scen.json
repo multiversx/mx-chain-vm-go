@@ -7,9 +7,7 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "1,000,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1,000,000,000"
                 },
                 "sc:auction": {
                     "nonce": "0",
@@ -24,7 +22,6 @@
                     "balance": "789,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "2",
                         "''stake_per_node": "394,500,000,000",
                         "''node_share": "3455",
@@ -52,15 +49,11 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "''delegator_2___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -70,7 +63,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "activate",
                 "arguments": [
                     "''signature_1_____________________",
@@ -83,14 +75,7 @@
                 "out": [],
                 "status": "0",
                 "message": "str:",
-                "logs": [
-                    {
-                        "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000004",
-                        "topics": [],
-                        "data": "''auction smart contract deliberate error"
-                    }
-                ],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -108,7 +93,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "''staking_failure": "true"                       
+                        "''staking_failure": "true"
                     },
                     "code": "file:../auction-mock.wasm"
                 },
@@ -117,7 +102,6 @@
                     "balance": "789,000,000,000",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "2",
                         "''stake_per_node": "394,500,000,000",
                         "''node_share": "3455",

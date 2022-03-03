@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_varags_tuples",
                 "arguments": [
                     "10",
@@ -44,7 +40,7 @@
                     "40"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -55,29 +51,26 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_varags_tuples",
                 "arguments": [],
                 "gasLimit": "1,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                ],
+                "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
             "step": "scCall",
-            "comment": "only even number of arguments possible",
             "txId": "1",
+            "comment": "only even number of arguments possible",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_varags_tuples",
                 "arguments": [
                     "10",
@@ -91,7 +84,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:wrong number of arguments",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

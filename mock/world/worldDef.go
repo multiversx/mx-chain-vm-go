@@ -3,7 +3,7 @@ package worldmock
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -21,6 +21,15 @@ type BlockInfo struct {
 	BlockRound     uint64
 	BlockEpoch     uint32
 	RandomSeed     *[48]byte
+}
+
+// GetRandomSeedSlice retrieves the configured random seed or a slice of zeros.
+// Always 48 bytes long, never nil.
+func (bi *BlockInfo) GetRandomSeedSlice() []byte {
+	if bi.RandomSeed == nil {
+		bi.RandomSeed = &[48]byte{}
+	}
+	return bi.RandomSeed[:]
 }
 
 // MockWorld provides a mock representation of the blockchain to be used in VM tests.
@@ -47,7 +56,7 @@ func NewMockWorld() *MockWorld {
 		AcctMap:           accountMap,
 		AccountsAdapter:   nil,
 		PreviousBlockInfo: nil,
-		CurrentBlockInfo:  &BlockInfo{},
+		CurrentBlockInfo:  nil,
 		Blockhashes:       nil,
 		NewAddressMocks:   nil,
 		CompiledCode:      make(map[string][]byte),

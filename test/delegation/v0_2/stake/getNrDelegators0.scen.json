@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "0x100",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "5000",
@@ -31,9 +28,7 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0x300abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x300abc"
                 }
             }
         },
@@ -43,7 +38,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNrDelegators",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -54,7 +48,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -73,7 +67,6 @@
                     "balance": "0x100",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "5000",

@@ -5,9 +5,11 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -199,6 +201,15 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
+// RemoveReturnData removes the return data item located at the specified index
+func (context *outputContext) RemoveReturnData(index uint32) {
+	returnData := context.outputState.ReturnData
+	if index >= uint32(len(returnData)) {
+		return
+	}
+	context.outputState.ReturnData = append(returnData[:index], returnData[index+1:]...)
+}
+
 // SelfDestruct does nothing
 // TODO change comment when the function is implemented
 func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
@@ -214,6 +225,13 @@ func (context *outputContext) PrependFinish(data []byte) {
 	context.outputState.ReturnData = append([][]byte{data}, context.outputState.ReturnData...)
 }
 
+// DeleteFirstReturnData deletes the first return data, to be used after prepend
+func (context *outputContext) DeleteFirstReturnData() {
+	if len(context.outputState.ReturnData) > 0 {
+		context.outputState.ReturnData = context.outputState.ReturnData[1:]
+	}
+}
+
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
 	if context.host.Runtime().ReadOnly() {
@@ -222,8 +240,9 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	}
 
 	newLogEntry := &vmcommon.LogEntry{
-		Address: address,
-		Data:    data,
+		Address:    address,
+		Data:       data,
+		Identifier: []byte(context.host.Runtime().Function()),
 	}
 	logOutput.Trace("log entry", "address", address, "data", data)
 
@@ -232,11 +251,10 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 		return
 	}
 
-	newLogEntry.Identifier = topics[0]
-	newLogEntry.Topics = topics[1:]
+	newLogEntry.Topics = topics
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
-	logOutput.Trace("log entry", "identifier", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -253,14 +271,13 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 		return arwen.ErrTransferInsufficientFunds
 	}
 
-	payable, err := context.host.Blockchain().IsPayable(destination)
+	payable, err := context.host.Blockchain().IsPayable(sender, destination)
 	if err != nil {
 		logOutput.Trace("transfer value", "error", err)
 		return err
 	}
 
-	isAsyncCall := context.host.IsArwenV3Enabled() && context.host.Runtime().GetVMInput().CallType == vmcommon.AsynchronousCall
-	checkPayable = checkPayable || !context.host.IsESDTFunctionsEnabled()
+	isAsyncCall := context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall
 	hasValue := value.Cmp(arwen.Zero) > 0
 	if checkPayable && !payable && hasValue && !isAsyncCall {
 		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
@@ -279,8 +296,8 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error {
-	checkPayableIfNotCallback := gasLimit > 0 && callType != vmcommon.AsynchronousCallBack
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error {
+	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
 	if err != nil {
 		return err
@@ -305,20 +322,22 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 func (context *outputContext) TransferESDT(
 	destination []byte,
 	sender []byte,
-	tokenIdentifier []byte,
-	nonce uint64,
-	value *big.Int,
+	transfers []*vmcommon.ESDTTransfer,
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
-	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
-	sameShard := context.host.AreInSameShard(sender, destination)
-	callType := vmcommon.DirectCall
-	isExecution := isSmartContract && callInput != nil
-	if isExecution {
-		callType = vmcommon.ESDTTransferAndExecute
+	if len(transfers) == 0 {
+		return 0, arwen.ErrTransferValueOnESDTCall
 	}
 
-	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, tokenIdentifier, nonce, value, callType)
+	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
+	sameShard := context.host.AreInSameShard(sender, destination)
+	callType := vm.DirectCall
+	isExecution := isSmartContract && callInput != nil
+	if isExecution {
+		callType = vm.ESDTTransferAndExecute
+	}
+
+	vmOutput, gasConsumedByTransfer, err := context.host.ExecuteESDTTransfer(destination, sender, transfers, callType)
 	if err != nil {
 		return 0, err
 	}
@@ -349,25 +368,12 @@ func (context *outputContext) TransferESDT(
 		Value:         big.NewInt(0),
 		GasLimit:      gasRemaining,
 		GasLocked:     0,
-		Data:          []byte(vmcommon.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(tokenIdentifier) + "@" + hex.EncodeToString(value.Bytes())),
-		CallType:      vmcommon.DirectCall,
+		Data:          []byte{},
+		CallType:      vm.DirectCall,
 		SenderAddress: sender,
 	}
 
-	if nonce > 0 {
-		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-		outputTransfer.Data = []byte(vmcommon.BuiltInFunctionESDTNFTTransfer + "@" + hex.EncodeToString(tokenIdentifier) +
-			"@" + hex.EncodeToString(nonceAsBytes) + "@" + hex.EncodeToString(value.Bytes()))
-		if sameShard {
-			outputTransfer.Data = append(outputTransfer.Data, []byte("@"+hex.EncodeToString(destination))...)
-		} else {
-			outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
-			if ok && len(outTransfer.OutputTransfers) == 1 {
-				outputTransfer.Data = outTransfer.OutputTransfers[0].Data
-			}
-		}
-
-	}
+	outputTransfer.Data = context.getOutputTransferDataFromESDTTransfer(transfers, vmOutput, sameShard, destination)
 
 	if sameShard {
 		outputTransfer.GasLimit = 0
@@ -383,7 +389,43 @@ func (context *outputContext) TransferESDT(
 
 	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
 
+	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 	return gasRemaining, nil
+}
+
+func (context *outputContext) getOutputTransferDataFromESDTTransfer(
+	transfers []*vmcommon.ESDTTransfer,
+	vmOutput *vmcommon.VMOutput,
+	sameShard bool,
+	destination []byte,
+) []byte {
+
+	if len(transfers) == 1 && transfers[0].ESDTTokenNonce == 0 {
+		return []byte(core.BuiltInFunctionESDTTransfer + "@" + hex.EncodeToString(transfers[0].ESDTTokenName) + "@" + hex.EncodeToString(transfers[0].ESDTValue.Bytes()))
+	}
+
+	if !sameShard {
+		outTransfer, ok := vmOutput.OutputAccounts[string(destination)]
+		if ok && len(outTransfer.OutputTransfers) == 1 {
+			return outTransfer.OutputTransfers[0].Data
+		}
+	}
+
+	if len(transfers) == 1 {
+		data := []byte(core.BuiltInFunctionESDTNFTTransfer + "@" +
+			hex.EncodeToString(transfers[0].ESDTTokenName) + "@" +
+			hex.EncodeToString(big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()) + "@" +
+			hex.EncodeToString(transfers[0].ESDTValue.Bytes()) + "@" +
+			hex.EncodeToString(destination))
+		return data
+	}
+
+	data := core.BuiltInFunctionMultiESDTNFTTransfer + "@" + hex.EncodeToString(destination) + "@" + hex.EncodeToString(big.NewInt(int64(len(transfers))).Bytes())
+	for _, transfer := range transfers {
+		data += "@" + hex.EncodeToString(transfer.ESDTTokenName) + "@" + hex.EncodeToString(big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()) + "@" + hex.EncodeToString(transfer.ESDTValue.Bytes())
+	}
+
+	return []byte(data)
 }
 
 func (context *outputContext) hasSufficientBalance(address []byte, value *big.Int) bool {
@@ -395,6 +437,17 @@ func (context *outputContext) hasSufficientBalance(address []byte, value *big.In
 func (context *outputContext) AddTxValueToAccount(address []byte, value *big.Int) {
 	destAcc, _ := context.GetOutputAccount(address)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
+}
+
+// RemoveNonUpdatedStorage removes non updated storage from output state
+func (context *outputContext) RemoveNonUpdatedStorage() {
+	for _, outAcc := range context.outputState.OutputAccounts {
+		for _, storageUpdate := range outAcc.StorageUpdates {
+			if !storageUpdate.Written {
+				delete(outAcc.StorageUpdates, string(storageUpdate.Offset))
+			}
+		}
+	}
 }
 
 // GetVMOutput updates the current VMOutput and returns it

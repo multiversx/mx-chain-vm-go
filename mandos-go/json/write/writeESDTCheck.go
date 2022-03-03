@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
 func checkESDTDataToOJ(esdtItems []*mj.CheckESDTData, moreESDTTokensAllowed bool) *oj.OJsonMap {
@@ -24,9 +24,7 @@ func checkESDTItemToOJ(esdtItem *mj.CheckESDTData) oj.OJsonObject {
 	esdtItemOJ := oj.NewMap()
 
 	// instances
-	if len(esdtItem.Instances) == 1 {
-		appendCheckESDTInstanceToOJ(esdtItem.Instances[0], esdtItemOJ)
-	} else {
+	if len(esdtItem.Instances) > 0 {
 		var convertedList []oj.OJsonObject
 		for _, esdtInstance := range esdtItem.Instances {
 			esdtInstanceOJ := oj.NewMap()
@@ -58,9 +56,8 @@ func checkESDTItemToOJ(esdtItem *mj.CheckESDTData) oj.OJsonObject {
 }
 
 func appendCheckESDTInstanceToOJ(esdtInstance *mj.CheckESDTInstance, targetOj *oj.OJsonMap) {
-	if len(esdtInstance.Nonce.Original) > 0 {
-		targetOj.Put("nonce", checkUint64ToOJ(esdtInstance.Nonce))
-	}
+	targetOj.Put("nonce", uint64ToOJ(esdtInstance.Nonce))
+
 	if len(esdtInstance.Balance.Original) > 0 {
 		targetOj.Put("balance", checkBigIntToOJ(esdtInstance.Balance))
 	}
@@ -73,8 +70,8 @@ func appendCheckESDTInstanceToOJ(esdtInstance *mj.CheckESDTInstance, targetOj *o
 	if !esdtInstance.Hash.Unspecified && len(esdtInstance.Hash.Value) > 0 {
 		targetOj.Put("hash", checkBytesToOJ(esdtInstance.Hash))
 	}
-	if !esdtInstance.Uri.Unspecified && len(esdtInstance.Uri.Value) > 0 {
-		targetOj.Put("uri", checkBytesToOJ(esdtInstance.Creator))
+	if !esdtInstance.Uris.IsUnspecified() {
+		targetOj.Put("uri", checkValueListToOJ(esdtInstance.Uris))
 	}
 	if !esdtInstance.Attributes.Unspecified && len(esdtInstance.Attributes.Value) > 0 {
 		targetOj.Put("attributes", checkBytesToOJ(esdtInstance.Attributes))

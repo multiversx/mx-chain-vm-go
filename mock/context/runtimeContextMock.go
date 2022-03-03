@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -17,7 +17,6 @@ type RuntimeContextMock struct {
 	SCCodeSize             uint64
 	CallFunction           string
 	VMType                 []byte
-	IsContractOnStack      bool
 	ReadOnlyFlag           bool
 	VerifyCode             bool
 	CurrentBreakpointValue arwen.BreakpointValue
@@ -29,10 +28,13 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
+	FailManagedBuffersAPI  bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
+	TraceGasEnabled        bool
+	GasTrace               map[string]map[string][]uint64
 }
 
 // InitState mocked method
@@ -124,11 +126,6 @@ func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
 	r.VMInput = vmInput
 }
 
-// IsContractOnTheStack mocked method
-func (r *RuntimeContextMock) IsContractOnTheStack(_ []byte) bool {
-	return r.IsContractOnStack
-}
-
 // GetSCAddress mocked method
 func (r *RuntimeContextMock) GetSCAddress() []byte {
 	return r.SCAddress
@@ -197,7 +194,7 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 }
 
 // ExecuteAsyncCall mocked method
-func (r *RuntimeContextMock) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+func (r *RuntimeContextMock) ExecuteAsyncCall(_ []byte, _ []byte, _ []byte) error {
 	return r.Err
 }
 
@@ -236,8 +233,8 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 	return nil
 }
 
-// CleanWasmerInstance mocked method
-func (r *RuntimeContextMock) CleanWasmerInstance() {
+// ClearWarmInstanceCache mocked method
+func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
 
 // GetFunctionToCall mocked method
@@ -296,6 +293,11 @@ func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 	return r.FailBigIntAPI
 }
 
+// ManagedBufferAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) ManagedBufferAPIErrorShouldFailExecution() bool {
+	return r.FailManagedBuffersAPI
+}
+
 // FailExecution mocked method
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
@@ -335,10 +337,18 @@ func (r *RuntimeContextMock) IsFunctionImported(_ string) bool {
 }
 
 // AddError mocked method
-func (r *RuntimeContextMock) AddError(err error, otherInfo ...string) {
+func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 }
 
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
+}
+
+// DisableUseDifferentGasCostFlag mocked method
+func (r *RuntimeContextMock) DisableUseDifferentGasCostFlag() {
+}
+
+// CleanInstance mocked method
+func (r *RuntimeContextMock) CleanInstance() {
 }

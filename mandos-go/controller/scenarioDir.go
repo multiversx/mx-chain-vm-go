@@ -15,7 +15,8 @@ func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 	generalTestPath string,
 	specificTestPath string,
 	allowedSuffix string,
-	excludedFilePatterns []string) error {
+	excludedFilePatterns []string,
+	options *RunScenarioOptions) error {
 
 	mainDirPath := path.Join(generalTestPath, specificTestPath)
 	var nrPassed, nrFailed, nrSkipped int
@@ -28,7 +29,8 @@ func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 				fmt.Print("  skip\n")
 			} else {
 				r.Executor.Reset()
-				testErr := r.RunSingleJSONScenario(testFilePath)
+				r.RunsNewTest = true
+				testErr := r.RunSingleJSONScenario(testFilePath, options)
 				if testErr == nil {
 					nrPassed++
 					fmt.Print("  ok\n")
@@ -45,7 +47,7 @@ func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 	}
 	fmt.Printf("Done. Passed: %d. Failed: %d. Skipped: %d.\n", nrPassed, nrFailed, nrSkipped)
 	if nrFailed > 0 {
-		return errors.New("Some tests failed")
+		return errors.New("some tests failed")
 	}
 
 	return nil

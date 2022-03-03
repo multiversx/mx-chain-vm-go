@@ -4,28 +4,14 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
-
-func blockHashesToOJ(blockHashes []mj.JSONBytesFromString) oj.OJsonObject {
-	var blockhashesList []oj.OJsonObject
-	for _, blh := range blockHashes {
-		blockhashesList = append(blockhashesList, bytesFromStringToOJ(blh))
-	}
-	blockhashesOJ := oj.OJsonList(blockhashesList)
-	return &blockhashesOJ
-}
 
 func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	resultOJ := oj.NewMap()
 
-	var outList []oj.OJsonObject
-	for _, out := range res.Out {
-		outList = append(outList, checkBytesToOJ(out))
-	}
-	outOJ := oj.OJsonList(outList)
-	resultOJ.Put("out", &outOJ)
+	resultOJ.Put("out", checkValueListToOJ(res.Out))
 
 	if !res.Status.IsUnspecified() {
 		resultOJ.Put("status", checkBigIntToOJ(res.Status))
@@ -33,15 +19,12 @@ func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {
 	if !res.Message.IsUnspecified() {
 		resultOJ.Put("message", checkBytesToOJ(res.Message))
 	}
-	if !res.LogsUnspecified {
-		if res.LogsStar {
+	if !res.Logs.IsUnspecified {
+		if res.Logs.IsStar {
 			resultOJ.Put("logs", stringToOJ("*"))
 		} else {
-			if len(res.LogHash) > 0 {
-				resultOJ.Put("logs", stringToOJ(res.LogHash))
-			} else {
-				resultOJ.Put("logs", logsToOJ(res.Logs))
-			}
+			resultOJ.Put("logs", logsToOJ(res.Logs))
+
 		}
 	}
 	if !res.Gas.IsUnspecified() {
@@ -63,25 +46,21 @@ func LogToString(logEntry *mj.LogEntry) string {
 func logToOJ(logEntry *mj.LogEntry) oj.OJsonObject {
 	logOJ := oj.NewMap()
 	logOJ.Put("address", checkBytesToOJ(logEntry.Address))
-	logOJ.Put("identifier", checkBytesToOJ(logEntry.Identifier))
-
-	var topicsList []oj.OJsonObject
-	for _, topic := range logEntry.Topics {
-		topicsList = append(topicsList, checkBytesToOJ(topic))
-	}
-	topicsOJ := oj.OJsonList(topicsList)
-	logOJ.Put("topics", &topicsOJ)
-
+	logOJ.Put("endpoint", checkBytesToOJ(logEntry.Endpoint))
+	logOJ.Put("topics", checkValueListToOJ(logEntry.Topics))
 	logOJ.Put("data", checkBytesToOJ(logEntry.Data))
 
 	return logOJ
 }
 
-func logsToOJ(logEntries []*mj.LogEntry) oj.OJsonObject {
+func logsToOJ(logEntries mj.LogList) oj.OJsonObject {
 	var logList []oj.OJsonObject
-	for _, logEntry := range logEntries {
+	for _, logEntry := range logEntries.List {
 		logOJ := logToOJ(logEntry)
 		logList = append(logList, logOJ)
+	}
+	if logEntries.MoreAllowedAtEnd {
+		logList = append(logList, stringToOJ("+"))
 	}
 	logOJList := oj.OJsonList(logList)
 	return &logOJList
@@ -143,6 +122,28 @@ func checkBytesToOJ(checkBytes mj.JSONCheckBytes) oj.OJsonObject {
 	return checkBytes.Original
 }
 
+func valueListToOJ(jsonBytesList mj.JSONValueList) oj.OJsonObject {
+	var valuesList []oj.OJsonObject
+	for _, blh := range jsonBytesList.Values {
+		valuesList = append(valuesList, bytesFromStringToOJ(blh))
+	}
+	ojList := oj.OJsonList(valuesList)
+	return &ojList
+}
+
+func checkValueListToOJ(jcbl mj.JSONCheckValueList) oj.OJsonObject {
+	if jcbl.IsStar {
+		return &oj.OJsonString{Value: "*"}
+	}
+
+	var valuesList []oj.OJsonObject
+	for _, jcb := range jcbl.Values {
+		valuesList = append(valuesList, checkBytesToOJ(jcb))
+	}
+	ojList := oj.OJsonList(valuesList)
+	return &ojList
+}
+
 func uint64ToOJ(i mj.JSONUint64) oj.OJsonObject {
 	return &oj.OJsonString{Value: i.Original}
 }
@@ -153,4 +154,9 @@ func checkUint64ToOJ(i mj.JSONCheckUint64) oj.OJsonObject {
 
 func stringToOJ(str string) oj.OJsonObject {
 	return &oj.OJsonString{Value: str}
+}
+
+func boolToOJ(val bool) oj.OJsonObject {
+	obj := oj.OJsonBool(val)
+	return &obj
 }

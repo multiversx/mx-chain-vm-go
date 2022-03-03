@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0x300abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x300abc"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "logEventA",
                 "arguments": [
                     "0x1234abc"
@@ -39,8 +35,10 @@
                 "logs": [
                     {
                         "address": "sc:basic-features",
-                        "identifier": "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000a",
-                        "topics": [],
+                        "endpoint": "str:logEventA",
+                        "topics": [
+                            "0x0123456789abcdef0123456789abcdef0123456789abcdef000000000000000a"
+                        ],
                         "data": "0x1234abc"
                     }
                 ],

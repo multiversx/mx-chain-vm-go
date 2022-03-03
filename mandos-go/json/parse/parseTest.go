@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
 // ParseTestFile converts json string to object representation
@@ -73,7 +73,7 @@ func (p *Parser) processTest(testObj oj.OJsonObject) (*mj.Test, error) {
 			}
 
 		case "blockHashes":
-			test.BlockHashes, err = p.parseByteArrayList(kvp.Value)
+			test.BlockHashes, err = p.parseValueList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshalled blockHashes object is not a list: %w", err)
 			}

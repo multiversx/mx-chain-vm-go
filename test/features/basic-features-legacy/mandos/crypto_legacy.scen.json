@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0x300abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x300abc"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "computeKeccak256",
                 "arguments": [
                     "0x61"
@@ -38,7 +34,7 @@
                     "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -49,7 +45,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "computeKeccak256",
                 "arguments": [
                     "0x0102030405060708"
@@ -62,7 +57,7 @@
                     "0xfec062278915ba5c3c3af6ebf470b5afc94fedadf39fe78eea427b9aa5df9692"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

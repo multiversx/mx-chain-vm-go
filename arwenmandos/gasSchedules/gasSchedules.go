@@ -14,13 +14,12 @@ package gasschedules
 
 //go:generate go run scripts/includetoml.go
 
-func GetV1() string {
-	return gasScheduleV1
-}
-
-func GetV2() string {
-	return gasScheduleV2
-}
+// GetV3 yields the schedule V3
 func GetV3() string {
 	return gasScheduleV3
+}
+
+// GetV4 yields the schedule V4
+func GetV4() string {
+	return gasScheduleV4
 }

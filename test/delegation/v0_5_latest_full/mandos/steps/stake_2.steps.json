@@ -7,7 +7,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator3",
-                "value": "200,000,000,000,000"
+                "egldValue": "200,000,000,000,000"
             }
         },
         {
@@ -16,7 +16,7 @@
             "tx": {
                 "from": "address:delegator3",
                 "to": "sc:delegation",
-                "value": "200,000,000,000,000",
+                "egldValue": "200,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -28,8 +28,9 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "endpoint": "str:stake",
                         "topics": [
+                            "str:userStake",
                             "address:delegator3"
                         ],
                         "data": "200,000,000,000,000"
@@ -45,7 +46,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -53,10 +53,14 @@
             },
             "expect": {
                 "out": [
-                   "0",  "150,000,000,000,000", "300,000,000,000,000", "0", "50,001,000,000,000"
+                    "0",
+                    "150,000,000,000,000",
+                    "300,000,000,000,000",
+                    "0",
+                    "50,001,000,000,000"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -67,7 +71,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator3"
@@ -77,10 +80,14 @@
             },
             "expect": {
                 "out": [
-                    "0", "150,000,000,000,000", "50,000,000,000,000","0","0"
+                    "0",
+                    "150,000,000,000,000",
+                    "50,000,000,000,000",
+                    "0",
+                    "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -91,16 +98,17 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "totalStake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [ "500,001,000,000,000" ],
+                "out": [
+                    "500,001,000,000,000"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

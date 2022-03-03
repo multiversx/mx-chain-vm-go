@@ -7,7 +7,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator1",
-                "value": "100,001,000,000,000"
+                "egldValue": "100,001,000,000,000"
             }
         },
         {
@@ -16,7 +16,7 @@
             "tx": {
                 "from": "address:endless_sack_of_erd",
                 "to": "address:delegator2",
-                "value": "200,000,000,000,000"
+                "egldValue": "200,000,000,000,000"
             }
         },
         {
@@ -25,7 +25,7 @@
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "100,001,000,000,000",
+                "egldValue": "100,001,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -37,8 +37,9 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "endpoint": "str:stake",
                         "topics": [
+                            "str:userStake",
                             "address:delegator1"
                         ],
                         "data": "100,001,000,000,000"
@@ -54,7 +55,7 @@
             "tx": {
                 "from": "address:delegator2",
                 "to": "sc:delegation",
-                "value": "200,000,000,000,000",
+                "egldValue": "200,000,000,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -66,8 +67,9 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
-                        "identifier": "0x0000000000000000000000000000000000000000000000000000000000000001",
+                        "endpoint": "str:stake",
                         "topics": [
+                            "str:userStake",
                             "address:delegator2"
                         ],
                         "data": "200,000,000,000,000"

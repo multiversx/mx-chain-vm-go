@@ -10,12 +10,13 @@ import (
 	"strings"
 	"testing"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -70,8 +71,12 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	if err != nil {
 		return nil, err
 	}
+
 	mandosGasSchedule := mj.GasScheduleV3
-	arwenTestExecutor.SetMandosGasSchedule(mandosGasSchedule)
+	err = arwenTestExecutor.InitVM(mandosGasSchedule)
+	if err != nil {
+		return nil, err
+	}
 
 	parser := mjparse.NewParser(fileResolver)
 
@@ -107,6 +112,8 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
+	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
@@ -156,7 +163,7 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

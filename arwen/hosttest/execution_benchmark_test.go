@@ -6,12 +6,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos/gasSchedules"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/gasSchedules"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +46,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 				big.NewInt(1).Bytes(),
 			},
 			CallValue:   big.NewInt(10),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    100000000000000,
 			GasProvided: gasProvided,
 		},
@@ -68,6 +72,9 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	}
 
 	verifyTransfers(tb, mockWorld, totalTokenSupply)
+	defer func() {
+		_ = host.Close()
+	}()
 }
 
 func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.MockWorld) {
@@ -85,15 +92,18 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		NewAddress:     scAddress,
 	})
 
-	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV2())
+	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	require.Nil(tb, err)
 
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
 		VMType:                   testcommon.DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasMap,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &mock.EpochNotifierStub{},
 	})
 	require.Nil(tb, err)
 
@@ -105,7 +115,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 				totalTokenSupply.Bytes(),
 			},
 			CallValue:   big.NewInt(0),
-			CallType:    vmcommon.DirectCall,
+			CallType:    vm.DirectCall,
 			GasPrice:    0,
 			GasProvided: 0xFFFFFFFFFFFFFFFF,
 		},

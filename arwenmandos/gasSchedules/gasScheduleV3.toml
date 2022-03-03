@@ -1,10 +1,20 @@
 [BuiltInCost]
-    ChangeOwnerAddress    = 5000000
-    ClaimDeveloperRewards = 5000000
-    SaveUserName          = 1000000
-    SaveKeyValue          = 250000
-    ESDTTransfer          = 250000
-    ESDTBurn              = 250000
+    ChangeOwnerAddress       = 5000000
+    ClaimDeveloperRewards    = 5000000
+    SaveUserName             = 1000000
+    SaveKeyValue             = 250000
+    ESDTTransfer             = 250000
+    ESDTBurn                 = 250000
+    ESDTLocalMint            = 250000
+    ESDTLocalBurn            = 250000
+    ESDTNFTCreate            = 500000
+    ESDTNFTAddQuantity       = 500000
+    ESDTNFTBurn              = 500000
+    ESDTNFTTransfer          = 500000
+    ESDTNFTChangeCreateOwner = 1000000
+    ESDTNFTAddUri            = 500000
+    ESDTNFTUpdateAttributes  = 500000
+    ESDTNFTMultiTransfer     = 1000000
 
 [MetaChainSystemSCsCost]
     Stake               = 5000000
@@ -44,12 +54,14 @@
     GetShardOfAddress  = 5000
     GetExternalBalance = 7000
     GetBlockHash       = 10000
+    GetOriginalTxHash  = 10000
     TransferValue      = 150000
     GetArgument        = 100
     GetFunction        = 100
     GetNumArguments    = 100
     StorageStore       = 250000
     StorageLoad        = 100000
+    CachedStorageLoad  = 100
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -76,6 +88,8 @@
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100    
 
 [EthAPICost]
     UseGas              = 100
@@ -129,6 +143,9 @@
     BigIntAdd                = 2000
     BigIntSub                = 2000
     BigIntMul                = 6000
+    BigIntSqrt               = 6000
+    BigIntPow                = 6000
+    BigIntLog                = 6000
     BigIntTDiv               = 6000
     BigIntTMod               = 6000
     BigIntEDiv               = 6000
@@ -152,14 +169,46 @@
     BigIntGetSignedArgument     = 1000
     BigIntGetCallValue          = 1000
     BigIntGetExternalBalance    = 10000
+    CopyPerByteForTooBig        = 1000
 
 [CryptoAPICost]
-    SHA256          = 1000000
-    Keccak256       = 1000000
-    Ripemd160       = 1000000
-    VerifyBLS       = 5000000
-    VerifyEd25519   = 2000000
-    VerifySecp256k1 = 2000000
+    SHA256                 = 1000000
+    Keccak256              = 1000000
+    Ripemd160              = 1000000
+    VerifyBLS              = 5000000
+    VerifyEd25519          = 2000000
+    VerifySecp256k1        = 2000000
+    EllipticCurveNew       = 10000
+    AddECC                 = 75000
+    DoubleECC              = 65000
+    IsOnCurveECC           = 10000
+    ScalarMultECC          = 400000
+    MarshalECC             = 13000
+    MarshalCompressedECC   = 15000
+    UnmarshalECC           = 20000
+    UnmarshalCompressedECC = 270000
+    GenerateKeyECC         = 7000000
+    EncodeDERSig           = 1000000
+
+[ManagedBufferAPICost]
+    MBufferNew                   = 2000
+    MBufferNewFromBytes          = 4000
+    MBufferGetLength             = 2000
+    MBufferGetBytes              = 2000
+    MBufferGetByteSlice          = 2000
+    MBufferCopyByteSlice         = 2000
+    MBufferSetBytes              = 2000
+    MBufferAppend                = 2000
+    MBufferAppendBytes           = 2000
+    MBufferToBigIntUnsigned      = 4000
+    MBufferToBigIntSigned        = 10000
+    MBufferFromBigIntUnsigned    = 4000
+    MBufferFromBigIntSigned      = 10000
+    MBufferStorageStore          = 250000
+    MBufferStorageLoad           = 100000
+    MBufferGetArgument           = 1000
+    MBufferFinish                = 1000
+    MBufferSetRandom             = 6000
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -611,3 +660,5 @@
     I16x8RoundingAverageU = 200
     LocalAllocate = 2
     LocalsUnmetered = 100
+    MaxMemoryGrow = 8
+    MaxMemoryGrowDelta = 10

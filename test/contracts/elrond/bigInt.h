@@ -13,27 +13,28 @@ void      bigIntGetSignedArgument(int argumentIndex, bigInt argument);
 int       bigIntStorageLoadUnsigned(byte *key, int keyLength, bigInt value);
 int       bigIntStorageStoreUnsigned(byte *key, int keyLength, bigInt value);
 
-void      bigIntAdd(bigInt destination, bigInt op1, bigInt op2);
-void      bigIntSub(bigInt destination, bigInt op1, bigInt op2);
-void      bigIntMul(bigInt destination, bigInt op1, bigInt op2);
+void      bigIntAdd(bigInt destinationHandle, bigInt op1, bigInt op2);
+void      bigIntSub(bigInt destinationHandle, bigInt op1, bigInt op2);
+void      bigIntMul(bigInt destinationHandle, bigInt op1, bigInt op2);
 int       bigIntCmp(bigInt op1, bigInt op2);
 
-int       bigIntIsInt64(bigInt reference);
-long long bigIntGetInt64(bigInt reference);
-void      bigIntSetInt64(bigInt destination, long long value);
+int       bigIntIsInt64(bigInt bigIntHandle);
+long long bigIntGetInt64(bigInt bigIntHandle);
+void      bigIntSetInt64(bigInt destinationHandle, long long value);
 
-void      bigIntFinishUnsigned(bigInt reference);
-void      bigIntFinishSigned(bigInt reference);
-void      bigIntGetCallValue(bigInt destination);
+void      bigIntFinishUnsigned(bigInt bigIntHandle);
+void      bigIntFinishSigned(bigInt bigIntHandle);
+void      bigIntGetCallValue(bigInt destinationHandle);
 void      bigIntgetExternalBalance(byte *address, bigInt result);
 
-int       bigIntByteLength(bigInt reference);
-int       bigIntGetUnsignedBytes(bigInt reference, byte *byte);
-int       bigIntGetSignedBytes(bigInt reference, byte *byte);
-void      bigIntSetUnsignedBytes(bigInt destination, byte *byte, int byteLength);
-void      bigIntSetSignedBytes(bigInt destination, byte *byte, int byteLength);
+int       bigIntUnsignedByteLength(bigInt bigIntHandle);
+int       bigIntSignedByteLength(bigInt bigIntHandle);
+int       bigIntGetUnsignedBytes(bigInt bigIntHandle, byte *byte);
+int       bigIntGetSignedBytes(bigInt bigIntHandle, byte *byte);
+void      bigIntSetUnsignedBytes(bigInt destinationHandle, byte *byte, int byteLength);
+void      bigIntSetSignedBytes(bigInt destinationHandle, byte *byte, int byteLength);
 
-void      bigIntGetESDTCallValue(bigInt destination);
+void      bigIntGetESDTCallValue(bigInt destinationHandle);
 void      bigIntGetESDTExternalBalance(byte *addressOffset, byte *tokenIDOffset, unsigned int tokenIDLen, long long nonce, bigInt result);
 
 #endif

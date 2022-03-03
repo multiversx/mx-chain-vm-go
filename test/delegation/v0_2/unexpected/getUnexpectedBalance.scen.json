@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "10,001,000,010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "1,000,000",
                         "''node_share": "3000",
@@ -36,22 +33,17 @@
                         "''u_uncl|0x00000003": "0",
                         "''u_stak|0x00000003": "900,000",
                         "''u_sale|0x00000003": "0",
-
                         "''ELRONDreward": "10,000,000,010"
                     },
                     "code": "file:../delegation.wasm"
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0x300abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x300abc"
                 },
                 "''someone_______________________s2": {
                     "nonce": "0",
-                    "balance": "0x300abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x300abc"
                 }
             }
         },
@@ -61,7 +53,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUnexpectedBalance",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -72,7 +63,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -83,7 +74,7 @@
             "tx": {
                 "from": "''someone_______________________s2",
                 "to": "sc:delegation",
-                "value": "50,000"
+                "egldValue": "50,000"
             }
         },
         {
@@ -92,7 +83,6 @@
             "tx": {
                 "from": "''delegator_1___________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUnexpectedBalance",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -103,7 +93,7 @@
                     "50,000"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

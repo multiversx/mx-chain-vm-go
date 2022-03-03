@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 )
 
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
@@ -148,4 +148,14 @@ func (instance *InstanceMock) IsFunctionImported(name string) bool {
 func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
+}
+
+// SetMemory -
+func (instance *InstanceMock) SetMemory(_ []byte) bool {
+	return true
+}
+
+// IsInterfaceNil -
+func (instance *InstanceMock) IsInterfaceNil() bool {
+	return instance == nil
 }

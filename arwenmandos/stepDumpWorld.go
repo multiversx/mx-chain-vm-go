@@ -5,11 +5,13 @@ import (
 	"sort"
 	"strings"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -25,7 +27,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 	var storageKvps []*mj.StorageKeyValuePair
 	for _, storageKey := range storageKeys {
 		storageValue := account.Storage[storageKey]
-		includeKey := includeElrondProtectedStorage || !strings.HasPrefix(storageKey, vmcommon.ElrondProtectedKeyPrefix)
+		includeKey := includeElrondProtectedStorage || !strings.HasPrefix(storageKey, core.ElrondProtectedKeyPrefix)
 		if includeKey && len(storageValue) > 0 {
 			storageKvps = append(storageKvps, &mj.StorageKeyValuePair{
 				Key: mj.JSONBytesFromString{
@@ -40,7 +42,12 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		}
 	}
 
-	tokenData, err := account.GetFullMockESDTData()
+	systemAccStorage := make(map[string][]byte)
+	systemAcc, exists := ae.World.AcctMap[string(vmcommon.SystemAccountAddress)]
+	if exists {
+		systemAccStorage = systemAcc.Storage
+	}
+	tokenData, err := esdtconvert.GetFullMockESDTData(account.Storage, systemAccStorage)
 	if err != nil {
 		return nil, err
 	}
@@ -84,12 +91,12 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 				}
 			}
 
-			var uri mj.JSONBytesFromTree
-			if len(mockInstance.TokenMetaData.URIs) > 0 {
-				uri = mj.JSONBytesFromTree{
-					Value:    mockInstance.TokenMetaData.URIs[0],
-					Original: &oj.OJsonString{Value: ae.exprReconstructor.Reconstruct(mockInstance.TokenMetaData.URIs[0], er.NoHint)},
-				}
+			var jsonUris []mj.JSONBytesFromString
+			for _, uri := range mockInstance.TokenMetaData.URIs {
+				jsonUris = append(jsonUris, mj.JSONBytesFromString{
+					Value:    uri,
+					Original: ae.exprReconstructor.Reconstruct(uri, er.StrHint),
+				})
 			}
 
 			var attributes mj.JSONBytesFromString
@@ -112,7 +119,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 				Creator:    creator,
 				Royalties:  royalties,
 				Hash:       hash,
-				Uri:        uri,
+				Uris:       mj.JSONValueList{Values: jsonUris},
 				Attributes: attributes,
 			})
 		}
@@ -146,6 +153,10 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 		},
 		Storage:  storageKvps,
 		ESDTData: mandosESDT,
+		Owner: mj.JSONBytesFromString{
+			Value:    account.OwnerAddress,
+			Original: ae.exprReconstructor.Reconstruct(account.OwnerAddress, er.AddressHint),
+		},
 	}, nil
 }
 

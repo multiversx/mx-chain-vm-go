@@ -9,14 +9,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -26,7 +23,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "return_error",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -36,7 +32,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:return_error",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

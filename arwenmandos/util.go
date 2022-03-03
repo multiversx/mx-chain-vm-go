@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"math/big"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
@@ -19,6 +19,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
+	_ = esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
 
 	if len(testAcct.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
@@ -45,42 +46,6 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		MockWorld: world,
 	}
 
-	for _, mandosESDTData := range testAcct.ESDTData {
-		tokenName := mandosESDTData.TokenIdentifier.Value
-		isFrozen := mandosESDTData.Frozen.Value > 0
-		for _, instance := range mandosESDTData.Instances {
-			tokenNonce := instance.Nonce.Value
-			tokenKey := worldmock.MakeTokenKey(tokenName, tokenNonce)
-			tokenBalance := instance.Balance.Value
-			tokenData := &esdt.ESDigitalToken{
-				Value:      tokenBalance,
-				Type:       uint32(vmcommon.Fungible),
-				Properties: makeESDTUserMetadataBytes(isFrozen),
-				TokenMetaData: &esdt.MetaData{
-					Name:       tokenName,
-					Nonce:      tokenNonce,
-					Creator:    instance.Creator.Value,
-					Royalties:  uint32(instance.Royalties.Value),
-					Hash:       instance.Hash.Value,
-					URIs:       [][]byte{instance.Uri.Value},
-					Attributes: instance.Attributes.Value,
-				},
-			}
-			err := account.SetTokenData(tokenKey, tokenData)
-			if err != nil {
-				return nil, err
-			}
-			err = account.SetLastNonce(tokenName, mandosESDTData.LastNonce.Value)
-			if err != nil {
-				return nil, err
-			}
-		}
-		err := account.SetTokenRolesAsStrings(tokenName, mandosESDTData.Roles)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return account, nil
 }
 
@@ -93,14 +58,6 @@ func validateSetStateAccount(mandosAccount *mj.Account, converted *worldmock.Acc
 			err)
 	}
 	return nil
-}
-
-func makeESDTUserMetadataBytes(frozen bool) []byte {
-	metadata := &builtInFunctions.ESDTUserMetadata{
-		Frozen: frozen,
-	}
-
-	return metadata.ToBytes()
 }
 
 func validateNewAddressMocks(testNAMs []*mj.NewAddressMock) error {
@@ -126,43 +83,67 @@ func convertNewAddressMocks(testNAMs []*mj.NewAddressMock) []*worldmock.NewAddre
 	return result
 }
 
-func convertBlockInfo(testBlockInfo *mj.BlockInfo) *worldmock.BlockInfo {
+func convertBlockInfo(testBlockInfo *mj.BlockInfo, currentInfo *worldmock.BlockInfo) *worldmock.BlockInfo {
 	if testBlockInfo == nil {
-		return nil
+		return currentInfo
 	}
 
-	var randomsSeed [48]byte
-	if testBlockInfo.BlockRandomSeed != nil {
+	if currentInfo == nil {
+		currentInfo = &worldmock.BlockInfo{
+			BlockTimestamp: 0,
+			BlockNonce:     0,
+			BlockRound:     0,
+			BlockEpoch:     0,
+			RandomSeed:     nil,
+		}
+	}
+
+	if !testBlockInfo.BlockTimestamp.OriginalEmpty() {
+		currentInfo.BlockTimestamp = testBlockInfo.BlockTimestamp.Value
+
+	}
+
+	if !testBlockInfo.BlockNonce.OriginalEmpty() {
+		currentInfo.BlockNonce = testBlockInfo.BlockNonce.Value
+	}
+
+	if !testBlockInfo.BlockRound.OriginalEmpty() {
+		currentInfo.BlockRound = testBlockInfo.BlockRound.Value
+	}
+
+	if !testBlockInfo.BlockEpoch.OriginalEmpty() {
+		currentInfo.BlockEpoch = uint32(testBlockInfo.BlockEpoch.Value)
+	}
+
+	if testBlockInfo.BlockRandomSeed != nil && !testBlockInfo.BlockRandomSeed.OriginalEmpty() {
+		var randomsSeed [48]byte
 		copy(randomsSeed[:], testBlockInfo.BlockRandomSeed.Value)
+		currentInfo.RandomSeed = &randomsSeed
+
 	}
 
-	result := &worldmock.BlockInfo{
-		BlockTimestamp: testBlockInfo.BlockTimestamp.Value,
-		BlockNonce:     testBlockInfo.BlockNonce.Value,
-		BlockRound:     testBlockInfo.BlockRound.Value,
-		BlockEpoch:     uint32(testBlockInfo.BlockEpoch.Value),
-		RandomSeed:     &randomsSeed,
-	}
-
-	return result
+	return currentInfo
 }
 
 // this is a small hack, so we can reuse mandos's JSON printing in error messages
 func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
+	topics := mj.JSONCheckValueList{
+		Values: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
+	}
+	for i, topic := range outputLog.Topics {
+		topics.Values[i] = mj.JSONCheckBytesReconstructed(topic, "")
+	}
 	testLog := mj.LogEntry{
 		Address: mj.JSONCheckBytesReconstructed(
 			outputLog.Address,
 			ae.exprReconstructor.Reconstruct(outputLog.Address,
 				er.AddressHint)),
-		Identifier: mj.JSONCheckBytesReconstructed(
+		Endpoint: mj.JSONCheckBytesReconstructed(
 			outputLog.Identifier,
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),
 		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
-		Topics: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
-	}
-	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic, "")
+		Topics: topics,
 	}
 
 	return &testLog
@@ -179,15 +160,69 @@ func generateTxHash(txIndex string) []byte {
 	return txIndexBytes
 }
 
-func addESDTToVMInput(esdtData *mj.ESDTTxData, vmInput *vmcommon.VMInput) {
-	if esdtData != nil {
-		vmInput.ESDTTokenName = esdtData.TokenIdentifier.Value
-		vmInput.ESDTValue = esdtData.Value.Value
-		vmInput.ESDTTokenNonce = esdtData.Nonce.Value
-		if vmInput.ESDTTokenNonce != 0 {
-			vmInput.ESDTTokenType = uint32(vmcommon.NonFungible)
-		} else {
-			vmInput.ESDTTokenType = uint32(vmcommon.Fungible)
+func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
+	esdtDataLen := len(esdtData)
+
+	if esdtDataLen > 0 {
+		vmInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, esdtDataLen)
+		for i := 0; i < esdtDataLen; i++ {
+			vmInput.ESDTTransfers[i] = &vmcommon.ESDTTransfer{}
+			vmInput.ESDTTransfers[i].ESDTTokenName = esdtData[i].TokenIdentifier.Value
+			vmInput.ESDTTransfers[i].ESDTValue = esdtData[i].Value.Value
+			vmInput.ESDTTransfers[i].ESDTTokenNonce = esdtData[i].Nonce.Value
+			if vmInput.ESDTTransfers[i].ESDTTokenNonce != 0 {
+				vmInput.ESDTTransfers[i].ESDTTokenType = uint32(core.NonFungible)
+			} else {
+				vmInput.ESDTTransfers[i].ESDTTokenType = uint32(core.Fungible)
+			}
 		}
+	}
+}
+
+func logGasTrace(ae *ArwenTestExecutor) {
+	if ae.PeekTraceGas() {
+		metering := ae.GetVMHost().Metering()
+		scGasTrace := metering.GetGasTrace()
+		totalGasUsedByAPIs := 0
+		for scAddress, gasTrace := range scGasTrace {
+			fmt.Println("Gas Trace for: ", "SC Address", scAddress)
+			for functionName, value := range gasTrace {
+				totalGasUsed := uint64(0)
+				for _, usedGas := range value {
+					totalGasUsed += usedGas
+				}
+				fmt.Println("GasTrace: functionName:", functionName, ",  totalGasUsed:", totalGasUsed, ", numberOfCalls:", len(value))
+				totalGasUsedByAPIs += int(totalGasUsed)
+			}
+			fmt.Println("TotalGasUsedByAPIs: ", totalGasUsedByAPIs)
+		}
+	}
+}
+
+func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
+	metering := ae.GetVMHost().Metering()
+	if enable && ae.PeekTraceGas() {
+		metering.SetGasTracing(true)
+	} else {
+		metering.SetGasTracing(false)
+	}
+}
+
+func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep) {
+	switch step.TraceGas.ToInt() {
+	case mj.Undefined.ToInt():
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, ae.PeekTraceGas())
+	case mj.TrueValue.ToInt():
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, true)
+	case mj.FalseValue.ToInt():
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, false)
+	}
+}
+
+func resetGasTracesIfNewTest(ae *ArwenTestExecutor, scenario *mj.Scenario) {
+	if ae.vm == nil || scenario.IsNewTest {
+		ae.scenarioTraceGas = make([]bool, 0)
+		ae.scenarioTraceGas = append(ae.scenarioTraceGas, scenario.TraceGas)
+		scenario.IsNewTest = false
 	}
 }

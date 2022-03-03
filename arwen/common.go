@@ -1,11 +1,12 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-const ArwenVersion = "v1.3"
+// ArwenVersion returns the current arwen version
+const ArwenVersion = "v1.4"
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
@@ -110,17 +111,18 @@ type CodeDeployInput struct {
 
 // VMHostParameters represents the parameters to be passed to VMHost
 type VMHostParameters struct {
-	VMType                        []byte
-	BlockGasLimit                 uint64
-	GasSchedule                   config.GasScheduleMap
-	ProtocolBuiltinFunctions      vmcommon.FunctionNames
-	ElrondProtectedKeyPrefix      []byte
-	ArwenV2EnableEpoch            uint32
-	AheadOfTimeEnableEpoch        uint32
-	DynGasLockEnableEpoch         uint32
-	ArwenV3EnableEpoch            uint32
-	ArwenESDTFunctionsEnableEpoch uint32
-	UseWarmInstance               bool
+	VMType                                          []byte
+	BlockGasLimit                                   uint64
+	GasSchedule                                     config.GasScheduleMap
+	BuiltInFuncContainer                            vmcommon.BuiltInFunctionContainer
+	ESDTTransferParser                              vmcommon.ESDTTransferParser
+	ElrondProtectedKeyPrefix                        []byte
+	EpochNotifier                                   vmcommon.EpochNotifier
+	MultiESDTTransferAsyncCallBackEnableEpoch       uint32
+	FixOOGReturnCodeEnableEpoch                     uint32
+	RemoveNonUpdatedStorageEnableEpoch              uint32
+	CreateNFTThroughExecByCallerEnableEpoch         uint32
+	UseDifferentGasCostForReadingCachedStorageEpoch uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

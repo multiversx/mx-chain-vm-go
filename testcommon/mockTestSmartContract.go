@@ -3,15 +3,18 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 )
 
 type testSmartContract struct {
-	address []byte
-	balance int64
-	config  interface{}
-	shardID uint32
+	address      []byte
+	balance      int64
+	config       interface{}
+	shardID      uint32
+	codeHash     []byte
+	codeMetadata []byte
+	ownerAddress []byte
 }
 
 // MockTestSmartContract represents the config data for the mock smart contract instance to be tested
@@ -47,6 +50,24 @@ func (mockSC *MockTestSmartContract) WithConfig(config interface{}) *MockTestSma
 	return mockSC
 }
 
+// WithCodeMetadata provides the code metadata for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithCodeMetadata(codeMetadata []byte) *MockTestSmartContract {
+	mockSC.codeMetadata = codeMetadata
+	return mockSC
+}
+
+// WithCodeHash provides the code hash for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithCodeHash(codeHash []byte) *MockTestSmartContract {
+	mockSC.codeHash = codeHash
+	return mockSC
+}
+
+// WithOwnerAddress provides the owner address for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithOwnerAddress(ownerAddress []byte) *MockTestSmartContract {
+	mockSC.ownerAddress = ownerAddress
+	return mockSC
+}
+
 // WithMethods provides the methods for the MockTestSmartContract
 func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.InstanceMock, interface{})) MockTestSmartContract {
 	mockSC.initMethods = initMethods
@@ -54,7 +75,7 @@ func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.Insta
 }
 
 func (mockSC *MockTestSmartContract) initialize(t testing.TB, host arwen.VMHost, imb *mock.InstanceBuilderMock) {
-	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.shardID, mockSC.balance)
+	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.codeHash, mockSC.codeMetadata, mockSC.ownerAddress, mockSC.shardID, mockSC.balance)
 	for _, initMethod := range mockSC.initMethods {
 		initMethod(instance, mockSC.config)
 	}

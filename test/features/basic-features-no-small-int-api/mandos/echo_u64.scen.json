@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-no-small-int-api.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0x900abc",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0x900abc"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_u64",
                 "arguments": [
                     "0"
@@ -38,7 +34,7 @@
                     ""
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -49,7 +45,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_u64",
                 "arguments": [
                     "5"
@@ -62,7 +57,7 @@
                     "5"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -73,7 +68,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_u64",
                 "arguments": [
                     "0xc8"
@@ -86,7 +80,7 @@
                     "0xc8"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -97,7 +91,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_u64",
                 "arguments": [
                     "0xffffffffffffffff"
@@ -110,7 +103,7 @@
                     "0xffffffffffffffff"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -121,7 +114,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_u64",
                 "arguments": [
                     "0x010000000000000000"
@@ -133,7 +125,7 @@
                 "out": [],
                 "status": "*",
                 "message": "str:argument out of range",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

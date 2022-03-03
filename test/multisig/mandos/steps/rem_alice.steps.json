@@ -8,7 +8,6 @@
             "tx": {
                 "from": "address:paul",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "proposeRemoveUser",
                 "arguments": [
                     "address:alice"
@@ -17,9 +16,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["3"],
+                "out": [
+                    "3"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -30,16 +31,17 @@
             "tx": {
                 "from": "address:bob",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "sign",
-                "arguments": ["3"],
+                "arguments": [
+                    "3"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -50,16 +52,17 @@
             "tx": {
                 "from": "address:charlie",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "sign",
-                "arguments": ["3"],
+                "arguments": [
+                    "3"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -70,16 +73,17 @@
             "tx": {
                 "from": "address:paul",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "performAction",
-                "arguments": ["3"],
+                "arguments": [
+                    "3"
+                ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

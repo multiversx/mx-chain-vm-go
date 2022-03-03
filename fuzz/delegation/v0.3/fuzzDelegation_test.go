@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/fuzz/util"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
+	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/fuzz/util"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,8 +61,8 @@ func TestFuzzDelegation(t *testing.T) {
 		stakePerNode:                big.NewInt(1000000000),
 	})
 	require.Nil(t, err)
-	pfe.enableAutoActivation()
-	pfe.increaseBlockNonce(r.Intn(10000))
+	_ = pfe.enableAutoActivation()
+	_ = pfe.increaseBlockNonce(r.Intn(10000))
 
 	maxStake := big.NewInt(0).Mul(pfe.stakePerNode, big.NewInt(2))
 	maxSystemReward := big.NewInt(1000000000)
@@ -173,7 +173,7 @@ func TestFuzzDelegation(t *testing.T) {
 		require.Nil(t, err)
 	}
 
-	pfe.increaseBlockNonce(pfe.numBlocksBeforeForceUnstake + 1)
+	_ = pfe.increaseBlockNonce(pfe.numBlocksBeforeForceUnstake + 1)
 
 	// all delegators (incl. owner) unstake
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
@@ -181,7 +181,7 @@ func TestFuzzDelegation(t *testing.T) {
 		require.Nil(t, err)
 	}
 
-	pfe.increaseBlockNonce(pfe.numBlocksBeforeUnbond + 1)
+	_ = pfe.increaseBlockNonce(pfe.numBlocksBeforeUnbond + 1)
 
 	// unBondAllAvailable
 	err = pfe.unBondAllAvailable()

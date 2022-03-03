@@ -7,16 +7,13 @@
             "accounts": {
                 "''node_address__________________s1": {
                     "nonce": "0",
-                    "balance": "1000000000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "1000000000"
                 },
                 "sc:delegation": {
                     "nonce": "0",
                     "balance": "10000400010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "3000",
@@ -36,9 +33,7 @@
                 },
                 "''delegator_1___________________s1": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -48,7 +43,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setBlsKeys",
                 "arguments": [
                     "''bls_key_1_______________________________________________________________________________________"
@@ -59,7 +53,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -70,7 +64,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -81,7 +74,7 @@
                     "''bls_key_1_______________________________________________________________________________________"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -92,7 +85,6 @@
             "tx": {
                 "from": "''node_address__________________s1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getNumBlsKeys",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -103,7 +95,7 @@
                     "1"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -122,7 +114,6 @@
                     "balance": "10000400010",
                     "storage": {
                         "''owner": "''node_address__________________s1",
-                        
                         "''num_nodes": "1",
                         "''stake_per_node": "500,000,000,100",
                         "''node_share": "3000",

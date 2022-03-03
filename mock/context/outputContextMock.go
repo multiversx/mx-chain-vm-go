@@ -3,9 +3,10 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)
@@ -140,6 +141,10 @@ func (o *OutputContextMock) ClearReturnData() {
 	o.ReturnDataMock = make([][]byte, 0)
 }
 
+// RemoveReturnData mocked method
+func (o *OutputContextMock) RemoveReturnData(index uint32) {
+}
+
 // SelfDestruct mocked method
 func (o *OutputContextMock) SelfDestruct(_ []byte, _ []byte) {
 	panic("not implemented")
@@ -155,8 +160,16 @@ func (o *OutputContextMock) PrependFinish(data []byte) {
 	o.ReturnDataMock = append([][]byte{data}, o.ReturnDataMock...)
 }
 
+// DeleteFirstReturnData mocked method
+func (o *OutputContextMock) DeleteFirstReturnData() {
+	if len(o.ReturnDataMock) > 0 {
+		o.ReturnDataMock = o.ReturnDataMock[1:]
+	}
+}
+
 // WriteLog mocked method
 func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
+	return
 }
 
 // TransferValueOnly mocked method
@@ -165,12 +178,12 @@ func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ 
 }
 
 // Transfer mocked method
-func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vmcommon.CallType) error {
+func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vm.CallType) error {
 	return o.TransferResult
 }
 
 // TransferESDT mocked method
-func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []byte, _ uint64, _ *big.Int, _ *vmcommon.ContractCallInput) (uint64, error) {
+func (o *OutputContextMock) TransferESDT(_ []byte, _ []byte, _ []*vmcommon.ESDTTransfer, _ *vmcommon.ContractCallInput) (uint64, error) {
 	return 0, nil
 }
 
@@ -181,6 +194,10 @@ func (o *OutputContextMock) AddTxValueToAccount(_ []byte, _ *big.Int) {
 // GetVMOutput mocked method
 func (o *OutputContextMock) GetVMOutput() *vmcommon.VMOutput {
 	return o.OutputStateMock
+}
+
+// RemoveNonUpdatedStorage mocked method
+func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 }
 
 // DeployCode mocked method

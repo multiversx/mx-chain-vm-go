@@ -3,14 +3,14 @@ package arwenmandos
 import (
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
 // ExecuteTest executes an individual test.
 func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	// reset world
 	ae.World.Clear()
-	ae.World.Blockhashes = mj.JSONBytesFromStringValues(test.BlockHashes)
+	ae.World.Blockhashes = test.BlockHashes.ToValues()
 
 	for _, acct := range test.Pre {
 		account, err := convertAccount(acct, ae.World)
@@ -41,5 +41,7 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 		}
 	}
 
-	return ae.checkAccounts(test.PostState)
+	err := ae.checkAccounts(test.PostState)
+	ae.Close()
+	return err
 }

@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
@@ -103,7 +104,7 @@ func (b *MockWorld) LastRandomSeed() []byte {
 	if b.PreviousBlockInfo == nil {
 		return nil
 	}
-	return b.PreviousBlockInfo.RandomSeed[:]
+	return b.PreviousBlockInfo.GetRandomSeedSlice()
 }
 
 // LastEpoch returns the epoch from the last committed block
@@ -148,7 +149,7 @@ func (b *MockWorld) CurrentRandomSeed() []byte {
 	if b.CurrentBlockInfo == nil {
 		return nil
 	}
-	return b.CurrentBlockInfo.RandomSeed[:]
+	return b.CurrentBlockInfo.GetRandomSeedSlice()
 }
 
 // CurrentEpoch returns the current epoch
@@ -174,7 +175,7 @@ func (b *MockWorld) ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*
 }
 
 // GetESDTToken -
-func (b *MockWorld) GetESDTToken(address []byte, tokenName []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
+func (b *MockWorld) GetESDTToken(address []byte, tokenIdentifier []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	// custom error
 	if b.Err != nil {
 		return nil, b.Err
@@ -184,8 +185,7 @@ func (b *MockWorld) GetESDTToken(address []byte, tokenName []byte, nonce uint64)
 		return nil, ErrBuiltinFuncWrapperNotInitialized
 	}
 
-	tokenKey := MakeTokenKey(tokenName, nonce)
-	return b.BuiltinFuncs.GetTokenData(address, tokenKey)
+	return b.BuiltinFuncs.GetTokenData(address, tokenIdentifier, nonce)
 }
 
 // GetBuiltinFunctionNames -
@@ -248,8 +248,8 @@ func (b *MockWorld) IsSmartContract(address []byte) bool {
 }
 
 // IsPayable -
-func (b *MockWorld) IsPayable(address []byte) (bool, error) {
-	account := b.AcctMap.GetAccount(address)
+func (b *MockWorld) IsPayable(sndAddress []byte, rcvAddress []byte) (bool, error) {
+	account := b.AcctMap.GetAccount(rcvAddress)
 	if account == nil {
 		return true, nil
 	}
@@ -259,6 +259,10 @@ func (b *MockWorld) IsPayable(address []byte) (bool, error) {
 	}
 
 	metadata := vmcommon.CodeMetadataFromBytes(account.CodeMetadata)
+	if core.IsSmartContractAddress(sndAddress) {
+		return metadata.PayableBySC || metadata.Payable, nil
+	}
+
 	return metadata.Payable, nil
 }
 

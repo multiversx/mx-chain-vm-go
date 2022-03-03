@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 )
 
 // RunSingleJSONTest parses and prepares test, then calls testCallback.
@@ -27,7 +27,9 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 	}
 
 	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
+	defer func() {
+		_ = jsonFile.Close()
+	}()
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {

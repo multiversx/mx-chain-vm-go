@@ -3,8 +3,9 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*OutputContextStub)(nil)
@@ -24,7 +25,7 @@ type OutputContextStub struct {
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
-	TransferESDTCalled                func(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, input *vmcommon.ContractCallInput) (uint64, error)
+	TransferESDTCalled                func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, input *vmcommon.ContractCallInput) (uint64, error)
 	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -34,14 +35,17 @@ type OutputContextStub struct {
 	SetReturnMessageCalled            func(message string)
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
+	RemoveReturnDataCalled            func(index uint32)
 	FinishCalled                      func(data []byte)
 	PrependFinishCalled               func(data []byte)
+	DeleteFirstReturnDataCalled       func()
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
 	DeployCodeCalled                  func(input arwen.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
+	RemoveNonUpdatedStorageCalled     func()
 }
 
 // AddToActiveState mocked method
@@ -135,6 +139,7 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 	if o.WriteLogCalled != nil {
 		o.WriteLogCalled(address, topics, data)
 	}
+	return
 }
 
 // TransferValueOnly mocked method
@@ -147,7 +152,7 @@ func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte,
 }
 
 // Transfer mocked method
-func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, _ vmcommon.CallType) error {
+func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, _ vm.CallType) error {
 	if o.TransferCalled != nil {
 		return o.TransferCalled(destination, sender, gasLimit, gasLocked, value, input)
 	}
@@ -156,9 +161,9 @@ func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit
 }
 
 // TransferESDT mocked method
-func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callInput *vmcommon.ContractCallInput) (uint64, error) {
+func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error) {
 	if o.TransferESDTCalled != nil {
-		return o.TransferESDTCalled(destination, sender, tokenIdentifier, nonce, value, callInput)
+		return o.TransferESDTCalled(destination, sender, transfers, callInput)
 	}
 	return 0, nil
 }
@@ -230,6 +235,13 @@ func (o *OutputContextStub) ClearReturnData() {
 	}
 }
 
+// RemoveReturnData mocked method
+func (o *OutputContextStub) RemoveReturnData(index uint32) {
+	if o.RemoveReturnDataCalled != nil {
+		o.RemoveReturnDataCalled(index)
+	}
+}
+
 // Finish mocked method
 func (o *OutputContextStub) Finish(data []byte) {
 	if o.FinishCalled != nil {
@@ -244,12 +256,26 @@ func (o *OutputContextStub) PrependFinish(data []byte) {
 	}
 }
 
+// DeleteFirstReturnData mocked method
+func (o *OutputContextStub) DeleteFirstReturnData() {
+	if o.DeleteFirstReturnDataCalled != nil {
+		o.DeleteFirstReturnDataCalled()
+	}
+}
+
 // GetVMOutput mocked method
 func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 	if o.GetVMOutputCalled != nil {
 		return o.GetVMOutputCalled()
 	}
 	return nil
+}
+
+// GetVMOutput mocked method
+func (o *OutputContextStub) RemoveNonUpdatedStorage() {
+	if o.RemoveNonUpdatedStorageCalled != nil {
+		o.RemoveNonUpdatedStorageCalled()
+	}
 }
 
 // AddTxValueToAccount mocked method

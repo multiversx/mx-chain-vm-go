@@ -3,10 +3,10 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 var log = logger.GetOrCreate("arwen/blockchainContext")
@@ -40,7 +40,7 @@ func (context *blockchainContext) NewAddress(creatorAddress []byte) ([]byte, err
 		return nil, err
 	}
 
-	isIndirectDeployment := context.IsSmartContract(creatorAddress) && context.host.IsArwenV3Enabled()
+	isIndirectDeployment := context.IsSmartContract(creatorAddress)
 	if !isIndirectDeployment && nonce > 0 {
 		nonce--
 	}
@@ -99,7 +99,7 @@ func (context *blockchainContext) GetBalanceBigInt(address []byte) *big.Int {
 func (context *blockchainContext) GetNonce(address []byte) (uint64, error) {
 	outputAccount, isNew := context.host.Output().GetOutputAccount(address)
 
-	readNonceFromBlockChain := isNew || (outputAccount.Nonce == 0 && context.host.IsArwenV3Enabled())
+	readNonceFromBlockChain := isNew || outputAccount.Nonce == 0
 	if !readNonceFromBlockChain {
 		return outputAccount.Nonce, nil
 	}
@@ -270,8 +270,8 @@ func (context *blockchainContext) IsSmartContract(addr []byte) bool {
 }
 
 // IsPayable returns true if the SC at the given address is payable
-func (context *blockchainContext) IsPayable(addr []byte) (bool, error) {
-	return context.blockChainHook.IsPayable(addr)
+func (context *blockchainContext) IsPayable(sndAddress []byte, rcvAddress []byte) (bool, error) {
+	return context.blockChainHook.IsPayable(sndAddress, rcvAddress)
 }
 
 // SaveCompiledCode saves the compiled code to cache and storage.

@@ -5,9 +5,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -390,7 +390,7 @@ func TestBlockchainContext_IsPayable(t *testing.T) {
 
 	bc, _ := NewBlockchainContext(host, mockWorld)
 
-	isPayable, err := bc.IsPayable([]byte("test"))
+	isPayable, err := bc.IsPayable(nil, []byte("test"))
 	require.Nil(t, err)
 	require.True(t, isPayable)
 }

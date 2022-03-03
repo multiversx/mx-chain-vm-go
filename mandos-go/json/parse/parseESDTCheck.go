@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
 func (p *Parser) processCheckESDTData(
@@ -24,7 +24,7 @@ func (p *Parser) processCheckESDTData(
 		}
 		esdtData.Instances = []*mj.CheckESDTInstance{
 			{
-				Nonce:   mj.JSONCheckUint64{Value: 0, Original: ""},
+				Nonce:   mj.JSONUint64Zero(),
 				Balance: balance,
 			},
 		}
@@ -36,9 +36,10 @@ func (p *Parser) processCheckESDTData(
 	}
 }
 
-// map containing other fields too, e.g.:
+// Map containing ESDT fields, e.g.:
 // {
-// 	"balance": "400,000,000,000",
+// 	"instances": [ ... ],
+//  "lastNonce": "5",
 // 	"frozen": "true"
 // }
 func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtDataMap *oj.OJsonMap) (*mj.CheckESDTData, error) {
@@ -47,12 +48,12 @@ func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtD
 	}
 	// var err error
 	firstInstance := &mj.CheckESDTInstance{
-		Nonce:      mj.JSONCheckUint64Unspecified(),
+		Nonce:      mj.JSONUint64Zero(),
 		Balance:    mj.JSONCheckBigIntUnspecified(),
 		Creator:    mj.JSONCheckBytesUnspecified(),
 		Royalties:  mj.JSONCheckUint64Unspecified(),
 		Hash:       mj.JSONCheckBytesUnspecified(),
-		Uri:        mj.JSONCheckBytesUnspecified(),
+		Uris:       mj.JSONCheckValueListUnspecified(),
 		Attributes: mj.JSONCheckBytesUnspecified(),
 	}
 	firstInstanceLoaded := false
@@ -95,6 +96,9 @@ func (p *Parser) processCheckESDTDataMap(tokenName mj.JSONBytesFromString, esdtD
 	}
 
 	if firstInstanceLoaded {
+		if !p.AllowEsdtLegacyCheckSyntax {
+			return nil, fmt.Errorf("wrong ESDT check state syntax: instances in root no longer allowed")
+		}
 		esdtData.Instances = []*mj.CheckESDTInstance{firstInstance}
 	}
 	esdtData.Instances = append(esdtData.Instances, explicitInstances...)
@@ -106,7 +110,7 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 	var err error
 	switch kvp.Key {
 	case "nonce":
-		targetInstance.Nonce, err = p.processCheckUint64(kvp.Value)
+		targetInstance.Nonce, err = p.processUint64(kvp.Value)
 		if err != nil {
 			return false, fmt.Errorf("invalid account nonce: %w", err)
 		}
@@ -134,7 +138,7 @@ func (p *Parser) tryProcessCheckESDTInstanceField(kvp *oj.OJsonKeyValuePair, tar
 			return false, fmt.Errorf("invalid ESDT NFT hash: %w", err)
 		}
 	case "uri":
-		targetInstance.Uri, err = p.parseCheckBytes(kvp.Value)
+		targetInstance.Uris, err = p.parseCheckValueList(kvp.Value)
 		if err != nil {
 			return false, fmt.Errorf("invalid ESDT NFT URI: %w", err)
 		}

@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -50,8 +50,11 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(
 }
 
 func (callerTest *TestCreateTemplateConfig) runTest() {
-
 	host, stubBlockchainHook := DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+	defer func() {
+		host.Reset()
+	}()
+
 	callerTest.setup(host, stubBlockchainHook)
 
 	vmOutput, err := host.RunSmartContractCreate(callerTest.input)

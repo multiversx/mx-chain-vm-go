@@ -6,12 +6,14 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,19 +23,27 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	code := test.GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	scBalance := big.NewInt(1000)
 	host, world := test.DefaultTestArwenForCallWithWorldMock(t, code, scBalance)
+	defer func() {
+		_ = host.Close()
+	}()
 
-	tokenKey := worldmock.MakeTokenKey(test.ESDTTestTokenName, 0)
-	err := world.BuiltinFuncs.SetTokenData(test.ParentAddress, tokenKey, &esdt.ESDigitalToken{
-		Value: big.NewInt(100),
-		Type:  uint32(vmcommon.Fungible),
-	})
+	err := world.BuiltinFuncs.SetTokenData(
+		test.ParentAddress,
+		test.ESDTTestTokenName,
+		0,
+		&esdt.ESDigitalToken{
+			Value: big.NewInt(100),
+			Type:  uint32(core.Fungible),
+		})
 	require.Nil(t, err)
 
 	input := test.DefaultTestContractCallInput()
 	input.Function = "basic_transfer"
 	input.GasProvided = 100000
-	input.ESDTTokenName = test.ESDTTestTokenName
-	input.ESDTValue = big.NewInt(16)
+	input.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
+	input.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+	input.ESDTTransfers[0].ESDTValue = big.NewInt(16)
+	input.ESDTTransfers[0].ESDTTokenName = test.ESDTTestTokenName
 
 	vmOutput, err := host.RunSmartContractCall(input)
 
@@ -43,7 +53,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
-	parentGasUsed := uint64(1988)
+	parentGasUsed := uint64(1973)
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -56,7 +66,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -69,7 +79,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *testing.T) {
-	parentGasUsed := uint64(1992)
+	parentGasUsed := uint64(1977)
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -82,7 +92,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -107,7 +117,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -130,7 +140,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) 
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -154,7 +164,7 @@ func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -174,11 +184,11 @@ func TestESDT_GettersAPI(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			WithFunction("validateGetters").
 			WithESDTValue(big.NewInt(5)).
-			WithESDTTokenName(test.ESDTTestTokenName).
+			WithESDTTokenName([]byte("TT")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
-			host.SetProtocolBuiltinFunctions(getDummyBuiltinFunctionNames())
+			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
@@ -188,6 +198,9 @@ func TestESDT_GettersAPI(t *testing.T) {
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	host, world := test.DefaultTestArwenWithWorldMock(t)
+	defer func() {
+		_ = host.Close()
+	}()
 
 	initialESDTTokenBalance := uint64(1000)
 
@@ -195,8 +208,9 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	// code of the contract is not important, because the exchange will be called
 	// by the "parent" using a manual call to host.ExecuteOnDestContext().
 	dummyCode := test.GetTestSCCode("init-simple", "../../")
+	testToken := []byte("TT")
 	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, dummyCode, world)
-	_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenKey, initialESDTTokenBalance)
+	_ = parentAccount.SetTokenBalanceUint64(testToken, 0, initialESDTTokenBalance)
 
 	// Deploy the exchange contract, which will receive ESDT and verify that it
 	// can see the received token amount and token name.
@@ -216,10 +230,10 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	esdtValue := int64(5)
 	input.CallerAddr = test.ParentAddress
 	input.RecipientAddr = exchangeAddress
-	input.Function = vmcommon.BuiltInFunctionESDTTransfer
+	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
-		test.ESDTTestTokenName,
+		testToken,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),
 	}
@@ -232,7 +246,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 
 	require.Zero(t, len(asyncInfo.AsyncContextMap))
 
-	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenKey)
+	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(testToken, 0)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)
 }
 
@@ -258,7 +272,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	if input.Function == "builtinFail" {
 		return nil, errors.New("whatdidyoudo")
 	}
-	if input.Function == vmcommon.BuiltInFunctionESDTTransfer {
+	if input.Function == core.BuiltInFunctionESDTTransfer {
 		vmOutput := &vmcommon.VMOutput{
 			GasRemaining: 0,
 		}
@@ -271,7 +285,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 			Value:         big.NewInt(0),
 			GasLimit:      input.GasProvided - test.ESDTTransferGasCost + input.GasLocked,
 			Data:          []byte(esdtTransferTxData),
-			CallType:      vmcommon.AsynchronousCall,
+			CallType:      vm.AsynchronousCall,
 			SenderAddress: input.CallerAddr,
 		}
 		vmOutput.OutputAccounts = make(map[string]*vmcommon.OutputAccount)
@@ -287,14 +301,12 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 	return nil, arwen.ErrFuncNotFound
 }
 
-func getDummyBuiltinFunctionNames() vmcommon.FunctionNames {
-	names := make(vmcommon.FunctionNames)
+func getDummyBuiltinFunctionsContainer() vmcommon.BuiltInFunctionContainer {
+	builtInContainer := builtInFunctions.NewBuiltInFunctionContainer()
+	_ = builtInContainer.Add("builtinClaim", &test.MockBuiltin{})
+	_ = builtInContainer.Add("builtinDoSomething", &test.MockBuiltin{})
+	_ = builtInContainer.Add("builtinFail", &test.MockBuiltin{})
+	_ = builtInContainer.Add(core.BuiltInFunctionESDTTransfer, &test.MockBuiltin{})
 
-	var empty struct{}
-	names["builtinClaim"] = empty
-	names["builtinDoSomething"] = empty
-	names["builtinFail"] = empty
-	names[vmcommon.BuiltInFunctionESDTTransfer] = empty
-
-	return names
+	return builtInContainer
 }

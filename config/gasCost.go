@@ -1,14 +1,15 @@
 package config
 
-import "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+import "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 
 type GasCost struct {
-	BaseOperationCost BaseOperationCost
-	BigIntAPICost     BigIntAPICost
-	EthAPICost        EthAPICost
-	ElrondAPICost     ElrondAPICost
-	CryptoAPICost     CryptoAPICost
-	WASMOpcodeCost    WASMOpcodeCost
+	BaseOperationCost    BaseOperationCost
+	BigIntAPICost        BigIntAPICost
+	EthAPICost           EthAPICost
+	ElrondAPICost        ElrondAPICost
+	ManagedBufferAPICost ManagedBufferAPICost
+	CryptoAPICost        CryptoAPICost
+	WASMOpcodeCost       WASMOpcodeCost
 }
 
 type BaseOperationCost struct {
@@ -28,12 +29,14 @@ type ElrondAPICost struct {
 	GetShardOfAddress    uint64
 	GetExternalBalance   uint64
 	GetBlockHash         uint64
+	GetOriginalTxHash    uint64
 	TransferValue        uint64
 	GetArgument          uint64
 	GetFunction          uint64
 	GetNumArguments      uint64
 	StorageStore         uint64
 	StorageLoad          uint64
+	CachedStorageLoad    uint64
 	GetCaller            uint64
 	GetCallValue         uint64
 	Log                  uint64
@@ -60,6 +63,8 @@ type ElrondAPICost struct {
 	GetReturnData        uint64
 	GetNumReturnData     uint64
 	GetReturnDataSize    uint64
+	CleanReturnData      uint64
+	DeleteFromReturnData uint64
 }
 
 type EthAPICost struct {
@@ -112,6 +117,9 @@ type BigIntAPICost struct {
 	BigIntAdd                  uint64
 	BigIntSub                  uint64
 	BigIntMul                  uint64
+	BigIntSqrt                 uint64
+	BigIntPow                  uint64
+	BigIntLog                  uint64
 	BigIntTDiv                 uint64
 	BigIntTMod                 uint64
 	BigIntEDiv                 uint64
@@ -134,15 +142,48 @@ type BigIntAPICost struct {
 	BigIntGetSignedArgument    uint64
 	BigIntGetCallValue         uint64
 	BigIntGetExternalBalance   uint64
+	CopyPerByteForTooBig       uint64
 }
 
 type CryptoAPICost struct {
-	SHA256          uint64
-	Keccak256       uint64
-	Ripemd160       uint64
-	VerifyBLS       uint64
-	VerifyEd25519   uint64
-	VerifySecp256k1 uint64
+	SHA256                 uint64
+	Keccak256              uint64
+	Ripemd160              uint64
+	VerifyBLS              uint64
+	VerifyEd25519          uint64
+	VerifySecp256k1        uint64
+	EllipticCurveNew       uint64
+	AddECC                 uint64
+	DoubleECC              uint64
+	IsOnCurveECC           uint64
+	ScalarMultECC          uint64
+	MarshalECC             uint64
+	MarshalCompressedECC   uint64
+	UnmarshalECC           uint64
+	UnmarshalCompressedECC uint64
+	GenerateKeyECC         uint64
+	EncodeDERSig           uint64
+}
+
+type ManagedBufferAPICost struct {
+	MBufferNew                uint64
+	MBufferNewFromBytes       uint64
+	MBufferGetLength          uint64
+	MBufferGetBytes           uint64
+	MBufferGetByteSlice       uint64
+	MBufferCopyByteSlice      uint64
+	MBufferSetBytes           uint64
+	MBufferAppend             uint64
+	MBufferAppendBytes        uint64
+	MBufferToBigIntUnsigned   uint64
+	MBufferToBigIntSigned     uint64
+	MBufferFromBigIntUnsigned uint64
+	MBufferFromBigIntSigned   uint64
+	MBufferStorageStore       uint64
+	MBufferStorageLoad        uint64
+	MBufferGetArgument        uint64
+	MBufferFinish             uint64
+	MBufferSetRandom          uint64
 }
 
 type WASMOpcodeCost struct {
@@ -595,6 +636,8 @@ type WASMOpcodeCost struct {
 	I16x8RoundingAverageU  uint32
 	LocalAllocate          uint32
 	LocalsUnmetered        uint32
+	MaxMemoryGrow          uint32
+	MaxMemoryGrowDelta     uint32
 }
 
 func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_COUNT]uint32 {
@@ -1048,8 +1091,9 @@ func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_C
 	opcode_costs[wasmer.OpcodeI8x16RoundingAverageU] = opcode_costs_struct.I8x16RoundingAverageU
 	opcode_costs[wasmer.OpcodeI16x8RoundingAverageU] = opcode_costs_struct.I16x8RoundingAverageU
 	opcode_costs[wasmer.OpcodeLocalAllocate] = opcode_costs_struct.LocalAllocate
-	// opcode_costs_struct.LocalsUnmetered is not added to the opcode_costs
-	// array; the value will be sent to Wasmer as a compilation option instead
+	// LocalsUnmetered, MaxMemoryGrow and MaxMemoryGrowDelta are not added to the
+	// opcode_costs array; the values will be sent to Wasmer as compilation
+	// options instead
 
 	return opcode_costs
 }

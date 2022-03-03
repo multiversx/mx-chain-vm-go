@@ -3,8 +3,8 @@ package mock
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookStub)(nil)
@@ -217,7 +217,7 @@ func (b *BlockchainHookStub) IsSmartContract(address []byte) bool {
 }
 
 // IsPayable mocked method
-func (b *BlockchainHookStub) IsPayable(address []byte) (bool, error) {
+func (b *BlockchainHookStub) IsPayable(_, address []byte) (bool, error) {
 	if b.IsPayableCalled != nil {
 		return b.IsPayableCalled(address)
 	}

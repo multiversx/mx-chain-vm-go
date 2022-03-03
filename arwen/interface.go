@@ -1,13 +1,16 @@
 package arwen
 
 import (
+	"crypto/elliptic"
+	"io"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/data/esdt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // StateStack defines the functionality for working with a state stack
@@ -31,31 +34,29 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
-	BigInt() BigIntContext
+	ManagedTypes() ManagedTypesContext
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
-	IsArwenV2Enabled() bool
-	IsAheadOfTimeCompileEnabled() bool
-	IsDynamicGasLockingEnabled() bool
-	IsArwenV3Enabled() bool
-	IsESDTFunctionsEnabled() bool
 
-	ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error)
+	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
 	GetAPIMethods() *wasmer.Imports
-	GetProtocolBuiltinFunctions() vmcommon.FunctionNames
-	SetProtocolBuiltinFunctions(vmcommon.FunctionNames)
 	IsBuiltinFunctionName(functionName string) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
-	GetContexts() (BigIntContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
 
+	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
+
+	FixOOGReturnCodeEnabled() bool
+	CreateNFTOnExecByCallerEnabled() bool
+	Reset()
 }
 
 // BlockchainContext defines the functionality needed for interacting with the blockchain context
@@ -86,7 +87,7 @@ type BlockchainContext interface {
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
-	IsPayable(address []byte) (bool, error)
+	IsPayable(sndAddress, rcvAddress []byte) (bool, error)
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
@@ -119,7 +120,6 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	IsContractOnTheStack(address []byte) bool
 	GetAsyncCallInfo() *AsyncCallInfo
 	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
 	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
@@ -127,12 +127,10 @@ type RuntimeContext interface {
 	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
 	RunningInstancesCount() uint64
 	IsFunctionImported(name string) bool
-	IsWarmInstance() bool
-	ResetWarmInstance()
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
-	CleanWasmerInstance()
+	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	GetInstance() wasmer.InstanceHandler
@@ -148,24 +146,48 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
+	DisableUseDifferentGasCostFlag()
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
-// BigIntContext defines the functionality needed for interacting with the big int context
-type BigIntContext interface {
+// ManagedTypesContext defines the functionality needed for interacting with the big int context
+type ManagedTypesContext interface {
 	StateStack
 
-	Put(value int64) int32
-	GetOne(id int32) *big.Int
-	GetTwo(id1, id2 int32) (*big.Int, *big.Int)
-	GetThree(id1, id2, id3 int32) (*big.Int, *big.Int, *big.Int)
+	GetRandReader() io.Reader
+	ConsumeGasForThisBigIntNumberOfBytes(byteLen *big.Int)
+	ConsumeGasForThisIntNumberOfBytes(byteLen int)
+	ConsumeGasForBytes(bytes []byte)
+	ConsumeGasForBigIntCopy(values ...*big.Int)
+	NewBigInt(value *big.Int) int32
+	NewBigIntFromInt64(int64Value int64) int32
+	GetBigIntOrCreate(handle int32) *big.Int
+	GetBigInt(id int32) (*big.Int, error)
+	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
+	PutEllipticCurve(ec *elliptic.CurveParams) int32
+	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
+	GetEllipticCurveSizeOfField(ecHandle int32) int32
+	Get100xCurveGasCostMultiplier(ecHandle int32) int32
+	GetScalarMult100xCurveGasCostMultiplier(ecHandle int32) int32
+	GetUCompressed100xCurveGasCostMultiplier(ecHandle int32) int32
+	GetPrivateKeyByteLengthEC(ecHandle int32) int32
+	NewManagedBuffer() int32
+	NewManagedBufferFromBytes(bytes []byte) int32
+	SetBytes(mBufferHandle int32, bytes []byte)
+	GetBytes(mBufferHandle int32) ([]byte, error)
+	AppendBytes(mBufferHandle int32, bytes []byte) bool
+	GetLength(mBufferHandle int32) int32
+	GetSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
+	DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error)
+	InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error)
+	ReadManagedVecOfManagedBuffers(managedVecHandle int32) ([][]byte, uint64, error)
+	WriteManagedVecOfManagedBuffers(data [][]byte, destinationHandle int32)
 }
 
 // OutputContext defines the functionality needed for interacting with the output context
@@ -180,8 +202,8 @@ type OutputContext interface {
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
-	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vmcommon.CallType) error
-	TransferESDT(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callInput *vmcommon.ContractCallInput) (uint64, error)
+	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error
+	TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error)
 	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -191,9 +213,12 @@ type OutputContext interface {
 	SetReturnMessage(message string)
 	ReturnData() [][]byte
 	ClearReturnData()
+	RemoveReturnData(index uint32)
 	Finish(data []byte)
 	PrependFinish(data []byte)
+	DeleteFirstReturnData()
 	GetVMOutput() *vmcommon.VMOutput
+	RemoveNonUpdatedStorage()
 	AddTxValueToAccount(address []byte, value *big.Int)
 	DeployCode(input CodeDeployInput)
 	CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput
@@ -208,6 +233,8 @@ type MeteringContext interface {
 	SetGasSchedule(gasMap config.GasScheduleMap)
 	GasSchedule() *config.GasCost
 	UseGas(gas uint64)
+	UseAndTraceGas(gas uint64)
+	UseGasAndAddTracedGas(functionName string, gas uint64)
 	FreeGas(gas uint64)
 	RestoreGas(gas uint64)
 	GasLeft() uint64
@@ -228,6 +255,9 @@ type MeteringContext interface {
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	StartGasTracing(functionName string)
+	SetGasTracing(enableGasTracing bool)
+	GetGasTrace() map[string]map[string][]uint64
 }
 
 // StorageStatus defines the states the storage can be in
@@ -253,11 +283,14 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorageFromAddress(address []byte, key []byte) []byte
-	GetStorage(key []byte) []byte
-	GetStorageUnmetered(key []byte) []byte
+	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
+	GetStorage(key []byte) ([]byte, bool)
+	GetStorageUnmetered(key []byte) ([]byte, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
+	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
+	DisableUseDifferentGasCostFlag()
+	IsUseDifferentGasCostFlagSet() bool
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
@@ -273,4 +306,13 @@ type AsyncCallInfoHandler interface {
 type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+}
+
+// GasTracing defines the functionality needed for a gas tracing
+type GasTracing interface {
+	BeginTrace(scAddress string, functionName string)
+	AddToCurrentTrace(usedGas uint64)
+	AddTracedGas(scAddress string, functionName string, usedGas uint64)
+	GetGasTrace() map[string]map[string][]uint64
+	IsInterfaceNil() bool
 }

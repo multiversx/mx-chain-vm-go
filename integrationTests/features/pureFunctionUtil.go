@@ -7,13 +7,14 @@ import (
 	"strings"
 	"testing"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/config"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,12 +43,15 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
 	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
 		VMType:                   testVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,
-		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
+		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &worldhook.EpochNotifierStub{},
 	})
 	if err != nil {
 		return nil, err
@@ -117,8 +121,10 @@ func (pfe *pureFunctionExecutor) checkTxResults(
 
 	// check result
 	if len(output.ReturnData) != len(testCase.expectedResults) {
+		rec := er.ExprReconstructor{}
 		return fmt.Errorf("result length mismatch. Want: %s. Have: %s",
-			mj.ResultAsString(testCase.expectedResults), mj.ResultAsString(output.ReturnData))
+			rec.ReconstructList(testCase.expectedResults, er.NoHint),
+			rec.ReconstructList(output.ReturnData, er.NoHint))
 	}
 	for i, expected := range testCase.expectedResults {
 		wantNum := resultInterpreter(expected)
@@ -153,5 +159,8 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
+
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}
 }

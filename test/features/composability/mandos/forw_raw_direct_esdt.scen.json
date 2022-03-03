@@ -8,21 +8,17 @@
                     "nonce": "0",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKEN": "1000"
-                    },
-                    "storage": {},
-                    "code": ""
+                        "str:TEST-TOKENA": "1000"
+                    }
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
                 }
             }
@@ -33,11 +29,12 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
-                "esdt": {
-                    "tokenIdentifier": "str:TEST-TOKEN",
-                    "value": "1000"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:TEST-TOKENA",
+                        "value": "1000"
+                    }
+                ],
                 "function": "forward_payment",
                 "arguments": [
                     "sc:vault"
@@ -51,10 +48,20 @@
                 "logs": [
                     {
                         "address": "sc:forwarder",
-                        "identifier": "str:callback_raw",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
-                            "str:EGLD",
-                            "0"
+                            "str:TEST-TOKENA",
+                            "",
+                            "1000",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:forwarder",
+                        "endpoint": "str:callBack",
+                        "topics": [
+                            "str:callback_raw"
                         ],
                         "data": {
                             "0-status": "biguint:0"
@@ -72,7 +79,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "esdt": {
-                        "str:TEST-TOKEN": "0"
+                        "str:TEST-TOKENA": "0"
                     },
                     "storage": {},
                     "code": ""
@@ -80,10 +87,10 @@
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "esdt": {
-                        "str:TEST-TOKEN": "1000"
+                        "str:TEST-TOKENA": "1000"
                     },
+                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
@@ -92,9 +99,6 @@
                     "storage": {
                         "str:callback_data.len": "1",
                         "str:callback_data.item|u32:1": [
-                            "u32:4", "str:EGLD",
-                            "u32:0",
-                            "u32:1",
                             "u32:0"
                         ]
                     },

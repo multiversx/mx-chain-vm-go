@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
 // TestToJSONString converts a test object to its JSON representation.
@@ -38,7 +38,7 @@ func testToOJ(test *mj.Test) oj.OJsonObject {
 	blocksOJ := oj.OJsonList(blockList)
 	testOJ.Put("blocks", &blocksOJ)
 	testOJ.Put("network", stringToOJ(test.Network))
-	testOJ.Put("blockHashes", blockHashesToOJ(test.BlockHashes))
+	testOJ.Put("blockHashes", valueListToOJ(test.BlockHashes))
 	testOJ.Put("postState", checkAccountsToOJ(test.PostState))
 	return testOJ
 }
@@ -48,7 +48,7 @@ func transactionToTestOJ(tx *mj.Transaction) oj.OJsonObject {
 	transactionOJ.Put("nonce", uint64ToOJ(tx.Nonce))
 	transactionOJ.Put("function", stringToOJ(tx.Function))
 	transactionOJ.Put("gasLimit", uint64ToOJ(tx.GasLimit))
-	transactionOJ.Put("value", bigIntToOJ(tx.Value))
+	transactionOJ.Put("value", bigIntToOJ(tx.EGLDValue))
 	transactionOJ.Put("to", bytesFromStringToOJ(tx.To))
 
 	var argList []oj.OJsonObject

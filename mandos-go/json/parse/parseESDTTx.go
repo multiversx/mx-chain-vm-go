@@ -4,20 +4,50 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
-func (p *Parser) processTxESDT(txEsdtRaw oj.OJsonObject) (*mj.ESDTTxData, error) {
-	fieldMap, isMap := txEsdtRaw.(*oj.OJsonMap)
-	if !isMap {
-		return nil, errors.New("unmarshalled account object is not a map")
+func (p *Parser) processTxESDT(txEsdtRaw oj.OJsonObject) ([]*mj.ESDTTxData, error) {
+	allEsdtData := []*mj.ESDTTxData{}
+
+	switch txEsdt := txEsdtRaw.(type) {
+	case *oj.OJsonMap:
+		if !p.AllowEsdtTxLegacySyntax {
+			return nil, fmt.Errorf("wrong ESDT Multi-Transfer format, list expected")
+		}
+		entry, err := p.parseSingleTxEsdtEntry(txEsdt)
+		if err != nil {
+			return nil, err
+		}
+
+		allEsdtData = append(allEsdtData, entry)
+	case *oj.OJsonList:
+		for _, txEsdtListItem := range txEsdt.AsList() {
+			txEsdtMap, isMap := txEsdtListItem.(*oj.OJsonMap)
+			if !isMap {
+				return nil, fmt.Errorf("wrong ESDT Multi-Transfer format")
+			}
+
+			entry, err := p.parseSingleTxEsdtEntry(txEsdtMap)
+			if err != nil {
+				return nil, err
+			}
+
+			allEsdtData = append(allEsdtData, entry)
+		}
+	default:
+		return nil, fmt.Errorf("wrong ESDT transfer format, expected list")
 	}
 
+	return allEsdtData, nil
+}
+
+func (p *Parser) parseSingleTxEsdtEntry(esdtTxEntry *oj.OJsonMap) (*mj.ESDTTxData, error) {
 	esdtData := mj.ESDTTxData{}
 	var err error
 
-	for _, kvp := range fieldMap.OrderedKV {
+	for _, kvp := range esdtTxEntry.OrderedKV {
 		switch kvp.Key {
 		case "tokenIdentifier":
 			esdtData.TokenIdentifier, err = p.processStringAsByteArray(kvp.Value)

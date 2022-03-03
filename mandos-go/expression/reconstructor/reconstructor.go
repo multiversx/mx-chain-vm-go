@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	ei "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/expression/interpreter"
+	ei "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/interpreter"
 )
 
 type ExprReconstructorHint uint64
@@ -56,6 +56,15 @@ func (er *ExprReconstructor) ReconstructFromBigInt(value *big.Int) string {
 
 func (er *ExprReconstructor) ReconstructFromUint64(value uint64) string {
 	return er.Reconstruct(big.NewInt(0).SetUint64(value).Bytes(), NumberHint)
+}
+
+func (er *ExprReconstructor) ReconstructList(values [][]byte, hint ExprReconstructorHint) string {
+	var strs []string
+	for _, value := range values {
+		strs = append(strs, "\""+er.Reconstruct(value, hint)+"\"")
+	}
+
+	return "[" + strings.Join(strs, ", ") + "]"
 }
 
 func unknownByteArrayPretty(bytes []byte) string {

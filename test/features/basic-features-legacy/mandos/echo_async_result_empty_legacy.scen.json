@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0x100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_async_result_empty",
                 "arguments": [
                     "0"
@@ -36,7 +32,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -47,7 +43,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "echo_async_result_empty",
                 "arguments": [
                     "5",
@@ -60,11 +55,10 @@
                 "out": [],
                 "status": "4",
                 "message": "str:message",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
         }
-        
     ]
 }

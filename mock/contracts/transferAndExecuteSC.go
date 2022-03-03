@@ -1,0 +1,49 @@
+package contracts
+
+import (
+	"fmt"
+	"math/big"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+)
+
+// TransferAndExecuteFuncName -
+var TransferAndExecuteFuncName = "transferAndExecute"
+
+// TransferAndExecuteReturnData -
+var TransferAndExecuteReturnData = []byte{1, 2, 3}
+
+// TransferAndExecute is an exposed mock contract method
+func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(TransferAndExecuteTestConfig)
+	instanceMock.AddMockMethod(TransferAndExecuteFuncName, func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		host.Metering().UseGas(testConfig.GasUsedByParent)
+
+		arguments := host.Runtime().Arguments()
+		noOfTransfers := int(big.NewInt(0).SetBytes(arguments[0]).Int64())
+
+		for transfer := 0; transfer < noOfTransfers; transfer++ {
+			elrondapi.TransferValueExecuteWithTypedArgs(host,
+				GetChildAddressForTransfer(transfer),
+				big.NewInt(testConfig.TransferFromParentToChild),
+				int64(testConfig.GasTransferToChild),
+				big.NewInt(int64(transfer)).Bytes(), // transfer data
+				[][]byte{},
+			)
+		}
+
+		host.Output().Finish([]byte(TransferAndExecuteReturnData))
+
+		return instance
+	})
+}
+
+// GetChildAddressForTransfer -
+func GetChildAddressForTransfer(transfer int) []byte {
+	return testcommon.MakeTestSCAddress(fmt.Sprintf("childSC-%d", transfer))
+}

@@ -3,14 +3,14 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type testTemplateConfig struct {
-	t        *testing.T
+	tb       testing.TB
 	input    *vmcommon.ContractCallInput
 	useMocks bool
 }
@@ -24,10 +24,10 @@ type MockInstancesTestTemplate struct {
 }
 
 // BuildMockInstanceCallTest starts the building process for a mock contract call test
-func BuildMockInstanceCallTest(t *testing.T) *MockInstancesTestTemplate {
+func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 	return &MockInstancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
-			t:        t,
+			tb:       tb,
 			useMocks: true,
 		},
 		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
@@ -59,11 +59,13 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func
 }
 
 func (callerTest *MockInstancesTestTemplate) runTest() {
-
-	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.t)
+	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.tb)
+	defer func() {
+		host.Reset()
+	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.initialize(callerTest.t, host, imb)
+		mockSC.initialize(callerTest.tb, host, imb)
 	}
 
 	callerTest.setup(host, world)
@@ -73,7 +75,7 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
 
 	allErrors := host.Runtime().GetAllErrors()
-	verify := NewVMOutputVerifierWithAllErrors(callerTest.t, vmOutput, err, allErrors)
+	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
 	callerTest.assertResults(world, verify)
 }
 
@@ -82,6 +84,15 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
 		host.Metering().UseGas(gas)
+		instance := mock.GetMockInstance(host)
+		return instance
+	}
+}
+
+// Empty
+func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
+	return func() *mock.InstanceMock {
+		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		return instance
 	}

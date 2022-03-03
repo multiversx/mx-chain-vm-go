@@ -8,6 +8,42 @@ void getOwnerAddress(byte *address);
 int getShardOfAddress(byte *address);
 int isSmartContract(byte *address);
 
+// EllipticCurve-Related functions
+
+void addEC(int xResultHandle, int yResultHandle, int ecHandle, int fstPointXHandle, int fstPointYHandle, int sndPointXHandle, int sndPointYHandle);
+void doubleEC(int xResultHandle, int yResultHandle, int ecHandle, int pointXHandle, int pointYHandle);
+int isOnCurveEC(int ecHandle, int pointXHandle, int pointYHandle);
+int scalarBaseMultEC(int xResultHandle, int yResultHandle, int ecHandle, byte *dataOffset, int length);
+int scalarMultEC(int xResultHandle, int yResultHandle, int ecHandle, int pointXHandle, int pointYHandle, byte *dataOffset, int length);
+int marshalEC(int xPairHandle, int yPairHandle, int ecHandle, byte *resultOffset);
+int unmarshalEC(int xResultHandle, int yResultHandle, int ecHandle, byte *dataOffset, int length);
+int marshalCompressedEC(int xPairHandle, int yPairHandle, int ecHandle, byte *resultOffset);
+int unmarshalCompressedEC(int xResultHandle, int yResultHandle, int ecHandle, byte *dataOffset, int length);
+int generateKeyEC(int xPubKeyHandle, int yPubKeyHandle, int ecHandle, byte *resultOffset);
+int getCurveLengthEC(int ecHandle);
+int getPrivKeyByteLengthEC(int ecHandle);
+int createEC(byte *dataOffset, int dataLength);
+int ellipticCurveGetValues(int ecHandle, int fieldOrderHandle, int basePointOrderHandle, int eqConstantHandle, int xBasePointHandle, int yBasePointHandle);
+
+// Managed Buffers
+int	mBufferNew();
+int mBufferNewFromBytes(byte*dataOffset, int dataLength);
+int mBufferSetRandom(int mBufferHandle, int length);
+int	mBufferSetBytes(int mBufferHandle, byte *dataOffset, int dataLength);
+int	mBufferSetByteSlice(int mBufferHandle, int startingPosition, int dataLength, byte *dataOffset);
+int mBufferGetLength(int mBufferHandle);
+int	mBufferGetBytes(int mBufferHandle, byte *resultOffset);
+int	mBufferAppend(int mBufferHandle, int otherHandle);
+int	mBufferAppendBytes(int mBufferHandle, byte *dataOffset, int dataLength);
+int	mBufferToBigIntUnsigned(int mBufferHandle, int bigIntHandle);
+int mBufferToBigIntSigned(int mBufferHandle, int bigIntHandle);
+int	mBufferFromBigIntUnsigned(int mBufferHandle, int bigIntHandle);
+int	mBufferFromBigIntSigned(int mBufferHandle, int bigIntHandle);
+int	mBufferStorageStore(int keyHandle, int mBufferHandle);
+int	mBufferStorageLoad(int keyHandle, int mBufferHandle);
+int	mBufferGetArgument(int id, int mBufferHandle);
+int	mBufferFinish(int mBufferHandle);
+
 // Call-related functions
 void getCaller(byte *callerAddress);
 int getFunction(byte *function);

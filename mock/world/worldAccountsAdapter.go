@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -41,7 +41,12 @@ func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (vmcommon.Accou
 
 // LoadAccount -
 func (m *MockAccountsAdapter) LoadAccount(address []byte) (vmcommon.AccountHandler, error) {
-	return m.GetExistingAccount(address)
+	account, exists := m.World.AcctMap[string(address)]
+	if !exists {
+		account = m.World.AcctMap.CreateAccount(address, m.World)
+	}
+
+	return account, nil
 }
 
 // SaveAccount -

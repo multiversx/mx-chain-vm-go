@@ -1,34 +1,49 @@
 package arwenmandos
 
 import (
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/controller"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
+	}
 	ae.World.Clear()
+}
+
+// Close will simply close the VM
+func (ae *ArwenTestExecutor) Close() {
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
+	}
 }
 
 // ExecuteScenario executes an individual test.
 func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
-	err := ae.SetMandosGasSchedule(scenario.GasSchedule)
+	resetGasTracesIfNewTest(ae, scenario)
+
+	err := ae.InitVM(scenario.GasSchedule)
 	if err != nil {
 		return err
 	}
 
 	txIndex := 0
 	for _, generalStep := range scenario.Steps {
+		setGasTraceInMetering(ae, true)
 		err := ae.ExecuteStep(generalStep)
 		if err != nil {
 			return err
 		}
-
+		setGasTraceInMetering(ae, false)
 		txIndex++
 	}
 
@@ -42,6 +57,9 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	switch step := generalStep.(type) {
 	case *mj.ExternalStepsStep:
 		err = ae.ExecuteExternalStep(step)
+		length := len(ae.scenarioTraceGas)
+		ae.scenarioTraceGas = ae.scenarioTraceGas[:length-1]
+		return err
 	case *mj.SetStateStep:
 		err = ae.ExecuteSetStateStep(step)
 	case *mj.CheckStateStep:
@@ -51,6 +69,8 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	case *mj.DumpStateStep:
 		err = ae.DumpWorld()
 	}
+
+	logGasTrace(ae)
 
 	return err
 }
@@ -67,7 +87,9 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 	externalStepsRunner := mc.NewScenarioRunner(ae, clonedFileResolver)
 
 	extAbsPth := ae.fileResolver.ResolveAbsolutePath(step.Path)
-	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth)
+	setExternalStepGasTracing(ae, step)
+
+	err := externalStepsRunner.RunSingleJSONScenario(extAbsPth, mc.DefaultRunScenarioOptions())
 	if err != nil {
 		return err
 	}
@@ -98,9 +120,9 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	}
 
 	// replace block info
-	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo)
-	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo)
-	ae.World.Blockhashes = mj.JSONBytesFromStringValues(step.BlockHashes)
+	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo, ae.World.PreviousBlockInfo)
+	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo, ae.World.CurrentBlockInfo)
+	ae.World.Blockhashes = step.BlockHashes.ToValues()
 
 	// append NewAddressMocks
 	err := validateNewAddressMocks(step.NewAddressMocks)
@@ -120,9 +142,17 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 		log.Trace("ExecuteTxStep", "comment", step.Comment)
 	}
 
+	if step.DisplayLogs {
+		arwen.SetLoggingForTests()
+	}
+
 	output, err := ae.executeTx(step.TxIdent, step.Tx)
 	if err != nil {
 		return nil, err
+	}
+
+	if step.DisplayLogs {
+		arwen.DisableLoggingForTests()
 	}
 
 	// check results

@@ -4,9 +4,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -531,7 +531,9 @@ func TestOutputContext_WriteLog(t *testing.T) {
 	t.Parallel()
 
 	host := &contextmock.VMHostMock{
-		RuntimeContext: &contextmock.RuntimeContextMock{},
+		RuntimeContext: &contextmock.RuntimeContextMock{
+			CallFunction: "function",
+		},
 	}
 	outputContext, _ := NewOutputContext(host)
 
@@ -543,15 +545,14 @@ func TestOutputContext_WriteLog(t *testing.T) {
 	require.Equal(t, len(outputContext.outputState.Logs), 1)
 	require.Equal(t, outputContext.outputState.Logs[0].Address, address)
 	require.Equal(t, outputContext.outputState.Logs[0].Data, data)
-	require.Empty(t, outputContext.outputState.Logs[0].Identifier)
+	require.Equal(t, outputContext.outputState.Logs[0].Identifier, []byte("function"))
 	require.Empty(t, outputContext.outputState.Logs[0].Topics)
 
-	identifier := []byte("identifier")
 	topic := []byte("topic")
-	topics = append(topics, identifier)
+	topics = [][]byte{}
 	outputContext.WriteLog(address, topics, data)
 
-	require.Equal(t, outputContext.outputState.Logs[1].Identifier, identifier)
+	require.Equal(t, outputContext.outputState.Logs[1].Identifier, []byte("function"))
 	require.Empty(t, outputContext.outputState.Logs[1].Topics)
 
 	topics = append(topics, topic)
@@ -563,26 +564,26 @@ func TestOutputContext_WriteLog(t *testing.T) {
 func TestOutputContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, _ := NewOutputContext(&contextmock.VMHostMock{})
-	bigIntContext.PopSetActiveState()
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext.PopSetActiveState()
 
-	require.Equal(t, 0, len(bigIntContext.stateStack))
+	require.Equal(t, 0, len(outputContext.stateStack))
 }
 
 func TestOutputContext_PopMergeActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, _ := NewOutputContext(&contextmock.VMHostMock{})
-	bigIntContext.PopMergeActiveState()
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext.PopMergeActiveState()
 
-	require.Equal(t, 0, len(bigIntContext.stateStack))
+	require.Equal(t, 0, len(outputContext.stateStack))
 }
 
 func TestOutputContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	bigIntContext, _ := NewOutputContext(&contextmock.VMHostMock{})
-	bigIntContext.PopDiscard()
+	outputContext, _ := NewOutputContext(&contextmock.VMHostMock{})
+	outputContext.PopDiscard()
 
-	require.Equal(t, 0, len(bigIntContext.stateStack))
+	require.Equal(t, 0, len(outputContext.stateStack))
 }

@@ -7,9 +7,7 @@
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0xe8d4a51000"
                 },
                 "sc:erc20": {
                     "nonce": "0",
@@ -29,7 +27,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "transferFrom",
                 "arguments": [
                     "0x7777777777777777777707777777777777777777777777177777777777771234",
@@ -43,7 +40,7 @@
                 "out": [],
                 "status": "0x04",
                 "message": "str:allowance exceeded",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

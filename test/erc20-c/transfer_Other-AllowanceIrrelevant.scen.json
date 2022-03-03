@@ -7,9 +7,7 @@
             "accounts": {
                 "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000": {
                     "nonce": "0",
-                    "balance": "0xe8d4a51000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0xe8d4a51000"
                 },
                 "sc:erc20": {
                     "nonce": "0",
@@ -28,7 +26,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "approve",
                 "arguments": [
                     "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
@@ -43,8 +40,9 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "0x7134692b230b9e1ffa39098904722134159652b09c5bc41d88d6698779d228ff",
+                        "endpoint": "str:approve",
                         "topics": [
+                            "0x7134692b230b9e1ffa39098904722134159652b09c5bc41d88d6698779d228ff",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000"
                         ],
@@ -61,7 +59,6 @@
             "tx": {
                 "from": "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                 "to": "sc:erc20",
-                "value": "0",
                 "function": "transferToken",
                 "arguments": [
                     "0x1234123400000000000000000000000000000000000000000000000000000004",
@@ -76,8 +73,9 @@
                 "logs": [
                     {
                         "address": "sc:erc20",
-                        "identifier": "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
+                        "endpoint": "str:transferToken",
                         "topics": [
+                            "0xf099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
                             "0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b000000000000000000000000",
                             "0x1234123400000000000000000000000000000000000000000000000000000004"
                         ],

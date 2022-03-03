@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/elrond-go-logger/check"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
@@ -21,7 +23,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
 		}
-		host.Clean()
 	}()
 
 	_, blockchain, metering, output, runtime, storage := host.GetContexts()
@@ -84,8 +85,11 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
+	if host.flagRemoveNonUpdatedStorage.IsSet() {
+		output.RemoveNonUpdatedStorage()
+	}
+
 	vmOutput := output.GetVMOutput()
-	runtime.CleanWasmerInstance()
 	return vmOutput, nil
 }
 
@@ -97,7 +101,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
 		}
-		host.Clean()
 	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
@@ -129,10 +132,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, metering arwen.MeteringContext) error {
-	if !host.IsArwenV2Enabled() {
-		return nil
-	}
-
 	getCodeBaseCost := metering.GasSchedule().BaseOperationCost.GetCode
 	if input.GasProvided < getCodeBaseCost {
 		return arwen.ErrNotEnoughGas
@@ -148,7 +147,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errs)
 		}
-		host.Clean()
 	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
@@ -187,6 +185,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
+	if host.flagRemoveNonUpdatedStorage.IsSet() {
+		output.RemoveNonUpdatedStorage()
+	}
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
@@ -194,14 +195,10 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
 
-	runtime.CleanWasmerInstance()
 	return
 }
 
-func copyTxHashesFromContext(copyEnabled bool, runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
-	if !copyEnabled {
-		return
-	}
+func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
 	currentVMInput := runtime.GetVMInput()
 	if len(currentVMInput.OriginalTxHash) > 0 {
 		input.OriginalTxHash = currentVMInput.OriginalTxHash
@@ -262,14 +259,14 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 }
 
 func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, asyncInfo *arwen.AsyncContextInfo, err error) {
-	bigInt, _, metering, output, runtime, storage := host.GetContexts()
-	bigInt.PushState()
-	bigInt.InitState()
+	managedTypes, _, metering, output, runtime, storage := host.GetContexts()
+	managedTypes.PushState()
+	managedTypes.InitState()
 
 	output.PushState()
 	output.CensorVMOutput()
 
-	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
+	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -289,7 +286,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 
 	// Perform a value transfer to the called SC. If the execution fails, this
 	// transfer will not persist.
-	if input.CallType != vmcommon.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
+	if input.CallType != vm.AsynchronousCallBack || input.CallValue.Cmp(arwen.Zero) == 0 {
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
@@ -309,7 +306,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
-	bigInt, _, metering, output, runtime, storage := host.GetContexts()
+	managedTypes, _, metering, output, runtime, storage := host.GetContexts()
 
 	var vmOutput *vmcommon.VMOutput
 	if executeErr != nil {
@@ -325,7 +322,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	gasSpentByChildContract := metering.GasSpentByContract()
 
 	// Restore the previous context states
-	bigInt.PopSetActiveState()
+	managedTypes.PopSetActiveState()
 	storage.PopSetActiveState()
 
 	if vmOutput.ReturnCode == vmcommon.Ok {
@@ -356,14 +353,15 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 		return nil, arwen.ErrBuiltinCallOnSameContextDisallowed
 	}
 
-	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
+	managedTypes, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	// Back up the states of the contexts (except Storage, which isn't affected
 	// by ExecuteOnSameContext())
-	bigInt.PushState()
+	managedTypes.PushState()
+	managedTypes.InitState()
 	output.PushState()
 
-	copyTxHashesFromContext(host.IsESDTFunctionsEnabled(), runtime, input)
+	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -394,15 +392,15 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 }
 
 func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
-	bigInt, blockchain, metering, output, runtime, _ := host.GetContexts()
+	managedTypes, blockchain, metering, output, runtime, _ := host.GetContexts()
 
 	if output.ReturnCode() != vmcommon.Ok || executeErr != nil {
 		// Execution failed: restore contexts as if the execution didn't happen.
-		bigInt.PopSetActiveState()
+		managedTypes.PopSetActiveState()
 		metering.PopSetActiveState()
 		output.PopSetActiveState()
-		runtime.PopSetActiveState()
 		blockchain.PopSetActiveState()
+		runtime.PopSetActiveState()
 		return
 	}
 
@@ -413,10 +411,9 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 	metering.PopMergeActiveState()
 	output.PopDiscard()
-	bigInt.PopDiscard()
 	blockchain.PopDiscard()
+	managedTypes.PopSetActiveState()
 	runtime.PopSetActiveState()
-
 	// Restore remaining gas to the caller (parent) Wasmer instance
 	metering.RestoreGas(vmOutput.GasRemaining)
 }
@@ -433,8 +430,12 @@ func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
-	_, ok := host.protocolBuiltinFunctions[functionName]
-	return ok
+	function, err := host.builtInFuncContainer.Get(functionName)
+	if err != nil {
+		return false
+	}
+
+	return function.IsActive()
 }
 
 // CreateNewContract creates a new contract indirectly (from another Smart Contract)
@@ -652,8 +653,12 @@ func (host *vmHost) callSCMethodIndirect() error {
 }
 
 // ExecuteESDTTransfer calls the process built in function with the given transfer for ESDT/ESDTNFT if nonce > 0
-// there are no NFTs with nonce == 0
-func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, tokenIdentifier []byte, nonce uint64, value *big.Int, callType vmcommon.CallType) (*vmcommon.VMOutput, uint64, error) {
+// there are no NFTs with nonce == 0, it will call multi transfer if multiple tokens are sent
+func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
+	if len(transfers) == 0 {
+		return nil, 0, arwen.ErrFailedTransfer
+	}
+
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -667,22 +672,34 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			GasLocked:   0,
 		},
 		RecipientAddr:     destination,
-		Function:          vmcommon.BuiltInFunctionESDTTransfer,
+		Function:          core.BuiltInFunctionESDTTransfer,
 		AllowInitFunction: false,
 	}
 
-	if nonce > 0 {
-		esdtTransferInput.Function = vmcommon.BuiltInFunctionESDTNFTTransfer
-		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
-		nonceAsBytes := big.NewInt(0).SetUint64(nonce).Bytes()
-		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, nonceAsBytes, value.Bytes(), destination)
+	if len(transfers) == 1 {
+		if transfers[0].ESDTTokenNonce > 0 {
+			esdtTransferInput.Function = core.BuiltInFunctionESDTNFTTransfer
+			esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
+			nonceAsBytes := big.NewInt(0).SetUint64(transfers[0].ESDTTokenNonce).Bytes()
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, nonceAsBytes, transfers[0].ESDTValue.Bytes(), destination)
+		} else {
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfers[0].ESDTTokenName, transfers[0].ESDTValue.Bytes())
+		}
 	} else {
-		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, tokenIdentifier, value.Bytes())
+		esdtTransferInput.Function = core.BuiltInFunctionMultiESDTNFTTransfer
+		esdtTransferInput.RecipientAddr = esdtTransferInput.CallerAddr
+		esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, destination, big.NewInt(int64(len(transfers))).Bytes())
+		for _, transfer := range transfers {
+			nonceAsBytes := big.NewInt(0).SetUint64(transfer.ESDTTokenNonce).Bytes()
+			esdtTransferInput.Arguments = append(esdtTransferInput.Arguments, transfer.ESDTTokenName, nonceAsBytes, transfer.ESDTValue.Bytes())
+		}
 	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(esdtTransferInput)
 	log.Trace("ESDT transfer", "sender", sender, "dest", destination)
-	log.Trace("ESDT transfer", "token", tokenIdentifier, "value", value)
+	for _, transfer := range transfers {
+		log.Trace("ESDT transfer", "token", transfer.ESDTTokenName, "nonce", transfer.ESDTTokenNonce, "value", transfer.ESDTValue)
+	}
 	if err != nil {
 		log.Trace("ESDT transfer", "error", err)
 		return vmOutput, esdtTransferInput.GasProvided, err
@@ -698,7 +715,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, token
 			gasConsumed = math.SubUint64(gasConsumed, transfer.GasLimit)
 		}
 	}
-	if callType != vmcommon.AsynchronousCallBack {
+	if callType != vm.AsynchronousCallBack {
 		if metering.GasLeft() < gasConsumed {
 			log.Trace("ESDT transfer", "error", arwen.ErrNotEnoughGas)
 			return vmOutput, esdtTransferInput.GasProvided, arwen.ErrNotEnoughGas
@@ -745,22 +762,17 @@ func (host *vmHost) addESDTTransferToVMOutputSCIntraShardCall(
 	if output.ReturnCode != vmcommon.Ok {
 		return
 	}
-	if !host.AreInSameShard(input.RecipientAddr, input.CallerAddr) {
-		return
-	}
-	isESDTTransfer := input.Function == vmcommon.BuiltInFunctionESDTTransfer || input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
-	if !isESDTTransfer {
+
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(input.CallerAddr, input.RecipientAddr, input.Function, input.Arguments)
+	if err != nil {
 		return
 	}
 
-	recipientAddr := input.RecipientAddr
-	if input.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		if len(input.Arguments) != 4 {
-			return
-		}
-		recipientAddr = input.Arguments[3]
+	if !host.AreInSameShard(input.CallerAddr, parsedTransfer.RcvAddr) {
+		return
 	}
-	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, recipientAddr, input.CallType, output)
+
+	addOutputTransferToVMOutput(input.Function, input.Arguments, input.CallerAddr, parsedTransfer.RcvAddr, input.CallType, output)
 }
 
 func addOutputTransferToVMOutput(
@@ -768,7 +780,7 @@ func addOutputTransferToVMOutput(
 	arguments [][]byte,
 	sender []byte,
 	recipient []byte,
-	callType vmcommon.CallType,
+	callType vm.CallType,
 	vmOutput *vmcommon.VMOutput,
 ) {
 	esdtTransferTxData := function
@@ -797,15 +809,13 @@ func addOutputTransferToVMOutput(
 }
 
 func (host *vmHost) checkFinalGasAfterExit() error {
-	if !host.IsArwenV2Enabled() {
-		return nil
-	}
-
 	totalUsedPoints := host.Runtime().GetPointsUsed()
 	if totalUsedPoints > host.Metering().GetGasForExecution() {
+		log.Trace("checkFinalGasAfterExit", "failed")
 		return arwen.ErrNotEnoughGas
 	}
 
+	log.Trace("checkFinalGasAfterExit", "ok")
 	return nil
 }
 
@@ -839,39 +849,40 @@ func (host *vmHost) callSCMethod() error {
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "verifyAllowedFunctionCall")
 		return err
 	}
 
 	callType := runtime.GetVMInput().CallType
 	function, err := host.getFunctionByCallType(callType)
 	if err != nil {
-		if callType == vmcommon.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
+		if callType == vm.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
 			err = host.processCallbackStack()
 			if err != nil {
-				log.Trace("call SC method failed", "error", err)
+				log.Trace("call SC method failed", "error", err, "src", "processCallbackStack")
 			}
 
 			return err
 		}
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "getFunctionByCallType")
 		return err
 	}
 
 	_, err = function()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+		log.Trace("breakpoint detected and handled", "err", err)
 	}
 	if err == nil {
 		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "sc function")
 		return err
 	}
 
 	switch callType {
-	case vmcommon.AsynchronousCall:
+	case vm.AsynchronousCall:
 		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
 			log.Trace("call SC method failed", "error", paiErr)
@@ -880,14 +891,14 @@ func (host *vmHost) callSCMethod() error {
 		if len(pendingMap.AsyncContextMap) == 0 {
 			err = host.sendCallbackToCurrentCaller()
 		}
-	case vmcommon.AsynchronousCallBack:
+	case vm.AsynchronousCallBack:
 		err = host.processCallbackStack()
 	default:
 		_, err = host.processAsyncInfo(runtime.GetAsyncContextInfo())
 	}
 
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "async post-process")
 	}
 
 	return err
@@ -903,7 +914,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	}
 
 	isCallBack := functionName == arwen.CallbackFunctionName
-	isInAsyncCallBack := runtime.GetVMInput().CallType == vmcommon.AsynchronousCallBack
+	isInAsyncCallBack := runtime.GetVMInput().CallType == vm.AsynchronousCallBack
 	if isCallBack && !isInAsyncCallBack {
 		return arwen.ErrCallBackFuncCalledInRun
 	}
@@ -918,18 +929,23 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		return nil, nil
 	}
-	recipient := vmInput.RecipientAddr
-	if vmInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer && bytes.Equal(vmInput.CallerAddr, vmInput.RecipientAddr) {
-		recipient = vmInput.Arguments[3]
-	}
-	if !host.AreInSameShard(vmInput.CallerAddr, recipient) {
-		return nil, nil
-	}
-	if !host.Blockchain().IsSmartContract(recipient) {
+	if vmInput.ReturnCallAfterError && vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, nil
 	}
 
-	outAcc, ok := vmOutput.OutputAccounts[string(recipient)]
+	parsedTransfer, err := host.esdtTransferParser.ParseESDTTransfers(vmInput.CallerAddr, vmInput.RecipientAddr, vmInput.Function, vmInput.Arguments)
+	if err != nil {
+		return nil, nil
+	}
+
+	if !host.AreInSameShard(vmInput.CallerAddr, parsedTransfer.RcvAddr) {
+		return nil, nil
+	}
+	if !host.Blockchain().IsSmartContract(parsedTransfer.RcvAddr) {
+		return nil, nil
+	}
+
+	outAcc, ok := vmOutput.OutputAccounts[string(parsedTransfer.RcvAddr)]
 	if !ok {
 		return nil, nil
 	}
@@ -958,28 +974,12 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 			OriginalTxHash: vmInput.OriginalTxHash,
 			CurrentTxHash:  vmInput.CurrentTxHash,
 		},
-		RecipientAddr:     recipient,
+		RecipientAddr:     parsedTransfer.RcvAddr,
 		Function:          function,
 		AllowInitFunction: false,
 	}
 
-	fillWithESDTValue(vmInput, newVMInput)
+	newVMInput.ESDTTransfers = parsedTransfer.ESDTTransfers
 
 	return newVMInput, nil
-}
-
-func fillWithESDTValue(fullVMInput *vmcommon.ContractCallInput, newVMInput *vmcommon.ContractCallInput) {
-	isESDTTransfer := fullVMInput.Function == vmcommon.BuiltInFunctionESDTTransfer || fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer
-	if !isESDTTransfer {
-		return
-	}
-
-	newVMInput.ESDTTokenName = fullVMInput.Arguments[0]
-	newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[1])
-
-	if fullVMInput.Function == vmcommon.BuiltInFunctionESDTNFTTransfer {
-		newVMInput.ESDTTokenNonce = big.NewInt(0).SetBytes(fullVMInput.Arguments[1]).Uint64()
-		newVMInput.ESDTValue = big.NewInt(0).SetBytes(fullVMInput.Arguments[2])
-		newVMInput.ESDTTokenType = uint32(vmcommon.NonFungible)
-	}
 }

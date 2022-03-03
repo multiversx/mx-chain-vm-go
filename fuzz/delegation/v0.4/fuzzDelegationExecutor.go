@@ -7,12 +7,13 @@ import (
 	"math/big"
 	"strings"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -82,6 +83,8 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
+	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
@@ -166,7 +169,7 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

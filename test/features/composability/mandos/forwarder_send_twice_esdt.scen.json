@@ -6,14 +6,11 @@
             "accounts": {
                 "address:a_user": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "sc:vault": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../vault/output/vault.wasm"
                 },
                 "sc:forwarder": {
@@ -22,7 +19,6 @@
                     "esdt": {
                         "str:FWD-TOKEN": "1000"
                     },
-                    "storage": {},
                     "code": "file:../forwarder/output/forwarder.wasm"
                 }
             }
@@ -33,14 +29,13 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "value": "0",
                 "function": "send_funds_twice",
                 "arguments": [
                     "sc:vault",
                     "str:FWD-TOKEN",
                     "1"
                 ],
-                "gasLimit": "70,000,000",
+                "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
@@ -48,9 +43,21 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "address": "sc:forwarder",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
+                            "str:FWD-TOKEN",
+                            "",
+                            "1",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:accept_funds",
+                        "topics": [
+                            "str:accept_funds",
                             "str:FWD-TOKEN",
                             "str:FungibleESDT",
                             "1",
@@ -59,9 +66,21 @@
                         "data": ""
                     },
                     {
-                        "address": "sc:vault",
-                        "identifier": "str:accept_funds",
+                        "address": "sc:forwarder",
+                        "endpoint": "str:ESDTTransfer",
                         "topics": [
+                            "str:FWD-TOKEN",
+                            "",
+                            "1",
+                            "sc:vault"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:accept_funds",
+                        "topics": [
+                            "str:accept_funds",
                             "str:FWD-TOKEN",
                             "str:FungibleESDT",
                             "1",

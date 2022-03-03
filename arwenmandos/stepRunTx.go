@@ -7,8 +7,9 @@ import (
 	"math"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {
@@ -65,6 +66,9 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			if err != nil {
 				return nil, err
 			}
+			if ae.PeekTraceGas() {
+				fmt.Println("\nIn txID:", txIndex, ", step type:Deploy", ", total gas used:", gasForExecution-output.GasRemaining)
+			}
 		case mj.ScQuery:
 			// imitates the behaviour of the protocol
 			// the sender is the contract itself during SC queries
@@ -77,6 +81,9 @@ func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmc
 			output, err = ae.scCall(txIndex, tx, gasForExecution)
 			if err != nil {
 				return nil, err
+			}
+			if ae.PeekTraceGas() {
+				fmt.Println("\nIn txID:", txIndex, ", step type:ScCall, function:", tx.Function, ", total gas used:", gasForExecution-output.GasRemaining)
 			}
 		case mj.Transfer:
 			output = ae.simpleTransferOutput(tx)
@@ -109,14 +116,14 @@ func (ae *ArwenTestExecutor) senderHasEnoughBalance(tx *mj.Transaction) bool {
 		return true
 	}
 	sender := ae.World.AcctMap.GetAccount(tx.From.Value)
-	return sender.Balance.Cmp(tx.Value.Value) >= 0
+	return sender.Balance.Cmp(tx.EGLDValue.Value) >= 0
 }
 
 func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) *vmcommon.VMOutput {
 	outputAccounts := make(map[string]*vmcommon.OutputAccount)
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
-		BalanceDelta: tx.Value.Value,
+		BalanceDelta: tx.EGLDValue.Value,
 	}
 
 	return &vmcommon.VMOutput{
@@ -133,7 +140,7 @@ func (ae *ArwenTestExecutor) simpleTransferOutput(tx *mj.Transaction) *vmcommon.
 }
 
 func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmcommon.VMOutput, error) {
-	reward := tx.Value.Value
+	reward := tx.EGLDValue.Value
 	recipient := ae.World.AcctMap.GetAccount(tx.To.Value)
 	if recipient == nil {
 		return nil, fmt.Errorf("tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
@@ -147,7 +154,7 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmcommo
 	outputAccounts := make(map[string]*vmcommon.OutputAccount)
 	outputAccounts[string(tx.To.Value)] = &vmcommon.OutputAccount{
 		Address:      tx.To.Value,
-		BalanceDelta: tx.Value.Value,
+		BalanceDelta: tx.EGLDValue.Value,
 		StorageUpdates: map[string]*vmcommon.StorageUpdate{
 			ElrondRewardKey: {
 				Offset: []byte(ElrondRewardKey),
@@ -188,14 +195,12 @@ func (ae *ArwenTestExecutor) scCreate(txIndex string, tx *mj.Transaction, gasLim
 	vmInput := vmcommon.VMInput{
 		CallerAddr:     tx.From.Value,
 		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
-		CallValue:      tx.Value.Value,
+		CallValue:      tx.EGLDValue.Value,
 		GasPrice:       tx.GasPrice.Value,
 		GasProvided:    gasLimit,
 		OriginalTxHash: txHash,
 		CurrentTxHash:  txHash,
-		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:  nil,
-		ESDTTokenNonce: 0,
+		ESDTTransfers:  make([]*vmcommon.ESDTTransfer, 0),
 	}
 	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCreateInput{
@@ -218,14 +223,12 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 	vmInput := vmcommon.VMInput{
 		CallerAddr:     tx.From.Value,
 		Arguments:      mj.JSONBytesFromTreeValues(tx.Arguments),
-		CallValue:      tx.Value.Value,
+		CallValue:      tx.EGLDValue.Value,
 		GasPrice:       tx.GasPrice.Value,
 		GasProvided:    gasLimit,
 		OriginalTxHash: txHash,
 		CurrentTxHash:  txHash,
-		ESDTValue:      big.NewInt(0),
-		ESDTTokenName:  nil,
-		ESDTTokenNonce: 0,
+		ESDTTransfers:  make([]*vmcommon.ESDTTransfer, 0),
 	}
 	addESDTToVMInput(tx.ESDTValue, &vmInput)
 	input := &vmcommon.ContractCallInput{
@@ -238,15 +241,27 @@ func (ae *ArwenTestExecutor) scCall(txIndex string, tx *mj.Transaction, gasLimit
 }
 
 func (ae *ArwenTestExecutor) directESDTTransferFromTx(tx *mj.Transaction) (uint64, error) {
-	return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
-		tx.From.Value,
-		tx.To.Value,
-		tx.ESDTValue.TokenIdentifier.Value,
-		tx.ESDTValue.Nonce.Value,
-		tx.ESDTValue.Value.Value,
-		vmcommon.DirectCall,
-		tx.GasLimit.Value,
-		tx.GasPrice.Value)
+	nrTransfers := len(tx.ESDTValue)
+
+	if nrTransfers == 1 {
+		return ae.World.BuiltinFuncs.PerformDirectESDTTransfer(
+			tx.From.Value,
+			tx.To.Value,
+			tx.ESDTValue[0].TokenIdentifier.Value,
+			tx.ESDTValue[0].Nonce.Value,
+			tx.ESDTValue[0].Value.Value,
+			vm.DirectCall,
+			tx.GasLimit.Value,
+			tx.GasPrice.Value)
+	} else {
+		return ae.World.BuiltinFuncs.PerformDirectMultiESDTTransfer(
+			tx.From.Value,
+			tx.To.Value,
+			tx.ESDTValue,
+			vm.DirectCall,
+			tx.GasLimit.Value,
+			tx.GasPrice.Value)
+	}
 }
 
 func (ae *ArwenTestExecutor) updateStateAfterTx(
@@ -256,7 +271,7 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 	// subtract call value from sender (this is not reflected in the delta)
 	// except for validatorReward, there is no sender there
 	if tx.Type.HasSender() {
-		_ = ae.World.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.Value.Value))
+		_ = ae.World.UpdateBalanceWithDelta(tx.From.Value, big.NewInt(0).Neg(tx.EGLDValue.Value))
 	}
 
 	// update accounts based on deltas
@@ -272,9 +287,9 @@ func (ae *ArwenTestExecutor) updateStateAfterTx(
 		for _, oa := range output.OutputAccounts {
 			sumOfBalanceDeltas = sumOfBalanceDeltas.Add(sumOfBalanceDeltas, oa.BalanceDelta)
 		}
-		if sumOfBalanceDeltas.Cmp(tx.Value.Value) != 0 {
+		if sumOfBalanceDeltas.Cmp(tx.EGLDValue.Value) != 0 {
 			return fmt.Errorf("sum of balance deltas should equal call value. Sum of balance deltas: %d (0x%x). Call value: %d (0x%x)",
-				sumOfBalanceDeltas, sumOfBalanceDeltas, tx.Value.Value, tx.Value.Value)
+				sumOfBalanceDeltas, sumOfBalanceDeltas, tx.EGLDValue.Value, tx.EGLDValue.Value)
 		}
 	}
 

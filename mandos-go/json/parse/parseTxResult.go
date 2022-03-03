@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 )
 
 func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.TransactionResult, error) {
@@ -15,18 +15,17 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 	}
 
 	blr := mj.TransactionResult{
-		Status:          mj.JSONCheckBigIntUnspecified(),
-		Message:         mj.JSONCheckBytesUnspecified(),
-		Gas:             mj.JSONCheckUint64Unspecified(),
-		Refund:          mj.JSONCheckBigIntUnspecified(),
-		LogsStar:        true,
-		LogsUnspecified: true,
+		Status:  mj.JSONCheckBigIntUnspecified(),
+		Message: mj.JSONCheckBytesUnspecified(),
+		Gas:     mj.JSONCheckUint64Unspecified(),
+		Refund:  mj.JSONCheckBigIntUnspecified(),
+		Logs:    mj.LogList{IsUnspecified: true, IsStar: true},
 	}
 	var err error
 	for _, kvp := range blrMap.OrderedKV {
 		switch kvp.Key {
 		case "out":
-			blr.Out, err = p.parseCheckBytesList(kvp.Value)
+			blr.Out, err = p.parseCheckValueList(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid block result out: %w", err)
 			}
@@ -41,19 +40,9 @@ func (p *Parser) processTxExpectedResult(blrRaw oj.OJsonObject) (*mj.Transaction
 				return nil, fmt.Errorf("invalid block result message: %w", err)
 			}
 		case "logs":
-			blr.LogsUnspecified = false
-			if IsStar(kvp.Value) {
-				blr.LogsStar = true
-			} else {
-				blr.LogsStar = false
-				blr.LogHash, err = p.parseString(kvp.Value)
-				if err != nil {
-					var logListErr error
-					blr.Logs, logListErr = p.processLogList(kvp.Value)
-					if logListErr != nil {
-						return nil, logListErr
-					}
-				}
+			blr.Logs, err = p.processLogList(kvp.Value)
+			if err != nil {
+				return nil, err
 			}
 		case "gas":
 			blr.Gas, err = p.processCheckUint64(kvp.Value)

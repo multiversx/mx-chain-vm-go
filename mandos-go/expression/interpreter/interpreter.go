@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"strings"
 
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/orderedjson"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
@@ -209,7 +209,7 @@ func (ei *ExprInterpreter) interpretNumber(strRaw string, targetWidth int) ([]by
 
 func (ei *ExprInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error) {
 	str := strings.ReplaceAll(strRaw, "_", "") // allow underscores, to group digits
-	str = strings.ReplaceAll(str, ",", "")     // also allow commas to group digits
+	strRaw = strings.ReplaceAll(str, ",", "")  // also allow commas to group digits
 
 	// hex, the usual representation
 	if strings.HasPrefix(strRaw, "0x") || strings.HasPrefix(strRaw, "0X") {
@@ -235,7 +235,7 @@ func (ei *ExprInterpreter) interpretUnsignedNumber(strRaw string) ([]byte, error
 	// default: parse as BigInt, base 10
 	result := new(big.Int)
 	var parseOk bool
-	result, parseOk = result.SetString(str, 10)
+	result, parseOk = result.SetString(strRaw, 10)
 	if !parseOk {
 		return []byte{}, fmt.Errorf("could not parse base 10 value: %s", strRaw)
 	}

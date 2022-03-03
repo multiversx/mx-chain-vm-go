@@ -3,8 +3,10 @@ package contexts
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,12 +15,11 @@ func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
 		"rockets": {},
 	}
 
-	fromProtocol := vmcommon.FunctionNames{
-		"protocolFunctionFoo": {},
-		"protocolFunctionBar": {},
-	}
+	builtInFuncContainer := builtInFunctions.NewBuiltInFunctionContainer()
+	_ = builtInFuncContainer.Add("protocolFunctionFoo", &mock.BuiltInFunctionStub{})
+	_ = builtInFuncContainer.Add("protocolFunctionBar", &mock.BuiltInFunctionStub{})
 
-	reserved := NewReservedFunctions(scAPINames, fromProtocol)
+	reserved := NewReservedFunctions(scAPINames, builtInFuncContainer)
 
 	require.False(t, reserved.IsReserved("foo"))
 	require.True(t, reserved.IsReserved("rockets"))

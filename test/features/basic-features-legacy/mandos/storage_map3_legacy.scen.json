@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "100000000000000000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "100000000000000000"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "store_map3",
                 "arguments": [
                     "0x57",
@@ -37,7 +33,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -67,7 +63,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_map3",
                 "arguments": [
                     "0x57"
@@ -76,9 +71,11 @@
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "true" ],
+                "out": [
+                    "true"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -89,7 +86,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "store_map3",
                 "arguments": [
                     "0x57",
@@ -101,7 +97,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -131,7 +127,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "load_map3",
                 "arguments": [
                     "0x57"
@@ -140,9 +135,11 @@
                 "gasPrice": "0x01"
             },
             "expect": {
-                "out": [ "false" ],
+                "out": [
+                    "false"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

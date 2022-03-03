@@ -16,16 +16,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "isBootstrapMode",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["true"],
+                "out": [
+                    "true"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -36,7 +37,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "1000"
@@ -45,9 +45,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -58,16 +60,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["1000"],
+                "out": [
+                    "1000"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -75,11 +78,11 @@
         {
             "step": "externalSteps",
             "path": "steps/add_nodes.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/stake_1.steps.json"
-        }, 
+        },
         {
             "step": "externalSteps",
             "path": "steps/increase_cap.steps.json"
@@ -90,16 +93,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "isBootstrapMode",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["false"],
+                "out": [
+                    "false"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -110,7 +114,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "2000"
@@ -119,9 +122,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:interrupted"],
+                "out": [
+                    "str:interrupted"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -132,16 +137,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["1000"],
+                "out": [
+                    "1000"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -152,16 +158,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "continueGlobalOperation",
                 "arguments": [],
                 "gasLimit": "1,000,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -172,16 +179,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["2000"],
+                "out": [
+                    "2000"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -192,7 +200,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "setServiceFee",
                 "arguments": [
                     "2000"
@@ -201,9 +208,11 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["str:completed"],
+                "out": [
+                    "str:completed"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -214,16 +223,17 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getServiceFee",
                 "arguments": [],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": ["2000"],
+                "out": [
+                    "2000"
+                ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

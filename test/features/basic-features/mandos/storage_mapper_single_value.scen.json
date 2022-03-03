@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "storage": {},
                     "code": "file:../output/basic-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "map_my_single_value_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -36,7 +32,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -47,7 +43,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "my_single_value_mapper_increment_1",
                 "arguments": [
                     "123"
@@ -58,7 +53,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -69,7 +64,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "map_my_single_value_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -80,7 +74,7 @@
                     "123"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -91,7 +85,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "my_single_value_mapper_increment_2",
                 "arguments": [
                     "121"
@@ -102,7 +95,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -113,7 +106,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "my_single_value_mapper_subtract_with_require",
                 "arguments": [
                     "10,000"
@@ -125,7 +117,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:not enough funds",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -136,7 +128,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "my_single_value_mapper_subtract_with_require",
                 "arguments": [
                     "10"
@@ -147,7 +138,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -158,7 +149,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "map_my_single_value_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -169,7 +159,7 @@
                     "+234"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -181,7 +171,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``my_single_value_mapper": "+234"
+                        "str:my_single_value_mapper": "+234"
                     },
                     "code": "file:../output/basic-features.wasm"
                 },
@@ -199,7 +189,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "is_empty_single_value_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -210,7 +199,7 @@
                     "false"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -221,7 +210,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "clear_single_value_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -230,7 +218,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -241,7 +229,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "is_empty_single_value_mapper",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -252,7 +239,7 @@
                     "true"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -280,7 +267,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "my_single_value_mapper_set_if_empty",
                 "arguments": [
                     "42"
@@ -289,9 +275,10 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "",
                 "message": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -321,7 +308,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "my_single_value_mapper_set_if_empty",
                 "arguments": [
                     "100"
@@ -330,9 +316,10 @@
                 "gasPrice": "0"
             },
             "expect": {
+                "out": [],
                 "status": "",
                 "message": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -361,7 +348,8 @@
             "txId": "query-raw-byte-length",
             "tx": {
                 "to": "sc:basic-features",
-                "function": "raw_byte_length_single_value_mapper"
+                "function": "raw_byte_length_single_value_mapper",
+                "arguments": []
             },
             "expect": {
                 "out": [

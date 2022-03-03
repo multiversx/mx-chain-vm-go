@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
@@ -100,7 +100,13 @@ func GetSCCode(fileName string) []byte {
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
 	logger.SetLogLevel("*:TRACE")
+	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
+}
+
+// DisableLoggingForTests sets log level to *:NONE
+func DisableLoggingForTests() {
+	_ = logger.SetLogLevel("*:NONE")
 }
 
 // U64ToLEB128 encodes an uint64 using LEB128 (Little Endian Base 128), used in WASM bytecode
@@ -155,9 +161,9 @@ func GetCryptoContext(vmHostPtr unsafe.Pointer) crypto.VMCrypto {
 	return GetVMHost(vmHostPtr).Crypto()
 }
 
-// GetBigIntContext returns the big int context
-func GetBigIntContext(vmHostPtr unsafe.Pointer) BigIntContext {
-	return GetVMHost(vmHostPtr).BigInt()
+// GetManagedTypesContext returns the big int context
+func GetManagedTypesContext(vmHostPtr unsafe.Pointer) ManagedTypesContext {
+	return GetVMHost(vmHostPtr).ManagedTypes()
 }
 
 // GetOutputContext returns the output context

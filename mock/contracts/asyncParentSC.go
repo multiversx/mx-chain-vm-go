@@ -6,9 +6,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
@@ -93,7 +93,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _ := host.Storage().GetStorage(test.ParentKeyB)
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {

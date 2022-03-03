@@ -5,21 +5,19 @@
         {
             "step": "setState",
             "accounts": {
-                "``account_1_____________________s1": {
+                "address:account_1": {
                     "nonce": "0",
                     "balance": "0x10000000",
                     "esdt": {
-                        "str:ANY_TOKEN": "1000"
-                    },
-                    "storage": {},
-                    "code": ""
+                        "str:ANY-TOKENA": "1000"
+                    }
                 },
                 "sc:erc20": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``balance|``account_1_____________________s1": "0x2710",
-                        "``total_supply": "0x2710"
+                        "str:balance|address:account_1": "0x2710",
+                        "str:totalSupply": "0x2710"
                     },
                     "code": "file:../output/erc20.wasm"
                 }
@@ -29,12 +27,14 @@
             "step": "scCall",
             "txId": "1",
             "tx": {
-                "from": "``account_1_____________________s1",
+                "from": "address:account_1",
                 "to": "sc:erc20",
-                "esdt": {
-                    "tokenIdentifier": "str:ANY_TOKEN",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ANY-TOKENA",
+                        "value": "1"
+                    }
+                ],
                 "function": "totalSupply",
                 "arguments": [],
                 "gasLimit": "0x100000",
@@ -44,7 +44,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:function does not accept ESDT payment",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -53,15 +53,17 @@
             "step": "scCall",
             "txId": "2",
             "tx": {
-                "from": "``account_1_____________________s1",
+                "from": "address:account_1",
                 "to": "sc:erc20",
-                "esdt": {
-                    "tokenIdentifier": "str:ANY_TOKEN",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ANY-TOKENA",
+                        "value": "1"
+                    }
+                ],
                 "function": "balanceOf",
                 "arguments": [
-                    "``account_1_____________________s1"
+                    "address:account_1"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -70,7 +72,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:function does not accept ESDT payment",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -79,16 +81,18 @@
             "step": "scCall",
             "txId": "3",
             "tx": {
-                "from": "``account_1_____________________s1",
+                "from": "address:account_1",
                 "to": "sc:erc20",
-                "esdt": {
-                    "tokenIdentifier": "str:ANY_TOKEN",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ANY-TOKENA",
+                        "value": "1"
+                    }
+                ],
                 "function": "allowance",
                 "arguments": [
-                    "``account_1_____________________s1",
-                    "``account_1_____________________s1"
+                    "address:account_1",
+                    "address:account_1"
                 ],
                 "gasLimit": "0x100000",
                 "gasPrice": "0x01"
@@ -97,7 +101,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:function does not accept ESDT payment",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -106,15 +110,17 @@
             "step": "scCall",
             "txId": "4",
             "tx": {
-                "from": "``account_1_____________________s1",
+                "from": "address:account_1",
                 "to": "sc:erc20",
-                "esdt": {
-                    "tokenIdentifier": "str:ANY_TOKEN",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ANY-TOKENA",
+                        "value": "1"
+                    }
+                ],
                 "function": "transfer",
                 "arguments": [
-                    "``account_1_____________________s1",
+                    "address:account_1",
                     "0x01"
                 ],
                 "gasLimit": "0x100000",
@@ -124,7 +130,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:function does not accept ESDT payment",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -133,15 +139,17 @@
             "step": "scCall",
             "txId": "5",
             "tx": {
-                "from": "``account_1_____________________s1",
+                "from": "address:account_1",
                 "to": "sc:erc20",
-                "esdt": {
-                    "tokenIdentifier": "str:ANY_TOKEN",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ANY-TOKENA",
+                        "value": "1"
+                    }
+                ],
                 "function": "approve",
                 "arguments": [
-                    "``account_1_____________________s1",
+                    "address:account_1",
                     "0x01"
                 ],
                 "gasLimit": "0x100000",
@@ -151,7 +159,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:function does not accept ESDT payment",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -160,16 +168,18 @@
             "step": "scCall",
             "txId": "6",
             "tx": {
-                "from": "``account_1_____________________s1",
+                "from": "address:account_1",
                 "to": "sc:erc20",
-                "esdt": {
-                    "tokenIdentifier": "str:ANY_TOKEN",
-                    "value": "1"
-                },
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ANY-TOKENA",
+                        "value": "1"
+                    }
+                ],
                 "function": "transferFrom",
                 "arguments": [
-                    "``account_1_____________________s1",
-                    "``account_1_____________________s1",
+                    "address:account_1",
+                    "address:account_1",
                     "0x01"
                 ],
                 "gasLimit": "0x100000",
@@ -179,7 +189,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:function does not accept ESDT payment",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -187,11 +197,11 @@
         {
             "step": "checkState",
             "accounts": {
-                "``account_1_____________________s1": {
+                "address:account_1": {
                     "nonce": "6",
                     "balance": "0xfa00000",
                     "esdt": {
-                        "str:ANY_TOKEN": "1000"
+                        "str:ANY-TOKENA": "1000"
                     },
                     "storage": {},
                     "code": ""
@@ -200,8 +210,8 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "``balance|``account_1_____________________s1": "0x2710",
-                        "``total_supply": "0x2710"
+                        "str:balance|address:account_1": "0x2710",
+                        "str:totalSupply": "0x2710"
                     },
                     "code": "file:../output/erc20.wasm"
                 }

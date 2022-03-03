@@ -8,14 +8,11 @@
                 "sc:basic-features": {
                     "nonce": "0",
                     "balance": "100",
-                    "storage": {},
                     "code": "file:../output/features-legacy.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 }
             }
         },
@@ -25,7 +22,6 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "value": "0",
                 "function": "send_tx_endpoint",
                 "arguments": [
                     "address:an_account",
@@ -38,7 +34,7 @@
                 "out": [],
                 "status": "10",
                 "message": "str:failed transfer (insufficient funds)",
-                "logs": []
+                "logs": "*"
             }
         }
     ]

@@ -3,14 +3,16 @@ package dex
 import (
 	"errors"
 	"fmt"
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/model"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mandos-go/json/write"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"io/ioutil"
+
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type fuzzDexExecutorInitArgs struct {
@@ -31,6 +33,9 @@ type fuzzDexExecutorInitArgs struct {
 	enterFarmProb           int
 	exitFarmProb            int
 	claimRewardsProb        int
+	compoundRewardsProb     int
+	compoundRewardsMaxValue int
+	tokenDepositMaxValue    int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
@@ -59,7 +64,6 @@ type FarmerInfo struct {
 	user  string
 	value int64
 	farm  Farm
-	rps   string
 }
 
 type fuzzDexExecutor struct {
@@ -93,6 +97,7 @@ type fuzzDexExecutor struct {
 	enterFarmProb           int
 	exitFarmProb            int
 	claimRewardsProb        int
+	compoundRewardsProb     int
 	increaseBlockNonceProb  int
 	removeLiquidityMaxValue int
 	addLiquidityMaxValue    int
@@ -100,6 +105,8 @@ type fuzzDexExecutor struct {
 	enterFarmMaxValue       int
 	exitFarmMaxValue        int
 	claimRewardsMaxValue    int
+	compoundRewardsMaxValue int
+	tokenDepositMaxValue    int
 	blockNonceIncrease      int
 	tokensCheckFrequency    int
 	currentFarmTokenNonce   map[string]int
@@ -137,10 +144,19 @@ type eventsStatistics struct {
 	claimRewardsHits        int
 	claimRewardsMisses      int
 	claimRewardsWithRewards int
+
+	compoundRewardsHits   int
+	compoundRewardsMisses int
 }
 
 func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) {
 	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	if err != nil {
+		return nil, err
+	}
+
+	mandosGasSchedule := mj.GasScheduleDummy
+	err = arwenTestExecutor.InitVM(mandosGasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -154,12 +170,16 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 		mandosParser:      parser,
 		txIndex:           0,
 		generatedScenario: &mj.Scenario{
-			Name: "fuzz generated",
+			Name:        "fuzz generated",
+			GasSchedule: mandosGasSchedule,
 		},
 	}, nil
 }
 
 func (pfe *fuzzDexExecutor) saveGeneratedScenario() {
+	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost.Reset()
+
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
 	err := ioutil.WriteFile("fuzz_gen.scen.json", []byte(serialized), 0644)
@@ -242,7 +262,7 @@ func (pfe *fuzzDexExecutor) querySingleResult(from, to, funcName, args string) (
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -279,7 +299,7 @@ func (pfe *fuzzDexExecutor) querySingleResultStringAddr(from string, to string, 
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
