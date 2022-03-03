@@ -293,6 +293,11 @@ func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 	return true
 }
 
+// FixFailExecutionEnabled mocked method
+func (vhs *VMHostStub) FixFailExecutionEnabled() bool {
+	return true
+}
+
 // CreateNFTOnExecByCallerEnabled mocked method
 func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true

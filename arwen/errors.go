@@ -194,3 +194,15 @@ var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
+
+// ErrNilESDTData is given when ESDT data is missing
+var ErrNilESDTData = errors.New("nil esdt data")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidArgument = errors.New("invalid argument")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidTokenIndex = errors.New("invalid token index")
+
+// ErrInvalidBuiltInFunctionCall signals that built in function was used in the wrong context
+var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")

@@ -407,9 +407,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				HasRuntimeErrors("forced fail")
+			verify.ReturnCode(vmcommon.ExecutionFailed)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -1392,6 +1390,7 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 				WithRecipientAddr(test.ParentAddress).
 				WithFunction("foo").
 				WithGasProvided(gasLimit).
+				WithArguments(test.ChildAddress).
 				Build()).
 			WithGasSchedule(gasSchedule).
 			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {

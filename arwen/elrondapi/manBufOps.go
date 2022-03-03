@@ -651,6 +651,7 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrArgOutOfRange, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])

@@ -12,7 +12,6 @@
                 "sc:auction": {
                     "nonce": "0",
                     "balance": "1000",
-                    "storage": {},
                     "code": "file:../../auction-mock/output/auction-mock.wasm"
                 },
                 "sc:delegation": {
