@@ -3,6 +3,8 @@ package elrond_ethereum_bridge
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
 	"strconv"
 )
@@ -45,11 +47,16 @@ func (fe *fuzzExecutor) getEsdtBalance(address string, tokenId string) *big.Int 
 
 func (fe *fuzzExecutor) generateValidRandomEsdtPayment(address string) (string, *big.Int, error) {
 	acc := fe.world.AcctMap.GetAccount(fe.interpretExpr(address))
-	allEsdts, err := acc.GetFullMockESDTData()
+	systemAccStorage := make(map[string][]byte)
+	systemAcc, exists := fe.world.AcctMap[string(vmcommon.SystemAccountAddress)]
+	if exists {
+		systemAccStorage = systemAcc.Storage
+	}
+
+	allEsdts, err := esdtconvert.GetFullMockESDTData(acc.Storage, systemAccStorage)
 	if err != nil {
 		return "", nil, err
 	}
-
 	// map key order is not guaranteed, so this is "random"
 	for tokenId := range allEsdts {
 		tokenIdMandosFormat := "str:" + tokenId
