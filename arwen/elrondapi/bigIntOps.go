@@ -332,7 +332,7 @@ func v1_4_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinatio
 	metering.UseGasAndAddTracedGas(bigIntGetUnsignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
-	if int32(len(args)) <= id {
+	if int32(len(args)) <= id || id < 0 {
 		return
 	}
 
@@ -351,7 +351,7 @@ func v1_4_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationH
 	metering.UseGasAndAddTracedGas(bigIntGetSignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
-	if int32(len(args)) <= id {
+	if int32(len(args)) <= id || id < 0 {
 		return
 	}
 

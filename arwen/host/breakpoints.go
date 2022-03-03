@@ -35,6 +35,9 @@ func (host *vmHost) handleBreakpoint(breakpointValue arwen.BreakpointValue) erro
 	if breakpointValue == arwen.BreakpointOutOfGas {
 		return arwen.ErrNotEnoughGas
 	}
+	if breakpointValue == arwen.BreakpointMemoryLimit {
+		return arwen.ErrMemoryLimit
+	}
 
 	return arwen.ErrUnhandledRuntimeBreakpoint
 }

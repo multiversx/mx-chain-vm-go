@@ -191,7 +191,7 @@ var logEEI = logger.GetOrCreate("arwen/eei")
 
 func getESDTTransferFromInputFailIfWrongIndex(host arwen.VMHost, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
-	if int32(len(esdtTransfers))-1 < index {
+	if int32(len(esdtTransfers))-1 < index || index < 0 {
 		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidTokenIndex, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
@@ -3242,7 +3242,7 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 	metering.UseGasAndAddTracedGas(getReturnDataSizeName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) || resultID < 0 {
 		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
