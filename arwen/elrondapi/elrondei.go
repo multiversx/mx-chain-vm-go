@@ -66,6 +66,8 @@ package elrondapi
 // extern int32_t	v1_4_getNumReturnData(void *context);
 // extern int32_t	v1_4_getReturnDataSize(void *context, int32_t resultID);
 // extern int32_t	v1_4_getReturnData(void *context, int32_t resultID, int32_t dataOffset);
+// extern void		v1_4_cleanReturnData(void *context);
+// extern void		v1_4_deleteFromReturnData(void *context, int32_t resultID);
 //
 // extern int32_t	v1_4_setStorageLock(void *context, int32_t keyOffset, int32_t keyLength, long long lockTimestamp);
 // extern long long v1_4_getStorageLock(void *context, int32_t keyOffset, int32_t keyLength);
@@ -165,6 +167,8 @@ const (
 	getNumReturnDataName             = "getNumReturnData"
 	getReturnDataSizeName            = "getReturnDataSize"
 	getReturnDataName                = "getReturnData"
+	cleanReturnDataName              = "cleanReturnData"
+	deleteFromReturnDataName         = "deleteFromReturnData"
 	setStorageLockName               = "setStorageLock"
 	getStorageLockName               = "getStorageLock"
 	isStorageLockedName              = "isStorageLocked"
@@ -187,7 +191,7 @@ var logEEI = logger.GetOrCreate("arwen/eei")
 
 func getESDTTransferFromInput(vmInput *vmcommon.VMInput, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := vmInput.ESDTTransfers
-	if int32(len(esdtTransfers))-1 < index {
+	if int32(len(esdtTransfers))-1 < index || index < 0 {
 		return nil
 	}
 	return esdtTransfers[index]
@@ -542,6 +546,16 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getReturnData", v1_4_getReturnData, C.v1_4_getReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("cleanReturnData", v1_4_cleanReturnData, C.v1_4_cleanReturnData)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("deleteFromReturnData", v1_4_deleteFromReturnData, C.v1_4_deleteFromReturnData)
 	if err != nil {
 		return nil, err
 	}
@@ -943,13 +957,10 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	esdtRoleKeyPrefix := []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
-	data_buffer, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(
-		storageLoadName,
-		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		len(data_buffer), usedCache)
+	data, usedCache := storage.GetStorage(key)
+	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 
-	return getESDTRoles(data_buffer)
+	return getESDTRoles(data)
 }
 
 //export v1_4_validateTokenIdentifier
@@ -969,7 +980,11 @@ func v1_4_validateTokenIdentifier(
 		return -1
 	}
 
-	return validateToken(tokenID)
+	if ValidateToken(tokenID) {
+		return 1
+	} else {
+		return 0
+	}
 
 }
 
@@ -1447,7 +1462,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	function []byte,
 	data [][]byte,
 ) int32 {
-
 	var executeErr error
 
 	runtime := host.Runtime()
@@ -1779,6 +1793,17 @@ func upgradeContract(
 		value,
 	)
 	logEEI.Trace("upgradeContract", "error", err)
+
+	storage := host.Storage()
+	if storage.IsUseDifferentGasCostFlagSet() {
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
+			runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return
+		}
+		if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return
+		}
+	}
 }
 
 //export v1_4_asyncCall
@@ -1944,10 +1969,7 @@ func v1_4_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength i
 	}
 
 	data, usedCache := storage.GetStorageUnmetered(key)
-	storage.UseGasForStorageLoad(
-		storageLoadLengthName,
-		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		0, usedCache)
+	storage.UseGasForStorageLoad(storageLoadLengthName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 
 	return int32(len(data))
 }
@@ -1993,10 +2015,7 @@ func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key 
 	storage := host.Storage()
 	metering := host.Metering()
 	data, usedCache := storage.GetStorageFromAddress(address, key)
-	storage.UseGasForStorageLoad(
-		storageLoadFromAddressName,
-		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		len(data), usedCache)
+	storage.UseGasForStorageLoad(storageLoadFromAddressName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	return data
 }
 
@@ -2035,10 +2054,7 @@ func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) []byte {
 	storage := host.Storage()
 	metering := host.Metering()
 	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(
-		storageLoadName,
-		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		len(data), usedCache)
+	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	return data
 }
 
@@ -2095,10 +2111,7 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 
 	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
 	data, usedCache := storage.GetStorage(timeLockKey)
-	storage.UseGasForStorageLoad(
-		getStorageLockName,
-		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		len(data), usedCache)
+	storage.UseGasForStorageLoad(getStorageLockName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
@@ -2291,11 +2304,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 	}
 
 	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
-	data, usedCache := storage.GetStorageFromAddress(destination, key)
-	storage.UseGasForStorageLoad(
-		getCurrentESDTNFTNonceName,
-		metering.GasSchedule().ElrondAPICost.StorageLoad,
-		len(data), usedCache)
+	data, _ := storage.GetStorageFromAddress(destination, key)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
 	return int64(nonce)
@@ -3141,7 +3150,7 @@ func v1_4_deployFromSourceContract(
 		gasLimit,
 	)
 
-	if err != nil {
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -3222,7 +3231,7 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 	metering.UseGasAndAddTracedGas(getReturnDataSizeName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
+	if resultID >= int32(len(returnData)) || resultID < 0 {
 		return 0
 	}
 
@@ -3231,24 +3240,72 @@ func v1_4_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 
 //export v1_4_getReturnData
 func v1_4_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
+	host := arwen.GetVMHost(context)
+
+	result := GetReturnDataWithHostAndTypedArgs(host, resultID)
+	if result == nil {
+		return 0
+	}
+
 	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+	err := runtime.MemStore(dataOffset, result)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	return int32(len(result))
+}
+
+func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte {
+	output := host.Output()
+	metering := host.Metering()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnData
 	metering.UseGasAndAddTracedGas(getReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
-	if resultID >= int32(len(returnData)) {
-		return 0
+	if resultID >= int32(len(returnData)) || resultID < 0 {
+		return nil
 	}
 
-	err := runtime.MemStore(dataOffset, returnData[resultID])
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 0
-	}
+	return returnData[resultID]
+}
 
-	return int32(len(returnData[resultID]))
+//export v1_4_cleanReturnData
+func v1_4_cleanReturnData(context unsafe.Pointer) {
+	host := arwen.GetVMHost(context)
+	CleanReturnDataWithHost(host)
+}
+
+// CleanReturnDataWithHost - exposed version of v1_4_deleteFromReturnData for tests
+func CleanReturnDataWithHost(host arwen.VMHost) {
+	output := host.Output()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CleanReturnData
+	metering.UseGasAndAddTracedGas(cleanReturnDataName, gasToUse)
+
+	output.ClearReturnData()
+}
+
+//export v1_4_deleteFromReturnData
+func v1_4_deleteFromReturnData(context unsafe.Pointer, resultID int32) {
+	host := arwen.GetVMHost(context)
+	DeleteFromReturnDataWithHost(host, resultID)
+}
+
+// DeleteFromReturnDataWithHost - exposed version of v1_4_deleteFromReturnData for tests
+func DeleteFromReturnDataWithHost(host arwen.VMHost, resultID int32) {
+	output := host.Output()
+	metering := host.Metering()
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.DeleteFromReturnData
+	metering.UseGasAndAddTracedGas(deleteFromReturnDataName, gasToUse)
+
+	returnData := output.ReturnData()
+	if resultID < int32(len(returnData)) {
+		output.RemoveReturnData(uint32(resultID))
+	}
 }
 
 //export v1_4_getOriginalTxHash

@@ -72,6 +72,9 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 	}
 
 	verifyTransfers(tb, mockWorld, totalTokenSupply)
+	defer func() {
+		_ = host.Close()
+	}()
 }
 
 func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.MockWorld) {

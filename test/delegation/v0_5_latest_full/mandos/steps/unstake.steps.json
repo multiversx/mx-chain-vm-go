@@ -1,22 +1,23 @@
 {
     "name": "unstake-2",
-    "steps":[
+    "steps": [
         {
             "step": "scCall",
             "txId": "user-unstake",
             "tx": {
                 "from": "address:delegator1",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "unStake",
-                "arguments": ["50,001,000,000,000"],
+                "arguments": [
+                    "50,001,000,000,000"
+                ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -27,7 +28,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator1"
@@ -37,10 +37,14 @@
             },
             "expect": {
                 "out": [
-                    "0", "0", "50,000,000,000,000", "50,000,000,000,000", "1,000,000,000"
+                    "0",
+                    "0",
+                    "50,000,000,000,000",
+                    "50,000,000,000,000",
+                    "1,000,000,000"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -51,7 +55,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserDeferredPaymentList",
                 "arguments": [
                     "address:delegator1"
@@ -61,10 +64,11 @@
             },
             "expect": {
                 "out": [
-                    "1,000,000,000","0"
+                    "1,000,000,000",
+                    "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -75,7 +79,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getUserStakeByType",
                 "arguments": [
                     "address:delegator2"
@@ -85,10 +88,14 @@
             },
             "expect": {
                 "out": [
-                    "0", "0","200,000,000,000,000", "0","0"
+                    "0",
+                    "0",
+                    "200,000,000,000,000",
+                    "0",
+                    "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -99,7 +106,6 @@
             "tx": {
                 "from": "address:someone",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getTotalStakeByType",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -107,10 +113,14 @@
             },
             "expect": {
                 "out": [
-                   "0", "0", "250,000,000,000,000",  "50,000,000,000,000", "1,000,000,000"
+                    "0",
+                    "0",
+                    "250,000,000,000,000",
+                    "50,000,000,000,000",
+                    "1,000,000,000"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

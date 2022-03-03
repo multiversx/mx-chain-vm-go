@@ -7,7 +7,6 @@
             "tx": {
                 "from": "address:bob",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "sign",
                 "arguments": [
                     "1"
@@ -19,7 +18,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:action does not exist",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -30,7 +29,6 @@
             "tx": {
                 "from": "address:bob",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "unsign",
                 "arguments": [
                     "1"
@@ -42,7 +40,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:action does not exist",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -53,7 +51,6 @@
             "tx": {
                 "from": "address:bob",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "sign",
                 "arguments": [
                     "1000"
@@ -65,7 +62,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:action does not exist",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -76,7 +73,6 @@
             "tx": {
                 "from": "address:bob",
                 "to": "sc:multisig",
-                "value": "0",
                 "function": "unsign",
                 "arguments": [
                     "1000"
@@ -88,7 +84,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:action does not exist",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

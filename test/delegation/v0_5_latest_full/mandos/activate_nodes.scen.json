@@ -78,7 +78,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -133,7 +133,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -189,7 +189,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -223,7 +223,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -251,7 +251,16 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": "*",
+                "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:callBack",
+                        "topics": [
+                            "str:nodeUnbondOk"
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
@@ -285,7 +294,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -380,7 +389,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -433,7 +442,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

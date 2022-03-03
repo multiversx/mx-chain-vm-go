@@ -37,7 +37,7 @@
                     "3"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -101,7 +101,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -122,7 +122,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -155,7 +155,7 @@
                     "sc:adder"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -195,7 +195,7 @@
                     "4"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -216,7 +216,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -237,7 +237,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -258,57 +258,44 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "check-cleanup-1",
             "comment": "check that account data got cleaned up",
             "tx": {
-                "from": "address:paul",
-                "to": "sc:multisig",
+                "to": "sc:multisig-view",
                 "function": "getActionData",
                 "arguments": [
                     "4"
-                ],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
+                ]
             },
             "expect": {
                 "out": [
                     ""
                 ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                "status": ""
             }
         },
         {
-            "step": "scCall",
+            "step": "scQuery",
             "txId": "check-cleanup-2",
             "comment": "check that account data got cleaned up",
             "tx": {
-                "from": "address:paul",
-                "to": "sc:multisig",
+                "to": "sc:multisig-view",
                 "function": "getActionSigners",
                 "arguments": [
                     "4"
-                ],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
+                ]
             },
             "expect": {
                 "out": [
                     ""
-                ],
-                "status": "",
-                "logs": [],
-                "gas": "*",
-                "refund": "*"
+                ]
             }
         },
         {

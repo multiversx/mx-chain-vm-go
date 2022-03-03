@@ -16,7 +16,9 @@ type InstanceHandler interface {
 	GetData() uintptr
 	GetInstanceCtxMemory() MemoryHandler
 	GetMemory() MemoryHandler
+	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
+	IsInterfaceNil() bool
 }
 
 // MemoryHandler defines the functionality of the memory of a Wasmer instance
@@ -25,4 +27,5 @@ type MemoryHandler interface {
 	Data() []byte
 	Grow(pages uint32) error
 	Destroy()
+	IsInterfaceNil() bool
 }

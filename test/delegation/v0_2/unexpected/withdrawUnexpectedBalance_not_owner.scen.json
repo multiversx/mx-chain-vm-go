@@ -71,7 +71,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:only owner can withdraw unexpected balance",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

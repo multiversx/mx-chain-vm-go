@@ -149,3 +149,13 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
 }
+
+// SetMemory -
+func (instance *InstanceMock) SetMemory(_ []byte) bool {
+	return true
+}
+
+// IsInterfaceNil -
+func (instance *InstanceMock) IsInterfaceNil() bool {
+	return instance == nil
+}

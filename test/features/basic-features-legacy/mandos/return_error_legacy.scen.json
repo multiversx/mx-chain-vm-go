@@ -32,7 +32,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:return_error",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

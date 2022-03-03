@@ -72,6 +72,11 @@ type JSONUint64 struct {
 	Unspecified bool
 }
 
+// OriginalEmpty returns true if the object originates from "".
+func (ju *JSONUint64) OriginalEmpty() bool {
+	return len(ju.Original) == 0
+}
+
 // JSONUint64Zero provides an unitialized zero value.
 func JSONUint64Zero() JSONUint64 {
 	return JSONUint64{
@@ -79,4 +84,30 @@ func JSONUint64Zero() JSONUint64 {
 		Original:    "",
 		Unspecified: true,
 	}
+}
+
+// JSONValueList represents a list of values, as expressed in JSON
+type JSONValueList struct {
+	Values []JSONBytesFromString
+}
+
+// JSONValueListEmpty provides an empty list.
+func JSONValueListEmpty() JSONValueList {
+	return JSONValueList{
+		Values: nil,
+	}
+}
+
+// IsUnspecified yields true if the field was originally unspecified.
+func (jvl JSONValueList) IsUnspecified() bool {
+	return len(jvl.Values) == 0
+}
+
+// ToValues extracts values from a JSONValueList
+func (jvl JSONValueList) ToValues() [][]byte {
+	result := make([][]byte, len(jvl.Values))
+	for i, jb := range jvl.Values {
+		result[i] = jb.Value
+	}
+	return result
 }

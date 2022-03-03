@@ -245,10 +245,7 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	}
 
 	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(
-		smallIntStorageLoadUnsignedName,
-		metering.GasSchedule().ElrondAPICost.Int64StorageLoad,
-		len(data), usedCache)
+	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
@@ -271,10 +268,7 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	}
 
 	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(
-		smallIntStorageLoadSignedName,
-		metering.GasSchedule().ElrondAPICost.Int64StorageLoad,
-		len(data), usedCache)
+	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {

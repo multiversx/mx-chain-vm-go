@@ -6,7 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)
@@ -139,6 +139,10 @@ func (o *OutputContextMock) SetReturnMessage(returnMessage string) {
 // ClearReturnData mocked method
 func (o *OutputContextMock) ClearReturnData() {
 	o.ReturnDataMock = make([][]byte, 0)
+}
+
+// RemoveReturnData mocked method
+func (o *OutputContextMock) RemoveReturnData(index uint32) {
 }
 
 // SelfDestruct mocked method
