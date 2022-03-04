@@ -63,14 +63,6 @@ type TestCallNode struct {
 
 	NonGasEdgeCounter int64
 
-	// group callbacks
-	// GroupCallbacks map[string]*TestCallNode
-	// context callback
-	// ContextCallback *TestCallNode
-
-	// will be reseted after each dfs traversal
-	// Visited bool
-
 	// labels used only for visualization & debugging
 	VisualLabel string
 	// needs to be unique (will be in te form of contract_function_index)
@@ -165,15 +157,12 @@ func (node *TestCallNode) copy() *TestCallNode {
 	return &TestCallNode{
 		Call:          node.Call.copy(),
 		AdjacentEdges: make([]*TestCallEdge, 0),
-		// GroupCallbacks:   make(map[string]*TestCallNode, 0),
-		// ContextCallback:  nil,
-		// Visited:          false,
-		IsStartNode:  node.IsStartNode,
-		Label:        node.Label,
-		GasLimit:     node.GasLimit,
-		GasRemaining: node.GasRemaining,
-		GasUsed:      node.GasUsed,
-		GasLocked:    node.GasLocked,
+		IsStartNode:   node.IsStartNode,
+		Label:         node.Label,
+		GasLimit:      node.GasLimit,
+		GasRemaining:  node.GasRemaining,
+		GasUsed:       node.GasUsed,
+		GasLocked:     node.GasLocked,
 		// IncomingEdge: node.IncomingEdge,
 		Fail:    node.Fail,
 		ErrFail: node.ErrFail,
@@ -392,11 +381,8 @@ func (graph *TestCallGraph) AddNode(contractID string, functionName string) *Tes
 		ID:            graph.sequence,
 		Call:          testCall,
 		AdjacentEdges: make([]*TestCallEdge, 0),
-		// GroupCallbacks:  make(map[string]*TestCallNode, 0),
-		// ContextCallback: nil,
-		// Visited:     false,
-		IsStartNode: false,
-		Label:       strconv.Quote(contractID + "." + functionName),
+		IsStartNode:   false,
+		Label:         strconv.Quote(contractID + "." + functionName),
 	}
 	graph.Nodes = append(graph.Nodes, testNode)
 	return testNode
@@ -488,22 +474,6 @@ func (edge *TestCallEdge) setAsyncEdgeAttributes(group string, callBack string) 
 func (graph *TestCallGraph) GetStartNode() *TestCallNode {
 	return graph.StartNode
 }
-
-// SetGroupCallback sets the callback for the specified group id
-// func (graph *TestCallGraph) SetGroupCallback(node *TestCallNode, groupID string, groupCallbackNode *TestCallNode,
-// 	gasLocked uint64, gasUsed uint64) {
-// 	groupCallbackNode.GasLocked = gasLocked
-// 	groupCallbackNode.GasUsed = gasUsed
-// 	// node.GroupCallbacks[groupID] = groupCallbackNode
-// }
-
-// SetContextCallback sets the callback for the async context
-// func (graph *TestCallGraph) SetContextCallback(node *TestCallNode, contextCallbackNode *TestCallNode,
-// 	gasLocked uint64, gasUsed uint64) {
-// 	node.ContextCallback = contextCallbackNode
-// 	node.ContextCallback.GasLocked = gasLocked
-// 	node.ContextCallback.GasUsed = gasUsed
-// }
 
 // FindNode finds the corresponding node in the call graph
 func (graph *TestCallGraph) FindNode(contractAddress []byte, functionName string) *TestCallNode {
@@ -688,20 +658,6 @@ func (graph *TestCallGraph) newGraphUsingNodes() *TestCallGraph {
 		graphCopy.AddNodeCopy(node)
 	}
 
-	// for _, nodeCopy := range graphCopy.Nodes {
-	// 	node := graph.FindNode(nodeCopy.Call.ContractAddress, nodeCopy.Call.FunctionName)
-	// 	for group, callBackNode := range node.GroupCallbacks {
-	// 		nodeCopy.GroupCallbacks[group] = graphCopy.FindNode(callBackNode.Call.ContractAddress, callBackNode.Call.FunctionName)
-	// 	}
-	// }
-
-	// for _, node := range graph.Nodes {
-	// 	if node.ContextCallback != nil {
-	// 		executionNode := graphCopy.FindNode(node.Call.ContractAddress, node.Call.FunctionName)
-	// 		executionNode.ContextCallback = graphCopy.FindNode(node.ContextCallback.Call.ContractAddress, node.ContextCallback.Call.FunctionName)
-	// 	}
-	// }
-
 	return graphCopy
 }
 
@@ -729,27 +685,6 @@ func (graph *TestCallGraph) CreateExecutionGraphFromCallGraph() *TestCallGraph {
 		// callbacks were added by async source node processing and must be moved to the end of the node
 		// after all other node activity (sync & async calls)
 		moveCallbacksToTheEndOfEdges(newSource)
-
-		// add group callbacks calls if any
-		// for _, group := range groups {
-		// 	groupCallbackNode := newSource.GroupCallbacks[group]
-		// 	if groupCallbackNode != nil {
-		// 		execEdge := executionGraph.addEdge(newSource, groupCallbackNode)
-		// 		execEdge.Type = GroupCallback
-		// 		execEdge.Label = "Callback[" + group + "]"
-		// 		execEdge.GasUsed = groupCallbackNode.GasUsed
-		// 		execEdge.GasLocked = groupCallbackNode.GasLocked
-		// 	}
-		// }
-
-		// // is start node add context callback
-		// if newSource.ContextCallback != nil {
-		// 	execEdge := executionGraph.addEdge(newSource, newSource.ContextCallback)
-		// 	execEdge.Type = ContextCallback
-		// 	execEdge.Label = "Callback\nContext"
-		// 	execEdge.GasUsed = newSource.ContextCallback.GasUsed
-		// 	execEdge.GasLocked = newSource.ContextCallback.GasLocked
-		// }
 
 		return node
 	}, true)

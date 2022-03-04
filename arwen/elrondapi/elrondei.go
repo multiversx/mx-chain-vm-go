@@ -65,7 +65,6 @@ package elrondapi
 // extern void		v1_4_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t	v1_4_createAsyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 // extern int32_t	v1_4_setAsyncContextCallback(void *context, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
-// extern int32_t v1_4_setAsyncGroupCallback(void *context, int32_t groupIDOffset, int32_t groupIDLength,int32_t callback, int32_t callbackLength,int32_t data, int32_t dataLength,  long long gas);
 //
 // extern int32_t	v1_4_getNumReturnData(void *context);
 // extern int32_t	v1_4_getReturnDataSize(void *context, int32_t resultID);
@@ -278,11 +277,6 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("createAsyncCall", v1_4_createAsyncCall, C.v1_4_createAsyncCall)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("setAsyncGroupCallback", v1_4_setAsyncGroupCallback, C.v1_4_setAsyncGroupCallback)
 	if err != nil {
 		return nil, err
 	}
@@ -1635,63 +1629,6 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 
 	err := async.RegisterAsyncCall("", asyncCall)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	return 0
-}
-
-//export v1_4_setAsyncGroupCallback
-func v1_4_setAsyncGroupCallback(context unsafe.Pointer,
-	groupIDOffset int32,
-	groupIDLength int32,
-	callback int32,
-	callbackLength int32,
-	data int32,
-	dataLength int32,
-	gas int64,
-) int32 {
-	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	async := host.Async()
-	metering.StartGasTracing(setAsyncGroupCallbackName)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.SetAsyncGroupCallback
-	metering.UseAndTraceGas(gasToUse)
-
-	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	groupID := string(groupIDBytes)
-	if groupID == arwen.LegacyAsyncCallGroupID {
-		err = arwen.ErrInvalidAsyncCallGroupID
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	callbackNameBytes, err := runtime.MemLoad(callback, callbackLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	dataBytes, err := runtime.MemLoad(data, dataLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	_, exists := async.GetCallGroup(groupID)
-	if !exists {
-		err = arwen.ErrAsyncCallGroupDoesNotExist
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	callbackName := string(callbackNameBytes)
-	err = async.SetGroupCallback(groupID, callbackName, dataBytes, uint64(gas))
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 

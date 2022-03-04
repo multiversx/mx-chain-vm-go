@@ -31,14 +31,6 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 	return nil
 }
 
-func (context *asyncContext) executeCompletedGroupCallbacks() {
-	for _, group := range context.asyncCallGroups {
-		if group.IsComplete() {
-			context.executeCallGroupCallback(group)
-		}
-	}
-}
-
 func (context *asyncContext) getNextLocalAsyncCall() *arwen.AsyncCall {
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
@@ -152,24 +144,6 @@ func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.Asyn
 	context.host.Metering().RestoreGas(asyncCall.GasLimit)
 	context.host.Metering().RestoreGas(asyncCall.GasLocked)
 	asyncCall.UpdateStatus(vmcommon.Ok)
-}
-
-// executeCallGroupCallback synchronously executes the designated callback of
-// the AsyncCallGroup, as it was set with SetGroupCallback().
-//
-// Gas for the execution has been already paid for when SetGroupCallback() was
-// set. The remaining gas is refunded to context.callerAddr, which initiated
-// the call and paid for the gas in the first place.
-func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGroup) {
-	if !group.HasCallback() {
-		return
-	}
-
-	input := context.createGroupCallbackInput(group)
-	context.gasAccumulated = 0
-	vmOutput, _, err := context.host.ExecuteOnDestContext(input)
-	context.finishAsyncLocalCallbackExecution(vmOutput, err, 0, false)
-	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested

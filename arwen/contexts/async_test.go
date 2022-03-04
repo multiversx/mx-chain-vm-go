@@ -249,61 +249,6 @@ func TestAsyncContext_RegisterAsyncCall_ValidationAndFields(t *testing.T) {
 	// TODO locked gas
 }
 
-func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host, nil)
-	mockWasmerInstance.Exports["callbackFunction"] = nil
-
-	async.groupCallbacksEnabled = true
-	err := async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
-	require.True(t, errors.Is(err, arwen.ErrAsyncCallGroupDoesNotExist))
-}
-
-func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host, nil)
-	mockWasmerInstance.Exports["callbackFunction"] = nil
-
-	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
-	mockMetering.Err = arwen.ErrNotEnoughGas
-
-	async.groupCallbacksEnabled = true
-	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
-	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
-}
-
-func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host, nil)
-
-	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
-	mockMetering.GasComputedToLock = 42
-	async.groupCallbacksEnabled = true
-
-	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	mockWasmerInstance.Exports["callbackFunction"] = nil
-	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
-	require.Nil(t, err)
-
-	group, exists := async.GetCallGroup("testGroup")
-	require.NotNil(t, group)
-	require.True(t, exists)
-	require.Equal(t, "callbackFunction", group.Callback)
-	require.Equal(t, []byte{}, group.CallbackData)
-	require.Equal(t, uint64(42), group.GasLocked)
-}
-
 func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	leftAddress := []byte("left")
 	leftAccount := &worldmock.Account{

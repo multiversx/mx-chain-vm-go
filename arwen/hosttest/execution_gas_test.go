@@ -487,7 +487,6 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 	asyncCallData := txDataBuilder.NewBuilder()
 	asyncCallData.Func(contracts.AsyncChildFunction)
 	asyncCallData.Bytes(nil) // placeholder for data used by async framework
-	asyncCallData.Bytes(nil) // placeholder for data used by async framework
 	asyncCallData.Int64(testConfig.TransferToThirdParty)
 	asyncCallData.Str(contracts.AsyncChildData)
 	asyncCallData.Bytes([]byte{0})

@@ -36,6 +36,7 @@ func (context *asyncContext) Save() error {
 	return nil
 }
 
+// LoadParentContext loads AsyncContext from the storage of the contract using the caller id
 func (context *asyncContext) LoadParentContext() error {
 	switch context.callType {
 	case vm.DirectCall:
@@ -167,7 +168,7 @@ func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext
 	}
 }
 
-// IsComplete -
+// IsComplete returns true if no more async calls are pending
 func (context *SerializableAsyncContext) IsComplete() bool {
 	return context.CallsCounter == 0 && len(context.AsyncCallGroups) == 0
 }

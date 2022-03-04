@@ -170,9 +170,6 @@ var ErrCannotInterpretCallbackArgs = errors.New("cannot interpret callback args"
 // ErrAsyncContextDoesNotExist signals that the async context does not exist
 var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
 
-// ErrGroupCallbacksDisabled signals that group callbacks cannot be set nor executed
-var ErrGroupCallbacksDisabled = errors.New("group callbacks disabled")
-
 // ErrContextCallbackDisabled signals that group callbacks cannot be set nor executed
 var ErrContextCallbackDisabled = errors.New("context callback disabled")
 

@@ -54,12 +54,6 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 				})
 				require.Nil(t, err)
 			}
-
-			async.SetGroupCallback(
-				groupName,
-				testcommon.TestCallbackPrefix+groupName,
-				nil,
-				testConfig.GasProvidedToCallback)
 		}
 
 		async.SetContextCallback(

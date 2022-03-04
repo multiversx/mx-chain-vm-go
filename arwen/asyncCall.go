@@ -150,13 +150,12 @@ func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
 func fromSerializableAsyncCalls(serializableAsyncCalls []*SerializableAsyncCall) []*AsyncCall {
 	var asyncCalls = make([]*AsyncCall, len(serializableAsyncCalls))
 	for i, serAsyncCall := range serializableAsyncCalls {
-		asyncCalls[i] = serAsyncCall.FromSerializable()
+		asyncCalls[i] = serAsyncCall.fromSerializable()
 	}
 	return asyncCalls
 }
 
-// FromSerializable -
-func (serAsyncCall *SerializableAsyncCall) FromSerializable() *AsyncCall {
+func (serAsyncCall *SerializableAsyncCall) fromSerializable() *AsyncCall {
 	return &AsyncCall{
 		CallID:          serAsyncCall.CallID,
 		Status:          AsyncCallStatus(serAsyncCall.Status),

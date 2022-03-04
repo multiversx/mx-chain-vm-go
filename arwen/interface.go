@@ -320,7 +320,6 @@ type AsyncContext interface {
 	HasPendingCallGroups() bool
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
-	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
 	GetCallerAddress() []byte

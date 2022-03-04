@@ -34,7 +34,6 @@ type asyncContext struct {
 	totalCallsCounter uint64 // used for callid generation
 
 	childResults           *vmcommon.VMOutput
-	groupCallbacksEnabled  bool
 	contextCallbackEnabled bool
 
 	address                      []byte
@@ -71,7 +70,6 @@ func NewAsyncContext(
 		asyncCallGroups:        make([]*arwen.AsyncCallGroup, 0),
 		callArgsParser:         callArgsParser,
 		esdtTransferParser:     esdtTransferParser,
-		groupCallbacksEnabled:  false,
 		contextCallbackEnabled: false,
 	}
 
@@ -283,40 +281,6 @@ func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 	}
 
 	context.asyncCallGroups = append(context.asyncCallGroups, group)
-	return nil
-}
-
-// SetGroupCallback registers the name of the callback method to be called upon the completion of the specified AsyncCallGroup.
-func (context *asyncContext) SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error {
-	if !context.groupCallbacksEnabled {
-		return arwen.ErrGroupCallbacksDisabled
-	}
-
-	group, exists := context.GetCallGroup(groupID)
-	if !exists {
-		return arwen.ErrAsyncCallGroupDoesNotExist
-	}
-
-	if group.IsComplete() {
-		return arwen.ErrAsyncCallGroupAlreadyComplete
-	}
-
-	err := context.host.Runtime().ValidateCallbackName(callbackName)
-	if err != nil {
-		return err
-	}
-
-	metering := context.host.Metering()
-	gasToLock := math.AddUint64(gas, metering.ComputeExtraGasLockedForAsync())
-	err = metering.UseGasBounded(gasToLock)
-	if err != nil {
-		return err
-	}
-
-	group.Callback = callbackName
-	group.GasLocked = gasToLock
-	group.CallbackData = data
-
 	return nil
 }
 
@@ -749,12 +713,6 @@ func (context *asyncContext) DeleteAsyncCallAndCleanGroup(callID []byte) error {
 
 	currentCallGroup := context.asyncCallGroups[groupIndex]
 	currentCallGroup.DeleteAsyncCall(callIndex)
-
-	if context.groupCallbacksEnabled {
-		// The current group expects no more callbacks, so its own callback can be
-		// executed now.
-		context.executeCallGroupCallback(currentCallGroup)
-	}
 
 	if currentCallGroup.IsComplete() {
 		context.deleteCallGroup(groupIndex)

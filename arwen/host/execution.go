@@ -257,6 +257,12 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	output := host.Output()
 
 	asyncPrefixArgs := arwen.PopCallIDsFromArguments(input)
+	if asyncPrefixArgs == nil {
+		// this should never happen
+		err := fmt.Errorf("Async framework error - PopCallIDsFromArguments")
+		log.Trace("ExecuteOnDestContext builtin function", "error", err)
+		return nil, nil, err
+	}
 
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
