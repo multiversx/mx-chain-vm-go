@@ -242,3 +242,18 @@ var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
 
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
+
+// ErrNoAsyncParentContext signals that load parent was called for an async call
+var ErrNoAsyncParentContext = errors.New("this should not be called for async calls (only callbacks and direct calls)")
+
+// ErrInvalidAsyncArgsList signals that an error in the async framework produced an invalid arguments list
+var ErrInvalidAsyncArgsList = errors.New("async call has an invalid arguments list")
+
+// ErrAsyncInit signals an async context initialization error
+var ErrAsyncInit = errors.New("async context initialization error")
+
+// ErrAsyncNoOutputFromCallback signals that an error happen while producing the output of a callback
+var ErrAsyncNoOutputFromCallback = errors.New("callback's VMOutput should not be nil")
+
+// var ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
+var ErrAsyncNoMultiLevel = errors.New("Multi-level async calls are not allowed yet")

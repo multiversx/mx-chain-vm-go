@@ -31,18 +31,6 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 	return nil
 }
 
-func (context *asyncContext) getNextLocalAsyncCall() *arwen.AsyncCall {
-	for _, group := range context.asyncCallGroups {
-		for _, call := range group.AsyncCalls {
-			if call.IsLocal() {
-				return call
-			}
-		}
-	}
-
-	return nil
-}
-
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
 	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
 		context.executeESDTTransferOnCallback(asyncCall)
@@ -73,15 +61,19 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 			// Restore gas locked while still on the caller instance; otherwise, the
 			// locked gas will appear to have been used twice by the caller instance.
 			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
-			if isCallbackComplete && callbackVMOutput != nil {
-				callbackVMOutput.GasRemaining = 0
-				err = context.completeChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
-				if err != nil {
-					return err
+			if isCallbackComplete {
+				if callbackVMOutput != nil {
+					callbackVMOutput.GasRemaining = 0
+					err = context.completeChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
+					if err != nil {
+						return err
+					}
+				} else {
+					return arwen.ErrAsyncNoOutputFromCallback
 				}
 			}
 		} else {
-			metering.UseGas(vmOutput.GasRemaining)
+			// metering.UseGas(vmOutput.GasRemaining)
 			err = context.completeChild(asyncCall.CallID, 0)
 			if err != nil {
 				return err
@@ -94,11 +86,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, destinationCallInput *vmcommon.ContractCallInput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
-	isUpgradeCall := false
-	if destinationCallInput != nil {
-		isUpgradeCall = context.isUpgradeCall(destinationCallInput.Function)
-	}
-	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode, isUpgradeCall)
+	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode)
 	return isComplete, callbackVMOutput
 }
 
@@ -114,21 +102,8 @@ func (context *asyncContext) executeSyncCallback(
 		return nil, true, err
 	}
 
-	var callbackVMOutput *vmcommon.VMOutput
-	var isComplete bool
-	var callBackErr error
-
 	context.host.Metering().RestoreGas(asyncCall.GasLocked)
-	callbackVMOutput, isComplete, callBackErr = context.host.ExecuteOnDestContext(callbackInput)
-
-	return callbackVMOutput, isComplete, callBackErr
-}
-
-func (context *asyncContext) isUpgradeCall(function string) bool {
-	if !context.host.Storage().IsUseDifferentGasCostFlagSet() {
-		return false
-	}
-	return function == arwen.UpgradeFunctionName
+	return context.host.ExecuteOnDestContext(callbackInput)
 }
 
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
@@ -179,7 +154,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
 		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
-		context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, 0, false)
+		context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, 0)
 	}
 
 	// The gas that remains after executing the in-shard half of the built-in
@@ -193,8 +168,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 func (context *asyncContext) finishAsyncLocalCallbackExecution(
 	vmOutput *vmcommon.VMOutput,
 	err error,
-	destinationReturnCode vmcommon.ReturnCode,
-	setReturnCode bool) {
+	destinationReturnCode vmcommon.ReturnCode) {
 	// output := context.host.Output()
 	// if err == nil {
 	// 	if setReturnCode {

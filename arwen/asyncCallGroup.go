@@ -130,7 +130,7 @@ func (acg *AsyncCallGroup) toSerializable() *SerializableAsyncCallGroup {
 	}
 }
 
-// ToSerializableAsyncCallGroups -
+// ToSerializableAsyncCallGroups - serialize all call groups to protobuf
 func ToSerializableAsyncCallGroups(asyncCallGroups []*AsyncCallGroup) []*SerializableAsyncCallGroup {
 	var serializableGroups = make([]*SerializableAsyncCallGroup, len(asyncCallGroups))
 	for i, acg := range asyncCallGroups {
@@ -139,7 +139,7 @@ func ToSerializableAsyncCallGroups(asyncCallGroups []*AsyncCallGroup) []*Seriali
 	return serializableGroups
 }
 
-// FromSerializableAsyncCallGroups -
+// FromSerializableAsyncCallGroups - deserialize all call groups from protobuf
 func FromSerializableAsyncCallGroups(serializableAsyncCallGroups []*SerializableAsyncCallGroup) []*AsyncCallGroup {
 	var asyncCallGroups = make([]*AsyncCallGroup, len(serializableAsyncCallGroups))
 	for i, serCallGroup := range serializableAsyncCallGroups {

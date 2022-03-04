@@ -962,10 +962,14 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	return ok
 }
 
-func (context *runtimeContext) PopFirstArgumentFromVMInput() []byte {
+// PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
+func (context *runtimeContext) PopFirstArgumentFromVMInput() ([]byte, error) {
+	if len(context.vmInput.Arguments) == 0 {
+		return nil, arwen.ErrInvalidAsyncArgsList
+	}
 	firstArg := context.vmInput.Arguments[0]
 	context.vmInput.Arguments = context.vmInput.Arguments[1:]
-	return firstArg
+	return firstArg, nil
 }
 
 // DisableUseDifferentGasCostFlag - for tests

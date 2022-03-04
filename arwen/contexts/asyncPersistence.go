@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -45,7 +44,7 @@ func (context *asyncContext) LoadParentContext() error {
 		// parent is the same as the callback, and the id is callbackAsyncInitiatorCallID
 		return context.loadSpecificContext(context.address, context.callbackAsyncInitiatorCallID)
 	default:
-		return fmt.Errorf("This should not be called for async calls (only callbacks and direct calls)")
+		return arwen.ErrNoAsyncParentContext
 	}
 }
 

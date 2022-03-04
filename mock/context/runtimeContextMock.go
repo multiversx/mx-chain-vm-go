@@ -348,8 +348,8 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 }
 
 // PopFirstArgumentFromVMInput mocked method
-func (r *RuntimeContextMock) PopFirstArgumentFromVMInput() []byte {
-	return nil
+func (r *RuntimeContextMock) PopFirstArgumentFromVMInput() ([]byte, error) {
+	return nil, nil
 }
 
 // DisableUseDifferentGasCostFlag mocked method

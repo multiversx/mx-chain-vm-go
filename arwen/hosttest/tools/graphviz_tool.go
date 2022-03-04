@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	callGraph := test.CreateGraphTestSyncAndAsync5()
+	callGraph := test.CreateGraphTestOneAsyncCallNoCallback()
 
 	graphviz := testcommon.ToGraphviz(callGraph, true)
 	testcommon.CreateSvg("1 call-graph", graphviz)

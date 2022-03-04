@@ -95,7 +95,7 @@ func (context *asyncContext) InitState() {
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
 // information provided by a ContractCallInput.
-func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) {
+func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInput) error {
 	context.InitState()
 	context.callerAddr = input.CallerAddr
 	context.callType = input.CallType
@@ -103,18 +103,33 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetSCAddress()
 
+	var err error
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
-		context.callID = runtime.PopFirstArgumentFromVMInput()
-		context.callerCallID = runtime.PopFirstArgumentFromVMInput()
+		context.callID, err = runtime.PopFirstArgumentFromVMInput()
+		if err != nil {
+			return err
+		}
+		context.callerCallID, err = runtime.PopFirstArgumentFromVMInput()
+		if err != nil {
+			return err
+		}
 	}
 
 	if input.CallType == vm.AsynchronousCallBack {
-		context.callbackAsyncInitiatorCallID = runtime.PopFirstArgumentFromVMInput()
-		context.gasAccumulated = big.NewInt(0).SetBytes(runtime.PopFirstArgumentFromVMInput()).Uint64()
+		context.callbackAsyncInitiatorCallID, err = runtime.PopFirstArgumentFromVMInput()
+		if err != nil {
+			return err
+		}
+		var gasBytes []byte
+		gasBytes, err = runtime.PopFirstArgumentFromVMInput()
+		if err != nil {
+			return err
+		}
+		context.gasAccumulated = big.NewInt(0).SetBytes(gasBytes).Uint64()
 	}
 
 	if logAsync.GetLevel() == logger.LogTrace {
@@ -128,6 +143,8 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		logAsync.Trace("", "callbackAsyncInitiatorCallID", context.callbackAsyncInitiatorCallID)
 		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
 	}
+
+	return nil
 }
 
 // PushState creates a deep clone of the internal state and pushes it onto the
@@ -197,6 +214,7 @@ func (context *asyncContext) PopSetActiveState() {
 	context.gasAccumulated = math.AddUint64(context.gasAccumulated, prevState.gasAccumulated)
 }
 
+// Clone creates a clone of the given context
 func (context *asyncContext) Clone() arwen.AsyncContext {
 	return &asyncContext{
 		address:                      context.address,
@@ -240,6 +258,7 @@ func (context *asyncContext) GetCallbackAsyncInitiatorCallID() []byte {
 	return context.callbackAsyncInitiatorCallID
 }
 
+// GetCallID is a getter for the async call's callID
 func (context *asyncContext) GetCallID() []byte {
 	return context.callID
 }
@@ -308,6 +327,8 @@ func (context *asyncContext) SetContextCallback(callbackName string, data []byte
 
 	return nil
 }
+
+// PrependArgumentsForAsyncContext prepends standard async context arguments to the provided ones
 func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte) {
 	newCallID := context.generateNewCallID()
 	context.incrementCallsCounter()
@@ -317,6 +338,7 @@ func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]b
 	}, args...)
 }
 
+// GetAsyncCallByCallID gets from the context the call with the given callID
 func (context *asyncContext) GetAsyncCallByCallID(callID []byte) (*arwen.AsyncCall, int, int, error) {
 	for groupIndex, group := range context.asyncCallGroups {
 		for callIndex, callInGroup := range group.AsyncCalls {
@@ -332,7 +354,10 @@ func (context *asyncContext) GetAsyncCallByCallID(callID []byte) (*arwen.AsyncCa
 func (context *asyncContext) generateNewCallID() []byte {
 	context.totalCallsCounter++
 	newCallID := append(context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes()...)
-	newCallID, _ = context.host.Crypto().Sha256(newCallID)
+	newCallID, err := context.host.Crypto().Sha256(newCallID)
+	if err != nil {
+		return []byte{}
+	}
 	return newCallID
 }
 
@@ -344,16 +369,19 @@ func (context *asyncContext) decrementCallsCounter() {
 	context.callsCounter--
 }
 
+// SetResults fills the child result of the async context
 func (context *asyncContext) SetResults(vmOutput *vmcommon.VMOutput) {
 	if context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall {
 		context.childResults = vmOutput
 	}
 }
 
+// GetGasAccumulated is a getter for gas accumulated
 func (context *asyncContext) GetGasAccumulated() uint64 {
 	return context.gasAccumulated
 }
 
+// IsCrossShard returns true if the current async call is cross shard
 func (context *asyncContext) IsCrossShard() bool {
 	return len(context.stateStack) == 0 && (context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack)
 }
@@ -493,7 +521,7 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	call.ExecutionMode = execMode
 
 	if context.isMultiLevelAsync(call) {
-		return fmt.Errorf("Multi-level async calls are not allowed yet")
+		return arwen.ErrAsyncNoMultiLevel
 	}
 
 	group, ok := context.GetCallGroup(groupID)
@@ -705,6 +733,7 @@ func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, e
 	return gasUseForSerialization, nil
 }
 
+// DeleteAsyncCallAndCleanGroup deletes the specified async call and the group if this is the last call
 func (context *asyncContext) DeleteAsyncCallAndCleanGroup(callID []byte) error {
 	_, groupIndex, callIndex, err := context.GetAsyncCallByCallID(callID)
 	if err != nil {
@@ -868,7 +897,7 @@ func (context *asyncContext) executeContextCallback() error {
 
 	callbackCallInput := context.createContextCallbackInput()
 	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callBackErr, 0, false)
+	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callBackErr, 0)
 
 	return nil
 }
@@ -900,36 +929,6 @@ func computeDataLengthFromArguments(function string, arguments [][]byte) int {
 func (context *asyncContext) accumulateGas(gas uint64) {
 	context.gasAccumulated = math.AddUint64(context.gasAccumulated, gas)
 	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
-}
-
-// deleteCompletedGroups removes all completed AsyncGroups
-func (context *asyncContext) deleteCompletedGroups() {
-	remainingAsyncGroups := make([]*arwen.AsyncCallGroup, 0)
-	for _, group := range context.asyncCallGroups {
-		if !group.IsComplete() {
-			remainingAsyncGroups = append(remainingAsyncGroups, group)
-		} else {
-			logAsync.Trace("deleted group", "group", group.Identifier)
-		}
-	}
-
-	context.asyncCallGroups = remainingAsyncGroups
-}
-
-func (context *asyncContext) closeCompletedAsyncCalls() {
-	for _, group := range context.asyncCallGroups {
-		group.DeleteCompletedAsyncCalls()
-	}
-}
-
-func (context *asyncContext) getCallByIndex(groupIndex int, callIndex int) (*arwen.AsyncCall, error) {
-	if groupIndex > len(context.asyncCallGroups)-1 {
-		return nil, arwen.ErrAsyncCallGroupDoesNotExist
-	}
-	if callIndex > len(context.asyncCallGroups[groupIndex].AsyncCalls)-1 {
-		return nil, arwen.ErrAsyncCallNotFound
-	}
-	return context.asyncCallGroups[groupIndex].AsyncCalls[callIndex], nil
 }
 
 func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {

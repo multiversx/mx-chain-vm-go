@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
+// SendCrossShardCallback creates a transfer for a cross shard callback
 func (context *asyncContext) SendCrossShardCallback(
 	returnCode vmcommon.ReturnCode,
 	returnData [][]byte,
@@ -17,8 +18,7 @@ func (context *asyncContext) SendCrossShardCallback(
 	sender := context.address
 	destination := context.callerAddr
 	data := context.createCallbackArgumentsForCrossShardCallback(returnCode, returnData, returnMessage)
-	err := sendCrossShardCallback(context.host, sender, destination, data)
-	return err
+	return sendCrossShardCallback(context.host, sender, destination, data)
 }
 
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall) error {
@@ -44,7 +44,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		callData.Bytes(argument)
 	}
 
-	err = output.Transfer(
+	return output.Transfer(
 		asyncCall.GetDestination(),
 		runtime.GetSCAddress(),
 		asyncCall.GetGasLimit(),
@@ -53,11 +53,6 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		callData.ToBytes(),
 		vm.AsynchronousCall,
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte, data []byte) error {

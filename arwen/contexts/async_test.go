@@ -527,62 +527,6 @@ func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
 
-func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.T) {
-	// Scenario 2
-	// Successful execution at destination, but not enough gas for callback execution
-	// (this situation should not happen in practice, due to dynamic gas locking)
-	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
-	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host, nil)
-
-	asyncCall := defaultAsyncCall_AliceToBob()
-	asyncCall.GasLimit = 10
-
-	gasConsumedByDestination := uint64(3)
-	destOutput := &vmcommon.VMOutput{
-		ReturnCode:   vmcommon.Ok,
-		GasRemaining: asyncCall.GasLimit - gasConsumedByDestination,
-	}
-	host.EnqueueVMOutput(destOutput)
-
-	err := async.executeAsyncLocalCall(asyncCall)
-	require.Nil(t, err)
-	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
-
-	// Only one ContractCallInput was stored by the VmHostMock: constructing the
-	// ContractCallInput for the callback has failed with insufficient gas before
-	// reaching host.ExecutionOnDestContext()
-	require.Len(t, host.StoredInputs, 1)
-
-	// The ContractCallInput generated to execute the destination call synchronously
-	destInput := defaultCallInput_AliceToBob(originalVMInput)
-	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
-
-	_, host.StoredInputs[0].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[0].Arguments, 2)
-
-	require.Equal(t, destInput, host.StoredInputs[0])
-
-	// Verify the final VMOutput, containing the failure.
-	expectedOutput := arwen.MakeEmptyVMOutput()
-	// expectedOutput.ReturnCode = vmcommon.OutOfGas
-	// expectedOutput.ReturnMessage = "not enough gas"
-	// expectedOutput.GasRemaining = 0
-	// arwen.AddFinishData(expectedOutput, []byte("out of gas"))
-	// arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
-
-	// The expectedOutput must also contain an OutputAccount corresponding to
-	// Alice, because of a call to host.Output().GetOutputAccount() in
-	// host.Output().GetVMOutput(), which creates and caches an empty account for
-	// her.
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
-
-	host.Output().GetOutputAccount(Alice)
-	vmOutput := host.Output().GetVMOutput()
-	// Bob entry is retuned by the MockWorld.GetStorageData()
-	delete(vmOutput.OutputAccounts, string(Bob))
-	require.Equal(t, expectedOutput, vmOutput)
-}
-
 func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Scenario 3
 	// Successful execution at destination, and successful callback execution;
@@ -772,7 +716,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 	async := makeAsyncContext(t, host, nil)
-	async.finishAsyncLocalCallbackExecution(nil, nil, 0, false)
+	async.finishAsyncLocalCallbackExecution(nil, nil, 0)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -791,7 +735,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async := makeAsyncContext(t, host, nil)
 
 	syncExecErr := arwen.ErrNotEnoughGas
-	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0, false)
+	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.OutOfGas
@@ -818,7 +762,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
-	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0, false)
+	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.UserError

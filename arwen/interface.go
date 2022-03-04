@@ -152,7 +152,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-	PopFirstArgumentFromVMInput() []byte
+	PopFirstArgumentFromVMInput() ([]byte, error)
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
@@ -316,7 +316,7 @@ type InstanceBuilder interface {
 type AsyncContext interface {
 	StateStack
 
-	InitStateFromInput(input *vmcommon.ContractCallInput)
+	InitStateFromInput(input *vmcommon.ContractCallInput) error
 	HasPendingCallGroups() bool
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)

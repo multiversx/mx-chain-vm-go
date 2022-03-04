@@ -5,6 +5,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
+// NotifyChildIsComplete is called for the parent when an async child is completed (callback included)
 func (context *asyncContext) NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error {
 	if logAsync.GetLevel() == logger.LogTrace {
 		logAsync.Trace("NofityChildIsComplete")
@@ -32,6 +33,7 @@ func (context *asyncContext) completeChild(callID []byte, gasToAccumulate uint64
 	return context.CompleteChildConditional(true, callID, gasToAccumulate)
 }
 
+// CompleteChildConditional complets a child and accumulates the provided gas to the async context
 func (context *asyncContext) CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error {
 	if !isChildComplete {
 		return nil

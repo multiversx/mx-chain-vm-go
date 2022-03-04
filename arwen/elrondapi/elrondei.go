@@ -1242,7 +1242,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, err = ExecuteOnDestContextFromAPI(host, contractCallInput)
+		_, err = executeOnDestContextFromAPI(host, contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
@@ -1501,7 +1501,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, executeErr := ExecuteOnDestContextFromAPI(host, contractCallInput)
+		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
@@ -2871,7 +2871,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	_, err = ExecuteOnDestContextFromAPI(host, contractCallInput)
+	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2985,7 +2985,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
 	}
 
-	_, err = ExecuteOnDestContextFromAPI(host, contractCallInput)
+	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -3083,7 +3083,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	runtime.SetReadOnly(true)
-	_, err = ExecuteOnDestContextFromAPI(host, contractCallInput)
+	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
@@ -3466,7 +3466,7 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 	return integers
 }
 
-func ExecuteOnDestContextFromAPI(host arwen.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func executeOnDestContextFromAPI(host arwen.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	_, input.Arguments = host.Async().PrependArgumentsForAsyncContext(input.Arguments)
 	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
 	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
