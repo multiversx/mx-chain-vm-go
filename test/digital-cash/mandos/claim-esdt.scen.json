@@ -181,10 +181,10 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "str:invalid signature",
-                "logs": "*",
+                "message": "str:argument decode error (signature): bad array length",
                 "gas": "*",
-                "refund": "*"
+                "refund": "*",
+                "logs": "*"
             }
         },
         {

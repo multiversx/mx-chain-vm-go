@@ -8,15 +8,26 @@ import (
 
 // JSONBytesFromString stores a byte slice
 type JSONBytesFromString struct {
-	Value    []byte
-	Original string
+	Value       []byte
+	Original    string
+	Unspecified bool
 }
 
 // NewJSONBytesFromString creates a new JSONBytesFromString instance.
 func NewJSONBytesFromString(value []byte, originalStr string) JSONBytesFromString {
 	return JSONBytesFromString{
-		Value:    value,
-		Original: originalStr,
+		Value:       value,
+		Original:    originalStr,
+		Unspecified: false,
+	}
+}
+
+// JSONBytesEmpty creates a new JSONBytesFromString instance with default values.
+func JSONBytesEmpty() JSONBytesFromString {
+	return JSONBytesFromString{
+		Value:       nil,
+		Original:    "",
+		Unspecified: true,
 	}
 }
 
@@ -25,8 +36,9 @@ func NewJSONBytesFromString(value []byte, originalStr string) JSONBytesFromStrin
 // and it is designed to make it easier to express serialized objects.
 // The strings in the list get simply concatenated to produce a value.
 type JSONBytesFromTree struct {
-	Value    []byte
-	Original oj.OJsonObject
+	Value       []byte
+	Original    oj.OJsonObject
+	Unspecified bool
 }
 
 // OriginalEmpty returns true if the object originates from "".
@@ -39,22 +51,25 @@ func (jb JSONBytesFromTree) OriginalEmpty() bool {
 
 // JSONBigInt stores the parsed big int value but also the original parsed string
 type JSONBigInt struct {
-	Value    *big.Int
-	Original string
+	Value       *big.Int
+	Original    string
+	Unspecified bool
 }
 
 // JSONBigIntZero provides an unitialized zero value.
 func JSONBigIntZero() JSONBigInt {
 	return JSONBigInt{
-		Value:    big.NewInt(0),
-		Original: "",
+		Value:       big.NewInt(0),
+		Original:    "",
+		Unspecified: true,
 	}
 }
 
 // JSONUint64 stores the parsed uint64 value but also the original parsed string
 type JSONUint64 struct {
-	Value    uint64
-	Original string
+	Value       uint64
+	Original    string
+	Unspecified bool
 }
 
 // OriginalEmpty returns true if the object originates from "".
@@ -65,8 +80,9 @@ func (ju *JSONUint64) OriginalEmpty() bool {
 // JSONUint64Zero provides an unitialized zero value.
 func JSONUint64Zero() JSONUint64 {
 	return JSONUint64{
-		Value:    0,
-		Original: "",
+		Value:       0,
+		Original:    "",
+		Unspecified: true,
 	}
 }
 

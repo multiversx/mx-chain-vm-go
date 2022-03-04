@@ -39,7 +39,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": "*",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -107,7 +107,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": "*",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -136,7 +136,7 @@
                     "200,000,000"
                 ],
                 "status": "",
-                "logs": "*",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -159,7 +159,7 @@
                     "116,666,666"
                 ],
                 "status": "",
-                "logs": "*",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -182,7 +182,7 @@
                     "33,333,333"
                 ],
                 "status": "",
-                "logs": "*",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -205,7 +205,7 @@
                     "49,999,999"
                 ],
                 "status": "",
-                "logs": "*",
+                "logs": [],
                 "gas": "*",
                 "refund": "*"
             }
@@ -283,7 +283,7 @@
                     "balance": "33,333,333",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "''delegation rewards claim"
+                    "asyncCallData": "str:delegation rewards claim"
                 },
                 "address:delegator2": {
                     "nonce": "*",

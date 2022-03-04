@@ -218,6 +218,7 @@ func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultO
 
 	result, err := crypto.Sha256(data)
 	if err != nil {
+		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -246,6 +247,7 @@ func v1_4_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32)
 
 	resultBytes, err := crypto.Sha256(inputBytes)
 	if err != nil {
+		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -271,6 +273,7 @@ func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resu
 
 	result, err := crypto.Keccak256(data)
 	if err != nil {
+		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -299,6 +302,7 @@ func v1_4_managedKeccak256(context unsafe.Pointer, inputHandle, outputHandle int
 
 	resultBytes, err := crypto.Keccak256(inputBytes)
 	if err != nil {
+		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -324,6 +328,7 @@ func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resu
 
 	result, err := crypto.Ripemd160(data)
 	if err != nil {
+		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -371,6 +376,7 @@ func v1_4_verifyBLS(
 
 	invalidSigErr := crypto.VerifyBLS(key, message, sig)
 	if invalidSigErr != nil {
+		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -413,6 +419,7 @@ func v1_4_verifyEd25519(
 
 	invalidSigErr := crypto.VerifyEd25519(key, message, sig)
 	if invalidSigErr != nil {
+		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -471,6 +478,7 @@ func v1_4_verifyCustomSecp256k1(
 
 	invalidSigErr := crypto.VerifySecp256k1(key, message, sig, uint8(hashType))
 	if invalidSigErr != nil {
+		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 

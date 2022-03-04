@@ -42,6 +42,16 @@ type ExportedFunctionSignature struct {
 	OutputArity int
 }
 
+// SetRkyvSerializationEnabled enables or disables RKYV serialization of
+// instances in Wasmer
+func SetRkyvSerializationEnabled(enabled bool) {
+	if enabled {
+		cWasmerInstanceEnableRkyv()
+	} else {
+		cWasmerInstanceDisableRkyv()
+	}
+}
+
 // NewExportedFunctionError constructs a new `ExportedFunctionError`,
 // where `functionName` is the name of the exported function, and
 // `message` is the error message. If the error message contains `%s`,

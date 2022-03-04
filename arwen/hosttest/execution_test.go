@@ -22,6 +22,7 @@ import (
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -184,7 +185,7 @@ func TestExecution_DeployWASM_Successful(t *testing.T) {
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte("init successful")).
-				GasRemaining(528).
+				GasRemaining(430).
 				Nonce([]byte("caller"), 24).
 				Code(newAddress, input.ContractCode).
 				BalanceDelta(newAddress, 88)
@@ -602,6 +603,36 @@ func TestExecution_Call_Successful(t *testing.T) {
 					test.CreateStoreEntry(test.ParentAddress).WithKey(counterKey).WithValue(big.NewInt(1002).Bytes()),
 				)
 		})
+}
+
+func TestExecution_CachingCompiledCode(t *testing.T) {
+	scAddress := test.MakeTestSCAddress("counter")
+	code := test.GetTestSCCode("counter", "../../")
+
+	host, world := test.DefaultTestArwenWithWorldMock(t)
+	defer func() {
+		_ = host.Close()
+	}()
+
+	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithRecipientAddr(scAddress).
+		WithGasProvided(100000).
+		WithFunction(increment).
+		Build()
+
+	vmOutput, err := host.RunSmartContractCall(input)
+	require.Nil(t, err)
+	require.Zero(t, vmOutput.ReturnCode)
+	require.NotEqual(t, vmOutput.GasRemaining, 100000)
+
+	for i := 0; i < 3; i++ {
+		vmOutput, err = host.RunSmartContractCall(input)
+		require.Nil(t, err)
+		require.Zero(t, vmOutput.ReturnCode)
+		require.NotEqual(t, vmOutput.GasRemaining, 100000)
+	}
 }
 
 func TestExecution_ManagedBuffers(t *testing.T) {
@@ -2647,13 +2678,13 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 885).
+				GasUsed(test.ParentAddress, 1069).
 				/// test.ChildAddress
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).
 				CodeDeployerAddress(childAddress, test.ParentAddress).
-				GasUsed(childAddress, 472).
+				GasUsed(childAddress, 570).
 				// other
 				ReturnData([]byte{byte(l / 256), byte(l % 256)}, []byte("init successful"), []byte("succ")).
 				Storage()
@@ -2967,36 +2998,64 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 						childInput.Function = "doSomething"
 						childInput.GasProvided = 1000
 						returnValue := contracts.ExecuteOnDestContextInMockContracts(host, childInput)
-						require.Equal(t, int32(0), returnValue)
+						assert.Equal(t, int32(0), returnValue)
 
+						instance.BreakpointValue = 0
 						returnData := elrondapi.GetReturnDataWithHostAndTypedArgs(host, -1)
-						require.Nil(t, returnData)
-						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
-						require.Equal(t, zero, string(returnData))
-						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
-						require.Equal(t, one, string(returnData))
-						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
-						require.Equal(t, two, string(returnData))
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 
+						instance.BreakpointValue = 0
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, zero, string(returnData))
+
+						instance.BreakpointValue = 0
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, one, string(returnData))
+
+						instance.BreakpointValue = 0
+						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, two, string(returnData))
+
+						instance.BreakpointValue = 0
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
-						require.Equal(t, one, string(returnData))
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, one, string(returnData))
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
-						require.Equal(t, two, string(returnData))
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
+						assert.Equal(t, two, string(returnData))
+
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
+
+						instance.BreakpointValue = 0
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						elrondapi.DeleteFromReturnDataWithHost(host, 0)
 						remainingReturnData := host.Output().ReturnData()
-						require.Equal(t, remainingReturnData, [][]byte{})
+						assert.Equal(t, remainingReturnData, [][]byte{})
+						assert.Equal(t, arwen.BreakpointNone, instance.BreakpointValue)
 
+						instance.BreakpointValue = 0
 						elrondapi.CleanReturnDataWithHost(host)
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 0)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 1)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
+						instance.BreakpointValue = 0
 						returnData = elrondapi.GetReturnDataWithHostAndTypedArgs(host, 2)
-						require.Nil(t, returnData)
+						assert.Equal(t, arwen.BreakpointExecutionFailed, instance.BreakpointValue)
+						assert.Nil(t, returnData)
 
 						return instance
 					})
@@ -3020,43 +3079,43 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 			WithFunction("callChild").
 			Build()).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
+			// No assertions here, because they were performed during the instance call
 		})
 }
 
 var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
-	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, 10, vmcommon.Ok)
+	maxGrows := uint32(math.MaxUint32)
+	maxDelta := uint32(10)
+	argDelta := int64(10)
+	runMemGrowTest(t, maxGrows, maxDelta, argDelta, 10, vmcommon.Ok)
 }
 
 func TestExecution_Opcodes_MemoryGrow_Limit(t *testing.T) {
-	maxMemGrow := uint32(10)
-	maxMemGrowDelta := uint32(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), int64(maxMemGrow-1), vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), int64(maxMemGrow), vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), int64(maxMemGrow+1), vmcommon.ExecutionFailed)
+	maxGrows := uint32(10)
+	maxDelta := uint32(10)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows-1), vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows), vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), int64(maxGrows+1), vmcommon.ExecutionFailed)
 }
 
 func TestExecution_Opcodes_MemoryGrowDelta(t *testing.T) {
-	maxMemGrow := uint32(10)
-	maxMemGrowDelta := uint32(10)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta-1), 1, vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta), 1, vmcommon.Ok)
-	runWASMOpcodeTestMemGrow(t, maxMemGrow, maxMemGrowDelta, int64(maxMemGrowDelta+1), 1, vmcommon.ExecutionFailed)
+	maxGrows := uint32(10)
+	maxDelta := uint32(10)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta-1), 1, vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta), 1, vmcommon.Ok)
+	runMemGrowTest(t, maxGrows, maxDelta, int64(maxDelta+1), 1, vmcommon.ExecutionFailed)
 }
 
 func BenchmarkOpcodeMemoryGrow(b *testing.B) {
-	maxMemGrow := uint32(math.MaxUint32)
-	maxMemGrowDelta := uint32(10)
-	argMemGrowDelta := int64(10)
-	runWASMOpcodeTestMemGrow(b, maxMemGrow, maxMemGrowDelta, argMemGrowDelta, int64(b.N), vmcommon.Ok)
+	maxGrows := uint32(math.MaxUint32)
+	maxDelta := uint32(10)
+	argDelta := int64(10)
+	runMemGrowTest(b, maxGrows, maxDelta, argDelta, int64(b.N), vmcommon.Ok)
 }
 
-func runWASMOpcodeTestMemGrow(
+func runMemGrowTest(
 	tb testing.TB,
 	maxMemGrow uint32,
 	maxMemGrowDelta uint32,
@@ -3086,6 +3145,11 @@ func runWASMOpcodeTestMemGrow(
 		}).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(expectedRetCode)
+			if expectedRetCode == vmcommon.ExecutionFailed {
+				vmOutput := verify.VmOutput
+				require.Len(tb, vmOutput.Logs, 1)
+				require.Contains(tb, string(vmOutput.Logs[0].Data), arwen.ErrMemoryLimit.Error())
+			}
 		})
 }
 
@@ -3125,6 +3189,72 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
 		})
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		var i *int
+		i = nil
+
+		// dereference a nil pointer
+		*i = *i + 1
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
+}
+
+func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../")
+	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	defer func() {
+		_ = host.Close()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		i := 5
+		j := 4
+		i = i / (j - 4)
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
+	// wrapped error.
+	defer func() {
+		r := recover()
+		require.NotNil(t, r)
+		err, ok := r.(error)
+		require.True(t, ok)
+		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
+	}()
+
+	_, _ = host.RunSmartContractCall(input)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

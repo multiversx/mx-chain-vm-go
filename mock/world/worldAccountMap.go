@@ -57,7 +57,12 @@ func (am AccountMap) CreateSmartContractAccountWithCodeHash(owner []byte, addres
 	newAccount.CodeHash = codeHash
 	newAccount.IsSmartContract = true
 	newAccount.OwnerAddress = owner
-	newAccount.CodeMetadata = []byte{0, vmcommon.MetadataPayable}
+
+	metadata := &vmcommon.CodeMetadata{
+		Payable: true,
+	}
+
+	newAccount.SetCodeAndMetadata(code, metadata)
 
 	return newAccount
 }
