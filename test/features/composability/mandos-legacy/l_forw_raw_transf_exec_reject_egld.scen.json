@@ -16,7 +16,7 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         },
@@ -37,7 +37,8 @@
             },
             "expect": {
                 "out": [],
-                "status": "",
+                "status": "10",
+                "message": "str:error signalled by smartcontract",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"

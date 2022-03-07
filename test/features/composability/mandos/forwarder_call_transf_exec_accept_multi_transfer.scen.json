@@ -46,7 +46,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "transf_exec_multi_reject_funds",
+                "function": "transf_exec_multi_accept_funds",
                 "arguments": [
                     "sc:vault",
                     "str:FWD-TOKEN",
@@ -83,7 +83,7 @@
                         "str:FWD-TOKEN": "300"
                     },
                     "storage": {
-                        "str:call_counts|nested:str:accept_funds_multi_transfer": "1"
+                        "str:call_counts|nested:str:accept_funds": "1"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },
@@ -177,7 +177,7 @@
                         }
                     },
                     "storage": {
-                        "str:call_counts|nested:str:accept_funds_multi_transfer": "2"
+                        "str:call_counts|nested:str:accept_funds": "2"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },

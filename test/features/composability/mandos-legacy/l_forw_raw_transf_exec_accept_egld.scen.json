@@ -16,7 +16,7 @@
                 "sc:forwarder": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         },
@@ -64,7 +64,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         },
@@ -111,7 +111,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {},
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../forwarder-raw/output/forwarder-raw-unmanaged.wasm"
                 }
             }
         }

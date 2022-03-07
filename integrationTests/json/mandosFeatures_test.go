@@ -93,11 +93,11 @@ func TestTimelocks(t *testing.T) {
 // }
 
 func TestForwarderTransfExec(t *testing.T) {
-	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_nft_reject.scen.json")
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_nft.scen.json")
 	require.Nil(t, err)
 }
 
 func TestForwarderTransfExecMultiReject(t *testing.T) {
-	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_multi_transfer_reject.scen.json")
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_multi_transfer.scen.json")
 	require.Nil(t, err)
 }

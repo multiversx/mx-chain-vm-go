@@ -30,7 +30,7 @@
                             ]
                         }
                     },
-                    "code": "file:../forwarder/output/forwarder.wasm"
+                    "code": "file:../forwarder/output/forwarder-unmanaged.wasm"
                 },
                 "sc:vault": {
                     "nonce": "0",
@@ -46,7 +46,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_transf_exec_accept_funds_multi_transfer",
+                "function": "transf_exec_multi_accept_funds",
                 "arguments": [
                     "sc:vault",
                     "str:FWD-TOKEN",
@@ -83,7 +83,7 @@
                         "str:FWD-TOKEN": "300"
                     },
                     "storage": {
-                        "str:call_counts|nested:str:accept_funds_multi_transfer": "1"
+                        "str:call_counts|nested:str:accept_funds": "1"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },
@@ -110,7 +110,7 @@
                         }
                     },
                     "storage": {},
-                    "code": "file:../forwarder/output/forwarder.wasm"
+                    "code": "file:../forwarder/output/forwarder-unmanaged.wasm"
                 }
             }
         },
@@ -121,7 +121,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_transf_exec_accept_funds_multi_transfer",
+                "function": "transf_exec_multi_accept_funds",
                 "arguments": [
                     "sc:vault",
                     "str:FWD-TOKEN",
@@ -177,7 +177,7 @@
                         }
                     },
                     "storage": {
-                        "str:call_counts|nested:str:accept_funds_multi_transfer": "2"
+                        "str:call_counts|nested:str:accept_funds": "2"
                     },
                     "code": "file:../vault/output/vault.wasm"
                 },
@@ -196,7 +196,7 @@
                         }
                     },
                     "storage": {},
-                    "code": "file:../forwarder/output/forwarder.wasm"
+                    "code": "file:../forwarder/output/forwarder-unmanaged.wasm"
                 }
             }
         }
