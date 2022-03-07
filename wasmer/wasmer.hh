@@ -832,6 +832,10 @@ const wasmer_memory_t *wasmer_instance_context_memory(const wasmer_instance_cont
 /// ```
 void wasmer_instance_destroy(wasmer_instance_t *instance);
 
+void wasmer_instance_disable_rkyv();
+
+void wasmer_instance_enable_rkyv();
+
 /// Gets all the exports of the given WebAssembly instance.
 ///
 /// This function stores a Rust vector of exports into `exports` as an
