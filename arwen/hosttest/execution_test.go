@@ -2583,7 +2583,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 997041).
+				GasUsed(test.ParentAddress, 997044).
 				GasUsed(test.ChildAddress, 0).
 				GasRemaining(2959).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
@@ -2710,7 +2710,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 198344).
+				GasUsed(test.ParentAddress, 198347).
 				GasUsed(test.ChildAddress, 1297).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
