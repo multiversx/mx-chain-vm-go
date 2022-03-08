@@ -583,6 +583,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithCallerAddr(test.ParentAddress).
 			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
 			WithGasProvided(gasForAsyncCall).
 			WithFunction(contracts.AsyncChildFunction).
 			WithArguments(
