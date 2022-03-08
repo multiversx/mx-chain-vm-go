@@ -73,7 +73,6 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 				}
 			}
 		} else {
-			// metering.UseGas(vmOutput.GasRemaining)
 			err = context.completeChild(asyncCall.CallID, 0)
 			if err != nil {
 				return err
