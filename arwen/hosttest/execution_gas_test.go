@@ -627,13 +627,10 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
-	t.Skip("needs change in testing framework")
 	testConfig := asyncTestConfig
 	gasUsedByChild := testConfig.GasUsedByChild
 	gasUsedByParent := testConfig.GasUsedByParent
 	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
-
-	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
 
 	// async cross-shard parent -> child
 	test.BuildMockInstanceCallTest(t).
@@ -667,15 +664,14 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 				Ok().
 				GasUsed(test.ChildAddress, gasUsedByChild).
 				GasRemaining(0).
-				ReturnData(childAsyncReturnData...).
+				ReturnData().
 				Transfers(
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-						WithGasLimit(gasForAsyncCall-gasUsedByChild).
+						WithGasLimit(0).
 						WithCallType(vm.DirectCall).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, nil)).
 						WithGasLimit(gasForAsyncCall-gasUsedByChild).
 						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
