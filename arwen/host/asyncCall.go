@@ -292,12 +292,17 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}
 
+	valueToTransfer := currentCall.CallValue
+	if host.flagUseDifferentGasCostForCachedStorage.IsSet() {
+		valueToTransfer = big.NewInt(0)
+	}
+
 	err := output.Transfer(
 		currentCall.CallerAddr,
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
 		0,
-		currentCall.CallValue,
+		valueToTransfer,
 		retData,
 		vm.AsynchronousCallBack,
 	)
