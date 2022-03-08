@@ -450,8 +450,3 @@ func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
 }
-
-// UseDifferentGasCostForReadingCachedStorage returns true if the corresponding flag is set
-func (host *vmHost) UseDifferentGasCostForReadingCachedStorageEnabled() bool {
-	return host.flagUseDifferentGasCostForCachedStorage.IsSet()
-}
