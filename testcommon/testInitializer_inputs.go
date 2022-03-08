@@ -398,6 +398,12 @@ func (contractInput *ContractCallInputBuilder) WithCallerAddr(address []byte) *C
 	return contractInput
 }
 
+// WithCallValue provides the value transferred to the called contract
+func (contractInput *ContractCallInputBuilder) WithCallValue(value int64) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.CallValue = big.NewInt(value)
+	return contractInput
+}
+
 // WithGasProvided provides the gas of ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithGasProvided(gas uint64) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.GasProvided = gas

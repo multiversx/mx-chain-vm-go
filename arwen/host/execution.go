@@ -883,14 +883,12 @@ func (host *vmHost) callSCMethod() error {
 
 	switch callType {
 	case vm.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		_, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
 			log.Trace("call SC method failed", "error", paiErr)
 			return paiErr
 		}
-		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
+		err = host.sendCallbackToCurrentCaller()
 	case vm.AsynchronousCallBack:
 		err = host.processCallbackStack()
 	default:

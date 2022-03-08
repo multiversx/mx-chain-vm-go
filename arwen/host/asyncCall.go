@@ -297,7 +297,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 		runtime.GetSCAddress(),
 		metering.GasLeft(),
 		0,
-		currentCall.CallValue,
+		big.NewInt(0),
 		retData,
 		vm.AsynchronousCallBack,
 	)
