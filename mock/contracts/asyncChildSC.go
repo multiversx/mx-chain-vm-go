@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TransferToAsyncParentOnCallbackChilMock(instanceMock *mock.InstanceMock, config interface{}) {
+func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
@@ -35,7 +35,7 @@ func TransferToAsyncParentOnCallbackChilMock(instanceMock *mock.InstanceMock, co
 			0,
 			valueToTransfer,
 			nil,
-			vm.AsynchronousCallBack)
+			vm.DirectCall)
 		return instance
 	})
 }
