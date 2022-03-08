@@ -303,11 +303,6 @@ func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
 
-// UseDifferentGasCostForReadingCachedStorageEnabled mocked method
-func (vhs *VMHostStub) UseDifferentGasCostForReadingCachedStorageEnabled() bool {
-	return true
-}
-
 // Close -
 func (vhs *VMHostStub) Close() error {
 	return nil

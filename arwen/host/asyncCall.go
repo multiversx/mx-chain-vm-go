@@ -293,7 +293,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	}
 
 	valueToTransfer := currentCall.CallValue
-	if host.UseDifferentGasCostForReadingCachedStorageEnabled() {
+	if host.flagUseDifferentGasCostForCachedStorage.IsSet() {
 		valueToTransfer = big.NewInt(0)
 	}
 

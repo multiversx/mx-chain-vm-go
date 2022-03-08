@@ -57,7 +57,6 @@ type VMHost interface {
 	FixOOGReturnCodeEnabled() bool
 	FixFailExecutionEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
-	UseDifferentGasCostForReadingCachedStorageEnabled() bool
 	Reset()
 }
 
