@@ -65,6 +65,9 @@ type vmHost struct {
 
 	fixFailExecutionOnErrorEnableEpoch uint32
 	flagFixFailExecutionOnError        atomic.Flag
+
+	useDifferentGasCostForReadingCachedStorageEpoch uint32
+	flagUseDifferentGasCostForCachedStorage         atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -101,11 +104,12 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
-		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
-		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
-		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
-		fixFailExecutionOnErrorEnableEpoch:        hostParameters.FixFailExecutionOnErrorEnableEpoch,
+		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
+		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
+		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
+		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
 	var err error
@@ -536,6 +540,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagFixFailExecutionOnError.SetValue(epoch >= host.fixFailExecutionOnErrorEnableEpoch)
 	log.Debug("Arwen VM: fix fail execution on error", "enabled", host.flagFixFailExecutionOnError.IsSet())
+
+	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
@@ -548,7 +555,12 @@ func (host *vmHost) FixFailExecutionEnabled() bool {
 	return host.flagFixFailExecutionOnError.IsSet()
 }
 
-//CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
+// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
+}
+
+// UseDifferentGasCostForReadingCachedStorage returns true if the corresponding flag is set
+func (host *vmHost) UseDifferentGasCostForReadingCachedStorageEnabled() bool {
+	return host.flagUseDifferentGasCostForCachedStorage.IsSet()
 }

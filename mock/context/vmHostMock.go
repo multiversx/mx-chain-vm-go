@@ -205,6 +205,10 @@ func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
 
+func (host *VMHostMock) UseDifferentGasCostForReadingCachedStorageEnabled() bool {
+	return true
+}
+
 // Close -
 func (host *VMHostMock) Close() error {
 	return nil
