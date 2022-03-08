@@ -2585,7 +2585,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 			verify.Ok().
 				GasUsed(test.ParentAddress, 997044).
 				GasUsed(test.ChildAddress, 0).
-				GasRemaining(2959).
+				GasRemaining(2956).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2714,7 +2714,7 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				GasUsed(test.ChildAddress, 1297).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				GasRemaining(359).
+				GasRemaining(356).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
