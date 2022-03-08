@@ -7,8 +7,38 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
 )
+
+func TransferToAsyncParentOnCallbackChilMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		host.Metering().UseGas(testConfig.GasUsedByChild)
+
+		runtime := host.Runtime()
+		output := host.Output()
+
+		vmInput := runtime.GetVMInput()
+		scAddress := host.Runtime().GetSCAddress()
+		arguments := host.Runtime().Arguments()
+
+		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
+
+		output.Transfer(
+			vmInput.CallerAddr,
+			scAddress,
+			0,
+			0,
+			valueToTransfer,
+			nil,
+			vm.AsynchronousCallBack)
+		return instance
+	})
+}
 
 // TransferToThirdPartyAsyncChildMock is an exposed mock contract method
 func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {

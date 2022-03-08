@@ -620,6 +620,62 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		})
 }
 
+func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
+	testConfig := asyncTestConfig
+	gasUsedByChild := testConfig.GasUsedByChild
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	childAsyncReturnData := [][]byte{{0}, []byte("thirdparty"), []byte("vault")}
+
+	// async cross-shard parent -> child
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractOnShard(test.ChildAddress, 1).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.TransferToThirdPartyAsyncChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ParentAddress).
+			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
+			WithGasProvided(gasForAsyncCall).
+			WithFunction(contracts.AsyncChildFunction).
+			WithArguments(
+				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
+				[]byte(contracts.AsyncChildData),
+				[]byte{0}).
+			WithCallType(vm.AsynchronousCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
+			world.CurrentBlockInfo.BlockRound = 1
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(test.ChildAddress, gasUsedByChild).
+				GasRemaining(0).
+				ReturnData(childAsyncReturnData...).
+				Transfers(
+					test.CreateTransferEntry(test.ChildAddress, test.ThirdPartyAddress).
+						WithData([]byte(contracts.AsyncChildData)).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+					test.CreateTransferEntry(test.ChildAddress, test.VaultAddress).
+						WithData([]byte{}).
+						WithValue(big.NewInt(testConfig.TransferToVault)),
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithGasLimit(gasForAsyncCall-gasUsedByChild).
+						WithCallType(vm.AsynchronousCallBack).
+						WithValue(big.NewInt(0)),
+				)
+		})
+}
+
 func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 	testConfig := asyncTestConfig
 	testConfig.GasProvided = 1000

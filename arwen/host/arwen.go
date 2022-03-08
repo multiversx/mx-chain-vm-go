@@ -61,6 +61,9 @@ type vmHost struct {
 
 	createNFTThroughExecByCallerEnableEpoch uint32
 	flagCreateNFTThroughExecByCaller        atomic.Flag
+
+	useDifferentGasCostForReadingCachedStorageEpoch uint32
+	flagUseDifferentGasCostForCachedStorage         atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -97,10 +100,11 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
-		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
-		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
-		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
+		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
+		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
 	var err error
@@ -432,6 +436,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagCreateNFTThroughExecByCaller.SetValue(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
 	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
+
+	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
@@ -439,7 +446,12 @@ func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.flagFixOOGReturnCode.IsSet()
 }
 
-//CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
+// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
+}
+
+// UseDifferentGasCostForReadingCachedStorage returns true if the corresponding flag is set
+func (host *vmHost) UseDifferentGasCostForReadingCachedStorageEnabled() bool {
+	return host.flagUseDifferentGasCostForCachedStorage.IsSet()
 }
