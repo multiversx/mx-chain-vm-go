@@ -295,6 +295,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		WasmerSIGSEGVPassthrough: true,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -324,6 +325,7 @@ func DefaultTestArwenWithGasSchedule(tb testing.TB, blockchain vmcommon.Blockcha
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
 		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
+		WasmerSIGSEGVPassthrough:                        true,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

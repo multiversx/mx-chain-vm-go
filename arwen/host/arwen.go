@@ -204,6 +204,10 @@ func NewArwenVM(
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 	wasmer.SetRkyvSerializationEnabled(true)
 
+	if hostParameters.WasmerSIGSEGVPassthrough {
+		wasmer.SetSIGSEGVPassthrough()
+	}
+
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 

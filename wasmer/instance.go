@@ -52,6 +52,14 @@ func SetRkyvSerializationEnabled(enabled bool) {
 	}
 }
 
+// SetSIGSEGVPassthrough instructs Wasmer to never register a handler for
+// SIGSEGV. Only has effect if called before creating the first Wasmer instance
+// since the process started. Calling this function after the first Wasmer
+// instance will not unregister the signal handler set by Wasmer.
+func SetSIGSEGVPassthrough() {
+	cWasmerSetSIGSEGVPassthrough()
+}
+
 // NewExportedFunctionError constructs a new `ExportedFunctionError`,
 // where `functionName` is the name of the exported function, and
 // `message` is the error message. If the error message contains `%s`,
