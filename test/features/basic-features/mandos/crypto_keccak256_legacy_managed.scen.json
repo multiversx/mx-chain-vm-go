@@ -1,5 +1,5 @@
 {
-    "name": "echo_varags_tuples",
+    "name": "crypto",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -22,22 +22,16 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_varags_tuples",
+                "function": "compute_keccak256_legacy_managed",
                 "arguments": [
-                    "10",
-                    "20",
-                    "30",
-                    "40"
+                    "0x61"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "10",
-                    "20",
-                    "30",
-                    "40"
+                    "0x3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb"
                 ],
                 "status": "",
                 "logs": "*",
@@ -51,39 +45,18 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_varags_tuples",
-                "arguments": [],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [],
-                "status": "",
-                "logs": "*",
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "txId": "1",
-            "comment": "only even number of arguments possible",
-            "tx": {
-                "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_varags_tuples",
+                "function": "compute_keccak256_legacy_managed",
                 "arguments": [
-                    "10",
-                    "20",
-                    "30"
+                    "0x0102030405060708"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
-                "status": "4",
-                "message": "str:argument decode error (m): too few arguments",
+                "out": [
+                    "keccak256:0x0102030405060708"
+                ],
+                "status": "",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"

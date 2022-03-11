@@ -1,14 +1,14 @@
 {
-    "name": "echo_big_int",
+    "name": "echo_multi_value_tuples",
     "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -21,17 +21,23 @@
             "txId": "1",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_big_int_managed_vec",
+                "to": "sc:alloc-features",
+                "function": "echo_multi_value_tuples",
                 "arguments": [
-                    "nested:+3|nested:+5"
+                    "10",
+                    "20",
+                    "30",
+                    "40"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "nested:+3|nested:+5"
+                    "10",
+                    "20",
+                    "30",
+                    "40"
                 ],
                 "status": "",
                 "logs": "*",
@@ -44,18 +50,14 @@
             "txId": "2",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_big_int_tuple",
-                "arguments": [
-                    "nested:+3|nested:+5"
-                ],
+                "to": "sc:alloc-features",
+                "function": "echo_multi_value_tuples",
+                "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "nested:+3|nested:+5"
-                ],
+                "out": [],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -64,42 +66,27 @@
         },
         {
             "step": "scCall",
-            "txId": "3",
+            "txId": "1",
+            "comment": "only even number of arguments possible",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_big_int_option",
+                "to": "sc:alloc-features",
+                "function": "echo_multi_value_tuples",
                 "arguments": [
-                    "0x01|nested:+3"
+                    "10",
+                    "20",
+                    "30"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "0x01|nested:+3"
-                ],
-                "status": "",
+                "out": [],
+                "status": "4",
+                "message": "str:argument decode error (m): too few arguments",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
-            }
-        },
-        {
-            "step": "checkState",
-            "accounts": {
-                "sc:basic-features": {
-                    "nonce": "*",
-                    "balance": "*",
-                    "storage": {},
-                    "code": "file:../output/basic-features.wasm"
-                },
-                "address:an_account": {
-                    "nonce": "*",
-                    "balance": "*",
-                    "storage": {},
-                    "code": ""
-                }
             }
         }
     ]

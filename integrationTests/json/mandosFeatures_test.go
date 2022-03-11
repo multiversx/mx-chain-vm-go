@@ -6,6 +6,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestRustAllocFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/alloc-features/mandos")
+}
+
 func TestRustBasicFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")

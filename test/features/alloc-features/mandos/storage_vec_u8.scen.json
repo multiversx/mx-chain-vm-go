@@ -5,10 +5,10 @@
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -21,7 +21,7 @@
             "txId": "store-val",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "store_vec_u8",
                 "arguments": [
                     "123"
@@ -40,13 +40,13 @@
         {
             "step": "checkState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "str:vec_u8": "123"
                     },
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "*",
@@ -61,7 +61,7 @@
             "txId": "load-val",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "load_vec_u8",
                 "arguments": [],
                 "gasLimit": "50,000,000",
@@ -82,7 +82,7 @@
             "txId": "store-empty",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "store_vec_u8",
                 "arguments": [
                     "0"
@@ -101,13 +101,13 @@
         {
             "step": "checkState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "str:vec_u8": "0"
                     },
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "*",
@@ -122,7 +122,7 @@
             "txId": "load-empty",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "load_vec_u8",
                 "arguments": [],
                 "gasLimit": "50,000,000",

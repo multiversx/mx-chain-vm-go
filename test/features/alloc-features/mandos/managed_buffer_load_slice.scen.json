@@ -3,10 +3,10 @@
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -18,7 +18,7 @@
             "step": "scQuery",
             "txId": "1",
             "tx": {
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "mbuffer_load_slice",
                 "arguments": [
                     "str:abcdef",
@@ -36,7 +36,7 @@
             "step": "scQuery",
             "txId": "2",
             "tx": {
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "mbuffer_load_slice",
                 "arguments": [
                     "str:abcdef",
@@ -54,7 +54,7 @@
             "step": "scQuery",
             "txId": "3",
             "tx": {
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "mbuffer_load_slice",
                 "arguments": [
                     "str:abcdef",
@@ -70,7 +70,7 @@
             "step": "scQuery",
             "txId": "3",
             "tx": {
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "mbuffer_load_slice",
                 "arguments": [
                     "",
@@ -88,7 +88,7 @@
             "step": "scQuery",
             "txId": "3",
             "tx": {
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "mbuffer_load_slice",
                 "arguments": [
                     "",

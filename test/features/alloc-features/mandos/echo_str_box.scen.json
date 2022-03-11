@@ -1,14 +1,14 @@
 {
-    "name": "echo_big_int",
+    "name": "echo_str_box",
     "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -21,17 +21,18 @@
             "txId": "1",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_big_int_managed_vec",
+                "to": "sc:alloc-features",
+                "function": "echo_str_box",
                 "arguments": [
-                    "nested:+3|nested:+5"
+                    "0x00"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "nested:+3|nested:+5"
+                    "0x00",
+                    "0x01"
                 ],
                 "status": "",
                 "logs": "*",
@@ -44,17 +45,18 @@
             "txId": "2",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_big_int_tuple",
+                "to": "sc:alloc-features",
+                "function": "echo_str_box",
                 "arguments": [
-                    "nested:+3|nested:+5"
+                    "str:a_string"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "nested:+3|nested:+5"
+                    "str:a_string",
+                    "8"
                 ],
                 "status": "",
                 "logs": "*",
@@ -64,42 +66,24 @@
         },
         {
             "step": "scCall",
-            "txId": "3",
+            "txId": "invalid-utf-8",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "echo_big_int_option",
+                "to": "sc:alloc-features",
+                "function": "echo_str_box",
                 "arguments": [
-                    "0x01|nested:+3"
+                    "0x009f9296"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "0x01|nested:+3"
-                ],
-                "status": "",
+                "out": [],
+                "status": "4",
+                "message": "str:argument decode error (s): utf-8 decode error",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
-            }
-        },
-        {
-            "step": "checkState",
-            "accounts": {
-                "sc:basic-features": {
-                    "nonce": "*",
-                    "balance": "*",
-                    "storage": {},
-                    "code": "file:../output/basic-features.wasm"
-                },
-                "address:an_account": {
-                    "nonce": "*",
-                    "balance": "*",
-                    "storage": {},
-                    "code": ""
-                }
             }
         }
     ]

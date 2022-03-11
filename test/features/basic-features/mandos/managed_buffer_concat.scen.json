@@ -19,7 +19,7 @@
             "txId": "1",
             "tx": {
                 "to": "sc:basic-features",
-                "function": "mbuffer_concat_1",
+                "function": "mbuffer_concat",
                 "arguments": [
                     "str:abc",
                     "str:def"
@@ -36,7 +36,7 @@
             "txId": "2",
             "tx": {
                 "to": "sc:basic-features",
-                "function": "mbuffer_concat_1",
+                "function": "mbuffer_concat",
                 "arguments": [
                     "",
                     "str:def"
@@ -53,7 +53,7 @@
             "txId": "3",
             "tx": {
                 "to": "sc:basic-features",
-                "function": "mbuffer_concat_1",
+                "function": "mbuffer_concat",
                 "arguments": [
                     "str:abc",
                     ""
@@ -70,7 +70,7 @@
             "txId": "4",
             "tx": {
                 "to": "sc:basic-features",
-                "function": "mbuffer_concat_1",
+                "function": "mbuffer_concat",
                 "arguments": [
                     "",
                     ""

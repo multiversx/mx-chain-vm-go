@@ -1,5 +1,5 @@
 {
-    "name": "echo_string",
+    "name": "echo_multi_value_tuples",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -22,17 +22,22 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_string",
+                "function": "echo_multi_value_tuples",
                 "arguments": [
-                    "0x00"
+                    "10",
+                    "20",
+                    "30",
+                    "40"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x00",
-                    "0x01"
+                    "10",
+                    "20",
+                    "30",
+                    "40"
                 ],
                 "status": "",
                 "logs": "*",
@@ -46,18 +51,13 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_string",
-                "arguments": [
-                    "str:a_string"
-                ],
+                "function": "echo_multi_value_tuples",
+                "arguments": [],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "str:a_string",
-                    "8"
-                ],
+                "out": [],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
@@ -66,13 +66,16 @@
         },
         {
             "step": "scCall",
-            "txId": "invalid-utf-8",
+            "txId": "1",
+            "comment": "only even number of arguments possible",
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "echo_string",
+                "function": "echo_multi_value_tuples",
                 "arguments": [
-                    "0x009f9296"
+                    "10",
+                    "20",
+                    "30"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -80,7 +83,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "str:argument decode error (s): utf-8 decode error",
+                "message": "str:argument decode error (m): too few arguments",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"

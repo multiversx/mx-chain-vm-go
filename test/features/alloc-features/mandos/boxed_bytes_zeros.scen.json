@@ -1,14 +1,14 @@
 {
-    "name": "crypto",
+    "name": "boxed_bytes_zeros",
     "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -21,17 +21,17 @@
             "txId": "1",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "compute_ripemd160",
+                "to": "sc:alloc-features",
+                "function": "boxed_bytes_zeros",
                 "arguments": [
-                    "0x010203"
+                    "5"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x79f901da2609f020adadbf2e5f68a16c8c3f7d57"
+                    "0x0000000000"
                 ],
                 "status": "",
                 "logs": "*",
@@ -44,17 +44,17 @@
             "txId": "2",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "compute_ripemd160",
+                "to": "sc:alloc-features",
+                "function": "boxed_bytes_zeros",
                 "arguments": [
-                    "0x0102030405060708"
+                    "0"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0xc9883eece7dca619b830dc9d87e82c38478111c0"
+                    "0x"
                 ],
                 "status": "",
                 "logs": "*",
