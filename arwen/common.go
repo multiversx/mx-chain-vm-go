@@ -125,6 +125,7 @@ type VMHostParameters struct {
 	BuiltInFuncContainer                            vmcommon.BuiltInFunctionContainer
 	ESDTTransferParser                              vmcommon.ESDTTransferParser
 	ElrondProtectedKeyPrefix                        []byte
+	WasmerSIGSEGVPassthrough                        bool
 	EpochNotifier                                   vmcommon.EpochNotifier
 	MultiESDTTransferAsyncCallBackEnableEpoch       uint32
 	FixOOGReturnCodeEnableEpoch                     uint32

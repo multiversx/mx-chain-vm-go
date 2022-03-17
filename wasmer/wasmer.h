@@ -1409,6 +1409,8 @@ wasmer_result_t wasmer_serialized_module_from_bytes(wasmer_serialized_module_t *
 
 void wasmer_set_opcode_costs(const uint32_t *opcode_costs_pointer);
 
+void wasmer_set_sigsegv_passthrough(void);
+
 /**
  * Frees memory for the given Table
  */
