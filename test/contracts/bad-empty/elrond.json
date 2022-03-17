@@ -1,0 +1,6 @@
+{
+    "language": "clang",
+    "source_files": [
+        "/home/bogdan/go2/src/github.com/ElrondNetwork/arwen-wasm-vm/test/contracts/bad-empty/empty.c"
+    ]
+}

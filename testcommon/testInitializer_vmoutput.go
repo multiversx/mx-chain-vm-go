@@ -110,6 +110,20 @@ func (v *VMOutputVerifier) HasRuntimeErrors(messages ...string) *VMOutputVerifie
 	return v
 }
 
+// HasRuntimeErrorAndInfo verifies if the provided errors are present in the runtime context
+func (v *VMOutputVerifier) HasRuntimeErrorAndInfo(message string, otherInfo string) *VMOutputVerifier {
+	errorFound := false
+	require.NotNil(v.T, v.AllErrors)
+	errors, otherInfos := v.AllErrors.GetAllErrorsAndOtherInfo()
+	for index, err := range errors {
+		if strings.HasPrefix(err.Error(), message) && strings.HasPrefix(otherInfos[index], otherInfo) {
+			errorFound = true
+		}
+	}
+	require.True(v.T, errorFound, fmt.Sprintf("No error with message '%s' found", message))
+	return v
+}
+
 // GasUsed verifies if GasUsed of the specified account is the same as the provided one
 func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier {
 	account := v.VmOutput.OutputAccounts[string(address)]
