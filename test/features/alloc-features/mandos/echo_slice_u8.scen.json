@@ -1,14 +1,14 @@
 {
-    "name": "crypto",
+    "name": "echo_slice_u8",
     "gasSchedule": "v3",
     "steps": [
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -21,17 +21,18 @@
             "txId": "1",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "compute_sha256_legacy",
+                "to": "sc:alloc-features",
+                "function": "echo_slice_u8",
                 "arguments": [
-                    "0x010203"
+                    "0x00"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81"
+                    "0x00",
+                    "0x01"
                 ],
                 "status": "",
                 "logs": "*",
@@ -44,22 +45,40 @@
             "txId": "2",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
-                "function": "compute_sha256_legacy",
+                "to": "sc:alloc-features",
+                "function": "echo_slice_u8",
                 "arguments": [
-                    "0x0102030405060708"
+                    "0x0102030405"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x66840dda154e8a113c31dd0ad32f7f3a366a80e8136979d8f5a101d3d29d6f72"
+                    "0x0102030405",
+                    "0x05"
                 ],
                 "status": "",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:alloc-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/alloc-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "2",
+                    "balance": "0",
+                    "storage": {},
+                    "code": ""
+                }
             }
         }
     ]

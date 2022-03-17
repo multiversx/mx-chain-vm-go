@@ -1,5 +1,5 @@
 {
-    "name": "boxed_bytes_zeros",
+    "name": "crypto",
     "gasSchedule": "v3",
     "steps": [
         {
@@ -22,16 +22,16 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "boxed_bytes_zeros",
+                "function": "compute_sha256_legacy_managed",
                 "arguments": [
-                    "5"
+                    "0x010203"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x0000000000"
+                    "0x039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81"
                 ],
                 "status": "",
                 "logs": "*",
@@ -45,16 +45,16 @@
             "tx": {
                 "from": "address:an_account",
                 "to": "sc:basic-features",
-                "function": "boxed_bytes_zeros",
+                "function": "compute_sha256_legacy_managed",
                 "arguments": [
-                    "0"
+                    "0x0102030405060708"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [
-                    "0x"
+                    "0x66840dda154e8a113c31dd0ad32f7f3a366a80e8136979d8f5a101d3d29d6f72"
                 ],
                 "status": "",
                 "logs": "*",

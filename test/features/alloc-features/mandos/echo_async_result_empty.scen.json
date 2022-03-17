@@ -5,10 +5,10 @@
         {
             "step": "setState",
             "accounts": {
-                "sc:basic-features": {
+                "sc:alloc-features": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../output/basic-features.wasm"
+                    "code": "file:../output/alloc-features.wasm"
                 },
                 "address:an_account": {
                     "nonce": "0",
@@ -21,7 +21,7 @@
             "txId": "1-ok",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "echo_async_result_empty",
                 "arguments": [
                     "0"
@@ -42,7 +42,7 @@
             "txId": "2-err",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "echo_async_result_empty",
                 "arguments": [
                     "5",
@@ -65,7 +65,7 @@
             "txId": "2-err-no-message",
             "tx": {
                 "from": "address:an_account",
-                "to": "sc:basic-features",
+                "to": "sc:alloc-features",
                 "function": "echo_async_result_empty",
                 "arguments": [
                     "5"
