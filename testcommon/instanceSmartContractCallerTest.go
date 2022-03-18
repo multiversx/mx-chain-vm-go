@@ -57,7 +57,7 @@ func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
 		testTemplateConfig: testTemplateConfig{
 			tb:                       tb,
 			useMocks:                 false,
-			wasmerSIGSEGVPassthrough: true,
+			wasmerSIGSEGVPassthrough: false,
 		},
 		setup: func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
 	}

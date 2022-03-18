@@ -330,8 +330,8 @@ func DefaultTestArwenWithGasSchedule(
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
-		WasmerSIGSEGVPassthrough:                        wasmerSIGSEGVPassthrough,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

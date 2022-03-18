@@ -30,7 +30,7 @@ func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 		testTemplateConfig: testTemplateConfig{
 			tb:                       tb,
 			useMocks:                 true,
-			wasmerSIGSEGVPassthrough: true,
+			wasmerSIGSEGVPassthrough: false,
 		},
 		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
 	}
