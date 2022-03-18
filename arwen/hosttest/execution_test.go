@@ -3228,7 +3228,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../")
-	host, blockchain := test.DefaultTestArwenForCall(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
 	defer func() {
 		_ = host.Close()
 	}()
