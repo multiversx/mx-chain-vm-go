@@ -28,14 +28,15 @@ var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
-const executionTimeout = time.Second
+const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	cryptoHook      crypto.VMCrypto
-	mutExecution    sync.RWMutex
-	closingInstance bool
+	cryptoHook       crypto.VMCrypto
+	mutExecution     sync.RWMutex
+	closingInstance  bool
+	executionTimeout time.Duration
 
 	ethInput []byte
 
@@ -104,6 +105,7 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
+		executionTimeout:     minExecutionTimeout,
 		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
 		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
@@ -112,8 +114,10 @@ func NewArwenVM(
 		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
-	var err error
-
+	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
+	if newExecutionTimeout > minExecutionTimeout {
+		host.executionTimeout = newExecutionTimeout
+	}
 	imports, err := elrondapi.ElrondEIImports()
 	if err != nil {
 		return nil, err
@@ -249,7 +253,7 @@ func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
 }
 
-// BigInt returns the BigIntContext instance of the host
+// ManagedTypes returns the ManagedTypeContext instance of the host
 func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
 	return host.managedTypesContext
 }
@@ -355,7 +359,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		return nil, arwen.ErrVMIsClosing
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
 
 	log.Trace("RunSmartContractCreate begin",
@@ -413,7 +417,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		return nil, arwen.ErrVMIsClosing
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
 
 	log.Trace("RunSmartContractCall begin",
