@@ -327,7 +327,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 // DefaultTestArwen creates a host configured with a configured blockchain hook
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
 	customGasSchedule := config.GasScheduleMap(nil)
-	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule, true)
+	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule, false)
 }
 
 func DefaultTestArwenWithGasSchedule(
