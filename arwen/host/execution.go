@@ -155,7 +155,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	err := async.InitStateFromInput(input)
 	if err != nil {
 		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrAsyncInit)
-		return output.CreateVMOutputInCaseOfError(arwen.ErrAsyncInit)
+		return output.CreateVMOutputInCaseOfError(err)
 	}
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)

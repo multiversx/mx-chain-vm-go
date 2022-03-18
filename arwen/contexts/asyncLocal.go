@@ -163,7 +163,6 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	return nil
 }
 
-// TODO return values are never used by code that calls finishAsyncLocalExecution
 func (context *asyncContext) finishAsyncLocalCallbackExecution(
 	vmOutput *vmcommon.VMOutput,
 	err error,

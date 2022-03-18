@@ -77,24 +77,22 @@ func (acg *AsyncCallGroup) FindByDestination(destination []byte) (int, bool) {
 }
 
 // DeleteAsyncCall removes an AsyncCall from this AsyncCallGroup, given its index
-func (acg *AsyncCallGroup) DeleteAsyncCall(index int) *AsyncCall {
+func (acg *AsyncCallGroup) DeleteAsyncCall(index int) {
 	asyncCalls := acg.AsyncCalls
 	if len(asyncCalls) == 0 {
-		return nil
+		return
 	}
 
 	last := len(asyncCalls) - 1
 	if index < 0 || index > last {
-		return nil
+		return
 	}
-
-	deletedAsyncCall := asyncCalls[index]
 
 	asyncCalls[index] = asyncCalls[last]
 	asyncCalls = asyncCalls[:last]
 	acg.AsyncCalls = asyncCalls
 
-	return deletedAsyncCall
+	return
 }
 
 // DeleteCompletedAsyncCalls removes all completed AsyncCalls, keeping only
@@ -130,7 +128,7 @@ func (acg *AsyncCallGroup) toSerializable() *SerializableAsyncCallGroup {
 	}
 }
 
-// ToSerializableAsyncCallGroups - serialize all call groups to protobuf
+// ToSerializableAsyncCallGroups serializes all call groups to protobuf
 func ToSerializableAsyncCallGroups(asyncCallGroups []*AsyncCallGroup) []*SerializableAsyncCallGroup {
 	var serializableGroups = make([]*SerializableAsyncCallGroup, len(asyncCallGroups))
 	for i, acg := range asyncCallGroups {

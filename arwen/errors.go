@@ -256,4 +256,4 @@ var ErrAsyncInit = errors.New("async context initialization error")
 var ErrAsyncNoOutputFromCallback = errors.New("callback's VMOutput should not be nil")
 
 // var ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
-var ErrAsyncNoMultiLevel = errors.New("Multi-level async calls are not allowed yet")
+var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed yet")

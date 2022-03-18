@@ -109,27 +109,17 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
-		context.callID, err = runtime.PopFirstArgumentFromVMInput()
-		if err != nil {
-			return err
-		}
-		context.callerCallID, err = runtime.PopFirstArgumentFromVMInput()
+		err = context.popCallIDsFromVMInputArgs()
 		if err != nil {
 			return err
 		}
 	}
 
 	if input.CallType == vm.AsynchronousCallBack {
-		context.callbackAsyncInitiatorCallID, err = runtime.PopFirstArgumentFromVMInput()
+		err = context.popCallbackInfoFromVMInputArgs()
 		if err != nil {
 			return err
 		}
-		var gasBytes []byte
-		gasBytes, err = runtime.PopFirstArgumentFromVMInput()
-		if err != nil {
-			return err
-		}
-		context.gasAccumulated = big.NewInt(0).SetBytes(gasBytes).Uint64()
 	}
 
 	if logAsync.GetLevel() == logger.LogTrace {
@@ -144,6 +134,36 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
 	}
 
+	return nil
+}
+
+func (context *asyncContext) popCallIDsFromVMInputArgs() error {
+	runtime := context.host.Runtime()
+	var err error
+	context.callID, err = runtime.PopFirstArgumentFromVMInput()
+	if err != nil {
+		return err
+	}
+	context.callerCallID, err = runtime.PopFirstArgumentFromVMInput()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (context *asyncContext) popCallbackInfoFromVMInputArgs() error {
+	runtime := context.host.Runtime()
+	var err error
+	context.callbackAsyncInitiatorCallID, err = runtime.PopFirstArgumentFromVMInput()
+	if err != nil {
+		return err
+	}
+	var gasBytes []byte
+	gasBytes, err = runtime.PopFirstArgumentFromVMInput()
+	if err != nil {
+		return err
+	}
+	context.gasAccumulated = big.NewInt(0).SetBytes(gasBytes).Uint64()
 	return nil
 }
 
@@ -338,17 +358,34 @@ func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]b
 	}, args...)
 }
 
+type asyncCallInfo struct {
+	asyncCall  *arwen.AsyncCall
+	groupIndex int
+	callIndex  int
+	err        error
+}
+
 // GetAsyncCallByCallID gets from the context the call with the given callID
-func (context *asyncContext) GetAsyncCallByCallID(callID []byte) (*arwen.AsyncCall, int, int, error) {
+func (context *asyncContext) GetAsyncCallByCallID(callID []byte) *asyncCallInfo {
 	for groupIndex, group := range context.asyncCallGroups {
 		for callIndex, callInGroup := range group.AsyncCalls {
 			if bytes.Equal(callInGroup.CallID, callID) {
-				return callInGroup, groupIndex, callIndex, nil
+				return &asyncCallInfo{
+					asyncCall:  callInGroup,
+					groupIndex: groupIndex,
+					callIndex:  callIndex,
+					err:        nil,
+				}
 			}
 		}
 	}
 
-	return nil, -1, -1, arwen.ErrAsyncCallNotFound
+	return &asyncCallInfo{
+		asyncCall:  nil,
+		groupIndex: -1,
+		callIndex:  -1,
+		err:        arwen.ErrAsyncCallNotFound,
+	}
 }
 
 func (context *asyncContext) generateNewCallID() []byte {
@@ -629,7 +666,9 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		return nil, err
 	}
 
-	call, _, _, err := loadedContext.GetAsyncCallByCallID(callID)
+	asyncCallInfo := loadedContext.GetAsyncCallByCallID(callID)
+	call := asyncCallInfo.asyncCall
+	err = asyncCallInfo.err
 	if err != nil {
 		return nil, err
 	}
@@ -735,7 +774,10 @@ func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, e
 
 // DeleteAsyncCallAndCleanGroup deletes the specified async call and the group if this is the last call
 func (context *asyncContext) DeleteAsyncCallAndCleanGroup(callID []byte) error {
-	_, groupIndex, callIndex, err := context.GetAsyncCallByCallID(callID)
+	asyncCallInfo := context.GetAsyncCallByCallID(callID)
+	groupIndex := asyncCallInfo.groupIndex
+	callIndex := asyncCallInfo.callIndex
+	err := asyncCallInfo.err
 	if err != nil {
 		return err
 	}
@@ -762,7 +804,9 @@ func (context *asyncContext) callCallback(callID []byte, vmOutput *vmcommon.VMOu
 
 	gasAccumulated := context.gasAccumulated
 	context, _ = context.loadParentContextFromStackOrStorage()
-	asyncCall, _, _, errLoad := context.GetAsyncCallByCallID(callID)
+	asyncCallInfo := context.GetAsyncCallByCallID(callID)
+	asyncCall := asyncCallInfo.asyncCall
+	errLoad := asyncCallInfo.err
 	if errLoad != nil {
 		return false, nil, errLoad
 	}
