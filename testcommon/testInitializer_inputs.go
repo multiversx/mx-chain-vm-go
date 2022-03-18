@@ -144,6 +144,26 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (arwe
 	return host, stubBlockchainHook
 }
 
+// DefaultTestArwenForCall creates a BlockchainHookStub
+func DefaultTestArwenForCallSigSegv(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.BlockchainHookStub) {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
+		if bytes.Equal(scAddress, ParentAddress) {
+			return &contextmock.StubAccount{
+				Balance: balance,
+			}, nil
+		}
+		return nil, ErrAccountNotFound
+	}
+	stubBlockchainHook.GetCodeCalled = func(account vmcommon.UserAccountHandler) []byte {
+		return code
+	}
+
+	customGasSchedule := config.GasScheduleMap(nil)
+	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, customGasSchedule, true)
+	return host, stubBlockchainHook
+}
+
 // DefaultTestArwenForCallWithInstanceRecorderMock creates an InstanceBuilderRecorderMock
 func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.InstanceBuilderRecorderMock) {
 	// this uses a Blockchain Hook Stub that does not cache the compiled code
@@ -234,6 +254,7 @@ func defaultTestArwenForContracts(
 	tb testing.TB,
 	contracts []*InstanceTestSmartContract,
 	gasSchedule config.GasScheduleMap,
+	wasmerSIGSEGVPassthrough bool,
 ) (arwen.VMHost, *contextmock.BlockchainHookStub) {
 
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
@@ -266,7 +287,7 @@ func defaultTestArwenForContracts(
 		return nil
 	}
 
-	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule)
+	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule, wasmerSIGSEGVPassthrough)
 	return host, stubBlockchainHook
 }
 
@@ -295,7 +316,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
-		WasmerSIGSEGVPassthrough: true,
+		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -306,10 +327,15 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 // DefaultTestArwen creates a host configured with a configured blockchain hook
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
 	customGasSchedule := config.GasScheduleMap(nil)
-	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule)
+	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule, false)
 }
 
-func DefaultTestArwenWithGasSchedule(tb testing.TB, blockchain vmcommon.BlockchainHook, customGasSchedule config.GasScheduleMap) arwen.VMHost {
+func DefaultTestArwenWithGasSchedule(
+	tb testing.TB,
+	blockchain vmcommon.BlockchainHook,
+	customGasSchedule config.GasScheduleMap,
+	wasmerSIGSEGVPassthrough bool,
+) arwen.VMHost {
 	gasSchedule := customGasSchedule
 	if gasSchedule == nil {
 		gasSchedule = config.MakeGasMapForTests()
@@ -324,8 +350,8 @@ func DefaultTestArwenWithGasSchedule(tb testing.TB, blockchain vmcommon.Blockcha
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
-		WasmerSIGSEGVPassthrough:                        true,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
