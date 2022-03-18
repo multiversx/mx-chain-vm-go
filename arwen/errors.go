@@ -253,7 +253,7 @@ var ErrInvalidAsyncArgsList = errors.New("async call has an invalid arguments li
 var ErrAsyncInit = errors.New("async context initialization error")
 
 // ErrAsyncNoOutputFromCallback signals that an error happen while producing the output of a callback
-var ErrAsyncNoOutputFromCallback = errors.New("callback's VMOutput should not be nil")
+var ErrAsyncNoOutputFromCallback = errors.New("callback VMOutput should not be nil")
 
 // var ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
 var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed yet")
