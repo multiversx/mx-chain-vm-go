@@ -691,8 +691,7 @@ func (context *asyncContext) isCallAsyncOnStack() bool {
 		return true
 	}
 
-	for index := range context.stateStack {
-		index = len(context.stateStack) - 1 - index
+	for index := len(context.stateStack) - 1; index >= 0; index-- {
 		stackContext := context.stateStack[index]
 		if stackContext.isCallAsync() {
 			return true

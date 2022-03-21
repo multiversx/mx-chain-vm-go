@@ -959,12 +959,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		return err
 	}
 
-	err = async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
 }
 
 func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {

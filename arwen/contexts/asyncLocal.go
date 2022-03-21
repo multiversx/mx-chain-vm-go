@@ -61,22 +61,19 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 			// Restore gas locked while still on the caller instance; otherwise, the
 			// locked gas will appear to have been used twice by the caller instance.
 			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
+			if callbackVMOutput == nil {
+				return arwen.ErrAsyncNoOutputFromCallback
+			}
+
 			if isCallbackComplete {
 				if callbackVMOutput != nil {
+					callbackGasRemaining := callbackVMOutput.GasRemaining
 					callbackVMOutput.GasRemaining = 0
-					err = context.completeChild(asyncCall.CallID, callbackVMOutput.GasRemaining)
-					if err != nil {
-						return err
-					}
-				} else {
-					return arwen.ErrAsyncNoOutputFromCallback
+					return context.completeChild(asyncCall.CallID, callbackGasRemaining)
 				}
 			}
 		} else {
-			err = context.completeChild(asyncCall.CallID, 0)
-			if err != nil {
-				return err
-			}
+			return context.completeChild(asyncCall.CallID, 0)
 		}
 	}
 
