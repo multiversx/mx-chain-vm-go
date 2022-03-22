@@ -203,24 +203,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
-func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
-	// for DirectCalls tx hashses are not filled
-	if input.CallType != vm.DirectCall {
-		return
-	}
-	currentVMInput := runtime.GetVMInput()
-	if len(currentVMInput.OriginalTxHash) > 0 {
-		input.OriginalTxHash = currentVMInput.OriginalTxHash
-	}
-	if len(currentVMInput.CurrentTxHash) > 0 {
-		input.CurrentTxHash = currentVMInput.CurrentTxHash
-	}
-	if len(currentVMInput.PrevTxHash) > 0 {
-		input.PrevTxHash = currentVMInput.PrevTxHash
-	}
-
-}
-
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
@@ -290,7 +272,6 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	output.PushState()
 	output.CensorVMOutput()
 
-	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -404,7 +385,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	managedTypes.InitState()
 	output.PushState()
 
-	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
