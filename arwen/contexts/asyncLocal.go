@@ -80,7 +80,12 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	return nil
 }
 
-func (context *asyncContext) executeSyncCallbackAndFinishOutput(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, destinationCallInput *vmcommon.ContractCallInput, gasAccumulated uint64, err error) (bool, *vmcommon.VMOutput) {
+func (context *asyncContext) executeSyncCallbackAndFinishOutput(
+	asyncCall *arwen.AsyncCall,
+	vmOutput *vmcommon.VMOutput,
+	destinationCallInput *vmcommon.ContractCallInput,
+	gasAccumulated uint64,
+	err error) (bool, *vmcommon.VMOutput) {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
 	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode)
 	return isComplete, callbackVMOutput

@@ -14,8 +14,7 @@ type AsyncCall struct {
 	Destination []byte
 	Data        []byte
 	GasLimit    uint64
-
-	GasLocked uint64
+	GasLocked   uint64
 
 	ValueBytes      []byte
 	SuccessCallback string

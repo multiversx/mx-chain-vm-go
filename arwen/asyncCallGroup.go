@@ -91,8 +91,6 @@ func (acg *AsyncCallGroup) DeleteAsyncCall(index int) {
 	asyncCalls[index] = asyncCalls[last]
 	asyncCalls = asyncCalls[:last]
 	acg.AsyncCalls = asyncCalls
-
-	return
 }
 
 // DeleteCompletedAsyncCalls removes all completed AsyncCalls, keeping only

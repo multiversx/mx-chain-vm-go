@@ -9,6 +9,8 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
+const callbackNamePlaceholder = "<callback>"
+
 // SendCrossShardCallback creates a transfer for a cross shard callback
 func (context *asyncContext) SendCrossShardCallback(
 	returnCode vmcommon.ReturnCode,
@@ -94,7 +96,7 @@ func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 	transferData := txDataBuilder.NewBuilder()
 
 	// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
-	transferData.Func("<callback>")
+	transferData.Func(callbackNamePlaceholder)
 
 	transferData.Bytes(context.generateNewCallID())
 	transferData.Bytes(context.callID)
