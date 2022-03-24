@@ -9,8 +9,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
-var marshalizer = &marshal.GogoProtoMarshalizer{}
-
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
 func (context *asyncContext) Save() error {
 	address := context.address
@@ -22,7 +20,7 @@ func (context *asyncContext) Save() error {
 	}
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
-	data, err := marshalizer.Marshal(context.toSerializable())
+	data, err := context.marshalizer.Marshal(context.toSerializable())
 	if err != nil {
 		return err
 	}
@@ -82,7 +80,11 @@ func (context *asyncContext) loadFromStackOrStorage(address []byte, callID []byt
 
 // Load restores the internal state of the AsyncContext from the storage of the contract.
 func (context *asyncContext) loadSpecificContext(address []byte, callID []byte) error {
-	loadedContext, err := readAsyncContextFromStorage(context.host.Storage(), address, callID)
+	loadedContext, err := readAsyncContextFromStorage(
+		context.host.Storage(),
+		address,
+		callID,
+		context.marshalizer)
 	if err != nil {
 		return err
 	}
@@ -107,6 +109,7 @@ func readAsyncContextFromStorage(
 	storage arwen.StorageContext,
 	address []byte,
 	callID []byte,
+	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
 	data, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
@@ -114,10 +117,10 @@ func readAsyncContextFromStorage(
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}
 
-	return deserializeAsyncContext(data)
+	return deserializeAsyncContext(data, marshalizer)
 }
 
-func deserializeAsyncContext(data []byte) (*asyncContext, error) {
+func deserializeAsyncContext(data []byte, marshalizer *marshal.GogoProtoMarshalizer) (*asyncContext, error) {
 	deserializedAsyncContext := &SerializableAsyncContext{}
 	err := marshalizer.Unmarshal(deserializedAsyncContext, data)
 	if err != nil {

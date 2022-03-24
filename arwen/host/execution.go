@@ -203,6 +203,23 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	return
 }
 
+func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
+	if input.CallType != vm.DirectCall {
+		return
+	}
+	currentVMInput := runtime.GetVMInput()
+	if len(currentVMInput.OriginalTxHash) > 0 {
+		input.OriginalTxHash = currentVMInput.OriginalTxHash
+	}
+	if len(currentVMInput.CurrentTxHash) > 0 {
+		input.CurrentTxHash = currentVMInput.CurrentTxHash
+	}
+	if len(currentVMInput.PrevTxHash) > 0 {
+		input.PrevTxHash = currentVMInput.PrevTxHash
+	}
+
+}
+
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
 func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
@@ -243,8 +260,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 
 	asyncPrefixArgs := arwen.PopCallIDsFromArguments(input)
 	if asyncPrefixArgs == nil {
-		// this should never happen
-		err := fmt.Errorf("Async framework error - PopCallIDsFromArguments")
+		err := arwen.ErrAsyncFrameworkPopCallID
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
 		return nil, nil, err
 	}
@@ -272,6 +288,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	output.PushState()
 	output.CensorVMOutput()
 
+	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
@@ -385,6 +402,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	managedTypes.InitState()
 	output.PushState()
 
+	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 

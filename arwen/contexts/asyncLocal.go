@@ -66,11 +66,9 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 			}
 
 			if isCallbackComplete {
-				if callbackVMOutput != nil {
-					callbackGasRemaining := callbackVMOutput.GasRemaining
-					callbackVMOutput.GasRemaining = 0
-					return context.completeChild(asyncCall.CallID, callbackGasRemaining)
-				}
+				callbackGasRemaining := callbackVMOutput.GasRemaining
+				callbackVMOutput.GasRemaining = 0
+				return context.completeChild(asyncCall.CallID, callbackGasRemaining)
 			}
 		} else {
 			return context.completeChild(asyncCall.CallID, 0)

@@ -257,3 +257,6 @@ var ErrAsyncNoOutputFromCallback = errors.New("callback VMOutput should not be n
 
 // var ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
 var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed yet")
+
+// var ErrAsyncFrameworkPopCallID signals an error in the async fremwork that did not fill the correct call id arguments
+var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsFromArguments")

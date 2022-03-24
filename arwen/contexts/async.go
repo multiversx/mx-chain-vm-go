@@ -9,6 +9,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -18,8 +19,9 @@ var _ arwen.AsyncContext = (*asyncContext)(nil)
 var logAsync = logger.GetOrCreate("arwen/async")
 
 type asyncContext struct {
-	host       arwen.VMHost
-	stateStack []*asyncContext
+	host        arwen.VMHost
+	stateStack  []*asyncContext
+	marshalizer *marshal.GogoProtoMarshalizer
 
 	callerAddr         []byte
 	callback           string
@@ -48,6 +50,7 @@ func NewAsyncContext(
 	host arwen.VMHost,
 	callArgsParser arwen.CallArgsParser,
 	esdtTransferParser vmcommon.ESDTTransferParser,
+	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -661,7 +664,8 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	loadedContext, err := readAsyncContextFromStorage(
 		context.host.Storage(),
 		address,
-		context.callbackAsyncInitiatorCallID)
+		context.callbackAsyncInitiatorCallID,
+		context.marshalizer)
 	if err != nil {
 		return nil, err
 	}
@@ -759,7 +763,7 @@ func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, e
 	serializedContext := context.toSerializable()
 	serializedContext.CallsCounter = 1
 	serializedContext.TotalCallsCounter = 1
-	serializedData, err := marshalizer.Marshal(serializedContext)
+	serializedData, err := context.marshalizer.Marshal(serializedContext)
 	if err != nil {
 		return 0, err
 	}

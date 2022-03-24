@@ -12,6 +12,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -25,6 +26,8 @@ var Bob = []byte("address_bob")
 
 const GasForAsyncStep = config.GasValueForTests
 
+var marshalizer = &marshal.GogoProtoMarshalizer{}
+
 func makeAsyncContext(t testing.TB, host arwen.VMHost, address []byte) *asyncContext {
 	callParser := parsers.NewCallArgsParser()
 	esdtParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
@@ -32,6 +35,7 @@ func makeAsyncContext(t testing.TB, host arwen.VMHost, address []byte) *asyncCon
 		host,
 		callParser,
 		esdtParser,
+		marshalizer,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, async)

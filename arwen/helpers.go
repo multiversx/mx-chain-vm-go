@@ -287,6 +287,9 @@ func PrependToArguments(input *vmcommon.ContractCallInput, toPrepend ...[]byte) 
 
 // SplitPrefixArguments splits arguments in two arrays of arguments
 func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
+	if len(arguments) < numberOfArgsToRemove {
+		return nil, nil
+	}
 	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
 }
 
@@ -298,10 +301,6 @@ func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
 	}
 
 	var asyncPrefixArgs [][]byte
-	if len(input.Arguments) < asyncPrefixArgsNumber {
-		// this should never happen
-		return nil
-	}
 	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
 	return asyncPrefixArgs
 }

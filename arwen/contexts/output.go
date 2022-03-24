@@ -137,6 +137,7 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
+	// TODO matei-p investigate transfer issue merging
 	for _, account := range context.outputState.OutputAccounts {
 		account.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
 	}
@@ -633,7 +634,13 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
+	// TODO matei-p investigate transfer issue merging
 	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
+	// lenLeftOutTransfers := len(leftAccount.OutputTransfers)
+	// lenRightOutTransfers := len(rightAccount.OutputTransfers)
+	// if lenRightOutTransfers > lenLeftOutTransfers {
+	// 	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
+	// }
 
 	leftAccount.GasUsed = rightAccount.GasUsed
 
