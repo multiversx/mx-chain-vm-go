@@ -36,3 +36,4 @@ test/contracts/**/target
 test/contracts/**/wasm/target
 
 **/Cargo.lock
+arwen/**/__debug_bin

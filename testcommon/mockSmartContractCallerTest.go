@@ -12,6 +12,8 @@ import (
 
 var logMock = logger.GetOrCreate("arwen/mock")
 
+type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
+
 type testTemplateConfig struct {
 	tb       testing.TB
 	input    *vmcommon.ContractCallInput
@@ -22,8 +24,8 @@ type testTemplateConfig struct {
 type MockInstancesTestTemplate struct {
 	testTemplateConfig
 	contracts     *[]MockTestSmartContract
-	setup         func(arwen.VMHost, *worldmock.MockWorld)
-	assertResults func(*worldmock.MockWorld, *VMOutputVerifier)
+	setup         SetupFunction
+	assertResults func(*TestCallNode, *worldmock.MockWorld, *VMOutputVerifier, []string)
 }
 
 // BuildMockInstanceCallTest starts the building process for a mock contract call test
@@ -50,25 +52,45 @@ func (callerTest *MockInstancesTestTemplate) WithInput(input *vmcommon.ContractC
 }
 
 // WithSetup provides the setup function to be used by the mock contract call test
-func (callerTest *MockInstancesTestTemplate) WithSetup(setup func(arwen.VMHost, *worldmock.MockWorld)) *MockInstancesTestTemplate {
+func (callerTest *MockInstancesTestTemplate) WithSetup(setup SetupFunction) *MockInstancesTestTemplate {
 	callerTest.setup = setup
 	return callerTest
 }
 
+type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
+
 // AndAssertResults provides the function that will aserts the results
-func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func(world *worldmock.MockWorld, verify *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	callerTest.runTest()
+func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults AssertResultsFunc) (*vmcommon.VMOutput, error) {
+	return callerTest.AndAssertResultsWithWorld(nil, true, nil, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
+		assertResults(world, verify)
+	})
 }
 
-func (callerTest *MockInstancesTestTemplate) runTest() {
-	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.tb)
+type AssertResultsWithStartNodeFunc func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)
+
+// AndAssertResultsWithWorld provides the function that will aserts the results
+func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
+	world *worldmock.MockWorld,
+	createAccount bool,
+	startNode *TestCallNode,
+	expectedErrorsForRound []string,
+	assertResults AssertResultsWithStartNodeFunc) (*vmcommon.VMOutput, error) {
+	callerTest.assertResults = assertResults
+	if world == nil {
+		world = worldmock.NewMockWorld()
+	}
+	return callerTest.runTest(startNode, world, createAccount, expectedErrorsForRound)
+}
+
+func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, world *worldmock.MockWorld, createAccount bool, expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
+	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.tb, world)
+
 	defer func() {
 		_ = host.Close()
 	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.initialize(callerTest.tb, host, imb)
+		mockSC.initialize(callerTest.tb, host, imb, createAccount)
 	}
 
 	callerTest.setup(host, world)
@@ -76,10 +98,13 @@ func (callerTest *MockInstancesTestTemplate) runTest() {
 	world.CreateStateBackup()
 
 	vmOutput, err := host.RunSmartContractCall(callerTest.input)
-
 	allErrors := host.Runtime().GetAllErrors()
 	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
-	callerTest.assertResults(world, verify)
+	if callerTest.assertResults != nil {
+		callerTest.assertResults(startNode, world, verify, expectedErrorsForRound)
+	}
+
+	return vmOutput, err
 }
 
 // SimpleWasteGasMockMethod is a simple waste gas mock method

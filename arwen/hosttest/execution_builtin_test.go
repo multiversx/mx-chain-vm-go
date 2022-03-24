@@ -226,12 +226,13 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
+		{}, {},
 		testToken,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),
 	}
 
-	vmOutput, err := host.ExecuteOnDestContext(input)
+	vmOutput, _, err := host.ExecuteOnDestContext(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
 	verify.Ok()

@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.OutputContext = (*OutputContextStub)(nil)
@@ -26,7 +26,6 @@ type OutputContextStub struct {
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
 	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
 	TransferESDTCalled                func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, input *vmcommon.ContractCallInput) (uint64, error)
-	SelfDestructCalled                func(address []byte, beneficiary []byte)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
 	ReturnCodeCalled                  func() vmcommon.ReturnCode
@@ -165,13 +164,6 @@ func (o *OutputContextStub) TransferESDT(destination []byte, sender []byte, tran
 		return o.TransferESDTCalled(destination, sender, transfers, callInput)
 	}
 	return 0, nil
-}
-
-// SelfDestruct mocked method
-func (o *OutputContextStub) SelfDestruct(address []byte, beneficiary []byte) {
-	if o.SelfDestructCalled != nil {
-		o.SelfDestructCalled(address, beneficiary)
-	}
 }
 
 // GetRefund mocked method

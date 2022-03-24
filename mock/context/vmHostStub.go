@@ -32,7 +32,7 @@ type VMHostStub struct {
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	GetAPIMethodsCalled         func() *wasmer.Imports
 	IsBuiltinFunctionNameCalled func(functionName string) bool
 	IsBuiltinFunctionCallCalled func(data []byte) bool
@@ -47,6 +47,8 @@ type VMHostStub struct {
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
+
+	UpdateCurrentAsyncCallStatusCalled func(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error)
 }
 
 // GetVersion mocked method
@@ -190,11 +192,11 @@ func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) e
 }
 
 // ExecuteOnDestContext mocked method
-func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
-	return nil, nil
+	return nil, true, nil
 }
 
 // AreInSameShard mocked method

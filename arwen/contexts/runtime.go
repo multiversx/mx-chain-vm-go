@@ -126,8 +126,6 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances
-// TODO remove after implementing proper mocking of
-// Wasmer instances; this is used for tests only
 func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
@@ -940,11 +938,6 @@ func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
 
-// SetWarmInstance overwrites the warm Wasmer instance with the provided one.
-// TODO remove after implementing proper mocking of Wasmer instances; this is
-// used for tests only
-// func (context *runtimeContext) SetWarmInstance(address []byte, instanc e
-
 // ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
 func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	err := context.validator.verifyValidFunctionName(callbackName)
@@ -967,6 +960,16 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 func (context *runtimeContext) HasFunction(functionName string) bool {
 	_, ok := context.instance.GetExports()[functionName]
 	return ok
+}
+
+// PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
+func (context *runtimeContext) PopFirstArgumentFromVMInput() ([]byte, error) {
+	if len(context.vmInput.Arguments) == 0 {
+		return nil, arwen.ErrInvalidAsyncArgsList
+	}
+	firstArg := context.vmInput.Arguments[0]
+	context.vmInput.Arguments = context.vmInput.Arguments[1:]
+	return firstArg, nil
 }
 
 // DisableUseDifferentGasCostFlag - for tests

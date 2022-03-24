@@ -96,7 +96,7 @@ const CallbackFunctionName = "callBack"
 // ProtectedStoragePrefix is the storage key prefix that will be protected by
 // Arwen explicitly, and implicitly by the Elrond node due to '@'; the
 // protection can be disabled temporarily by the StorageContext
-const ProtectedStoragePrefix = "ARWEN@"
+const ProtectedStoragePrefix = "VM@"
 
 // TimeLockKeyPrefix is the storage key prefix used for timelock-related storage.
 const TimeLockKeyPrefix = ProtectedStoragePrefix + "TIMELOCK"

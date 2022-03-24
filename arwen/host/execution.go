@@ -20,7 +20,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
+			log.Trace("doRunSmartContractCreate full error list", "error", errs)
 		}
 	}()
 
@@ -98,7 +98,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
+			log.Trace("doRunSmartContractUpgrade full error list", "error", errs)
 		}
 	}()
 
@@ -148,14 +148,20 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		}
 	}()
 
-	_, _, metering, output, runtime, _, storage := host.GetContexts()
+	_, _, metering, output, runtime, async, storage := host.GetContexts()
 
 	runtime.InitStateFromContractCallInput(input)
+
+	err := async.InitStateFromInput(input)
+	if err != nil {
+		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrAsyncInit)
+		return output.CreateVMOutputInCaseOfError(err)
+	}
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
 	storage.SetAddress(runtime.GetSCAddress())
 
-	err := host.checkGasForGetCode(input, metering)
+	err = host.checkGasForGetCode(input, metering)
 	if err != nil {
 		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
@@ -198,6 +204,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 }
 
 func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
+	if input.CallType != vm.DirectCall {
+		return
+	}
 	currentVMInput := runtime.GetVMInput()
 	if len(currentVMInput.OriginalTxHash) > 0 {
 		input.OriginalTxHash = currentVMInput.OriginalTxHash
@@ -213,7 +222,7 @@ func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.Contr
 
 // ExecuteOnDestContext pushes each context to the corresponding stack
 // and initializes new contexts for executing the contract call with the given input
-func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	log.Trace("ExecuteOnDestContext", "caller", input.CallerAddr, "dest", input.RecipientAddr, "function", input.Function, "gas", input.GasProvided)
 
 	scExecutionInput := input
@@ -227,12 +236,14 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
+			isChildComplete = true
 			return
 		}
 	}
 
+	isChildComplete = true
 	if scExecutionInput != nil {
-		vmOutput, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
+		vmOutput, isChildComplete, err = host.executeOnDestContextNoBuiltinFunction(scExecutionInput)
 	}
 
 	if err != nil {
@@ -246,10 +257,22 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	output := host.Output()
+
+	asyncPrefixArgs := arwen.PopCallIDsFromArguments(input)
+	if asyncPrefixArgs == nil {
+		err := arwen.ErrAsyncFrameworkPopCallID
+		log.Trace("ExecuteOnDestContext builtin function", "error", err)
+		return nil, nil, err
+	}
+
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
 		return nil, nil, err
+	}
+
+	if postBuiltinInput != nil {
+		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
 	}
 
 	output.AddToActiveState(builtinOutput)
@@ -257,7 +280,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	return postBuiltinInput, builtinOutput, nil
 }
 
-func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, isChildComplete bool, err error) {
 	managedTypes, _, metering, output, runtime, async, storage := host.GetContexts()
 	managedTypes.PushState()
 	managedTypes.InitState()
@@ -269,8 +292,6 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
 
-	// TODO async.LoadOrInit(), not just Init; the contract invoked here likely has a
-	// persisted AsyncContext of its own.
 	async.PushState()
 	async.InitStateFromInput(input)
 
@@ -294,18 +315,19 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 		err = output.TransferValueOnly(input.RecipientAddr, input.CallerAddr, input.CallValue, false)
 		if err != nil {
 			log.Trace("ExecuteOnDestContext transfer", "error", err)
-			return vmOutput, err
+			return vmOutput, true, err
 		}
 	}
 
 	err = host.execute(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext execution", "error", err)
-		return vmOutput, err
+		return vmOutput, true, err
 	}
 
 	err = async.Execute()
-	return vmOutput, err
+
+	return vmOutput, async.IsComplete(), err
 }
 
 func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOutput {
@@ -320,6 +342,14 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		// Retrieve the VMOutput before popping the Runtime state and the previous
 		// instance, to ensure accurate GasRemaining
 		vmOutput = output.GetVMOutput()
+	}
+
+	async.SetResults(vmOutput)
+	if !async.IsComplete() {
+		saveErr := async.Save()
+		if saveErr != nil {
+			vmOutput = output.CreateVMOutputInCaseOfError(executeErr)
+		}
 	}
 
 	gasSpentByChildContract := metering.GasSpentByContract()
@@ -339,12 +369,18 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetSCAddress()), "function", runtime.Function())
 	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract, "gas remaining", vmOutput.GasRemaining)
 
+	isAsyncCall := runtime.GetVMInput().CallType == vm.AsynchronousCall
+	isAsyncComplete := async.IsComplete()
+
 	// Return to the caller context completely
 	runtime.PopSetActiveState()
+
 	async.PopSetActiveState()
 
 	// Restore remaining gas to the caller Wasmer instance
-	metering.RestoreGas(vmOutput.GasRemaining)
+	if !isAsyncCall || isAsyncComplete {
+		metering.RestoreGas(vmOutput.GasRemaining)
+	}
 
 	return vmOutput
 }
@@ -424,11 +460,6 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
-func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
-	functionName := host.Runtime().Function()
-	return host.IsBuiltinFunctionName(functionName)
-}
-
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
 func (host *vmHost) IsBuiltinFunctionName(functionName string) bool {
 	function, err := host.builtInFuncContainer.Get(functionName)
@@ -501,10 +532,10 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		AllowInitFunction: true,
 		VMInput:           input.VMInput,
 	}
-	_, err = host.ExecuteOnDestContext(initCallInput)
-	if err != nil {
-		return
-	}
+
+	_, initCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(initCallInput.Arguments)
+	_, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
+	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 
@@ -848,39 +879,104 @@ func (host *vmHost) callSCMethod() error {
 	log.Trace("callSCMethod")
 
 	runtime := host.Runtime()
-	vmInput := runtime.GetVMInput()
-	async := host.Async()
-	callType := vmInput.CallType
+	callType := runtime.GetVMInput().CallType
 
-	if callType == vm.AsynchronousCallBack {
-		async.Load()
-		asyncCall, err := async.UpdateCurrentCallStatus()
-		if err != nil {
-			log.Trace("UpdateCurrentCallStatus failed", "error", err)
-			err = async.PostprocessCrossShardCallback()
-			if err != nil {
-				log.Trace("call SC method failed", "error", err)
-			}
-			return err
+	var err error
+	switch callType {
+	case vm.DirectCall:
+		err = host.callSCMethodDirectCall()
+	case vm.AsynchronousCall:
+		err = host.callSCMethodAsynchronousCall()
+	case vm.AsynchronousCallBack:
+		err = host.callSCMethodAsynchronousCallBack()
+	default:
+		err = arwen.ErrUnknownCallType
+	}
+
+	if err != nil {
+		log.Error("call SC method failed", "error", err)
+	}
+
+	return err
+}
+
+func (host *vmHost) callSCMethodDirectCall() error {
+	_, err := host.callFunctionAndExecuteAsync()
+	return err
+}
+
+func (host *vmHost) callSCMethodAsynchronousCall() error {
+	isCallComplete, err := host.callFunctionAndExecuteAsync()
+	if !isCallComplete {
+		return err
+	}
+
+	async := host.Async()
+	output := host.Output()
+	return async.SendCrossShardCallback(output.ReturnCode(), output.ReturnData(), output.ReturnMessage())
+}
+
+func (host *vmHost) callSCMethodAsynchronousCallBack() error {
+	runtime := host.Runtime()
+	async := host.Async()
+
+	callerCallID := async.GetCallerCallID()
+
+	asyncCall, err := async.UpdateCurrentAsyncCallStatus(
+		runtime.GetSCAddress(),
+		callerCallID,
+		runtime.GetVMInput())
+	if err != nil {
+		log.Trace("UpdateCurrentCallStatus failed", "error", err)
+		return err
+	}
+
+	callbackName := asyncCall.GetCallbackName()
+	if callbackName != "" {
+		runtime.SetCustomCallFunction(callbackName)
+		isCallComplete, callbackErr := host.callFunctionAndExecuteAsync()
+
+		if callbackErr != nil {
+			metering := host.Metering()
+			metering.UseGas(metering.GasLeft())
 		}
 
-		runtime.SetCustomCallFunction(asyncCall.GetCallbackName())
+		// TODO matei-p R2 Returning an error here will cause the VMOutput to be
+		// empty (due to CreateVMOutputInCaseOfError()). But in release 2 of
+		// Promises, CreateVMOutputInCaseOfError() should still contain storage
+		// deletions caused by AsyncContext cleanup, even if callbackErr != nil and
+		// was returned here. The storage deletions MUST be persisted in the data
+		// trie once R2 goes live.
+		if !isCallComplete {
+			return callbackErr
+		}
 	}
+
+	err = async.LoadParentContext()
+	if err != nil {
+		return err
+	}
+
+	return async.NotifyChildIsComplete(callerCallID, host.Metering().GasLeft())
+}
+
+func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
+	runtime := host.Runtime()
+	async := host.Async()
 
 	// TODO refactor this, and apply this condition in other places where a
 	// function is called
-	var err error
 	if runtime.Function() != "" {
-		err = host.verifyAllowedFunctionCall()
+		err := host.verifyAllowedFunctionCall()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
-			return err
+			return false, err
 		}
 
 		function, err := runtime.GetFunctionToCall()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
-			return err
+			return false, err
 		}
 
 		_, err = function()
@@ -892,32 +988,25 @@ func (host *vmHost) callSCMethod() error {
 		}
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
-			return err
+			return true, err
 		}
 
 		err = async.Execute()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
-			return err
+			return false, err
 		}
+
+		if !async.IsComplete() {
+			async.SetResults(host.Output().GetVMOutput())
+			err := async.Save()
+			return false, err
+		}
+	} else {
+		return false, arwen.ErrInvalidFunction
 	}
 
-	switch callType {
-	case vm.DirectCall:
-		break
-	case vm.AsynchronousCall:
-		err = host.sendAsyncCallbackToCaller()
-	case vm.AsynchronousCallBack:
-		err = async.PostprocessCrossShardCallback()
-	default:
-		err = arwen.ErrUnknownCallType
-	}
-
-	if err != nil {
-		log.Trace("call SC method failed", "error", err)
-	}
-
-	return err
+	return true, nil
 }
 
 func (host *vmHost) verifyAllowedFunctionCall() error {

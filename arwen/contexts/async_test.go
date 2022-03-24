@@ -12,6 +12,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -25,16 +26,21 @@ var Bob = []byte("address_bob")
 
 const GasForAsyncStep = config.GasValueForTests
 
-func makeAsyncContext(t testing.TB, host arwen.VMHost) *asyncContext {
+var marshalizer = &marshal.GogoProtoMarshalizer{}
+
+func makeAsyncContext(t testing.TB, host arwen.VMHost, address []byte) *asyncContext {
 	callParser := parsers.NewCallArgsParser()
 	esdtParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	async, err := NewAsyncContext(
 		host,
 		callParser,
 		esdtParser,
+		marshalizer,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, async)
+
+	async.address = address
 
 	return async
 }
@@ -77,6 +83,8 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = factory.NewVMCrypto()
+	host.StorageContext, _ = NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix, 0)
+
 	return host, world
 }
 
@@ -114,7 +122,7 @@ func initializeArwenAndWasmer_AsyncContextWithAliceAndBob() (
 
 func TestNewAsyncContext(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	require.NotNil(t, async.host)
 	require.Nil(t, async.stateStack)
@@ -126,10 +134,9 @@ func TestNewAsyncContext(t *testing.T) {
 
 func TestAsyncContext_InitState(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
-	async.gasPrice = 1000
 	async.returnData = []byte("some return data")
 	async.asyncCallGroups = nil
 
@@ -137,7 +144,6 @@ func TestAsyncContext_InitState(t *testing.T) {
 
 	require.NotNil(t, async.callerAddr)
 	require.Empty(t, async.callerAddr)
-	require.Zero(t, async.gasPrice)
 	require.NotNil(t, async.returnData)
 	require.Empty(t, async.returnData)
 	require.NotNil(t, async.asyncCallGroups)
@@ -145,11 +151,11 @@ func TestAsyncContext_InitState(t *testing.T) {
 }
 
 func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
+	contract := []byte("contract")
 	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
-	async.gasPrice = 1000
 	async.returnData = []byte("some return data")
 	async.asyncCallGroups = nil
 
@@ -158,28 +164,28 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 			CallerAddr: []byte("real caller addr"),
 			GasPrice:   42,
 		},
+		RecipientAddr: contract,
 	}
 
+	host.Runtime().SetSCAddress(contract)
 	async.InitStateFromInput(input)
 
 	require.Equal(t, input.CallerAddr, async.callerAddr)
-	require.Equal(t, uint64(42), async.gasPrice)
 	require.NotNil(t, async.returnData)
 	require.Empty(t, async.returnData)
 	require.NotNil(t, async.asyncCallGroups)
 	require.Empty(t, async.asyncCallGroups)
+	require.Equal(t, contract, async.address)
 }
 
 func TestAsyncContext_GettersAndSetters(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	async.callerAddr = []byte("some address")
-	async.gasPrice = 1000
 	async.returnData = []byte("some return data")
 
 	require.Equal(t, []byte("some address"), async.GetCallerAddress())
-	require.Equal(t, uint64(1000), async.GetGasPrice())
 	require.Equal(t, []byte("some return data"), async.GetReturnData())
 
 	async.SetReturnData([]byte("rockets"))
@@ -189,9 +195,8 @@ func TestAsyncContext_GettersAndSetters(t *testing.T) {
 func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
 
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
-	require.True(t, async.IsComplete())
 	require.False(t, async.HasPendingCallGroups())
 
 	group, exists := async.GetCallGroup("testGroup")
@@ -203,7 +208,6 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 		Data:        []byte("something"),
 	})
 	require.Nil(t, err)
-	require.False(t, async.IsComplete())
 	require.True(t, async.HasPendingCallGroups())
 	require.Equal(t, 1, len(async.asyncCallGroups))
 
@@ -211,7 +215,6 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 	require.NotNil(t, group)
 	require.True(t, exists)
 	require.True(t, group.HasPendingCalls())
-	require.False(t, group.IsComplete())
 	require.False(t, group.HasCallback())
 
 	async.deleteCallGroupByID("testGroup")
@@ -223,13 +226,13 @@ func TestAsyncContext_RegisterAsyncCall_NewGroup_DeleteGroup(t *testing.T) {
 func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
 
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 	require.Equal(t, 0, len(async.asyncCallGroups))
 
 	err := async.AddCallGroup(arwen.NewAsyncCallGroup("testGroup"))
 	require.Nil(t, err)
 	require.Equal(t, 1, len(async.asyncCallGroups))
-	require.False(t, async.IsComplete())
+	require.True(t, async.HasPendingCallGroups())
 
 	group, exists := async.GetCallGroup("testGroup")
 	require.NotNil(t, group)
@@ -241,68 +244,13 @@ func TestAsyncContext_RegisterAsyncCall_ExistingGroup(t *testing.T) {
 	})
 	require.Nil(t, err)
 	require.Equal(t, 1, len(async.asyncCallGroups))
-	require.False(t, async.IsComplete())
+	require.True(t, async.HasPendingCallGroups())
 }
 
 func TestAsyncContext_RegisterAsyncCall_ValidationAndFields(t *testing.T) {
 	// TODO execution mode
 	// TODO non-nil destination
 	// TODO locked gas
-}
-
-func TestAsyncContext_SetGroupCallback_GroupDoesntExist(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
-	mockWasmerInstance.Exports["callbackFunction"] = nil
-
-	async.groupCallbacksEnabled = true
-	err := async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
-	require.True(t, errors.Is(err, arwen.ErrAsyncCallGroupDoesNotExist))
-}
-
-func TestAsyncContext_SetGroupCallback_OutOfGas(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
-	mockWasmerInstance.Exports["callbackFunction"] = nil
-
-	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
-	mockMetering.Err = arwen.ErrNotEnoughGas
-
-	async.groupCallbacksEnabled = true
-	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
-	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
-}
-
-func TestAsyncContext_SetGroupCallback_Success(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
-
-	mockMetering := host.Metering().(*contextmock.MeteringContextMock)
-	mockMetering.GasComputedToLock = 42
-	async.groupCallbacksEnabled = true
-
-	err := async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	mockWasmerInstance.Exports["callbackFunction"] = nil
-	err = async.SetGroupCallback("testGroup", "callbackFunction", []byte{}, 0)
-	require.Nil(t, err)
-
-	group, exists := async.GetCallGroup("testGroup")
-	require.NotNil(t, group)
-	require.True(t, exists)
-	require.Equal(t, "callbackFunction", group.Callback)
-	require.Equal(t, []byte{}, group.CallbackData)
-	require.Equal(t, uint64(42), group.GasLocked)
 }
 
 func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
@@ -325,7 +273,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	world.AcctMap.PutAccount(rightAccount)
 	runtime := host.Runtime()
 
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	runtime.SetSCAddress(leftAddress)
 	execMode, err := async.determineExecutionMode(rightAddress, []byte("func"))
@@ -375,7 +323,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 
 func TestAsyncContext_IsValidCallbackName(t *testing.T) {
 	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	mockWasmerInstance.Exports["a"] = nil
 	mockWasmerInstance.Exports["my_contract_method_22"] = nil
@@ -406,71 +354,35 @@ func TestAsyncContext_IsValidCallbackName(t *testing.T) {
 	require.False(t, async.isValidCallbackName("Ainulindalë"))
 }
 
-func TestAsyncContext_FindCall(t *testing.T) {
-	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
-
-	groupID, index, err := async.findCall([]byte("somewhere"))
-	require.Equal(t, "", groupID)
-	require.Equal(t, -1, index)
-	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
-
-	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	groupID, index, err = async.findCall([]byte("somewhere"))
-	require.Nil(t, err)
-	require.Equal(t, "testGroup", groupID)
-	require.Equal(t, 0, index)
-
-	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere_else"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	groupID, index, err = async.findCall([]byte("somewhere_else"))
-	require.Nil(t, err)
-	require.Equal(t, "testGroup", groupID)
-	require.Equal(t, 1, index)
-
-	err = async.RegisterAsyncCall("another_testGroup", &arwen.AsyncCall{
-		Destination: []byte("somewhere_else_entirely"),
-		Data:        []byte("something"),
-	})
-	require.Nil(t, err)
-
-	groupID, index, err = async.findCall([]byte("somewhere_else_entirely"))
-	require.Nil(t, err)
-	require.Equal(t, "another_testGroup", groupID)
-	require.Equal(t, 0, index)
-}
-
 func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
+	contract := []byte("contract")
+
 	vmInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr: []byte("caller"),
 			Arguments:  [][]byte{{0}},
 			CallType:   vm.DirectCall,
 		},
+		RecipientAddr: contract,
 	}
 
 	host, _ := initializeArwenAndWasmer_AsyncContext()
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, contract)
+
+	storedAsync := &asyncContext{}
+	storedAsync.host = host
+	storedAsync.Save()
 
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err := async.UpdateCurrentCallStatus()
+	asyncCall, err := async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
 	vmInput.CallType = vm.AsynchronousCall
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.Nil(t, err)
 
@@ -479,7 +391,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrCannotInterpretCallbackArgs))
 
@@ -488,22 +400,24 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
-	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
+	require.True(t, errors.Is(err, arwen.ErrNoStoredAsyncContextFound))
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
 	// but it's not the expected one.
 	err = async.RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+		CallID:      []byte("callID_1"),
 		Destination: []byte("some_address"),
 		Data:        []byte("function"),
 	})
 	require.Nil(t, err)
+	async.Save()
 
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
 	require.Nil(t, asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
@@ -515,10 +429,25 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	})
 	require.Nil(t, err)
 
+	asyncCtx := &asyncContext{
+		asyncCallGroups: []*arwen.AsyncCallGroup{
+			{
+				Identifier: "",
+				AsyncCalls: []*arwen.AsyncCall{
+					{
+						Destination: []byte("caller"),
+					},
+				},
+			},
+		},
+	}
+	asyncCtx.host = host
+	asyncCtx.Save()
+
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
@@ -529,7 +458,7 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentCallStatus()
+	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallRejected, asyncCall.Status)
@@ -543,7 +472,7 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	})
 
 	host.Runtime().SetSCAddress([]byte("smartcontract"))
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	asyncCall := &arwen.AsyncCall{
 		Destination: []byte("destination"),
@@ -580,7 +509,10 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 	require.Equal(t, big.NewInt(88), asyncTransfer.Value)
 	require.Equal(t, uint64(42), asyncTransfer.GasLimit)
 	require.Equal(t, uint64(98), asyncTransfer.GasLocked)
-	require.Equal(t, []byte("some_data"), asyncTransfer.Data)
+
+	callParser := parsers.NewCallArgsParser()
+	function, _, _ := callParser.ParseData(string(asyncTransfer.Data))
+	require.Equal(t, "some_data", function)
 	require.Equal(t, vm.AsynchronousCall, asyncTransfer.CallType)
 }
 
@@ -590,64 +522,13 @@ func TestAsyncContext_ExecuteSyncCall_EarlyOutOfGas(t *testing.T) {
 	// async.createContractCallInput()
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Data = []byte("function")
 	asyncCall.GasLimit = 1
 	err := async.executeAsyncLocalCall(asyncCall)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
-}
-
-func TestAsyncContext_ExecuteSyncCall_NoDynamicGasLocking_Simulation(t *testing.T) {
-	// Scenario 2
-	// Successful execution at destination, but not enough gas for callback execution
-	// (this situation should not happen in practice, due to dynamic gas locking)
-	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
-	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
-
-	asyncCall := defaultAsyncCall_AliceToBob()
-	asyncCall.GasLimit = 10
-
-	gasConsumedByDestination := uint64(3)
-	destOutput := &vmcommon.VMOutput{
-		ReturnCode:   vmcommon.Ok,
-		GasRemaining: asyncCall.GasLimit - gasConsumedByDestination,
-	}
-	host.EnqueueVMOutput(destOutput)
-
-	err := async.executeAsyncLocalCall(asyncCall)
-	require.Nil(t, err)
-	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
-
-	// Only one ContractCallInput was stored by the VmHostMock: constructing the
-	// ContractCallInput for the callback has failed with insufficient gas before
-	// reaching host.ExecutionOnDestContext()
-	require.Len(t, host.StoredInputs, 1)
-
-	// The ContractCallInput generated to execute the destination call synchronously
-	destInput := defaultCallInput_AliceToBob(originalVMInput)
-	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
-	require.Equal(t, destInput, host.StoredInputs[0])
-
-	// Verify the final VMOutput, containing the failure.
-	expectedOutput := arwen.MakeEmptyVMOutput()
-	// expectedOutput.ReturnCode = vmcommon.OutOfGas
-	// expectedOutput.ReturnMessage = "not enough gas"
-	// expectedOutput.GasRemaining = 0
-	// arwen.AddFinishData(expectedOutput, []byte("out of gas"))
-	// arwen.AddFinishData(expectedOutput, originalVMInput.CurrentTxHash)
-
-	// The expectedOutput must also contain an OutputAccount corresponding to
-	// Alice, because of a call to host.Output().GetOutputAccount() in
-	// host.Output().GetVMOutput(), which creates and caches an empty account for
-	// her.
-	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
-
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
-	vmOutput := host.Output().GetVMOutput()
-	require.Equal(t, expectedOutput, vmOutput)
 }
 
 func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
@@ -657,10 +538,13 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 
-	async := makeAsyncContext(t, host)
+	mockWasmerInstance.Exports["successCallback"] = nil
+	mockWasmerInstance.Exports["errorCallback"] = nil
+
+	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
-	asyncCall.GasLimit = 100
+	asyncCall.GasLimit = 200
 	asyncCall.GasLocked = 90
 	gasConsumedByDestination := uint64(23)
 	gasConsumedByCallback := uint64(22)
@@ -677,7 +561,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Prepare the input to Alice's callback
 	callbackInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.GasLocked
-	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput)
+	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput) + 4*(32+1)
 	callbackInput.GasProvided -= GasForAsyncStep
 	callbackInput.GasLocked = 0
 
@@ -689,13 +573,17 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host.EnqueueVMOutput(destOutput)
 	host.EnqueueVMOutput(callbackOutput)
 
+	async.RegisterAsyncCall("test", asyncCall)
 	err := async.executeAsyncLocalCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
 	// There were two calls to host.ExecuteOnDestContext()
 	require.Len(t, host.StoredInputs, 2)
+
+	_, host.StoredInputs[0].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[0].Arguments, 2)
 	require.Equal(t, destInput, host.StoredInputs[0])
+	_, host.StoredInputs[1].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[1].Arguments, 4)
 	require.Equal(t, callbackInput, host.StoredInputs[1])
 
 	// Verify the final output of the execution; GasRemaining is set to 0 because
@@ -712,15 +600,17 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	actualOutput := host.Output().GetVMOutput()
+	// Bob entry is retuned empty by the MockWorld.GetStorageData()
+	delete(actualOutput.OutputAccounts, string(Bob))
 	require.Equal(t, expectedOutput, actualOutput)
 }
 
 func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 	asyncCall := &arwen.AsyncCall{
 		Destination: Bob,
 		ValueBytes:  big.NewInt(88).Bytes(),
@@ -745,50 +635,52 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 
 	expectedInput := defaultCallInput_AliceToBob(originalVMInput)
 	expectedInput.GasProvided = 1
+	_, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, 2)
 	require.Equal(t, expectedInput, input)
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallResolved
-	asyncCall.GasLocked = 82
+	asyncCall.GasLocked = 300
 
 	vmOutput := defaultDestOutput_Ok()
 	vmOutput.GasRemaining = 12
 
 	destinationErr := error(nil)
-	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
 	expectedInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
+	_, callbackInput.Arguments = arwen.SplitPrefixArguments(callbackInput.Arguments, 4)
 	require.Equal(t, expectedInput, callbackInput)
 }
 
 func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, Alice)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallRejected
-	asyncCall.GasLocked = 82
+	asyncCall.GasLocked = 200
 
 	vmOutput := defaultDestOutput_UserError()
 	destinationErr := arwen.ErrSignalError
-	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
 	expectedInput := arwen.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
@@ -798,6 +690,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	expectedInput.GasProvided = expectedGasProvided
 	expectedInput.CallType = vm.AsynchronousCallBack
 	expectedInput.ReturnCallAfterError = true
+	_, callbackInput.Arguments = arwen.SplitPrefixArguments(callbackInput.Arguments, 4)
 	require.Equal(t, expectedInput, callbackInput)
 }
 
@@ -805,7 +698,7 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	// Due to dynamic gas locking, this situation should never happen
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	asyncCall := defaultAsyncCall_AliceToBob()
 	asyncCall.Status = arwen.AsyncCallRejected
@@ -818,7 +711,7 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 	}
 
 	destinationErr := arwen.ErrSignalError
-	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, destinationErr)
+	callbackInput, err := async.createCallbackInput(asyncCall, vmOutput, 0, destinationErr)
 	require.Nil(t, callbackInput)
 	require.True(t, errors.Is(err, arwen.ErrNotEnoughGas))
 }
@@ -826,8 +719,8 @@ func TestAsyncContext_CreateCallbackInput_NotEnoughGas(t *testing.T) {
 func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
-	async.finishAsyncLocalExecution(nil, nil, 0, false)
+	async := makeAsyncContext(t, host, nil)
+	async.finishAsyncLocalCallbackExecution(nil, nil, 0)
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -836,17 +729,17 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
 func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	syncExecErr := arwen.ErrNotEnoughGas
-	async.finishAsyncLocalExecution(nil, syncExecErr, 0, false)
+	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.OutOfGas
@@ -860,20 +753,20 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 
 func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	host, _, originalVMInput := initializeArwenAndWasmer_AsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
-	async := makeAsyncContext(t, host)
+	async := makeAsyncContext(t, host, nil)
 
 	syncExecOutput := arwen.MakeEmptyVMOutput()
 	syncExecOutput.ReturnCode = vmcommon.UserError
 	syncExecOutput.ReturnMessage = "user made an error"
 	syncExecErr := arwen.ErrSignalError
-	async.finishAsyncLocalExecution(syncExecOutput, syncExecErr, 0, false)
+	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	// expectedOutput.ReturnCode = vmcommon.UserError
@@ -887,7 +780,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	// her.
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
-	host.Output().GetOutputAccount(Alice) // TODO matei-p keep?
+	host.Output().GetOutputAccount(Alice)
 	require.Equal(t, expectedOutput, host.Output().GetVMOutput())
 }
 

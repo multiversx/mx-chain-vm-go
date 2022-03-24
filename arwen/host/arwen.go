@@ -16,6 +16,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -159,7 +160,7 @@ func NewArwenVM(
 		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	)
 
-	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser)
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser, &marshal.GogoProtoMarshalizer{})
 
 	if err != nil {
 		return nil, err

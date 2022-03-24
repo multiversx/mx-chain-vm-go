@@ -137,6 +137,11 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
+	// TODO matei-p investigate transfer issue merging
+	for _, account := range context.outputState.OutputAccounts {
+		account.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+	}
+
 	logOutput.Trace("state content censored")
 }
 
@@ -204,11 +209,6 @@ func (context *outputContext) SetReturnMessage(returnMessage string) {
 // ClearReturnData reinitializes the return data for the current output state.
 func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
-}
-
-// SelfDestruct does nothing
-// TODO change comment when the function is implemented
-func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
 }
 
 // Finish appends the given data to the return data of the current output state.
@@ -634,11 +634,13 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
-	lenLeftOutTransfers := len(leftAccount.OutputTransfers)
-	lenRightOutTransfers := len(rightAccount.OutputTransfers)
-	if lenRightOutTransfers > lenLeftOutTransfers {
-		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
-	}
+	// TODO matei-p investigate transfer issue merging
+	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
+	// lenLeftOutTransfers := len(leftAccount.OutputTransfers)
+	// lenRightOutTransfers := len(rightAccount.OutputTransfers)
+	// if lenRightOutTransfers > lenLeftOutTransfers {
+	// 	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
+	// }
 
 	leftAccount.GasUsed = rightAccount.GasUsed
 

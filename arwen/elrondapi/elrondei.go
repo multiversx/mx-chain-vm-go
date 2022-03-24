@@ -63,9 +63,8 @@ package elrondapi
 // extern void		v1_4_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
-// extern void		v1_4_createAsyncCall(void *context, int32_t identifierOffset, int32_t identifierLength, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas);
+// extern int32_t	v1_4_createAsyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 // extern int32_t	v1_4_setAsyncContextCallback(void *context, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
-// extern int32_t v1_4_setAsyncGroupCallback(void *context, int32_t groupIDOffset, int32_t groupIDLength,int32_t callback, int32_t callbackLength,int32_t data, int32_t dataLength,  long long gas);
 //
 // extern int32_t	v1_4_getNumReturnData(void *context);
 // extern int32_t	v1_4_getReturnDataSize(void *context, int32_t resultID);
@@ -278,11 +277,6 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("createAsyncCall", v1_4_createAsyncCall, C.v1_4_createAsyncCall)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("setAsyncGroupCallback", v1_4_setAsyncGroupCallback, C.v1_4_setAsyncGroupCallback)
 	if err != nil {
 		return nil, err
 	}
@@ -1248,7 +1242,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		logEEI.Trace("eGLD pre-transfer execution begin")
-		_, err = host.ExecuteOnDestContext(contractCallInput)
+		_, err = executeOnDestContextFromAPI(host, contractCallInput)
 		if err != nil {
 			logEEI.Trace("eGLD pre-transfer execution failed", "error", err)
 			return 1
@@ -1507,7 +1501,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	if host.AreInSameShard(sender, dest) && contractCallInput != nil && host.Blockchain().IsSmartContract(dest) {
 		contractCallInput.GasProvided = gasLimitForExec
 		logEEI.Trace("ESDT post-transfer execution begin")
-		_, executeErr = host.ExecuteOnDestContext(contractCallInput)
+		_, executeErr := executeOnDestContextFromAPI(host, contractCallInput)
 		if executeErr != nil {
 			logEEI.Trace("ESDT post-transfer execution failed", "error", executeErr)
 			host.Blockchain().RevertToSnapshot(snapshotBeforeTransfer)
@@ -1522,8 +1516,6 @@ func TransferESDTNFTExecuteWithTypedArgs(
 
 //export v1_4_createAsyncCall
 func v1_4_createAsyncCall(context unsafe.Pointer,
-	groupIDOffset int32,
-	groupIDLength int32,
 	destOffset int32,
 	valueOffset int32,
 	dataOffset int32,
@@ -1533,53 +1525,91 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 	errorOffset int32,
 	errorLength int32,
 	gas int64,
-) {
+	extraGasForCallback int64,
+) int32 {
 	host := arwen.GetVMHost(context)
+	return CreateAsyncCallWithHost(
+		host,
+		destOffset,
+		valueOffset,
+		dataOffset,
+		dataLength,
+		successOffset,
+		successLength,
+		errorOffset,
+		errorLength,
+		gas,
+		extraGasForCallback)
+}
+
+// CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
+func CreateAsyncCallWithHost(host arwen.VMHost,
+	destOffset int32,
+	valueOffset int32,
+	dataOffset int32,
+	dataLength int32,
+	successOffset int32,
+	successLength int32,
+	errorOffset int32,
+	errorLength int32,
+	gas int64,
+	extraGasForCallback int64,
+) int32 {
 	runtime := host.Runtime()
+
+	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	data, err := runtime.MemLoad(dataOffset, dataLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	successFunc, err := runtime.MemLoad(successOffset, successLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	errorFunc, err := runtime.MemLoad(errorOffset, errorLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return CreateAsyncCallWithTypedArgs(host,
+		calledSCAddress,
+		value,
+		data,
+		successFunc,
+		errorFunc,
+		gas,
+		extraGasForCallback)
+}
+
+// CreateAsyncCallWithTypedArgs - createAsyncCall with arguments already read from memory
+func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
+	calledSCAddress []byte,
+	value []byte,
+	data []byte,
+	successFunc []byte,
+	errorFunc []byte,
+	gas int64,
+	extraGasForCallback int64) int32 {
+
 	metering := host.Metering()
+	runtime := host.Runtime()
 	async := host.Async()
 
 	metering.StartGasTracing(createAsyncCallName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateAsyncCall
 	metering.UseAndTraceGas(gasToUse)
-
-	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-
-	groupID := string(groupIDBytes)
-	if groupID == arwen.LegacyAsyncCallGroupID {
-		err = arwen.ErrInvalidAsyncCallGroupID
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return
-	}
-
-	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-
-	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-
-	data, err := runtime.MemLoad(dataOffset, dataLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-
-	successFunc, err := runtime.MemLoad(successOffset, successLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-
-	errorFunc, err := runtime.MemLoad(errorOffset, errorLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
 
 	asyncCall := &arwen.AsyncCall{
 		Status:          arwen.AsyncCallPending,
@@ -1589,6 +1619,7 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 		GasLimit:        uint64(gas),
 		SuccessCallback: string(successFunc),
 		ErrorCallback:   string(errorFunc),
+		GasLocked:       uint64(extraGasForCallback),
 	}
 
 	if asyncCall.HasDefinedAnyCallback() {
@@ -1596,63 +1627,8 @@ func v1_4_createAsyncCall(context unsafe.Pointer,
 		metering.UseAndTraceGas(gasToUse)
 	}
 
-	err = async.RegisterAsyncCall(groupID, asyncCall)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return
-	}
-}
-
-//export v1_4_setAsyncGroupCallback
-func v1_4_setAsyncGroupCallback(context unsafe.Pointer,
-	groupIDOffset int32,
-	groupIDLength int32,
-	callback int32,
-	callbackLength int32,
-	data int32,
-	dataLength int32,
-	gas int64,
-) int32 {
-	host := arwen.GetVMHost(context)
-	runtime := host.Runtime()
-	metering := host.Metering()
-	async := host.Async()
-	metering.StartGasTracing(setAsyncGroupCallbackName)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.SetAsyncGroupCallback
-	metering.UseAndTraceGas(gasToUse)
-
-	groupIDBytes, err := runtime.MemLoad(groupIDOffset, groupIDLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	groupID := string(groupIDBytes)
-	if groupID == arwen.LegacyAsyncCallGroupID {
-		err = arwen.ErrInvalidAsyncCallGroupID
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	callbackNameBytes, err := runtime.MemLoad(callback, callbackLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	dataBytes, err := runtime.MemLoad(data, dataLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	_, exists := async.GetCallGroup(groupID)
-	if !exists {
-		err = arwen.ErrAsyncCallGroupDoesNotExist
-		arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
-		return 1
-	}
-
-	callbackName := string(callbackNameBytes)
-	err = async.SetGroupCallback(groupID, callbackName, dataBytes, uint64(gas))
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	err := async.RegisterAsyncCall("", asyncCall)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -2895,7 +2871,7 @@ func ExecuteOnDestContextWithTypedArgs(
 		return 1
 	}
 
-	_, err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -3009,7 +2985,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
 	}
 
-	_, err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -3107,7 +3083,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	runtime.SetReadOnly(true)
-	_, err = host.ExecuteOnDestContext(contractCallInput)
+	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	runtime.SetReadOnly(false)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
@@ -3130,7 +3106,34 @@ func v1_4_createContract(
 	dataOffset int32,
 ) int32 {
 	host := arwen.GetVMHost(context)
+	return createContractWithHost(
+		host,
+		gasLimit,
+		valueOffset,
+		codeOffset,
+		codeMetadataOffset,
+		length,
+		resultOffset,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+}
+
+func createContractWithHost(
+	host arwen.VMHost,
+	gasLimit int64,
+	valueOffset int32,
+	codeOffset int32,
+	codeMetadataOffset int32,
+	length int32,
+	resultOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) int32 {
 	runtime := host.Runtime()
+
 	metering := host.Metering()
 	metering.StartGasTracing(createContractName)
 
@@ -3139,17 +3142,17 @@ func v1_4_createContract(
 
 	sender := runtime.GetSCAddress()
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	code, err := runtime.MemLoad(codeOffset, length)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	codeMetadata, err := runtime.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -3163,19 +3166,19 @@ func v1_4_createContract(
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
 	metering.UseAndTraceGas(gasToUse)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	valueAsInt := big.NewInt(0).SetBytes(value)
 	newAddress, err := createContract(sender, data, valueAsInt, metering, gasLimit, code, codeMetadata, host, runtime)
 
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	err = runtime.MemStore(resultOffset, newAddress)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -3461,4 +3464,11 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 		index++
 	}
 	return integers
+}
+
+func executeOnDestContextFromAPI(host arwen.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+	_, input.Arguments = host.Async().PrependArgumentsForAsyncContext(input.Arguments)
+	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
+	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
+	return vmOutput, err
 }

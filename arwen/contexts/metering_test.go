@@ -241,7 +241,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	gasProvided := uint64(1_000_000)
 	input.GasProvided = gasProvided
 	meteringContext.gasForExecution = gasProvided
-	gasToLock := meteringContext.ComputeGasLockedForAsync()
+	gasToLock := meteringContext.ComputeExtraGasLockedForAsync()
 	err = meteringContext.UseGasBounded(gasToLock)
 	require.Nil(t, err)
 	expectedGasLeft := gasProvided - gasToLock

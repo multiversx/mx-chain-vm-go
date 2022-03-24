@@ -310,14 +310,6 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	require.Nil(t, data)
 }
 
-func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
-	// TODO
-}
-
-func TestStorageContext_StoreGasPerKey(t *testing.T) {
-	// TODO
-}
-
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 

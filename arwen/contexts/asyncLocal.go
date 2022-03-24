@@ -6,43 +6,25 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	for {
-		call := context.getNextLocalAsyncCall()
-		if check.IfNil(call) {
-			break
-		}
+	localCalls := make([]*arwen.AsyncCall, 0)
 
-		err := context.executeAsyncLocalCall(call)
-		if err != nil {
-			return err
-		}
-
-		context.closeCompletedAsyncCalls()
-	}
-
-	return nil
-}
-
-func (context *asyncContext) executeCompletedGroupCallbacks() {
-	for _, group := range context.asyncCallGroups {
-		if group.IsComplete() {
-			context.executeCallGroupCallback(group)
-		}
-	}
-}
-
-func (context *asyncContext) getNextLocalAsyncCall() *arwen.AsyncCall {
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
 			if call.IsLocal() {
-				return call
+				localCalls = append(localCalls, call)
 			}
+		}
+	}
+
+	for _, call := range localCalls {
+		err := context.executeAsyncLocalCall(call)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -67,38 +49,60 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, isComplete, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
 	}
 
-	// The vmOutput instance returned by host.ExecuteOnDestContext() is never nil,
-	// by design. Using it without checking for err is safe here.
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
-	if asyncCall.HasCallback() {
-		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		isUpgradeCall := context.isUpgradeCall(destinationCallInput.Function)
-		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode, isUpgradeCall)
-		context.gasAccumulated = 0
-		if callbackVMOutput != nil {
-			context.accumulateGas(callbackVMOutput.GasRemaining)
-		}
-	} else {
-		context.gasAccumulated = 0
-		if vmOutput != nil {
-			context.accumulateGas(vmOutput.GasRemaining)
+	if isComplete {
+		if asyncCall.HasCallback() {
+			// Restore gas locked while still on the caller instance; otherwise, the
+			// locked gas will appear to have been used twice by the caller instance.
+			isCallbackComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
+			if callbackVMOutput == nil {
+				return arwen.ErrAsyncNoOutputFromCallback
+			}
+
+			if isCallbackComplete {
+				callbackGasRemaining := callbackVMOutput.GasRemaining
+				callbackVMOutput.GasRemaining = 0
+				return context.completeChild(asyncCall.CallID, callbackGasRemaining)
+			}
+		} else {
+			return context.completeChild(asyncCall.CallID, 0)
 		}
 	}
 
 	return nil
 }
 
-func (context *asyncContext) isUpgradeCall(function string) bool {
-	if !context.host.Storage().IsUseDifferentGasCostFlagSet() {
-		return false
+func (context *asyncContext) executeSyncCallbackAndFinishOutput(
+	asyncCall *arwen.AsyncCall,
+	vmOutput *vmcommon.VMOutput,
+	destinationCallInput *vmcommon.ContractCallInput,
+	gasAccumulated uint64,
+	err error) (bool, *vmcommon.VMOutput) {
+	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
+	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, vmOutput.ReturnCode)
+	return isComplete, callbackVMOutput
+}
+
+func (context *asyncContext) executeSyncCallback(
+	asyncCall *arwen.AsyncCall,
+	destinationVMOutput *vmcommon.VMOutput,
+	gasAccumulated uint64,
+	destinationErr error,
+) (*vmcommon.VMOutput, bool, error) {
+
+	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, gasAccumulated, destinationErr)
+	if err != nil {
+		return nil, true, err
 	}
-	return function == arwen.UpgradeFunctionName
+
+	context.host.Metering().RestoreGas(asyncCall.GasLocked)
+	return context.host.ExecuteOnDestContext(callbackInput)
 }
 
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
@@ -114,43 +118,6 @@ func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.Asyn
 	context.host.Metering().RestoreGas(asyncCall.GasLimit)
 	context.host.Metering().RestoreGas(asyncCall.GasLocked)
 	asyncCall.UpdateStatus(vmcommon.Ok)
-}
-
-func (context *asyncContext) executeSyncCallback(
-	asyncCall *arwen.AsyncCall,
-	destinationVMOutput *vmcommon.VMOutput,
-	destinationErr error,
-) (*vmcommon.VMOutput, error) {
-	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, destinationErr)
-	if err != nil {
-		return nil, err
-	}
-
-	// Restore gas locked while still on the caller instance; otherwise, the
-	// locked gas will appear to have been used twice by the caller instance.
-	context.host.Metering().RestoreGas(asyncCall.GetGasLocked())
-	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackInput)
-
-	return callbackVMOutput, callBackErr
-}
-
-// executeCallGroupCallback synchronously executes the designated callback of
-// the AsyncCallGroup, as it was set with SetGroupCallback().
-//
-// Gas for the execution has been already paid for when SetGroupCallback() was
-// set. The remaining gas is refunded to context.callerAddr, which initiated
-// the call and paid for the gas in the first place.
-func (context *asyncContext) executeCallGroupCallback(group *arwen.AsyncCallGroup) {
-	if !group.HasCallback() {
-		return
-	}
-
-	input := context.createGroupCallbackInput(group)
-	context.gasAccumulated = 0
-	vmOutput, err := context.host.ExecuteOnDestContext(input)
-	context.finishAsyncLocalExecution(vmOutput, err, 0, false)
-	logAsync.Trace("gas remaining after group callback", "group", group.Identifier, "gas", vmOutput.GasRemaining)
-	context.accumulateGas(vmOutput.GasRemaining)
 }
 
 // executeSyncHalfOfBuiltinFunction will synchronously call the requested
@@ -176,7 +143,7 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	metering := context.host.Metering()
 	metering.RestoreGas(asyncCall.GetGasLimit())
 
-	vmOutput, err := context.host.ExecuteOnDestContext(destinationCallInput)
+	vmOutput, _, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if err != nil {
 		return err
 	}
@@ -185,8 +152,8 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
-		callbackVMOutput, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, err)
-		context.finishAsyncLocalExecution(callbackVMOutput, callbackErr, 0, false)
+		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
+		context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, 0)
 	}
 
 	// The gas that remains after executing the in-shard half of the built-in
@@ -196,20 +163,10 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	return nil
 }
 
-// executeSyncContextCallback will execute the callback of the original caller
-// synchronously, already assuming the original caller is in the same shard
-func (context *asyncContext) executeSyncContextCallback() {
-	callbackCallInput := context.createContextCallbackInput()
-	callbackVMOutput, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalExecution(callbackVMOutput, callBackErr, 0, false)
-}
-
-// TODO return values are never used by code that calls finishAsyncLocalExecution
-func (context *asyncContext) finishAsyncLocalExecution(
+func (context *asyncContext) finishAsyncLocalCallbackExecution(
 	vmOutput *vmcommon.VMOutput,
 	err error,
-	destinationReturnCode vmcommon.ReturnCode,
-	setReturnCode bool) {
+	destinationReturnCode vmcommon.ReturnCode) {
 	// output := context.host.Output()
 	// if err == nil {
 	// 	if setReturnCode {
@@ -256,6 +213,9 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	}
 	gasLimit -= gasToUse
 
+	// send the callID to a local async call
+	asyncCall.CallID, arguments = context.PrependArgumentsForAsyncContext(arguments)
+
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     sender,
@@ -280,9 +240,9 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 func (context *asyncContext) createCallbackInput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
+	gasAccumulated uint64,
 	destinationErr error,
 ) (*vmcommon.ContractCallInput, error) {
-	metering := context.host.Metering()
 	runtime := context.host.Runtime()
 
 	actualCallbackInitiator := asyncCall.GetDestination()
@@ -290,10 +250,7 @@ func (context *asyncContext) createCallbackInput(
 		actualCallbackInitiator = context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
 	}
 
-	// always provide return code as the first argument to callback function
-	arguments := [][]byte{
-		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
-	}
+	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, gasAccumulated, destinationErr)
 
 	esdtFunction := ""
 	isESDTOnCallBack := false
@@ -306,28 +263,17 @@ func (context *asyncContext) createCallbackInput(
 			actualCallbackInitiator,
 			runtime.GetSCAddress(),
 			vmOutput)
-		arguments = append(arguments, vmOutput.ReturnData...)
 	} else {
-		// when execution returned error, callBack arguments are:
-		// [error code, error message]
-		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 		returnWithError = true
 	}
 
 	callbackFunction := asyncCall.GetCallbackName()
 
-	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
-	gasLimit = math.AddUint64(gasLimit, context.gasAccumulated)
 	dataLength := computeDataLengthFromArguments(callbackFunction, arguments)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
-	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
-	gas := math.MulUint64(copyPerByte, uint64(dataLength))
-	gasToUse = math.AddUint64(gasToUse, gas)
-	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
+	gasLimit, err := context.computeGasLimitForCallback(asyncCall, vmOutput, dataLength)
+	if err != nil {
+		return nil, err
 	}
-	gasLimit -= gasToUse
 
 	// Return to the sender SC, calling its specified callback method.
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -344,26 +290,76 @@ func (context *asyncContext) createCallbackInput(
 			PrevTxHash:           runtime.GetPrevTxHash(),
 			ReturnCallAfterError: returnWithError,
 		},
-		RecipientAddr: runtime.GetSCAddress(),
+		RecipientAddr: context.address,
 		Function:      callbackFunction,
 	}
 
 	if isESDTOnCallBack {
-		contractCallInput.Function = esdtFunction
-		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
-		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
-		if len(vmOutput.ReturnData) > 1 {
-			contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
-		}
-		if context.isSameShardNFTTransfer(contractCallInput) {
-			contractCallInput.RecipientAddr = contractCallInput.CallerAddr
-		}
-		context.host.Output().DeleteFirstReturnData()
+		context.updateContractInputForESDTOnCallback(contractCallInput, esdtFunction, esdtArgs, vmOutput, asyncCall, gasAccumulated)
 	}
 
 	return contractCallInput, nil
+}
+
+func (context *asyncContext) updateContractInputForESDTOnCallback(
+	contractCallInput *vmcommon.ContractCallInput,
+	esdtFunction string,
+	esdtArgs [][]byte,
+	vmOutput *vmcommon.VMOutput,
+	asyncCall *arwen.AsyncCall,
+	gasAccumulated uint64) {
+
+	oldArgLen := len(contractCallInput.Arguments)
+	oldFunction := contractCallInput.Function
+
+	contractCallInput.Function = esdtFunction
+	contractCallInput.Arguments = make([][]byte, 0, oldArgLen)
+	contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
+	contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(oldFunction))
+	contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
+	if len(vmOutput.ReturnData) > 1 {
+		contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
+	}
+	if context.isSameShardNFTTransfer(contractCallInput) {
+		contractCallInput.RecipientAddr = contractCallInput.CallerAddr
+	}
+	contractCallInput.Arguments = context.prependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
+
+	context.host.Output().DeleteFirstReturnData()
+}
+
+func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, dataLength int) (uint64, error) {
+	metering := context.host.Metering()
+	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
+	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
+	gas := math.MulUint64(copyPerByte, uint64(dataLength))
+	gasToUse = math.AddUint64(gasToUse, gas)
+	if gasLimit <= gasToUse {
+		return 0, arwen.ErrNotEnoughGas
+	}
+	gasLimit -= gasToUse
+
+	return gasLimit, nil
+}
+
+func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) [][]byte {
+	// always provide return code as the first argument to callback function
+	arguments := [][]byte{
+		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
+	}
+	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
+		// when execution went Ok, callBack arguments are:
+		// [0, result1, result2, ....]
+		arguments = append(arguments, vmOutput.ReturnData...)
+	} else {
+		// when execution returned error, callBack arguments are:
+		// [error code, error message]
+		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
+	}
+
+	return context.prependCallbackArgumentsForAsyncContext(arguments, asyncCall, gasAccumulated)
 }
 
 func (context *asyncContext) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractCallInput) bool {
@@ -384,7 +380,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 			CallerAddr:     context.callerAddr,
 			Arguments:      [][]byte{group.CallbackData},
 			CallValue:      big.NewInt(0),
-			GasPrice:       context.gasPrice,
+			GasPrice:       runtime.GetVMInput().GasPrice,
 			GasProvided:    group.GasLocked + context.gasAccumulated,
 			CurrentTxHash:  runtime.GetCurrentTxHash(),
 			OriginalTxHash: runtime.GetOriginalTxHash(),
@@ -403,10 +399,7 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 	host := context.host
 	runtime := host.Runtime()
 
-	_, arguments, err := context.callArgsParser.ParseData(string(context.returnData))
-	if err != nil {
-		arguments = [][]byte{context.returnData}
-	}
+	arguments := [][]byte{context.callbackData}
 
 	// TODO ensure a new value for VMInput.CurrentTxHash
 	input := &vmcommon.ContractCallInput{

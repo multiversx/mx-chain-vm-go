@@ -7,12 +7,15 @@ import (
 
 // AsyncCall holds the information about an individual async call
 type AsyncCall struct {
-	Status          AsyncCallStatus
-	ExecutionMode   AsyncCallExecutionMode
-	Destination     []byte
-	Data            []byte
-	GasLimit        uint64
-	GasLocked       uint64
+	CallID        []byte
+	Status        AsyncCallStatus
+	ExecutionMode AsyncCallExecutionMode
+
+	Destination []byte
+	Data        []byte
+	GasLimit    uint64
+	GasLocked   uint64
+
 	ValueBytes      []byte
 	SuccessCallback string
 	ErrorCallback   string
@@ -21,6 +24,7 @@ type AsyncCall struct {
 // Clone creates a deep clone of the AsyncCall
 func (ac *AsyncCall) Clone() *AsyncCall {
 	clone := &AsyncCall{
+		CallID:          ac.CallID,
 		Status:          ac.Status,
 		ExecutionMode:   ac.ExecutionMode,
 		Destination:     make([]byte, len(ac.Destination)),
@@ -37,6 +41,11 @@ func (ac *AsyncCall) Clone() *AsyncCall {
 	copy(clone.ValueBytes, ac.ValueBytes)
 
 	return clone
+}
+
+// GetIdentifier returns the identifier of an async call
+func (ac *AsyncCall) GetIdentifier() []byte {
+	return ac.CallID
 }
 
 // GetDestination returns the destination of an async call
@@ -120,4 +129,42 @@ func (ac *AsyncCall) GetCallbackName() string {
 // IsInterfaceNil returns true if there is no value under the interface
 func (ac *AsyncCall) IsInterfaceNil() bool {
 	return ac == nil
+}
+
+func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
+	return &SerializableAsyncCall{
+		CallID:          ac.CallID,
+		Status:          SerializableAsyncCallStatus(ac.Status),
+		ExecutionMode:   SerializableAsyncCallExecutionMode(ac.ExecutionMode),
+		Destination:     ac.Destination,
+		Data:            ac.Data,
+		GasLimit:        ac.GasLimit,
+		GasLocked:       ac.GasLocked,
+		ValueBytes:      ac.ValueBytes,
+		SuccessCallback: ac.SuccessCallback,
+		ErrorCallback:   ac.ErrorCallback,
+	}
+}
+
+func fromSerializableAsyncCalls(serializableAsyncCalls []*SerializableAsyncCall) []*AsyncCall {
+	var asyncCalls = make([]*AsyncCall, len(serializableAsyncCalls))
+	for i, serAsyncCall := range serializableAsyncCalls {
+		asyncCalls[i] = serAsyncCall.fromSerializable()
+	}
+	return asyncCalls
+}
+
+func (serAsyncCall *SerializableAsyncCall) fromSerializable() *AsyncCall {
+	return &AsyncCall{
+		CallID:          serAsyncCall.CallID,
+		Status:          AsyncCallStatus(serAsyncCall.Status),
+		ExecutionMode:   AsyncCallExecutionMode(serAsyncCall.ExecutionMode),
+		Destination:     serAsyncCall.Destination,
+		Data:            serAsyncCall.Data,
+		GasLimit:        serAsyncCall.GasLimit,
+		GasLocked:       serAsyncCall.GasLocked,
+		ValueBytes:      serAsyncCall.ValueBytes,
+		SuccessCallback: serAsyncCall.SuccessCallback,
+		ErrorCallback:   serAsyncCall.ErrorCallback,
+	}
 }

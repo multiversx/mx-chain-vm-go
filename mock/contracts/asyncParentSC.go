@@ -81,6 +81,24 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
+		if string(arguments[1]) == "new_async" {
+			destination := arguments[2]
+			function := arguments[3]
+			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+				Status:          arwen.AsyncCallPending,
+				Destination:     destination,
+				Data:            function,
+				ValueBytes:      big.NewInt(0).Bytes(),
+				SuccessCallback: "callBack",
+				ErrorCallback:   "callBack",
+				GasLimit:        testConfig.GasProvidedToChild,
+				GasLocked:       150,
+			})
+			if err != nil {
+				host.Runtime().FailExecution(err)
+			}
+		}
+
 		return instance
 	})
 }

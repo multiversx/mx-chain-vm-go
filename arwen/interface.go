@@ -43,7 +43,7 @@ type VMHost interface {
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
@@ -152,6 +152,7 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
+	PopFirstArgumentFromVMInput() ([]byte, error)
 
 	// TODO remove after implementing proper mocking of Wasmer instances; this is
 	// used for tests only
@@ -205,7 +206,6 @@ type OutputContext interface {
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error
 	TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error)
-	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
@@ -248,13 +248,15 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	ComputeGasLockedForAsync() uint64
+	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	DisableRestoreGas()
+	EnableRestoreGas()
 	StartGasTracing(functionName string)
 	SetGasTracing(enableGasTracing bool)
 	GetGasTrace() map[string]map[string][]uint64
@@ -284,10 +286,12 @@ type StorageContext interface {
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
+	GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool)
 	GetStorage(key []byte) ([]byte, bool)
 	GetStorageUnmetered(key []byte) ([]byte, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
 	DisableUseDifferentGasCostFlag()
 	IsUseDifferentGasCostFlagSet() bool
@@ -312,27 +316,54 @@ type InstanceBuilder interface {
 type AsyncContext interface {
 	StateStack
 
-	InitStateFromInput(input *vmcommon.ContractCallInput)
+	InitStateFromInput(input *vmcommon.ContractCallInput) error
 	HasPendingCallGroups() bool
 	IsComplete() bool
 	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
-	SetGroupCallback(groupID string, callbackName string, data []byte, gas uint64) error
 	SetContextCallback(callbackName string, data []byte, gas uint64) error
 	HasCallback() bool
-	PostprocessCrossShardCallback() error
 	GetCallerAddress() []byte
+	GetCallerCallID() []byte
 	GetReturnData() []byte
 	SetReturnData(data []byte)
-	GetGasPrice() uint64
 
 	Execute() error
 	RegisterAsyncCall(groupID string, call *AsyncCall) error
 	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
-	UpdateCurrentCallStatus() (*AsyncCall, error)
 
-	Load() error
+	LoadParentContext() error
 	Save() error
 	Delete() error
+	DeleteFromAddress(address []byte) error
+
+	GetCallID() []byte
+	GetCallbackAsyncInitiatorCallID() []byte
+	IsCrossShard() bool
+
+	Clone() AsyncContext
+
+	UpdateCurrentAsyncCallStatus(
+		address []byte,
+		callID []byte,
+		vmInput *vmcommon.VMInput) (*AsyncCall, error)
+	SendCrossShardCallback(
+		returnCode vmcommon.ReturnCode,
+		returnData [][]byte,
+		returnMessage string) error
+
+	CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error
+	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error
+
+	SetResults(vmOutput *vmcommon.VMOutput)
+	GetGasAccumulated() uint64
+
+	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
+
+	/*
+		for tests / test framework usage
+	*/
+	SetCallID(callID []byte)
+	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
 }
 
 // GasTracing defines the functionality needed for a gas tracing

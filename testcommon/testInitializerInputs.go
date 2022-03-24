@@ -158,14 +158,22 @@ func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte,
 }
 
 // DefaultTestArwenForCallWithInstanceMocks creates an InstanceBuilderMock
-func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *worldmock.MockWorld, *contextmock.InstanceBuilderMock) {
+func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
 	world := worldmock.NewMockWorld()
+	return DefaultTestArwenForCallWithInstanceMocksAndWorld(tb, world)
+}
+
+// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an InstanceBuilderMock
+func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
+	if world == nil {
+		world = worldmock.NewMockWorld()
+	}
 	host := DefaultTestArwen(tb, world)
 
 	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 
-	return host, world, instanceBuilderMock
+	return host, instanceBuilderMock
 }
 
 // DefaultTestArwenForCallWithWorldMock creates a MockWorld
@@ -446,6 +454,12 @@ func (contractInput *ContractCallInputBuilder) WithGasProvided(gas uint64) *Cont
 	return contractInput
 }
 
+// WithGasLocked provides the locked gas of ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithGasLocked(gas uint64) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.GasLocked = gas
+	return contractInput
+}
+
 // WithFunction provides the function to be called for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithFunction(function string) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.Function = function
@@ -467,6 +481,12 @@ func (contractInput *ContractCallInputBuilder) WithCallType(callType vm.CallType
 // WithCurrentTxHash provides the CurrentTxHash for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithCurrentTxHash(txHash []byte) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.CurrentTxHash = txHash
+	return contractInput
+}
+
+// WithPrevTxHash provides the PrevTxHash for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithPrevTxHash(txHash []byte) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.PrevTxHash = txHash
 	return contractInput
 }
 

@@ -110,3 +110,46 @@ func (acg *AsyncCallGroup) DeleteCompletedAsyncCalls() {
 func (acg *AsyncCallGroup) IsInterfaceNil() bool {
 	return acg == nil
 }
+
+func (acg *AsyncCallGroup) toSerializable() *SerializableAsyncCallGroup {
+	var serializableAsyncCalls = make([]*SerializableAsyncCall, len(acg.AsyncCalls))
+	for i, ac := range acg.AsyncCalls {
+		serializableAsyncCalls[i] = ac.toSerializable()
+	}
+
+	return &SerializableAsyncCallGroup{
+		Callback:     acg.Callback,
+		GasLocked:    acg.GasLocked,
+		CallbackData: acg.CallbackData,
+		Identifier:   acg.Identifier,
+		AsyncCalls:   serializableAsyncCalls,
+	}
+}
+
+// ToSerializableAsyncCallGroups serializes all call groups to protobuf
+func ToSerializableAsyncCallGroups(asyncCallGroups []*AsyncCallGroup) []*SerializableAsyncCallGroup {
+	var serializableGroups = make([]*SerializableAsyncCallGroup, len(asyncCallGroups))
+	for i, acg := range asyncCallGroups {
+		serializableGroups[i] = acg.toSerializable()
+	}
+	return serializableGroups
+}
+
+// FromSerializableAsyncCallGroups - deserialize all call groups from protobuf
+func FromSerializableAsyncCallGroups(serializableAsyncCallGroups []*SerializableAsyncCallGroup) []*AsyncCallGroup {
+	var asyncCallGroups = make([]*AsyncCallGroup, len(serializableAsyncCallGroups))
+	for i, serCallGroup := range serializableAsyncCallGroups {
+		asyncCallGroups[i] = serCallGroup.fromSerializable()
+	}
+	return asyncCallGroups
+}
+
+func (serializableCallGroup *SerializableAsyncCallGroup) fromSerializable() *AsyncCallGroup {
+	return &AsyncCallGroup{
+		Callback:     serializableCallGroup.Callback,
+		GasLocked:    serializableCallGroup.GasLocked,
+		CallbackData: serializableCallGroup.CallbackData,
+		Identifier:   serializableCallGroup.Identifier,
+		AsyncCalls:   fromSerializableAsyncCalls(serializableCallGroup.AsyncCalls),
+	}
+}

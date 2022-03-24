@@ -11,7 +11,9 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
 )
 
@@ -23,7 +25,7 @@ var One = big.NewInt(1)
 
 // CustomStorageKey generates a storage key of a specific type.
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
-	return append(associatedKey, []byte(keyType)...)
+	return append([]byte(keyType), associatedKey...)
 }
 
 // BooleanToInt returns 1 if the given bool is true, 0 otherwise
@@ -160,9 +162,20 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 	return loadedMap, nil
 }
 
+// SetPlainLoggerFormatter configures the logger to output only ASCII characters
+func SetPlainLoggerFormatter() {
+	logger.ClearLogObservers()
+	logger.AddLogObserver(os.Stdout, &logger.PlainFormatter{})
+}
+
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
-	logger.SetLogLevel("*:TRACE")
+	SetLoggingForTestsWithLogger("*")
+}
+
+// SetLoggingForTestsWithLogger configures the logger package with a certain logger
+func SetLoggingForTestsWithLogger(loggerName string) {
+	logger.SetLogLevel(fmt.Sprintf("*:NONE,%s:TRACE", loggerName))
 	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }
@@ -265,4 +278,29 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	}
 
 	return true
+}
+
+// PrependToArguments adds new arguments in front of the existing ones
+func PrependToArguments(input *vmcommon.ContractCallInput, toPrepend ...[]byte) {
+	input.Arguments = append(toPrepend, input.Arguments...)
+}
+
+// SplitPrefixArguments splits arguments in two arrays of arguments
+func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
+	if len(arguments) < numberOfArgsToRemove {
+		return nil, nil
+	}
+	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
+}
+
+// PopCallIDsFromArguments removes async infrastructure arguments from the arguments list
+func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
+	asyncPrefixArgsNumber := 2
+	if input.CallType == vm.AsynchronousCallBack {
+		asyncPrefixArgsNumber = 4
+	}
+
+	var asyncPrefixArgs [][]byte
+	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
+	return asyncPrefixArgs
 }

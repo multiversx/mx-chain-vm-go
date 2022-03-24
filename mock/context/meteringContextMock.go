@@ -136,8 +136,8 @@ func (m *MeteringContextMock) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
-// ComputeGasLockedForAsync mocked method
-func (m *MeteringContextMock) ComputeGasLockedForAsync() uint64 {
+// ComputeExtraGasLockedForAsync mocked method
+func (m *MeteringContextMock) ComputeExtraGasLockedForAsync() uint64 {
 	return m.GasComputedToLock
 }
 
@@ -187,6 +187,14 @@ func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDe
 // DeductInitialGasForIndirectDeployment mocked method
 func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
 	return m.Err
+}
+
+// EnableRestoreGas mocked method
+func (m *MeteringContextMock) EnableRestoreGas() {
+}
+
+// DisableRestoreGas mocked method
+func (m *MeteringContextMock) DisableRestoreGas() {
 }
 
 func (m *MeteringContextMock) StartGasTracing(_ string) {
