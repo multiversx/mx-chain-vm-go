@@ -252,13 +252,12 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	context.changeStorageUpdate(key, value, storageUpdates)
 
-	var zero []byte
-	if bytes.Equal(oldValue, zero) {
+	if len(oldValue) == 0 {
 		return context.storageAdded(length, key, value)
 	}
 
 	lengthOldValue := len(oldValue)
-	if bytes.Equal(value, zero) {
+	if len(value) == 0 {
 		return context.storageDeleted(lengthOldValue, key)
 	}
 
@@ -297,10 +296,7 @@ func (context *storageContext) computeGasForSmallerValues(newValueExtraLength in
 	newValueExtraLength = -newValueExtraLength
 
 	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
-	metering.UseGas(useGas)
-
 	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
-	metering.FreeGas(freeGas)
 	return useGas, freeGas
 }
 
