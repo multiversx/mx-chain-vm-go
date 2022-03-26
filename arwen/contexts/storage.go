@@ -294,7 +294,6 @@ func (context *storageContext) changeStorageUpdate(key []byte, value []byte, sto
 func (context *storageContext) computeGasForSmallerValues(newValueExtraLength int, length int) (uint64, uint64) {
 	metering := context.host.Metering()
 	newValueExtraLength = -newValueExtraLength
-
 	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
 	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
 	return useGas, freeGas
