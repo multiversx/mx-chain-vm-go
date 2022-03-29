@@ -31,6 +31,7 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 	return nil
 }
 
+// TODO split this method into smaller ones
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
 	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
 		context.executeESDTTransferOnCallback(asyncCall)
@@ -39,8 +40,17 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
-		return err
+		log.Trace("executeAsyncLocalCall failed", "error", err)
+		return destinationCallInput, nil, err
 	}
+
+	log.Trace("executeAsyncLocalCall",
+		"caller", destinationCallInput.CallerAddr,
+		"dest", destinationCallInput.RecipientAddr,
+		"func", destinationCallInput.Function,
+		"args", destinationCallInput.Arguments,
+		"gasProvided", destinationCallInput.GasProvided,
+		"gasLocked", destinationCallInput.GasLocked)
 
 	// Briefly restore the AsyncCall GasLimit, after it was consumed in its
 	// entirety by addAsyncCall(); this is required, because ExecuteOnDestContext()
@@ -53,6 +63,13 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	if vmOutput == nil {
 		return arwen.ErrNilDestinationCallVMOutput
 	}
+
+	log.Trace("executeAsyncLocalCall",
+		"retCode", destinationVMOutput.ReturnCode,
+		"message", destinationVMOutput.ReturnMessage,
+		"data", destinationVMOutput.ReturnData,
+		"gasRemaining", destinationVMOutput.GasRemaining,
+		"error", err)
 
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
 
@@ -78,6 +95,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	return nil
 }
 
+// TODO rename to executeLocalCallbackAndFinishOutput
 func (context *asyncContext) executeSyncCallbackAndFinishOutput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
@@ -89,6 +107,7 @@ func (context *asyncContext) executeSyncCallbackAndFinishOutput(
 	return isComplete, callbackVMOutput
 }
 
+// TODO rename to executeLocalCallback
 func (context *asyncContext) executeSyncCallback(
 	asyncCall *arwen.AsyncCall,
 	destinationVMOutput *vmcommon.VMOutput,
@@ -98,11 +117,30 @@ func (context *asyncContext) executeSyncCallback(
 
 	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, gasAccumulated, destinationErr)
 	if err != nil {
+		log.Trace("executeSyncCallback", "error", err)
 		return nil, true, err
 	}
 
+	log.Trace("executeSyncCallback",
+		"caller", callbackCallInput.CallerAddr,
+		"dest", callbackCallInput.RecipientAddr,
+		"func", callbackCallInput.Function,
+		"args", callbackCallInput.Arguments,
+		"gasProvided", callbackCallInput.GasProvided,
+		"gasLocked", callbackCallInput.GasLocked)
+
 	context.host.Metering().RestoreGas(asyncCall.GasLocked)
-	return context.host.ExecuteOnDestContext(callbackInput)
+	callbackVMOutput, isComplete, callbackErr := context.host.ExecuteOnDestContext(callbackInput)
+	if callbackVMOutput != nil {
+		log.Trace("async call: sync callback call",
+			"retCode", callbackVMOutput.ReturnCode,
+			"message", callbackVMOutput.ReturnMessage,
+			"data", callbackVMOutput.ReturnData,
+			"gasRemaining", callbackVMOutput.GasRemaining,
+			"error", callBackErr)
+	}
+
+	return callbackVMOutput, isComplete, callbackErr
 }
 
 func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {

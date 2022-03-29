@@ -34,6 +34,7 @@ type OutputContextStub struct {
 	SetReturnMessageCalled            func(message string)
 	ReturnDataCalled                  func() [][]byte
 	ClearReturnDataCalled             func()
+	RemoveReturnDataCalled            func(index uint32)
 	FinishCalled                      func(data []byte)
 	PrependFinishCalled               func(data []byte)
 	DeleteFirstReturnDataCalled       func()
@@ -223,6 +224,13 @@ func (o *OutputContextStub) ReturnData() [][]byte {
 func (o *OutputContextStub) ClearReturnData() {
 	if o.ClearReturnDataCalled != nil {
 		o.ClearReturnDataCalled()
+	}
+}
+
+// RemoveReturnData mocked method
+func (o *OutputContextStub) RemoveReturnData(index uint32) {
+	if o.RemoveReturnDataCalled != nil {
+		o.RemoveReturnDataCalled(index)
 	}
 }
 

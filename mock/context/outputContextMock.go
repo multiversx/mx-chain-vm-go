@@ -141,6 +141,10 @@ func (o *OutputContextMock) ClearReturnData() {
 	o.ReturnDataMock = make([][]byte, 0)
 }
 
+// RemoveReturnData mocked method
+func (o *OutputContextMock) RemoveReturnData(index uint32) {
+}
+
 // Finish mocked method
 func (o *OutputContextMock) Finish(data []byte) {
 	o.ReturnDataMock = append(o.ReturnDataMock, data)

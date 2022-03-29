@@ -52,6 +52,8 @@
     GetReturnData        = 10
     GetNumReturnData     = 10
     GetReturnDataSize    = 10
+    CleanReturnData      = 10
+    DeleteFromReturnData = 10
 
 [EthAPICost]
     UseGas              = 10

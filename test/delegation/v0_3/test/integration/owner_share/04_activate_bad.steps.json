@@ -21,7 +21,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:owner doesn't have enough stake in the contract",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

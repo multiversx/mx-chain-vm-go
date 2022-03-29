@@ -12,7 +12,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "''stake_per_node": "100,000,000,000,000"
+                        "str:stake_per_node": "100,000,000,000,000"
                     },
                     "code": "file:../../../auction-mock/output/auction-mock.wasm"
                 },
@@ -52,7 +52,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "''stake_per_node": "100,000,000,000,000"
+                        "str:stake_per_node": "100,000,000,000,000"
                     },
                     "code": "file:../../../auction-mock/output/auction-mock.wasm"
                 },
