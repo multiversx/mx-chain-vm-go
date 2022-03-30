@@ -40,11 +40,11 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
-		log.Trace("executeAsyncLocalCall failed", "error", err)
-		return destinationCallInput, nil, err
+		logAsync.Trace("executeAsyncLocalCall failed", "error", err)
+		return err
 	}
 
-	log.Trace("executeAsyncLocalCall",
+	logAsync.Trace("executeAsyncLocalCall",
 		"caller", destinationCallInput.CallerAddr,
 		"dest", destinationCallInput.RecipientAddr,
 		"func", destinationCallInput.Function,
@@ -64,11 +64,11 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 		return arwen.ErrNilDestinationCallVMOutput
 	}
 
-	log.Trace("executeAsyncLocalCall",
-		"retCode", destinationVMOutput.ReturnCode,
-		"message", destinationVMOutput.ReturnMessage,
-		"data", destinationVMOutput.ReturnData,
-		"gasRemaining", destinationVMOutput.GasRemaining,
+	logAsync.Trace("executeAsyncLocalCall",
+		"retCode", vmOutput.ReturnCode,
+		"message", vmOutput.ReturnMessage,
+		"data", vmOutput.ReturnData,
+		"gasRemaining", vmOutput.GasRemaining,
 		"error", err)
 
 	asyncCall.UpdateStatus(vmOutput.ReturnCode)
@@ -117,27 +117,27 @@ func (context *asyncContext) executeSyncCallback(
 
 	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, gasAccumulated, destinationErr)
 	if err != nil {
-		log.Trace("executeSyncCallback", "error", err)
+		logAsync.Trace("executeSyncCallback", "error", err)
 		return nil, true, err
 	}
 
-	log.Trace("executeSyncCallback",
-		"caller", callbackCallInput.CallerAddr,
-		"dest", callbackCallInput.RecipientAddr,
-		"func", callbackCallInput.Function,
-		"args", callbackCallInput.Arguments,
-		"gasProvided", callbackCallInput.GasProvided,
-		"gasLocked", callbackCallInput.GasLocked)
+	logAsync.Trace("executeSyncCallback",
+		"caller", callbackInput.CallerAddr,
+		"dest", callbackInput.RecipientAddr,
+		"func", callbackInput.Function,
+		"args", callbackInput.Arguments,
+		"gasProvided", callbackInput.GasProvided,
+		"gasLocked", callbackInput.GasLocked)
 
 	context.host.Metering().RestoreGas(asyncCall.GasLocked)
 	callbackVMOutput, isComplete, callbackErr := context.host.ExecuteOnDestContext(callbackInput)
 	if callbackVMOutput != nil {
-		log.Trace("async call: sync callback call",
+		logAsync.Trace("async call: sync callback call",
 			"retCode", callbackVMOutput.ReturnCode,
 			"message", callbackVMOutput.ReturnMessage,
 			"data", callbackVMOutput.ReturnData,
 			"gasRemaining", callbackVMOutput.GasRemaining,
-			"error", callBackErr)
+			"error", callbackErr)
 	}
 
 	return callbackVMOutput, isComplete, callbackErr

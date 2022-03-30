@@ -896,7 +896,7 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	if err != nil {
-		log.Error("call SC method failed", "error", err, "callType", callType)
+		log.Trace("call SC method failed", "error", err, "callType", callType)
 	}
 
 	return err

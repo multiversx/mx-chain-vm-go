@@ -167,6 +167,7 @@ func TestGasUsed_SetStorage_BigKey_FlagDisabled(t *testing.T) {
 }
 
 func setStorage(t *testing.T, key []byte, flagEnabled bool) {
+	testConfig := makeTestConfig()
 	value := []byte("testValue")
 
 	storageStoreGas := uint64(10)

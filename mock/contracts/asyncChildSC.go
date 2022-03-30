@@ -12,7 +12,7 @@ import (
 )
 
 func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

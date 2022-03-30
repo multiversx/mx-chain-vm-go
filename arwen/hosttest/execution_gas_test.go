@@ -605,7 +605,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
-	testConfig := asyncTestConfig
+	testConfig := makeTestConfig()
 	gasUsedByChild := testConfig.GasUsedByChild
 	gasUsedByParent := testConfig.GasUsedByParent
 	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
@@ -625,6 +625,8 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 			WithGasProvided(gasForAsyncCall).
 			WithFunction(contracts.AsyncChildFunction).
 			WithArguments(
+				[]byte{0}, // placeholder for data used by async framework
+				[]byte{0}, // placeholder for data used by async framework
 				big.NewInt(testConfig.TransferToThirdParty).Bytes()).
 			WithCallType(vm.AsynchronousCall).
 			Build()).
@@ -1521,7 +1523,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCallManaged_Mocks(t *testing.T) {
-	testConfig := asyncTestConfig
+	testConfig := makeTestConfig()
 	startValue := uint64(3000)
 	outOfGasValue := uint64(150)
 	stopValue := uint64(100)

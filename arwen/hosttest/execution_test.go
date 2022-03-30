@@ -2856,10 +2856,9 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
-				GasUsed(test.ParentAddress, 885).
-				GasRemaining(998643).
+				GasUsed(test.ParentAddress, 1069).
+				GasRemaining(998361).
 				BalanceDelta(childAddress, 42).
 				Code(childAddress, childCode).
 				CodeMetadata(childAddress, []byte{1, 0}).

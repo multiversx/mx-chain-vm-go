@@ -247,7 +247,7 @@ func (context *storageContext) SetProtectedStorageToAddress(address []byte, key 
 func (context *storageContext) setStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.host.Runtime().ReadOnly() {
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
-		return arwen.StorageUnchanged, arwen.ErrCannotWriteInReadOnlyMode
+		return arwen.StorageUnchanged, nil
 	}
 	if context.isElrondReservedKey(key) {
 		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
