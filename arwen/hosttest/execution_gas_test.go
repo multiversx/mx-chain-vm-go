@@ -1564,7 +1564,7 @@ func TestGasUsed_AsyncCallManaged_Mocks(t *testing.T) {
 
 func TestGasUsed_AsyncCallManaged(t *testing.T) {
 	startValue := uint64(10000000)
-	outOfGasValue := uint64(5400000)
+	outOfGasValue := uint64(6300000)
 	stopValue := uint64(5000000)
 	decrement := uint64(1000)
 
@@ -1590,11 +1590,9 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 			WithGasSchedule(gasSchedule).
 			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 				if gasLimit > outOfGasValue {
-					verify.
-						Ok()
+					verify.Ok()
 				} else {
-					verify.
-						OutOfGas()
+					verify.OutOfGas()
 				}
 			})
 	}

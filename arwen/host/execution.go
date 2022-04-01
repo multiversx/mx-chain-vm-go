@@ -154,7 +154,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err := async.InitStateFromInput(input)
 	if err != nil {
-		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrAsyncInit)
+		log.Trace("doRunSmartContractCall init async", "error", arwen.ErrAsyncInit)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -163,7 +163,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err = host.checkGasForGetCode(input, metering)
 	if err != nil {
-		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrNotEnoughGas)
+		log.Trace("doRunSmartContractCall check gas for GetSCCode", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 

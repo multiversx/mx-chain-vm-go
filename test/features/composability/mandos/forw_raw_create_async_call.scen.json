@@ -26,7 +26,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_create_async_call",
+                "function": "forward_register_promise",
                 "arguments": [
                     "sc:vault",
                     "str:echo_arguments",
@@ -42,7 +42,7 @@
                 "out": [],
                 "status": "5",
                 "message": "str:not enough gas",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -72,7 +72,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_create_async_call",
+                "function": "forward_register_promise",
                 "arguments": [
                     "sc:vault",
                     "str:echo_arguments",
@@ -98,7 +98,8 @@
                             "0-status": "biguint:5",
                             "1-message": "nested:str:not enough gas"
                         }
-                    }
+                    },
+                    "+"
                 ],
                 "gas": "*",
                 "refund": "*"
@@ -129,7 +130,7 @@
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
-                "function": "forward_create_async_call",
+                "function": "forward_register_promise",
                 "arguments": [
                     "sc:vault",
                     "str:echo_arguments",
