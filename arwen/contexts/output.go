@@ -223,6 +223,7 @@ func (context *outputContext) RemoveReturnData(index uint32) {
 // Finish appends the given data to the return data of the current output state.
 func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
+	logOutput.Trace("finish", "data", data)
 }
 
 // PrependFinish appends the given data to the return data of the current output state.
