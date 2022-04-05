@@ -1,4 +1,4 @@
-package gasschedules 
+package gasschedules
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
@@ -104,6 +104,8 @@ const (
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100    
 
 [EthAPICost]
     UseGas              = 100
@@ -775,6 +777,8 @@ const (
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100
 
 [EthAPICost]
     UseGas              = 100

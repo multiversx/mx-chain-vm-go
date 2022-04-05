@@ -29,7 +29,6 @@ type RuntimeContextMock struct {
 	FailElrondAPI            bool
 	FailElrondSyncExecAPI    bool
 	FailManagedBuffersAPI    bool
-	DefaultAsyncCall         *arwen.AsyncCall
 	RunningInstances         uint64
 	CurrentTxHash            []byte
 	OriginalTxHash           []byte
@@ -354,4 +353,8 @@ func (r *RuntimeContextMock) PopFirstArgumentFromVMInput() ([]byte, error) {
 
 // DisableUseDifferentGasCostFlag mocked method
 func (r *RuntimeContextMock) DisableUseDifferentGasCostFlag() {
+}
+
+// CleanInstance mocked method
+func (r *RuntimeContextMock) CleanInstance() {
 }

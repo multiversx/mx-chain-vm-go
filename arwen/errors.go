@@ -26,8 +26,14 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 // ErrExecutionFailed signals that the execution failed
 var ErrExecutionFailed = errors.New("execution failed")
 
+// ErrExecutionPanicked signals that the execution failed irrecoverably
+var ErrExecutionPanicked = errors.New("VM execution panicked")
+
 // ErrExecutionFailedWithTimeout signals that the execution failed with timeout
 var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
+
+// ErrMemoryLimit signals that too much memory was allocated by the contract
+var ErrMemoryLimit = errors.New("memory limit reached")
 
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")
@@ -94,6 +100,9 @@ var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond
 
 // ErrCannotWriteProtectedKey signals an attempt to write to a protected key, while storage protection is enforced
 var ErrCannotWriteProtectedKey = errors.New("cannot write to protected key")
+
+// ErrCannotWriteInReadOnlyMode signals an attempt to write to storage when running in read-only mode
+var ErrCannotWriteInReadOnlyMode = errors.New("cannot write to storage in read-only mode")
 
 // ErrNonPayableFunctionEgld signals that a non-payable function received non-zero call value
 var ErrNonPayableFunctionEgld = errors.New("function does not accept EGLD payment")
@@ -260,3 +269,18 @@ var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed y
 
 // var ErrAsyncFrameworkPopCallID signals an error in the async fremwork that did not fill the correct call id arguments
 var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsFromArguments")
+
+// ErrVMIsClosing signals that vm is closing
+var ErrVMIsClosing = errors.New("vm is closing")
+
+// ErrNilESDTData is given when ESDT data is missing
+var ErrNilESDTData = errors.New("nil esdt data")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidArgument = errors.New("invalid argument")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidTokenIndex = errors.New("invalid token index")
+
+// ErrInvalidBuiltInFunctionCall signals that built in function was used in the wrong context
+var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")

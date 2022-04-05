@@ -94,8 +94,8 @@ func appendESDTInstanceToOJ(esdtInstance *mj.ESDTInstance, targetOj *oj.OJsonMap
 	if len(esdtInstance.Hash.Original) > 0 {
 		targetOj.Put("hash", bytesFromStringToOJ(esdtInstance.Hash))
 	}
-	if len(esdtInstance.Uri.Value) > 0 {
-		targetOj.Put("uri", bytesFromTreeToOJ(esdtInstance.Uri))
+	if !esdtInstance.Uris.IsUnspecified() {
+		targetOj.Put("uri", valueListToOJ(esdtInstance.Uris))
 	}
 	if len(esdtInstance.Attributes.Original) > 0 {
 		targetOj.Put("attributes", bytesFromStringToOJ(esdtInstance.Attributes))

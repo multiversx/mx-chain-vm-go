@@ -100,6 +100,18 @@ func cWasmerInstanceIsFunctionImported(instance *cWasmerInstanceT, name string) 
 	))
 }
 
+func cWasmerInstanceEnableRkyv() {
+	C.wasmer_instance_enable_rkyv()
+}
+
+func cWasmerInstanceDisableRkyv() {
+	C.wasmer_instance_disable_rkyv()
+}
+
+func cWasmerSetSIGSEGVPassthrough() {
+	C.wasmer_set_sigsegv_passthrough()
+}
+
 func cWasmerInstanceCache(
 	instance *cWasmerInstanceT,
 	cacheBytes **cUchar,

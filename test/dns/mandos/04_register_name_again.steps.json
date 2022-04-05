@@ -28,7 +28,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:name already taken",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -71,7 +71,7 @@
                         "''feat:register": "1",
                         "''value_state|keccak256:str:coolname0001.elrond": "u8:2|address:cool_address"
                     },
-                    "code": "file:../output/dns.wasm"
+                    "code": "file:../output/elrond-wasm-sc-dns.wasm"
                 },
                 "+": ""
             }

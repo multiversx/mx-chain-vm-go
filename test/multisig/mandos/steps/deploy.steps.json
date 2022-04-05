@@ -7,7 +7,7 @@
             "txId": "multisig-deploy",
             "tx": {
                 "from": "address:owner",
-                "contractCode": "file:../../output/multisig.wasm",
+                "contractCode": "file:../../output/multisig-external-view.wasm",
                 "arguments": [
                     "2",
                     "address:alice",
@@ -20,7 +20,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -30,7 +30,7 @@
             "txId": "multisig-view-deploy",
             "tx": {
                 "from": "address:owner",
-                "contractCode": "file:../../output/multisig-view.wasm",
+                "contractCode": "file:../../output/multisig-external-view-view.wasm",
                 "arguments": [
                     "sc:multisig"
                 ],
@@ -40,7 +40,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -61,7 +61,7 @@
                     "2"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -82,7 +82,7 @@
                     "3"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -107,7 +107,7 @@
                         "str:num_board_members": "3",
                         "str:quorum": "2"
                     },
-                    "code": "file:../../output/multisig.wasm"
+                    "code": "file:../../output/multisig-external-view.wasm"
                 },
                 "+": ""
             }

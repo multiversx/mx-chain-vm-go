@@ -539,13 +539,11 @@ func TestGraph_DifferentTypeOfCallsToSameFunction_CallGraph(t *testing.T) {
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_LocalLocal_CallGraph(t *testing.T) {
-	arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsLocalLocal())
 	RunGraphCallTestTemplate(t, callGraph)
 }
 
 func TestGraph_SameContractWithDifferentSubCalls_LocalCross_CallGraph(t *testing.T) {
-	//arwen.SetLoggingForTestsWithLogger("arwen/async")
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSameContractWithDifferentSubCallsLocalCross())
 	RunGraphCallTestTemplate(t, callGraph)
 }

@@ -70,7 +70,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 		sender,
 		gasLeft,
 		0,
-		currentCall.CallValue,
+		big.NewInt(0),
 		data,
 		vm.AsynchronousCallBack,
 	)

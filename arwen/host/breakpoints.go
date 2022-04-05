@@ -11,6 +11,7 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 
 	runtime := host.Runtime()
 	breakpointValue := runtime.GetRuntimeBreakpointValue()
+	log.Trace("handleBreakpointIfAny", "value", breakpointValue)
 	if breakpointValue != arwen.BreakpointNone {
 		err := host.handleBreakpoint(breakpointValue)
 		runtime.AddError(err)
@@ -33,6 +34,9 @@ func (host *vmHost) handleBreakpoint(breakpointValue arwen.BreakpointValue) erro
 	}
 	if breakpointValue == arwen.BreakpointOutOfGas {
 		return arwen.ErrNotEnoughGas
+	}
+	if breakpointValue == arwen.BreakpointMemoryLimit {
+		return arwen.ErrMemoryLimit
 	}
 
 	return arwen.ErrUnhandledRuntimeBreakpoint

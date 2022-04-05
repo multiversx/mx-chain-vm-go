@@ -16,7 +16,7 @@ type InstanceMock struct {
 	Points          uint64
 	Data            uintptr
 	GasLimit        uint64
-	BreakpointValue uint64
+	BreakpointValue arwen.BreakpointValue
 	Memory          wasmer.MemoryHandler
 	Host            arwen.VMHost
 	T               testing.TB
@@ -78,12 +78,12 @@ func (instance *InstanceMock) SetGasLimit(gasLimit uint64) {
 
 // SetBreakpointValue mocked method
 func (instance *InstanceMock) SetBreakpointValue(value uint64) {
-	instance.BreakpointValue = value
+	instance.BreakpointValue = arwen.BreakpointValue(value)
 }
 
 // GetBreakpointValue mocked method
 func (instance *InstanceMock) GetBreakpointValue() uint64 {
-	return instance.BreakpointValue
+	return uint64(instance.BreakpointValue)
 }
 
 // Cache mocked method
@@ -143,7 +143,7 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 
 // SetMemory -
 func (instance *InstanceMock) SetMemory(_ []byte) bool {
-	return false
+	return true
 }
 
 // IsInterfaceNil -

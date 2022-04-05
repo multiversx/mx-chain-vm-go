@@ -154,7 +154,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err := async.InitStateFromInput(input)
 	if err != nil {
-		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrAsyncInit)
+		log.Trace("doRunSmartContractCall init async", "error", arwen.ErrAsyncInit)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -163,7 +163,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	err = host.checkGasForGetCode(input, metering)
 	if err != nil {
-		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrNotEnoughGas)
+		log.Trace("doRunSmartContractCall check gas for GetSCCode", "error", arwen.ErrNotEnoughGas)
 		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
 	}
 
@@ -850,9 +850,11 @@ func addOutputTransferToVMOutput(
 func (host *vmHost) checkFinalGasAfterExit() error {
 	totalUsedPoints := host.Runtime().GetPointsUsed()
 	if totalUsedPoints > host.Metering().GetGasForExecution() {
+		log.Trace("checkFinalGasAfterExit", "failed")
 		return arwen.ErrNotEnoughGas
 	}
 
+	log.Trace("checkFinalGasAfterExit", "ok")
 	return nil
 }
 
@@ -894,7 +896,7 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	if err != nil {
-		log.Error("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "callType", callType)
 	}
 
 	return err
@@ -969,31 +971,32 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 	if runtime.Function() != "" {
 		err := host.verifyAllowedFunctionCall()
 		if err != nil {
-			log.Trace("call SC method failed", "error", err)
+			log.Trace("call SC method failed", "error", err, "src", "verifyAllowedFunctionCall")
 			return false, err
 		}
 
 		function, err := runtime.GetFunctionToCall()
 		if err != nil {
-			log.Trace("call SC method failed", "error", err)
+			log.Trace("call SC method failed", "error", err, "src", "GetFunctionToCall")
 			return false, err
 		}
 
 		_, err = function()
 		if err != nil {
 			err = host.handleBreakpointIfAny(err)
+			log.Trace("breakpoint detected and handled", "err", err)
 		}
 		if err == nil {
 			err = host.checkFinalGasAfterExit()
 		}
 		if err != nil {
-			log.Trace("call SC method failed", "error", err)
+			log.Trace("call SC method failed", "error", err, "src", "sc function")
 			return true, err
 		}
 
 		err = async.Execute()
 		if err != nil {
-			log.Trace("call SC method failed", "error", err)
+			log.Trace("call SC method failed", "error", err, "src", "async execution")
 			return false, err
 		}
 
