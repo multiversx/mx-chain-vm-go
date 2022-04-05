@@ -375,15 +375,17 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 
 	// CallType == DirectCall, async.UpdateCurrentCallStatus() does nothing
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err := async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	asyncCall, isLegacy, err := async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
+	require.False(t, isLegacy)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCall, async.UpdateCurrentCallStatus() does nothing
 	vmInput.CallType = vm.AsynchronousCall
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
+	require.False(t, isLegacy)
 	require.Nil(t, err)
 
 	// CallType == AsynchronousCallback, but no AsyncCalls registered in the
@@ -391,8 +393,9 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = nil
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, asyncCall)
+	require.False(t, isLegacy)
 	require.True(t, errors.Is(err, arwen.ErrCannotInterpretCallbackArgs))
 
 	// CallType == AsynchronousCallback, but no AsyncCalls registered in the
@@ -400,9 +403,17 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
-	require.Nil(t, asyncCall)
-	require.True(t, errors.Is(err, arwen.ErrNoStoredAsyncContextFound))
+	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	require.Equal(t, asyncCall, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallResolved,
+		Destination:     contract,
+		SuccessCallback: arwen.CallbackFunctionName,
+		ErrorCallback:   arwen.CallbackFunctionName,
+		GasLimit:        vmInput.GasProvided,
+		GasLocked:       vmInput.GasLocked,
+	})
+	require.True(t, isLegacy)
+	require.Nil(t, err)
 
 	// CallType == AsynchronousCallback, and there is an AsyncCall registered,
 	// but it's not the expected one.
@@ -417,8 +428,9 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
+	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
 	require.Nil(t, asyncCall)
+	require.False(t, isLegacy)
 	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
 
 	// CallType == AsynchronousCallback, but this time there is a corresponding AsyncCall
@@ -447,8 +459,9 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
+	require.False(t, isLegacy)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
@@ -458,8 +471,9 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.CallType = vm.AsynchronousCallBack
 	vmInput.Arguments = [][]byte{{1}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
-	asyncCall, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
+	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte{}, &vmInput.VMInput)
 	require.Nil(t, err)
+	require.False(t, isLegacy)
 	require.NotNil(t, asyncCall)
 	require.Equal(t, arwen.AsyncCallRejected, asyncCall.Status)
 }

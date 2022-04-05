@@ -37,7 +37,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		scAddress := host.Runtime().GetSCAddress()
 		transferValue := big.NewInt(testConfig.TransferToThirdParty)
-		err = host.Output().Transfer(test.ThirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
+		err = host.Output().Transfer(testConfig.GetThirdPartyAddress(), scAddress, 0, 0, transferValue, []byte("hello"), 0)
 		require.Nil(t, err)
 
 		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
@@ -59,7 +59,24 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 
 	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 	async := host.Async()
-	return async.RegisterLegacyAsyncCall(test.ChildAddress, callData.ToBytes(), value)
+	if len(arguments) > 1 && arguments[1][0] == 1 {
+		err := host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+			Status:          arwen.AsyncCallPending,
+			Destination:     testConfig.GetChildAddress(),
+			Data:            callData.ToBytes(),
+			ValueBytes:      value,
+			SuccessCallback: "callBack",
+			ErrorCallback:   "callBack",
+			GasLimit:        testConfig.GasProvidedToChild,
+			GasLocked:       testConfig.GasToLock,
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		return async.RegisterLegacyAsyncCall(testConfig.GetChildAddress(), callData.ToBytes(), value)
+	}
 }
 
 // SimpleCallbackMock is an exposed mock contract method
@@ -140,6 +157,8 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		require.Nil(t, err)
 
 		finishResult(host, status)
+
+		host.Storage().SetStorage(test.CallbackKey, test.CallbackData)
 
 		return instance
 	})

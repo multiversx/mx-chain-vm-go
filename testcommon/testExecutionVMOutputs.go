@@ -18,6 +18,12 @@ var ChildKey = []byte("childKey........................")
 // ChildData value exposed for test usage
 var ChildData = []byte("childData")
 
+// CallbackKey value exposed for test usage
+var CallbackKey = []byte("callbackKey.....................")
+
+// CallbackData value exposed for test usage
+var CallbackData = []byte("callbackData")
+
 // ParentFinishA value exposed for test usage
 var ParentFinishA = []byte("parentFinishA")
 

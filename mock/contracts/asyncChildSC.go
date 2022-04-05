@@ -45,7 +45,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		scAddress := host.Runtime().GetSCAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err = outputContext.Transfer(
-			test.ThirdPartyAddress,
+			testConfig.GetThirdPartyAddress(),
 			scAddress,
 			0,
 			0,
@@ -57,7 +57,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 
 		valueToTransfer = big.NewInt(testConfig.TransferToVault)
 		err = outputContext.Transfer(
-			test.VaultAddress,
+			testConfig.GetVaultAddress(),
 			scAddress,
 			0,
 			0,

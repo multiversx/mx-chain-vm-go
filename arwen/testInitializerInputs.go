@@ -26,6 +26,9 @@ const AddressSize = 32
 // SCAddressPrefix is the prefix of any smart contract address used for testing.
 var SCAddressPrefix = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0f")
 
+// WalletAddressPrefix is the prefix of any smart contract address used for testing.
+var WalletAddressPrefix = []byte("..........")
+
 // ParentAddress is an exposed value to use in tests
 var ParentAddress = MakeTestSCAddress("parentSC")
 
@@ -46,6 +49,16 @@ var DefaultCodeMetadata = []byte{3, 0}
 // MakeTestSCAddress generates a new smart contract address to be used for
 // testing based on the given identifier.
 func MakeTestSCAddress(identifier string) []byte {
+	return makeTestAddress(SCAddressPrefix, identifier)
+}
+
+// MakeTestWalletAddress generates a new wallet address to be used for
+// testing based on the given identifier.
+func MakeTestWalletAddress(identifier string) []byte {
+	return makeTestAddress(WalletAddressPrefix, identifier)
+}
+
+func makeTestAddress(prefix []byte, identifier string) []byte {
 	numberOfTrailingDots := AddressSize - len(SCAddressPrefix) - len(identifier)
 	leftBytes := SCAddressPrefix
 	rightBytes := []byte(identifier + strings.Repeat(".", numberOfTrailingDots))

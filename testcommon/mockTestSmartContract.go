@@ -9,6 +9,10 @@ import (
 
 // TestConfig is configuration for async call tests
 type TestConfig struct {
+	ChildAddress      []byte
+	ThirdPartyAddress []byte
+	VaultAddress      []byte
+
 	GasProvided           uint64
 	GasProvidedToChild    uint64
 	GasProvidedToCallback uint64
@@ -16,6 +20,7 @@ type TestConfig struct {
 	GasUsedByChild        uint64
 	GasUsedByCallback     uint64
 	GasLockCost           uint64
+	GasToLock             uint64
 
 	ParentBalance int64
 	ChildBalance  int64
@@ -43,6 +48,25 @@ type TestConfig struct {
 	IsFlagEnabled              bool
 	HasCallback                bool
 	CallbackFails              bool
+}
+
+func getAddressOrDefult(address []byte, defaultAddress []byte) []byte {
+	if address == nil {
+		return defaultAddress
+	}
+	return address
+}
+
+func (config *TestConfig) GetChildAddress() []byte {
+	return getAddressOrDefult(config.ChildAddress, ChildAddress)
+}
+
+func (config *TestConfig) GetThirdPartyAddress() []byte {
+	return getAddressOrDefult(config.ThirdPartyAddress, ThirdPartyAddress)
+}
+
+func (config *TestConfig) GetVaultAddress() []byte {
+	return getAddressOrDefult(config.VaultAddress, VaultAddress)
 }
 
 type testSmartContract struct {
@@ -114,7 +138,11 @@ func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.Insta
 	return *mockSC
 }
 
-func (mockSC *MockTestSmartContract) initialize(
+func (mockSC *MockTestSmartContract) GetShardID() uint32 {
+	return mockSC.shardID
+}
+
+func (mockSC MockTestSmartContract) Initialize(
 	t testing.TB,
 	host arwen.VMHost,
 	imb *mock.InstanceBuilderMock,

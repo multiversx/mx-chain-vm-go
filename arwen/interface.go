@@ -345,7 +345,7 @@ type AsyncContext interface {
 	UpdateCurrentAsyncCallStatus(
 		address []byte,
 		callID []byte,
-		vmInput *vmcommon.VMInput) (*AsyncCall, error)
+		vmInput *vmcommon.VMInput) (*AsyncCall, bool, error)
 	SendCrossShardCallback(
 		returnCode vmcommon.ReturnCode,
 		returnData [][]byte,
@@ -358,6 +358,8 @@ type AsyncContext interface {
 	GetGasAccumulated() uint64
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
+
+	HasLegacyGroup() bool
 
 	/*
 		for tests / test framework usage

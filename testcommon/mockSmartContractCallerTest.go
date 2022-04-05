@@ -90,7 +90,7 @@ func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, wo
 	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.initialize(callerTest.tb, host, imb, createAccount)
+		mockSC.Initialize(callerTest.tb, host, imb, createAccount)
 	}
 
 	callerTest.setup(host, world)

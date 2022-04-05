@@ -922,7 +922,7 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 
 	callerCallID := async.GetCallerCallID()
 
-	asyncCall, err := async.UpdateCurrentAsyncCallStatus(
+	asyncCall, isLegacy, err := async.UpdateCurrentAsyncCallStatus(
 		runtime.GetSCAddress(),
 		callerCallID,
 		runtime.GetVMInput())
@@ -950,6 +950,10 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		if !isCallComplete {
 			return callbackErr
 		}
+	}
+
+	if isLegacy {
+		return nil
 	}
 
 	err = async.LoadParentContext()
@@ -991,6 +995,7 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return true, err
 		}
 
+		isLegacy := async.HasLegacyGroup()
 		err = async.Execute()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err)
@@ -998,8 +1003,11 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 		}
 
 		if !async.IsComplete() {
-			async.SetResults(host.Output().GetVMOutput())
-			err := async.Save()
+			var err error = nil
+			if !isLegacy {
+				async.SetResults(host.Output().GetVMOutput())
+				err = async.Save()
+			}
 			return false, err
 		}
 	} else {

@@ -652,13 +652,13 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	address []byte,
 	callID []byte,
 	vmInput *vmcommon.VMInput,
-) (*arwen.AsyncCall, error) {
+) (*arwen.AsyncCall, bool, error) {
 	if vmInput.CallType != vm.AsynchronousCallBack {
-		return nil, nil
+		return nil, false, nil
 	}
 
 	if len(vmInput.Arguments) == 0 {
-		return nil, arwen.ErrCannotInterpretCallbackArgs
+		return nil, false, arwen.ErrCannotInterpretCallbackArgs
 	}
 
 	loadedContext, err := readAsyncContextFromStorage(
@@ -667,21 +667,37 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		context.callbackAsyncInitiatorCallID,
 		context.marshalizer)
 	if err != nil {
-		return nil, err
+		if err == arwen.ErrNoStoredAsyncContextFound {
+			var valueBytes []byte = nil
+			if vmInput.CallValue != nil {
+				valueBytes = vmInput.CallValue.Bytes()
+			}
+			return &arwen.AsyncCall{
+				Status:          arwen.AsyncCallResolved,
+				Destination:     address,
+				ValueBytes:      valueBytes,
+				SuccessCallback: arwen.CallbackFunctionName,
+				ErrorCallback:   arwen.CallbackFunctionName,
+				GasLimit:        vmInput.GasProvided,
+				GasLocked:       vmInput.GasLocked,
+			}, true, nil
+		} else {
+			return nil, false, err
+		}
 	}
 
 	asyncCallInfo := loadedContext.GetAsyncCallByCallID(callID)
 	call := asyncCallInfo.asyncCall
 	err = asyncCallInfo.err
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	// The first argument of the callback is the return code of the destination call
 	destReturnCode := big.NewInt(0).SetBytes(vmInput.Arguments[0]).Uint64()
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
-	return call, nil
+	return call, false, nil
 }
 
 func (context *asyncContext) isMultiLevelAsync(call *arwen.AsyncCall) bool {
@@ -741,12 +757,12 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 func (context *asyncContext) computeGasLimitForLegacyAsyncCall(gasToLock uint64) (uint64, error) {
 	gasLimit := math.SubUint64(context.host.Metering().GasLeft(), gasToLock)
 
-	gasReservedForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
-	if err != nil {
-		return 0, err
-	}
-	logAsync.Trace("async legacy serialization", "gas", gasReservedForLegacyContextSerialization)
-	gasLimit = math.SubUint64(gasLimit, gasReservedForLegacyContextSerialization)
+	// gasReservedForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// logAsync.Trace("async legacy serialization", "gas", gasReservedForLegacyContextSerialization)
+	// gasLimit = math.SubUint64(gasLimit, gasReservedForLegacyContextSerialization)
 
 	return gasLimit, nil
 }
@@ -985,6 +1001,11 @@ func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]by
 		context.callID,              // async initiator call id (original async call source)
 		big.NewInt(int64(gasAccumulated)).Bytes(),
 	}, args...)
+}
+
+func (context *asyncContext) HasLegacyGroup() bool {
+	_, hasLegacyGroup := context.GetCallGroup(arwen.LegacyAsyncCallGroupID)
+	return hasLegacyGroup
 }
 
 // DebugCallIDAsString - just for debug purposes
