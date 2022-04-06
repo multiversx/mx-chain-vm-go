@@ -5,7 +5,7 @@
             "txId": "multisig-deploy",
             "tx": {
                 "from": "address:owner",
-                "contractCode": "file:../../output/multisig.wasm",
+                "contractCode": "file:../../output/multisig-external-view.wasm",
                 "arguments": [
                     "0",
                     "address:alice"
@@ -16,7 +16,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -37,7 +37,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -58,7 +58,7 @@
                     "1"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

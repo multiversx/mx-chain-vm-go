@@ -175,7 +175,7 @@ func SetLoggingForTests() {
 
 // SetLoggingForTestsWithLogger configures the logger package with a certain logger
 func SetLoggingForTestsWithLogger(loggerName string) {
-	logger.SetLogLevel(fmt.Sprintf("*:NONE,%s:TRACE", loggerName))
+	_ = logger.SetLogLevel(fmt.Sprintf("*:NONE,%s:TRACE", loggerName))
 	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }
@@ -303,4 +303,19 @@ func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
 	var asyncPrefixArgs [][]byte
 	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
 	return asyncPrefixArgs
+}
+
+// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecution bool) {
+	runtime := GetVMHost(vmHostPtr)
+	if runtime.FixFailExecutionEnabled() {
+		_ = WithFaultAndHost(runtime, err, failExecution)
+	}
+}
+
+// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bool) {
+	if host.FixFailExecutionEnabled() {
+		_ = WithFaultAndHost(host, err, failExecution)
+	}
 }

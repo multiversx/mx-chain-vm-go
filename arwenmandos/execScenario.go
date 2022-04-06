@@ -1,6 +1,8 @@
 package arwenmandos
 
 import (
+	"errors"
+
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
 	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
@@ -12,16 +14,16 @@ import (
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
 func (ae *ArwenTestExecutor) Reset() {
-	if !check.IfNil(ae.vm) {
-		_ = ae.vm.Close()
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
 	}
 	ae.World.Clear()
 }
 
 // Close will simply close the VM
 func (ae *ArwenTestExecutor) Close() {
-	if !check.IfNil(ae.vm) {
-		_ = ae.vm.Close()
+	if !check.IfNil(ae.vmHost) {
+		ae.vmHost.Reset()
 	}
 }
 
@@ -105,24 +107,26 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
 
-	// append accounts
 	for _, mandosAccount := range step.Accounts {
-		worldAccount, err := convertAccount(mandosAccount, ae.World)
-		if err != nil {
-			return err
+		if mandosAccount.Update {
+			err := ae.UpdateAccount(mandosAccount)
+			if err != nil {
+				log.Debug("could not update account", err)
+				return err
+			}
+		} else {
+			err := ae.PutNewAccount(mandosAccount)
+			if err != nil {
+				log.Debug("could not put new account", err)
+				return err
+			}
 		}
-		err = validateSetStateAccount(mandosAccount, worldAccount)
-		if err != nil {
-			return err
-		}
-
-		ae.World.AcctMap.PutAccount(worldAccount)
 	}
 
 	// replace block info
 	ae.World.PreviousBlockInfo = convertBlockInfo(step.PreviousBlockInfo, ae.World.PreviousBlockInfo)
 	ae.World.CurrentBlockInfo = convertBlockInfo(step.CurrentBlockInfo, ae.World.CurrentBlockInfo)
-	ae.World.Blockhashes = mj.JSONBytesFromStringValues(step.BlockHashes)
+	ae.World.Blockhashes = step.BlockHashes.ToValues()
 
 	// append NewAddressMocks
 	err := validateNewAddressMocks(step.NewAddressMocks)
@@ -164,4 +168,62 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 	}
 
 	return output, nil
+}
+
+// PutNewAccount Puts a new account in world account map. Overwrites.
+func (ae *ArwenTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
+	worldAccount, err := convertAccount(mandosAccount, ae.World)
+	if err != nil {
+		return err
+	}
+	err = validateSetStateAccount(mandosAccount, worldAccount)
+	if err != nil {
+		return err
+	}
+
+	ae.World.AcctMap.PutAccount(worldAccount)
+	return nil
+}
+
+// UpdateAccount Updates an account in world account map.
+func (ae *ArwenTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
+	worldAccount, err := convertAccount(mandosAccount, ae.World)
+	if err != nil {
+		return err
+	}
+	err = validateSetStateAccount(mandosAccount, worldAccount)
+	if err != nil {
+		return err
+	}
+
+	existingAccount := ae.World.AcctMap.GetAccount(mandosAccount.Address.Value)
+	if existingAccount == nil {
+		return errors.New("account not found. could not update")
+	}
+
+	for k, v := range worldAccount.Storage {
+		existingAccount.Storage[k] = v
+	}
+	if !mandosAccount.Nonce.Unspecified {
+		existingAccount.Nonce = worldAccount.Nonce
+	}
+	if !mandosAccount.Balance.Unspecified {
+		existingAccount.Balance = worldAccount.Balance
+	}
+	if !mandosAccount.Username.Unspecified {
+		existingAccount.Username = worldAccount.Username
+	}
+	if !mandosAccount.Owner.Unspecified {
+		existingAccount.OwnerAddress = worldAccount.OwnerAddress
+	}
+	if !mandosAccount.Code.Unspecified {
+		existingAccount.Code = worldAccount.Code
+	}
+	if !mandosAccount.Shard.Unspecified {
+		existingAccount.ShardID = worldAccount.ShardID
+	}
+	existingAccount.AsyncCallData = worldAccount.AsyncCallData
+
+	ae.World.AcctMap.PutAccount(existingAccount)
+	return nil
 }

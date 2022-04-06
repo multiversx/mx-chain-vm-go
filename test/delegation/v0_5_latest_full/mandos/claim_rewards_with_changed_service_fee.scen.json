@@ -89,7 +89,7 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "''claim rewards is temporarily paused as checkpoint is reset",
+                "message": "str:claim rewards is temporarily paused as checkpoint is reset",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
@@ -287,7 +287,7 @@
                     "balance": "43,333,332",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "''delegation rewards claim"
+                    "asyncCallData": "str:delegation rewards claim"
                 },
                 "address:delegator2": {
                     "nonce": "*",

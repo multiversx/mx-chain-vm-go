@@ -151,16 +151,23 @@ func computeExpectedGasForGetStorage(key []byte, value []byte, flagEnabled bool)
 }
 
 func TestGasUsed_SetStorage_FlagEnabled(t *testing.T) {
-	setStorage(t, true)
+	setStorage(t, smallKey, true)
 }
 
 func TestGasUsed_SetStorage_FlagDisabled(t *testing.T) {
-	setStorage(t, false)
+	setStorage(t, smallKey, false)
 }
 
-func setStorage(t *testing.T, flagEnabled bool) {
+func TestGasUsed_SetStorage_BigKey_FlagEnabled(t *testing.T) {
+	setStorage(t, bigKey, true)
+}
+
+func TestGasUsed_SetStorage_BigKey_FlagDisabled(t *testing.T) {
+	setStorage(t, bigKey, false)
+}
+
+func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 	testConfig := makeTestConfig()
-	key := []byte("testKey")
 	value := []byte("testValue")
 
 	storageStoreGas := uint64(10)
@@ -169,8 +176,14 @@ func setStorage(t *testing.T, flagEnabled bool) {
 	var expectedUsedGas uint64
 	if flagEnabled {
 		expectedUsedGas = 2 * storageStoreGas
+		if len(key) > arwen.AddressLen {
+			expectedUsedGas += uint64(len(key) - arwen.AddressLen)
+		}
 	} else {
 		expectedUsedGas = 2*storageStoreGas + uint64(len(value))*dataCopyGas
+		if len(key) > arwen.AddressLen {
+			expectedUsedGas += 2 * uint64(len(key)-arwen.AddressLen)
+		}
 	}
 
 	test.BuildMockInstanceCallTest(t).

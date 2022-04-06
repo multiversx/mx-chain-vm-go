@@ -73,7 +73,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:wrong number of arguments",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

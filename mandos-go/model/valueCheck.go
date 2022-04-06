@@ -37,6 +37,16 @@ func JSONCheckBytesStar() JSONCheckBytes {
 	}
 }
 
+// JSONCheckBytesStar yields JSONCheckBytes explicit "*" value.
+func JSONCheckListStar() JSONCheckBytes {
+	return JSONCheckBytes{
+		Value:       []byte{},
+		IsStar:      true,
+		Original:    &oj.OJsonList{&oj.OJsonString{Value: "*"}},
+		Unspecified: false,
+	}
+}
+
 // JSONCheckBytesReconstructed creates a JSONCheckBytes without an original JSON source.
 func JSONCheckBytesReconstructed(value []byte, originalString string) JSONCheckBytes {
 	return JSONCheckBytes{
@@ -144,4 +154,51 @@ func (jcu JSONCheckUint64) CheckBool(other bool) bool {
 		return true
 	}
 	return jcu.Value > 0 == other
+}
+
+// JSONCheckValueList represents a list of value checks, as expressed in JSON.
+// TODO: add star for all values
+type JSONCheckValueList struct {
+	Values      []JSONCheckBytes
+	IsStar      bool
+	Unspecified bool
+}
+
+// JSONCheckValueListUnspecified yields JSONCheckBytesList empty value.
+func JSONCheckValueListUnspecified() JSONCheckValueList {
+	return JSONCheckValueList{
+		Values:      nil,
+		IsStar:      false,
+		Unspecified: true,
+	}
+}
+
+// JSONCheckValueListStar yields the "*" value
+func JSONCheckValueListStar() JSONCheckValueList {
+	return JSONCheckValueList{
+		Values:      nil,
+		IsStar:      true,
+		Unspecified: false,
+	}
+}
+
+// IsUnspecified yields true if the field was originally unspecified.
+func (jcbl JSONCheckValueList) IsUnspecified() bool {
+	return jcbl.Unspecified
+}
+
+// CheckList compares expected value with a list of values.
+func (jcbl JSONCheckValueList) CheckList(other [][]byte) bool {
+	if jcbl.IsStar {
+		return true
+	}
+	if len(jcbl.Values) != len(other) {
+		return false
+	}
+	for i, expected := range jcbl.Values {
+		if !expected.Check(other[i]) {
+			return false
+		}
+	}
+	return true
 }

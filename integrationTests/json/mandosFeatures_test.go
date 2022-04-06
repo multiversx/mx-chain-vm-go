@@ -1,15 +1,28 @@
 package vmjsonintegrationtest
 
 import (
+<<<<<<< HEAD
+=======
+	"github.com/stretchr/testify/require"
+>>>>>>> feat/promises-final
 	"testing"
 )
+
+func TestRustAllocFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/alloc-features/mandos")
+}
 
 func TestRustBasicFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/basic-features/mandos")
+	runTestsInFolder(t, "features/basic-features/mandos", []string{
+		"features/basic-features/mandos/storage_mapper_fungible_token.scen.json"})
 }
 
 func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
@@ -85,8 +98,25 @@ func TestTimelocks(t *testing.T) {
 	runAllTestsInFolder(t, "timelocks")
 }
 
+<<<<<<< HEAD
 // func TestSingleJson(t *testing.T) {
 // 	arwen.SetLoggingForTests()
 // 	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
 // 	require.Nil(t, err)
 // }
+=======
+func TestSingleJson(t *testing.T) {
+	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
+	require.Nil(t, err)
+}
+
+func TestForwarderTransfExec(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_nft.scen.json")
+	require.Nil(t, err)
+}
+
+func TestForwarderTransfExecMultiReject(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_multi_transfer.scen.json")
+	require.Nil(t, err)
+}
+>>>>>>> feat/promises-final

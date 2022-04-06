@@ -19,7 +19,11 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	_ = esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+
+	err := esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(testAcct.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
@@ -127,6 +131,12 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo, currentInfo *worldmock.BlockI
 
 // this is a small hack, so we can reuse mandos's JSON printing in error messages
 func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
+	topics := mj.JSONCheckValueList{
+		Values: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
+	}
+	for i, topic := range outputLog.Topics {
+		topics.Values[i] = mj.JSONCheckBytesReconstructed(topic, "")
+	}
 	testLog := mj.LogEntry{
 		Address: mj.JSONCheckBytesReconstructed(
 			outputLog.Address,
@@ -137,10 +147,7 @@ func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry
 			ae.exprReconstructor.Reconstruct(outputLog.Identifier,
 				er.StrHint)),
 		Data:   mj.JSONCheckBytesReconstructed(outputLog.Data, ""),
-		Topics: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
-	}
-	for i, topic := range outputLog.Topics {
-		testLog.Topics[i] = mj.JSONCheckBytesReconstructed(topic, "")
+		Topics: topics,
 	}
 
 	return &testLog

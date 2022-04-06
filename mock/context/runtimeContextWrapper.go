@@ -602,3 +602,8 @@ func (contextWrapper *RuntimeContextWrapper) PopFirstArgumentFromVMInput() ([]by
 func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
 	contextWrapper.DisableUseDifferentGasCostFlag()
 }
+
+// CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
+	contextWrapper.CleanInstance()
+}

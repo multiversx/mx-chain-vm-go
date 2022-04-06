@@ -310,6 +310,11 @@ func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
 	return true
 }
 
+// FixFailExecutionEnabled mocked method
+func (vhs *VMHostStub) FixFailExecutionEnabled() bool {
+	return true
+}
+
 // CreateNFTOnExecByCallerEnabled mocked method
 func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true
@@ -318,4 +323,8 @@ func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 // Close -
 func (vhs *VMHostStub) Close() error {
 	return nil
+}
+
+// Reset -
+func (vhs *VMHostStub) Reset() {
 }

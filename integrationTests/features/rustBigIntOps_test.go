@@ -171,7 +171,8 @@ func TestBigIntArith(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		_ = pfe.vm.Close()
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}()
 
 	pfe.initAccounts(getFeaturesContractPath())
@@ -268,7 +269,8 @@ func TestBigUintArith(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		_ = pfe.vm.Close()
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}()
 
 	pfe.initAccounts(getFeaturesContractPath())
@@ -330,7 +332,8 @@ func TestBigUintBitwise(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		_ = pfe.vm.Close()
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}()
 
 	pfe.initAccounts(getFeaturesContractPath())
@@ -390,7 +393,8 @@ func TestBigUintShift(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		_ = pfe.vm.Close()
+		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost.Reset()
 	}()
 
 	pfe.initAccounts(getFeaturesContractPath())

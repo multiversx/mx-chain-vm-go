@@ -9,7 +9,7 @@
             "txId": "multisig-deploy",
             "tx": {
                 "from": "address:owner",
-                "contractCode": "file:../output/multisig.wasm",
+                "contractCode": "file:../output/multisig-external-view.wasm",
                 "arguments": [
                     "1",
                     "address:alice"
@@ -20,7 +20,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -43,7 +43,7 @@
                     "1"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -64,7 +64,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -86,7 +86,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:cannot remove all board members and proposers",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

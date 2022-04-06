@@ -15,9 +15,10 @@ var logMock = logger.GetOrCreate("arwen/mock")
 type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
 
 type testTemplateConfig struct {
-	tb       testing.TB
-	input    *vmcommon.ContractCallInput
-	useMocks bool
+	tb                       testing.TB
+	input                    *vmcommon.ContractCallInput
+	useMocks                 bool
+	wasmerSIGSEGVPassthrough bool
 }
 
 // MockInstancesTestTemplate holds the data to build a mock contract call test
@@ -32,8 +33,9 @@ type MockInstancesTestTemplate struct {
 func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 	return &MockInstancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
-			tb:       tb,
-			useMocks: true,
+			tb:                       tb,
+			useMocks:                 true,
+			wasmerSIGSEGVPassthrough: false,
 		},
 		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
 	}
@@ -54,6 +56,12 @@ func (callerTest *MockInstancesTestTemplate) WithInput(input *vmcommon.ContractC
 // WithSetup provides the setup function to be used by the mock contract call test
 func (callerTest *MockInstancesTestTemplate) WithSetup(setup SetupFunction) *MockInstancesTestTemplate {
 	callerTest.setup = setup
+	return callerTest
+}
+
+// WithWasmerSIGSEGVPassthrough sets the wasmerSIGSEGVPassthrough flag
+func (callerTest *MockInstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *MockInstancesTestTemplate {
+	callerTest.wasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
 	return callerTest
 }
 
@@ -86,7 +94,7 @@ func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, wo
 	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.tb, world)
 
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	for _, mockSC := range *callerTest.contracts {

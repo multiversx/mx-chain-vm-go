@@ -16,7 +16,7 @@
             "expect": {
                 "out": [ "sc:auction" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -36,7 +36,7 @@
             "expect": {
                 "out": [ "50" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -56,7 +56,7 @@
             "expect": {
                 "out": [ "60" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -76,7 +76,7 @@
             "expect": {
                 "out": [ "111,000,000,000,000" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -96,7 +96,7 @@
             "expect": {
                 "out": [ "5000" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
