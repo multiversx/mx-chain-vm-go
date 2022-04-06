@@ -1,11 +1,9 @@
 package vmjsonintegrationtest
 
 import (
-<<<<<<< HEAD
-=======
-	"github.com/stretchr/testify/require"
->>>>>>> feat/promises-final
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRustAllocFeatures(t *testing.T) {
@@ -98,17 +96,10 @@ func TestTimelocks(t *testing.T) {
 	runAllTestsInFolder(t, "timelocks")
 }
 
-<<<<<<< HEAD
 // func TestSingleJson(t *testing.T) {
-// 	arwen.SetLoggingForTests()
 // 	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
 // 	require.Nil(t, err)
 // }
-=======
-func TestSingleJson(t *testing.T) {
-	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
-	require.Nil(t, err)
-}
 
 func TestForwarderTransfExec(t *testing.T) {
 	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_nft.scen.json")
@@ -119,4 +110,3 @@ func TestForwarderTransfExecMultiReject(t *testing.T) {
 	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_multi_transfer.scen.json")
 	require.Nil(t, err)
 }
->>>>>>> feat/promises-final

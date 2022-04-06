@@ -1017,7 +1017,6 @@ func testGasUsed_AsyncCall_ChildFails(t *testing.T, isLegacy bool) {
 }
 
 func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
-	arwen.SetLoggingForTests()
 	testGasUsed_AsyncCall_CallBackFails(t, false)
 }
 
