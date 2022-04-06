@@ -52,8 +52,7 @@
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
-                        "str:other_contract": "sc:proxy-second",
-                        "str:VM@ASYNC1...............................": "0x0a20000000000000000070726f78792d66697273745f5f5f5f5f5f5f5f5f5f5f5f5f1220312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2220615f757365725f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f60016801"
+                        "str:other_contract": "sc:proxy-second"
                     },
                     "code": "file:../proxy-test-first/output/proxy-test-first.wasm"
                 },
