@@ -959,6 +959,7 @@ func testGasUsed_AsyncCall_ChildFails(t *testing.T, isLegacy bool) {
 }
 
 func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
+	arwen.SetLoggingForTests()
 	testGasUsed_AsyncCall_CallBackFails(t, false)
 }
 
@@ -970,6 +971,7 @@ func testGasUsed_AsyncCall_CallBackFails(t *testing.T, isLegacy bool) {
 	testConfig := makeTestConfig()
 
 	var expectedGasUsedByParent uint64
+	var expectedRemainingGas uint64
 	expectedGasUsedByChild := testConfig.GasUsedByChild
 
 	asyncCallType := LegacyAsyncCallType
@@ -979,10 +981,15 @@ func testGasUsed_AsyncCall_CallBackFails(t *testing.T, isLegacy bool) {
 			testConfig.GasUsedByParent +
 				testConfig.GasProvidedToChild +
 				testConfig.GasLockCost +
-				testConfig.GasToLock
+				testConfig.GasToLock -
+				testConfig.GasUsedByChild
+		expectedRemainingGas =
+			testConfig.GasProvided -
+				(expectedGasUsedByParent + testConfig.GasUsedByChild)
 	} else {
 		expectedGasUsedByParent =
 			testConfig.GasProvided - testConfig.GasUsedByChild
+		expectedRemainingGas = 0
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1014,7 +1021,7 @@ func testGasUsed_AsyncCall_CallBackFails(t *testing.T, isLegacy bool) {
 				BalanceDelta(test.ThirdPartyAddress, 2*testConfig.TransferToThirdParty).
 				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, expectedGasUsedByChild).
-				GasRemaining(0).
+				GasRemaining(expectedRemainingGas).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte{3}, []byte("thirdparty"), []byte("vault")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -1189,12 +1196,24 @@ func testGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T, isLe
 	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
-	expectedGasRemaining := uint64(50)
-	gasUsedByParent := testConfig.GasProvided - expectedGasRemaining
-
-	asyncCallType := NewAsyncCallType
-	if isLegacy {
+	var asyncCallType []byte
+	var expectedGasUsedByParent uint64
+	var expectedGasRemaining uint64
+	if !isLegacy {
+		asyncCallType = NewAsyncCallType
+		expectedGasUsedByParent =
+			testConfig.GasUsedByParent +
+				testConfig.GasProvidedToChild +
+				testConfig.GasLockCost +
+				testConfig.GasToLock -
+				testConfig.GasUsedByChild
+		expectedGasRemaining =
+			testConfig.GasProvided -
+				expectedGasUsedByParent
+	} else {
 		asyncCallType = LegacyAsyncCallType
+		expectedGasRemaining = uint64(50)
+		expectedGasUsedByParent = testConfig.GasProvided - expectedGasRemaining
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1223,8 +1242,8 @@ func testGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T, isLe
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasRemaining(50).
-				GasUsed(test.ParentAddress, gasUsedByParent).
+				GasRemaining(expectedGasRemaining).
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
 				GasUsed(test.ChildAddress, 0)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
@@ -1251,9 +1270,25 @@ func testGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T, i
 	testConfig := makeTestConfig()
 	testConfig.ESDTTokensToTransfer = 5
 
-	asyncCallType := NewAsyncCallType
-	if isLegacy {
-		asyncCallType = LegacyAsyncCallType
+	var expectedGasUsedByParent uint64
+	var expectedRemainingGas uint64
+
+	asyncCallType := LegacyAsyncCallType
+	if !isLegacy {
+		asyncCallType = NewAsyncCallType
+		expectedGasUsedByParent =
+			testConfig.GasUsedByParent +
+				testConfig.GasProvidedToChild +
+				testConfig.GasLockCost +
+				testConfig.GasToLock -
+				testConfig.GasUsedByChild
+		expectedRemainingGas =
+			testConfig.GasProvided -
+				(expectedGasUsedByParent + testConfig.GasUsedByChild)
+	} else {
+		expectedGasUsedByParent =
+			testConfig.GasProvided - testConfig.GasUsedByChild
+		expectedRemainingGas = 0
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1281,7 +1316,10 @@ func testGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T, i
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
+			verify.Ok().
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
+				GasRemaining(expectedRemainingGas)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1305,14 +1343,14 @@ func testGasUsed_ESDTTransferInCallback(t *testing.T, isLegacy bool) {
 	initialESDTTokenBalance := uint64(100)
 
 	testConfig := makeTestConfig()
+	testConfig.GasProvidedToChild += 2000
+	testConfig.GasProvided += 4000
 	testConfig.ESDTTokensToTransfer = 5
 	testConfig.CallbackESDTTokensToTransfer = 2
 
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
-		testConfig.GasProvided += 4000
-		testConfig.GasProvidedToChild += 2000
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1364,15 +1402,32 @@ func testGasUsed_ESDTTransferInCallbackAndTryNewAsync(t *testing.T, isLegacy boo
 	initialESDTTokenBalance := uint64(100)
 
 	testConfig := makeTestConfig()
+	testConfig.GasProvided += 4000
+	testConfig.GasProvidedToChild += 2000
+
 	testConfig.ESDTTokensToTransfer = 5
 	// callback will failed because it will not be allowed to make an new async call (TODO matei-p possible in R2 of promises)
 	testConfig.CallbackESDTTokensToTransfer = 0
 
+	var expectedGasUsedByParent uint64
+	var expectedRemainingGas uint64
+
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
-		testConfig.GasProvided += 4000
-		testConfig.GasProvidedToChild += 2000
+		expectedGasUsedByParent =
+			testConfig.GasUsedByParent +
+				testConfig.GasProvidedToChild +
+				testConfig.GasLockCost +
+				testConfig.GasToLock -
+				testConfig.GasUsedByChild
+		expectedRemainingGas =
+			testConfig.GasProvided -
+				(expectedGasUsedByParent + testConfig.GasUsedByChild)
+	} else {
+		expectedGasUsedByParent =
+			testConfig.GasProvided - testConfig.GasUsedByChild
+		expectedRemainingGas = 0
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1400,7 +1455,10 @@ func testGasUsed_ESDTTransferInCallbackAndTryNewAsync(t *testing.T, isLegacy boo
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok()
+			verify.Ok().
+				GasUsed(test.ParentAddress, expectedGasUsedByParent).
+				GasUsed(test.ChildAddress, testConfig.GasUsedByChild).
+				GasRemaining(expectedRemainingGas)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
@@ -1424,14 +1482,14 @@ func testGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T, isLegacy bo
 	initialESDTTokenBalance := uint64(100)
 
 	testConfig := makeTestConfig()
+	testConfig.GasProvided += 4000
+	testConfig.GasProvidedToChild += 2000
 	testConfig.ESDTTokensToTransfer = 5
 	testConfig.CallbackESDTTokensToTransfer = 2
 
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
-		testConfig.GasProvided += 4000
-		testConfig.GasProvidedToChild += 2000
 	}
 
 	test.BuildMockInstanceCallTest(t).
