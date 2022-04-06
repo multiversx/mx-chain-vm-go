@@ -1798,9 +1798,9 @@ func TestGasUsed_AsyncCallManaged_Mocks(t *testing.T) {
 }
 
 func TestGasUsed_AsyncCallManaged(t *testing.T) {
-	startValue := uint64(10000000)
-	outOfGasValue := uint64(6300000)
-	stopValue := uint64(5000000)
+	startValue := uint64(5000000)
+	outOfGasValue := uint64(5300000)
+	stopValue := uint64(3000000)
 	decrement := uint64(1000)
 
 	gasSchedule, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
