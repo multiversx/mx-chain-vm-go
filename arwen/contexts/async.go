@@ -559,6 +559,10 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	}
 
 	call.ExecutionMode = execMode
+	if execMode == arwen.ESDTTransferOnCallBack {
+		context.incrementCallsCounter()
+		call.CallID = context.generateNewCallID()
+	}
 
 	if context.isMultiLevelAsync(call) {
 		return arwen.ErrAsyncNoMultiLevel

@@ -904,7 +904,7 @@ func testGasUsed_AsyncCall_ChildFails(t *testing.T, isLegacy bool) {
 	testConfig.GasProvided = 1000
 
 	asyncCallType := LegacyAsyncCallType
-	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasLockCost + testConfig.GasUsedByCallback
+	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasToLock + testConfig.GasUsedByCallback
 
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
@@ -969,12 +969,20 @@ func TestGasUsed_LegacyAsyncCall_CallBackFails(t *testing.T) {
 func testGasUsed_AsyncCall_CallBackFails(t *testing.T, isLegacy bool) {
 	testConfig := makeTestConfig()
 
-	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasUsedByChild
+	var expectedGasUsedByParent uint64
 	expectedGasUsedByChild := testConfig.GasUsedByChild
 
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
+		expectedGasUsedByParent =
+			testConfig.GasUsedByParent +
+				testConfig.GasProvidedToChild +
+				testConfig.GasLockCost +
+				testConfig.GasToLock
+	} else {
+		expectedGasUsedByParent =
+			testConfig.GasProvided - testConfig.GasUsedByChild
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1303,6 +1311,8 @@ func testGasUsed_ESDTTransferInCallback(t *testing.T, isLegacy bool) {
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
+		testConfig.GasProvided += 4000
+		testConfig.GasProvidedToChild += 2000
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1361,6 +1371,8 @@ func testGasUsed_ESDTTransferInCallbackAndTryNewAsync(t *testing.T, isLegacy boo
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
+		testConfig.GasProvided += 4000
+		testConfig.GasProvidedToChild += 2000
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1418,6 +1430,8 @@ func testGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T, isLegacy bo
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
+		testConfig.GasProvided += 4000
+		testConfig.GasProvidedToChild += 2000
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -1476,6 +1490,8 @@ func testGasUsed_ESDTTransfer_CallbackFail(t *testing.T, isLegacy bool) {
 	asyncCallType := LegacyAsyncCallType
 	if !isLegacy {
 		asyncCallType = NewAsyncCallType
+		testConfig.GasProvided += 4000
+		testConfig.GasProvidedToChild += 2000
 	}
 
 	test.BuildMockInstanceCallTest(t).

@@ -34,6 +34,7 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
 	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
 		context.executeESDTTransferOnCallback(asyncCall)
+		context.completeChild(asyncCall.CallID, 0)
 		return nil
 	}
 

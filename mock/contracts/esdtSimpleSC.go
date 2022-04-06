@@ -114,7 +114,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 4 {
-			host.Runtime().SignalUserError("need 3 arguments")
+			host.Runtime().SignalUserError("need 4 arguments")
 			return instance
 		}
 
@@ -136,13 +136,17 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		if asyncCallType[0] == 0 {
 			err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
 		} else {
+			callbackName := "callBack"
+			if host.Runtime().ValidateCallbackName(callbackName) == arwen.ErrFuncNotFound {
+				callbackName = ""
+			}
 			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 				Status:          arwen.AsyncCallPending,
 				Destination:     receiver,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,
-				SuccessCallback: "callBack",
-				ErrorCallback:   "callBack",
+				SuccessCallback: callbackName,
+				ErrorCallback:   callbackName,
 				GasLimit:        testConfig.GasProvidedToChild,
 				GasLocked:       testConfig.GasToLock,
 			})
