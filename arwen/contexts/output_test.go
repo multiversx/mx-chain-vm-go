@@ -212,7 +212,7 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		BalanceDelta:    big.NewInt(20000),
 		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
 		Code:            []byte("code2"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1, transfer1},
+		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
 	}
 
 	mergeOutputAccounts(left, right)
