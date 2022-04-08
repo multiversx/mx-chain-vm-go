@@ -269,7 +269,7 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	case newValueExtraLength > 0:
 		gasToUseForValue, gasToFreeForValue = context.computeGasForBiggerValues(lengthOldValue, newValueExtraLength)
 	case newValueExtraLength < 0:
-		gasToUseForValue, gasToFreeForValue = context.computeGasForSmallerValues(newValueExtraLength, length)
+		gasToUseForValue, gasToFreeForValue = context.computeGasForSmallerValues(&newValueExtraLength, length)
 	case newValueExtraLength == 0:
 		gasToUseForValue, gasToFreeForValue = 0, 0
 	}
@@ -292,15 +292,13 @@ func (context *storageContext) changeStorageUpdate(key []byte, value []byte, sto
 	storageUpdates[string(key)] = newUpdate
 }
 
-func (context *storageContext) computeGasForSmallerValues(newValueExtraLength int, length int) (uint64, uint64) {
+func (context *storageContext) computeGasForSmallerValues(newValueExtraLength *int, length int) (uint64, uint64) {
 	metering := context.host.Metering()
-	newValueExtraLength = -newValueExtraLength
+	*newValueExtraLength = -*newValueExtraLength
 
 	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(length))
-	metering.UseGas(useGas)
+	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(*newValueExtraLength))
 
-	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(newValueExtraLength))
-	metering.FreeGas(freeGas)
 	return useGas, freeGas
 }
 
