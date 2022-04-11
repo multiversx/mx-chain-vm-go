@@ -59,7 +59,7 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	host := &contextmock.VMHostMock{}
 	host.SCAPIMethods = imports
 
-	mockMetering := &contextmock.MeteringContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{GasLeftMock: 10000}
 	mockMetering.SetGasSchedule(gasSchedule)
 	host.MeteringContext = mockMetering
 
@@ -587,8 +587,11 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host.EnqueueVMOutput(destOutput)
 	host.EnqueueVMOutput(callbackOutput)
 
-	async.RegisterAsyncCall("test", asyncCall)
-	err := async.executeAsyncLocalCall(asyncCall)
+	host.Metering().RestoreGas(10000)
+
+	err := async.RegisterAsyncCall("test", asyncCall)
+	require.Nil(t, err)
+	err = async.executeAsyncLocalCall(asyncCall)
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncCallResolved, asyncCall.Status)
 
@@ -606,7 +609,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// not merged between executions.
 	expectedOutput := arwen.MakeEmptyVMOutput()
 	expectedOutput.ReturnCode = vmcommon.Ok
-	expectedOutput.GasRemaining = 0
+	expectedOutput.GasRemaining = host.Metering().GasLeft()
 
 	// The expectedOutput must also contain an OutputAccount corresponding to
 	// Alice, because of a call to host.Output().GetOutputAccount() in
@@ -741,6 +744,7 @@ func TestAsyncContext_FinishSyncExecution_NilError_NilVMOutput(t *testing.T) {
 	// host.Output().GetVMOutput(), which creates and caches an empty account for
 	// her.
 	expectedOutput := arwen.MakeEmptyVMOutput()
+	expectedOutput.GasRemaining = host.Metering().GasLeft()
 	arwen.AddNewOutputAccount(expectedOutput, Alice, 0, nil)
 
 	host.Output().GetOutputAccount(Alice)
@@ -756,6 +760,7 @@ func TestAsyncContext_FinishSyncExecution_Error_NilVMOutput(t *testing.T) {
 	async.finishAsyncLocalCallbackExecution(nil, syncExecErr, 0)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
+	expectedOutput.GasRemaining = host.Metering().GasLeft()
 	// expectedOutput.ReturnCode = vmcommon.OutOfGas
 	// expectedOutput.ReturnMessage = syncExecErr.Error()
 	// arwen.AddFinishData(expectedOutput, []byte(vmcommon.OutOfGas.String()))
@@ -783,6 +788,7 @@ func TestAsyncContext_FinishSyncExecution_ErrorAndVMOutput(t *testing.T) {
 	async.finishAsyncLocalCallbackExecution(syncExecOutput, syncExecErr, 0)
 
 	expectedOutput := arwen.MakeEmptyVMOutput()
+	expectedOutput.GasRemaining = host.Metering().GasLeft()
 	// expectedOutput.ReturnCode = vmcommon.UserError
 	// expectedOutput.ReturnMessage = "user made an error"
 	// arwen.AddFinishData(expectedOutput, []byte(vmcommon.UserError.String()))
