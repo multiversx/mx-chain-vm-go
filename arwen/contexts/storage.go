@@ -279,13 +279,12 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 
 	context.changeStorageUpdate(key, value, storageUpdates)
 
-	var zero []byte
-	if bytes.Equal(oldValue, zero) {
+	if len(oldValue) == 0 {
 		return context.storageAdded(length, key, value)
 	}
 
 	lengthOldValue := len(oldValue)
-	if bytes.Equal(value, zero) {
+	if len(value) == 0 {
 		return context.storageDeleted(lengthOldValue, key)
 	}
 
