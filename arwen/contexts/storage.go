@@ -181,7 +181,9 @@ func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key
 func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
 
-	if context.isElrondReservedKey(key) && context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if !context.isArwenProtectedKey(key) &&
+		context.isElrondReservedKey(key) &&
+		context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
 		value, _ = context.blockChainHook.GetStorageData(address, key)
 		return value, false
 	}
@@ -249,7 +251,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
-	if context.isElrondReservedKey(key) {
+	if !context.isArwenProtectedKey(key) && context.isElrondReservedKey(key) {
 		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
