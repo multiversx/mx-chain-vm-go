@@ -541,11 +541,6 @@ func testGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T, isLegacy bool) {
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
 		test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataB))
 
-	if !isLegacy {
-		expectedStorages = append(expectedStorages,
-			test.CreateStoreEntry(test.ParentAddress).WithKey([]byte(arwen.AsyncDataPrefix)).IgnoreValue())
-	}
-
 	expectedTransfers := make([]testcommon.TransferEntry, 0)
 	expectedTransfers = append(expectedTransfers,
 		test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
@@ -577,6 +572,11 @@ func testGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T, isLegacy bool) {
 			world.CurrentBlockInfo.BlockRound = 0
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
+			if !isLegacy {
+				expectedStorages = append(expectedStorages,
+					test.CreateStoreEntry(test.ParentAddress).WithKey(
+						host.Storage().GetVmProtectedPrefix(arwen.AsyncDataPrefix)).IgnoreValue())
+			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.Ok().

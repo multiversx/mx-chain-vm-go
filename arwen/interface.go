@@ -300,6 +300,7 @@ type StorageContext interface {
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
 	DisableUseDifferentGasCostFlag()
 	IsUseDifferentGasCostFlagSet() bool
+	GetVmProtectedPrefix(prefix string) []byte
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo

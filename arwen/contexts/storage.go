@@ -14,12 +14,15 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
+const vmStoragePrefix = "VM@"
+
 type storageContext struct {
 	host                          arwen.VMHost
 	blockChainHook                vmcommon.BlockchainHook
 	address                       []byte
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
+	vmProtectedKeyPrefix          []byte
 	arwenStorageProtectionEnabled bool
 
 	useDifferentGasCostForReadingCachedStorageEpoch uint32
@@ -47,6 +50,7 @@ func NewStorageContext(
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(vmStoragePrefix)...),
 		arwenStorageProtectionEnabled: true,
 		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
@@ -220,7 +224,7 @@ func (context *storageContext) disableStorageProtection() {
 }
 
 func (context *storageContext) isArwenProtectedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(arwen.ProtectedStoragePrefix))
+	return bytes.HasPrefix(key, context.vmProtectedKeyPrefix)
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
@@ -436,4 +440,8 @@ func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
 // IsInterfaceNil returns true if there is no value under the interface
 func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
+}
+
+func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
+	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
 }

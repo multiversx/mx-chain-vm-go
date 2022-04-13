@@ -175,12 +175,6 @@ func NewArwenVM(
 		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	)
 
-	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser, &marshal.GogoProtoMarshalizer{})
-
-	if err != nil {
-		return nil, err
-	}
-
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
 		return nil, err
@@ -198,6 +192,11 @@ func NewArwenVM(
 		hostParameters.ElrondProtectedKeyPrefix,
 		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser, &marshal.GogoProtoMarshalizer{})
 	if err != nil {
 		return nil, err
 	}

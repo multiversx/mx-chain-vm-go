@@ -101,16 +101,11 @@ const (
 // function of a smart contract
 const CallbackFunctionName = "callBack"
 
-// ProtectedStoragePrefix is the storage key prefix that will be protected by
-// Arwen explicitly, and implicitly by the Elrond node due to '@'; the
-// protection can be disabled temporarily by the StorageContext
-const ProtectedStoragePrefix = "ELROND@VM@"
-
 // TimeLockKeyPrefix is the storage key prefix used for timelock-related storage.
-const TimeLockKeyPrefix = ProtectedStoragePrefix + "TIMELOCK"
+const TimeLockKeyPrefix = "TIMELOCK"
 
 // AsyncDataPrefix is the storage key prefix used for AsyncContext-related storage.
-const AsyncDataPrefix = ProtectedStoragePrefix + "ASYNC"
+const AsyncDataPrefix = "ASYNC"
 
 // AsyncCallStatus represents the different status an async call can have
 type AsyncCallStatus uint8

@@ -2177,7 +2177,8 @@ func SetStorageLockWithHost(host arwen.VMHost, keyOffset int32, keyLength int32,
 func SetStorageLockWithTypedArgs(host arwen.VMHost, key []byte, lockTimestamp int64) int32 {
 	runtime := host.Runtime()
 	storage := host.Storage()
-	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
+	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(arwen.TimeLockKeyPrefix))
+	timeLockKey := arwen.CustomStorageKey(timeLockKeyPrefix, key)
 	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
 	storageStatus, err := storage.SetProtectedStorage(timeLockKey, bigTimestamp.Bytes())
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2200,7 +2201,8 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 		return -1
 	}
 
-	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
+	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(arwen.TimeLockKeyPrefix))
+	timeLockKey := arwen.CustomStorageKey(timeLockKeyPrefix, key)
 	data, usedCache := storage.GetStorage(timeLockKey)
 	storage.UseGasForStorageLoad(getStorageLockName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 

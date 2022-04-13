@@ -308,12 +308,19 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
 	storageContext.SetAddress(address)
 
-	key := []byte(arwen.ProtectedStoragePrefix + "something")
+	key := storageContext.GetVmProtectedPrefix("something")
 	value := []byte("data")
 
 	storageStatus, err := storageContext.SetStorage(key, value)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
+	require.Len(t, storageContext.GetStorageUpdates(address), 0)
+
+	storageContext.disableStorageProtection()
+	elrondProtectedKey := append(elrondReservedTestPrefix, []byte("ABC")...)
+	storageStatus, err = storageContext.SetStorage(elrondProtectedKey, value)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
+	require.True(t, errors.Is(err, arwen.ErrStoreElrondReservedKey))
 	require.Len(t, storageContext.GetStorageUpdates(address), 0)
 
 	storageContext.disableStorageProtection()

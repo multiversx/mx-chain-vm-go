@@ -43,6 +43,8 @@ type asyncContext struct {
 	callType                     vm.CallType
 	callerCallID                 []byte
 	callbackAsyncInitiatorCallID []byte
+
+	asyncStorageDataPrefix []byte
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -62,6 +64,8 @@ func NewAsyncContext(
 		return nil, arwen.ErrNilESDTTransferParser
 	}
 
+	storage := host.Storage()
+
 	context := &asyncContext{
 		host:                   host,
 		stateStack:             nil,
@@ -74,6 +78,7 @@ func NewAsyncContext(
 		callArgsParser:         callArgsParser,
 		esdtTransferParser:     esdtTransferParser,
 		contextCallbackEnabled: false,
+		asyncStorageDataPrefix: storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix),
 	}
 
 	return context, nil
@@ -778,22 +783,22 @@ func (context *asyncContext) computeGasLimitForLegacyAsyncCall(gasToLock uint64)
 // ErrNotEnoughGas. This method computes the amount that should be deducted
 // from the total remaining gas before consuming it, allowing async.Save() to
 // work correctly.
-func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
-	metering := context.host.Metering()
-	serializedContext := context.toSerializable()
-	serializedContext.CallsCounter = 1
-	serializedContext.TotalCallsCounter = 1
-	serializedData, err := context.marshalizer.Marshal(serializedContext)
-	if err != nil {
-		return 0, err
-	}
-	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte,
-		uint64(len(serializedData)))
-	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte,
-		uint64(len(arwen.AsyncDataPrefix)))
-	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
-	return gasUseForSerialization, nil
-}
+// func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
+// 	metering := context.host.Metering()
+// 	serializedContext := context.toSerializable()
+// 	serializedContext.CallsCounter = 1
+// 	serializedContext.TotalCallsCounter = 1
+// 	serializedData, err := context.marshalizer.Marshal(serializedContext)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte,
+// 		uint64(len(serializedData)))
+// 	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte,
+// 		uint64(len(context.asyncStorageDataPrefix)))
+// 	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
+// 	return gasUseForSerialization, nil
+// }
 
 // DeleteAsyncCallAndCleanGroup deletes the specified async call and the group if this is the last call
 func (context *asyncContext) DeleteAsyncCallAndCleanGroup(callID []byte) error {
