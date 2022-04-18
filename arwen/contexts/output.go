@@ -591,9 +591,6 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		if rightAccount.BalanceDelta != nil {
 			rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
 		}
-		if len(rightAccount.OutputTransfers) > 0 {
-			leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
-		}
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
@@ -668,6 +665,9 @@ func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.
 	rightAsyncCallTransfers, rightOtherTransfers := splitTransfers(rightAccount)
 
 	leftAsyncCallTransfers = append(leftAsyncCallTransfers, rightAsyncCallTransfers...)
+	// if len(rightAsyncCallTransfers) > len(leftAsyncCallTransfers) {
+	// 	leftAsyncCallTransfers = append(leftAsyncCallTransfers, rightAsyncCallTransfers[len(leftAsyncCallTransfers):]...)
+	// }
 
 	lenLeftOtherTransfers := len(leftOtherTransfers)
 	lenRightOtherTransfers := len(rightOtherTransfers)
