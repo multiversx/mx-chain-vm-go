@@ -665,9 +665,6 @@ func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.
 	rightAsyncCallTransfers, rightOtherTransfers := splitTransfers(rightAccount)
 
 	leftAsyncCallTransfers = append(leftAsyncCallTransfers, rightAsyncCallTransfers...)
-	// if len(rightAsyncCallTransfers) > len(leftAsyncCallTransfers) {
-	// 	leftAsyncCallTransfers = append(leftAsyncCallTransfers, rightAsyncCallTransfers[len(leftAsyncCallTransfers):]...)
-	// }
 
 	lenLeftOtherTransfers := len(leftOtherTransfers)
 	lenRightOtherTransfers := len(rightOtherTransfers)
