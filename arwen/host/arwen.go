@@ -22,6 +22,7 @@ import (
 )
 
 var log = logger.GetOrCreate("arwen/host")
+var logGasTrace = logger.GetOrCreate("gasTrace")
 
 // MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
 var MaximumWasmerInstanceCount = uint64(10)
@@ -359,6 +360,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		return nil, arwen.ErrVMIsClosing
 	}
 
+	host.setGasTracerEnabledIfLogIsTrace()
 	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
 
@@ -389,6 +391,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
+		host.logFromGasTracer("init")
 
 		close(done)
 	}()
@@ -417,6 +420,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		return nil, arwen.ErrVMIsClosing
 	}
 
+	host.setGasTracerEnabledIfLogIsTrace()
 	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
 
@@ -453,6 +457,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
+		host.logFromGasTracer(input.Function)
 
 		close(done)
 	}()
@@ -566,4 +571,30 @@ func (host *vmHost) FixFailExecutionEnabled() bool {
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
+}
+
+func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {
+	host.Metering().SetGasTracing(false)
+	if logGasTrace.GetLevel() == logger.LogTrace {
+		host.Metering().SetGasTracing(true)
+	}
+}
+
+func (host *vmHost) logFromGasTracer(functionName string) {
+	if logGasTrace.GetLevel() == logger.LogTrace {
+		scGasTrace := host.meteringContext.GetGasTrace()
+		totalGasUsedByAPIs := 0
+		for scAddress, gasTrace := range scGasTrace {
+			logGasTrace.Trace("Gas Trace for", "SC Address", scAddress, "function", functionName)
+			for apiName, value := range gasTrace {
+				totalGasUsed := uint64(0)
+				for _, usedGas := range value {
+					totalGasUsed += usedGas
+				}
+				logGasTrace.Trace("Gas Trace for", "apiName", apiName, "totalGasUsed", totalGasUsed, "numberOfCalls", len(value))
+				totalGasUsedByAPIs += int(totalGasUsed)
+			}
+			logGasTrace.Trace("Gas Trace for", "TotalGasUsedByAPIs", totalGasUsedByAPIs)
+		}
+	}
 }

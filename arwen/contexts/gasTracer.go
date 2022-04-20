@@ -32,8 +32,13 @@ func (gt *gasTracer) BeginTrace(scAddress string, functionName string) {
 // AddToCurrentTrace ads the usedGas passed at the current trace value
 func (gt *gasTracer) AddToCurrentTrace(usedGas uint64) {
 	gt.createGasTraceIfNil(gt.scAddress, gt.functionNameTraced)
-	length := len(gt.gasTrace[gt.scAddress][gt.functionNameTraced])
-	gt.gasTrace[gt.scAddress][gt.functionNameTraced][length-1] += usedGas
+	funcTrace := gt.gasTrace[gt.scAddress][gt.functionNameTraced]
+	length := len(funcTrace)
+	if length > 0 {
+		funcTrace[length-1] += usedGas
+	} else {
+		funcTrace = append(funcTrace, usedGas)
+	}
 }
 
 // AddTracedGas directly ads usedGas in the gasTrace map
