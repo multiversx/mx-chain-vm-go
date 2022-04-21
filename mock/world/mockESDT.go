@@ -23,8 +23,12 @@ func (bf *BuiltinFunctionsWrapper) GetTokenBalance(address []byte, tokenIdentifi
 // (token keys are built from the token identifier using MakeTokenKey).
 func (bf *BuiltinFunctionsWrapper) GetTokenData(address []byte, tokenIdentifier []byte, nonce uint64) (*esdt.ESDigitalToken, error) {
 	account := bf.World.AcctMap.GetAccount(address)
+	systemAccStorage := make(map[string][]byte)
 	systemAcc := bf.World.AcctMap.GetAccount(vmcommon.SystemAccountAddress)
-	return account.GetTokenData(tokenIdentifier, nonce, systemAcc.Storage)
+	if systemAcc != nil {
+		systemAccStorage = systemAcc.Storage
+	}
+	return account.GetTokenData(tokenIdentifier, nonce, systemAccStorage)
 }
 
 // SetTokenData sets the ESDT information related to a token from the storage of an account
