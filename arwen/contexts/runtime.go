@@ -1010,11 +1010,16 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 
 // PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
 func (context *runtimeContext) PopFirstArgumentFromVMInput() ([]byte, error) {
-	if len(context.vmInput.Arguments) == 0 {
+	return PopFirstArgumentFromVMInput(context.vmInput)
+}
+
+// PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
+func PopFirstArgumentFromVMInput(vmInput *vmcommon.VMInput) ([]byte, error) {
+	if len(vmInput.Arguments) == 0 {
 		return nil, arwen.ErrInvalidAsyncArgsList
 	}
-	firstArg := context.vmInput.Arguments[0]
-	context.vmInput.Arguments = context.vmInput.Arguments[1:]
+	firstArg := vmInput.Arguments[0]
+	vmInput.Arguments = vmInput.Arguments[1:]
 	return firstArg, nil
 }
 

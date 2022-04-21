@@ -730,7 +730,15 @@ func (context *asyncContext) isCallAsyncOnStack() bool {
 }
 
 func (context *asyncContext) isCallAsync() bool {
-	return context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack
+	return IsCallAsync(context.callType)
+}
+
+func IsCallAsync(callType vm.CallType) bool {
+	return callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack
+}
+
+func IsCallback(callType vm.CallType) bool {
+	return callType == vm.AsynchronousCallBack
 }
 
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
