@@ -959,21 +959,6 @@ func (context *asyncContext) determineDestinationForAsyncCall(destination []byte
 	return parsedTransfer.RcvAddr
 }
 
-// executeContextCallback will either execute a sync call (in-shard) to
-// the original caller by invoking its callback directly, or will dispatch a
-// cross-shard callback to it.
-func (context *asyncContext) executeContextCallback() error {
-	if !context.HasCallback() {
-		return nil
-	}
-
-	callbackCallInput := context.createContextCallbackInput()
-	callbackVMOutput, _, callBackErr := context.host.ExecuteOnDestContext(callbackCallInput)
-	context.finishAsyncLocalCallbackExecution(callbackVMOutput, callBackErr, 0)
-
-	return nil
-}
-
 func (context *asyncContext) findGroupByID(groupID string) (int, bool) {
 	for index, group := range context.asyncCallGroups {
 		if group.Identifier == groupID {
