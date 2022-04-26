@@ -23,6 +23,8 @@ var log = logger.GetOrCreate("arwen/host")
 // MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
 var MaximumWasmerInstanceCount = uint64(10)
 
+const internalVMErrors = "internalVMErrors"
+
 // TryFunction corresponds to the try() part of a try / catch block
 type TryFunction func()
 
@@ -339,6 +341,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		log.Trace("RunSmartContractCreate end", "returnCode", vmOutput.ReturnCode, "returnMessage", vmOutput.ReturnMessage)
 	}
 
+	logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
+	if logsFromErrors != nil {
+		vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
+	}
+
 	return
 }
 
@@ -367,6 +374,11 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		TryCatch(tryUpgrade, catch, "arwen.RunSmartContractUpgrade")
 	} else {
 		TryCatch(tryCall, catch, "arwen.RunSmartContractCall")
+	}
+
+	logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, input.Function)
+	if logsFromErrors != nil {
+		vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 	}
 
 	return
@@ -449,4 +461,20 @@ func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
+}
+
+func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, function string) *vmcommon.LogEntry {
+	formattedErrors := host.runtimeContext.GetAllErrors()
+	if formattedErrors == nil {
+		return nil
+	}
+
+	logFromError := &vmcommon.LogEntry{
+		Identifier: []byte(internalVMErrors),
+		Address:    sndAddress,
+		Topics:     [][]byte{rcvAddress, []byte(function)},
+		Data:       []byte(formattedErrors.Error()),
+	}
+
+	return logFromError
 }
