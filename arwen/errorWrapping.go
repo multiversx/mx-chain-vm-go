@@ -122,7 +122,11 @@ func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLeve
 
 func createErrorWithLocation(err error, skipStackLevels int, otherInfo ...string) errorWithLocation {
 	_, file, line, _ := runtime.Caller(skipStackLevels)
-	locationLine := fmt.Sprintf("%s:%d", file, line)
+
+	splitString := strings.Split(file, "/")
+	fileName := splitString[len(splitString)-1]
+	locationLine := fmt.Sprintf("%s:%d", fileName, line)
+
 	errWithLocation := errorWithLocation{err: err, location: locationLine, otherInfo: otherInfo}
 	return errWithLocation
 }
