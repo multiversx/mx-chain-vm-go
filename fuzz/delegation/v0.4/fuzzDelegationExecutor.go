@@ -166,7 +166,7 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 		"expect": {
 			"out": [ "*" ],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

@@ -160,7 +160,7 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

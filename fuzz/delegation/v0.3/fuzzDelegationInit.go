@@ -122,7 +122,7 @@ func (pfe *fuzzDelegationExecutor) init(args *fuzzDelegationExecutorInitArgs) er
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -175,7 +175,7 @@ func (pfe *fuzzDelegationExecutor) enableUnstake() error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -204,7 +204,7 @@ func (pfe *fuzzDelegationExecutor) setAnyoneCanActivate() error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -235,7 +235,7 @@ func (pfe *fuzzDelegationExecutor) setStakePerNode(stakePerNode *big.Int) error 
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -265,7 +265,7 @@ func (pfe *fuzzDelegationExecutor) enableAutoActivation() error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -298,7 +298,7 @@ func (pfe *fuzzDelegationExecutor) addNodes(numNodesToAdd int) error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
