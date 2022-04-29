@@ -19,6 +19,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:A": {
                     "nonce": "0",
