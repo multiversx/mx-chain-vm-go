@@ -11,6 +11,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:the-address": {
                     "nonce": "125"
@@ -19,6 +20,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-2",
             "accounts": {
                 "address:the-address": {
                     "nonce": "*"

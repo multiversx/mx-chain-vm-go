@@ -28,6 +28,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:the-address": {
                     "esdt": {

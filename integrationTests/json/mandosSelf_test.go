@@ -48,78 +48,78 @@ func TestMandoSetAccountSCAddressErr3(t *testing.T) {
 func TestMandosCheckNonceErr(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-nonce.err.json")
 	require.EqualError(t, err,
-		"bad account nonce. Account: address:the-address. Want: \"1002\". Have: \"1001\"")
+		"Check state \"check-1\": bad account nonce. Account: address:the-address. Want: \"1002\". Have: \"1001\"")
 }
 
 func TestMandosCheckOwnerErr1(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-owner.err1.json")
 	require.EqualError(t, err,
-		"bad account owner. Account: address:child. Want: \"address:other\". Have: \"address:parent\"")
+		"Check state \"check-1\": bad account owner. Account: address:child. Want: \"address:other\". Have: \"address:parent\"")
 }
 
 func TestMandosCheckOwnerErr2(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-owner.err2.json")
 	require.EqualError(t, err,
-		"bad account owner. Account: address:parent. Want: \"address:other\". Have: \"\"")
+		"Check state \"check-1\": bad account owner. Account: address:parent. Want: \"address:other\". Have: \"\"")
 }
 
 func TestMandosCheckBalanceErr(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-balance.err.json")
 	require.EqualError(t, err,
-		"bad account balance. Account: address:the-address. Want: \"1,000,002\". Have: \"1000001\"")
+		"Check state \"check-1\": bad account balance. Account: address:the-address. Want: \"1,000,002\". Have: \"1000001\"")
 }
 
 func TestMandosCheckUsernameErr(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-username.err.json")
 	require.EqualError(t, err,
-		"bad account username. Account: address:the-address. Want: \"str:wrong.elrond\". Have: \"str:theusername.elrond\"")
+		"Check state \"check-1\": bad account username. Account: address:the-address. Want: \"str:wrong.elrond\". Have: \"str:theusername.elrond\"")
 }
 
 func TestMandosCheckCodeErr(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-code.err.json")
 	require.EqualError(t, err,
-		"bad account code. Account: sc:contract-address. Want: \"file:set-check-code.scen.json\". Have: \"0x7b0a2020202022636f6d...\"")
+		"Check state \"check-1\": bad account code. Account: sc:contract-address. Want: \"file:set-check-code.scen.json\". Have: \"0x7b0a2020202022636f6d...\"")
 }
 
 func TestMandosCheckStorageErr1(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-storage.err1.json")
 	require.EqualError(t, err,
-		"wrong account storage for account \"address:the-address\":\n"+
+		"Check state \"check-1\": wrong account storage for account \"address:the-address\":\n"+
 			"  for key 0x6b65792d63 (str:key-c): Want: \"str:another-value\". Have: \"0x76616c75652d63 (str:value-c)\"")
 }
 
 func TestMandosCheckStorageErr2(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-storage.err2.json")
 	require.EqualError(t, err,
-		"wrong account storage for account \"address:the-address\":\n"+
+		"Check state \"check-1\": wrong account storage for account \"address:the-address\":\n"+
 			"  for key 0x6b65792d63 (str:key-c): Want: \"\". Have: \"0x76616c75652d63 (str:value-c)\"")
 }
 
 func TestMandosCheckStorageErr3(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-storage.err3.json")
 	require.EqualError(t, err,
-		"wrong account storage for account \"address:the-address\":\n"+
+		"Check state \"check-1\": wrong account storage for account \"address:the-address\":\n"+
 			"  for key 0x6b65792d64 (str:key-d): Want: \"str:value-d\". Have: \"\"")
 }
 
 func TestMandosCheckStorageErr4(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-storage.err4.json")
 	require.EqualError(t, err,
-		"wrong account storage for account \"address:the-address\":\n"+
+		"Check state \"check-1\": wrong account storage for account \"address:the-address\":\n"+
 			"  for key 0x6b65792d63 (str:key-c): Want: \"\". Have: \"0x76616c75652d63 (str:value-c)\"")
 }
 
 func TestMandosCheckStorageErr5(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-storage.err5.json")
 	require.EqualError(t, err,
-		"wrong account storage for account \"address:the-address\":\n"+
+		"Check state \"check-1\": wrong account storage for account \"address:the-address\":\n"+
 			"  for key 0x6b65792d62 (str:key-b): Want: \"str:another-b\". Have: \"0x76616c75652d62 (str:value-b)\"")
 }
 
 func TestMandosCheckESDTErr1(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-check-esdt.err1.json")
 	require.EqualError(t, err,
-		`mismatch for account "address:the-address":
+		`Check state "check-1": mismatch for account "address:the-address":
   for token: NFT-123456, nonce: 1: Bad balance. Want: "4". Have: "1"
   for token: NFT-123456, nonce: 1: Bad creator. Want: "address:another-address". Have: "address:the-address"
   for token: NFT-123456, nonce: 1: Bad royalties. Want: "2001". Have: "2000"
@@ -131,13 +131,13 @@ func TestMandosCheckESDTErr1(t *testing.T) {
 func TestMandosEsdtZeroBalance(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test", "esdt-zero-balance-check-err.scen.json")
 	require.EqualError(t, err,
-		`mismatch for account "address:A":
+		`Check state "check-1": mismatch for account "address:A":
   for token: TOK-123456, nonce: 0: Bad balance. Want: "". Have: "150"`)
 }
 
 func TestMandosEsdtNonZeroBalance(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test", "esdt-non-zero-balance-check-err.scen.json")
 	require.EqualError(t, err,
-		`mismatch for account "address:B":
+		`Check state "check-1": mismatch for account "address:B":
   for token: TOK-123456, nonce: 0: Bad balance. Want: "100". Have: "0"`)
 }

@@ -41,7 +41,8 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 		}
 	}
 
-	err := ae.checkAccounts(test.PostState)
+	baseErrMsg := "Legacy test check: "
+	err := ae.checkAccounts(baseErrMsg, test.PostState)
 	ae.Close()
 	return err
 }
