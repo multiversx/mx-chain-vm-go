@@ -448,14 +448,6 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 	return limit
 }
 
-// UseGasForAsyncStep consumes the AsyncCallStep gas cost on the currently
-// running Wasmer instance
-func (context *meteringContext) UseGasForAsyncStep() error {
-	gasSchedule := context.GasSchedule().ElrondAPICost
-	gasToDeduct := gasSchedule.AsyncCallStep
-	return context.UseGasBounded(gasToDeduct)
-}
-
 // UseGasBounded consumes the specified amount of gas on the currently running
 // Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
@@ -465,23 +457,6 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 	context.UseGas(gasToUse)
 	context.traceGas(gasToUse)
 	return nil
-}
-
-// ComputeExtraGasLockedForAsync calculates the minimum amount of gas to lock for async callbacks
-func (context *meteringContext) ComputeExtraGasLockedForAsync() uint64 {
-	baseGasSchedule := context.GasSchedule().BaseOperationCost
-	apiGasSchedule := context.GasSchedule().ElrondAPICost
-	codeSize := context.host.Runtime().GetSCCodeSize()
-	costPerByte := baseGasSchedule.AoTPreparePerByte
-
-	// Exact amount of gas required to compile this SC again, to execute the callback
-	compilationGasLock := math.MulUint64(codeSize, costPerByte)
-
-	// Minimum amount required to execute the callback
-	executionGasLock := math.AddUint64(apiGasSchedule.AsyncCallStep, apiGasSchedule.AsyncCallbackGasLock)
-	gasLockedForAsync := math.AddUint64(compilationGasLock, executionGasLock)
-
-	return gasLockedForAsync
 }
 
 // GetGasLocked returns the locked gas
