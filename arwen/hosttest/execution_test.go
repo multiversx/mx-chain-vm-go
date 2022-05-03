@@ -2617,9 +2617,9 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 997158).
+				GasUsed(test.ParentAddress, 997159).
 				GasUsed(test.ChildAddress, 0).
-				GasRemaining(2842).
+				GasRemaining(2841).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succ")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2697,9 +2697,9 @@ func TestExecution_AsyncCall_Promises_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 7250).
+				GasUsed(test.ParentAddress, 7251).
 				GasUsed(test.ChildAddress, 0).
-				GasRemaining(992750).
+				GasRemaining(992749).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succCallbackErr")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2739,11 +2739,11 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 198461).
+				GasUsed(test.ParentAddress, 198462).
 				GasUsed(test.ChildAddress, 1297).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				GasRemaining(242).
+				GasRemaining(241).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
@@ -2796,9 +2796,9 @@ func TestExecution_AsyncCall_Promises_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 106617).
+				GasUsed(test.ParentAddress, 106618).
 				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(92086).
+				GasRemaining(92085).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go

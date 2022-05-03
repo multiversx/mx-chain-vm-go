@@ -565,7 +565,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 
 	// The expected input passed to host.ExecuteOnDestContext() to call Bob as destination
 	destInput := defaultCallInput_AliceToBob(originalVMInput)
-	destInput.GasProvided = asyncCall.GasLimit - GasForAsyncStep
+	destInput.GasProvided = asyncCall.GasLimit
 	destInput.GasLocked = asyncCall.GasLocked
 
 	// Prepare the output of Bob (the destination call)
@@ -651,7 +651,7 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 	require.NotNil(t, input)
 
 	expectedInput := defaultCallInput_AliceToBob(originalVMInput)
-	expectedInput.GasProvided = 1
+	expectedInput.GasProvided = 2
 	_, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, 2)
 	require.Equal(t, expectedInput, input)
 }

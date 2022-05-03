@@ -773,40 +773,8 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 
 func (context *asyncContext) computeGasLimitForLegacyAsyncCall(gasToLock uint64) (uint64, error) {
 	gasLimit := math.SubUint64(context.host.Metering().GasLeft(), gasToLock)
-
-	// gasReservedForLegacyContextSerialization, err := context.getGasCostForLegacyAsyncContextStorage()
-	// if err != nil {
-	// 	return 0, err
-	// }
-	// logAsync.Trace("async legacy serialization", "gas", gasReservedForLegacyContextSerialization)
-	// gasLimit = math.SubUint64(gasLimit, gasReservedForLegacyContextSerialization)
-
 	return gasLimit, nil
 }
-
-// getGasCostForLegacyAsyncContextStorage computes the gas that should be
-// reserved for the call to async.Save() when a legacy asyncCall() is made.
-// This is required because the legacy asyncCall() immediately consumes all the
-// remaining gas, causing the subsequent async.Save() to fail with
-// ErrNotEnoughGas. This method computes the amount that should be deducted
-// from the total remaining gas before consuming it, allowing async.Save() to
-// work correctly.
-// func (context *asyncContext) getGasCostForLegacyAsyncContextStorage() (uint64, error) {
-// 	metering := context.host.Metering()
-// 	serializedContext := context.toSerializable()
-// 	serializedContext.CallsCounter = 1
-// 	serializedContext.TotalCallsCounter = 1
-// 	serializedData, err := context.marshalizer.Marshal(serializedContext)
-// 	if err != nil {
-// 		return 0, err
-// 	}
-// 	gasUseForSerialization := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte,
-// 		uint64(len(serializedData)))
-// 	gasUseForKey := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte,
-// 		uint64(len(context.asyncStorageDataPrefix)))
-// 	gasUseForSerialization = math.AddUint64(gasUseForSerialization, gasUseForKey)
-// 	return gasUseForSerialization, nil
-// }
 
 // DeleteAsyncCallAndCleanGroup deletes the specified async call and the group if this is the last call
 func (context *asyncContext) DeleteAsyncCallAndCleanGroup(callID []byte) error {
