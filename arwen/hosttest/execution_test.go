@@ -2560,9 +2560,9 @@ func TestExecution_AsyncCall(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 4159).
+				GasUsed(test.ParentAddress, 4158).
 				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(110544).
+				GasRemaining(110545).
 				Balance(test.ParentAddress, 1000).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ThirdPartyAddress, 6).
@@ -2647,9 +2647,9 @@ func TestExecution_AsyncCall_Promises(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 5374).
+				GasUsed(test.ParentAddress, 5375).
 				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(109329).
+				GasRemaining(109328).
 				Balance(test.ParentAddress, 1000).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ThirdPartyAddress, 6).
@@ -2697,9 +2697,9 @@ func TestExecution_AsyncCall_Promises_ChildFails(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 7251).
+				GasUsed(test.ParentAddress, 7252).
 				GasUsed(test.ChildAddress, 0).
-				GasRemaining(992749).
+				GasRemaining(992748).
 				ReturnData(test.ParentFinishA, test.ParentFinishB, []byte("succCallbackErr")).
 				Storage(
 					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
@@ -2796,9 +2796,9 @@ func TestExecution_AsyncCall_Promises_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 106618).
+				GasUsed(test.ParentAddress, 106619).
 				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(92085).
+				GasRemaining(92084).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
