@@ -456,6 +456,16 @@ func (blockchain *BlockchainHookGateway) GetSnapshot() int {
 	return 0
 }
 
+// IsPaused - not used in v1.2
+func (blockchain *BlockchainHookGateway) IsPaused(_ []byte) bool {
+	return false
+}
+
+// IsLimitedTransfer - not used in v1.2
+func (blockchain *BlockchainHookGateway) IsLimitedTransfer(_ []byte) bool {
+	return false
+}
+
 // RevertToSnapshot - not used in v1.2
 func (blockchain *BlockchainHookGateway) RevertToSnapshot(_ int) error {
 	return nil
