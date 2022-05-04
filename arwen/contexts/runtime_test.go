@@ -62,6 +62,7 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
 		0,
+		0,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
