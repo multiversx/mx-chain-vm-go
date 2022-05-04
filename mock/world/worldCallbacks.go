@@ -5,10 +5,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*MockWorld)(nil)
@@ -276,6 +276,16 @@ func (b *MockWorld) GetCompiledCode(codeHash []byte) (bool, []byte) {
 // ClearCompiledCodes -
 func (b *MockWorld) ClearCompiledCodes() {
 	b.CompiledCode = make(map[string][]byte)
+}
+
+// IsPaused -
+func (b *MockWorld) IsPaused(_ []byte) bool {
+	return false
+}
+
+// IsLimitedTransfer -
+func (b *MockWorld) IsLimitedTransfer(_ []byte) bool {
+	return false
 }
 
 // IsInterfaceNil returns true if underlying implementation is nil
