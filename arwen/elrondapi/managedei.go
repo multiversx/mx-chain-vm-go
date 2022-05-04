@@ -35,7 +35,7 @@ package elrondapi
 // extern void		v1_4_managedGetStateRootHash(void *context, int32_t resultHandle);
 // extern void		v1_4_managedGetOriginalTxHash(void *context, int32_t resultHandle);
 //
-// extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, uint64_t nonce);
+// extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
 // extern int32_t   v1_4_managedIsPaused(void *context, int32_t tokenIDHandle);
 // extern int32_t   v1_4_managedIsLimitedTransfer(void *context, int32_t tokenIDHandle);
 import "C"
@@ -951,7 +951,7 @@ func v1_4_managedTransferValueExecute(
 }
 
 //export v1_4_managedIsESDTFrozen
-func v1_4_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce uint64) int32 {
+func v1_4_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
@@ -971,7 +971,7 @@ func v1_4_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, token
 		return -1
 	}
 
-	esdtToken, err := blockchain.GetESDTToken(address, tokenID, nonce)
+	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
 		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
