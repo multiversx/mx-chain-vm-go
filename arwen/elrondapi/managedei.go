@@ -992,7 +992,7 @@ func v1_4_managedIsLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) 
 	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(managedIsESDTFrozenName, gasToUse)
+	metering.UseGasAndAddTracedGas(managedIsLimitedTransferName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
@@ -1015,7 +1015,7 @@ func v1_4_managedIsPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(managedIsESDTFrozenName, gasToUse)
+	metering.UseGasAndAddTracedGas(managedIsPausedName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
