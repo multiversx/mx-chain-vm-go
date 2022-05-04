@@ -2560,9 +2560,9 @@ func TestExecution_AsyncCall(t *testing.T) {
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
-				GasUsed(test.ParentAddress, 4158).
+				GasUsed(test.ParentAddress, 4159).
 				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(110545).
+				GasRemaining(110544).
 				Balance(test.ParentAddress, 1000).
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ThirdPartyAddress, 6).

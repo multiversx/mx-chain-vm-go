@@ -760,10 +760,10 @@ func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error 
 
 func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) {
 	metering := context.host.Metering()
-	// err := metering.UseGasForAsyncStep()
-	// if err != nil {
-	// 	return 0, err
-	// }
+	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return 0, err
+	}
 
 	gasToLock := uint64(0)
 	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
