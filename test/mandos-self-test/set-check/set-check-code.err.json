@@ -11,6 +11,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "sc:contract-address": {
                     "code": "file:set-check-code.scen.json"

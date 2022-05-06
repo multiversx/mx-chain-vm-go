@@ -28,6 +28,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:the-address": {
                     "esdt": {
@@ -53,6 +54,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-2",
             "accounts": {
                 "address:the-address": {
                     "esdt": {
@@ -78,6 +80,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-3",
             "accounts": {
                 "address:the-address": {
                     "esdt": {
@@ -97,6 +100,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-4",
             "accounts": {
                 "address:the-address": {
                     "esdt": {
