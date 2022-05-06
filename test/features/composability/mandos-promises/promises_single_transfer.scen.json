@@ -13,10 +13,10 @@
                     "balance": "0",
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:forwarder": {
+                "sc:promises": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }
         },
@@ -25,8 +25,8 @@
             "txId": "1",
             "tx": {
                 "from": "address:a_user",
-                "to": "sc:forwarder",
-                "function": "forward_register_promise",
+                "to": "sc:promises",
+                "function": "promise_single_token",
                 "arguments": [
                     "sc:vault",
                     "str:echo_arguments",
@@ -59,10 +59,10 @@
                     "balance": "0",
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:forwarder": {
+                "sc:promises": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }
         },
@@ -71,8 +71,8 @@
             "txId": "2",
             "tx": {
                 "from": "address:a_user",
-                "to": "sc:forwarder",
-                "function": "forward_register_promise",
+                "to": "sc:promises",
+                "function": "promise_single_token",
                 "arguments": [
                     "sc:vault",
                     "str:echo_arguments",
@@ -89,7 +89,7 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
+                        "address": "sc:promises",
                         "endpoint": "str:error_callback",
                         "topics": [
                             "str:async_call_event_callback"
@@ -117,10 +117,10 @@
                     "balance": "0",
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:forwarder": {
+                "sc:promises": {
                     "nonce": "0",
                     "balance": "0",
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }
         },
@@ -129,8 +129,8 @@
             "txId": "3",
             "tx": {
                 "from": "address:a_user",
-                "to": "sc:forwarder",
-                "function": "forward_register_promise",
+                "to": "sc:promises",
+                "function": "promise_single_token",
                 "arguments": [
                     "sc:vault",
                     "str:echo_arguments",
@@ -150,7 +150,7 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:forwarder",
+                        "address": "sc:promises",
                         "endpoint": "str:success_callback",
                         "topics": [
                             "str:async_call_event_callback"
@@ -180,13 +180,13 @@
                     "balance": "0",
                     "code": "file:../vault/output/vault.wasm"
                 },
-                "sc:forwarder": {
+                "sc:promises": {
                     "nonce": "0",
                     "balance": "0",
                     "storage": {
                         "str:async_call_callback_data": "true"
                     },
-                    "code": "file:../forwarder-raw/output/forwarder-raw.wasm"
+                    "code": "file:../promises-features/output/promises-features.wasm"
                 }
             }
         }

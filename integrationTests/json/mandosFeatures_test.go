@@ -59,6 +59,10 @@ func TestRustComposability(t *testing.T) {
 	})
 }
 
+func TestRustPromisesFeatures(t *testing.T) {
+	runAllTestsInFolder(t, "features/composability/mandos-promises")
+}
+
 // For debugging:
 // func TestESDTMultiTransferOnCallback(t *testing.T) {
 // 	err := runSingleTestReturnError(
