@@ -10,7 +10,6 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/stretchr/testify/require"
 )
 
 var AsyncChildFunction = "transferToThirdParty"
@@ -22,7 +21,6 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
@@ -38,10 +36,16 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		scAddress := host.Runtime().GetSCAddress()
 		transferValue := big.NewInt(testConfig.TransferToThirdParty)
 		err = host.Output().Transfer(testConfig.GetThirdPartyAddress(), scAddress, 0, 0, transferValue, []byte("hello"), 0)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
 
 		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
 
 		return instance
 
@@ -126,7 +130,6 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 		arguments := host.Runtime().Arguments()
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
@@ -154,7 +157,10 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			}
 		}
 		err = handleTransferToVault(host, arguments)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
 
 		finishResult(host, status)
 

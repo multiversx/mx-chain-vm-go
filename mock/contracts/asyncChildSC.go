@@ -8,7 +8,6 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/stretchr/testify/require"
 )
 
 func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, config interface{}) {
@@ -46,7 +45,6 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 
 		metering := host.Metering()
 		err := metering.UseGasBounded(testConfig.GasUsedByChild)
@@ -82,7 +80,11 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			valueToTransfer,
 			arguments[1],
 			0)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
+
 		outputContext.Finish([]byte("thirdparty"))
 
 		valueToTransfer = big.NewInt(testConfig.TransferToVault)
@@ -94,7 +96,11 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			valueToTransfer,
 			[]byte{},
 			0)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
+
 		outputContext.Finish([]byte("vault"))
 
 		host.Storage().SetStorage(test.ChildKey, test.ChildData)
