@@ -321,7 +321,7 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("bigIntToString", v1_4_bigIntToString, C.v1_4_bigIntbigIntToString)
+	imports, err = imports.Append("bigIntToString", v1_4_bigIntToString, C.v1_4_bigIntToString)
 	if err != nil {
 		return nil, err
 	}
