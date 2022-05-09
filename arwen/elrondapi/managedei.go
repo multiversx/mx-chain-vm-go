@@ -38,9 +38,11 @@ package elrondapi
 // extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
 // extern int32_t   v1_4_managedIsPaused(void *context, int32_t tokenIDHandle);
 // extern int32_t   v1_4_managedIsLimitedTransfer(void *context, int32_t tokenIDHandle);
+// extern void      v1_4_managedBufferToHex(void *context, int32_t sourceHandle, int32_t destHandle);
 import "C"
 
 import (
+	"encoding/hex"
 	"errors"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"unsafe"
@@ -78,6 +80,7 @@ const (
 	managedIsESDTFrozenName                 = "managedIsESDTFrozen"
 	managedIsLimitedTransferName            = "managedIsLimitedTransfer"
 	managedIsPausedName                     = "managedIsPaused"
+	managedBufferToHexName                  = "managedBufferToHex"
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
@@ -215,6 +218,11 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedIsLimitedTransfer", v1_4_managedIsLimitedTransfer, C.v1_4_managedIsLimitedTransfer)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedBufferToHex", v1_4_managedBufferToHex, C.v1_4_managedBufferToHex)
 	if err != nil {
 		return nil, err
 	}
@@ -1028,4 +1036,23 @@ func v1_4_managedIsPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	}
 
 	return 0
+}
+
+//export v1_4_managedBufferToHex
+func v1_4_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	managedType := arwen.GetManagedTypesContext(context)
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
+	metering.UseGasAndAddTracedGas(managedBufferToHexName, gasToUse)
+
+	mBuff, err := managedType.GetBytes(sourceHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return
+	}
+
+	encoded := hex.EncodeToString(mBuff)
+	managedType.SetBytes(destHandle, []byte(encoded))
 }

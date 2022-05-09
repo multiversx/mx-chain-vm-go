@@ -728,6 +728,12 @@ func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
 	if context.instance.IsFunctionImported("managedIsLimitedTransfer") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("managedBufferToHex") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigIntToString") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
