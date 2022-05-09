@@ -734,6 +734,48 @@ func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
 	if context.instance.IsFunctionImported("bigIntToString") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("managedRipemd160") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifyBLS") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifyEd25519") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifySecp256k1") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifyCustomSecp256k1") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedEncodeSecp256k1DerSignature") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedScalarBaseMultEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedScalarMultEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedMarshalEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedUnmarshalEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedMarshalCompressedEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedUnmarshalCompressedEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedGenerateKeyEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedCreateEC") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
