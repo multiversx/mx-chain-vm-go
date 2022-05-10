@@ -230,6 +230,8 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetReturnData"] = value
 	gasMap["GetNumReturnData"] = value
 	gasMap["GetReturnDataSize"] = value
+	gasMap["CleanReturnData"] = value
+	gasMap["DeleteFromReturnData"] = value
 
 	return gasMap
 }

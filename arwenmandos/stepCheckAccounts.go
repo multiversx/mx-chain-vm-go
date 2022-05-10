@@ -22,15 +22,24 @@ func (ae *ArwenTestExecutor) ExecuteCheckStateStep(step *mj.CheckStateStep) erro
 		log.Trace("CheckStateStep", "comment", step.Comment)
 	}
 
-	return ae.checkAccounts(step.CheckAccounts)
+	baseErrMsg := checkStateBaseErrorMsg(step)
+	return ae.checkAccounts(baseErrMsg, step.CheckAccounts)
 }
 
-func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) error {
+func checkStateBaseErrorMsg(step *mj.CheckStateStep) string {
+	if len(step.CheckStateIdent) > 0 {
+		return fmt.Sprintf("Check state \"%s\":", step.CheckStateIdent)
+	}
+	return "Check state:"
+}
+
+func (ae *ArwenTestExecutor) checkAccounts(baseErrMsg string, checkAccounts *mj.CheckAccounts) error {
 	if !checkAccounts.MoreAccountsAllowed {
 		for worldAcctAddr := range ae.World.AcctMap {
 			postAcctMatch := mj.FindCheckAccount(checkAccounts.Accounts, []byte(worldAcctAddr))
 			if postAcctMatch == nil && !bytes.Equal([]byte(worldAcctAddr), vmcommon.SystemAccountAddress) {
-				return fmt.Errorf("unexpected account address: %s",
+				return fmt.Errorf("%s unexpected account address: %s",
+					baseErrMsg,
 					ae.exprReconstructor.Reconstruct(
 						[]byte(worldAcctAddr),
 						er.AddressHint))
@@ -41,33 +50,38 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 	for _, expectedAcct := range checkAccounts.Accounts {
 		matchingAcct, isMatch := ae.World.AcctMap[string(expectedAcct.Address.Value)]
 		if !isMatch {
-			return fmt.Errorf("account %s expected but not found after running test",
+			return fmt.Errorf("%s account %s expected but not found after running test",
+				baseErrMsg,
 				expectedAcct.Address.Original)
 		}
 
 		if !bytes.Equal(matchingAcct.Address, expectedAcct.Address.Value) {
-			return fmt.Errorf("bad account address %s",
+			return fmt.Errorf("%s bad account address %s",
+				baseErrMsg,
 				ae.exprReconstructor.Reconstruct(
 					matchingAcct.Address,
 					er.AddressHint))
 		}
 
 		if !expectedAcct.Nonce.Check(matchingAcct.Nonce) {
-			return fmt.Errorf("bad account nonce. Account: %s. Want: \"%s\". Have: \"%d\"",
+			return fmt.Errorf("%s bad account nonce. Account: %s. Want: \"%s\". Have: \"%d\"",
+				baseErrMsg,
 				expectedAcct.Address.Original,
 				expectedAcct.Nonce.Original,
 				matchingAcct.Nonce)
 		}
 
 		if !expectedAcct.Balance.Check(matchingAcct.Balance) {
-			return fmt.Errorf("bad account balance. Account: %s. Want: \"%s\". Have: \"%s\"",
+			return fmt.Errorf("%s bad account balance. Account: %s. Want: \"%s\". Have: \"%s\"",
+				baseErrMsg,
 				expectedAcct.Address.Original,
 				expectedAcct.Balance.Original,
 				ae.exprReconstructor.ReconstructFromBigInt(matchingAcct.Balance))
 		}
 
 		if !expectedAcct.Username.Check(matchingAcct.Username) {
-			return fmt.Errorf("bad account username. Account: %s. Want: %s. Have: \"%s\"",
+			return fmt.Errorf("%s bad account username. Account: %s. Want: %s. Have: \"%s\"",
+				baseErrMsg,
 				expectedAcct.Address.Original,
 				oj.JSONString(expectedAcct.Username.Original),
 				ae.exprReconstructor.Reconstruct(
@@ -76,7 +90,8 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		}
 
 		if !expectedAcct.Code.Check(matchingAcct.Code) {
-			return fmt.Errorf("bad account code. Account: %s. Want: %s. Have: \"%s\"",
+			return fmt.Errorf("%s bad account code. Account: %s. Want: %s. Have: \"%s\"",
+				baseErrMsg,
 				expectedAcct.Address.Original,
 				oj.JSONString(expectedAcct.Code.Original),
 				ae.exprReconstructor.Reconstruct(
@@ -85,7 +100,8 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		}
 
 		if !expectedAcct.Owner.IsUnspecified() && !bytes.Equal(matchingAcct.OwnerAddress, expectedAcct.Owner.Value) {
-			return fmt.Errorf("bad account owner. Account: %s. Want: %s. Have: \"%s\"",
+			return fmt.Errorf("%s bad account owner. Account: %s. Want: %s. Have: \"%s\"",
+				baseErrMsg,
 				expectedAcct.Address.Original,
 				oj.JSONString(expectedAcct.Owner.Original),
 				ae.exprReconstructor.Reconstruct(
@@ -96,18 +112,19 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 		// currently ignoring asyncCallData that is unspecified in the json
 		if !expectedAcct.AsyncCallData.IsUnspecified() &&
 			!expectedAcct.AsyncCallData.Check([]byte(matchingAcct.AsyncCallData)) {
-			return fmt.Errorf("bad async call data. Account: %s. Want: [%s]. Have: [%s]",
+			return fmt.Errorf("%s bad async call data. Account: %s. Want: [%s]. Have: [%s]",
+				baseErrMsg,
 				expectedAcct.Address.Original,
 				expectedAcct.AsyncCallData.Original,
 				matchingAcct.AsyncCallData)
 		}
 
-		err := ae.checkAccountStorage(expectedAcct, matchingAcct)
+		err := ae.checkAccountStorage(baseErrMsg, expectedAcct, matchingAcct)
 		if err != nil {
 			return err
 		}
 
-		err = ae.checkAccountESDT(expectedAcct, matchingAcct)
+		err = ae.checkAccountESDT(baseErrMsg, expectedAcct, matchingAcct)
 		if err != nil {
 			return err
 		}
@@ -116,7 +133,7 @@ func (ae *ArwenTestExecutor) checkAccounts(checkAccounts *mj.CheckAccounts) erro
 	return nil
 }
 
-func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
+func (ae *ArwenTestExecutor) checkAccountStorage(baseErrMsg string, expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
 	if expectedAcct.IgnoreStorage {
 		return nil
 	}
@@ -162,13 +179,14 @@ func (ae *ArwenTestExecutor) checkAccountStorage(expectedAcct *mj.CheckAccount, 
 		}
 	}
 	if len(storageError) > 0 {
-		return fmt.Errorf("wrong account storage for account \"%s\":%s",
+		return fmt.Errorf("%s wrong account storage for account \"%s\":%s",
+			baseErrMsg,
 			expectedAcct.Address.Original, storageError)
 	}
 	return nil
 }
 
-func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
+func (ae *ArwenTestExecutor) checkAccountESDT(baseErrMsg string, expectedAcct *mj.CheckAccount, matchingAcct *worldmock.Account) error {
 	if expectedAcct.IgnoreESDT {
 		return nil
 	}
@@ -221,7 +239,7 @@ func (ae *ArwenTestExecutor) checkAccountESDT(expectedAcct *mj.CheckAccount, mat
 
 	errorString := makeErrorString(errs)
 	if len(errorString) > 0 {
-		return fmt.Errorf("mismatch for account \"%s\":%s", accountAddress, errorString)
+		return fmt.Errorf("%s mismatch for account \"%s\":%s", baseErrMsg, accountAddress, errorString)
 	}
 
 	return nil
@@ -343,27 +361,18 @@ func (ae *ArwenTestExecutor) checkTokenInstances(
 					accountInstance.TokenMetaData.Hash,
 					er.NoHint)))
 		}
-		if len(accountInstance.TokenMetaData.URIs) > 1 {
+
+		if !expectedInstance.Uris.IsUnspecified() &&
+			!expectedInstance.Uris.CheckList(accountInstance.TokenMetaData.URIs) {
+			// in this case unspecified is interpreted as *
 			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: More than one URI currently not supported",
-				tokenName,
-				nonce))
-		}
-		var actualUri []byte
-		if len(accountInstance.TokenMetaData.URIs) == 1 {
-			actualUri = accountInstance.TokenMetaData.URIs[0]
-		}
-		if !expectedInstance.Uri.IsUnspecified() &&
-			!expectedInstance.Uri.Check(actualUri) {
-			errors = append(errors, fmt.Errorf(
-				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: \"%s\"",
+				"for token: %s, nonce: %d: Bad URI. Want: %s. Have: %s",
 				tokenName,
 				nonce,
-				objectStringOrDefault(expectedInstance.Uri.Original),
-				ae.exprReconstructor.Reconstruct(
-					actualUri,
-					er.StrHint)))
+				checkBytesListPretty(expectedInstance.Uris),
+				ae.exprReconstructor.ReconstructList(accountInstance.TokenMetaData.URIs, er.StrHint)))
 		}
+
 		if !expectedInstance.Attributes.IsUnspecified() &&
 			!expectedInstance.Attributes.Check(accountInstance.TokenMetaData.Attributes) {
 			errors = append(errors, fmt.Errorf(

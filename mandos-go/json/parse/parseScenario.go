@@ -169,6 +169,11 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
+			case "id":
+				step.SetStateIdent, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad tx set state step id: %w", err)
+				}
 			case "comment":
 				step.Comment, err = p.parseString(kvp.Value)
 				if err != nil {
@@ -195,7 +200,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 					return nil, fmt.Errorf("error parsing currentBlockInfo: %w", err)
 				}
 			case "blockHashes":
-				step.BlockHashes, err = p.parseByteArrayList(kvp.Value)
+				step.BlockHashes, err = p.parseValueList(kvp.Value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing block hashes: %w", err)
 				}
@@ -209,6 +214,11 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 		for _, kvp := range stepMap.OrderedKV {
 			switch kvp.Key {
 			case "step":
+			case "id":
+				step.CheckStateIdent, err = p.parseString(kvp.Value)
+				if err != nil {
+					return nil, fmt.Errorf("bad check state step id: %w", err)
+				}
 			case "comment":
 				step.Comment, err = p.parseString(kvp.Value)
 				if err != nil {
@@ -261,6 +271,8 @@ func (p *Parser) parseTxStep(txType mj.TransactionType, stepMap *oj.OJsonMap) (*
 		switch kvp.Key {
 		case "step":
 		case "txId":
+			fallthrough
+		case "id":
 			step.TxIdent, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("bad tx step id: %w", err)

@@ -99,7 +99,7 @@ func GetSCCode(fileName string) []byte {
 
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
 func SetLoggingForTests() {
-	logger.SetLogLevel("*:TRACE")
+	_ = logger.SetLogLevel("*:TRACE")
 	logger.ToggleCorrelation(false)
 	logger.ToggleLoggerName(true)
 }
@@ -210,4 +210,19 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	}
 
 	return true
+}
+
+// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecution bool) {
+	runtime := GetVMHost(vmHostPtr)
+	if runtime.FixFailExecutionEnabled() {
+		_ = WithFaultAndHost(runtime, err, failExecution)
+	}
+}
+
+// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bool) {
+	if host.FixFailExecutionEnabled() {
+		_ = WithFaultAndHost(host, err, failExecution)
+	}
 }

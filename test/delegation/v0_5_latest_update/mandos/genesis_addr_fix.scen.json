@@ -7,15 +7,11 @@
             "accounts": {
                 "address:node_address": {
                     "nonce": "0",
-                    "balance": "0",
-                    "storage": {},
-                    "code": ""
+                    "balance": "0"
                 },
                 "address:delegator_1": {
                     "nonce": "0",
-                    "balance": "7,777,000,000",
-                    "storage": {},
-                    "code": ""
+                    "balance": "7,777,000,000"
                 },
                 "sc:delegation": {
                     "nonce": "0",
@@ -84,7 +80,7 @@
             "tx": {
                 "from": "address:delegator_1",
                 "to": "sc:delegation",
-                "value": "7,777,000,000",
+                "egldValue": "7,777,000,000",
                 "function": "stake",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -114,7 +110,6 @@
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
-                "value": "0",
                 "function": "getFullWaitingList",
                 "arguments": [],
                 "gasLimit": "100,000,000",
@@ -122,7 +117,9 @@
             },
             "expect": {
                 "out": [
-                    "address:delegator_1", "7,777,000,000", "0"
+                    "address:delegator_1",
+                    "7,777,000,000",
+                    "0"
                 ],
                 "status": "",
                 "logs": [],

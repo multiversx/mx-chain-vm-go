@@ -12,20 +12,28 @@ const ArwenVersion = "v1.4"
 type BreakpointValue uint64
 
 const (
-	// BreakpointNone signifies the lack of a breakpoint
+	// BreakpointNone means the lack of a breakpoint
 	BreakpointNone BreakpointValue = iota
 
-	// BreakpointExecutionFailed means that Wasmer must stop immediately due to failure indicated by Arwen
+	// BreakpointExecutionFailed means that Wasmer must stop immediately
+	// due to failure indicated by Arwen
 	BreakpointExecutionFailed
 
-	// BreakpointAsyncCall means that Wasmer must stop immediately so Arwen can execute an AsyncCall
+	// BreakpointAsyncCall means that Wasmer must stop immediately
+	// so the VM can execute an AsyncCall
 	BreakpointAsyncCall
 
-	// BreakpointSignalError means that Wasmer must stop immediately due to a contract-signalled error
+	// BreakpointSignalError means that Wasmer must stop immediately
+	// due to a contract-signalled error
 	BreakpointSignalError
 
-	// BreakpointOutOfGas means that Wasmer must stop immediately due to gas being exhausted
+	// BreakpointOutOfGas means that Wasmer must stop immediately
+	// due to gas being exhausted
 	BreakpointOutOfGas
+
+	// BreakpointMemoryLimit means that Wasmer must stop immediately
+	// due to over-allocation of WASM memory
+	BreakpointMemoryLimit
 )
 
 // AsyncCallExecutionMode encodes the execution modes of an AsyncCall
@@ -117,12 +125,15 @@ type VMHostParameters struct {
 	BuiltInFuncContainer                            vmcommon.BuiltInFunctionContainer
 	ESDTTransferParser                              vmcommon.ESDTTransferParser
 	ElrondProtectedKeyPrefix                        []byte
+	WasmerSIGSEGVPassthrough                        bool
 	EpochNotifier                                   vmcommon.EpochNotifier
 	MultiESDTTransferAsyncCallBackEnableEpoch       uint32
 	FixOOGReturnCodeEnableEpoch                     uint32
 	RemoveNonUpdatedStorageEnableEpoch              uint32
 	CreateNFTThroughExecByCallerEnableEpoch         uint32
 	UseDifferentGasCostForReadingCachedStorageEpoch uint32
+	FixFailExecutionOnErrorEnableEpoch              uint32
+	TimeOutForSCExecutionInMilliseconds             uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

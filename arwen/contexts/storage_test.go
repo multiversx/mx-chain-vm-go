@@ -212,6 +212,75 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
 }
 
+func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
+	address := []byte("account")
+	mockOutput := &contextmock.OutputContextMock{}
+	account := mockOutput.NewVMOutputAccount(address)
+	mockOutput.OutputAccountMock = account
+	mockOutput.OutputAccountIsNew = false
+
+	storeCost := 11
+	persistCost := 7
+	releaseCost := 5
+
+	gasMap := config.MakeGasMapForTests()
+	gasMap["BaseOperationCost"]["StorePerByte"] = uint64(storeCost)
+	gasMap["BaseOperationCost"]["PersistPerByte"] = uint64(persistCost)
+	gasMap["BaseOperationCost"]["ReleasePerByte"] = uint64(releaseCost)
+
+	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
+	mockMetering.SetGasSchedule(gasMap)
+	mockMetering.BlockGasLimitMock = uint64(15000)
+
+	host := &contextmock.VMHostMock{
+		OutputContext:   mockOutput,
+		MeteringContext: mockMetering,
+		RuntimeContext:  mockRuntime,
+	}
+	bcHook := &contextmock.BlockchainHookStub{}
+
+	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext.SetAddress(address)
+
+	gasProvided := 100
+	mockMetering.GasLeftMock = uint64(gasProvided)
+	key := []byte("key")
+
+	// Store new value
+	value := []byte("value")
+	storageStatus, err := storageContext.SetStorage(key, value)
+	gasLeft := gasProvided - storeCost*len(value)
+	storedValue, _ := storageContext.GetStorage(key)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageAdded, storageStatus)
+	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
+	require.Equal(t, value, storedValue)
+
+	// Update with longer value
+	value2 := []byte("value2")
+	mockMetering.GasLeftMock = uint64(gasProvided)
+	storageStatus, err = storageContext.SetStorage(key, value2)
+	storedValue, _ = storageContext.GetStorage(key)
+	gasLeft = gasProvided - persistCost*len(value) - storeCost*(len(value2)-len(value))
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageModified, storageStatus)
+	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
+	require.Equal(t, value2, storedValue)
+
+	// Revert to initial value
+	mockMetering.GasLeftMock = uint64(gasProvided)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	gasLeft = gasProvided - persistCost*len(value)
+	gasFreed := releaseCost * (len(value2) - len(value))
+	storedValue, _ = storageContext.GetStorage(key)
+	require.Nil(t, err)
+	require.Equal(t, arwen.StorageModified, storageStatus)
+	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
+	require.Equal(t, gasFreed, int(mockMetering.GasFreedMock))
+	require.Equal(t, value, storedValue)
+}
+
 func TestStorageContext_StorageProtection(t *testing.T) {
 	address := []byte("account")
 	mockOutput := &contextmock.OutputContextMock{}

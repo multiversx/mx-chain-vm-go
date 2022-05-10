@@ -19,6 +19,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "sc:contract-address": {
                     "code": "file:set-check-esdt.scen.json"
@@ -27,6 +28,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-2",
             "accounts": {
                 "sc:contract-address": {
                     "code": "*"

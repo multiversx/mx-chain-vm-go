@@ -52,8 +52,6 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetRuntimeBreakpointValueFunc func() arwen.BreakpointValue
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	IsContractOnTheStackFunc func(address []byte) bool
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetAsyncCallInfoFunc func() *arwen.AsyncCallInfo
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetAsyncCallInfoFunc func(asyncCallInfo *arwen.AsyncCallInfo)
@@ -213,10 +211,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.GetRuntimeBreakpointValueFunc = func() arwen.BreakpointValue {
 		return runtimeWrapper.runtimeContext.GetRuntimeBreakpointValue()
-	}
-
-	runtimeWrapper.IsContractOnTheStackFunc = func(address []byte) bool {
-		return runtimeWrapper.runtimeContext.IsContractOnTheStack(address)
 	}
 
 	runtimeWrapper.GetAsyncCallInfoFunc = func() *arwen.AsyncCallInfo {
@@ -470,11 +464,6 @@ func (contextWrapper *RuntimeContextWrapper) GetRuntimeBreakpointValue() arwen.B
 	return contextWrapper.GetRuntimeBreakpointValueFunc()
 }
 
-// IsContractOnTheStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) IsContractOnTheStack(address []byte) bool {
-	return contextWrapper.IsContractOnTheStackFunc(address)
-}
-
 // GetAsyncCallInfo calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 	return contextWrapper.GetAsyncCallInfoFunc()
@@ -663,4 +652,9 @@ func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 // DisableUseDifferentGasCostFlag calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
 	contextWrapper.DisableUseDifferentGasCostFlag()
+}
+
+// CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
+	contextWrapper.CleanInstance()
 }

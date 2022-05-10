@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/orderedjson"
@@ -28,19 +29,11 @@ func (ae *ArwenTestExecutor) checkTxResults(
 	}
 
 	// check result
-	if len(output.ReturnData) != len(blResult.Out) {
-		return fmt.Errorf("result length mismatch. Tx %s. Want: %s. Have: %s",
+	if !blResult.Out.CheckList(output.ReturnData) {
+		return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
 			txIndex,
 			checkBytesListPretty(blResult.Out),
-			mj.ResultAsString(output.ReturnData))
-	}
-	for i, expected := range blResult.Out {
-		if !expected.Check(output.ReturnData[i]) {
-			return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
-				txIndex,
-				checkBytesListPretty(blResult.Out),
-				mj.ResultAsString(output.ReturnData))
-		}
+			ae.exprReconstructor.ReconstructList(output.ReturnData, er.NoHint))
 	}
 
 	// check refund
@@ -59,62 +52,87 @@ func (ae *ArwenTestExecutor) checkTxResults(
 			output.GasRemaining)
 	}
 
+	return ae.checkTxLogs(txIndex, blResult.Logs, output.Logs)
+}
+
+func (ae *ArwenTestExecutor) checkTxLogs(
+	txIndex string,
+	expectedLogs mj.LogList,
+	actualLogs []*vmi.LogEntry,
+) error {
 	// "logs": "*" means any value is accepted, log check ignored
-	if blResult.LogsStar {
+	if expectedLogs.IsStar {
 		return nil
 	}
 
 	// this is the real log check
-	if len(blResult.Logs) != len(output.Logs) {
-		return fmt.Errorf("wrong number of logs. Tx %s. Want:%d. Got:%d",
+	if len(actualLogs) < len(expectedLogs.List) {
+		return fmt.Errorf("too few logs. Tx %s. Want:%d. Got:%d",
 			txIndex,
-			len(blResult.Logs),
-			len(output.Logs))
+			len(expectedLogs.List),
+			len(actualLogs))
 	}
-	for i, outLog := range output.Logs {
-		testLog := blResult.Logs[i]
-		if !testLog.Address.Check(outLog.Address) {
-			return fmt.Errorf("bad log address. Tx %s. Want:\n%s\nGot:\n%s",
-				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-		}
-		if !testLog.Endpoint.Check(outLog.Identifier) {
-			return fmt.Errorf("bad log identifier. Tx %s. Want:\n%s\nGot:\n%s",
-				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-		}
-		if len(outLog.Topics) != len(testLog.Topics) {
-			return fmt.Errorf("wrong number of log topics. Tx %s. Want:\n%s\nGot:\n%s",
-				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
-		}
-		for ti := range outLog.Topics {
-			if !testLog.Topics[ti].Check(outLog.Topics[ti]) {
-				return fmt.Errorf("bad log topic. Tx %s. Want:\n%s\nGot:\n%s",
-					txIndex,
-					mjwrite.LogToString(testLog),
-					mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
+
+	for i, actualLog := range actualLogs {
+		if i < len(expectedLogs.List) {
+			testLog := expectedLogs.List[i]
+			err := ae.checkTxLog(txIndex, i, testLog, actualLog)
+			if err != nil {
+				return err
 			}
-		}
-		if !testLog.Data.Check(outLog.Data) {
-			return fmt.Errorf("bad log data. Tx %s. Want:\n%s\nGot:\n%s",
+		} else if !expectedLogs.MoreAllowedAtEnd {
+			return fmt.Errorf("unexpected log. Tx %s. Log index: %d. Log:%s",
 				txIndex,
-				mjwrite.LogToString(testLog),
-				mjwrite.LogToString(ae.convertLogToTestFormat(outLog)))
+				i,
+				mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)),
+			)
 		}
 	}
 
 	return nil
 }
 
+func (ae *ArwenTestExecutor) checkTxLog(
+	txIndex string,
+	logIndex int,
+	expectedLog *mj.LogEntry,
+	actualLog *vmi.LogEntry) error {
+	if !expectedLog.Address.Check(actualLog.Address) {
+		return fmt.Errorf("bad log address. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+			txIndex,
+			logIndex,
+			mjwrite.LogToString(expectedLog),
+			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
+	}
+	if !expectedLog.Endpoint.Check(actualLog.Identifier) {
+		return fmt.Errorf("bad log identifier. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+			txIndex,
+			logIndex,
+			mjwrite.LogToString(expectedLog),
+			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
+	}
+	if !expectedLog.Topics.CheckList(actualLog.Topics) {
+		return fmt.Errorf("bad log topics. Tx %s. Log index: %d. Want: %s. Have: %s",
+			txIndex,
+			logIndex,
+			checkBytesListPretty(expectedLog.Topics),
+			ae.exprReconstructor.ReconstructList(actualLog.Topics, er.NoHint))
+	}
+	if !expectedLog.Data.Check(actualLog.Data) {
+		return fmt.Errorf("bad log data. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+			txIndex,
+			logIndex,
+			mjwrite.LogToString(expectedLog),
+			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
+	}
+	return nil
+}
+
 // JSONCheckBytesString formats a list of JSONCheckBytes for printing to console.
 // TODO: move somewhere else
-func checkBytesListPretty(jcbs []mj.JSONCheckBytes) string {
+func checkBytesListPretty(jcbl mj.JSONCheckValueList) string {
 	str := "["
-	for i, jcb := range jcbs {
+	for i, jcb := range jcbl.Values {
 		if i > 0 {
 			str += ", "
 		}

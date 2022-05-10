@@ -17,7 +17,6 @@ type RuntimeContextMock struct {
 	SCCodeSize             uint64
 	CallFunction           string
 	VMType                 []byte
-	IsContractOnStack      bool
 	ReadOnlyFlag           bool
 	VerifyCode             bool
 	CurrentBreakpointValue arwen.BreakpointValue
@@ -126,11 +125,6 @@ func (r *RuntimeContextMock) GetVMInput() *vmcommon.VMInput {
 // SetVMInput mocked method
 func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
 	r.VMInput = vmInput
-}
-
-// IsContractOnTheStack mocked method
-func (r *RuntimeContextMock) IsContractOnTheStack(_ []byte) bool {
-	return r.IsContractOnStack
 }
 
 // GetSCAddress mocked method
@@ -359,4 +353,8 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 
 // DisableUseDifferentGasCostFlag mocked method
 func (r *RuntimeContextMock) DisableUseDifferentGasCostFlag() {
+}
+
+// CleanInstance mocked method
+func (r *RuntimeContextMock) CleanInstance() {
 }

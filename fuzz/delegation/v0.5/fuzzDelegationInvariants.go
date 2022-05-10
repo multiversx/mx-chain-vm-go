@@ -21,7 +21,7 @@ func (pfe *fuzzDelegationExecutor) validateOwnerStakeShare() error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}
@@ -54,7 +54,7 @@ func (pfe *fuzzDelegationExecutor) validateDelegationCapInvariant() error {
 		"expect": {
 			"out": [],
 			"status": "",
-			"logs": [],
+			"logs": "*",
 			"gas": "*",
 			"refund": "*"
 		}

@@ -16,6 +16,7 @@ type Account struct {
 	Owner           JSONBytesFromString
 	AsyncCallData   string
 	ESDTData        []*ESDTData
+	Update          bool
 }
 
 // StorageKeyValuePair is a json key value pair in the storage map.

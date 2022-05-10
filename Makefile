@@ -21,6 +21,12 @@ test: clean
 test-short:
 	go test -short -count=1 ./...
 
+test-v: clean
+	go test -count=1 -v ./...
+
+test-short-v:
+	go test -short -count=1 -v ./...
+
 print-api-costs:
 	@echo "bigIntOps.go:"
 	@grep "func v1_4\|GasSchedule" arwen/elrondapi/bigIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"

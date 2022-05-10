@@ -31,12 +31,13 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 		Comment:         "",
 		Nonce:           mj.JSONUint64Zero(),
 		Balance:         mj.JSONBigIntZero(),
-		Username:        mj.NewJSONBytesFromString(nil, ""),
+		Username:        mj.JSONBytesEmpty(),
 		Storage:         nil,
-		Code:            mj.NewJSONBytesFromString(nil, ""),
-		Owner:           mj.NewJSONBytesFromString(nil, ""),
+		Code:            mj.JSONBytesEmpty(),
+		Owner:           mj.JSONBytesEmpty(),
 		AsyncCallData:   "",
 		ESDTData:        nil,
+		Update:          false,
 	}
 
 	var err error
@@ -119,6 +120,11 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			acct.AsyncCallData, err = p.parseString(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid asyncCallData string: %w", err)
+			}
+		case "update":
+			acct.Update, err = p.parseBool(kvp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid update flag bool: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown account field: %s", kvp.Key)

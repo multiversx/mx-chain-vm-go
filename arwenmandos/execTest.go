@@ -10,7 +10,7 @@ import (
 func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 	// reset world
 	ae.World.Clear()
-	ae.World.Blockhashes = mj.JSONBytesFromStringValues(test.BlockHashes)
+	ae.World.Blockhashes = test.BlockHashes.ToValues()
 
 	for _, acct := range test.Pre {
 		account, err := convertAccount(acct, ae.World)
@@ -41,7 +41,8 @@ func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
 		}
 	}
 
-	err := ae.checkAccounts(test.PostState)
+	baseErrMsg := "Legacy test check: "
+	err := ae.checkAccounts(baseErrMsg, test.PostState)
 	ae.Close()
 	return err
 }
