@@ -69,8 +69,8 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 			Destination:     testConfig.GetChildAddress(),
 			Data:            callData.ToBytes(),
 			ValueBytes:      value,
-			SuccessCallback: "callBack",
-			ErrorCallback:   "callBack",
+			SuccessCallback: "myCallBack",
+			ErrorCallback:   "myCallBack",
 			GasLimit:        testConfig.GasProvidedToChild,
 			GasLocked:       testConfig.GasToLock,
 		})
@@ -126,7 +126,8 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 // CallBackParentMock is an exposed mock contract method
 func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+
+	callbackFunc := func() *mock.InstanceMock {
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -167,7 +168,10 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		host.Storage().SetStorage(test.CallbackKey, test.CallbackData)
 
 		return instance
-	})
+	}
+
+	instanceMock.AddMockMethod("callBack", callbackFunc)
+	instanceMock.AddMockMethod("myCallBack", callbackFunc)
 }
 
 func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
