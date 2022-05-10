@@ -1203,10 +1203,9 @@ func v1_4_managedMarshalEC(
 	ecHandle int32,
 	resultHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
 	result, err := commonMarshalEC(context, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
-		_ = arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFault(err, context, true)
 		return -1
 	}
 
