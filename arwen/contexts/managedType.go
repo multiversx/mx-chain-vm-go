@@ -216,9 +216,8 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 	metering.UseAndTraceGas(gasToUse)
 }
 
-// ConsumeGasForBigFloatCopy
+// ConsumeGasForBigFloatCopy uses gas for the given big float values
 func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
-	// TODO THIS FUNCTION WILL BE CHANGED TOGETHER WITH THE GAS USAGE SYSTEM OF BIG FLOATS AFTER BENCHMARKS
 	context.ConsumeGasForThisIntNumberOfBytes(encodedBigFloatMaxByteLen * len(values))
 }
 

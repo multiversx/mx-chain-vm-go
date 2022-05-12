@@ -1,14 +1,14 @@
 package math
 
 import (
-	"fmt"
 	"math/big"
 )
 
+// SubBigFloat substraction implementation with error handling for big float
 func SubBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%w while doing float.Sub", ErrOperationCausingPanic)
+			err = ErrBigFloatSub
 			result = big.NewFloat(0)
 		}
 	}()
@@ -17,10 +17,11 @@ func SubBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	return
 }
 
+// AddBigFloat addition implementation with error handling for big float
 func AddBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%w while doing float.Add", ErrOperationCausingPanic)
+			err = ErrBigFloatAdd
 			result = big.NewFloat(0)
 		}
 	}()
@@ -29,10 +30,11 @@ func AddBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	return
 }
 
+// QuoBigFloat quotient implementation with error handling for big float
 func QuoBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%w while doing float.Quo", ErrOperationCausingPanic)
+			err = ErrBigFloatQuo
 			result = big.NewFloat(0)
 		}
 	}()
@@ -41,10 +43,11 @@ func QuoBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	return
 }
 
+// MulBigFloat multiplication implementation with error handling for big float
 func MulBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%w while doing float.Mul", ErrOperationCausingPanic)
+			err = ErrBigFloatMul
 			result = big.NewFloat(0)
 		}
 	}()
@@ -53,10 +56,11 @@ func MulBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	return
 }
 
+// SqrtBigFloat sqrt implementation with error handling for big float
 func SqrtBigFloat(op *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%w while doing float.Sqrt", ErrOperationCausingPanic)
+			err = ErrBigFloatSqrt
 			result = big.NewFloat(0)
 		}
 	}()
