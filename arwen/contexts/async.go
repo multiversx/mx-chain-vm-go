@@ -735,10 +735,12 @@ func (context *asyncContext) isCallAsync() bool {
 	return IsCallAsync(context.callType)
 }
 
+// IsCallAsync checks if the call is an async or callback async
 func IsCallAsync(callType vm.CallType) bool {
 	return callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack
 }
 
+// IsCallback checks if the call is a callback async
 func IsCallback(callType vm.CallType) bool {
 	return callType == vm.AsynchronousCallBack
 }
@@ -975,6 +977,7 @@ func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]by
 	}, args...)
 }
 
+// HasLegacyGroup checks if the a legacy async group was created
 func (context *asyncContext) HasLegacyGroup() bool {
 	_, hasLegacyGroup := context.GetCallGroup(arwen.LegacyAsyncCallGroupID)
 	return hasLegacyGroup

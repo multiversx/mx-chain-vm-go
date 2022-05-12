@@ -250,7 +250,6 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
 	}
-	// gasLimit -= gasToUse
 
 	// send the callID to a local async call
 	asyncCall.CallID, arguments = context.PrependArgumentsForAsyncContext(arguments)
