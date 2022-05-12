@@ -54,6 +54,7 @@ package elrondapi
 // extern void			v1_4_bigIntGetESDTCallValueByIndex(void *context, int32_t destination, int32_t index);
 // extern void			v1_4_bigIntGetESDTExternalBalance(void *context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t result);
 // extern void			v1_4_bigIntGetExternalBalance(void *context, int32_t addressOffset, int32_t result);
+// extern void			v1_4_bigIntToString(void *context, int32_t bigIntHandle, int32_t destinaitonHandle);
 import "C"
 
 import (
@@ -108,6 +109,7 @@ const (
 	bigIntGetESDTCallValueByIndexName = "bigIntGetESDTCallValueByIndex"
 	bigIntGetESDTExternalBalanceName  = "bigIntGetESDTExternalBalance"
 	bigIntGetExternalBalanceName      = "bigIntGetExternalBalance"
+	bigIntToStringName                = "bigIntToString"
 )
 
 // BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
@@ -315,6 +317,11 @@ func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("bigIntGetESDTCallValueByIndex", v1_4_bigIntGetESDTCallValueByIndex, C.v1_4_bigIntGetESDTCallValueByIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("bigIntToString", v1_4_bigIntToString, C.v1_4_bigIntToString)
 	if err != nil {
 		return nil, err
 	}
@@ -1198,5 +1205,25 @@ func v1_4_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 	output.Finish(bigInt2cBytes)
 
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(len(bigInt2cBytes)))
+	metering.UseAndTraceGas(gasToUse)
+}
+
+//export v1_4_bigIntToString
+func v1_4_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
+	managedType := arwen.GetManagedTypesContext(context)
+	metering := arwen.GetMeteringContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+
+	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
+	metering.UseGasAndAddTracedGas(bigIntToStringName, gasToUse)
+
+	value, err := managedType.GetBigInt(bigIntHandle)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	resultStr := value.String()
+	managedType.SetBytes(destinationHandle, []byte(resultStr))
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(resultStr)))
 	metering.UseAndTraceGas(gasToUse)
 }

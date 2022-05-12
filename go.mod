@@ -7,8 +7,12 @@ require (
 	github.com/ElrondNetwork/elrond-go-core v1.1.13
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.5
+<<<<<<< HEAD
 	github.com/ElrondNetwork/elrond-vm-common v1.3.2
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
+=======
+	github.com/ElrondNetwork/elrond-vm-common v1.3.4
+>>>>>>> master
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.6
 	github.com/gogo/protobuf v1.3.2

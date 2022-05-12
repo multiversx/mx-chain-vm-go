@@ -174,6 +174,7 @@ func NewArwenVM(
 		host.builtInFuncContainer,
 		hostParameters.EpochNotifier,
 		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+		hostParameters.ManagedCryptoAPIEnableEpoch,
 	)
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
