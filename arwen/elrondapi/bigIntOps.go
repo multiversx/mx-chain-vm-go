@@ -609,9 +609,6 @@ func v1_4_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.SetBytes(bytes)
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
-	metering.UseAndTraceGas(gasToUse)
 }
 
 //export v1_4_bigIntSetSignedBytes
