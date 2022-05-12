@@ -38,7 +38,7 @@
                     "3"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -59,7 +59,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -80,7 +80,7 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -113,7 +113,7 @@
                     "sc:multisig-child"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -132,7 +132,7 @@
                         "str:num_board_members": "1",
                         "str:quorum": "1"
                     },
-                    "code": "file:../output/multisig.wasm"
+                    "code": "file:../output/multisig-external-view.wasm"
                 },
                 "+": ""
             }

@@ -82,7 +82,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:payment exceeds unfilled total stake",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

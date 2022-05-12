@@ -15,7 +15,8 @@
                                     "royalties": "2000",
                                     "hash": "keccak256:str:metadata_hash",
                                     "uri": [
-                                        "str:www.cool_nft.com/my_nft.jpg"
+                                        "str:www.cool_nft.com/my_nft.jpg",
+                                        "str:www.cool_nft.com/my_nft.json"
                                     ],
                                     "attributes": "str:serialized_attributes"
                                 }
@@ -27,6 +28,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:the-address": {
                     "esdt": {
@@ -39,7 +41,8 @@
                                     "royalties": "2000",
                                     "hash": "keccak256:str:metadata_hash",
                                     "uri": [
-                                        "str:www.cool_nft.com/my_nft.jpg"
+                                        "str:www.cool_nft.com/my_nft.jpg",
+                                        "*"
                                     ],
                                     "attributes": "str:serialized_attributes"
                                 }
@@ -51,6 +54,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-2",
             "accounts": {
                 "address:the-address": {
                     "esdt": {
@@ -59,7 +63,14 @@
                                 {
                                     "nonce": "1",
                                     "balance": "1",
-                                    "royalties": "*"
+                                    "creator": "address:the-address",
+                                    "royalties": "2000",
+                                    "hash": "keccak256:str:metadata_hash",
+                                    "uri": [
+                                        "*",
+                                        "str:www.cool_nft.com/my_nft.json"
+                                    ],
+                                    "attributes": "str:serialized_attributes"
                                 }
                             ]
                         }
@@ -69,6 +80,27 @@
         },
         {
             "step": "checkState",
+            "id": "check-3",
+            "accounts": {
+                "address:the-address": {
+                    "esdt": {
+                        "str:NFT-123456": {
+                            "instances": [
+                                {
+                                    "nonce": "1",
+                                    "balance": "1",
+                                    "royalties": "*",
+                                    "uri": "*"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "id": "check-4",
             "accounts": {
                 "address:the-address": {
                     "esdt": {

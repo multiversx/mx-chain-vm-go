@@ -1,7 +1,6 @@
 package math
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 
@@ -16,7 +15,7 @@ func TestBigFloatSub_Panic(t *testing.T) {
 	result, err := SubBigFloat(value1, value2)
 
 	require.Equal(t, big.NewFloat(0), result)
-	require.Equal(t, fmt.Errorf("%w while doing float.Sub", ErrOperationCausingPanic), err)
+	require.Equal(t, ErrBigFloatSub, err)
 }
 
 func TestBigFloatSub_Success(t *testing.T) {
@@ -41,7 +40,7 @@ func TestBigFloatAdd_Panic(t *testing.T) {
 	result, err := AddBigFloat(value1, value2)
 
 	require.Equal(t, big.NewFloat(0), result)
-	require.Equal(t, fmt.Errorf("%w while doing float.Add", ErrOperationCausingPanic), err)
+	require.Equal(t, ErrBigFloatAdd, err)
 }
 
 func TestBigFloatAdd_Success(t *testing.T) {
@@ -63,7 +62,7 @@ func TestBigFloatQuo_Panic(t *testing.T) {
 	result, err := QuoBigFloat(value1, value2)
 
 	require.Equal(t, big.NewFloat(0), result)
-	require.Equal(t, fmt.Errorf("%w while doing float.Quo", ErrOperationCausingPanic), err)
+	require.Equal(t, ErrBigFloatQuo, err)
 }
 
 func TestBigFloatQuo_Success(t *testing.T) {
@@ -78,7 +77,7 @@ func TestBigFloatMul_Panic(t *testing.T) {
 	value1, value2 := big.NewFloat(0), new(big.Float).SetInf(false)
 	result, err := MulBigFloat(value1, value2)
 
-	require.Equal(t, fmt.Errorf("%w while doing float.Mul", ErrOperationCausingPanic), err)
+	require.Equal(t, ErrBigFloatMul, err)
 	require.Equal(t, big.NewFloat(0), result)
 }
 
@@ -99,7 +98,7 @@ func TestBigFloatSqrt_Panic(t *testing.T) {
 	result, err := SqrtBigFloat(value)
 
 	require.Equal(t, big.NewFloat(0), result)
-	require.Equal(t, fmt.Errorf("%w while doing float.Sqrt", ErrOperationCausingPanic), err)
+	require.Equal(t, ErrBigFloatSqrt, err)
 }
 
 func TestBigFloatSqrt_Success(t *testing.T) {

@@ -49,6 +49,9 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 			}
 			stepOJ.Put("path", stringToOJ(step.Path))
 		case *mj.SetStateStep:
+			if len(step.SetStateIdent) > 0 {
+				stepOJ.Put("id", stringToOJ(step.SetStateIdent))
+			}
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
@@ -64,10 +67,13 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 			if step.CurrentBlockInfo != nil {
 				stepOJ.Put("currentBlockInfo", blockInfoToOJ(step.CurrentBlockInfo))
 			}
-			if len(step.BlockHashes) > 0 {
-				stepOJ.Put("blockHashes", blockHashesToOJ(step.BlockHashes))
+			if !step.BlockHashes.IsUnspecified() {
+				stepOJ.Put("blockHashes", valueListToOJ(step.BlockHashes))
 			}
 		case *mj.CheckStateStep:
+			if len(step.CheckStateIdent) > 0 {
+				stepOJ.Put("id", stringToOJ(step.CheckStateIdent))
+			}
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))
 			}
@@ -78,7 +84,7 @@ func ScenarioToOrderedJSON(scenario *mj.Scenario) oj.OJsonObject {
 			}
 		case *mj.TxStep:
 			if len(step.TxIdent) > 0 {
-				stepOJ.Put("txId", stringToOJ(step.TxIdent))
+				stepOJ.Put("id", stringToOJ(step.TxIdent))
 			}
 			if len(step.Comment) > 0 {
 				stepOJ.Put("comment", stringToOJ(step.Comment))

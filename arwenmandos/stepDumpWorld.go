@@ -91,12 +91,12 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 				}
 			}
 
-			var uri mj.JSONBytesFromTree
-			if len(mockInstance.TokenMetaData.URIs) > 0 {
-				uri = mj.JSONBytesFromTree{
-					Value:    mockInstance.TokenMetaData.URIs[0],
-					Original: &oj.OJsonString{Value: ae.exprReconstructor.Reconstruct(mockInstance.TokenMetaData.URIs[0], er.NoHint)},
-				}
+			var jsonUris []mj.JSONBytesFromString
+			for _, uri := range mockInstance.TokenMetaData.URIs {
+				jsonUris = append(jsonUris, mj.JSONBytesFromString{
+					Value:    uri,
+					Original: ae.exprReconstructor.Reconstruct(uri, er.StrHint),
+				})
 			}
 
 			var attributes mj.JSONBytesFromString
@@ -119,7 +119,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 				Creator:    creator,
 				Royalties:  royalties,
 				Hash:       hash,
-				Uri:        uri,
+				Uris:       mj.JSONValueList{Values: jsonUris},
 				Attributes: attributes,
 			})
 		}

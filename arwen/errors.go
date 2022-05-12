@@ -23,8 +23,14 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 // ErrExecutionFailed signals that the execution failed
 var ErrExecutionFailed = errors.New("execution failed")
 
+// ErrExecutionPanicked signals that the execution failed irrecoverably
+var ErrExecutionPanicked = errors.New("VM execution panicked")
+
 // ErrExecutionFailedWithTimeout signals that the execution failed with timeout
 var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
+
+// ErrMemoryLimit signals that too much memory was allocated by the contract
+var ErrMemoryLimit = errors.New("memory limit reached")
 
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")
@@ -206,3 +212,15 @@ var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
+
+// ErrNilESDTData is given when ESDT data is missing
+var ErrNilESDTData = errors.New("nil esdt data")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidArgument = errors.New("invalid argument")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidTokenIndex = errors.New("invalid token index")
+
+// ErrInvalidBuiltInFunctionCall signals that built in function was used in the wrong context
+var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")

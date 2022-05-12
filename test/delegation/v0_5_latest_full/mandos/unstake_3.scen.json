@@ -39,8 +39,8 @@
             "expect": {
                 "out": [],
                 "status": "4",
-                "message": "''cannot unstake more than the user waiting + active stake",
-                "logs": [],
+                "message": "str:cannot unstake more than the user waiting + active stake",
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

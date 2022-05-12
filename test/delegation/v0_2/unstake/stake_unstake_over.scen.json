@@ -83,7 +83,7 @@
                 "out": [],
                 "status": "4",
                 "message": "str:cannot unstake more than was staked",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

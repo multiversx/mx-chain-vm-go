@@ -15,6 +15,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:the-address": {
                     "storage": {
@@ -27,6 +28,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-2",
             "accounts": {
                 "address:the-address": {
                     "storage": "*"
@@ -35,6 +37,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-3",
             "accounts": {
                 "address:the-address": {
                     "storage": {
@@ -46,6 +49,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-4",
             "accounts": {
                 "address:the-address": {
                     "storage": {
@@ -58,6 +62,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-5",
             "accounts": {
                 "address:the-address": {
                     "storage": {
@@ -70,6 +75,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-6",
             "accounts": {
                 "address:the-address": {
                     "storage": {

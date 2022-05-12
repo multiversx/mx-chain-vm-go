@@ -811,9 +811,11 @@ func addOutputTransferToVMOutput(
 func (host *vmHost) checkFinalGasAfterExit() error {
 	totalUsedPoints := host.Runtime().GetPointsUsed()
 	if totalUsedPoints > host.Metering().GetGasForExecution() {
+		log.Trace("checkFinalGasAfterExit", "failed")
 		return arwen.ErrNotEnoughGas
 	}
 
+	log.Trace("checkFinalGasAfterExit", "ok")
 	return nil
 }
 
@@ -847,7 +849,7 @@ func (host *vmHost) callSCMethod() error {
 
 	err := host.verifyAllowedFunctionCall()
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "verifyAllowedFunctionCall")
 		return err
 	}
 
@@ -857,37 +859,36 @@ func (host *vmHost) callSCMethod() error {
 		if callType == vm.AsynchronousCallBack && errors.Is(err, arwen.ErrNilCallbackFunction) {
 			err = host.processCallbackStack()
 			if err != nil {
-				log.Trace("call SC method failed", "error", err)
+				log.Trace("call SC method failed", "error", err, "src", "processCallbackStack")
 			}
 
 			return err
 		}
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "getFunctionByCallType")
 		return err
 	}
 
 	_, err = function()
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
+		log.Trace("breakpoint detected and handled", "err", err)
 	}
 	if err == nil {
 		err = host.checkFinalGasAfterExit()
 	}
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "sc function")
 		return err
 	}
 
 	switch callType {
 	case vm.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		_, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
 			log.Trace("call SC method failed", "error", paiErr)
 			return paiErr
 		}
-		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
+		err = host.sendCallbackToCurrentCaller()
 	case vm.AsynchronousCallBack:
 		err = host.processCallbackStack()
 	default:
@@ -895,7 +896,7 @@ func (host *vmHost) callSCMethod() error {
 	}
 
 	if err != nil {
-		log.Trace("call SC method failed", "error", err)
+		log.Trace("call SC method failed", "error", err, "src", "async post-process")
 	}
 
 	return err

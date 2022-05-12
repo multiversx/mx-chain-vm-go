@@ -7,6 +7,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-after-external-steps",
             "comment": "just checking that steps executed",
             "accounts": {
                 "address:an_account": {

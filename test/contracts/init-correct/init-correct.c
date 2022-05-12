@@ -1,6 +1,12 @@
 #include "../elrond/context.h"
 
 void init() {
+	if (getNumArguments() == 0) {
+		unsigned char msg[] = "init successful";
+		finish(msg, 15);
+		return;
+	}
+
 	byte arg = 0;
 	getArgument(0, &arg);
 

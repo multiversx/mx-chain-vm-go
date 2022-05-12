@@ -64,6 +64,8 @@ type ElrondAPICost struct {
 	GetReturnData        uint64
 	GetNumReturnData     uint64
 	GetReturnDataSize    uint64
+	CleanReturnData      uint64
+	DeleteFromReturnData uint64
 }
 
 type EthAPICost struct {
