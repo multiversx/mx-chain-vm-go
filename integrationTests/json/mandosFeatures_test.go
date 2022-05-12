@@ -40,6 +40,14 @@ func TestRustBasicFeaturesLegacy(t *testing.T) {
 	runAllTestsInFolder(t, "features/basic-features-legacy/mandos")
 }
 
+func TestRustBigFloatFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/big-float-features/mandos")
+}
+
 func TestRustPayableFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
