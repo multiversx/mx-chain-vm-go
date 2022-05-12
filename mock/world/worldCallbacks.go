@@ -282,6 +282,16 @@ func (b *MockWorld) ClearCompiledCodes() {
 	b.CompiledCode = make(map[string][]byte)
 }
 
+// IsPaused -
+func (b *MockWorld) IsPaused(_ []byte) bool {
+	return false
+}
+
+// IsLimitedTransfer -
+func (b *MockWorld) IsLimitedTransfer(_ []byte) bool {
+	return false
+}
+
 // IsInterfaceNil returns true if underlying implementation is nil
 func (b *MockWorld) IsInterfaceNil() bool {
 	return b == nil
