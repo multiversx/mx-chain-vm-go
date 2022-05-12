@@ -309,7 +309,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
-		0)
+		0, 0)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
