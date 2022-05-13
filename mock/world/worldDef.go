@@ -46,6 +46,7 @@ type MockWorld struct {
 	LastCreatedContractAddress []byte
 	CompiledCode               map[string][]byte
 	BuiltinFuncs               *BuiltinFunctionsWrapper
+	ProvidedBlockchainHook     vmcommon.BlockchainHook
 }
 
 // NewMockWorld creates a new MockWorld instance
@@ -65,6 +66,10 @@ func NewMockWorld() *MockWorld {
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
 
 	return world
+}
+
+func (b *MockWorld) SetProvidedBlockchainHook(bh vmcommon.BlockchainHook) {
+	b.ProvidedBlockchainHook = bh
 }
 
 // InitBuiltinFunctions initializes the inner BuiltinFunctionsWrapper, required

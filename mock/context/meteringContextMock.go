@@ -12,6 +12,7 @@ var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
 type MeteringContextMock struct {
 	GasCost           *config.GasCost
 	GasLeftMock       uint64
+	GasFreedMock      uint64
 	GasLockedMock     uint64
 	GasProvidedMock   uint64
 	GasComputedToLock uint64
@@ -55,7 +56,13 @@ func (m *MeteringContextMock) GasSchedule() *config.GasCost {
 }
 
 // UseGas mocked method
-func (m *MeteringContextMock) UseGas(_ uint64) {
+func (m *MeteringContextMock) UseGas(gas uint64) {
+	if gas > m.GasLeftMock {
+		m.GasLeftMock = 0
+		return
+	}
+
+	m.GasLeftMock -= gas
 }
 
 // UseAndTraceGas mocked method
@@ -66,11 +73,13 @@ func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {
 }
 
 // FreeGas mocked method
-func (m *MeteringContextMock) FreeGas(_ uint64) {
+func (m *MeteringContextMock) FreeGas(gas uint64) {
+	m.GasFreedMock += gas
 }
 
 // RestoreGas mocked method
-func (m *MeteringContextMock) RestoreGas(_ uint64) {
+func (m *MeteringContextMock) RestoreGas(gas uint64) {
+	m.GasLeftMock += gas
 }
 
 // GasLeft mocked method
@@ -147,8 +156,15 @@ func (m *MeteringContextMock) DeductGasIfAsyncStep() error {
 }
 
 // UseGasBounded mocked method
-func (m *MeteringContextMock) UseGasBounded(_ uint64) error {
-	return m.Err
+func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
+	if m.Err != nil {
+		return m.Err
+	}
+	if m.GasLeft() <= gas {
+		return arwen.ErrNotEnoughGas
+	}
+	m.UseGas(gas)
+	return nil
 }
 
 // UnlockGasIfAsyncCallback mocked method

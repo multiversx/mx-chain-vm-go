@@ -19,7 +19,7 @@ func (context *asyncContext) Save() error {
 		return errors.New("callID must be 32 bytes")
 	}
 
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
+	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, callID)
 	data, err := context.marshalizer.Marshal(context.toSerializable())
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (context *asyncContext) LoadParentContext() error {
 // Delete deletes the persisted state of the AsyncContext from the contract storage.
 func (context *asyncContext) Delete() error {
 	storage := context.host.Storage()
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, context.callID)
+	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, context.callID)
 	_, err := storage.SetProtectedStorage(storageKey, nil)
 	return err
 }
@@ -57,7 +57,7 @@ func (context *asyncContext) Delete() error {
 // Delete deletes the persisted state of the AsyncContext from the contract storage.
 func (context *asyncContext) DeleteFromAddress(address []byte) error {
 	storage := context.host.Storage()
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, context.callID)
+	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, context.callID)
 	_, err := storage.SetProtectedStorageToAddress(address, storageKey, nil)
 	return err
 }
@@ -111,7 +111,7 @@ func readAsyncContextFromStorage(
 	callID []byte,
 	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
-	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, callID)
+	storageKey := getAsyncContextStorageKey(storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix), callID)
 	data, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
 		return nil, arwen.ErrNoStoredAsyncContextFound
@@ -199,4 +199,8 @@ func fromSerializableVMOutput(serializedVMOutput *SerializableVMOutput) *vmcommo
 		GasRemaining:  serializedVMOutput.GasRemaining,
 		GasRefund:     serializedVMOutput.GasRefund,
 	}
+}
+
+func getAsyncContextStorageKey(prefix []byte, callID []byte) []byte {
+	return arwen.CustomStorageKey(string(prefix), callID)
 }

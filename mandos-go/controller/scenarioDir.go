@@ -30,12 +30,13 @@ func (r *ScenarioRunner) RunAllJSONScenariosInDirectory(
 			} else {
 				r.Executor.Reset()
 				r.RunsNewTest = true
+				fmt.Printf("Scenario: %s ... ", shortenTestPath(testFilePath, generalTestPath))
 				testErr := r.RunSingleJSONScenario(testFilePath, options)
 				if testErr == nil {
 					nrPassed++
+					fmt.Print("  ok\n")
 				} else {
 					nrFailed++
-					fmt.Printf("Scenario: %s ... ", shortenTestPath(testFilePath, generalTestPath))
 					fmt.Printf("  FAIL: %s\n", testErr.Error())
 				}
 			}

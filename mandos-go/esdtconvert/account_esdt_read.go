@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 
@@ -40,13 +39,9 @@ func GetTokenData(tokenIdentifier []byte, nonce uint64, source map[string][]byte
 }
 
 func getTokenDataByKey(tokenKey []byte, source map[string][]byte, systemAccStorage map[string][]byte) (*esdt.ESDigitalToken, error) {
+	// default value copied from the protocol
 	esdtData := &esdt.ESDigitalToken{
 		Value: big.NewInt(0),
-		Type:  uint32(core.Fungible),
-		TokenMetaData: &esdt.MetaData{
-			Name:  getTokenNameFromKey(tokenKey),
-			Nonce: 0,
-		},
 	}
 
 	marshaledData := source[string(tokenKey)]

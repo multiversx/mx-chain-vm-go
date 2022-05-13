@@ -137,9 +137,14 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
-	// TODO matei-p investigate transfer issue merging
 	for _, account := range context.outputState.OutputAccounts {
-		account.OutputTransfers = make([]vmcommon.OutputTransfer, 0)
+		newTransfers := make([]vmcommon.OutputTransfer, 0)
+		for _, existingTransfer := range account.OutputTransfers {
+			if isNonAsyncCallTransfer(existingTransfer) {
+				newTransfers = append(newTransfers, existingTransfer)
+			}
+		}
+		account.OutputTransfers = newTransfers
 	}
 
 	logOutput.Trace("state content censored")
@@ -586,9 +591,6 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		if rightAccount.BalanceDelta != nil {
 			rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
 		}
-		if len(rightAccount.OutputTransfers) > 0 {
-			leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
-		}
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
@@ -649,19 +651,48 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
-	// TODO matei-p investigate transfer issue merging
-	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
-	// lenLeftOutTransfers := len(leftAccount.OutputTransfers)
-	// lenRightOutTransfers := len(rightAccount.OutputTransfers)
-	// if lenRightOutTransfers > lenLeftOutTransfers {
-	// 	leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
-	// }
+	mergeTransfers(leftAccount, rightAccount)
 
 	leftAccount.GasUsed = rightAccount.GasUsed
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress
 	}
+}
+
+func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount) {
+	leftAsyncCallTransfers, leftOtherTransfers := splitTransfers(leftAccount)
+	rightAsyncCallTransfers, rightOtherTransfers := splitTransfers(rightAccount)
+
+	leftAsyncCallTransfers = append(leftAsyncCallTransfers, rightAsyncCallTransfers...)
+
+	lenLeftOtherTransfers := len(leftOtherTransfers)
+	lenRightOtherTransfers := len(rightOtherTransfers)
+	if lenRightOtherTransfers > lenLeftOtherTransfers {
+		leftOtherTransfers = append(leftOtherTransfers, rightOtherTransfers[lenLeftOtherTransfers:]...)
+	}
+
+	leftAccount.OutputTransfers = append(leftAsyncCallTransfers, leftOtherTransfers...)
+}
+
+func splitTransfers(account *vmcommon.OutputAccount) ([]vmcommon.OutputTransfer, []vmcommon.OutputTransfer) {
+	if account.OutputTransfers == nil {
+		return nil, nil
+	}
+	asyncCallTransfers := make([]vmcommon.OutputTransfer, 0)
+	otherTransfers := make([]vmcommon.OutputTransfer, 0)
+	for _, transfer := range account.OutputTransfers {
+		if isNonAsyncCallTransfer(transfer) {
+			otherTransfers = append(otherTransfers, transfer)
+		} else {
+			asyncCallTransfers = append(asyncCallTransfers, transfer)
+		}
+	}
+	return asyncCallTransfers, otherTransfers
+}
+
+func isNonAsyncCallTransfer(transfer vmcommon.OutputTransfer) bool {
+	return transfer.CallType != vm.AsynchronousCall && transfer.CallType != vm.AsynchronousCallBack
 }
 
 func mergeStorageUpdates(

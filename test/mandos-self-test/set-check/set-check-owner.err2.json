@@ -12,6 +12,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "accounts": {
                 "address:parent": {
                     "owner": "address:other"

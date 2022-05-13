@@ -113,14 +113,15 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		}
 
 		arguments := host.Runtime().Arguments()
-		if len(arguments) != 3 {
-			host.Runtime().SignalUserError("need 3 arguments")
+		if len(arguments) != 4 {
+			host.Runtime().SignalUserError("need 4 arguments")
 			return instance
 		}
 
 		receiver := arguments[0]
 		builtInFunction := arguments[1]
 		functionToCallOnChild := arguments[2]
+		asyncCallType := arguments[3]
 
 		callData := txDataBuilder.NewBuilder()
 		// function to be called on child
@@ -128,10 +129,29 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		callData.Bytes(test.ESDTTestTokenName)
 		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
 		callData.Bytes(functionToCallOnChild)
+		callData.Bytes(asyncCallType)
 
 		value := big.NewInt(0).Bytes()
 
-		err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
+		if asyncCallType[0] == 0 {
+			err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
+		} else {
+			callbackName := "callBack"
+			if host.Runtime().ValidateCallbackName(callbackName) == arwen.ErrFuncNotFound {
+				callbackName = ""
+			}
+			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+				Status:          arwen.AsyncCallPending,
+				Destination:     receiver,
+				Data:            callData.ToBytes(),
+				ValueBytes:      value,
+				SuccessCallback: callbackName,
+				ErrorCallback:   callbackName,
+				GasLimit:        testConfig.GasProvidedToChild,
+				GasLocked:       testConfig.GasToLock,
+			})
+		}
+
 		if err != nil {
 			host.Runtime().FailExecution(err)
 		}

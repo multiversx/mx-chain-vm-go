@@ -35,6 +35,7 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
 	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
 		context.executeESDTTransferOnCallback(asyncCall)
+		context.completeChild(asyncCall.CallID, 0)
 		return nil
 	}
 
@@ -249,7 +250,6 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	if gasLimit <= gasToUse {
 		return nil, arwen.ErrNotEnoughGas
 	}
-	gasLimit -= gasToUse
 
 	// send the callID to a local async call
 	asyncCall.CallID, arguments = context.PrependArgumentsForAsyncContext(arguments)

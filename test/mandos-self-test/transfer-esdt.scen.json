@@ -35,6 +35,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "comment": "check after tx 1",
             "accounts": {
                 "address:A": {
@@ -74,6 +75,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-2",
             "comment": "check after tx 2",
             "accounts": {
                 "address:A": {

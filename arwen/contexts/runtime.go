@@ -49,6 +49,9 @@ type runtimeContext struct {
 
 	useDifferentGasCostForReadingCachedStorageEpoch uint32
 	flagEnableNewAPIMethods                         atomic.Flag
+
+	managedCryptoApiEnableEpoch uint32
+	flagEnableManagedCryptoAPI  atomic.Flag
 }
 
 type instanceAndMemory struct {
@@ -63,6 +66,7 @@ func NewRuntimeContext(
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	epochNotifier vmcommon.EpochNotifier,
 	useDifferentGasCostForReadingCachedStorageEpoch uint32,
+	managedCryptoAPIEnableEpoch uint32,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -71,12 +75,13 @@ func NewRuntimeContext(
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
-		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:        nil,
+		host:                        host,
+		vmType:                      vmType,
+		stateStack:                  make([]*runtimeContext, 0),
+		instanceStack:               make([]wasmer.InstanceHandler, 0),
+		validator:                   newWASMValidator(scAPINames, builtInFuncContainer),
+		errors:                      nil,
+		managedCryptoApiEnableEpoch: managedCryptoAPIEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
@@ -682,6 +687,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if !context.flagEnableManagedCryptoAPI.IsSet() {
+		err = context.checkIfContainsNewManagedCryptoAPI()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -713,6 +726,68 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 		return arwen.ErrContractInvalid
 	}
 	if context.instance.IsFunctionImported("completedTxEvent") {
+		return arwen.ErrContractInvalid
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
+	if context.instance.IsFunctionImported("managedIsESDTFrozen") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedIsPaused") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedIsLimitedTransfer") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedBufferToHex") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigIntToString") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedRipemd160") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifyBLS") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifyEd25519") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifySecp256k1") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedVerifyCustomSecp256k1") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedEncodeSecp256k1DerSignature") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedScalarBaseMultEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedScalarMultEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedMarshalEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedUnmarshalEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedMarshalCompressedEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedUnmarshalCompressedEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedGenerateKeyEC") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("managedCreateEC") {
 		return arwen.ErrContractInvalid
 	}
 
@@ -1010,11 +1085,16 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 
 // PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
 func (context *runtimeContext) PopFirstArgumentFromVMInput() ([]byte, error) {
-	if len(context.vmInput.Arguments) == 0 {
+	return PopFirstArgumentFromVMInput(context.vmInput)
+}
+
+// PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
+func PopFirstArgumentFromVMInput(vmInput *vmcommon.VMInput) ([]byte, error) {
+	if len(vmInput.Arguments) == 0 {
 		return nil, arwen.ErrInvalidAsyncArgsList
 	}
-	firstArg := context.vmInput.Arguments[0]
-	context.vmInput.Arguments = context.vmInput.Arguments[1:]
+	firstArg := vmInput.Arguments[0]
+	vmInput.Arguments = vmInput.Arguments[1:]
 	return firstArg, nil
 }
 

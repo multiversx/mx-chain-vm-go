@@ -10,7 +10,6 @@ import (
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/stretchr/testify/require"
 )
 
 var AsyncChildFunction = "transferToThirdParty"
@@ -22,7 +21,6 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
@@ -37,11 +35,17 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 
 		scAddress := host.Runtime().GetSCAddress()
 		transferValue := big.NewInt(testConfig.TransferToThirdParty)
-		err = host.Output().Transfer(test.ThirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
-		require.Nil(t, err)
+		err = host.Output().Transfer(testConfig.GetThirdPartyAddress(), scAddress, 0, 0, transferValue, []byte("hello"), 0)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
 
 		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
 
 		return instance
 
@@ -59,7 +63,24 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 
 	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 	async := host.Async()
-	return async.RegisterLegacyAsyncCall(test.ChildAddress, callData.ToBytes(), value)
+	if len(arguments) > 1 && arguments[1][0] == 1 {
+		err := host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+			Status:          arwen.AsyncCallPending,
+			Destination:     testConfig.GetChildAddress(),
+			Data:            callData.ToBytes(),
+			ValueBytes:      value,
+			SuccessCallback: "myCallBack",
+			ErrorCallback:   "myCallBack",
+			GasLimit:        testConfig.GasProvidedToChild,
+			GasLocked:       testConfig.GasToLock,
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		return async.RegisterLegacyAsyncCall(testConfig.GetChildAddress(), callData.ToBytes(), value)
+	}
 }
 
 // SimpleCallbackMock is an exposed mock contract method
@@ -105,11 +126,11 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 // CallBackParentMock is an exposed mock contract method
 func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+
+	callbackFunc := func() *mock.InstanceMock {
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 		arguments := host.Runtime().Arguments()
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
@@ -137,12 +158,20 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			}
 		}
 		err = handleTransferToVault(host, arguments)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
 
 		finishResult(host, status)
 
+		host.Storage().SetStorage(test.CallbackKey, test.CallbackData)
+
 		return instance
-	})
+	}
+
+	instanceMock.AddMockMethod("callBack", callbackFunc)
+	instanceMock.AddMockMethod("myCallBack", callbackFunc)
 }
 
 func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {

@@ -344,3 +344,13 @@ func (context *blockchainContext) GetSnapshot() int {
 func (context *blockchainContext) RevertToSnapshot(snapshot int) {
 	_ = context.blockChainHook.RevertToSnapshot(snapshot)
 }
+
+// IsLimitedTransfer returns true if token transfers are limited
+func (context *blockchainContext) IsLimitedTransfer(tokenID []byte) bool {
+	return context.blockChainHook.IsLimitedTransfer(tokenID)
+}
+
+// IsPaused returns true if tokenID is paused
+func (context *blockchainContext) IsPaused(tokenID []byte) bool {
+	return context.blockChainHook.IsPaused(tokenID)
+}

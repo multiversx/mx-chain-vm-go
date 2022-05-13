@@ -228,8 +228,29 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 
 		value := big.NewInt(0).Bytes()
 
+		arguments := host.Runtime().Arguments()
+		asyncCallType := arguments[0]
+
 		async := host.Async()
-		err := async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
+		var err error
+		if asyncCallType[0] == 0 {
+			err = async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
+		} else {
+			callbackName := "callBack"
+			if host.Runtime().ValidateCallbackName(callbackName) == arwen.ErrFuncNotFound {
+				callbackName = ""
+			}
+			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+				Status:          arwen.AsyncCallPending,
+				Destination:     test.ParentAddress,
+				Data:            callData.ToBytes(),
+				ValueBytes:      value,
+				SuccessCallback: callbackName,
+				ErrorCallback:   callbackName,
+				GasLimit:        testConfig.GasProvidedToChild / 2,
+				GasLocked:       testConfig.GasToLock,
+			})
+		}
 
 		if err != nil {
 			host.Runtime().FailExecution(err)

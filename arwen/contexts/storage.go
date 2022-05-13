@@ -14,12 +14,15 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
+const vmStoragePrefix = "VM@"
+
 type storageContext struct {
 	host                          arwen.VMHost
 	blockChainHook                vmcommon.BlockchainHook
 	address                       []byte
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
+	vmProtectedKeyPrefix          []byte
 	arwenStorageProtectionEnabled bool
 
 	useDifferentGasCostForReadingCachedStorageEpoch uint32
@@ -47,6 +50,7 @@ func NewStorageContext(
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(vmStoragePrefix)...),
 		arwenStorageProtectionEnabled: true,
 		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
@@ -181,7 +185,9 @@ func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key
 func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
 
-	if context.isElrondReservedKey(key) && context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if !context.isArwenProtectedKey(key) &&
+		context.isElrondReservedKey(key) &&
+		context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
 		value, _ = context.blockChainHook.GetStorageData(address, key)
 		return value, false
 	}
@@ -218,7 +224,7 @@ func (context *storageContext) disableStorageProtection() {
 }
 
 func (context *storageContext) isArwenProtectedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(arwen.ProtectedStoragePrefix))
+	return bytes.HasPrefix(key, context.vmProtectedKeyPrefix)
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
@@ -249,7 +255,7 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
-	if context.isElrondReservedKey(key) {
+	if !context.isArwenProtectedKey(key) && context.isElrondReservedKey(key) {
 		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
@@ -277,13 +283,12 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 
 	context.changeStorageUpdate(key, value, storageUpdates)
 
-	var zero []byte
-	if bytes.Equal(oldValue, zero) {
+	if len(oldValue) == 0 {
 		return context.storageAdded(length, key, value)
 	}
 
 	lengthOldValue := len(oldValue)
-	if bytes.Equal(value, zero) {
+	if len(value) == 0 {
 		return context.storageDeleted(lengthOldValue, key)
 	}
 
@@ -435,4 +440,8 @@ func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
 // IsInterfaceNil returns true if there is no value under the interface
 func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
+}
+
+func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
+	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
 }

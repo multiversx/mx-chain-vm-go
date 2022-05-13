@@ -95,6 +95,8 @@ type BlockchainContext interface {
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	IsLimitedTransfer(tokenID []byte) bool
+	IsPaused(tokenID []byte) bool
 	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetSnapshot() int
@@ -300,6 +302,7 @@ type StorageContext interface {
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
 	DisableUseDifferentGasCostFlag()
 	IsUseDifferentGasCostFlagSet() bool
+	GetVmProtectedPrefix(prefix string) []byte
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
@@ -350,7 +353,7 @@ type AsyncContext interface {
 	UpdateCurrentAsyncCallStatus(
 		address []byte,
 		callID []byte,
-		vmInput *vmcommon.VMInput) (*AsyncCall, error)
+		vmInput *vmcommon.VMInput) (*AsyncCall, bool, error)
 	SendCrossShardCallback(
 		returnCode vmcommon.ReturnCode,
 		returnData [][]byte,
@@ -363,6 +366,8 @@ type AsyncContext interface {
 	GetGasAccumulated() uint64
 
 	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
+
+	HasLegacyGroup() bool
 
 	/*
 		for tests / test framework usage

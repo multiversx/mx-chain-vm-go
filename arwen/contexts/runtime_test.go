@@ -62,6 +62,7 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
 		0,
+		0,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -308,7 +309,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
-		0)
+		0, 0)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
