@@ -149,6 +149,7 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
@@ -168,11 +169,19 @@ type ManagedTypesContext interface {
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBytes(bytes []byte)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
+	ConsumeGasForBigFloatCopy(values ...*big.Float)
 	NewBigInt(value *big.Int) int32
 	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
+	PutBigFloat(value *big.Float) (int32, error)
+	BigFloatPrecIsNotValid(precision uint) bool
+	BigFloatExpIsNotValid(exponent int) bool
+	EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool
+	GetBigFloatOrCreate(handle int32) (*big.Float, error)
+	GetBigFloat(handle int32) (*big.Float, error)
+	GetTwoBigFloats(handle1 int32, handle2 int32) (*big.Float, *big.Float, error)
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveSizeOfField(ecHandle int32) int32

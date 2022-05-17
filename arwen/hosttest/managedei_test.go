@@ -131,7 +131,7 @@ func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
 						managedTypes := host.ManagedTypes()
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
 
-						retValue := elrondapi.ManagedIsPausedWithHost(
+						retValue := elrondapi.ManagedIsESDTPausedWithHost(
 							host,
 							tokenIDHandle)
 
@@ -185,7 +185,7 @@ func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer b
 						managedTypes := host.ManagedTypes()
 						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
 
-						retValue := elrondapi.ManagedIsLimitedTransferWithHost(
+						retValue := elrondapi.ManagedIsESDTLimitedTransferWithHost(
 							host,
 							tokenIDHandle)
 

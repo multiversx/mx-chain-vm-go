@@ -29,6 +29,8 @@ var vmType = []byte("type")
 func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
+	imports, _ = elrondapi.BigFloatImports(imports)
+	imports, _ = elrondapi.ManagedBufferImports(imports)
 	imports, _ = elrondapi.SmallIntImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports

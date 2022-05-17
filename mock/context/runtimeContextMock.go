@@ -28,6 +28,7 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
+	FailBigFloatAPI        bool
 	FailManagedBuffersAPI  bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
 	RunningInstances       uint64
@@ -291,6 +292,11 @@ func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {
 // BigIntAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 	return r.FailBigIntAPI
+}
+
+// BigFloatAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) BigFloatAPIErrorShouldFailExecution() bool {
+	return r.FailBigFloatAPI
 }
 
 // ManagedBufferAPIErrorShouldFailExecution mocked method

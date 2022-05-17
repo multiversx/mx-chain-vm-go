@@ -36,8 +36,8 @@ package elrondapi
 // extern void		v1_4_managedGetOriginalTxHash(void *context, int32_t resultHandle);
 //
 // extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
-// extern int32_t   v1_4_managedIsPaused(void *context, int32_t tokenIDHandle);
-// extern int32_t   v1_4_managedIsLimitedTransfer(void *context, int32_t tokenIDHandle);
+// extern int32_t   v1_4_managedIsESDTPaused(void *context, int32_t tokenIDHandle);
+// extern int32_t   v1_4_managedIsESDTLimitedTransfer(void *context, int32_t tokenIDHandle);
 // extern void      v1_4_managedBufferToHex(void *context, int32_t sourceHandle, int32_t destHandle);
 import "C"
 
@@ -79,8 +79,8 @@ const (
 	managedGetStateRootHashName             = "managedGetStateRootHash"
 	managedGetOriginalTxHashName            = "managedGetOriginalTxHash"
 	managedIsESDTFrozenName                 = "managedIsESDTFrozen"
-	managedIsLimitedTransferName            = "managedIsLimitedTransfer"
-	managedIsPausedName                     = "managedIsPaused"
+	managedIsESDTLimitedTransferName        = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                 = "managedIsESDTPaused"
 	managedBufferToHexName                  = "managedBufferToHex"
 )
 
@@ -213,12 +213,12 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("managedIsPaused", v1_4_managedIsPaused, C.v1_4_managedIsPaused)
+	imports, err = imports.Append("managedIsESDTPaused", v1_4_managedIsESDTPaused, C.v1_4_managedIsESDTPaused)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("managedIsLimitedTransfer", v1_4_managedIsLimitedTransfer, C.v1_4_managedIsLimitedTransfer)
+	imports, err = imports.Append("managedIsESDTLimitedTransfer", v1_4_managedIsESDTLimitedTransfer, C.v1_4_managedIsESDTLimitedTransfer)
 	if err != nil {
 		return nil, err
 	}
@@ -1006,20 +1006,20 @@ func ManagedIsESDTFrozenWithHost(
 	return 0
 }
 
-//export v1_4_managedIsLimitedTransfer
-func v1_4_managedIsLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
+//export v1_4_managedIsESDTLimitedTransfer
+func v1_4_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	host := arwen.GetVMHost(context)
-	return ManagedIsLimitedTransferWithHost(host, tokenIDHandle)
+	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
 }
 
-func ManagedIsLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
+func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
 	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(managedIsLimitedTransferName, gasToUse)
+	metering.UseGasAndAddTracedGas(managedIsESDTLimitedTransferName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
@@ -1034,20 +1034,20 @@ func ManagedIsLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32) in
 	return 0
 }
 
-//export v1_4_managedIsPaused
-func v1_4_managedIsPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
+//export v1_4_managedIsESDTPaused
+func v1_4_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	host := arwen.GetVMHost(context)
-	return ManagedIsPausedWithHost(host, tokenIDHandle)
+	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
 }
 
-func ManagedIsPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
+func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
 	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(managedIsPausedName, gasToUse)
+	metering.UseGasAndAddTracedGas(managedIsESDTPausedName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {

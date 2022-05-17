@@ -43,6 +43,12 @@ func TestDecode_ArwenGas(t *testing.T) {
 
 	fmt.Printf("%+v\n", bigIntOp)
 
+	bigFloatOp := &BigFloatAPICost{}
+	err = mapstructure.Decode(gasMap, bigFloatOp)
+	assert.Nil(t, err)
+
+	fmt.Printf("%+v\n", bigFloatOp)
+
 	erdOp := &ElrondAPICost{}
 	err = mapstructure.Decode(gasMap, erdOp)
 	assert.Nil(t, err)

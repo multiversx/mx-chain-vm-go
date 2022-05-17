@@ -722,10 +722,10 @@ func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
 	if context.instance.IsFunctionImported("managedIsESDTFrozen") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedIsPaused") {
+	if context.instance.IsFunctionImported("managedIsESDTPaused") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedIsLimitedTransfer") {
+	if context.instance.IsFunctionImported("managedIsESDTLimitedTransfer") {
 		return arwen.ErrContractInvalid
 	}
 	if context.instance.IsFunctionImported("managedBufferToHex") {
@@ -776,6 +776,75 @@ func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
 	if context.instance.IsFunctionImported("managedCreateEC") {
 		return arwen.ErrContractInvalid
 	}
+	if context.instance.IsFunctionImported("mBufferToBigFloat") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("mBufferFromBigFloat") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatNewFromParts") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatNewFromFrac") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatNewFromSci") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatAdd") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatSub") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatMul") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatDiv") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatAbs") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatCmp") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatSign") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatClone") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatSqrt") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatPow") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatFloor") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatCeil") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatTruncate") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatIsInt") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatSetInt64") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatSetBigInt") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatGetConstPi") {
+		return arwen.ErrContractInvalid
+	}
+	if context.instance.IsFunctionImported("bigFloatGetConstE") {
+		return arwen.ErrContractInvalid
+	}
 
 	return nil
 }
@@ -792,6 +861,11 @@ func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool 
 
 // BigIntAPIErrorShouldFailExecution returns true
 func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
+	return true
+}
+
+// BigFloatAPIErrorShouldFailExecution returns true
+func (context *runtimeContext) BigFloatAPIErrorShouldFailExecution() bool {
 	return true
 }
 
