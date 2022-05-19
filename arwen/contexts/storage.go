@@ -250,6 +250,9 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		return context.storageUnchanged(length, usedCache)
 	}
 
+	deltaBytes := len(value) - len(oldValue)
+	context.addDeltaBytes(deltaBytes)
+
 	context.changeStorageUpdate(key, value, storageUpdates)
 
 	if len(oldValue) == 0 {
@@ -278,6 +281,15 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	logStorage.Trace("storage modified", "key", key, "value", value, "lengthDelta", newValueExtraLength)
 	return arwen.StorageModified, nil
+}
+
+func (context *storageContext) addDeltaBytes(deltaBytes int) {
+	account, _ := context.host.Output().GetOutputAccount(context.address)
+	if deltaBytes > 0 {
+		account.BytesAddedToStorage += uint64(deltaBytes)
+	} else {
+		account.BytesDeletedFromStorage += uint64(-deltaBytes)
+	}
 }
 
 func (context *storageContext) changeStorageUpdate(key []byte, value []byte, storageUpdates map[string]*vmcommon.StorageUpdate) {

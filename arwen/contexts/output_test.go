@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -187,32 +187,38 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		Data:     []byte("data1"),
 	}
 	left := &vmcommon.OutputAccount{
-		Address:         []byte("addr1"),
-		Nonce:           1,
-		Balance:         big.NewInt(1000),
-		BalanceDelta:    big.NewInt(10000),
-		StorageUpdates:  nil,
-		Code:            []byte("code1"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1},
+		Address:                 []byte("addr1"),
+		Nonce:                   1,
+		Balance:                 big.NewInt(1000),
+		BalanceDelta:            big.NewInt(10000),
+		StorageUpdates:          nil,
+		Code:                    []byte("code1"),
+		OutputTransfers:         []vmcommon.OutputTransfer{transfer1},
+		BytesAddedToStorage:     10,
+		BytesDeletedFromStorage: 5,
 	}
 	right := &vmcommon.OutputAccount{
-		Address:         []byte("addr2"),
-		Nonce:           2,
-		Balance:         big.NewInt(2000),
-		BalanceDelta:    big.NewInt(20000),
-		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:            []byte("code2"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
+		Address:                 []byte("addr2"),
+		Nonce:                   2,
+		Balance:                 big.NewInt(2000),
+		BalanceDelta:            big.NewInt(20000),
+		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:                    []byte("code2"),
+		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
+		BytesAddedToStorage:     4,
+		BytesDeletedFromStorage: 12,
 	}
 
 	expected := &vmcommon.OutputAccount{
-		Address:         []byte("addr2"),
-		Nonce:           2,
-		Balance:         big.NewInt(2000),
-		BalanceDelta:    big.NewInt(20000),
-		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:            []byte("code2"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
+		Address:                 []byte("addr2"),
+		Nonce:                   2,
+		Balance:                 big.NewInt(2000),
+		BalanceDelta:            big.NewInt(20000),
+		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:                    []byte("code2"),
+		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
+		BytesAddedToStorage:     left.BytesAddedToStorage + right.BytesAddedToStorage,
+		BytesDeletedFromStorage: left.BytesDeletedFromStorage + right.BytesDeletedFromStorage,
 	}
 
 	mergeOutputAccounts(left, right)
