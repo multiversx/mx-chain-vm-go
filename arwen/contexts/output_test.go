@@ -217,8 +217,8 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
 		Code:                    []byte("code2"),
 		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
-		BytesAddedToStorage:     left.BytesAddedToStorage + right.BytesAddedToStorage,
-		BytesDeletedFromStorage: left.BytesDeletedFromStorage + right.BytesDeletedFromStorage,
+		BytesAddedToStorage:     left.BytesAddedToStorage,
+		BytesDeletedFromStorage: right.BytesDeletedFromStorage,
 	}
 
 	mergeOutputAccounts(left, right)
