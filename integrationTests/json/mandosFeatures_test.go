@@ -60,6 +60,10 @@ func TestRustComposability(t *testing.T) {
 	runAllTestsInFolder(t, "features/composability/mandos")
 }
 
+func TestRustFormattedMessageFeatures(t *testing.T) {
+	runAllTestsInFolder(t, "features/formatted-message-features/mandos")
+}
+
 // For debugging:
 // func TestESDTMultiTransferOnCallback(t *testing.T) {
 // 	err := runSingleTestReturnError(

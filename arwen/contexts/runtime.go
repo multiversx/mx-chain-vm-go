@@ -722,10 +722,10 @@ func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
 	if context.instance.IsFunctionImported("managedIsESDTFrozen") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedIsPaused") {
+	if context.instance.IsFunctionImported("managedIsESDTPaused") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedIsLimitedTransfer") {
+	if context.instance.IsFunctionImported("managedIsESDTLimitedTransfer") {
 		return arwen.ErrContractInvalid
 	}
 	if context.instance.IsFunctionImported("managedBufferToHex") {

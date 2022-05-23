@@ -1208,15 +1208,20 @@ func v1_4_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 
 //export v1_4_bigIntToString
 func v1_4_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
+	host := arwen.GetVMHost(context)
+	BigIntToStringWithHost(host, bigIntHandle, destinationHandle)
+}
+
+func BigIntToStringWithHost(host arwen.VMHost, bigIntHandle int32, destinationHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	metering.UseGasAndAddTracedGas(bigIntToStringName, gasToUse)
 
 	value, err := managedType.GetBigInt(bigIntHandle)
-	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 
