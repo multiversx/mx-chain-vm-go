@@ -7,7 +7,7 @@ require (
 	github.com/ElrondNetwork/elrond-go-core v1.1.13
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.5
-	github.com/ElrondNetwork/elrond-vm-common v1.3.4
+	github.com/ElrondNetwork/elrond-vm-common v1.3.5
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.6
 	github.com/mitchellh/mapstructure v1.4.1
@@ -16,4 +16,3 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
-
