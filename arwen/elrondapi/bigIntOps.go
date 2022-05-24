@@ -611,12 +611,11 @@ func v1_4_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
+	metering.UseGas(gasToUse)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.SetBytes(bytes)
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
-	metering.UseAndTraceGas(gasToUse)
 }
 
 //export v1_4_bigIntSetSignedBytes
@@ -633,12 +632,11 @@ func v1_4_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, 
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
+	metering.UseGas(gasToUse)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	twos.SetBytes(value, bytes)
-
-	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(bytes)))
-	metering.UseAndTraceGas(gasToUse)
 }
 
 //export v1_4_bigIntIsInt64
@@ -1210,15 +1208,20 @@ func v1_4_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
 
 //export v1_4_bigIntToString
 func v1_4_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	metering := arwen.GetMeteringContext(context)
-	runtime := arwen.GetRuntimeContext(context)
+	host := arwen.GetVMHost(context)
+	BigIntToStringWithHost(host, bigIntHandle, destinationHandle)
+}
+
+func BigIntToStringWithHost(host arwen.VMHost, bigIntHandle int32, destinationHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntFinishSigned
 	metering.UseGasAndAddTracedGas(bigIntToStringName, gasToUse)
 
 	value, err := managedType.GetBigInt(bigIntHandle)
-	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
 

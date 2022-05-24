@@ -220,3 +220,85 @@ func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 				GasRemaining(simpleGasTestConfig.GasProvided - expectedUsedGas)
 		})
 }
+
+var expectedAddByParent = len(contracts.TestStorageValue1) +
+	len(contracts.TestStorageValue2)
+
+var expectedDeletedByParent = (len(contracts.TestStorageValue1) - len(contracts.TestStorageValue2)) +
+	(len(contracts.TestStorageValue2) - len(contracts.TestStorageValue3))
+
+var expectedAddByChild = len(contracts.TestStorageValue2) +
+	(len(contracts.TestStorageValue1) - len(contracts.TestStorageValue2)) +
+	len(contracts.TestStorageValue1)
+
+var expectedDeletedByChild = len(contracts.TestStorageValue1) - len(contracts.TestStorageValue4)
+
+func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(simpleGasTestConfig.ParentBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ParentSetStorageMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(simpleGasTestConfig.ChildBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ChildSetStorageMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithFunction("parentSetStorage").
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				BytesAddedToStorage(test.ParentAddress,
+					expectedAddByParent+expectedAddByChild).
+				BytesAddedToStorage(test.ChildAddress,
+					0).
+				BytesDeletedFromStorage(test.ParentAddress,
+					expectedDeletedByParent+expectedDeletedByChild).
+				BytesDeletedFromStorage(test.ChildAddress,
+					0)
+		})
+}
+
+func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(simpleGasTestConfig.ParentBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ParentSetStorageMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(simpleGasTestConfig.ChildBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ChildSetStorageMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithFunction("parentSetStorage").
+			WithArguments([]byte{1}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				BytesAddedToStorage(test.ParentAddress,
+					expectedAddByParent).
+				BytesAddedToStorage(test.ChildAddress,
+					expectedAddByChild).
+				BytesDeletedFromStorage(test.ParentAddress,
+					expectedDeletedByParent).
+				BytesDeletedFromStorage(test.ChildAddress,
+					expectedDeletedByChild)
+		})
+}

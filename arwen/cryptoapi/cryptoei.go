@@ -427,22 +427,27 @@ func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resu
 
 //export v1_4_managedRipemd160
 func v1_4_managedRipemd160(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
-	crypto := arwen.GetCryptoContext(context)
-	metering := arwen.GetMeteringContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
+}
+
+func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle int32) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	crypto := host.Crypto()
 
 	metering.UseGasAndAddTracedGas(ripemd160Name, metering.GasSchedule().CryptoAPICost.Ripemd160)
 
 	inputBytes, err := managedType.GetBytes(inputHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(inputBytes)
 
 	result, err := crypto.Ripemd160(inputBytes)
 	if err != nil {
-		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHostIfFailAlwaysActive(err, host, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -501,36 +506,46 @@ func v1_4_managedVerifyBLS(
 	messageHandle int32,
 	sigHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	crypto := arwen.GetCryptoContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle)
+}
+
+func ManagedVerifyBLSWithHost(
+	host arwen.VMHost,
+	keyHandle int32,
+	messageHandle int32,
+	sigHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	crypto := host.Crypto()
 	metering.StartGasTracing(verifyBLSName)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
 	metering.UseAndTraceGas(gasToUse)
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(keyBytes)
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(msgBytes)
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(sigBytes)
 
 	invalidSigErr := crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
-		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHostIfFailAlwaysActive(invalidSigErr, host, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -585,36 +600,44 @@ func v1_4_managedVerifyEd25519(
 	context unsafe.Pointer,
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	crypto := arwen.GetCryptoContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedVerifyEd25519WithHost(host, keyHandle, messageHandle, sigHandle)
+}
+
+func ManagedVerifyEd25519WithHost(
+	host arwen.VMHost,
+	keyHandle, messageHandle, sigHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	crypto := host.Crypto()
 	metering.StartGasTracing(verifyEd25519Name)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
 	metering.UseAndTraceGas(gasToUse)
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(keyBytes)
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(msgBytes)
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(sigBytes)
 
 	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
-		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHostIfFailAlwaysActive(invalidSigErr, host, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -686,36 +709,50 @@ func v1_4_managedVerifyCustomSecp256k1(
 	keyHandle, messageHandle, sigHandle int32,
 	hashType int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	crypto := arwen.GetCryptoContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedVerifyCustomSecp256k1WithHost(
+		host,
+		keyHandle,
+		messageHandle,
+		sigHandle,
+		hashType)
+}
+
+func ManagedVerifyCustomSecp256k1WithHost(
+	host arwen.VMHost,
+	keyHandle, messageHandle, sigHandle int32,
+	hashType int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	crypto := host.Crypto()
 	metering.StartGasTracing(verifyCustomSecp256k1Name)
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifySecp256k1
 	metering.UseAndTraceGas(gasToUse)
 
 	keyBytes, err := managedType.GetBytes(keyHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(keyBytes)
 
 	msgBytes, err := managedType.GetBytes(messageHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(msgBytes)
 
 	sigBytes, err := managedType.GetBytes(sigHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	managedType.ConsumeGasForBytes(sigBytes)
 
 	invalidSigErr := crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
 	if invalidSigErr != nil {
-		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHostIfFailAlwaysActive(invalidSigErr, host, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -747,8 +784,16 @@ func v1_4_managedVerifySecp256k1(
 	context unsafe.Pointer,
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
-	return v1_4_managedVerifyCustomSecp256k1(
-		context,
+	host := arwen.GetVMHost(context)
+	return ManagedVerifySecp256k1WithHost(host, keyHandle, messageHandle, sigHandle)
+}
+
+func ManagedVerifySecp256k1WithHost(
+	host arwen.VMHost,
+	keyHandle, messageHandle, sigHandle int32,
+) int32 {
+	return ManagedVerifyCustomSecp256k1WithHost(
+		host,
 		keyHandle,
 		messageHandle,
 		sigHandle,
@@ -796,21 +841,29 @@ func v1_4_managedEncodeSecp256k1DerSignature(
 	context unsafe.Pointer,
 	rHandle, sHandle, sigHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	crypto := arwen.GetCryptoContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedEncodeSecp256k1DerSignatureWithHost(host, rHandle, sHandle, sigHandle)
+}
+
+func ManagedEncodeSecp256k1DerSignatureWithHost(
+	host arwen.VMHost,
+	rHandle, sHandle, sigHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	crypto := host.Crypto()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
 	metering.UseGasAndAddTracedGas(encodeSecp256k1DerSignatureName, gasToUse)
 
 	r, err := managedType.GetBytes(rHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	s, err := managedType.GetBytes(sHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -993,7 +1046,8 @@ func v1_4_scalarBaseMultEC(
 		return 1
 	}
 
-	return commonScalarBaseMultEC(context, xResultHandle, yResultHandle, ecHandle, data)
+	host := arwen.GetVMHost(context)
+	return commonScalarBaseMultEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
 //export v1_4_managedScalarBaseMultEC
@@ -1004,19 +1058,36 @@ func v1_4_managedScalarBaseMultEC(
 	ecHandle int32,
 	dataHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedScalarBaseMultECWithHost(
+		host,
+		xResultHandle,
+		yResultHandle,
+		ecHandle,
+		dataHandle,
+	)
+}
+
+func ManagedScalarBaseMultECWithHost(
+	host arwen.VMHost,
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	dataHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(scalarBaseMultECName)
 
 	curveMultiplier := managedType.GetScalarMult100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	data, err := managedType.GetBytes(dataHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1024,26 +1095,26 @@ func v1_4_managedScalarBaseMultEC(
 	gasToUse := oneByteScalarGasCost + uint64(len(data))*oneByteScalarGasCost
 	metering.UseAndTraceGas(gasToUse)
 
-	return commonScalarBaseMultEC(context, xResultHandle, yResultHandle, ecHandle, data)
+	return commonScalarBaseMultEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
 func commonScalarBaseMultEC(
-	context unsafe.Pointer,
+	host arwen.VMHost,
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
 	data []byte,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1051,7 +1122,7 @@ func commonScalarBaseMultEC(
 
 	xResultSBM, yResultSBM := ec.ScalarBaseMult(data)
 	if !ec.IsOnCurve(xResultSBM, yResultSBM) {
-		_ = arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	xResult.Set(xResultSBM)
@@ -1095,7 +1166,8 @@ func v1_4_scalarMultEC(
 		return 1
 	}
 
-	return commonScalarMultEC(context, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
+	host := arwen.GetVMHost(context)
+	return commonScalarMultEC(host, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
 }
 
 //export v1_4_managedScalarMultEC
@@ -1108,19 +1180,40 @@ func v1_4_managedScalarMultEC(
 	pointYHandle int32,
 	dataHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedScalarMultECWithHost(
+		host,
+		xResultHandle,
+		yResultHandle,
+		ecHandle,
+		pointXHandle,
+		pointYHandle,
+		dataHandle,
+	)
+}
+
+func ManagedScalarMultECWithHost(
+	host arwen.VMHost,
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	pointXHandle int32,
+	pointYHandle int32,
+	dataHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(scalarMultECName)
 
 	curveMultiplier := managedType.GetScalarMult100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	data, err := managedType.GetBytes(dataHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1128,11 +1221,11 @@ func v1_4_managedScalarMultEC(
 	gasToUse := oneByteScalarGasCost + uint64(len(data))*oneByteScalarGasCost
 	metering.UseAndTraceGas(gasToUse)
 
-	return commonScalarMultEC(context, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
+	return commonScalarMultEC(host, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
 }
 
 func commonScalarMultEC(
-	context unsafe.Pointer,
+	host arwen.VMHost,
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1140,31 +1233,31 @@ func commonScalarMultEC(
 	pointYHandle int32,
 	data []byte,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(scalarMultECName)
 
 	ec, err1 := managedType.GetEllipticCurve(ecHandle)
-	if arwen.WithFault(err1, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err1, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	xResult, yResult, err1 := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
 	x, y, err2 := managedType.GetTwoBigInt(pointXHandle, pointYHandle)
 	if err1 != nil || err2 != nil {
-		_ = arwen.WithFault(arwen.ErrNoBigIntUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrNoBigIntUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	if !ec.IsOnCurve(x, y) {
-		_ = arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	managedType.ConsumeGasForBigIntCopy(xResult, yResult, ec.P, ec.N, ec.B, ec.Gx, ec.Gy, x, y)
 	xResultSM, yResultSM := ec.ScalarMult(x, y, data)
 	if !ec.IsOnCurve(xResultSM, yResultSM) {
-		_ = arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	xResult.Set(xResultSM)
@@ -1182,7 +1275,8 @@ func v1_4_marshalEC(
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
-	result, err := commonMarshalEC(context, xPairHandle, yPairHandle, ecHandle)
+	host := arwen.GetVMHost(context)
+	result, err := commonMarshalEC(host, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
 		_ = arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
@@ -1203,25 +1297,42 @@ func v1_4_managedMarshalEC(
 	ecHandle int32,
 	resultHandle int32,
 ) int32 {
-	result, err := commonMarshalEC(context, xPairHandle, yPairHandle, ecHandle)
+	host := arwen.GetVMHost(context)
+	return ManagedMarshalECWithHost(
+		host,
+		xPairHandle,
+		yPairHandle,
+		ecHandle,
+		resultHandle,
+	)
+}
+
+func ManagedMarshalECWithHost(
+	host arwen.VMHost,
+	xPairHandle int32,
+	yPairHandle int32,
+	ecHandle int32,
+	resultHandle int32,
+) int32 {
+	result, err := commonMarshalEC(host, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
-		_ = arwen.WithFault(err, context, true)
+		_ = arwen.WithFaultAndHost(host, err, true)
 		return -1
 	}
 
-	managedType := arwen.GetManagedTypesContext(context)
+	managedType := host.ManagedTypes()
 	managedType.SetBytes(resultHandle, result)
 	return int32(len(result))
 }
 
 func commonMarshalEC(
-	context unsafe.Pointer,
+	host arwen.VMHost,
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
 ) ([]byte, error) {
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(marshalECName)
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
@@ -1262,7 +1373,8 @@ func v1_4_marshalCompressedEC(
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
-	result, err := commonMarshalCompressedEC(context, xPairHandle, yPairHandle, ecHandle)
+	host := arwen.GetVMHost(context)
+	result, err := commonMarshalCompressedEC(host, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
 		_ = arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
@@ -1283,25 +1395,42 @@ func v1_4_managedMarshalCompressedEC(
 	ecHandle int32,
 	resultHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	result, err := commonMarshalCompressedEC(context, xPairHandle, yPairHandle, ecHandle)
+	host := arwen.GetVMHost(context)
+	return ManagedMarshalCompressedECWithHost(
+		host,
+		xPairHandle,
+		yPairHandle,
+		ecHandle,
+		resultHandle,
+	)
+}
+
+func ManagedMarshalCompressedECWithHost(
+	host arwen.VMHost,
+	xPairHandle int32,
+	yPairHandle int32,
+	ecHandle int32,
+	resultHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
+	result, err := commonMarshalCompressedEC(host, xPairHandle, yPairHandle, ecHandle)
 	if err != nil {
-		_ = arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
-	managedType := arwen.GetManagedTypesContext(context)
 	managedType.SetBytes(resultHandle, result)
 	return int32(len(result))
 }
 
-func commonMarshalCompressedEC(context unsafe.Pointer,
+func commonMarshalCompressedEC(host arwen.VMHost,
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
 ) ([]byte, error) {
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(marshalCompressedECName)
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
@@ -1360,7 +1489,8 @@ func v1_4_unmarshalEC(
 		return 1
 	}
 
-	return commonUnmarshalEC(context, xResultHandle, yResultHandle, ecHandle, data)
+	host := arwen.GetVMHost(context)
+	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
 //export v1_4_managedUnmarshalEC
@@ -1371,14 +1501,31 @@ func v1_4_managedUnmarshalEC(
 	ecHandle int32,
 	dataHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedUnmarshalECWithHost(
+		host,
+		xResultHandle,
+		yResultHandle,
+		ecHandle,
+		dataHandle,
+	)
+}
+
+func ManagedUnmarshalECWithHost(
+	host arwen.VMHost,
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	dataHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(unmarshalECName)
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
@@ -1389,31 +1536,31 @@ func v1_4_managedUnmarshalEC(
 		return 1
 	}
 
-	return commonUnmarshalEC(context, xResultHandle, yResultHandle, ecHandle, data)
+	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
 func commonUnmarshalEC(
-	context unsafe.Pointer,
+	host arwen.VMHost,
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
 	data []byte,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	byteLen := (ec.BitSize + 7) / 8
 	if len(data) != 1+2*byteLen {
-		_ = arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrLengthOfBufferNotCorrect, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1421,7 +1568,7 @@ func commonUnmarshalEC(
 
 	xResultU, yResultU := elliptic.Unmarshal(ec, data)
 	if xResultU == nil || yResultU == nil || !ec.IsOnCurve(xResultU, yResultU) {
-		_ = arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	xResult.Set(xResultU)
@@ -1457,7 +1604,8 @@ func v1_4_unmarshalCompressedEC(
 		return int32(len(data))
 	}
 
-	return commonUnmarshalCompressedEC(context, xResultHandle, yResultHandle, ecHandle, data)
+	host := arwen.GetVMHost(context)
+	return commonUnmarshalCompressedEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
 //export v1_4_managedUnmarshalCompressedEC
@@ -1468,49 +1616,66 @@ func v1_4_managedUnmarshalCompressedEC(
 	ecHandle int32,
 	dataHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedUnmarshalCompressedECWithHost(
+		host,
+		xResultHandle,
+		yResultHandle,
+		ecHandle,
+		dataHandle,
+	)
+}
+
+func ManagedUnmarshalCompressedECWithHost(
+	host arwen.VMHost,
+	xResultHandle int32,
+	yResultHandle int32,
+	ecHandle int32,
+	dataHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(unmarshalCompressedECName)
 
 	curveMultiplier := managedType.GetUCompressed100xCurveGasCostMultiplier(ecHandle)
 	if curveMultiplier < 0 {
-		_ = arwen.WithFault(arwen.ErrNoEllipticCurveUnderThisHandle, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrNoEllipticCurveUnderThisHandle, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseAndTraceGas(gasToUse)
 
 	data, err := managedType.GetBytes(dataHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return int32(len(data))
 	}
 
-	return commonUnmarshalCompressedEC(context, xResultHandle, yResultHandle, ecHandle, data)
+	return commonUnmarshalCompressedEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
 func commonUnmarshalCompressedEC(
-	context unsafe.Pointer,
+	host arwen.VMHost,
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
 	data []byte,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
 
 	ec, err := managedType.GetEllipticCurve(ecHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	byteLen := (ec.BitSize+7)/8 + 1
 	if len(data) != byteLen {
-		_ = arwen.WithFault(arwen.ErrLengthOfBufferNotCorrect, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrLengthOfBufferNotCorrect, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
 	xResult, yResult, err := managedType.GetTwoBigInt(xResultHandle, yResultHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -1518,7 +1683,7 @@ func commonUnmarshalCompressedEC(
 
 	xResultUC, yResultUC := elliptic.UnmarshalCompressed(ec, data)
 	if xResultUC == nil || yResultUC == nil || !ec.IsOnCurve(xResultUC, yResultUC) {
-		_ = arwen.WithFault(arwen.ErrPointNotOnCurve, context, runtime.CryptoAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrPointNotOnCurve, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 	xResult.Set(xResultUC)
@@ -1535,7 +1700,8 @@ func v1_4_generateKeyEC(
 	resultOffset int32,
 ) int32 {
 	runtime := arwen.GetRuntimeContext(context)
-	result, err := commonGenerateEC(context, xPubKeyHandle, yPubKeyHandle, ecHandle)
+	host := arwen.GetVMHost(context)
+	result, err := commonGenerateEC(host, xPubKeyHandle, yPubKeyHandle, ecHandle)
 	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1556,26 +1722,42 @@ func v1_4_managedGenerateKeyEC(
 	ecHandle int32,
 	resultHandle int32,
 ) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	result, err := commonGenerateEC(context, xPubKeyHandle, yPubKeyHandle, ecHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	host := arwen.GetVMHost(context)
+	return ManagedGenerateKeyECWithHost(
+		host,
+		xPubKeyHandle,
+		yPubKeyHandle,
+		ecHandle,
+		resultHandle,
+	)
+}
+
+func ManagedGenerateKeyECWithHost(
+	host arwen.VMHost,
+	xPubKeyHandle int32,
+	yPubKeyHandle int32,
+	ecHandle int32,
+	resultHandle int32,
+) int32 {
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
+	result, err := commonGenerateEC(host, xPubKeyHandle, yPubKeyHandle, ecHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	managedType := arwen.GetManagedTypesContext(context)
 	managedType.SetBytes(resultHandle, result)
-
 	return 0
 }
 
 func commonGenerateEC(
-	context unsafe.Pointer,
+	host arwen.VMHost,
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,
 ) ([]byte, error) {
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(generateKeyECName)
 
 	curveMultiplier := managedType.Get100xCurveGasCostMultiplier(ecHandle)
@@ -1648,15 +1830,20 @@ func v1_4_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) i
 
 //export v1_4_managedCreateEC
 func v1_4_managedCreateEC(context unsafe.Pointer, dataHandle int32) int32 {
-	managedType := arwen.GetManagedTypesContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+	host := arwen.GetVMHost(context)
+	return ManagedCreateECWithHost(host, dataHandle)
+}
+
+func ManagedCreateECWithHost(host arwen.VMHost, dataHandle int32) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().CryptoAPICost.EllipticCurveNew
 	metering.UseGasAndAddTracedGas(createECName, gasToUse)
 
 	data, err := managedType.GetBytes(dataHandle)
-	if arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution()) {
+	if arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
 	curveChoice := string(data[:])
@@ -1675,7 +1862,7 @@ func v1_4_managedCreateEC(context unsafe.Pointer, dataHandle int32) int32 {
 		return managedType.PutEllipticCurve(curveParams)
 	}
 
-	_ = arwen.WithFault(arwen.ErrBadBounds, context, runtime.CryptoAPIErrorShouldFailExecution())
+	_ = arwen.WithFaultAndHost(host, arwen.ErrBadBounds, runtime.CryptoAPIErrorShouldFailExecution())
 	return -1
 }
 
