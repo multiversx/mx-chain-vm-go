@@ -6,8 +6,8 @@ require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
 	github.com/ElrondNetwork/elrond-go-core v1.1.13
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
-	github.com/ElrondNetwork/elrond-go-logger v1.0.5
-	github.com/ElrondNetwork/elrond-vm-common v1.3.5
+	github.com/ElrondNetwork/elrond-go-logger v1.0.7
+	github.com/ElrondNetwork/elrond-vm-common v1.3.6
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.6
 	github.com/mitchellh/mapstructure v1.4.1
