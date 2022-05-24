@@ -140,6 +140,13 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 	return nil
 }
 
+// doRunSmartContractDelete delete a contract directly
+func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
+	vmOutput := host.outputContext.GetVMOutput()
+	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, host.Runtime().GetSCAddress())
+	return vmOutput
+}
+
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
 	host.InitState()
 	defer func() {

@@ -61,6 +61,7 @@ package elrondapi
 // extern int32_t	v1_4_deployFromSourceContract(void *context, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void		v1_4_deleteContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_4_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 //
 // extern int32_t	v1_4_getNumReturnData(void *context);
@@ -1801,6 +1802,99 @@ func upgradeContract(
 		value,
 	)
 	logEEI.Trace("upgradeContract", "error", err)
+
+	storage := host.Storage()
+	if storage.IsUseDifferentGasCostFlagSet() {
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
+			runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return
+		}
+		if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+			return
+		}
+	}
+}
+
+//export v1_4_deleteContract
+func v1_4_deleteContract(
+	context unsafe.Pointer,
+	destOffset int32,
+	gasLimit int64,
+	valueOffset int32,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) {
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(upgradeFromSourceContractName)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseAndTraceGas(gasToUse)
+
+	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	data, actualLen, err := getArgumentsFromMemory(
+		host,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	metering.UseAndTraceGas(gasToUse)
+
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	deleteContractWithTypedArgs(
+		host,
+		calledSCAddress,
+		value,
+		data,
+		gasLimit,
+	)
+}
+
+func deleteContractWithTypedArgs(
+	host arwen.VMHost,
+	destContractAddress []byte,
+	value []byte,
+	data [][]byte,
+	gasLimit int64,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	gasSchedule := metering.GasSchedule()
+	minAsyncCallCost := math.AddUint64(
+		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
+		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
+	if uint64(gasLimit) < minAsyncCallCost {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+
+	callData := arwen.DeleteFunctionName
+	for _, arg := range data {
+		callData += "@" + hex.EncodeToString(arg)
+	}
+
+	err := runtime.ExecuteAsyncCall(
+		destContractAddress,
+		[]byte(callData),
+		value,
+	)
+	logEEI.Trace("deleteContract", "error", err)
 
 	storage := host.Storage()
 	if storage.IsUseDifferentGasCostFlagSet() {

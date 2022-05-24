@@ -67,7 +67,9 @@ func (host *vmHost) handleAsyncCallBreakpoint() error {
 	callbackVMOutput, callBackErr := host.executeSyncCallbackCall(asyncCallInfo, destinationVMOutput, destinationErr)
 
 	isUpgradeCall := host.isUpgradeCall(destinationCallInput.Function)
-	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr, destinationVMOutput.ReturnCode, isUpgradeCall)
+	isDeleteCall := host.isDeleteCall(destinationCallInput.Function)
+	err = host.processCallbackVMOutput(callbackVMOutput, callBackErr, destinationVMOutput.ReturnCode,
+		isUpgradeCall || isDeleteCall)
 	if err != nil {
 		return err
 	}
@@ -80,6 +82,13 @@ func (host *vmHost) isUpgradeCall(function string) bool {
 		return false
 	}
 	return function == arwen.UpgradeFunctionName
+}
+
+func (host *vmHost) isDeleteCall(function string) bool {
+	if !host.Storage().IsUseDifferentGasCostFlagSet() {
+		return false
+	}
+	return function == arwen.DeleteFunctionName
 }
 
 func (host *vmHost) isESDTTransferOnReturnDataWithNoAdditionalData(
