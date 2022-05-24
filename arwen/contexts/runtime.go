@@ -1181,6 +1181,9 @@ func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
 func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
 	context.flagEnableNewAPIMethods.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
 	logRuntime.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagEnableNewAPIMethods.IsSet())
+
+	context.flagEnableManagedCryptoAPI.SetValue(epoch >= context.managedCryptoApiEnableEpoch)
+	logRuntime.Debug("Arwen VM: managed crypto API", "enabled", context.flagEnableNewAPIMethods.IsSet())
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

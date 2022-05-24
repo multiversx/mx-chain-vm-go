@@ -48,8 +48,6 @@ import "C"
 
 import (
 	"crypto/elliptic"
-	"encoding/hex"
-	"fmt"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -1323,7 +1321,6 @@ func ManagedMarshalECWithHost(
 	}
 
 	managedType := host.ManagedTypes()
-	fmt.Println(hex.EncodeToString(result))
 	managedType.SetBytes(resultHandle, result)
 	return int32(len(result))
 }
@@ -1424,7 +1421,6 @@ func ManagedMarshalCompressedECWithHost(
 	}
 
 	managedType.SetBytes(resultHandle, result)
-	fmt.Println(hex.EncodeToString(result))
 	return int32(len(result))
 }
 
@@ -1751,7 +1747,6 @@ func ManagedGenerateKeyECWithHost(
 	}
 
 	managedType.SetBytes(resultHandle, result)
-	fmt.Println(hex.EncodeToString(result))
 	return 0
 }
 
