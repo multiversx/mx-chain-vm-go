@@ -17,4 +17,3 @@ require (
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
 
-replace github.com/ElrondNetwork/elrond-vm-common v1.3.4 => github.com/ElrondNetwork/elrond-vm-common v1.3.5-0.20220519095233-3eaf28f7c931
