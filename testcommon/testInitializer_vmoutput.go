@@ -331,6 +331,24 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 	return v
 }
 
+// BytesAddedToStorage verifies the number of bytes added to storage
+func (v *VMOutputVerifier) BytesAddedToStorage(address []byte, bytesAdded int) *VMOutputVerifier {
+	account := v.VmOutput.OutputAccounts[string(address)]
+	errMsg := formatErrorForAccount("BytesAddedToStorage", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, bytesAdded, int(account.BytesAddedToStorage), errMsg)
+	return v
+}
+
+// BytesDeletedFromStorage verifies the number of bytes deleted from storage
+func (v *VMOutputVerifier) BytesDeletedFromStorage(address []byte, bytesDelted int) *VMOutputVerifier {
+	account := v.VmOutput.OutputAccounts[string(address)]
+	errMsg := formatErrorForAccount("BytesAddedToStorage", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, bytesDelted, int(account.BytesDeletedFromStorage), errMsg)
+	return v
+}
+
 func formatErrorForAccount(field string, address ...[]byte) string {
 	return fmt.Sprintf("%s %s", field, humanReadable(address...))
 }

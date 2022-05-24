@@ -58,11 +58,13 @@ func newVMOutput() *vmcommon.VMOutput {
 // NewVMOutputAccount creates a new output account and sets the given address
 func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
-		Address:        address,
-		Nonce:          0,
-		BalanceDelta:   big.NewInt(0),
-		Balance:        nil,
-		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
+		Address:                 address,
+		Nonce:                   0,
+		BalanceDelta:            big.NewInt(0),
+		Balance:                 nil,
+		StorageUpdates:          make(map[string]*vmcommon.StorageUpdate),
+		BytesAddedToStorage:     0,
+		BytesDeletedFromStorage: 0,
 	}
 }
 
@@ -647,6 +649,13 @@ func mergeOutputAccounts(
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress
+	}
+
+	if rightAccount.BytesAddedToStorage > leftAccount.BytesAddedToStorage {
+		leftAccount.BytesAddedToStorage = rightAccount.BytesAddedToStorage
+	}
+	if rightAccount.BytesDeletedFromStorage > leftAccount.BytesDeletedFromStorage {
+		leftAccount.BytesDeletedFromStorage = rightAccount.BytesDeletedFromStorage
 	}
 }
 
