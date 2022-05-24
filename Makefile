@@ -50,6 +50,7 @@ build-test-contracts:
 	erdpy contract build ./test/contracts/async-call-child
 	erdpy contract build ./test/contracts/async-call-parent
 	erdpy contract build ./test/contracts/breakpoint
+	erdpy contract build ./test/contracts/big-floats
 	erdpy contract build ./test/contracts/counter
 	erdpy contract build ./test/contracts/deployer
 	erdpy contract build ./test/contracts/deployer-child

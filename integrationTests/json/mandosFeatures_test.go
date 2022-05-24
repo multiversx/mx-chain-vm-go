@@ -40,6 +40,14 @@ func TestRustBasicFeaturesLegacy(t *testing.T) {
 	runAllTestsInFolder(t, "features/basic-features-legacy/mandos")
 }
 
+func TestRustBigFloatFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/big-float-features/mandos")
+}
+
 func TestRustPayableFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
@@ -61,6 +69,10 @@ func TestRustComposability(t *testing.T) {
 
 func TestRustPromisesFeatures(t *testing.T) {
 	runAllTestsInFolder(t, "features/composability/mandos-promises")
+}
+
+func TestRustFormattedMessageFeatures(t *testing.T) {
+	runAllTestsInFolder(t, "features/formatted-message-features/mandos")
 }
 
 // For debugging:

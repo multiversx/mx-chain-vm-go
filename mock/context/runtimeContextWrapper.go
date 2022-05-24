@@ -96,6 +96,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	BigIntAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	BigFloatAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ReplaceInstanceBuilderFunc func(builder arwen.InstanceBuilder)
@@ -283,6 +285,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.BigIntAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.BigIntAPIErrorShouldFailExecution()
+	}
+
+	runtimeWrapper.BigFloatAPIErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.BigFloatAPIErrorShouldFailExecution()
 	}
 
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
@@ -531,6 +537,11 @@ func (contextWrapper *RuntimeContextWrapper) CryptoAPIErrorShouldFailExecution()
 // BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
+}
+
+// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
+	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
 }
 
 // ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

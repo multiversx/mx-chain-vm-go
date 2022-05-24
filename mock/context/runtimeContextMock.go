@@ -26,6 +26,7 @@ type RuntimeContextMock struct {
 	MemLoadMultipleResult    [][]byte
 	FailCryptoAPI            bool
 	FailBigIntAPI            bool
+	FailBigFloatAPI          bool
 	FailElrondAPI            bool
 	FailElrondSyncExecAPI    bool
 	FailManagedBuffersAPI    bool
@@ -297,6 +298,11 @@ func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {
 // BigIntAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 	return r.FailBigIntAPI
+}
+
+// BigFloatAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) BigFloatAPIErrorShouldFailExecution() bool {
+	return r.FailBigFloatAPI
 }
 
 // ManagedBufferAPIErrorShouldFailExecution mocked method

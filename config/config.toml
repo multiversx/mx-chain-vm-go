@@ -131,6 +131,26 @@
     BigIntGetExternalBalance   = 10
     CopyPerByteForTooBig       = 10
 
+[BigFloatAPICost]
+    BigFloatNewFromParts = 10
+    BigFloatAdd          = 10
+    BigFloatSub          = 10
+    BigFloatMul          = 10    
+    BigFloatDiv          = 10
+    BigFloatTruncate     = 10
+    BigFloatNeg          = 10
+    BigFloatClone        = 10
+    BigFloatCmp          = 10
+    BigFloatAbs          = 10
+    BigFloatSqrt         = 10
+    BigFloatPow          = 10
+    BigFloatFloor        = 10
+    BigFloatCeil         = 10
+    BigFloatIsInt        = 10
+    BigFloatSetBigInt    = 10
+    BigFloatSetInt64     = 10
+    BigFloatGetConst     = 10
+
 [CryptoAPICost]
     SHA256                 = 10
     Keccak256              = 10
@@ -160,6 +180,8 @@
     MBufferToBigIntSigned        = 10
     MBufferFromBigIntUnsigned    = 10
     MBufferFromBigIntSigned      = 10
+    MBufferToBigFloat            = 10
+    MBufferFromBigFloat          = 10
     MBufferStorageStore          = 10
     MBufferStorageLoad           = 10
     MBufferGetArgument           = 10

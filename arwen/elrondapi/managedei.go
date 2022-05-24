@@ -37,16 +37,17 @@ package elrondapi
 // extern void		v1_4_managedGetOriginalTxHash(void *context, int32_t resultHandle);
 //
 // extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
-// extern int32_t   v1_4_managedIsPaused(void *context, int32_t tokenIDHandle);
-// extern int32_t   v1_4_managedIsLimitedTransfer(void *context, int32_t tokenIDHandle);
+// extern int32_t   v1_4_managedIsESDTPaused(void *context, int32_t tokenIDHandle);
+// extern int32_t   v1_4_managedIsESDTLimitedTransfer(void *context, int32_t tokenIDHandle);
 // extern void      v1_4_managedBufferToHex(void *context, int32_t sourceHandle, int32_t destHandle);
 import "C"
 
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"unsafe"
+
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
@@ -81,8 +82,8 @@ const (
 	managedGetStateRootHashName             = "managedGetStateRootHash"
 	managedGetOriginalTxHashName            = "managedGetOriginalTxHash"
 	managedIsESDTFrozenName                 = "managedIsESDTFrozen"
-	managedIsLimitedTransferName            = "managedIsLimitedTransfer"
-	managedIsPausedName                     = "managedIsPaused"
+	managedIsESDTLimitedTransferName        = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                 = "managedIsESDTPaused"
 	managedBufferToHexName                  = "managedBufferToHex"
 )
 
@@ -220,12 +221,12 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("managedIsPaused", v1_4_managedIsPaused, C.v1_4_managedIsPaused)
+	imports, err = imports.Append("managedIsESDTPaused", v1_4_managedIsESDTPaused, C.v1_4_managedIsESDTPaused)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = imports.Append("managedIsLimitedTransfer", v1_4_managedIsLimitedTransfer, C.v1_4_managedIsLimitedTransfer)
+	imports, err = imports.Append("managedIsESDTLimitedTransfer", v1_4_managedIsESDTLimitedTransfer, C.v1_4_managedIsESDTLimitedTransfer)
 	if err != nil {
 		return nil, err
 	}
@@ -1020,29 +1021,42 @@ func v1_4_managedTransferValueExecute(
 }
 
 //export v1_4_managedIsESDTFrozen
-func v1_4_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+func v1_4_managedIsESDTFrozen(
+	context unsafe.Pointer,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64) int32 {
+	host := arwen.GetVMHost(context)
+	return ManagedIsESDTFrozenWithHost(host, addressHandle, tokenIDHandle, nonce)
+}
+
+func ManagedIsESDTFrozenWithHost(
+	host arwen.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(managedIsESDTFrozenName, gasToUse)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1053,19 +1067,24 @@ func v1_4_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, token
 	return 0
 }
 
-//export v1_4_managedIsLimitedTransfer
-func v1_4_managedIsLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+//export v1_4_managedIsESDTLimitedTransfer
+func v1_4_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
+	host := arwen.GetVMHost(context)
+	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
+}
+
+func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(managedIsLimitedTransferName, gasToUse)
+	metering.UseGasAndAddTracedGas(managedIsESDTLimitedTransferName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1076,19 +1095,24 @@ func v1_4_managedIsLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) 
 	return 0
 }
 
-//export v1_4_managedIsPaused
-func v1_4_managedIsPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+//export v1_4_managedIsESDTPaused
+func v1_4_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
+	host := arwen.GetVMHost(context)
+	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
+}
+
+func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
-	metering.UseGasAndAddTracedGas(managedIsPausedName, gasToUse)
+	metering.UseGasAndAddTracedGas(managedIsESDTPausedName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1101,16 +1125,21 @@ func v1_4_managedIsPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 
 //export v1_4_managedBufferToHex
 func v1_4_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	ManagedBufferToHexWithHost(host, sourceHandle, destHandle)
+}
+
+func ManagedBufferToHexWithHost(host arwen.VMHost, sourceHandle int32, destHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
 
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
 	metering.UseGasAndAddTracedGas(managedBufferToHexName, gasToUse)
 
 	mBuff, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 

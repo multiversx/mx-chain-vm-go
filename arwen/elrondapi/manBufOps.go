@@ -24,6 +24,8 @@ package elrondapi
 // extern int32_t 	v1_4_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
 // extern int32_t	v1_4_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern int32_t	v1_4_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
+// extern int32_t	v1_4_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 //
 // extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
 // extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
@@ -35,6 +37,7 @@ package elrondapi
 import "C"
 import (
 	"bytes"
+	"math/big"
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
@@ -63,6 +66,8 @@ const (
 	mBufferGetArgumentName        = "mBufferGetArgument"
 	mBufferFinishName             = "mBufferFinish"
 	mBufferSetRandomName          = "mBufferSetRandom"
+	mBufferToBigFloatName         = "mBufferToBigFloat"
+	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
 // ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
@@ -145,6 +150,16 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferFromBigIntSigned", v1_4_mBufferFromBigIntSigned, C.v1_4_mBufferFromBigIntSigned)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferToBigFloat", v1_4_mBufferToBigFloat, C.v1_4_mBufferToBigFloat)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("mBufferFromBigFloat", v1_4_mBufferFromBigFloat, C.v1_4_mBufferFromBigFloat)
 	if err != nil {
 		return nil, err
 	}
@@ -567,6 +582,72 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 	}
 
 	managedType.SetBytes(mBufferHandle, twos.ToBytes(value))
+	return 0
+}
+
+//export v1_4_mBufferToBigFloat
+func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	metering.StartGasTracing(mBufferToBigFloatName)
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferToBigFloat
+	metering.UseAndTraceGas(gasToUse)
+
+	managedBuffer, err := managedType.GetBytes(mBufferHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	managedType.ConsumeGasForBytes(managedBuffer)
+	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
+		_ = arwen.WithFault(arwen.ErrBigFloatWrongPrecision, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	value, err := managedType.GetBigFloatOrCreate(bigFloatHandle)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	bigFloat := new(big.Float)
+	err = bigFloat.GobDecode(managedBuffer)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	if bigFloat.IsInf() {
+		_ = arwen.WithFault(arwen.ErrInfinityFloatOperation, context, runtime.BigFloatAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	value.Set(bigFloat)
+	return 0
+}
+
+//export v1_4_mBufferFromBigFloat
+func v1_4_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandle int32) int32 {
+	managedType := arwen.GetManagedTypesContext(context)
+	runtime := arwen.GetRuntimeContext(context)
+	metering := arwen.GetMeteringContext(context)
+	metering.StartGasTracing(mBufferFromBigFloatName)
+
+	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferFromBigFloat
+	metering.UseAndTraceGas(gasToUse)
+
+	value, err := managedType.GetBigFloat(bigFloatHandle)
+	if arwen.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	encodedFloat, err := value.GobEncode()
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 1
+	}
+	managedType.ConsumeGasForBytes(encodedFloat)
+
+	managedType.SetBytes(mBufferHandle, encodedFloat)
+
 	return 0
 }
 

@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 )
 
-func makeESDTUserMetadataBytes(frozen bool) []byte {
+func MakeESDTUserMetadataBytes(frozen bool) []byte {
 	metadata := &builtInFunctions.ESDTUserMetadata{
 		Frozen: frozen,
 	}
@@ -61,7 +61,7 @@ func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]
 			tokenData := &esdt.ESDigitalToken{
 				Value:      tokenBalance,
 				Type:       uint32(core.Fungible),
-				Properties: makeESDTUserMetadataBytes(isFrozen),
+				Properties: MakeESDTUserMetadataBytes(isFrozen),
 				TokenMetaData: &esdt.MetaData{
 					Name:       tokenIdentifier,
 					Nonce:      tokenNonce,
