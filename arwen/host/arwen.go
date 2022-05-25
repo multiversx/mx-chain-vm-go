@@ -136,6 +136,11 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	imports, err = elrondapi.BigFloatImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
 	imports, err = elrondapi.SmallIntImports(imports)
 	if err != nil {
 		return nil, err

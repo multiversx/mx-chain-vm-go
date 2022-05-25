@@ -294,12 +294,12 @@ func (b *MockWorld) ClearCompiledCodes() {
 
 // IsPaused -
 func (b *MockWorld) IsPaused(_ []byte) bool {
-	return false
+	return b.IsPausedValue
 }
 
 // IsLimitedTransfer -
 func (b *MockWorld) IsLimitedTransfer(_ []byte) bool {
-	return false
+	return b.IsLimitedTransferValue
 }
 
 // IsInterfaceNil returns true if underlying implementation is nil

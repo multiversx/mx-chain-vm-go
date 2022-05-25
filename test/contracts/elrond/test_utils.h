@@ -4,6 +4,7 @@
 #include "../elrond/context.h"
 #include "../elrond/bigInt.h"
 #include "../elrond/types.h"
+#include "../elrond/bigFloat.h"
 
 void intTo3String(int value, byte *string, int startPos) {
   string[startPos + 2] = (byte)('0' + value % 10);
@@ -89,6 +90,18 @@ void finishResult(int result) {
 		byte message[] = "unkn";
 		finish(message, 4);
 	}
+}
+
+void bigFloatGetArgument(int argumentId, int bigFloatHandle) {
+    int manBufHandle = mBufferNew();
+    mBufferGetArgument(argumentId ,manBufHandle);
+    mBufferToBigFloat(manBufHandle,bigFloatHandle);
+}
+
+void bigFloatFinish(int bigFloatHandle) {
+    int manBufHandle = mBufferNew();
+    mBufferFromBigFloat(manBufHandle,bigFloatHandle);
+    mBufferFinish(manBufHandle);
 }
 
 #endif
