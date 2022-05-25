@@ -5,12 +5,12 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/factory"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -73,17 +73,16 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		epochNotifier,
-		0, 0)
+		epochNotifier)
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 
-	storageContext, _ := NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix)
 	host.StorageContext = storageContext
 
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = factory.NewVMCrypto()
-	host.StorageContext, _ = NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix, 0)
+	host.StorageContext, _ = NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix)
 
 	return host, world
 }

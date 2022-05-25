@@ -9,17 +9,17 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/contracts"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -972,11 +972,6 @@ func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcom
 
 	test.BuildInstanceCreatorTest(t).
 		WithInput(input).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			if !enabled {
-				host.Runtime().DisableUseDifferentGasCostFlag()
-			}
-		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(retCode)
 		})
@@ -1000,11 +995,6 @@ func runTestMBufferSetByteSlice(
 			WithFunction("mBufferSetByteSliceTest").
 			WithArguments([]byte{byte(startPos)}, []byte{byte(copyLen)}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			if !enabled {
-				host.Runtime().DisableUseDifferentGasCostFlag()
-			}
-		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(retCode)
 			if retCode == vmcommon.Ok {

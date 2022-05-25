@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -165,7 +165,7 @@ func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
 // SetPlainLoggerFormatter configures the logger to output only ASCII characters
 func SetPlainLoggerFormatter() {
 	logger.ClearLogObservers()
-	logger.AddLogObserver(os.Stdout, &logger.PlainFormatter{})
+	_ = logger.AddLogObserver(os.Stdout, &logger.PlainFormatter{})
 }
 
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
@@ -303,19 +303,4 @@ func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
 	var asyncPrefixArgs [][]byte
 	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
 	return asyncPrefixArgs
-}
-
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
-func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecution bool) {
-	runtime := GetVMHost(vmHostPtr)
-	if runtime.FixFailExecutionEnabled() {
-		_ = WithFaultAndHost(runtime, err, failExecution)
-	}
-}
-
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
-func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bool) {
-	if host.FixFailExecutionEnabled() {
-		_ = WithFaultAndHost(host, err, failExecution)
-	}
 }

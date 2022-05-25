@@ -4,10 +4,10 @@ import (
 	"math/big"
 	"testing"
 
-	mge "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/elrondgo-exporter"
+	mge "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/elrondgo-exporter"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
 	"github.com/stretchr/testify/require"
 )
 

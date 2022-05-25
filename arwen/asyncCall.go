@@ -1,7 +1,7 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 

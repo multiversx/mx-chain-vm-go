@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -84,9 +84,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
-	if host.flagRemoveNonUpdatedStorage.IsSet() {
-		output.RemoveNonUpdatedStorage()
-	}
+	output.RemoveNonUpdatedStorage()
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
@@ -190,9 +188,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	if host.flagRemoveNonUpdatedStorage.IsSet() {
-		output.RemoveNonUpdatedStorage()
-	}
+	output.RemoveNonUpdatedStorage()
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
@@ -293,7 +289,11 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	runtime.InitStateFromContractCallInput(input)
 
 	async.PushState()
-	async.InitStateFromInput(input)
+	err = async.InitStateFromInput(input)
+	if err != nil {
+		runtime.AddError(err, input.Function)
+		return nil, true, err
+	}
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -533,9 +533,16 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 		VMInput:           input.VMInput,
 	}
 
+	var isChildComplete bool
 	_, initCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(initCallInput.Arguments)
-	_, isChildComplete, err := host.ExecuteOnDestContext(initCallInput)
-	host.Async().CompleteChildConditional(isChildComplete, nil, 0)
+	_, isChildComplete, err = host.ExecuteOnDestContext(initCallInput)
+	if err != nil {
+		return
+	}
+	err = host.Async().CompleteChildConditional(isChildComplete, nil, 0)
+	if err != nil {
+		return
+	}
 
 	blockchain.IncreaseNonce(input.CallerAddr)
 

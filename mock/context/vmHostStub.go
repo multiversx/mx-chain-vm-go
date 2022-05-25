@@ -1,10 +1,10 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -298,26 +298,6 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
 	}
-}
-
-// MultiESDTTransferAsyncCallBackEnabled mocked method
-func (vhs *VMHostStub) MultiESDTTransferAsyncCallBackEnabled() bool {
-	return true
-}
-
-// FixOOGReturnCodeEnabled mocked method
-func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
-	return true
-}
-
-// FixFailExecutionEnabled mocked method
-func (vhs *VMHostStub) FixFailExecutionEnabled() bool {
-	return true
-}
-
-// CreateNFTOnExecByCallerEnabled mocked method
-func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
-	return true
 }
 
 // Close -

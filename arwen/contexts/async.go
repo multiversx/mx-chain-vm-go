@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -477,10 +477,13 @@ func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.Async
 		call.GasLocked = math.AddUint64(call.GasLocked, metering.ComputeExtraGasLockedForAsync())
 	}
 
-	metering.UseGasForAsyncStep()
+	err := metering.UseGasForAsyncStep()
+	if err != nil {
+		return err
+	}
 
 	call.CallID = nil
-	err := context.addAsyncCall(groupID, call)
+	err = context.addAsyncCall(groupID, call)
 	if err != nil {
 		return err
 	}

@@ -5,9 +5,9 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -56,10 +56,6 @@ type VMHost interface {
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
 
-	FixOOGReturnCodeEnabled() bool
-	MultiESDTTransferAsyncCallBackEnabled() bool
-	FixFailExecutionEnabled() bool
-	CreateNFTOnExecByCallerEnabled() bool
 	Reset()
 }
 
@@ -159,9 +155,6 @@ type RuntimeContext interface {
 	GetPrevTxHash() []byte
 	PopFirstArgumentFromVMInput() ([]byte, error)
 
-	// TODO remove after implementing proper mocking of Wasmer instances; this is
-	// used for tests only
-	DisableUseDifferentGasCostFlag()
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
@@ -309,8 +302,6 @@ type StorageContext interface {
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
-	DisableUseDifferentGasCostFlag()
-	IsUseDifferentGasCostFlagSet() bool
 	GetVmProtectedPrefix(prefix string) []byte
 }
 

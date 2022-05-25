@@ -7,15 +7,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/contexts"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/factory"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -57,24 +56,6 @@ type vmHost struct {
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       arwen.CallArgsParser
-
-	multiESDTTransferAsyncCallBackEnableEpoch uint32
-	flagMultiESDTTransferAsyncCallBack        atomic.Flag
-
-	fixOOGReturnCodeEnableEpoch uint32
-	flagFixOOGReturnCode        atomic.Flag
-
-	removeNonUpdatedStorageEnableEpoch uint32
-	flagRemoveNonUpdatedStorage        atomic.Flag
-
-	createNFTThroughExecByCallerEnableEpoch uint32
-	flagCreateNFTThroughExecByCaller        atomic.Flag
-
-	fixFailExecutionOnErrorEnableEpoch uint32
-	flagFixFailExecutionOnError        atomic.Flag
-
-	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagUseDifferentGasCostForCachedStorage         atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -114,12 +95,6 @@ func NewArwenVM(
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		callArgsParser:       parsers.NewCallArgsParser(),
 		executionTimeout:     minExecutionTimeout,
-		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
-		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
-		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
-		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
-		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
-		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
@@ -178,8 +153,6 @@ func NewArwenVM(
 		hostParameters.VMType,
 		host.builtInFuncContainer,
 		hostParameters.EpochNotifier,
-		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
-		hostParameters.ManagedCryptoAPIEnableEpoch,
 	)
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
@@ -197,7 +170,6 @@ func NewArwenVM(
 		blockChainHook,
 		hostParameters.EpochNotifier,
 		hostParameters.ElrondProtectedKeyPrefix,
-		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 	)
 	if err != nil {
 		return nil, err
@@ -564,44 +536,7 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
-func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
-	host.flagMultiESDTTransferAsyncCallBack.SetValue(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
-	log.Debug("Arwen VM: multi esdt transfer on async callback intra shard", "enabled", host.flagMultiESDTTransferAsyncCallBack.IsSet())
-
-	host.flagFixOOGReturnCode.SetValue(epoch >= host.fixOOGReturnCodeEnableEpoch)
-	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
-
-	host.flagRemoveNonUpdatedStorage.SetValue(epoch >= host.removeNonUpdatedStorageEnableEpoch)
-	log.Debug("Arwen VM: remove non updated storage", "enabled", host.flagRemoveNonUpdatedStorage.IsSet())
-
-	host.flagCreateNFTThroughExecByCaller.SetValue(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
-	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
-
-	host.flagFixFailExecutionOnError.SetValue(epoch >= host.fixFailExecutionOnErrorEnableEpoch)
-	log.Debug("Arwen VM: fix fail execution on error", "enabled", host.flagFixFailExecutionOnError.IsSet())
-
-	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
-}
-
-// MultiESDTTransferAsyncCallBackEnabled returns true if the corresponding flag is set
-func (host *vmHost) MultiESDTTransferAsyncCallBackEnabled() bool {
-	return host.flagMultiESDTTransferAsyncCallBack.IsSet()
-}
-
-// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.flagFixOOGReturnCode.IsSet()
-}
-
-// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
-func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.flagFixFailExecutionOnError.IsSet()
-}
-
-// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
-func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.flagCreateNFTThroughExecByCaller.IsSet()
+func (host *vmHost) EpochConfirmed(_ uint32, _ uint64) {
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {
