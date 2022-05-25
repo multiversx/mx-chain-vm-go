@@ -237,6 +237,7 @@ var expectedAddByChild = len(contracts.TestStorageValue2) +
 var expectedDeletedByChild = len(contracts.TestStorageValue1) - len(contracts.TestStorageValue4)
 
 func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
+	simpleGasTestConfig := makeTestConfig()
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
@@ -272,6 +273,7 @@ func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
 }
 
 func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
+	simpleGasTestConfig := makeTestConfig()
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).

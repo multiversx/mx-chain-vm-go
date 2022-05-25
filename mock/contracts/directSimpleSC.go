@@ -268,7 +268,7 @@ var TestStorageValue4 = []byte{1}
 
 // ParentSetStorageMock is an exposed mock contract method
 func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(DirectCallGasTestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("parentSetStorage", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
