@@ -15,6 +15,9 @@ var ParentDataB = []byte("parentDataB")
 // ChildKey value exposed for test usage
 var ChildKey = []byte("childKey........................")
 
+// ChildKeyB value exposed for test usage
+var ChildKeyB = []byte("childKeyB........................")
+
 // ChildData value exposed for test usage
 var ChildData = []byte("childData")
 
