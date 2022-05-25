@@ -16,15 +16,15 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/signing/secp256k1"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/esdtconvert"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
-var baseTestConfig = contracts.DirectCallGasTestConfig{
+var baseTestConfig = &testcommon.TestConfig{
 	GasProvided:     1000,
 	GasUsedByParent: 400,
 	GasUsedByChild:  200,
