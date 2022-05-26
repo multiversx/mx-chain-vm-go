@@ -399,20 +399,6 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	verify2.Ok()
 }
 
-func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
-	test.BuildInstanceCreatorTest(t).
-		WithInput(test.CreateTestContractCreateInputBuilder().
-			WithGasProvided(1000).
-			WithCallValue(88).
-			WithArguments([]byte{2}).
-			WithContractCode(test.GetTestSCCode("num-with-fp", "../../")).
-			Build()).
-		WithAddress(newAddress).
-		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.ContractInvalid()
-		})
-}
-
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	errGetAccount := errors.New("get code error")
 	test.BuildInstanceCallTest(t).
@@ -945,7 +931,6 @@ func buildRandomizer(host arwen.VMHost) io.Reader {
 
 func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	// mByteSetByteSlice not yet enabled
-	runTestMBufferSetByteSlice_Deploy(t, false, vmcommon.ContractInvalid)
 	runTestMBufferSetByteSlice_Deploy(t, true, vmcommon.Ok)
 
 	// Correct copying from "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" over "abcdefghijklmnopqrstuvwxyz"
