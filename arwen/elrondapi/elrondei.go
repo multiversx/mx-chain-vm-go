@@ -612,7 +612,7 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 		return nil, err
 	}
 
-	imports, err = imports.Append("deleteContract", v1_4_deleteContract, C.v1_4_deleteContract)
+	imports, err = imports.Append("deleteContract", v1_5_deleteContract, C.v1_5_deleteContract)
 	if err != nil {
 		return nil, err
 	}
