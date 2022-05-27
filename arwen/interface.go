@@ -378,6 +378,9 @@ type AsyncContext interface {
 
 	HasLegacyGroup() bool
 
+	SetCallbackParentCall(asyncCall *AsyncCall)
+	GetCallbackClosure() ([]byte, error)
+
 	/*
 		for tests / test framework usage
 	*/

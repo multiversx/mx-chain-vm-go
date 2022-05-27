@@ -282,11 +282,14 @@ var ErrAsyncInit = errors.New("async context initialization error")
 // ErrAsyncNoOutputFromCallback signals that an error happen while producing the output of a callback
 var ErrAsyncNoOutputFromCallback = errors.New("callback VMOutput should not be nil")
 
-// var ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
+// ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
 var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed yet")
 
-// var ErrAsyncFrameworkPopCallID signals an error in the async fremwork that did not fill the correct call id arguments
+// ErrAsyncFrameworkPopCallID signals an error in the async fremwork that did not fill the correct call id arguments
 var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsFromArguments")
+
+// ErrAsyncNoCallbackForClosure signals that closure can't be obtained
+var ErrAsyncNoCallbackForClosure = errors.New("no callback for closure")
 
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")

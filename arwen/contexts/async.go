@@ -45,6 +45,7 @@ type asyncContext struct {
 	callbackAsyncInitiatorCallID []byte
 
 	asyncStorageDataPrefix []byte
+	callbackParentCall     *arwen.AsyncCall
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -981,6 +982,20 @@ func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]by
 func (context *asyncContext) HasLegacyGroup() bool {
 	_, hasLegacyGroup := context.GetCallGroup(arwen.LegacyAsyncCallGroupID)
 	return hasLegacyGroup
+}
+
+// SetCallbackParentCall sets the async call that triggered the callback (used for callback closure)
+func (context *asyncContext) SetCallbackParentCall(asyncCall *arwen.AsyncCall) {
+	context.callbackParentCall = asyncCall
+}
+
+// GetCallbackClosure gets the async call callback closure
+func (context *asyncContext) GetCallbackClosure() ([]byte, error) {
+	asyncCall := context.callbackParentCall
+	if asyncCall == nil {
+		return nil, arwen.ErrAsyncNoCallbackForClosure
+	}
+	return asyncCall.CallbackClosure, nil
 }
 
 // DebugCallIDAsString - just for debug purposes

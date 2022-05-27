@@ -933,6 +933,8 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		return err
 	}
 
+	async.SetCallbackParentCall(asyncCall)
+
 	callbackName := asyncCall.GetCallbackName()
 	if callbackName != "" {
 		runtime.SetCustomCallFunction(callbackName)
