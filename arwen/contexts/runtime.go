@@ -8,10 +8,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
@@ -46,12 +45,6 @@ type runtimeContext struct {
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
 	errors          arwen.WrappableError
-
-	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagEnableNewAPIMethods                         atomic.Flag
-
-	managedCryptoApiEnableEpoch uint32
-	flagEnableManagedCryptoAPI  atomic.Flag
 }
 
 type instanceAndMemory struct {
@@ -65,8 +58,6 @@ func NewRuntimeContext(
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	epochNotifier vmcommon.EpochNotifier,
-	useDifferentGasCostForReadingCachedStorageEpoch uint32,
-	managedCryptoAPIEnableEpoch uint32,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -75,14 +66,12 @@ func NewRuntimeContext(
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
-		host:                        host,
-		vmType:                      vmType,
-		stateStack:                  make([]*runtimeContext, 0),
-		instanceStack:               make([]wasmer.InstanceHandler, 0),
-		validator:                   newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:                      nil,
-		managedCryptoApiEnableEpoch: managedCryptoAPIEnableEpoch,
-		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
+		host:          host,
+		vmType:        vmType,
+		stateStack:    make([]*runtimeContext, 0),
+		instanceStack: make([]wasmer.InstanceHandler, 0),
+		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
+		errors:        nil,
 	}
 
 	var err error
@@ -472,7 +461,7 @@ func (context *runtimeContext) popInstance(codeHash []byte) {
 	context.instance = prevInstance
 }
 
-// RunningInstanceCount returns the number of the currently running Wasmer instances.
+// RunningInstancesCount returns the number of the currently running Wasmer instances.
 func (context *runtimeContext) RunningInstancesCount() uint64 {
 	return uint64(len(context.instanceStack))
 }
@@ -570,7 +559,7 @@ func (context *runtimeContext) GetCurrentTxHash() []byte {
 	return context.vmInput.CurrentTxHash
 }
 
-// GetCurrentTxHash returns the hash of the original transaction, in the case of async calls, as specified by the current VMInput.
+// GetOriginalTxHash returns the hash of the original transaction, in the case of async calls, as specified by the current VMInput.
 func (context *runtimeContext) GetOriginalTxHash() []byte {
 	return context.vmInput.OriginalTxHash
 }
@@ -618,7 +607,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
-		if errors.Is(err, arwen.ErrNotEnoughGas) && context.host.FixOOGReturnCodeEnabled() {
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
 			breakpoint = arwen.BreakpointOutOfGas
 		}
 	} else {
@@ -679,186 +668,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	if !context.flagEnableNewAPIMethods.IsSet() {
-		err = context.checkBackwardCompatibility()
-		if err != nil {
-			logRuntime.Trace("verify contract code", "error", err)
-			return err
-		}
-	}
-
-	if !context.flagEnableManagedCryptoAPI.IsSet() {
-		err = context.checkIfContainsNewManagedCryptoAPI()
-		if err != nil {
-			logRuntime.Trace("verify contract code", "error", err)
-			return err
-		}
-	}
-
 	logRuntime.Trace("verified contract code")
-
-	return nil
-}
-
-func (context *runtimeContext) checkBackwardCompatibility() error {
-	if context.instance.IsFunctionImported("mBufferSetByteSlice") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("getESDTLocalRoles") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("validateTokenIdentifier") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedSha256") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedKeccak256") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("mBufferStorageLoadFromAddress") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("cleanReturnData") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("deleteFromReturnData") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("completedTxEvent") {
-		return arwen.ErrContractInvalid
-	}
-
-	return nil
-}
-
-func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
-	if context.instance.IsFunctionImported("managedIsESDTFrozen") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedIsESDTPaused") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedIsESDTLimitedTransfer") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedBufferToHex") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigIntToString") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedRipemd160") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifyBLS") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifyEd25519") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifySecp256k1") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifyCustomSecp256k1") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedEncodeSecp256k1DerSignature") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedScalarBaseMultEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedScalarMultEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedMarshalEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedUnmarshalEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedMarshalCompressedEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedUnmarshalCompressedEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedGenerateKeyEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedCreateEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("mBufferToBigFloat") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("mBufferFromBigFloat") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatNewFromParts") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatNewFromFrac") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatNewFromSci") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatAdd") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSub") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatMul") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatDiv") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatAbs") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatCmp") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSign") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatClone") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSqrt") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatPow") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatFloor") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatCeil") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatTruncate") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatIsInt") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSetInt64") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSetBigInt") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatGetConstPi") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatGetConstE") {
-		return arwen.ErrContractInvalid
-	}
 
 	return nil
 }
@@ -1172,18 +982,8 @@ func PopFirstArgumentFromVMInput(vmInput *vmcommon.VMInput) ([]byte, error) {
 	return firstArg, nil
 }
 
-// DisableUseDifferentGasCostFlag - for tests
-func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
-	context.flagEnableNewAPIMethods.Reset()
-}
-
 // EpochConfirmed is called whenever a new epoch is confirmed
-func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagEnableNewAPIMethods.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
-	logRuntime.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagEnableNewAPIMethods.IsSet())
-
-	context.flagEnableManagedCryptoAPI.SetValue(epoch >= context.managedCryptoApiEnableEpoch)
-	logRuntime.Debug("Arwen VM: managed crypto API", "enabled", context.flagEnableNewAPIMethods.IsSet())
+func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

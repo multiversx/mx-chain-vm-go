@@ -7,13 +7,13 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwenmandos"
+	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 

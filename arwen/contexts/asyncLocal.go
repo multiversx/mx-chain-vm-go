@@ -3,8 +3,8 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -284,10 +284,7 @@ func (context *asyncContext) createCallbackInput(
 ) (*vmcommon.ContractCallInput, error) {
 	runtime := context.host.Runtime()
 
-	actualCallbackInitiator := asyncCall.GetDestination()
-	if context.host.MultiESDTTransferAsyncCallBackEnabled() {
-		actualCallbackInitiator = context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
-	}
+	actualCallbackInitiator := context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
 
 	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, gasAccumulated, destinationErr)
 
@@ -483,10 +480,6 @@ func (context *asyncContext) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
-	if !context.host.MultiESDTTransferAsyncCallBackEnabled() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
-		return false, functionName, args
-	}
-
 	parsedTransfer, err := context.esdtTransferParser.ParseESDTTransfers(sndAddr, dstAddr, functionName, args)
 	if err != nil {
 		return false, functionName, args

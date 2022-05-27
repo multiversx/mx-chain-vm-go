@@ -12,11 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -359,7 +359,6 @@ func DefaultTestArwenWithGasSchedule(
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
-		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
