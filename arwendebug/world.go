@@ -3,10 +3,10 @@ package arwendebug
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"

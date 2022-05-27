@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -355,10 +355,6 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 // PopFirstArgumentFromVMInput mocked method
 func (r *RuntimeContextMock) PopFirstArgumentFromVMInput() ([]byte, error) {
 	return nil, nil
-}
-
-// DisableUseDifferentGasCostFlag mocked method
-func (r *RuntimeContextMock) DisableUseDifferentGasCostFlag() {
 }
 
 // CleanInstance mocked method

@@ -3,10 +3,10 @@ package hosttest
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/contracts"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -18,26 +18,18 @@ const cachedStorageLoadGas = uint64(5)
 const dataCopyGas = uint64(1)
 
 func TestGasUsed_LoadStorage_SmallKey_FlagEnabled(t *testing.T) {
-	loadStorage(t, smallKey, true)
-}
-
-func TestGasUsed_LoadStorage_SmallKey_FlagDisabled(t *testing.T) {
-	loadStorage(t, smallKey, false)
+	loadStorage(t, smallKey)
 }
 
 func TestGasUsed_LoadStorage_BigKey_FlagEnabled(t *testing.T) {
-	loadStorage(t, bigKey, true)
+	loadStorage(t, bigKey)
 }
 
-func TestGasUsed_LoadStorage_BigKey_FlagDisabled(t *testing.T) {
-	loadStorage(t, bigKey, false)
-}
-
-func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
+func loadStorage(t *testing.T, key []byte) {
 	testConfig := makeTestConfig()
 	value := []byte("testValue")
 
-	expectedUsedGas := computeExpectedGasForGetStorage(key, value, flagEnabled)
+	expectedUsedGas := computeExpectedGasForGetStorage(key, value)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -58,10 +50,6 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
-			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
-			}
-
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
 			(accountHandler.(*worldmock.Account)).Storage[string(key)] = value
 		}).
@@ -75,26 +63,18 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 }
 
 func TestGasUsed_LoadStorageFromAddress_SmallKey_FlagEnabled(t *testing.T) {
-	loadStorageFromAddress(t, smallKey, true)
-}
-
-func TestGasUsed_LoadStorageFromAddress_SmallKey_FlagDisabled(t *testing.T) {
-	loadStorageFromAddress(t, smallKey, false)
+	loadStorageFromAddress(t, smallKey)
 }
 
 func TestGasUsed_LoadStorageFromAddress_BigKey_FlagEnabled(t *testing.T) {
-	loadStorageFromAddress(t, bigKey, true)
+	loadStorageFromAddress(t, bigKey)
 }
 
-func TestGasUsed_LoadStorageFromAddress_BigKey_FlagDisabled(t *testing.T) {
-	loadStorageFromAddress(t, bigKey, false)
-}
-
-func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
+func loadStorageFromAddress(t *testing.T, key []byte) {
 	testConfig := makeTestConfig()
 	value := []byte("testValue")
 
-	expectedUsedGas := computeExpectedGasForGetStorage(key, value, flagEnabled)
+	expectedUsedGas := computeExpectedGasForGetStorage(key, value)
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -122,10 +102,6 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 			account := world.AcctMap[string(test.UserAddress)]
 			account.Storage[string(key)] = value
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
-
-			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
-			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
@@ -136,54 +112,34 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 		})
 }
 
-func computeExpectedGasForGetStorage(key []byte, value []byte, flagEnabled bool) uint64 {
+func computeExpectedGasForGetStorage(key []byte, value []byte) uint64 {
 	extraBytesForKey := len(key) - arwen.AddressLen
 	if extraBytesForKey < 0 {
 		extraBytesForKey = 0
 	}
-	var expectedUsedGas uint64
-	if flagEnabled {
-		expectedUsedGas = storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
-	} else {
-		expectedUsedGas = 2 * (storageLoadGas + uint64(len(value))*dataCopyGas + uint64(extraBytesForKey)*dataCopyGas)
-	}
+
+	expectedUsedGas := storageLoadGas + uint64(len(value))*dataCopyGas + cachedStorageLoadGas + uint64(extraBytesForKey)*dataCopyGas
 	return expectedUsedGas
 }
 
 func TestGasUsed_SetStorage_FlagEnabled(t *testing.T) {
-	setStorage(t, smallKey, true)
-}
-
-func TestGasUsed_SetStorage_FlagDisabled(t *testing.T) {
-	setStorage(t, smallKey, false)
+	setStorage(t, smallKey)
 }
 
 func TestGasUsed_SetStorage_BigKey_FlagEnabled(t *testing.T) {
-	setStorage(t, bigKey, true)
+	setStorage(t, bigKey)
 }
 
-func TestGasUsed_SetStorage_BigKey_FlagDisabled(t *testing.T) {
-	setStorage(t, bigKey, false)
-}
-
-func setStorage(t *testing.T, key []byte, flagEnabled bool) {
+func setStorage(t *testing.T, key []byte) {
 	testConfig := makeTestConfig()
 	value := []byte("testValue")
 
 	storageStoreGas := uint64(10)
 	dataCopyGas := uint64(1)
 
-	var expectedUsedGas uint64
-	if flagEnabled {
-		expectedUsedGas = 2 * storageStoreGas
-		if len(key) > arwen.AddressLen {
-			expectedUsedGas += uint64(len(key) - arwen.AddressLen)
-		}
-	} else {
-		expectedUsedGas = 2*storageStoreGas + uint64(len(value))*dataCopyGas
-		if len(key) > arwen.AddressLen {
-			expectedUsedGas += 2 * uint64(len(key)-arwen.AddressLen)
-		}
+	expectedUsedGas := 2 * storageStoreGas
+	if len(key) > arwen.AddressLen {
+		expectedUsedGas += uint64(len(key) - arwen.AddressLen)
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -211,10 +167,6 @@ func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 			account := world.AcctMap[string(test.UserAddress)]
 			account.Storage[string(key)] = value
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
-
-			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
-			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.

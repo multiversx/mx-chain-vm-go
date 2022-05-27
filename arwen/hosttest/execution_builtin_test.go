@@ -6,9 +6,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"

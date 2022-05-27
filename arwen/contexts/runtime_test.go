@@ -7,14 +7,14 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/factory"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
@@ -63,8 +63,6 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
-		0,
-		0,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -310,8 +308,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		epochNotifier,
-		0, 0)
+		epochNotifier)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),

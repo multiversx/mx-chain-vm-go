@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 )
 
 func main() {
