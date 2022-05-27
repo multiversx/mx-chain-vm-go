@@ -7,14 +7,14 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/cryptoapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/factory"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
@@ -63,8 +63,6 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
-		0,
-		0,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -81,7 +79,6 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
@@ -93,7 +90,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.scAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
 
 	runtimeContext.InitState()
 
@@ -101,7 +97,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
@@ -297,6 +292,78 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.ClearStateStack()
 	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
+	alpha := []byte("alpha")
+	beta := []byte("beta")
+	gamma := []byte("gamma")
+
+	imports := MakeAPIImports()
+	host := &contextmock.VMHostMock{}
+	host.SCAPIMethods = imports
+
+	vmType := []byte("type")
+	runtime, _ := NewRuntimeContext(
+		host,
+		vmType,
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		epochNotifier)
+
+	vmInput := vmcommon.VMInput{
+		CallerAddr:  []byte("caller"),
+		GasProvided: 1000,
+		CallValue:   big.NewInt(0),
+	}
+	input := &vmcommon.ContractCallInput{
+		VMInput:  vmInput,
+		Function: "function",
+	}
+
+	input.RecipientAddr = alpha
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = beta
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = gamma
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = alpha
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = gamma
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(2), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PopSetActiveState()
+	runtime.PopSetActiveState()
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PopDiscard()
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
@@ -689,4 +756,35 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	runtimeContext.popInstance([]byte{1})
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_PopArgumentsFromVMInput(t *testing.T) {
+	t.Parallel()
+	host := InitializeArwenAndWasmer()
+	runtimeContext := makeDefaultRuntimeContext(t, host)
+
+	vmInput := &vmcommon.VMInput{}
+	runtimeContext.vmInput = vmInput
+
+	vmInput.Arguments = nil
+	arg, err := runtimeContext.PopFirstArgumentFromVMInput()
+	require.Nil(t, arg)
+	require.ErrorIs(t, err, arwen.ErrInvalidAsyncArgsList)
+
+	vmInput.Arguments = make([][]byte, 0)
+	arg, err = runtimeContext.PopFirstArgumentFromVMInput()
+	require.Nil(t, arg)
+	require.ErrorIs(t, err, arwen.ErrInvalidAsyncArgsList)
+
+	vmInput.Arguments = make([][]byte, 1)
+	vmInput.Arguments[0] = []byte("test")
+	arg, err = runtimeContext.PopFirstArgumentFromVMInput()
+	require.Equal(t, []byte("test"), arg)
+	require.Nil(t, err)
+	require.NotNil(t, vmInput.Arguments)
+	require.Len(t, vmInput.Arguments, 0)
+
+	arg, err = runtimeContext.PopFirstArgumentFromVMInput()
+	require.Nil(t, arg)
+	require.ErrorIs(t, err, arwen.ErrInvalidAsyncArgsList)
 }

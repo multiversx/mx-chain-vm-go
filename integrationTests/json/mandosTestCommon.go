@@ -6,14 +6,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
+	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwenmandos"
+	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/controller"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
 
 func init() {
-	_ = logger.SetLogLevel("*:INFO")
+	_ = logger.SetLogLevel("*:NONE")
 }
 
 func getTestRoot() string {

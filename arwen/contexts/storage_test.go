@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +23,7 @@ func TestNewStorageContext(t *testing.T) {
 	host := &contextmock.VMHostMock{}
 	mockBlockchain := worldmock.NewMockWorld()
 
-	storageContext, err := NewStorageContext(host, mockBlockchain, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, err := NewStorageContext(host, mockBlockchain, epochNotifier, elrondReservedTestPrefix)
 	require.Nil(t, err)
 	require.NotNil(t, storageContext)
 }
@@ -62,6 +62,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
+	mockMetering.GasLeftMock = 20000
 
 	host := &contextmock.VMHostMock{
 		OutputContext:   stubOutput,
@@ -70,7 +71,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
 
 	keyA := []byte("keyA")
 	valueA := []byte("valueA")
@@ -120,7 +121,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	}
 
 	mockBlockchainHook := worldmock.NewMockWorld()
-	storageContext, _ := NewStorageContext(host, mockBlockchainHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, mockBlockchainHook, epochNotifier, elrondReservedTestPrefix)
 
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
 	require.Equal(t, 1, len(storageUpdates))
@@ -141,6 +142,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
+	mockMetering.GasLeftMock = 20000
 
 	host := &contextmock.VMHostMock{
 		OutputContext:   mockOutput,
@@ -149,7 +151,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
 	val1 := []byte("value")
@@ -249,12 +251,14 @@ func TestStorageContext_SetStorage(t *testing.T) {
 
 	key = []byte("RESERVEDkey")
 	value = []byte("doesn't matter")
-	_, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
 
 	key = []byte("RESERVED")
 	value = []byte("doesn't matter")
-	_, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageContext.SetStorage(key, value)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
 }
 
@@ -286,7 +290,7 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
 	gasProvided := 100
@@ -338,6 +342,7 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
+	mockMetering.GasLeftMock = 20000
 
 	host := &contextmock.VMHostMock{
 		OutputContext:   mockOutput,
@@ -346,15 +351,22 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
-	key := []byte(arwen.ProtectedStoragePrefix + "something")
+	key := storageContext.GetVmProtectedPrefix("something")
 	value := []byte("data")
 
 	storageStatus, err := storageContext.SetStorage(key, value)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
+	require.Len(t, storageContext.GetStorageUpdates(address), 0)
+
+	storageContext.disableStorageProtection()
+	elrondProtectedKey := append(elrondReservedTestPrefix, []byte("ABC")...)
+	storageStatus, err = storageContext.SetStorage(elrondProtectedKey, value)
+	require.Equal(t, arwen.StorageUnchanged, storageStatus)
+	require.True(t, errors.Is(err, arwen.ErrStoreElrondReservedKey))
 	require.Len(t, storageContext.GetStorageUpdates(address), 0)
 
 	storageContext.disableStorageProtection()
@@ -409,7 +421,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		},
 	}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
 	storageContext.SetAddress(scAddress)
 
 	key := []byte("key")
@@ -423,18 +435,10 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	require.Nil(t, data)
 }
 
-func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
-	// TODO
-}
-
-func TestStorageContext_StoreGasPerKey(t *testing.T) {
-	// TODO
-}
-
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, epochNotifier, elrondReservedTestPrefix)
 	storageContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(storageContext.stateStack))
@@ -443,7 +447,7 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, epochNotifier, elrondReservedTestPrefix, 0)
+	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, epochNotifier, elrondReservedTestPrefix)
 	storageContext.PopDiscard()
 
 	require.Equal(t, 0, len(storageContext.stateStack))

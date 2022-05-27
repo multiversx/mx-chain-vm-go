@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -14,16 +13,16 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
+const vmStoragePrefix = "VM@"
+
 type storageContext struct {
 	host                          arwen.VMHost
 	blockChainHook                vmcommon.BlockchainHook
 	address                       []byte
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
+	vmProtectedKeyPrefix          []byte
 	arwenStorageProtectionEnabled bool
-
-	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagUseDifferentGasCostForReadingCachedStorage  atomic.Flag
 }
 
 // NewStorageContext creates a new storageContext
@@ -32,18 +31,22 @@ func NewStorageContext(
 	blockChainHook vmcommon.BlockchainHook,
 	epochNotifier vmcommon.EpochNotifier,
 	elrondProtectedKeyPrefix []byte,
-	useDifferentGasCostForReadingCachedStorageEpoch uint32,
 ) (*storageContext, error) {
 	if len(elrondProtectedKeyPrefix) == 0 {
 		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
 	}
+
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	context := &storageContext{
 		host:                          host,
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(vmStoragePrefix)...),
 		arwenStorageProtectionEnabled: true,
-		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
 	}
 
 	if check.IfNil(epochNotifier) {
@@ -115,10 +118,10 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
 
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
 	metering := context.host.Metering()
-	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
-	if !usedCache || !gasFlagSet {
+	if !usedCache {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
+		// TODO replace UseGas with UseGasBounded
 		metering.UseGas(gasToUse)
 	}
 }
@@ -129,9 +132,9 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 	if extraBytes <= 0 {
 		return
 	}
-	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
-	if !gasFlagSet || !usedCache {
+	if !usedCache {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		// TODO replace UseGas with UseGasBounded
 		metering.UseGas(gasToUse)
 	}
 }
@@ -152,6 +155,11 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		}
 	}
 
+	return context.GetStorageFromAddressNoChecks(address, key)
+}
+
+// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by arwen, so no permissions checks are necessary
+func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool) {
 	// If the requested key is protected by the Elrond node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
 	// contracts themselves cannot change protected values. Values stored under
@@ -169,7 +177,8 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
 
-	if context.isElrondReservedKey(key) && context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if !context.isArwenProtectedKey(key) &&
+		context.isElrondReservedKey(key) {
 		value, _ = context.blockChainHook.GetStorageData(address, key)
 		return value, false
 	}
@@ -206,7 +215,7 @@ func (context *storageContext) disableStorageProtection() {
 }
 
 func (context *storageContext) isArwenProtectedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(arwen.ProtectedStoragePrefix))
+	return bytes.HasPrefix(key, context.vmProtectedKeyPrefix)
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
@@ -217,17 +226,27 @@ func (context *storageContext) isElrondReservedKey(key []byte) bool {
 func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	context.disableStorageProtection()
 	defer context.enableStorageProtection()
-
 	return context.SetStorage(key, value)
 }
 
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
+	return context.setStorageToAddress(context.address, key, value)
+}
+
+// SetProtectedStorageToAddress sets the given value at the given key, for the specified address. This is only used internaly by arwen!
+func (context *storageContext) SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
+	context.disableStorageProtection()
+	defer context.enableStorageProtection()
+	return context.setStorageToAddress(address, key, value)
+}
+
+func (context *storageContext) setStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
 	if context.host.Runtime().ReadOnly() {
 		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
 		return arwen.StorageUnchanged, nil
 	}
-	if context.isElrondReservedKey(key) {
+	if !context.isArwenProtectedKey(key) && context.isElrondReservedKey(key) {
 		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
 		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
 	}
@@ -240,11 +259,14 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 
 	length := len(value)
 
-	storageUpdates := context.GetStorageUpdates(context.address)
+	storageUpdates := context.GetStorageUpdates(address)
 	oldValue, usedCache := context.getOldValue(storageUpdates, key)
 
 	gasForKey := context.computeGasForKey(key, usedCache)
-	metering.UseGas(gasForKey)
+	err := metering.UseGasBounded(gasForKey)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
 
 	if bytes.Equal(oldValue, value) {
 		return context.storageUnchanged(length, usedCache)
@@ -276,7 +298,11 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		gasToUseForValue, gasToFreeForValue = 0, 0
 	}
 
-	metering.UseGas(gasToUseForValue)
+	err = metering.UseGasBounded(gasToUseForValue)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
 	metering.FreeGas(gasToFreeForValue)
 
 	logStorage.Trace("storage modified", "key", key, "value", value, "lengthDelta", newValueExtraLength)
@@ -322,7 +348,11 @@ func (context *storageContext) computeGasForBiggerValues(lengthOldValue int, new
 func (context *storageContext) storageAdded(length int, key []byte, value []byte) (arwen.StorageStatus, error) {
 	metering := context.host.Metering()
 	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
-	metering.UseGas(useGas)
+	err := metering.UseGasBounded(useGas)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
 	logStorage.Trace("storage added", "key", key, "value", value)
 	return arwen.StorageAdded, nil
 }
@@ -337,7 +367,11 @@ func (context *storageContext) storageDeleted(lengthOldValue int, key []byte) (a
 
 func (context *storageContext) storageUnchanged(length int, usedCache bool) (arwen.StorageStatus, error) {
 	useGas := context.computeGasForUnchangedValue(length, usedCache)
-	context.host.Metering().UseGas(useGas)
+	err := context.host.Metering().UseGasBounded(useGas)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
 	logStorage.Trace("storage set to identical value")
 	return arwen.StorageUnchanged, nil
 }
@@ -345,7 +379,7 @@ func (context *storageContext) storageUnchanged(length int, usedCache bool) (arw
 func (context *storageContext) computeGasForUnchangedValue(length int, usedCache bool) uint64 {
 	metering := context.host.Metering()
 	useGas := uint64(0)
-	if !usedCache || !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if !usedCache {
 		useGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	}
 	return useGas
@@ -373,8 +407,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 	metering := context.host.Metering()
 	extraBytes := len(key) - arwen.AddressLen
 	extraKeyLenGas := uint64(0)
-	if extraBytes > 0 &&
-		(!usedCache || !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()) {
+	if extraBytes > 0 && !usedCache {
 		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 	}
 	return extraKeyLenGas
@@ -383,30 +416,22 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 // UseGasForStorageLoad - single spot of gas consumption for storage load
 func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, usedCache bool) {
 	metering := context.host.Metering()
-	if context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() && usedCache {
+	if usedCache {
 		loadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
 	}
 
 	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)
 }
 
-// IsUseDifferentGasCostFlagSet - getter for flag
-func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
-	return context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
-}
-
-// DisableUseDifferentGasCostFlag - for tests
-func (context *storageContext) DisableUseDifferentGasCostFlag() {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Reset()
-}
-
 // EpochConfirmed is called whenever a new epoch is confirmed
-func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagUseDifferentGasCostForReadingCachedStorage.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
+func (context *storageContext) EpochConfirmed(_ uint32, _ uint64) {
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
 func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
+}
+
+func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
+	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
 }

@@ -4,15 +4,14 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/stretchr/testify/require"
 )
 
 func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -42,13 +41,17 @@ func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, c
 
 // TransferToThirdPartyAsyncChildMock is an exposed mock contract method
 func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		t := instance.T
 
-		host.Metering().UseGas(testConfig.GasUsedByChild)
+		metering := host.Metering()
+		err := metering.UseGasBounded(testConfig.GasUsedByChild)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		outputContext := host.Output()
@@ -62,7 +65,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		if len(arguments[2]) != 0 {
 			behavior = arguments[2][0]
 		}
-		err := handleChildBehaviorArgument(host, behavior)
+		err = handleChildBehaviorArgument(host, behavior)
 		if err != nil {
 			return instance
 		}
@@ -70,26 +73,34 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		scAddress := host.Runtime().GetSCAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err = outputContext.Transfer(
-			test.ThirdPartyAddress,
+			testConfig.GetThirdPartyAddress(),
 			scAddress,
 			0,
 			0,
 			valueToTransfer,
 			arguments[1],
 			0)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
+
 		outputContext.Finish([]byte("thirdparty"))
 
 		valueToTransfer = big.NewInt(testConfig.TransferToVault)
 		err = outputContext.Transfer(
-			test.VaultAddress,
+			testConfig.GetVaultAddress(),
 			scAddress,
 			0,
 			0,
 			valueToTransfer,
 			[]byte{},
 			0)
-		require.Nil(t, err)
+		if err != nil {
+			host.Runtime().SignalUserError(err.Error())
+			return instance
+		}
+
 		outputContext.Finish([]byte("vault"))
 
 		host.Storage().SetStorage(test.ChildKey, test.ChildData)

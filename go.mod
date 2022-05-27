@@ -1,4 +1,4 @@
-module github.com/ElrondNetwork/arwen-wasm-vm/v1_4
+module github.com/ElrondNetwork/arwen-wasm-vm/v1_5
 
 go 1.13
 
@@ -8,8 +8,10 @@ require (
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
 	github.com/ElrondNetwork/elrond-vm-common v1.3.6
+	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.6
+	github.com/gogo/protobuf v1.3.2
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.7.1

@@ -6,9 +6,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -48,8 +48,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	vmOutput, err := host.RunSmartContractCall(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.
-		Ok()
+	verify.Ok()
 }
 
 func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T) {
@@ -69,8 +68,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, 42).
 				GasUsed(test.ParentAddress, parentGasUsed).
 				GasRemaining(test.GasProvided - parentGasUsed).
@@ -95,8 +93,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(arwen.One, arwen.One).Int64()).
 				GasUsed(test.ParentAddress, parentGasUsed).
 				GasRemaining(test.GasProvided - parentGasUsed).
@@ -120,8 +117,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				ReturnMessage(arwen.ErrFuncNotFound.Error()).
 				GasRemaining(0)
 		})
@@ -143,8 +139,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) 
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				ReturnCode(vmcommon.ExecutionFailed).
+			verify.ExecutionFailed().
 				ReturnMessage("whatdidyoudo").
 				GasRemaining(0)
 		})
@@ -167,8 +162,7 @@ func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
+			verify.Ok().
 				ReturnData([]byte("hello"), []byte{10})
 		})
 }
@@ -191,8 +185,7 @@ func TestESDT_GettersAPI(t *testing.T) {
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.
-				Ok()
+			verify.Ok()
 		})
 }
 
@@ -233,18 +226,16 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
 	input.Arguments = [][]byte{
+		{}, {},
 		testToken,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),
 	}
 
-	vmOutput, asyncInfo, err := host.ExecuteOnDestContext(input)
+	vmOutput, _, err := host.ExecuteOnDestContext(input)
 
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.
-		Ok()
-
-	require.Zero(t, len(asyncInfo.AsyncContextMap))
+	verify.Ok()
 
 	parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(testToken, 0)
 	require.Equal(t, initialESDTTokenBalance-uint64(esdtValue), parentESDTBalance)

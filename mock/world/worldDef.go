@@ -3,7 +3,7 @@ package worldmock
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -48,6 +48,7 @@ type MockWorld struct {
 	BuiltinFuncs               *BuiltinFunctionsWrapper
 	IsPausedValue              bool
 	IsLimitedTransferValue     bool
+	ProvidedBlockchainHook     vmcommon.BlockchainHook
 }
 
 // NewMockWorld creates a new MockWorld instance
@@ -67,6 +68,10 @@ func NewMockWorld() *MockWorld {
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
 
 	return world
+}
+
+func (b *MockWorld) SetProvidedBlockchainHook(bh vmcommon.BlockchainHook) {
+	b.ProvidedBlockchainHook = bh
 }
 
 // InitBuiltinFunctions initializes the inner BuiltinFunctionsWrapper, required
@@ -136,6 +141,7 @@ func (b *MockWorld) CommunicationIdentifier(destShardID uint32) string {
 
 // GetSnapshot -
 func (b *MockWorld) GetSnapshot() int {
+	b.CreateStateBackup()
 	return b.AccountsAdapter.JournalLen()
 }
 

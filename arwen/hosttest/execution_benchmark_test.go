@@ -1,23 +1,25 @@
 package hosttest
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/gasSchedules"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/mock"
+	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwenmandos/gasSchedules"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
+
+var logBenchmark = logger.GetOrCreate("arwen/benchmark")
 
 var owner = []byte("owner")
 var receiver = []byte("receiver")
@@ -68,7 +70,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 		}
 		elapsedTime := time.Since(start)
-		fmt.Printf("Executing %d ERC20 transfers: %s\n", nTransfers, elapsedTime.String())
+		logBenchmark.Trace("Executing ERC20 transfers", "transfers", nTransfers, "time", elapsedTime.String())
 	}
 
 	verifyTransfers(tb, mockWorld, totalTokenSupply)

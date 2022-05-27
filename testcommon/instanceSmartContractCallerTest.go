@@ -3,9 +3,9 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
@@ -31,8 +31,8 @@ func (mockSC *InstanceTestSmartContract) WithBalance(balance int64) *InstanceTes
 }
 
 // WithConfig provides the config object for the InstanceTestSmartContract
-func (mockSC *InstanceTestSmartContract) WithConfig(config interface{}) *InstanceTestSmartContract {
-	mockSC.config = config
+func (mockSC *InstanceTestSmartContract) WithConfig(testConfig *TestConfig) *InstanceTestSmartContract {
+	mockSC.config = testConfig
 	return mockSC
 }
 

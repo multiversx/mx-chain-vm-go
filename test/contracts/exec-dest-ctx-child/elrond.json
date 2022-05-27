@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "./exec-dest-ctx-child.c"
+        "exec-dest-ctx-child.c"
     ]
 }

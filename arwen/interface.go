@@ -5,9 +5,9 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -34,6 +34,7 @@ type VMHost interface {
 	Crypto() crypto.VMCrypto
 	Blockchain() BlockchainContext
 	Runtime() RuntimeContext
+	Async() AsyncContext
 	ManagedTypes() ManagedTypesContext
 	Output() OutputContext
 	Metering() MeteringContext
@@ -41,22 +42,20 @@ type VMHost interface {
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*AsyncContextInfo, error)
-	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *AsyncContextInfo, error)
+	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
+	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
 
 	GetGasScheduleMap() config.GasScheduleMap
-	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, StorageContext)
+	GetContexts() (ManagedTypesContext, BlockchainContext, MeteringContext, OutputContext, RuntimeContext, AsyncContext, StorageContext)
 	SetRuntimeContext(runtime RuntimeContext)
 
 	SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFunctionContainer)
 	InitState()
 
-	FixOOGReturnCodeEnabled() bool
-	FixFailExecutionEnabled() bool
-	CreateNFTOnExecByCallerEnabled() bool
 	Reset()
 }
 
@@ -84,7 +83,7 @@ type BlockchainContext interface {
 	GetCodeHash(addr []byte) []byte
 	GetCode(addr []byte) ([]byte, error)
 	GetCodeSize(addr []byte) (int32, error)
-	BlockHash(number int64) []byte
+	BlockHash(number uint64) []byte
 	GetOwnerAddress() ([]byte, error)
 	GetShardOfAddress(addr []byte) uint32
 	IsSmartContract(addr []byte) bool
@@ -123,12 +122,8 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	GetAsyncCallInfo() *AsyncCallInfo
-	SetAsyncCallInfo(asyncCallInfo *AsyncCallInfo)
-	AddAsyncContextCall(contextIdentifier []byte, asyncCall *AsyncGeneratedCall) error
-	GetAsyncContextInfo() *AsyncContextInfo
-	GetAsyncContext(contextIdentifier []byte) (*AsyncContext, error)
 	RunningInstancesCount() uint64
+	CountSameContractInstancesOnStack(address []byte) uint64
 	IsFunctionImported(name string) bool
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
@@ -151,12 +146,15 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
-	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
-	DisableUseDifferentGasCostFlag()
+	ValidateCallbackName(callbackName string) error
+	HasFunction(functionName string) bool
+	GetPrevTxHash() []byte
+	PopFirstArgumentFromVMInput() ([]byte, error)
+
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
@@ -216,7 +214,6 @@ type OutputContext interface {
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
 	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error
 	TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error)
-	SelfDestruct(address []byte, beneficiary []byte)
 	GetRefund() uint64
 	SetRefund(refund uint64)
 	ReturnCode() vmcommon.ReturnCode
@@ -260,13 +257,15 @@ type MeteringContext interface {
 	DeductInitialGasForExecution(contract []byte) error
 	DeductInitialGasForDirectDeployment(input CodeDeployInput) error
 	DeductInitialGasForIndirectDeployment(input CodeDeployInput) error
-	ComputeGasLockedForAsync() uint64
+	ComputeExtraGasLockedForAsync() uint64
 	UseGasForAsyncStep() error
 	UseGasBounded(gasToUse uint64) error
 	GetGasLocked() uint64
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
 	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	DisableRestoreGas()
+	EnableRestoreGas()
 	StartGasTracing(functionName string)
 	SetGasTracing(enableGasTracing bool)
 	GetGasTrace() map[string]map[string][]uint64
@@ -296,13 +295,14 @@ type StorageContext interface {
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
 	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
+	GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool)
 	GetStorage(key []byte) ([]byte, bool)
 	GetStorageUnmetered(key []byte) ([]byte, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
-	DisableUseDifferentGasCostFlag()
-	IsUseDifferentGasCostFlagSet() bool
+	GetVmProtectedPrefix(prefix string) []byte
 }
 
 // AsyncCallInfoHandler defines the functionality for working with AsyncCallInfo
@@ -318,6 +318,62 @@ type AsyncCallInfoHandler interface {
 type InstanceBuilder interface {
 	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
+}
+
+// AsyncContext defines the functionality needed for interacting with the asynchronous execution context
+type AsyncContext interface {
+	StateStack
+
+	InitStateFromInput(input *vmcommon.ContractCallInput) error
+	HasPendingCallGroups() bool
+	IsComplete() bool
+	GetCallGroup(groupID string) (*AsyncCallGroup, bool)
+	SetContextCallback(callbackName string, data []byte, gas uint64) error
+	HasCallback() bool
+	GetCallerAddress() []byte
+	GetCallerCallID() []byte
+	GetReturnData() []byte
+	SetReturnData(data []byte)
+
+	Execute() error
+	RegisterAsyncCall(groupID string, call *AsyncCall) error
+	RegisterLegacyAsyncCall(address []byte, data []byte, value []byte) error
+
+	LoadParentContext() error
+	Save() error
+	Delete() error
+	DeleteFromAddress(address []byte) error
+
+	GetCallID() []byte
+	GetCallbackAsyncInitiatorCallID() []byte
+	IsCrossShard() bool
+
+	Clone() AsyncContext
+
+	UpdateCurrentAsyncCallStatus(
+		address []byte,
+		callID []byte,
+		vmInput *vmcommon.VMInput) (*AsyncCall, bool, error)
+	SendCrossShardCallback(
+		returnCode vmcommon.ReturnCode,
+		returnData [][]byte,
+		returnMessage string) error
+
+	CompleteChildConditional(isChildComplete bool, callID []byte, gasToAccumulate uint64) error
+	NotifyChildIsComplete(callID []byte, gasToAccumulate uint64) error
+
+	SetResults(vmOutput *vmcommon.VMOutput)
+	GetGasAccumulated() uint64
+
+	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
+
+	HasLegacyGroup() bool
+
+	/*
+		for tests / test framework usage
+	*/
+	SetCallID(callID []byte)
+	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
 }
 
 // GasTracing defines the functionality needed for a gas tracing
