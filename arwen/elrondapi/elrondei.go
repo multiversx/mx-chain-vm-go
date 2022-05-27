@@ -172,6 +172,7 @@ const (
 	deployFromSourceContractName     = "deployFromSourceContract"
 	upgradeContractName              = "upgradeContract"
 	upgradeFromSourceContractName    = "upgradeFromSourceContract"
+	deleteContractName               = "deleteContract"
 	asyncCallName                    = "asyncCall"
 	getNumReturnDataName             = "getNumReturnData"
 	getReturnDataSizeName            = "getReturnDataSize"
@@ -1909,7 +1910,7 @@ func v1_5_deleteContract(
 	host := arwen.GetVMHost(context)
 	runtime := host.Runtime()
 	metering := host.Metering()
-	metering.StartGasTracing(upgradeFromSourceContractName)
+	metering.StartGasTracing(deleteContractName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
@@ -1933,7 +1934,7 @@ func v1_5_deleteContract(
 		return
 	}
 
-	deleteContractWithTypedArgs(
+	deleteContract(
 		host,
 		calledSCAddress,
 		data,
@@ -1941,9 +1942,9 @@ func v1_5_deleteContract(
 	)
 }
 
-func deleteContractWithTypedArgs(
+func deleteContract(
 	host arwen.VMHost,
-	destContractAddress []byte,
+	dest []byte,
 	data [][]byte,
 	gasLimit int64,
 ) {
@@ -1965,7 +1966,7 @@ func deleteContractWithTypedArgs(
 
 	async := host.Async()
 	err := async.RegisterLegacyAsyncCall(
-		destContractAddress,
+		dest,
 		[]byte(callData),
 		big.NewInt(0).Bytes(),
 	)

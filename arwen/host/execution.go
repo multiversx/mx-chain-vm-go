@@ -140,7 +140,7 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 // doRunSmartContractDelete delete a contract directly
 func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	vmOutput := host.outputContext.GetVMOutput()
-	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, host.Runtime().GetSCAddress())
+	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, input.RecipientAddr)
 	return vmOutput
 }
 
@@ -627,6 +627,17 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
+func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
+	err := host.checkUpgradePermission(input)
+	if err != nil {
+		return err
+	}
+
+	host.doRunSmartContractDelete(input)
+
+	return nil
+}
+
 // execute executes an indirect call to a smart contract, assuming there is an
 // already-running Wasmer instance of another contract that has requested the
 // indirect call. This method creates a new Wasmer instance and pushes the
@@ -655,6 +666,11 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
 		return host.executeUpgrade(input)
+	}
+
+	isDelete := input.Function == arwen.DeleteFunctionName
+	if isDelete {
+		return host.executeDelete(input)
 	}
 
 	contract, err := runtime.GetSCCode()
