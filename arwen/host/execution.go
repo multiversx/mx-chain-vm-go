@@ -102,6 +102,12 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	_, _, metering, output, runtime, _, storage := host.GetContexts()
 
+	err := host.checkUpgradePermission(input)
+	if err != nil {
+		log.Trace("doRunSmartContractUpgrade", "error", arwen.ErrUpgradeNotAllowed)
+		return output.CreateVMOutputInCaseOfError(err)
+	}
+
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
