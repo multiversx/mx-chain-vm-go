@@ -229,6 +229,15 @@ func (v *VMOutputVerifier) isInReturnData(element []byte) bool {
 	return false
 }
 
+// DeletedAccounts verifies if DeletedAccounts is the same as the provided one
+func (v *VMOutputVerifier) DeletedAccounts(deletedAccounts ...[]byte) *VMOutputVerifier {
+	require.Equal(v.T, len(deletedAccounts), len(v.VmOutput.DeletedAccounts), "DeletedAccounts length")
+	for index := range v.VmOutput.DeletedAccounts {
+		require.Equal(v.T, deletedAccounts[index], v.VmOutput.DeletedAccounts[index], "DeletedAccounts")
+	}
+	return v
+}
+
 // StoreEntry holds the data for a storage assertion
 type StoreEntry struct {
 	address     []byte

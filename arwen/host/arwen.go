@@ -31,7 +31,7 @@ var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = 3600 * time.Second
+const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
@@ -438,10 +438,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			}
 		}()
 
-		isUpgrade := input.Function == arwen.UpgradeFunctionName
-		if isUpgrade {
+		switch input.Function {
+		case arwen.UpgradeFunctionName:
 			vmOutput = host.doRunSmartContractUpgrade(input)
-		} else {
+		case arwen.DeleteFunctionName:
+			vmOutput = host.doRunSmartContractDelete(input)
+		default:
 			vmOutput = host.doRunSmartContractCall(input)
 		}
 

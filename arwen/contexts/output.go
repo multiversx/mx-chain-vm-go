@@ -622,6 +622,8 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 
 	leftOutput.ReturnCode = rightOutput.ReturnCode
 	leftOutput.ReturnMessage = rightOutput.ReturnMessage
+
+	leftOutput.DeletedAccounts = append(leftOutput.DeletedAccounts, rightOutput.DeletedAccounts...)
 }
 
 func mergeOutputAccounts(

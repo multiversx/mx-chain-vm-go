@@ -23,6 +23,7 @@ package elrondapi
 // extern int32_t	v1_5_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
 // extern void		v1_5_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_5_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern void		v1_5_managedDeleteContract(void *context, int32_t dstHandle, long long gas, int32_t argsHandle);
 // extern void		v1_5_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t	v1_5_managedCreateAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 //
@@ -162,6 +163,11 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedUpgradeFromSourceContract", v1_5_managedUpgradeFromSourceContract, C.v1_5_managedUpgradeFromSourceContract)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedDeleteContract", v1_5_managedDeleteContract, C.v1_5_managedDeleteContract)
 	if err != nil {
 		return nil, err
 	}
@@ -710,6 +716,54 @@ func v1_5_managedUpgradeContract(
 
 	upgradeContract(host, vmInput.destination, code, codeMetadata, vmInput.value.Bytes(), vmInput.arguments, gas)
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
+}
+
+//export v1_5_managedDeleteContract
+func v1_5_managedDeleteContract(
+	context unsafe.Pointer,
+	destHandle int32,
+	gasLimit int64,
+	argumentsHandle int32,
+) {
+	host := arwen.GetVMHost(context)
+	ManagedDeleteContractWithHost(
+		host,
+		destHandle,
+		gasLimit,
+		argumentsHandle,
+	)
+}
+
+func ManagedDeleteContractWithHost(
+	host arwen.VMHost,
+	destHandle int32,
+	gasLimit int64,
+	argumentsHandle int32,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(deleteContractName)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseAndTraceGas(gasToUse)
+
+	calledSCAddress, err := managedType.GetBytes(destHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	data, _, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	deleteContract(
+		host,
+		calledSCAddress,
+		data,
+		gasLimit,
+	)
 }
 
 //export v1_5_managedDeployFromSourceContract

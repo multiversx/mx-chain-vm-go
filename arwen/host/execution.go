@@ -102,6 +102,12 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	_, _, metering, output, runtime, _, storage := host.GetContexts()
 
+	err := host.checkUpgradePermission(input)
+	if err != nil {
+		log.Trace("doRunSmartContractUpgrade", "error", arwen.ErrUpgradeNotAllowed)
+		return output.CreateVMOutputInCaseOfError(err)
+	}
+
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
@@ -135,6 +141,20 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 	}
 
 	return nil
+}
+
+// doRunSmartContractDelete delete a contract directly
+func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
+	output := host.Output()
+	err := host.checkUpgradePermission(input)
+	if err != nil {
+		log.Trace("doRunSmartContractDelete", "error", arwen.ErrUpgradeNotAllowed)
+		return output.CreateVMOutputInCaseOfError(err)
+	}
+
+	vmOutput := output.GetVMOutput()
+	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, input.RecipientAddr)
+	return vmOutput
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
@@ -620,6 +640,11 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 	return nil
 }
 
+func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
+	host.doRunSmartContractDelete(input)
+	return nil
+}
+
 // execute executes an indirect call to a smart contract, assuming there is an
 // already-running Wasmer instance of another contract that has requested the
 // indirect call. This method creates a new Wasmer instance and pushes the
@@ -648,6 +673,11 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 	isUpgrade := input.Function == arwen.UpgradeFunctionName
 	if isUpgrade {
 		return host.executeUpgrade(input)
+	}
+
+	isDelete := input.Function == arwen.DeleteFunctionName
+	if isDelete {
+		return host.executeDelete(input)
 	}
 
 	contract, err := runtime.GetSCCode()
