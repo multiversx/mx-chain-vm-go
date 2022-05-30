@@ -305,7 +305,8 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		[]byte(callbackName),
 		[]byte(callbackName),
 		int64(edge.GasLimit),
-		int64(gasLocked))
+		int64(gasLocked),
+		[]byte{})
 }
 
 func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte) ([]byte, string) {

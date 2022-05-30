@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -140,7 +141,15 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
 
-		closure, err := host.Async().GetCallbackClosure()
+		managed := host.ManagedTypes()
+		closureHandle := managed.NewManagedBuffer()
+		elrondapi.GetCallbackClosureWithHost(host, closureHandle)
+		closure, err := managed.GetBytes(closureHandle)
+		// closure, err := host.Async().GetCallbackClosure() // !!!
+		if err != nil {
+			host.Runtime().SignalUserError("can't get closure")
+			return instance
+		}
 
 		if !testConfig.IsLegacyAsync {
 			if err != nil || !bytes.Equal(closure, ExpectedClosure) {
@@ -148,7 +157,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 				return instance
 			}
 		} else {
-			if err != nil || closure != nil {
+			if err != nil || (closure != nil && len(closure) != 0) {
 				host.Runtime().SignalUserError("no closure should be present")
 				return instance
 			}
