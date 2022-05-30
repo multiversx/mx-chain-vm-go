@@ -139,7 +139,14 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 
 // doRunSmartContractDelete delete a contract directly
 func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
-	vmOutput := host.outputContext.GetVMOutput()
+	output := host.Output()
+	err := host.checkUpgradePermission(input)
+	if err != nil {
+		log.Trace("doRunSmartContractDelete", "error", arwen.ErrUpgradeNotAllowed)
+		return output.CreateVMOutputInCaseOfError(err)
+	}
+
+	vmOutput := output.GetVMOutput()
 	vmOutput.DeletedAccounts = append(vmOutput.DeletedAccounts, input.RecipientAddr)
 	return vmOutput
 }
@@ -628,13 +635,7 @@ func (host *vmHost) executeUpgrade(input *vmcommon.ContractCallInput) error {
 }
 
 func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
-	err := host.checkUpgradePermission(input)
-	if err != nil {
-		return err
-	}
-
 	host.doRunSmartContractDelete(input)
-
 	return nil
 }
 

@@ -1102,6 +1102,8 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 			test.CreateMockContractOnShard(test.ChildAddress, 1).
 				WithBalance(testConfig.ChildBalance).
 				WithConfig(testConfig).
+				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
+				WithOwnerAddress(test.ParentAddress).
 				WithMethods(contracts.WasteGasChildMock),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().
