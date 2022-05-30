@@ -2,7 +2,7 @@ package contexts
 
 import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // reservedFunctions holds the reserved function names
@@ -32,6 +32,7 @@ func NewReservedFunctions(scAPINames vmcommon.FunctionNames, builtInFuncContaine
 
 	var empty struct{}
 	result.functionNames[arwen.UpgradeFunctionName] = empty
+	result.functionNames[arwen.DeleteFunctionName] = empty
 
 	return result
 }

@@ -1923,6 +1923,7 @@ func setZeroCodeCosts(host arwen.VMHost) {
 	host.Metering().GasSchedule().ElrondAPICost.StorageLoad = 0
 	host.Metering().GasSchedule().ElrondAPICost.StorageStore = 0
 	host.Metering().GasSchedule().ElrondAPICost.TransferValue = 0
+	host.Metering().GasSchedule().ElrondAPICost.CreateContract = 0
 }
 
 func setAsyncCosts(host arwen.VMHost, gasLockCost uint64) {

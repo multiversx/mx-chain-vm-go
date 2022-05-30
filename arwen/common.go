@@ -144,6 +144,9 @@ const (
 
 	// UpgradeFunctionName specifies if the call is an upgradeContract call
 	UpgradeFunctionName = "upgradeContract"
+
+	// DeleteFunctionName specifies if the call is an deleteContract call
+	DeleteFunctionName = "deleteContract"
 )
 
 // CodeDeployInput contains code deploy state, whether it comes from a ContractCreateInput or a ContractCallInput

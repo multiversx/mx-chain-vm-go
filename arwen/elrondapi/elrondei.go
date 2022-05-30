@@ -62,6 +62,7 @@ package elrondapi
 // extern int32_t	v1_5_deployFromSourceContract(void *context, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_5_upgradeContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_5_upgradeFromSourceContract(void *context, int32_t dstOffset, long long gas, int32_t valueOffset, int32_t addressOffset, int32_t codeMetadataOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
+// extern void		v1_5_deleteContract(void *context, int32_t dstOffset, long long gas, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern void		v1_5_asyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length);
 // extern int32_t	v1_5_createAsyncCall(void *context, int32_t dstOffset, int32_t valueOffset, int32_t dataOffset, int32_t length, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
 // extern int32_t	v1_5_setAsyncContextCallback(void *context, int32_t callback, int32_t callbackLength, int32_t data, int32_t dataLength, long long gas);
@@ -171,6 +172,7 @@ const (
 	deployFromSourceContractName     = "deployFromSourceContract"
 	upgradeContractName              = "upgradeContract"
 	upgradeFromSourceContractName    = "upgradeFromSourceContract"
+	deleteContractName               = "deleteContract"
 	asyncCallName                    = "asyncCall"
 	getNumReturnDataName             = "getNumReturnData"
 	getReturnDataSizeName            = "getReturnDataSize"
@@ -607,6 +609,11 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("getESDTNFTURILength", v1_5_getESDTNFTURILength, C.v1_5_getESDTNFTURILength)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("deleteContract", v1_5_deleteContract, C.v1_5_deleteContract)
 	if err != nil {
 		return nil, err
 	}
@@ -1881,6 +1888,89 @@ func upgradeContract(
 		value,
 	)
 	logEEI.Trace("upgradeContract", "error", err)
+
+	if errors.Is(err, arwen.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+}
+
+//export v1_5_deleteContract
+func v1_5_deleteContract(
+	context unsafe.Pointer,
+	destOffset int32,
+	gasLimit int64,
+	numArguments int32,
+	argumentsLengthOffset int32,
+	dataOffset int32,
+) {
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	metering := host.Metering()
+	metering.StartGasTracing(deleteContractName)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseAndTraceGas(gasToUse)
+
+	data, actualLen, err := getArgumentsFromMemory(
+		host,
+		numArguments,
+		argumentsLengthOffset,
+		dataOffset,
+	)
+
+	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(actualLen))
+	metering.UseAndTraceGas(gasToUse)
+
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	calledSCAddress, err := runtime.MemLoad(destOffset, arwen.AddressLen)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	deleteContract(
+		host,
+		calledSCAddress,
+		data,
+		gasLimit,
+	)
+}
+
+func deleteContract(
+	host arwen.VMHost,
+	dest []byte,
+	data [][]byte,
+	gasLimit int64,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	gasSchedule := metering.GasSchedule()
+	minAsyncCallCost := math.AddUint64(
+		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
+		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
+	if uint64(gasLimit) < minAsyncCallCost {
+		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		return
+	}
+
+	callData := arwen.DeleteFunctionName
+	for _, arg := range data {
+		callData += "@" + hex.EncodeToString(arg)
+	}
+
+	async := host.Async()
+	err := async.RegisterLegacyAsyncCall(
+		dest,
+		[]byte(callData),
+		big.NewInt(0).Bytes(),
+	)
+	logEEI.Trace("deleteContract", "error", err)
 
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
