@@ -199,3 +199,8 @@ func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
+
+// CheckValueOnExecByCaller returns true if the corresponding flag is set
+func (host *VMHostMock) CheckValueOnExecByCaller() bool {
+	return true
+}
