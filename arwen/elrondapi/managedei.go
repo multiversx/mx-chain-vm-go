@@ -465,12 +465,32 @@ func v1_5_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 }
 
 //export v1_5_managedGetESDTTokenData
-func v1_5_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64,
+func v1_5_managedGetESDTTokenData(
+	context unsafe.Pointer,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
 	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	ManagedGetESDTTokenDataWithHost(
+		host,
+		addressHandle,
+		tokenIDHandle,
+		nonce,
+		valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+}
+
+func ManagedGetESDTTokenDataWithHost(
+	host arwen.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedGetESDTTokenDataName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
@@ -478,18 +498,18 @@ func v1_5_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
