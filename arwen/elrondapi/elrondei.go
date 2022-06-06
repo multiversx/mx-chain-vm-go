@@ -2909,13 +2909,22 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		return -1
 	}
 
+	if runtime.GetVMInput().CallType == vm.AsynchronousCallBack && host.CheckValueOnExecByCaller() {
+		_ = arwen.WithFaultAndHost(host, arwen.ErrCallNotAllowedOnCallback, runtime.ElrondAPIErrorShouldFailExecution())
+		return -1
+	}
+	if !isBuiltInCall(contractCallInput.Function, host) && host.CheckValueOnExecByCaller() {
+		_ = arwen.WithFaultAndHost(host, arwen.ErrNotBuiltInNFTCreate, runtime.ElrondAPIErrorShouldFailExecution())
+		return -1
+	}
+
 	if isBuiltInCall(contractCallInput.Function, host) {
 		if !host.CreateNFTOnExecByCallerEnabled() {
 			return 1
 		}
 
 		if contractCallInput.Function != core.BuiltInFunctionESDTNFTCreate {
-			if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+			if arwen.WithFaultAndHost(host, arwen.ErrNotBuiltInNFTCreate, runtime.ElrondAPIErrorShouldFailExecution()) {
 				return -1
 			}
 			return -1
@@ -2923,9 +2932,6 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 
 		contractCallInput.CallType = vm.ExecOnDestByCaller
 		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
-	} else if host.CheckValueOnExecByCaller() {
-		_ = arwen.WithFaultAndHost(host, core.ErrInvalidValue, runtime.ElrondAPIErrorShouldFailExecution())
-		return -1
 	}
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)

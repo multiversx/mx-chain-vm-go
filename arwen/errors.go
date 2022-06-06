@@ -182,3 +182,9 @@ var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
 
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
+
+// ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
+var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
+
+// ErrCallNotAllowedOnCallback  signals that call is not allowed on callback
+var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
