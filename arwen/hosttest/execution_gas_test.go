@@ -1459,6 +1459,46 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 	}
 }
 
+func TestGasUsed_ExecuteAndTransfer_CrossShard_Execute(t *testing.T) {
+	testConfig := asyncTestConfig
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	// async cross-shard parent -> child
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractOnShard(test.ChildAddress, 1).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.TransferToThirdPartyAsyncChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ParentAddress).
+			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
+			WithGasProvided(gasForAsyncCall).
+			WithFunction("ESDTTransfer").
+			WithArguments(
+				[]byte("TKN"),
+				big.NewInt(10).Bytes()).
+			WithCallType(vm.AsynchronousCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
+			world.CurrentBlockInfo.BlockRound = 1
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+			createMockBuiltinFunctions(t, host, world)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok()
+		})
+}
+
 type MockClaimBuiltin struct {
 	test.MockBuiltin
 	AmountToGive int64
