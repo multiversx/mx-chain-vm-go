@@ -123,7 +123,7 @@ type VMHostParameters struct {
 	RemoveNonUpdatedStorageEnableEpoch              uint32
 	CreateNFTThroughExecByCallerEnableEpoch         uint32
 	UseDifferentGasCostForReadingCachedStorageEpoch uint32
-	CheckValueOnExecByCallerEnableEpoch             uint32
+	EnableRoundsHandler                             EnableRoundsHandler
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

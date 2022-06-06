@@ -315,3 +315,9 @@ type GasTracing interface {
 	GetGasTrace() map[string]map[string][]uint64
 	IsInterfaceNil() bool
 }
+
+// EnableRoundsHandler defines the functionality of a component able to tell if certain flags are activated or not
+type EnableRoundsHandler interface {
+	IsCheckValueOnExecByCallerEnabled() bool
+	IsInterfaceNil() bool
+}

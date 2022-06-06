@@ -51,6 +51,7 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
+	enableRoundsHandler  arwen.EnableRoundsHandler
 
 	multiESDTTransferAsyncCallBackEnableEpoch uint32
 	flagMultiESDTTransferAsyncCallBack        atomic.Flag
@@ -66,9 +67,6 @@ type vmHost struct {
 
 	useDifferentGasCostForReadingCachedStorageEpoch uint32
 	flagUseDifferentGasCostForCachedStorage         atomic.Flag
-
-	checkValueOnExecByCallerEnableEpoch uint32
-	flagCheckValueOnExecByCaller        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -92,6 +90,9 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.EpochNotifier) {
 		return nil, arwen.ErrNilEpochNotifier
 	}
+	if check.IfNil(hostParameters.EnableRoundsHandler) {
+		return nil, arwen.ErrNilEnableRoundsHandler
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
@@ -105,12 +106,12 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
+		enableRoundsHandler:  hostParameters.EnableRoundsHandler,
 		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
 		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
 		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
-		checkValueOnExecByCallerEnableEpoch:             hostParameters.CheckValueOnExecByCallerEnableEpoch,
 	}
 
 	var err error
@@ -245,7 +246,7 @@ func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
 }
 
-// BigInt returns the BigIntContext instance of the host
+// ManagedTypes returns the ManagedTypesContext instance of the host
 func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
 	return host.managedTypesContext
 }
@@ -455,9 +456,6 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
 	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
-
-	host.flagCheckValueOnExecByCaller.SetValue(epoch >= host.checkValueOnExecByCallerEnableEpoch)
-	log.Debug("Arwen VM: check value on exec by caller", "enabled", host.flagCheckValueOnExecByCaller.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
@@ -472,7 +470,7 @@ func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 
 // CheckValueOnExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) CheckValueOnExecByCaller() bool {
-	return host.flagCheckValueOnExecByCaller.IsSet()
+	return host.enableRoundsHandler.IsCheckValueOnExecByCallerEnabled()
 }
 
 func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, function string) *vmcommon.LogEntry {

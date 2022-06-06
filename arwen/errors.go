@@ -186,8 +186,11 @@ var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 // ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
 var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
 
-// ErrCallNotAllowedOnCallback  signals that call is not allowed on callback
+// ErrCallNotAllowedOnCallback signals that call is not allowed on callback
 var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
 
 // ErrCallerIsSC signals that caller is a smart contract
 var ErrCallerIsSC = errors.New("caller is a smart contract")
+
+// ErrNilEnableRoundsHandler signals that a nil enable round handler has been provided
+var ErrNilEnableRoundsHandler = errors.New("nil enable rounds handler")
