@@ -2923,6 +2923,9 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 
 		contractCallInput.CallType = vm.ExecOnDestByCaller
 		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
+	} else if host.CheckValueOnExecByCaller() {
+		_ = arwen.WithFaultAndHost(host, core.ErrInvalidValue, runtime.ElrondAPIErrorShouldFailExecution())
+		return -1
 	}
 
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
