@@ -2915,7 +2915,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		}
 
 		if contractCallInput.Function != core.BuiltInFunctionESDTNFTCreate {
-			if arwen.WithFaultAndHost(host, arwen.ErrNotBuiltInNFTCreate, runtime.ElrondAPIErrorShouldFailExecution()) {
+			if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 				return -1
 			}
 			return -1
