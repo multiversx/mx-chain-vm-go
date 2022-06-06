@@ -290,7 +290,7 @@ func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.Mock
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
-		EnableRoundHandler:       &worldmock.EnableRoundsHandlerMock{},
+		EnableRoundsHandler:      &worldmock.EnableRoundsHandlerMock{},
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -315,7 +315,7 @@ func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.V
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldmock.EpochNotifierStub{},
 		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
-		EnableRoundHandler: &worldmock.EnableRoundsHandlerMock{},
+		EnableRoundsHandler:                             &worldmock.EnableRoundsHandlerMock{},
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

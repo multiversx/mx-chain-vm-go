@@ -192,5 +192,5 @@ var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
 // ErrCallerIsSC signals that caller is a smart contract
 var ErrCallerIsSC = errors.New("caller is a smart contract")
 
-// ErrNilEnableRoundHandler signals that a nil enable round handler has been provided
-var ErrNilEnableRoundHandler = errors.New("nil enable round handler")
+// ErrNilEnableRoundsHandler signals that a nil enable round handler has been provided
+var ErrNilEnableRoundsHandler = errors.New("nil enable rounds handler")

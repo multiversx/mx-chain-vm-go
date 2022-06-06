@@ -77,7 +77,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldhook.EpochNotifierStub{},
-		EnableRoundHandler:       &worldhook.EnableRoundsHandlerMock{},
+		EnableRoundsHandler:      &worldhook.EnableRoundsHandlerMock{},
 	})
 	if err != nil {
 		return err

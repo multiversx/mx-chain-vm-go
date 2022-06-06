@@ -51,7 +51,7 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
-	enableRoundHandler   arwen.EnableRoundHandler
+	enableRoundsHandler  arwen.EnableRoundsHandler
 
 	multiESDTTransferAsyncCallBackEnableEpoch uint32
 	flagMultiESDTTransferAsyncCallBack        atomic.Flag
@@ -90,8 +90,8 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.EpochNotifier) {
 		return nil, arwen.ErrNilEpochNotifier
 	}
-	if check.IfNil(hostParameters.EnableRoundHandler) {
-		return nil, arwen.ErrNilEnableRoundHandler
+	if check.IfNil(hostParameters.EnableRoundsHandler) {
+		return nil, arwen.ErrNilEnableRoundsHandler
 	}
 
 	cryptoHook := factory.NewVMCrypto()
@@ -106,7 +106,7 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		enableRoundHandler:   hostParameters.EnableRoundHandler,
+		enableRoundsHandler:  hostParameters.EnableRoundsHandler,
 		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
 		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
 		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
@@ -470,7 +470,7 @@ func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 
 // CheckValueOnExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) CheckValueOnExecByCaller() bool {
-	return host.enableRoundHandler.IsCheckValueOnExecByCallerEnabled()
+	return host.enableRoundsHandler.IsCheckValueOnExecByCallerEnabled()
 }
 
 func (host *vmHost) createLogEntryFromErrors(sndAddress, rcvAddress []byte, function string) *vmcommon.LogEntry {
