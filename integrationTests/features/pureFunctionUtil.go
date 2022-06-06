@@ -52,6 +52,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &worldhook.EpochNotifierStub{},
+		EnableRoundHandler:       &worldhook.EnableRoundsHandlerMock{},
 	})
 	if err != nil {
 		return nil, err
