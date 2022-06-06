@@ -2888,7 +2888,7 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	metering.UseAndTraceGas(gasToUse)
 
-	if host.CheckValueOnExecByCaller() && value.Cmp(arwen.Zero) > 0 {
+	if host.CheckValueOnExecByCaller() {
 		_ = arwen.WithFaultAndHost(host, core.ErrInvalidValue, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
@@ -2907,21 +2907,6 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
-	}
-
-	if host.CheckValueOnExecByCaller() {
-		if runtime.GetVMInput().CallType == vm.AsynchronousCallBack {
-			_ = arwen.WithFaultAndHost(host, arwen.ErrCallNotAllowedOnCallback, runtime.ElrondAPIErrorShouldFailExecution())
-			return -1
-		}
-		if !isBuiltInCall(contractCallInput.Function, host) {
-			_ = arwen.WithFaultAndHost(host, arwen.ErrNotBuiltInNFTCreate, runtime.ElrondAPIErrorShouldFailExecution())
-			return -1
-		}
-		if core.IsSmartContractAddress(contractCallInput.CallerAddr) {
-			_ = arwen.WithFaultAndHost(host, arwen.ErrCallerIsSC, runtime.ElrondAPIErrorShouldFailExecution())
-			return -1
-		}
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
