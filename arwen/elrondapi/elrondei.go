@@ -2909,13 +2909,19 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 		return -1
 	}
 
-	if runtime.GetVMInput().CallType == vm.AsynchronousCallBack && host.CheckValueOnExecByCaller() {
-		_ = arwen.WithFaultAndHost(host, arwen.ErrCallNotAllowedOnCallback, runtime.ElrondAPIErrorShouldFailExecution())
-		return -1
-	}
-	if !isBuiltInCall(contractCallInput.Function, host) && host.CheckValueOnExecByCaller() {
-		_ = arwen.WithFaultAndHost(host, arwen.ErrNotBuiltInNFTCreate, runtime.ElrondAPIErrorShouldFailExecution())
-		return -1
+	if host.CheckValueOnExecByCaller() {
+		if runtime.GetVMInput().CallType == vm.AsynchronousCallBack {
+			_ = arwen.WithFaultAndHost(host, arwen.ErrCallNotAllowedOnCallback, runtime.ElrondAPIErrorShouldFailExecution())
+			return -1
+		}
+		if !isBuiltInCall(contractCallInput.Function, host) {
+			_ = arwen.WithFaultAndHost(host, arwen.ErrNotBuiltInNFTCreate, runtime.ElrondAPIErrorShouldFailExecution())
+			return -1
+		}
+		if core.IsSmartContractAddress(contractCallInput.CallerAddr) {
+			_ = arwen.WithFaultAndHost(host, arwen.ErrCallerIsSC, runtime.ElrondAPIErrorShouldFailExecution())
+			return -1
+		}
 	}
 
 	if isBuiltInCall(contractCallInput.Function, host) {
