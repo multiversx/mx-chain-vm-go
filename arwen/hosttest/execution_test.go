@@ -2396,8 +2396,6 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// tokens, and not the parent, even if the parent is the one making the call
 	// to the child.
 
-	transferValue := int64(42)
-
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2413,22 +2411,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithGasProvided(2000).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok().
-				// test.ParentAddress
-				GasUsed(test.ParentAddress, 762).
-				/// test.ChildAddress
-				Balance(test.ChildAddress, 1000).
-				BalanceDelta(test.ChildAddress, -transferValue).
-				GasUsed(test.ChildAddress, 667).
-				// test.UserAddress
-				BalanceDelta(test.UserAddress, transferValue).
-				// other
-				ReturnData([]byte("sent"), []byte("child called")).
-				Transfers(
-					test.CreateTransferEntry(test.ChildAddress, test.UserAddress).
-						WithData([]byte{}).
-						WithValue(big.NewInt(transferValue)),
-				)
+			verify.ExecutionFailed()
 		})
 }
 
