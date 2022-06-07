@@ -128,3 +128,61 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		return instance
 	})
 }
+
+// ExecESDTTransferInAsyncCall is an exposed mock contract method
+func ExecESDTTransferInAsyncCall(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("esdtTransferInAsyncCall", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Metering().UseGas(testConfig.GasUsedByParent)
+
+		arguments := host.Runtime().Arguments()
+		if len(arguments) != 1 {
+			host.Runtime().SignalUserError("need 1 arguments")
+			return instance
+		}
+
+		receiver := arguments[0]
+
+		callData := txDataBuilder.NewBuilder()
+		callData.Func(string("ESDTTransfer"))
+		callData.Bytes(test.ESDTTestTokenName)
+		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
+
+		value := big.NewInt(0).Bytes()
+
+		err := host.Runtime().ExecuteAsyncCall(receiver, callData.ToBytes(), value)
+
+		if err != nil {
+			host.Runtime().FailExecution(err)
+			return instance
+		}
+
+		return instance
+	})
+}
+
+// EvilCallback is an exposed mock contract method
+func EvilCallback(instanceMock *mock.InstanceMock, config interface{}) {
+	// testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		retVal := elrondapi.ExecuteOnDestContextByCallerWithTypedArgs(
+			host,
+			int64(host.Metering().GasLeft()),
+			big.NewInt(0),
+			[]byte("wasteGas"),
+			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
+			[][]byte{},
+		)
+
+		if retVal != 0 {
+			host.Runtime().SignalUserError("execution by caller failed")
+			return instance
+		}
+
+		return instance
+	})
+}
