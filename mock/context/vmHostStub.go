@@ -303,6 +303,11 @@ func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
 
+// DisableExecByCaller mocked method
+func (vhs *VMHostStub) DisableExecByCaller() bool {
+	return true
+}
+
 // Close -
 func (vhs *VMHostStub) Close() error {
 	return nil
