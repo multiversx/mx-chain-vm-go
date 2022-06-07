@@ -2896,6 +2896,11 @@ func ExecuteOnDestContextByCallerWithTypedArgs(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	metering.UseAndTraceGas(gasToUse)
 
+	if host.DisableExecByCaller() {
+		_ = arwen.WithFaultAndHost(host, core.ErrInvalidValue, runtime.ElrondAPIErrorShouldFailExecution())
+		return -1
+	}
+
 	send := runtime.GetVMInput().CallerAddr
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,

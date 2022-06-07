@@ -205,6 +205,11 @@ func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
 
+// DisableExecByCaller mocked method
+func (host *VMHostMock) DisableExecByCaller() bool {
+	return true
+}
+
 // Close -
 func (host *VMHostMock) Close() error {
 	return nil

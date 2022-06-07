@@ -70,6 +70,9 @@ type vmHost struct {
 
 	useDifferentGasCostForReadingCachedStorageEpoch uint32
 	flagUseDifferentGasCostForCachedStorage         atomic.Flag
+
+	disableExecByCallerEnableEpoch uint32
+	flagDisableExecByCaller        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -113,6 +116,7 @@ func NewArwenVM(
 		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
 		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+		disableExecByCallerEnableEpoch:                  hostParameters.DisableExecByCallerEnableEpoch,
 	}
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
@@ -562,6 +566,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
 	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
+
+	host.flagDisableExecByCaller.SetValue(epoch >= host.disableExecByCallerEnableEpoch)
+	log.Debug("Arwen VM: disable execute by caller endpoints", "enabled", host.flagDisableExecByCaller.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
@@ -569,7 +576,7 @@ func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.flagFixOOGReturnCode.IsSet()
 }
 
-// FixOOGReturnCodeEnabled returns true if the corresponding flag is set
+// FixFailExecutionEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixFailExecutionEnabled() bool {
 	return host.flagFixFailExecutionOnError.IsSet()
 }
@@ -577,6 +584,11 @@ func (host *vmHost) FixFailExecutionEnabled() bool {
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
+}
+
+// DisableExecByCaller returns true if the corresponding flag is set
+func (host *vmHost) DisableExecByCaller() bool {
+	return host.flagDisableExecByCaller.IsSet()
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {

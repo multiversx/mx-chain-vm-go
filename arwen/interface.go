@@ -57,6 +57,7 @@ type VMHost interface {
 	FixOOGReturnCodeEnabled() bool
 	FixFailExecutionEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
+	DisableExecByCaller() bool
 	Reset()
 }
 
