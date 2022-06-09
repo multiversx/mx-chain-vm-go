@@ -16,7 +16,6 @@ package elrondapi
 // extern int32_t	v1_5_managedMultiTransferESDTNFTExecute(void *context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t	v1_5_managedTransferValueExecute(void *context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t	v1_5_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_5_managedExecuteOnDestContextByCaller(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_5_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_5_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_5_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
@@ -56,36 +55,35 @@ import (
 )
 
 const (
-	managedSCAddressName                    = "managedSCAddress"
-	managedOwnerAddressName                 = "managedOwnerAddress"
-	managedCallerName                       = "managedCaller"
-	managedSignalErrorName                  = "managedSignalError"
-	managedWriteLogName                     = "managedWriteLog"
-	managedMultiTransferESDTNFTExecuteName  = "managedMultiTransferESDTNFTExecute"
-	managedTransferValueExecuteName         = "managedTransferValueExecute"
-	managedExecuteOnDestContextName         = "managedExecuteOnDestContext"
-	managedExecuteOnDestContextByCallerName = "managedExecuteOnDestContextByCaller"
-	managedExecuteOnSameContextName         = "managedExecuteOnSameContext"
-	managedExecuteReadOnlyName              = "managedExecuteReadOnly"
-	managedCreateContractName               = "managedCreateContract"
-	managedDeployFromSourceContractName     = "managedDeployFromSourceContract"
-	managedUpgradeContractName              = "managedUpgradeContract"
-	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
-	managedAsyncCallName                    = "managedAsyncCall"
-	managedCreateAsyncCallName              = "managedCreateAsyncCall"
-	setManagedAsyncContextCallbackName      = "setManagedAsyncContextCallback"
-	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
-	managedGetESDTBalanceName               = "managedGetESDTBalance"
-	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
-	managedGetReturnDataName                = "managedGetReturnData"
-	managedGetPrevBlockRandomSeedName       = "managedGetPrevBlockRandomSeed"
-	managedGetBlockRandomSeedName           = "managedGetBlockRandomSeed"
-	managedGetStateRootHashName             = "managedGetStateRootHash"
-	managedGetOriginalTxHashName            = "managedGetOriginalTxHash"
-	managedIsESDTFrozenName                 = "managedIsESDTFrozen"
-	managedIsESDTLimitedTransferName        = "managedIsESDTLimitedTransfer"
-	managedIsESDTPausedName                 = "managedIsESDTPaused"
-	managedBufferToHexName                  = "managedBufferToHex"
+	managedSCAddressName                   = "managedSCAddress"
+	managedOwnerAddressName                = "managedOwnerAddress"
+	managedCallerName                      = "managedCaller"
+	managedSignalErrorName                 = "managedSignalError"
+	managedWriteLogName                    = "managedWriteLog"
+	managedMultiTransferESDTNFTExecuteName = "managedMultiTransferESDTNFTExecute"
+	managedTransferValueExecuteName        = "managedTransferValueExecute"
+	managedExecuteOnDestContextName        = "managedExecuteOnDestContext"
+	managedExecuteOnSameContextName        = "managedExecuteOnSameContext"
+	managedExecuteReadOnlyName             = "managedExecuteReadOnly"
+	managedCreateContractName              = "managedCreateContract"
+	managedDeployFromSourceContractName    = "managedDeployFromSourceContract"
+	managedUpgradeContractName             = "managedUpgradeContract"
+	managedUpgradeFromSourceContractName   = "managedUpgradeFromSourceContract"
+	managedAsyncCallName                   = "managedAsyncCall"
+	managedCreateAsyncCallName             = "managedCreateAsyncCall"
+	setManagedAsyncContextCallbackName     = "setManagedAsyncContextCallback"
+	managedGetMultiESDTCallValueName       = "managedGetMultiESDTCallValue"
+	managedGetESDTBalanceName              = "managedGetESDTBalance"
+	managedGetESDTTokenDataName            = "managedGetESDTTokenData"
+	managedGetReturnDataName               = "managedGetReturnData"
+	managedGetPrevBlockRandomSeedName      = "managedGetPrevBlockRandomSeed"
+	managedGetBlockRandomSeedName          = "managedGetBlockRandomSeed"
+	managedGetStateRootHashName            = "managedGetStateRootHash"
+	managedGetOriginalTxHashName           = "managedGetOriginalTxHash"
+	managedIsESDTFrozenName                = "managedIsESDTFrozen"
+	managedIsESDTLimitedTransferName       = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                = "managedIsESDTPaused"
+	managedBufferToHexName                 = "managedBufferToHex"
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
@@ -128,11 +126,6 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedExecuteOnDestContext", v1_5_managedExecuteOnDestContext, C.v1_5_managedExecuteOnDestContext)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedExecuteOnDestContextByCaller", v1_5_managedExecuteOnDestContextByCaller, C.v1_5_managedExecuteOnDestContextByCaller)
 	if err != nil {
 		return nil, err
 	}
@@ -956,38 +949,6 @@ func v1_5_managedExecuteOnSameContext(
 
 	lenReturnData := len(host.Output().ReturnData())
 	returnVal := ExecuteOnSameContextWithTypedArgs(
-		host,
-		gas,
-		vmInput.value,
-		[]byte(vmInput.function),
-		vmInput.destination,
-		vmInput.arguments,
-	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
-	return returnVal
-}
-
-//export v1_5_managedExecuteOnDestContextByCaller
-func v1_5_managedExecuteOnDestContextByCaller(
-	context unsafe.Pointer,
-	gas int64,
-	addressHandle int32,
-	valueHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-	resultHandle int32,
-) int32 {
-	host := arwen.GetVMHost(context)
-	metering := host.Metering()
-	metering.StartGasTracing(managedExecuteOnDestContextByCallerName)
-
-	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
 		host,
 		gas,
 		vmInput.value,
