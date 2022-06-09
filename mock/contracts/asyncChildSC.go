@@ -98,6 +98,16 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 	})
 }
 
+// ExecutedOnSameContextByCallback is an exposed mock contract method
+func ExecutedOnSameContextByCallback(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("executedOnSameContextByCallback", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Storage().SetStorage(test.ParentKeyB, test.ParentDataA)
+		return instance
+	})
+}
+
 func handleChildBehaviorArgument(host arwen.VMHost, behavior byte) error {
 	if behavior == 1 {
 		host.Runtime().SignalUserError("child error")
