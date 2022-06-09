@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -172,6 +173,29 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 	instanceMock.AddMockMethod("callBack", callbackFunc)
 	instanceMock.AddMockMethod("myCallBack", callbackFunc)
+}
+
+// CallbackWithOnSameContext is an exposed mock contract method
+func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		retVal := elrondapi.ExecuteOnSameContextWithTypedArgs(
+			host,
+			int64(host.Metering().GasLeft()),
+			big.NewInt(0),
+			[]byte("executedOnSameContextByCallback"),
+			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
+			[][]byte{},
+		)
+
+		if retVal != 0 {
+			host.Runtime().SignalUserError("execution by caller failed")
+			return instance
+		}
+
+		return instance
+	})
 }
 
 func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {

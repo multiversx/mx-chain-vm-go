@@ -35,6 +35,7 @@ var ErrAccountNotFound = errors.New("account not found")
 
 // UserAddress is an exposed value to use in tests
 var UserAddress = []byte("userAccount.....................")
+var UserAddress2 = []byte("userAccount2....................")
 
 // AddressSize is the size of an account address, in bytes.
 const AddressSize = 32
