@@ -2377,7 +2377,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithGasProvided(2000).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.ExecutionFailed()
+			verify.ReturnCode(vmcommon.ContractInvalid)
 		})
 }
 

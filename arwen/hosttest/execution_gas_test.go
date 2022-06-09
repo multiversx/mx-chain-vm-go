@@ -1833,57 +1833,8 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 	}
 }
 
-func TestGasUsed_AsyncESDTTransfer(t *testing.T) {
-	var parentAccount *worldmock.Account
-	initialESDTTokenBalance := uint64(100)
-
-	testConfig := asyncTestConfig
-	testConfig.ESDTTokensToTransfer = 5
-
-	test.BuildMockInstanceCallTest(t).
-		WithContracts(
-			test.CreateMockContract(test.ParentAddress).
-				WithBalance(testConfig.ParentBalance).
-				WithConfig(testConfig).
-				WithOwnerAddress(test.UserAddress).
-				WithMethods(contracts.ExecESDTTransferInAsyncCall, contracts.EvilCallback),
-			test.CreateMockContract(test.ChildAddress).
-				WithBalance(testConfig.ChildBalance).
-				WithConfig(testConfig).
-				WithOwnerAddress(test.UserAddress2).
-				WithMethods(contracts.WasteGasChildMock),
-		).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithRecipientAddr(test.ParentAddress).
-			WithGasProvided(testConfig.GasProvided).
-			WithFunction("esdtTransferInAsyncCall").
-			WithArguments(test.UserAddress2).
-			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
-			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
-			world.AcctMap.CreateAccount(test.UserAddress, world)
-			world.AcctMap.CreateAccount(test.UserAddress2, world)
-			createMockBuiltinFunctions(t, host, world)
-			setZeroCodeCosts(host)
-			setAsyncCosts(host, testConfig.GasLockCost)
-		}).
-		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				ReturnMessage("execution by caller failed")
-
-			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
-
-			childAccount := world.AcctMap.GetAccount(test.UserAddress2)
-			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
-		})
-}
-
 func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
-	testConfig := asyncTestConfig
+	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	test.BuildMockInstanceCallTest(t).

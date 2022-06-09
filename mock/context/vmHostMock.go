@@ -235,11 +235,6 @@ func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
 	return vmOutput
 }
 
-// DisableExecByCaller mocked method
-func (host *VMHostMock) DisableExecByCaller() bool {
-	return true
-}
-
 // Close -
 func (host *VMHostMock) Close() error {
 	return nil
