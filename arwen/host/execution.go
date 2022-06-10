@@ -38,7 +38,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		RecipientAddr: address,
 	}
 	runtime.SetVMInput(contractCallInput)
-	runtime.SetSCAddress(address)
+	runtime.SetCodeAddress(address)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	output.AddTxValueToAccount(address, input.CallValue)
@@ -380,7 +380,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
-	runtime.SetSCAddress(librarySCAddress)
+	runtime.SetCodeAddress(librarySCAddress)
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)

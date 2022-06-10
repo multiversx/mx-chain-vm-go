@@ -346,7 +346,7 @@ func initStateFromChildGetParentPointsBeforeStacking(t *testing.T, host *context
 	require.Equal(t, childProvidedGas+parentUsedGas, parentPointsBeforeStacking)
 	require.Equal(t, parentGasProvided-parentExecutionGas-parentPointsBeforeStacking, host.MeteringContext.GasLeft())
 
-	host.RuntimeContext.SetSCAddress([]byte("child"))
+	host.RuntimeContext.SetCodeAddress([]byte("child"))
 	host.RuntimeContext.SetPointsUsed(0)
 	host.RuntimeContext.SetVMInput(childInput)
 	host.MeteringContext.PushState()
@@ -565,7 +565,7 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 	gasTrace = meteringContext.GetGasTrace()
 	require.Equal(t, gasUsed1, gasTrace["scAddress1"]["function1"][0])
 
-	host.RuntimeContext.SetSCAddress([]byte("scAddress2"))
+	host.RuntimeContext.SetCodeAddress([]byte("scAddress2"))
 	meteringContext.UseGasAndAddTracedGas("function2", gasUsed2)
 	gasTrace = meteringContext.GetGasTrace()
 	require.Equal(t, 2, len(gasTrace))

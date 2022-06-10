@@ -74,7 +74,7 @@ func TestNewRuntimeContext(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 
 	require.Equal(t, &vmcommon.ContractCallInput{}, runtimeContext.vmInput)
-	require.Equal(t, []byte{}, runtimeContext.scAddress)
+	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
 	require.Nil(t, runtimeContext.asyncCallInfo)
@@ -85,7 +85,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 
 	runtimeContext.vmInput = nil
-	runtimeContext.scAddress = []byte("some address")
+	runtimeContext.codeAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
 	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
@@ -93,7 +93,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.InitState()
 
 	require.Equal(t, &vmcommon.ContractCallInput{}, runtimeContext.vmInput)
-	require.Equal(t, []byte{}, runtimeContext.scAddress)
+	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
 	require.Nil(t, runtimeContext.asyncCallInfo)
@@ -203,8 +203,8 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeContext.SetVMInput(&vmInput2)
 	require.Equal(t, []byte("caller2"), runtimeContext.GetVMInput().CallerAddr)
 
-	runtimeContext.SetSCAddress([]byte("smartcontract"))
-	require.Equal(t, []byte("smartcontract"), runtimeContext.scAddress)
+	runtimeContext.SetCodeAddress([]byte("smartcontract"))
+	require.Equal(t, []byte("smartcontract"), runtimeContext.codeAddress)
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
@@ -261,11 +261,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
 	// change state
-	runtimeContext.SetSCAddress([]byte("dummy"))
+	runtimeContext.SetCodeAddress([]byte("dummy"))
 	runtimeContext.SetVMInput(nil)
 	runtimeContext.SetReadOnly(true)
 
-	require.Equal(t, []byte("dummy"), runtimeContext.scAddress)
+	require.Equal(t, []byte("dummy"), runtimeContext.codeAddress)
 	require.Nil(t, runtimeContext.GetVMInput())
 	require.True(t, runtimeContext.ReadOnly())
 

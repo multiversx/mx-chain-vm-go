@@ -137,8 +137,8 @@ func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 
-// SetSCAddress mocked method
-func (r *RuntimeContextMock) SetSCAddress(scAddress []byte) {
+// SetCodeAddress mocked method
+func (r *RuntimeContextMock) SetCodeAddress(scAddress []byte) {
 	r.SCAddress = scAddress
 }
 

@@ -25,7 +25,7 @@ type runtimeContext struct {
 	host               arwen.VMHost
 	instance           wasmer.InstanceHandler
 	vmInput            *vmcommon.ContractCallInput
-	scAddress          []byte
+	codeAddress        []byte
 	codeSize           uint64
 	callFunction       string
 	vmType             []byte
@@ -81,7 +81,7 @@ func NewRuntimeContext(
 // InitState initializes all the contexts fields with default data.
 func (context *runtimeContext) InitState() {
 	context.vmInput = &vmcommon.ContractCallInput{}
-	context.scAddress = make([]byte, 0)
+	context.codeAddress = make([]byte, 0)
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
@@ -111,7 +111,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	blockchain := context.host.Blockchain()
-	codeHash := blockchain.GetCodeHash(context.scAddress)
+	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(codeHash, gasLimit, newCode)
 	if compiledCodeUsed {
 		return nil
@@ -209,7 +209,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
-	code, err := blockchain.GetCode(context.scAddress)
+	code, err := blockchain.GetCode(context.codeAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 // InitStateFromContractCallInput initializes the runtime context state with the values from the given input
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(input)
-	context.scAddress = input.RecipientAddr
+	context.codeAddress = input.RecipientAddr
 	context.callFunction = input.Function
 	// Reset async map for initial state
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
@@ -272,7 +272,7 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 // includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		scAddress:        context.scAddress,
+		codeAddress:      context.codeAddress,
 		callFunction:     context.callFunction,
 		readOnly:         context.readOnly,
 		asyncCallInfo:    context.asyncCallInfo,
@@ -301,7 +301,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.SetVMInput(prevState.vmInput)
-	context.scAddress = prevState.scAddress
+	context.codeAddress = prevState.codeAddress
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
@@ -443,9 +443,9 @@ func (context *runtimeContext) GetContextAddress() []byte {
 	return context.vmInput.RecipientAddr
 }
 
-// SetSCAddress sets the given address as the scAddress for the current context.
-func (context *runtimeContext) SetSCAddress(scAddress []byte) {
-	context.scAddress = scAddress
+// SetCodeAddress sets the given address as the scAddress for the current context.
+func (context *runtimeContext) SetCodeAddress(scAddress []byte) {
+	context.codeAddress = scAddress
 }
 
 // GetCurrentTxHash returns the txHash from the vmInput of the current context.
@@ -673,7 +673,7 @@ func (context *runtimeContext) CleanWasmerInstance() {
 // provided SC address is already in execution, below the current instance.
 func (context *runtimeContext) IsContractOnTheStack(address []byte) bool {
 	for _, state := range context.stateStack {
-		if bytes.Equal(address, state.scAddress) {
+		if bytes.Equal(address, state.codeAddress) {
 			return true
 		}
 	}

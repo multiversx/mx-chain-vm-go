@@ -106,7 +106,7 @@ type RuntimeContext interface {
 	GetVMInput() *vmcommon.ContractCallInput
 	SetVMInput(vmInput *vmcommon.ContractCallInput)
 	GetContextAddress() []byte
-	SetSCAddress(scAddress []byte)
+	SetCodeAddress(scAddress []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
 	GetVMType() []byte
