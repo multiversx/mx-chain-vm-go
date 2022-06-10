@@ -174,7 +174,7 @@ func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 	remainingGas := meteringContext.GasLeft()
 	require.Equal(t, gasProvided-uint64(len(contractCode))-1, remainingGas)
 
-	input.GasProvided = 2
+	contractCallInput.GasProvided = 2
 	mockRuntime.SetPointsUsed(0)
 	err = meteringContext.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
 	require.Equal(t, arwen.ErrNotEnoughGas, err)
@@ -208,7 +208,7 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 	remainingGas := meteringContext.GasLeft()
 	require.Equal(t, gasProvided-uint64(len(contractCode)), remainingGas)
 
-	input.GasProvided = 2
+	contractCallInput.GasProvided = 2
 	mockRuntime.SetPointsUsed(0)
 	err = meteringContext.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
 	require.Equal(t, arwen.ErrNotEnoughGas, err)

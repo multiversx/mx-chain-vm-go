@@ -399,6 +399,7 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	context.vmInput = &vmcommon.ContractCallInput{
 		VMInput:       internalVMInput,
 		RecipientAddr: vmInput.RecipientAddr,
+		Function:      vmInput.Function,
 	}
 
 	if vmInput.CallValue != nil {
