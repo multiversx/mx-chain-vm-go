@@ -69,6 +69,9 @@ type vmHost struct {
 
 	checkValueOnExecByCallerEnableEpoch uint32
 	flagCheckValueOnExecByCaller        atomic.Flag
+
+	refactorContextEnableEpoch uint32
+	flagRefactorContext        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -111,6 +114,7 @@ func NewArwenVM(
 		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 		checkValueOnExecByCallerEnableEpoch:             hostParameters.CheckValueOnExecByCallerEnableEpoch,
+		refactorContextEnableEpoch:                      hostParameters.RefactorContextEnableEpoch,
 	}
 
 	var err error
@@ -458,6 +462,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagCheckValueOnExecByCaller.SetValue(epoch >= host.checkValueOnExecByCallerEnableEpoch)
 	log.Debug("Arwen VM: check value on exec by caller", "enabled", host.flagCheckValueOnExecByCaller.IsSet())
+
+	host.flagRefactorContext.SetValue(epoch >= host.refactorContextEnableEpoch)
+	log.Debug("Arwen VM: refactor context", "enabled", host.flagRefactorContext.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set

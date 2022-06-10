@@ -126,8 +126,8 @@ func TestMeteringContext_DeductInitialGasForExecution(t *testing.T) {
 
 	mockRuntime := &contextmock.RuntimeContextMock{}
 	gasProvided := uint64(10000)
-	vmInput := &vmcommon.VMInput{
-		GasProvided: gasProvided,
+	vmInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{GasProvided: gasProvided},
 	}
 
 	mockRuntime.SetVMInput(vmInput)
@@ -159,7 +159,8 @@ func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 		ContractCode: contractCode,
 	}
 
-	mockRuntime.SetVMInput(&input.VMInput)
+	contractCallInput := &vmcommon.ContractCallInput{VMInput: input.VMInput}
+	mockRuntime.SetVMInput(contractCallInput)
 
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
@@ -192,7 +193,8 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 		ContractCode: contractCode,
 	}
 
-	mockRuntime.SetVMInput(&input.VMInput)
+	contractCallInput := &vmcommon.ContractCallInput{VMInput: input.VMInput}
+	mockRuntime.SetVMInput(contractCallInput)
 
 	host := &contextmock.VMHostMock{
 		RuntimeContext: mockRuntime,
@@ -224,7 +226,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 	}
 
 	mockRuntime.SCCodeSize = contractSize
-	mockRuntime.SetVMInput(&input.VMInput)
+	mockRuntime.SetVMInput(input)
 	mockRuntime.SetPointsUsed(0)
 
 	host := &contextmock.VMHostMock{
@@ -271,7 +273,7 @@ func TestMeteringContext_GasUsed_NoStacking(t *testing.T) {
 	input := &vmcommon.ContractCallInput{VMInput: vmcommon.VMInput{}}
 
 	mockRuntime.SCCodeSize = contractSize
-	mockRuntime.SetVMInput(&input.VMInput)
+	mockRuntime.SetVMInput(input)
 	mockRuntime.SetPointsUsed(0)
 
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), BlockGasLimit)
@@ -310,7 +312,7 @@ func setUpStackOneLevel(t *testing.T, parentInput *vmcommon.ContractCallInput, c
 	mockRuntime.SCAddress = []byte("parent")
 
 	mockRuntime.SetPointsUsed(0)
-	mockRuntime.SetVMInput(&parentInput.VMInput)
+	mockRuntime.SetVMInput(parentInput)
 
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 	host.MeteringContext = metering
@@ -346,7 +348,7 @@ func initStateFromChildGetParentPointsBeforeStacking(t *testing.T, host *context
 
 	host.RuntimeContext.SetSCAddress([]byte("child"))
 	host.RuntimeContext.SetPointsUsed(0)
-	host.RuntimeContext.SetVMInput(&childInput.VMInput)
+	host.RuntimeContext.SetVMInput(childInput)
 	host.MeteringContext.PushState()
 	host.MeteringContext.InitStateFromContractCallInput(&childInput.VMInput)
 	require.Equal(t, childProvidedGas, host.MeteringContext.GetGasProvided())
@@ -389,7 +391,7 @@ func TestMeteringContext_GasUsed_StackOneLevel(t *testing.T) {
 	metering.PopMergeActiveState()
 	mockRuntime.SCAddress = []byte("parent")
 	mockRuntime.SetPointsUsed(parentPointsBeforeStacking)
-	mockRuntime.SetVMInput(&parentInput.VMInput)
+	mockRuntime.SetVMInput(parentInput)
 
 	metering.RestoreGas(gasRemaining)
 	mockRuntime.IsContractOnStack = false
@@ -451,7 +453,7 @@ func TestMeteringContext_UpdateGasStateOnFailure_StackOneLevel(t *testing.T) {
 	metering.PopSetActiveState()
 	mockRuntime.SCAddress = []byte("parent")
 	mockRuntime.SetPointsUsed(parentPointsBeforeStacking)
-	mockRuntime.SetVMInput(&parentInput.VMInput)
+	mockRuntime.SetVMInput(parentInput)
 
 	metering.RestoreGas(gasRemaining)
 	mockRuntime.IsContractOnStack = false
@@ -499,7 +501,7 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 		VMInput:  vmcommon.VMInput{},
 		Function: "callBuiltinClaim",
 	}
-	mockRuntime.SetVMInput(&input.VMInput)
+	mockRuntime.SetVMInput(input)
 
 	metering, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 	host.MeteringContext = metering

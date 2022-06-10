@@ -1,4 +1,4 @@
-package gasschedules 
+package gasschedules
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
@@ -58,7 +58,7 @@ const (
     GetCode           = 1000000
 
 [ElrondAPICost]
-    GetSCAddress       = 100
+    GetContextAddress       = 100
     GetOwnerAddress    = 5000
     IsSmartContract    = 5000
     GetShardOfAddress  = 5000
@@ -725,7 +725,7 @@ const (
     GetCode           = 1000000
 
 [ElrondAPICost]
-    GetSCAddress       = 100
+    GetContextAddress       = 100
     GetOwnerAddress    = 5000
     IsSmartContract    = 5000
     GetShardOfAddress  = 5000

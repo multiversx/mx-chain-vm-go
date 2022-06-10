@@ -33,7 +33,7 @@ func TestDecode(t *testing.T) {
 func TestDecode_ArwenGas(t *testing.T) {
 	gasMap := make(map[string]uint64)
 	gasMap["StorePerByte"] = 4
-	gasMap["GetSCAddress"] = 4
+	gasMap["GetContextAddress"] = 4
 	gasMap["GetExternalBalance"] = 4
 	gasMap["BigIntByteLength"] = 4
 

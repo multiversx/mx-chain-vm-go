@@ -48,6 +48,9 @@ var ParentAddress = MakeTestSCAddress("parentSC")
 // ChildAddress is an exposed value to use in tests
 var ChildAddress = MakeTestSCAddress("childSC")
 
+// NephewAddress is an exposed value to use in tests
+var NephewAddress = MakeTestSCAddress("NephewAddress")
+
 var customGasSchedule = config.GasScheduleMap(nil)
 
 // ESDTTransferGasCost is an exposed value to use in tests

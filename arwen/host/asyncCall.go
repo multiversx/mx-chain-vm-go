@@ -118,7 +118,7 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 }
 
 func (host *vmHost) determineDestinationForAsyncCall(asyncCallInfo arwen.AsyncCallInfoHandler) []byte {
-	if !bytes.Equal(host.Runtime().GetSCAddress(), asyncCallInfo.GetDestination()) {
+	if !bytes.Equal(host.Runtime().GetContextAddress(), asyncCallInfo.GetDestination()) {
 		return asyncCallInfo.GetDestination()
 	}
 
@@ -150,10 +150,10 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 
 	actualDestination := host.determineDestinationForAsyncCall(asyncCallInfo)
 
-	sameShard := host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
+	sameShard := host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), actualDestination, functionName, args)
+			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetContextAddress(), actualDestination, functionName, args)
 			if isESDTTransfer && runtime.GetVMInput().CallType == vm.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, actualDestination) {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -254,7 +254,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 
 	err := output.Transfer(
 		asyncCallInfo.GetDestination(),
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		asyncCallInfo.GetGasLimit(),
 		asyncCallInfo.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
@@ -293,7 +293,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 
 	err := output.Transfer(
 		currentCall.CallerAddr,
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		metering.GasLeft(),
 		0,
 		valueToTransfer,
@@ -319,7 +319,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 
 	err := output.Transfer(
 		callerAddress,
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		metering.GasLeft(),
 		0,
 		currentCall.CallValue,
@@ -337,7 +337,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 
 func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	metering := host.Metering()
 
 	argParser := parsers.NewCallArgsParser()
@@ -371,7 +371,7 @@ func (host *vmHost) computeCallValueFromLastOutputTransfer(destinationVMOutput *
 	}
 
 	returnTransfer := big.NewInt(0)
-	callBackReceiver := host.Runtime().GetSCAddress()
+	callBackReceiver := host.Runtime().GetContextAddress()
 	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
 	if !ok {
 		return returnTransfer
@@ -411,7 +411,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnReturnDataWithNoAdditionalData(callbackInitiator, runtime.GetSCAddress(), destinationVMOutput)
+		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnReturnDataWithNoAdditionalData(callbackInitiator, runtime.GetContextAddress(), destinationVMOutput)
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -444,7 +444,7 @@ func (host *vmHost) createCallbackContractCallInput(
 			OriginalTxHash:       runtime.GetOriginalTxHash(),
 			ReturnCallAfterError: returnWithError,
 		},
-		RecipientAddr: runtime.GetSCAddress(),
+		RecipientAddr: runtime.GetContextAddress(),
 		Function:      callbackFunction,
 	}
 

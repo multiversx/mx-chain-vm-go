@@ -11,7 +11,7 @@ var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
 	Err                    error
-	VMInput                *vmcommon.VMInput
+	VMInput                *vmcommon.ContractCallInput
 	SCAddress              []byte
 	SCCode                 []byte
 	SCCodeSize             uint64
@@ -118,12 +118,12 @@ func (r *RuntimeContextMock) GetVMType() []byte {
 }
 
 // GetVMInput mocked method
-func (r *RuntimeContextMock) GetVMInput() *vmcommon.VMInput {
+func (r *RuntimeContextMock) GetVMInput() *vmcommon.ContractCallInput {
 	return r.VMInput
 }
 
 // SetVMInput mocked method
-func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
+func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	r.VMInput = vmInput
 }
 
@@ -132,8 +132,8 @@ func (r *RuntimeContextMock) IsContractOnTheStack(_ []byte) bool {
 	return r.IsContractOnStack
 }
 
-// GetSCAddress mocked method
-func (r *RuntimeContextMock) GetSCAddress() []byte {
+// GetContextAddress mocked method
+func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 

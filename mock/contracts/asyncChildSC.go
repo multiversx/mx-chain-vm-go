@@ -23,7 +23,7 @@ func TransferToAsyncParentOnCallbackChilMock(instanceMock *mock.InstanceMock, co
 		output := host.Output()
 
 		vmInput := runtime.GetVMInput()
-		scAddress := host.Runtime().GetSCAddress()
+		scAddress := host.Runtime().GetContextAddress()
 		arguments := host.Runtime().Arguments()
 
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
@@ -67,7 +67,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			return instance
 		}
 
-		scAddress := host.Runtime().GetSCAddress()
+		scAddress := host.Runtime().GetContextAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err = outputContext.Transfer(
 			test.ThirdPartyAddress,

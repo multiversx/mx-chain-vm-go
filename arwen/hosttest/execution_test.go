@@ -1950,7 +1950,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	_, _, metering, output, runtime, storage := host.GetContexts()
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 	_ = metering.DeductInitialGasForExecution([]byte{})
 
 	contract, err := runtime.GetSCCode()
@@ -3047,6 +3047,60 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
+		})
+}
+
+func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						host.Output().Finish([]byte("parent returns this"))
+						host.Metering().UseGas(500)
+						elrondapi.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(100).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						host.Output().Finish([]byte("child returns this"))
+						host.Metering().UseGas(100)
+						elrondapi.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2))
+						return childInstance
+					})
+				}),
+			test.CreateMockContract(test.NephewAddress).
+				WithBalance(0).
+				WithMethods(func(nephewInstance *mock.InstanceMock, config interface{}) {
+					nephewInstance.AddMockMethod("doSomethingNephew", func() *mock.InstanceMock {
+						host := nephewInstance.Host
+						host.Output().Finish([]byte("newphew returns this"))
+						caller := host.Runtime().GetVMInput().CallerAddr
+						if bytes.Equal(caller, test.ParentAddress) {
+							host.Output().Finish([]byte("OK"))
+						}
+						return nephewInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1000).
+			WithFunction("callChild").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
+			(accountHandler.(*worldmock.Account)).Storage["child"] = test.ChildData
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				ReturnData([]byte("parent returns this"), []byte("child returns this"), []byte("newphew returns this"), []byte("OK"))
 		})
 }
 

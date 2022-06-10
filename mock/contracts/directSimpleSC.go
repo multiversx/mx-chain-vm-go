@@ -35,13 +35,13 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{
 		runtime := host.Runtime()
 
 		input := test.DefaultTestContractCallInput()
-		input.CallerAddr = runtime.GetSCAddress()
+		input.CallerAddr = runtime.GetContextAddress()
 		input.GasProvided = runtime.GetVMInput().GasProvided / 2
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
 			runtime.Arguments()[0],
 		}
-		input.RecipientAddr = host.Runtime().GetSCAddress()
+		input.RecipientAddr = host.Runtime().GetContextAddress()
 		input.Function = "ESDTLocalBurn"
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)

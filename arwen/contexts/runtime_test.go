@@ -182,7 +182,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 
 	runtimeContext.InitStateFromContractCallInput(callInput)
 	require.Equal(t, []byte("caller"), runtimeContext.GetVMInput().CallerAddr)
-	require.Equal(t, []byte("recipient"), runtimeContext.GetSCAddress())
+	require.Equal(t, []byte("recipient"), runtimeContext.GetContextAddress())
 	require.Equal(t, "test function", runtimeContext.Function())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
 	require.Equal(t, arguments, runtimeContext.Arguments())
@@ -193,16 +193,18 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
 	require.Equal(t, uint64(94), runtimeInput.ESDTTransfers[0].ESDTTokenNonce)
 
-	vmInput2 := vmcommon.VMInput{
-		CallerAddr: []byte("caller2"),
-		Arguments:  arguments,
-		CallValue:  big.NewInt(0),
+	vmInput2 := vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr: []byte("caller2"),
+			Arguments:  arguments,
+			CallValue:  big.NewInt(0),
+		},
 	}
 	runtimeContext.SetVMInput(&vmInput2)
 	require.Equal(t, []byte("caller2"), runtimeContext.GetVMInput().CallerAddr)
 
 	runtimeContext.SetSCAddress([]byte("smartcontract"))
-	require.Equal(t, []byte("smartcontract"), runtimeContext.GetSCAddress())
+	require.Equal(t, []byte("smartcontract"), runtimeContext.GetContextAddress())
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
@@ -263,14 +265,14 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext.SetVMInput(nil)
 	runtimeContext.SetReadOnly(true)
 
-	require.Equal(t, []byte("dummy"), runtimeContext.GetSCAddress())
+	require.Equal(t, []byte("dummy"), runtimeContext.GetContextAddress())
 	require.Nil(t, runtimeContext.GetVMInput())
 	require.True(t, runtimeContext.ReadOnly())
 
 	runtimeContext.PopSetActiveState()
 
 	// check state was restored correctly
-	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
+	require.Equal(t, scAddress, runtimeContext.GetContextAddress())
 	require.Equal(t, funcName, runtimeContext.Function())
 	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
