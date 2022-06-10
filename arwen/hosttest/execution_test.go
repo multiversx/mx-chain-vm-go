@@ -1052,10 +1052,10 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				// test.ParentAddress
-				BalanceDelta(test.ParentAddress, -198).
+				BalanceDelta(test.ParentAddress, 0).
 				GasUsed(test.ParentAddress, parentGasUsed).
 				// test.ChildAddress
-				BalanceDelta(test.ChildAddress, 198).
+				BalanceDelta(test.ChildAddress, 0).
 				GasUsed(test.ChildAddress, childGasUsed).
 				// other
 				GasRemaining(test.GasProvided - executionCost).
@@ -1280,11 +1280,11 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, parentAccountBalance).
-				BalanceDelta(test.ParentAddress, -141).
+				BalanceDelta(test.ParentAddress, -138).
 				GasUsed(test.ParentAddress, 3602).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
-				BalanceDelta(test.ChildAddress, 3).
+				BalanceDelta(test.ChildAddress, 0).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
 				// others
 				BalanceDelta(test.ChildTransferReceiver, 96).
@@ -1340,10 +1340,10 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
-				BalanceDelta(test.ParentAddress, -99).
+				BalanceDelta(test.ParentAddress, 0).
 				GasUsed(test.ParentAddress, 3460).
 				// test.ChildAddress
-				BalanceDelta(test.ChildAddress, 99).
+				BalanceDelta(test.ChildAddress, 0).
 				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
 				// others
 				GasRemaining(test.GasProvided-
@@ -1605,11 +1605,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
 				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-				GasUsed(test.ParentAddress, 5550).
+				GasUsed(test.ParentAddress, 9284).
 				// test.ChildAddress
 				Balance(test.ChildAddress, 1000).
 				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-				GasUsed(test.ChildAddress, 3734).
+				GasUsed(test.ChildAddress, 0).
 				// other
 				ReturnData(returnData...).
 				Storage(storeEntries...)
@@ -2338,8 +2338,6 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// tokens, and not the parent, even if the parent is the one making the call
 	// to the child.
 
-	transferValue := int64(42)
-
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -2355,22 +2353,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 			WithGasProvided(2000).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.Ok().
-				// test.ParentAddress
-				GasUsed(test.ParentAddress, 762).
-				/// test.ChildAddress
-				Balance(test.ChildAddress, 1000).
-				BalanceDelta(test.ChildAddress, -transferValue).
-				GasUsed(test.ChildAddress, 667).
-				// test.UserAddress
-				BalanceDelta(test.UserAddress, transferValue).
-				// other
-				ReturnData([]byte("sent"), []byte("child called")).
-				Transfers(
-					test.CreateTransferEntry(test.ChildAddress, test.UserAddress).
-						WithData([]byte{}).
-						WithValue(big.NewInt(transferValue)),
-				)
+			verify.ExecutionFailed()
 		})
 }
 

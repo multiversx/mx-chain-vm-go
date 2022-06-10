@@ -45,7 +45,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 
 	host := &contextmock.VMHostStub{}
 	host.RuntimeCalled = func() arwen.RuntimeContext {
-		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	}
 	outputContext, _ := NewOutputContext(host)
 
@@ -367,7 +367,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 	host := &contextmock.VMHostMock{
 		MeteringContext: &contextmock.MeteringContextMock{},
 		RuntimeContext: &contextmock.RuntimeContextMock{
-			VMInput: &vmcommon.VMInput{},
+			VMInput: &vmcommon.ContractCallInput{},
 		},
 	}
 
@@ -395,7 +395,7 @@ func TestOutputContext_Transfer(t *testing.T) {
 	valueToTransfer := big.NewInt(1000)
 
 	host := &contextmock.VMHostMock{}
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	mockWorld := worldmock.NewMockWorld()
 	mockWorld.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
@@ -440,7 +440,7 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	outputContext, _ := NewOutputContext(host)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	host.OutputContext = outputContext
 	host.BlockchainContext = blockchainContext
 
@@ -509,7 +509,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 
 	host.OutputContext = oc
 	host.BlockchainContext = bc
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 
 	valueToTransfer := big.NewInt(10)
 	err := oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)

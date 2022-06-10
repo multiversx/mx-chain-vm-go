@@ -58,7 +58,7 @@ const (
     GetCode           = 1000000
 
 [ElrondAPICost]
-    GetContextAddress       = 100
+    GetSCAddress       = 100
     GetOwnerAddress    = 5000
     IsSmartContract    = 5000
     GetShardOfAddress  = 5000
@@ -725,7 +725,7 @@ const (
     GetCode           = 1000000
 
 [ElrondAPICost]
-    GetContextAddress       = 100
+    GetSCAddress       = 100
     GetOwnerAddress    = 5000
     IsSmartContract    = 5000
     GetShardOfAddress  = 5000

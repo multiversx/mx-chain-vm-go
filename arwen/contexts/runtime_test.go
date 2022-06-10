@@ -73,7 +73,7 @@ func TestNewRuntimeContext(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 
-	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
+	require.Equal(t, &vmcommon.ContractCallInput{}, runtimeContext.vmInput)
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
@@ -92,7 +92,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 
 	runtimeContext.InitState()
 
-	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
+	require.Equal(t, &vmcommon.ContractCallInput{}, runtimeContext.vmInput)
 	require.Equal(t, []byte{}, runtimeContext.scAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
@@ -204,7 +204,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	require.Equal(t, []byte("caller2"), runtimeContext.GetVMInput().CallerAddr)
 
 	runtimeContext.SetSCAddress([]byte("smartcontract"))
-	require.Equal(t, []byte("smartcontract"), runtimeContext.GetContextAddress())
+	require.Equal(t, []byte("smartcontract"), runtimeContext.scAddress)
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
@@ -265,7 +265,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext.SetVMInput(nil)
 	runtimeContext.SetReadOnly(true)
 
-	require.Equal(t, []byte("dummy"), runtimeContext.GetContextAddress())
+	require.Equal(t, []byte("dummy"), runtimeContext.scAddress)
 	require.Nil(t, runtimeContext.GetVMInput())
 	require.True(t, runtimeContext.ReadOnly())
 
