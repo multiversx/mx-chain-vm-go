@@ -422,11 +422,6 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		panic(err)
 	}
 
-	logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
-	if logsFromErrors != nil {
-		vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
-	}
-
 	return
 }
 
@@ -500,11 +495,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		// read again, because the call to `close(done)` will not happen anymore.
 		host.Runtime().FailExecution(err)
 		panic(err)
-	}
-
-	logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, input.Function)
-	if logsFromErrors != nil {
-		vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 	}
 
 	return
