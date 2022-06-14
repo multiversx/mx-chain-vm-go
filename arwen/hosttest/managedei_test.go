@@ -1134,3 +1134,78 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 				DeletedAccounts(test.ChildAddress)
 		})
 }
+
+func TestElrondEI_NFTNonceOverflow(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	MaxUint := ^uint64(0)
+	MaxInt := int64(MaxUint >> 1)
+
+	OverflowedMaxInt := uint64(MaxInt) + 1
+
+	tokenValue := int64(100)
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						managed := host.ManagedTypes()
+
+						addressHandle := managed.NewManagedBufferFromBytes(test.ParentAddress)
+						tokenIDHandle := managed.NewManagedBufferFromBytes(test.ESDTTestTokenName)
+
+						nonce := int64(OverflowedMaxInt)
+
+						valueHandle := managed.NewBigIntFromInt64(0)
+						propertiesHandle := managed.NewManagedBuffer()
+						hashHandle := managed.NewManagedBuffer()
+						nameHandle := managed.NewManagedBuffer()
+						attributesHandle := managed.NewManagedBuffer()
+						creatorHandle := managed.NewManagedBuffer()
+						royaltiesHandle := managed.NewManagedBuffer()
+						urisHandle := managed.NewManagedBuffer()
+
+						elrondapi.ManagedGetESDTTokenDataWithHost(host,
+							addressHandle,
+							tokenIDHandle,
+							nonce,
+							valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+						value, err := managed.GetBigInt(valueHandle)
+						if err != nil {
+							host.Runtime().SignalUserError(err.Error())
+							return parentInstance
+						}
+						host.Output().Finish(value.Bytes())
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			world.BuiltinFuncs.SetTokenData(
+				test.ParentAddress,
+				test.ESDTTestTokenName,
+				OverflowedMaxInt,
+				&esdt.ESDigitalToken{
+					Value:      big.NewInt(tokenValue),
+					Type:       uint32(core.Fungible),
+					Properties: esdtconvert.MakeESDTUserMetadataBytes(false),
+				})
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(big.NewInt(tokenValue).Bytes())
+		})
+}

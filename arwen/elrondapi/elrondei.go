@@ -55,7 +55,6 @@ package elrondapi
 // extern int32_t	v1_5_validateTokenIdentifier(void *context, int32_t tokenIdHandle);
 //
 // extern int32_t	v1_5_executeOnDestContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
-// extern int32_t	v1_5_executeOnDestContextByCaller(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_5_executeOnSameContext(void *context, long long gas, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_5_executeReadOnly(void *context, long long gas, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t	v1_5_createContract(void *context, long long gas, int32_t valueOffset, int32_t codeOffset, int32_t codeMetadataOffset, int32_t length, int32_t resultOffset, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -165,7 +164,6 @@ const (
 	getESDTLocalRolesName            = "getESDTLocalRoles"
 	validateTokenIdentifierName      = "validateTokenIdentifier"
 	executeOnDestContextName         = "executeOnDestContext"
-	executeOnDestContextByCallerName = "executeOnDestContextByCaller"
 	executeOnSameContextName         = "executeOnSameContext"
 	executeReadOnlyName              = "executeReadOnly"
 	createContractName               = "createContract"
@@ -519,11 +517,6 @@ func ElrondEIImports() (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("executeOnDestContext", v1_5_executeOnDestContext, C.v1_5_executeOnDestContext)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("executeOnDestContextByCaller", v1_5_executeOnDestContextByCaller, C.v1_5_executeOnDestContextByCaller)
 	if err != nil {
 		return nil, err
 	}
@@ -2995,116 +2988,6 @@ func ExecuteOnDestContextWithTypedArgs(
 	_, err = executeOnDestContextFromAPI(host, contractCallInput)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
-	}
-
-	return 0
-}
-
-//export v1_5_executeOnDestContextByCaller
-func v1_5_executeOnDestContextByCaller(
-	context unsafe.Pointer,
-	gasLimit int64,
-	addressOffset int32,
-	valueOffset int32,
-	functionOffset int32,
-	functionLength int32,
-	numArguments int32,
-	argumentsLengthOffset int32,
-	dataOffset int32,
-) int32 {
-	host := arwen.GetVMHost(context)
-	metering := host.Metering()
-	metering.StartGasTracing(executeOnDestContextByCallerName)
-
-	return ExecuteOnDestContextByCallerWithHost(
-		host,
-		gasLimit,
-		addressOffset,
-		valueOffset,
-		functionOffset,
-		functionLength,
-		numArguments,
-		argumentsLengthOffset,
-		dataOffset,
-	)
-}
-
-// ExecuteOnDestContextByCallerWithHost - executeOnDestContextByCaller with host instead of pointer context
-func ExecuteOnDestContextByCallerWithHost(
-	host arwen.VMHost,
-	gasLimit int64,
-	addressOffset int32,
-	valueOffset int32,
-	functionOffset int32,
-	functionLength int32,
-	numArguments int32,
-	argumentsLengthOffset int32,
-	dataOffset int32,
-) int32 {
-	runtime := host.Runtime()
-
-	callArgs, err := extractIndirectContractCallArgumentsWithValue(
-		host, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return 1
-	}
-
-	return ExecuteOnDestContextByCallerWithTypedArgs(
-		host,
-		gasLimit,
-		callArgs.value,
-		callArgs.function,
-		callArgs.dest,
-		callArgs.args,
-	)
-}
-
-// ExecuteOnDestContextByCallerWithTypedArgs - executeOnDestContextByCaller with args already read from memory
-func ExecuteOnDestContextByCallerWithTypedArgs(
-	host arwen.VMHost,
-	gasLimit int64,
-	value *big.Int,
-	function []byte,
-	dest []byte,
-	args [][]byte,
-) int32 {
-	runtime := host.Runtime()
-	metering := host.Metering()
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
-	metering.UseAndTraceGas(gasToUse)
-
-	send := runtime.GetVMInput().CallerAddr
-	contractCallInput, err := prepareIndirectContractCallInput(
-		host,
-		send,
-		value,
-		gasLimit,
-		dest,
-		function,
-		args,
-		gasToUse,
-		true,
-	)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		if contractCallInput.Function != core.BuiltInFunctionESDTNFTCreate {
-			if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-				return -1
-			}
-			return -1
-		}
-
-		contractCallInput.CallType = vm.ExecOnDestByCaller
-		contractCallInput.Arguments = append(contractCallInput.Arguments, runtime.GetSCAddress())
-	}
-
-	_, err = executeOnDestContextFromAPI(host, contractCallInput)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
-		return -1
 	}
 
 	return 0

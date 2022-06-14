@@ -16,7 +16,6 @@ package elrondapi
 // extern int32_t	v1_5_managedMultiTransferESDTNFTExecute(void *context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t	v1_5_managedTransferValueExecute(void *context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
 // extern int32_t	v1_5_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_5_managedExecuteOnDestContextByCaller(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_5_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_5_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern int32_t	v1_5_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
@@ -129,11 +128,6 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedExecuteOnDestContext", v1_5_managedExecuteOnDestContext, C.v1_5_managedExecuteOnDestContext)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedExecuteOnDestContextByCaller", v1_5_managedExecuteOnDestContextByCaller, C.v1_5_managedExecuteOnDestContextByCaller)
 	if err != nil {
 		return nil, err
 	}
@@ -471,12 +465,32 @@ func v1_5_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 }
 
 //export v1_5_managedGetESDTTokenData
-func v1_5_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64,
+func v1_5_managedGetESDTTokenData(
+	context unsafe.Pointer,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
 	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	ManagedGetESDTTokenDataWithHost(
+		host,
+		addressHandle,
+		tokenIDHandle,
+		nonce,
+		valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+}
+
+func ManagedGetESDTTokenDataWithHost(
+	host arwen.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedGetESDTTokenDataName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
@@ -484,18 +498,18 @@ func v1_5_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -980,38 +994,6 @@ func v1_5_managedExecuteOnSameContext(
 
 	lenReturnData := len(host.Output().ReturnData())
 	returnVal := ExecuteOnSameContextWithTypedArgs(
-		host,
-		gas,
-		vmInput.value,
-		[]byte(vmInput.function),
-		vmInput.destination,
-		vmInput.arguments,
-	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
-	return returnVal
-}
-
-//export v1_5_managedExecuteOnDestContextByCaller
-func v1_5_managedExecuteOnDestContextByCaller(
-	context unsafe.Pointer,
-	gas int64,
-	addressHandle int32,
-	valueHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-	resultHandle int32,
-) int32 {
-	host := arwen.GetVMHost(context)
-	metering := host.Metering()
-	metering.StartGasTracing(managedExecuteOnDestContextByCallerName)
-
-	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
 		host,
 		gas,
 		vmInput.value,

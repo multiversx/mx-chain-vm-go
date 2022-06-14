@@ -1847,6 +1847,47 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 	}
 }
 
+func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
+	testConfig := makeTestConfig()
+	testConfig.GasProvided = 1000
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress).
+				WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallbackWithOnSameContext),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress2).
+				WithMethods(contracts.TransferToThirdPartyAsyncChildMock, contracts.ExecutedOnSameContextByCallback),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("performAsyncCall").
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
+			world.AcctMap.CreateAccount(test.UserAddress2, world)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				Storage(
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
+					// overriden by ExecutedOnSameContextByCallback called from CallbackWithOnSameContext
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataA),
+					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
+				)
+		})
+}
+
 type MockClaimBuiltin struct {
 	test.MockBuiltin
 	AmountToGive int64

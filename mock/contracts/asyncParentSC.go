@@ -204,6 +204,29 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("myCallBack", callbackFunc)
 }
 
+// CallbackWithOnSameContext is an exposed mock contract method
+func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		retVal := elrondapi.ExecuteOnSameContextWithTypedArgs(
+			host,
+			int64(host.Metering().GasLeft()),
+			big.NewInt(0),
+			[]byte("executedOnSameContextByCallback"),
+			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
+			[][]byte{},
+		)
+
+		if retVal != 0 {
+			host.Runtime().SignalUserError("execution by caller failed")
+			return instance
+		}
+
+		return instance
+	})
+}
+
 func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
 	if behavior.Cmp(big.NewInt(3)) == 0 {
 		host.Runtime().SignalUserError("callBack error")
