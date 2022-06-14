@@ -133,9 +133,9 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				verify.
 					Ok().
 					GasRemaining(expectedGasRemaining).
-					GasUsed(test.ParentAddress, simpleGasTestConfig.GasUsedByParent)
+					GasUsed(test.ParentAddress, simpleGasTestConfig.GasUsedByParent+simpleGasTestConfig.GasUsedByChild*numCalls)
 				if numCalls > 0 {
-					verify.GasUsed(test.ChildAddress, simpleGasTestConfig.GasUsedByChild*numCalls)
+					verify.GasUsed(test.ChildAddress, 0)
 				}
 			})
 	}
