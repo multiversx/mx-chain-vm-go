@@ -294,8 +294,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	retData := []byte("@")
-	retData = append(retData, host.returnCodeToBytes(output.ReturnCode())...)
+	retData := []byte("@" + core.ConvertToEvenHex(int(output.ReturnCode())))
 	if !host.flagFixAsyncCallArguments.IsSet() {
 		// the legacy implementation was using the message string instead of the code
 		retData = []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
