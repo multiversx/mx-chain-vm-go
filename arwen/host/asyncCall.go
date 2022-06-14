@@ -466,7 +466,13 @@ func (host *vmHost) createCallbackContractCallInput(
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
+
+		returnCodeData := big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes()
+		if host.flagFixAsyncCallArguments.IsSet() && destinationVMOutput.ReturnCode == vmcommon.Ok {
+			returnCodeData = []byte{0}
+		}
+
+		contractCallInput.Arguments = append(contractCallInput.Arguments, returnCodeData)
 		if len(destinationVMOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
 		}
