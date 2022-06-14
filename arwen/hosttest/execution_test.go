@@ -1101,11 +1101,11 @@ func TestExecution_ExecuteOnSameContext_Simple(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				// test.ParentAddress
-				BalanceDelta(test.ParentAddress, -198).
-				GasUsed(test.ParentAddress, parentGasUsed).
+				BalanceDelta(test.ParentAddress, 0).
+				GasUsed(test.ParentAddress, parentGasUsed+childGasUsed).
 				// test.ChildAddress
-				BalanceDelta(test.ChildAddress, 198).
-				GasUsed(test.ChildAddress, childGasUsed).
+				BalanceDelta(test.ChildAddress, 0).
+				GasUsed(test.ChildAddress, 0).
 				// other
 				GasRemaining(test.GasProvided - executionCost).
 				ReturnData(returnData...)
@@ -1329,15 +1329,14 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, parentAccountBalance).
-				BalanceDelta(test.ParentAddress, -141).
-				GasUsed(test.ParentAddress, 3602).
+				BalanceDelta(test.ParentAddress, -138).
+				GasUsed(test.ParentAddress, 7497).
 				// test.ChildAddress
-				Balance(test.ChildAddress, 1000).
-				BalanceDelta(test.ChildAddress, 3).
-				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
+				BalanceDelta(test.ChildAddress, 0).
+				GasUsed(test.ChildAddress, 0).
 				// others
 				BalanceDelta(test.ChildTransferReceiver, 96).
-				BalanceDelta(test.ParentTransferReceiver, test.ParentTransferValue).
+				BalanceDelta(test.ParentTransferReceiver, 42).
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostSameCtx-
 					parentGasBeforeExecuteAPI-
@@ -1355,7 +1354,7 @@ func TestExecution_ExecuteOnSameContext_Successful(t *testing.T) {
 					test.CreateTransferEntry(test.ParentAddress, test.ParentTransferReceiver).
 						WithData(test.ParentTransferData).
 						WithValue(big.NewInt(test.ParentTransferValue)),
-					test.CreateTransferEntry(test.ChildAddress, test.ChildTransferReceiver).
+					test.CreateTransferEntry(test.ParentAddress, test.ChildTransferReceiver).
 						WithData([]byte("qwerty")).
 						WithValue(big.NewInt(96)),
 				)
@@ -1389,11 +1388,11 @@ func TestExecution_ExecuteOnSameContext_Successful_BigInts(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
-				BalanceDelta(test.ParentAddress, -99).
-				GasUsed(test.ParentAddress, 3460).
+				BalanceDelta(test.ParentAddress, 0).
+				GasUsed(test.ParentAddress, 3460+test.ChildCompilationCostSameCtx+childExecutionCost).
 				// test.ChildAddress
-				BalanceDelta(test.ChildAddress, 99).
-				GasUsed(test.ChildAddress, test.ChildCompilationCostSameCtx+childExecutionCost).
+				BalanceDelta(test.ChildAddress, 0).
+				GasUsed(test.ChildAddress, 0).
 				// others
 				GasRemaining(test.GasProvided-
 					test.ParentCompilationCostSameCtx-
@@ -1598,15 +1597,6 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 
 	recursiveCalls := 4
 
-	var expectedParentBalanceDelta, expectedChildBalanceDelta int64
-	if recursiveCalls%2 == 1 {
-		expectedParentBalanceDelta = -5
-		expectedChildBalanceDelta = 5
-	} else {
-		expectedParentBalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()
-		expectedChildBalanceDelta = big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()
-	}
-
 	var returnData [][]byte
 	var storeEntries []test.StoreEntry
 
@@ -1653,12 +1643,11 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs(t *testing.T) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
-				BalanceDelta(test.ParentAddress, expectedParentBalanceDelta).
-				GasUsed(test.ParentAddress, 5550).
+				BalanceDelta(test.ParentAddress, 0).
+				GasUsed(test.ParentAddress, 9284).
 				// test.ChildAddress
-				Balance(test.ChildAddress, 1000).
-				BalanceDelta(test.ChildAddress, expectedChildBalanceDelta).
-				GasUsed(test.ChildAddress, 3734).
+				BalanceDelta(test.ChildAddress, 0).
+				GasUsed(test.ChildAddress, 0).
 				// other
 				ReturnData(returnData...).
 				Storage(storeEntries...)
@@ -2002,7 +1991,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	_, _, metering, output, runtime, storage := host.GetContexts()
 	runtime.InitStateFromContractCallInput(input)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 	_ = metering.DeductInitialGasForExecution([]byte{})
 
 	contract, err := runtime.GetSCCode()
@@ -3171,6 +3160,60 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
+		})
+}
+
+func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(1000).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						host.Output().Finish([]byte("parent returns this"))
+						host.Metering().UseGas(500)
+						elrondapi.ExecuteOnSameContextWithTypedArgs(host, 1000, big.NewInt(4), []byte("doSomething"), test.ChildAddress, make([][]byte, 2))
+						return parentInstance
+					})
+				}),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(100).
+				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+						host := childInstance.Host
+						host.Output().Finish([]byte("child returns this"))
+						host.Metering().UseGas(100)
+						elrondapi.ExecuteOnDestContextWithTypedArgs(host, 100, big.NewInt(2), []byte("doSomethingNephew"), test.NephewAddress, make([][]byte, 2))
+						return childInstance
+					})
+				}),
+			test.CreateMockContract(test.NephewAddress).
+				WithBalance(0).
+				WithMethods(func(nephewInstance *mock.InstanceMock, config interface{}) {
+					nephewInstance.AddMockMethod("doSomethingNephew", func() *mock.InstanceMock {
+						host := nephewInstance.Host
+						host.Output().Finish([]byte("newphew returns this"))
+						caller := host.Runtime().GetVMInput().CallerAddr
+						if bytes.Equal(caller, test.ParentAddress) {
+							host.Output().Finish([]byte("OK"))
+						}
+						return nephewInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(1000).
+			WithFunction("callChild").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
+			(accountHandler.(*worldmock.Account)).Storage["child"] = test.ChildData
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				ReturnData([]byte("parent returns this"), []byte("child returns this"), []byte("newphew returns this"), []byte("OK"))
 		})
 }
 

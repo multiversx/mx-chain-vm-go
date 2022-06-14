@@ -303,6 +303,11 @@ func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
 	return true
 }
 
+// CheckValueOnExecByCaller returns true if the corresponding flag is set
+func (vhs *VMHostStub) CheckValueOnExecByCaller() bool {
+	return true
+}
+
 // DisableExecByCaller mocked method
 func (vhs *VMHostStub) DisableExecByCaller() bool {
 	return true

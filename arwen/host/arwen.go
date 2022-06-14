@@ -73,6 +73,9 @@ type vmHost struct {
 
 	disableExecByCallerEnableEpoch uint32
 	flagDisableExecByCaller        atomic.Flag
+
+	refactorContextEnableEpoch uint32
+	flagRefactorContext        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -117,6 +120,7 @@ func NewArwenVM(
 		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 		disableExecByCallerEnableEpoch:                  hostParameters.DisableExecByCallerEnableEpoch,
+		refactorContextEnableEpoch:                      hostParameters.RefactorContextEnableEpoch,
 	}
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
@@ -418,6 +422,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		panic(err)
 	}
 
+	logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, "_init")
+	if logsFromErrors != nil {
+		vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
+	}
+
 	return
 }
 
@@ -491,6 +500,11 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		// read again, because the call to `close(done)` will not happen anymore.
 		host.Runtime().FailExecution(err)
 		panic(err)
+	}
+
+	logsFromErrors := host.createLogEntryFromErrors(input.CallerAddr, input.CallerAddr, input.Function)
+	if logsFromErrors != nil {
+		vmOutput.Logs = append(vmOutput.Logs, logsFromErrors)
 	}
 
 	return
@@ -569,6 +583,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagDisableExecByCaller.SetValue(epoch >= host.disableExecByCallerEnableEpoch)
 	log.Debug("Arwen VM: disable execute by caller endpoints", "enabled", host.flagDisableExecByCaller.IsSet())
+
+	host.flagRefactorContext.SetValue(epoch >= host.refactorContextEnableEpoch)
+	log.Debug("Arwen VM: refactor context", "enabled", host.flagRefactorContext.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
