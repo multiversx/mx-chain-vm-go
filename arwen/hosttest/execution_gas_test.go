@@ -618,7 +618,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 						WithData([]byte{}).
 						WithValue(big.NewInt(testConfig.TransferToVault)),
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithData(computeReturnDataForCallback(childAsyncReturnData)).
 						WithGasLimit(gasForAsyncCall-gasUsedByChild).
 						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
@@ -671,7 +671,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 						WithCallType(vm.DirectCall).
 						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
-						WithData(computeReturnDataForCallback(vmcommon.Ok, nil)).
+						WithData(computeReturnDataForCallback(nil)).
 						WithGasLimit(gasForAsyncCall-gasUsedByChild).
 						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
@@ -1604,8 +1604,8 @@ func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
 }
 
-func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	retData := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+func computeReturnDataForCallback(returnData [][]byte) []byte {
+	var retData []byte
 	for _, data := range returnData {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}

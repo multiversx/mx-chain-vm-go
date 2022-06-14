@@ -287,7 +287,11 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	retData := []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
+	var retData []byte
+	if !host.flagFixFailExecutionOnError.IsSet() {
+		retData = []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
+	}
+
 	for _, data := range output.ReturnData() {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}
