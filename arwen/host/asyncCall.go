@@ -280,6 +280,13 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 	return nil
 }
 
+func (host *vmHost) returnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
+	if host.flagFixAsyncCallArguments.IsSet() && returnCode == vmcommon.Ok {
+		return []byte{0}
+	}
+	return big.NewInt(int64(returnCode)).Bytes()
+}
+
 // TODO add locked gas during future refactoring, if needed
 func (host *vmHost) sendCallbackToCurrentCaller() error {
 	runtime := host.Runtime()
@@ -287,8 +294,10 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	retData := []byte("@" + core.ConvertToEvenHex(int(output.ReturnCode())))
+	retData := []byte("@")
+	retData = append(retData, host.returnCodeToBytes(output.ReturnCode())...)
 	if !host.flagFixAsyncCallArguments.IsSet() {
+		// the legacy implementation was using the message string instead of the code
 		retData = []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
 	}
 
@@ -415,10 +424,7 @@ func (host *vmHost) createCallbackContractCallInput(
 	esdtArgs := make([][]byte, 0)
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
-		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
-	}
-	if host.flagFixAsyncCallArguments.IsSet() && destinationVMOutput.ReturnCode == vmcommon.Ok {
-		arguments[0] = []byte{0}
+		host.returnCodeToBytes(destinationVMOutput.ReturnCode),
 	}
 	returnWithError := false
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
@@ -466,12 +472,7 @@ func (host *vmHost) createCallbackContractCallInput(
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-
-		returnCodeData := big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes()
-		if host.flagFixAsyncCallArguments.IsSet() && destinationVMOutput.ReturnCode == vmcommon.Ok {
-			returnCodeData = []byte{0}
-		}
-
+		returnCodeData := host.returnCodeToBytes(destinationVMOutput.ReturnCode)
 		contractCallInput.Arguments = append(contractCallInput.Arguments, returnCodeData)
 		if len(destinationVMOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
