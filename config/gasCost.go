@@ -66,6 +66,7 @@ type ElrondAPICost struct {
 	SetAsyncCallback        uint64
 	SetAsyncGroupCallback   uint64
 	SetAsyncContextCallback uint64
+	GetCallbackClosure      uint64
 	CreateContract          uint64
 	GetReturnData           uint64
 	GetNumReturnData        uint64

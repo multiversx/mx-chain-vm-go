@@ -48,6 +48,7 @@
     SetAsyncCallback     = 10
     SetAsyncGroupCallback   = 10
     SetAsyncContextCallback = 10
+    GetCallbackClosure      = 10
     CreateContract       = 10
     GetReturnData        = 10
     GetNumReturnData     = 10

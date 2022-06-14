@@ -232,6 +232,7 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["SetAsyncCallback"] = value
 	gasMap["SetAsyncGroupCallback"] = value
 	gasMap["SetAsyncContextCallback"] = value
+	gasMap["GetCallbackClosure"] = value
 	gasMap["CreateContract"] = value
 	gasMap["GetReturnData"] = value
 	gasMap["GetNumReturnData"] = value

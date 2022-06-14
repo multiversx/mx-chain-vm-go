@@ -1930,6 +1930,7 @@ func setAsyncCosts(host arwen.VMHost, gasLockCost uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.CreateAsyncCall = 0
 	host.Metering().GasSchedule().ElrondAPICost.SetAsyncCallback = 0
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
+	host.Metering().GasSchedule().ElrondAPICost.GetCallbackClosure = 0
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLockCost
 }
 

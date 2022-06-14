@@ -74,7 +74,7 @@ const (
 	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
 	managedAsyncCallName                    = "managedAsyncCall"
 	managedCreateAsyncCallName              = "managedCreateAsyncCall"
-	setManagedAsyncContextCallbackName      = "setManagedAsyncContextCallback"
+	managedGetCallbackClosure               = "managedGetCallbackClosure"
 	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
 	managedGetESDTBalanceName               = "managedGetESDTBalance"
 	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
@@ -652,7 +652,13 @@ func GetCallbackClosureWithHost(
 ) {
 	runtime := host.Runtime()
 	async := host.Async()
+	metering := host.Metering()
 	managedTypes := host.ManagedTypes()
+
+	metering.StartGasTracing(managedGetCallbackClosure)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallbackClosure
+	metering.UseAndTraceGas(gasToUse)
 
 	callbackClosure, err := async.GetCallbackClosure()
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
