@@ -49,7 +49,9 @@ type TestConfig struct {
 	HasCallback                bool
 	CallbackFails              bool
 
-	IsLegacyAsync bool
+	IsLegacyAsync   bool
+	SuccessCallback string
+	ErrorCallback   string
 }
 
 func getAddressOrDefult(address []byte, defaultAddress []byte) []byte {

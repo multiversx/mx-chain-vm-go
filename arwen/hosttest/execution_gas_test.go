@@ -42,6 +42,9 @@ func makeTestConfig() *test.TestConfig {
 		TransferToThirdParty: 3,
 		TransferToVault:      4,
 		ESDTTokensToTransfer: 0,
+
+		SuccessCallback: "myCallBack",
+		ErrorCallback:   "myCallBack",
 	}
 }
 
@@ -1849,6 +1852,8 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 
 func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
 	testConfig := makeTestConfig()
+	testConfig.SuccessCallback = "callBack"
+	testConfig.ErrorCallback = "callBack"
 	testConfig.GasProvided = 1000
 
 	test.BuildMockInstanceCallTest(t).
