@@ -23,7 +23,7 @@ func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, c
 		output := host.Output()
 
 		vmInput := runtime.GetVMInput()
-		scAddress := host.Runtime().GetSCAddress()
+		scAddress := host.Runtime().GetContextAddress()
 		arguments := host.Runtime().Arguments()
 
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])

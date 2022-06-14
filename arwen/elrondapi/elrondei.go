@@ -3274,7 +3274,6 @@ func v1_4_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32
 }
 
 func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte {
-	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 
@@ -3283,7 +3282,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		_ = arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrInvalidArgument, host, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 

@@ -303,7 +303,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 
 	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
 	defer func() {
-		_ = host1.Close()
+		host1.Reset()
 	}()
 	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
@@ -322,7 +322,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
 	defer func() {
-		_ = host2.Close()
+		host2.Reset()
 	}()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
@@ -355,7 +355,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 
 	host1, _ := test.DefaultTestArwenForCall(t, code, nil)
 	defer func() {
-		_ = host1.Close()
+		host1.Reset()
 	}()
 	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
@@ -375,7 +375,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 
 	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
 	defer func() {
-		_ = host2.Close()
+		host2.Reset()
 	}()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
@@ -476,7 +476,7 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 
 	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 	gasSchedule := host.GetGasScheduleMap()
 
@@ -511,7 +511,7 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 
 	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 	gasSchedule := host.GetGasScheduleMap()
 
@@ -611,7 +611,7 @@ func TestExecution_CachingCompiledCode(t *testing.T) {
 
 	host, world := test.DefaultTestArwenWithWorldMock(t)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
@@ -1984,7 +1984,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
 	host, _ := test.DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 	host.InitState()
 
@@ -2296,7 +2296,7 @@ func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
 	host := test.DefaultTestArwen(t, world)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	alphaCode := test.GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
@@ -2338,7 +2338,7 @@ func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
 	host := test.DefaultTestArwen(t, world)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	alphaCode := test.GetTestSCCodeModule("exec-sync-ctx-multiple/alpha", "alpha", "../../")
