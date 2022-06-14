@@ -287,8 +287,8 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	var retData []byte
-	if !host.flagFixFailExecutionOnError.IsSet() {
+	retData := []byte("@" + core.ConvertToEvenHex(int(output.ReturnCode())))
+	if !host.flagFixAsyncCallArguments.IsSet() {
 		retData = []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
 	}
 
@@ -416,6 +416,9 @@ func (host *vmHost) createCallbackContractCallInput(
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
+	}
+	if host.flagFixAsyncCallArguments.IsSet() && destinationVMOutput.ReturnCode == vmcommon.Ok {
+		arguments[0] = []byte{0}
 	}
 	returnWithError := false
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
