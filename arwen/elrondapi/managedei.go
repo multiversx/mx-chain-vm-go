@@ -240,7 +240,7 @@ func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
 	metering.UseGasAndAddTracedGas(managedSCAddressName, gasToUse)
 
-	scAddress := runtime.GetSCAddress()
+	scAddress := runtime.GetContextAddress()
 
 	managedType.SetBytes(destinationHandle, scAddress)
 }
@@ -333,7 +333,7 @@ func v1_4_managedWriteLog(
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseAndTraceGas(gasToUse)
 
-	output.WriteLog(runtime.GetSCAddress(), topics, dataBytes)
+	output.WriteLog(runtime.GetContextAddress(), topics, dataBytes)
 }
 
 //export v1_4_managedGetOriginalTxHash
@@ -721,7 +721,7 @@ func v1_4_managedCreateContract(
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	value, err := managedType.GetBigInt(valueHandle)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1

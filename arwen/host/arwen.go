@@ -73,6 +73,12 @@ type vmHost struct {
 
 	disableExecByCallerEnableEpoch uint32
 	flagDisableExecByCaller        atomic.Flag
+
+	refactorContextEnableEpoch uint32
+	flagRefactorContext        atomic.Flag
+
+	fixAsnycCallArgumentsEnableEpoch uint32
+	flagFixAsyncCallArguments        atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -117,6 +123,8 @@ func NewArwenVM(
 		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 		disableExecByCallerEnableEpoch:                  hostParameters.DisableExecByCallerEnableEpoch,
+		refactorContextEnableEpoch:                      hostParameters.RefactorContextEnableEpoch,
+		fixAsnycCallArgumentsEnableEpoch:                hostParameters.ManagedCryptoAPIEnableEpoch,
 	}
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
@@ -569,6 +577,12 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagDisableExecByCaller.SetValue(epoch >= host.disableExecByCallerEnableEpoch)
 	log.Debug("Arwen VM: disable execute by caller endpoints", "enabled", host.flagDisableExecByCaller.IsSet())
+
+	host.flagRefactorContext.SetValue(epoch >= host.refactorContextEnableEpoch)
+	log.Debug("Arwen VM: refactor context", "enabled", host.flagRefactorContext.IsSet())
+
+	host.flagFixAsyncCallArguments.SetValue(epoch >= host.fixAsnycCallArgumentsEnableEpoch)
+	log.Debug("Arwen VM: fix asnyccall arguments", "enabled", host.flagFixAsyncCallArguments.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
