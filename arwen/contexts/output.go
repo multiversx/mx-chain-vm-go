@@ -234,8 +234,8 @@ func (context *outputContext) DeleteFirstReturnData() {
 	}
 }
 
-// WriteLog creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+// WriteLogWithIdentifier creates a new LogEntry and appends it to the logs of the current output state.
+func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data []byte, identifier []byte) {
 	if context.host.Runtime().ReadOnly() {
 		logOutput.Trace("log entry", "error", "cannot write logs in readonly mode")
 		return
@@ -244,7 +244,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	newLogEntry := &vmcommon.LogEntry{
 		Address:    address,
 		Data:       data,
-		Identifier: []byte(context.host.Runtime().Function()),
+		Identifier: identifier,
 	}
 	logOutput.Trace("log entry", "address", address, "data", data)
 
@@ -257,6 +257,11 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+}
+
+// WriteLog creates a new LogEntry and appends it to the logs of the current output state.
+func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().Function()))
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -291,6 +296,13 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
+
+	context.WriteLogWithIdentifier(
+		context.host.Runtime().GetSCAddress(),
+		[][]byte{destination, sender, value.Bytes()},
+		[]byte{},
+		[]byte("transferValueOnly"),
+	)
 
 	return nil
 }

@@ -679,6 +679,11 @@ func (context *runtimeContext) VerifyContractCode() error {
 			logRuntime.Trace("verify contract code", "error", err)
 			return err
 		}
+		err = context.validator.verifyProtectedFunctions(context.instance)
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
 	}
 
 	logRuntime.Trace("verified contract code")
