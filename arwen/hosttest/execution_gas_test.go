@@ -1605,7 +1605,7 @@ func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	retData := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+	retData := []byte("@" + core.ConvertToEvenHex(int(returnCode)))
 	for _, data := range returnData {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}
