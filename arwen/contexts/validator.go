@@ -49,7 +49,10 @@ func (validator *wasmValidator) verifyFunctions(instance wasmer.InstanceHandler)
 
 var protectedFunctions = map[string]bool{
 	"internalVMErrors":  true,
-	"transferValueOnly": true}
+	"transferValueOnly": true,
+	"writeLog":          true,
+	"signalError":       true,
+	"completedTxEvent":  true}
 
 func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.InstanceHandler) error {
 	for functionName := range instance.GetExports() {
