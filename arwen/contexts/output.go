@@ -297,12 +297,14 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 
-	context.WriteLogWithIdentifier(
-		context.host.Runtime().GetContextAddress(),
-		[][]byte{destination, sender, value.Bytes()},
-		[]byte{},
-		[]byte("transferValueOnly"),
-	)
+	if value.Cmp(arwen.Zero) > 0 {
+		context.WriteLogWithIdentifier(
+			context.host.Runtime().GetContextAddress(),
+			[][]byte{sender, destination, value.Bytes()},
+			[]byte{},
+			[]byte("transferValueOnly"),
+		)
+	}
 
 	return nil
 }
