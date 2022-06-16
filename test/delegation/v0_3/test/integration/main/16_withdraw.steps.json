@@ -21,6 +21,16 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_1___________________s1",
+                            "1,000,000,000,000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:delegation",
                         "endpoint": "str:withdrawInactiveStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
@@ -77,6 +87,16 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_1___________________s1",
+                            "113,000,000,000,000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:delegation",
                         "endpoint": "str:withdrawInactiveStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
@@ -131,6 +151,16 @@
                 "out": [],
                 "status": "",
                 "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_1___________________s1",
+                            "284,000,000,000,000"
+                        ],
+                        "data": ""
+                    },
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:withdrawInactiveStake",

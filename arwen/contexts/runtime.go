@@ -686,6 +686,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
+	if context.flagEnableManagedCryptoAPI.IsSet() {
+		err = context.validator.verifyProtectedFunctions(context.instance)
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil

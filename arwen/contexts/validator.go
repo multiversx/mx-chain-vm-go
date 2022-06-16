@@ -6,7 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const noArity = -1
@@ -42,6 +42,25 @@ func (validator *wasmValidator) verifyFunctions(instance wasmer.InstanceHandler)
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+var protectedFunctions = map[string]bool{
+	"internalVMErrors":  true,
+	"transferValueOnly": true,
+	"writeLog":          true,
+	"signalError":       true,
+	"completedTxEvent":  true}
+
+func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.InstanceHandler) error {
+	for functionName := range instance.GetExports() {
+		_, found := protectedFunctions[functionName]
+		if found {
+			return arwen.ErrContractInvalid
+		}
+
 	}
 
 	return nil

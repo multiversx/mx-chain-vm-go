@@ -331,6 +331,18 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 	return v
 }
 
+// Logs verifies if Logs is the same as the provided one
+func (v *VMOutputVerifier) Logs(logs ...vmcommon.LogEntry) *VMOutputVerifier {
+	require.Equal(v.T, len(logs), len(v.VmOutput.Logs), "Logs")
+	for idx := range v.VmOutput.Logs {
+		require.Equal(v.T, logs[idx].Address, v.VmOutput.Logs[idx].Address, "Logs.Address")
+		require.Equal(v.T, logs[idx].Topics, v.VmOutput.Logs[idx].Topics, "Logs.Topics")
+		require.Equal(v.T, logs[idx].Data, v.VmOutput.Logs[idx].Data, "Logs.Data")
+		require.Equal(v.T, logs[idx].Identifier, v.VmOutput.Logs[idx].Identifier, "Logs.Identifier")
+	}
+	return v
+}
+
 // BytesAddedToStorage verifies the number of bytes added to storage
 func (v *VMOutputVerifier) BytesAddedToStorage(address []byte, bytesAdded int) *VMOutputVerifier {
 	account := v.VmOutput.OutputAccounts[string(address)]

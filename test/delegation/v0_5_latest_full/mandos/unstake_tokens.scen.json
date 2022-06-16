@@ -98,6 +98,16 @@
                             "str:tokensUnbond"
                         ],
                         "data": "1000"
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:auction",
+                            "sc:delegation",
+                            "1000"
+                        ],
+                        "data": ""
                     }
                 ],
                 "gas": "*",

@@ -114,7 +114,18 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": [
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "sc:auction",
+                            "1,000,000,000"
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }
