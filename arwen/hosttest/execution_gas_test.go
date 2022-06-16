@@ -1356,8 +1356,8 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 		expectedLogs = append(expectedLogs, vmcommon.LogEntry{
 			Address: test.ParentAddress,
 			Topics: [][]byte{
-				contracts.GetChildAddressForTransfer(transfer),
 				test.ParentAddress,
+				contracts.GetChildAddressForTransfer(transfer),
 				big.NewInt(testConfig.TransferFromParentToChild).Bytes()},
 			Data:       []byte{},
 			Identifier: []byte("transferValueOnly"),
