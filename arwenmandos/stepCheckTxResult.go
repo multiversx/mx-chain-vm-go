@@ -81,7 +81,7 @@ func (ae *ArwenTestExecutor) checkTxLogs(
 				return err
 			}
 		} else if !expectedLogs.MoreAllowedAtEnd {
-			return fmt.Errorf("unexpected log. Tx '%s'. Log index: %d. Log:%s",
+			return fmt.Errorf("unexpected log. Tx '%s'. Log index: %d. Log:\n%s",
 				txIndex,
 				i,
 				mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)),
