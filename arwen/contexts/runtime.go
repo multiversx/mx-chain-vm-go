@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
@@ -49,12 +48,6 @@ type runtimeContext struct {
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
 	errors          arwen.WrappableError
-
-	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagEnableNewAPIMethods                         atomic.Flag
-
-	managedCryptoApiEnableEpoch uint32
-	flagEnableManagedCryptoAPI  atomic.Flag
 }
 
 type instanceAndMemory struct {
@@ -67,21 +60,16 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	epochNotifier vmcommon.EpochNotifier,
-	useDifferentGasCostForReadingCachedStorageEpoch uint32,
-	managedCryptoAPIEnableEpoch uint32,
 ) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
-		host:                        host,
-		vmType:                      vmType,
-		stateStack:                  make([]*runtimeContext, 0),
-		instanceStack:               make([]wasmer.InstanceHandler, 0),
-		validator:                   newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:                      nil,
-		managedCryptoApiEnableEpoch: managedCryptoAPIEnableEpoch,
-		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
+		host:          host,
+		vmType:        vmType,
+		stateStack:    make([]*runtimeContext, 0),
+		instanceStack: make([]wasmer.InstanceHandler, 0),
+		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
+		errors:        nil,
 	}
 
 	var err error
@@ -89,11 +77,6 @@ func NewRuntimeContext(
 	if err != nil {
 		return nil, err
 	}
-
-	if check.IfNil(epochNotifier) {
-		return nil, arwen.ErrNilEpochNotifier
-	}
-	epochNotifier.RegisterNotifyHandler(context)
 
 	context.instanceBuilder = &WasmerInstanceBuilder{}
 	context.InitState()
@@ -670,7 +653,8 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	if !context.flagEnableNewAPIMethods.IsSet() {
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	if !enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
 		err = context.checkBackwardCompatibility()
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
@@ -678,7 +662,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
-	if !context.flagEnableManagedCryptoAPI.IsSet() {
+	if !enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
 		err = context.checkIfContainsNewManagedCryptoAPI()
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
@@ -686,7 +670,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		}
 	}
 
-	if context.flagEnableManagedCryptoAPI.IsSet() {
+	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
 		err = context.validator.verifyProtectedFunctions(context.instance)
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
@@ -1189,20 +1173,6 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 // GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
-}
-
-// DisableUseDifferentGasCostFlag - for tests
-func (context *runtimeContext) DisableUseDifferentGasCostFlag() {
-	context.flagEnableNewAPIMethods.Reset()
-}
-
-// EpochConfirmed is called whenever a new epoch is confirmed
-func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagEnableNewAPIMethods.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagEnableNewAPIMethods.IsSet())
-
-	context.flagEnableManagedCryptoAPI.SetValue(epoch >= context.managedCryptoApiEnableEpoch)
-	log.Debug("Arwen VM: managed crypto API", "enabled", context.flagEnableNewAPIMethods.IsSet())
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

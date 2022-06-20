@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenMock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
@@ -460,7 +461,8 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *updateFromSourceTestConfi
 			gasSchedule.ElrondAPICost.AsyncCallbackGasLock = 0
 
 			if !testConfig.isFlagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(asserts)

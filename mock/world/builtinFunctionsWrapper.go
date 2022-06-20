@@ -3,6 +3,7 @@ package worldmock
 import (
 	"bytes"
 
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -38,7 +39,27 @@ func NewBuiltinFunctionsWrapper(
 		Marshalizer:      WorldMarshalizer,
 		Accounts:         world.AccountsAdapter,
 		ShardCoordinator: world,
-		EpochNotifier:    &EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:         true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+			IsFixOOGReturnCodeFlagEnabledField:                   true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+			IsManagedCryptoAPIsFlagEnabledField:                  true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+			IsRefactorContextFlagEnabledField:                    true,
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsDisableExecByCallerFlagEnabledField:                true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsESDTMetadataContinuousCleanupFlagEnabledField:      true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsBuiltInFunctionOnMetaFlagEnabledField:              true,
+			IsOptimizeNFTStoreFlagEnabledField:                   true,
+			IsSCDeployFlagEnabledField:                           true,
+			IsESDTMultiTransferFlagEnabledField:                  true,
+			IsRepairCallbackFlagEnabledField:                     true,
+			IsAheadOfTimeGasUsageFlagEnabledField:                true,
+		},
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)

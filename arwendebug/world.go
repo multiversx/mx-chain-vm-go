@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -59,7 +60,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
 	}
 }

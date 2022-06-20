@@ -14,6 +14,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
@@ -321,7 +322,18 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:     true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
+			IsFixOOGReturnCodeFlagEnabledField:               true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:        true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
+			IsManagedCryptoAPIsFlagEnabledField:              true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
+			IsESDTTransferRoleFlagEnabledField:               true,
+			IsESDTMetadataContinuousCleanupFlagEnabledField:  true,
+			IsGlobalMintBurnFlagEnabledField:                 true,
+		},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)
@@ -355,9 +367,22 @@ func DefaultTestArwenWithGasSchedule(
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:         true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+			IsFixOOGReturnCodeFlagEnabledField:                   true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+			IsManagedCryptoAPIsFlagEnabledField:                  true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+			IsRefactorContextFlagEnabledField:                    true,
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsDisableExecByCallerFlagEnabledField:                true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsESDTMetadataContinuousCleanupFlagEnabledField:      true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+		},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
-		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

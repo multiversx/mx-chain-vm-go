@@ -18,12 +18,13 @@ type VMHostMock struct {
 
 	EthInput []byte
 
-	BlockchainContext   arwen.BlockchainContext
-	RuntimeContext      arwen.RuntimeContext
-	OutputContext       arwen.OutputContext
-	MeteringContext     arwen.MeteringContext
-	StorageContext      arwen.StorageContext
-	ManagedTypesContext arwen.ManagedTypesContext
+	BlockchainContext        arwen.BlockchainContext
+	RuntimeContext           arwen.RuntimeContext
+	OutputContext            arwen.OutputContext
+	MeteringContext          arwen.MeteringContext
+	StorageContext           arwen.StorageContext
+	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
+	ManagedTypesContext      arwen.ManagedTypesContext
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
@@ -64,7 +65,12 @@ func (host *VMHostMock) Storage() arwen.StorageContext {
 	return host.StorageContext
 }
 
-// BigInt mocked method
+// EnableEpochsHandler mocked method
+func (host *VMHostMock) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	return host.EnableEpochsHandlerField
+}
+
+// ManagedTypes mocked method
 func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }

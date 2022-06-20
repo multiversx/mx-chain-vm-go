@@ -11,6 +11,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
+	arwenMock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
@@ -974,7 +975,8 @@ func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcom
 		WithInput(input).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
-				host.Runtime().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1002,7 +1004,8 @@ func runTestMBufferSetByteSlice(
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
-				host.Runtime().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {

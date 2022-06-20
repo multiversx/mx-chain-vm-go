@@ -9,6 +9,7 @@ import (
 
 	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
@@ -51,7 +52,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldhook.EpochNotifierStub{},
+		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	if err != nil {

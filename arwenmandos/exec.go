@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
@@ -76,7 +77,27 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldhook.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:         true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+			IsFixOOGReturnCodeFlagEnabledField:                   true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+			IsManagedCryptoAPIsFlagEnabledField:                  true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+			IsRefactorContextFlagEnabledField:                    true,
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsDisableExecByCallerFlagEnabledField:                true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsESDTMetadataContinuousCleanupFlagEnabledField:      true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsBuiltInFunctionOnMetaFlagEnabledField:              true,
+			IsOptimizeNFTStoreFlagEnabledField:                   true,
+			IsSCDeployFlagEnabledField:                           true,
+			IsESDTMultiTransferFlagEnabledField:                  true,
+			IsRepairCallbackFlagEnabledField:                     true,
+			IsAheadOfTimeGasUsageFlagEnabledField:                true,
+		},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	if err != nil {

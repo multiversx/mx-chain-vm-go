@@ -89,7 +89,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
-	if host.flagRemoveNonUpdatedStorage.IsSet() {
+	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
 		output.RemoveNonUpdatedStorage()
 	}
 
@@ -189,7 +189,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	if host.flagRemoveNonUpdatedStorage.IsSet() {
+	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
 		output.RemoveNonUpdatedStorage()
 	}
 	vmOutput = output.GetVMOutput()
@@ -368,7 +368,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	if host.flagRefactorContext.IsSet() {
+	if host.enableEpochsHandler.IsRefactorContextFlagEnabled() {
 		input.RecipientAddr = input.CallerAddr
 	}
 

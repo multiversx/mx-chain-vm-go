@@ -15,7 +15,6 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -52,33 +51,7 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
-
-	multiESDTTransferAsyncCallBackEnableEpoch uint32
-	flagMultiESDTTransferAsyncCallBack        atomic.Flag
-
-	fixOOGReturnCodeEnableEpoch uint32
-	flagFixOOGReturnCode        atomic.Flag
-
-	removeNonUpdatedStorageEnableEpoch uint32
-	flagRemoveNonUpdatedStorage        atomic.Flag
-
-	createNFTThroughExecByCallerEnableEpoch uint32
-	flagCreateNFTThroughExecByCaller        atomic.Flag
-
-	fixFailExecutionOnErrorEnableEpoch uint32
-	flagFixFailExecutionOnError        atomic.Flag
-
-	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagUseDifferentGasCostForCachedStorage         atomic.Flag
-
-	disableExecByCallerEnableEpoch uint32
-	flagDisableExecByCaller        atomic.Flag
-
-	refactorContextEnableEpoch uint32
-	flagRefactorContext        atomic.Flag
-
-	fixAsnycCallArgumentsEnableEpoch uint32
-	flagFixAsyncCallArguments        atomic.Flag
+	enableEpochsHandler  vmcommon.EnableEpochsHandler
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -99,8 +72,8 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.BuiltInFuncContainer) {
 		return nil, arwen.ErrNilBuiltInFunctionsContainer
 	}
-	if check.IfNil(hostParameters.EpochNotifier) {
-		return nil, arwen.ErrNilEpochNotifier
+	if check.IfNil(hostParameters.EnableEpochsHandler) {
+		return nil, arwen.ErrNilEnableEpochsHandler
 	}
 
 	cryptoHook := factory.NewVMCrypto()
@@ -116,15 +89,7 @@ func NewArwenVM(
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		executionTimeout:     minExecutionTimeout,
-		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
-		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
-		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
-		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
-		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
-		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
-		disableExecByCallerEnableEpoch:                  hostParameters.DisableExecByCallerEnableEpoch,
-		refactorContextEnableEpoch:                      hostParameters.RefactorContextEnableEpoch,
-		fixAsnycCallArgumentsEnableEpoch:                hostParameters.ManagedCryptoAPIEnableEpoch,
+		enableEpochsHandler:  hostParameters.EnableEpochsHandler,
 	}
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
@@ -182,9 +147,6 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
-		hostParameters.EpochNotifier,
-		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
-		hostParameters.ManagedCryptoAPIEnableEpoch,
 	)
 	if err != nil {
 		return nil, err
@@ -203,9 +165,8 @@ func NewArwenVM(
 	host.storageContext, err = contexts.NewStorageContext(
 		host,
 		blockChainHook,
-		hostParameters.EpochNotifier,
 		hostParameters.ElrondProtectedKeyPrefix,
-		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+		hostParameters.EnableEpochsHandler,
 	)
 	if err != nil {
 		return nil, err
@@ -232,7 +193,6 @@ func NewArwenVM(
 	}
 
 	host.initContexts()
-	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
 	return host, nil
 }
@@ -270,6 +230,11 @@ func (host *vmHost) Metering() arwen.MeteringContext {
 // Storage returns the StorageContext instance of the host
 func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
+}
+
+// EnableEpochsHandler returns the enableEpochsHandler instance of the host
+func (host *vmHost) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	return host.enableEpochsHandler
 }
 
 // ManagedTypes returns the ManagedTypeContext instance of the host
@@ -555,54 +520,24 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 	host.builtInFuncContainer = builtInFuncs
 }
 
-// EpochConfirmed is called whenever a new epoch is confirmed
-func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
-	host.flagMultiESDTTransferAsyncCallBack.SetValue(epoch >= host.multiESDTTransferAsyncCallBackEnableEpoch)
-	log.Debug("Arwen VM: multi esdt transfer on async callback intra shard", "enabled", host.flagMultiESDTTransferAsyncCallBack.IsSet())
-
-	host.flagFixOOGReturnCode.SetValue(epoch >= host.fixOOGReturnCodeEnableEpoch)
-	log.Debug("Arwen VM: fix OutOfGas ReturnCode", "enabled", host.flagFixOOGReturnCode.IsSet())
-
-	host.flagRemoveNonUpdatedStorage.SetValue(epoch >= host.removeNonUpdatedStorageEnableEpoch)
-	log.Debug("Arwen VM: remove non updated storage", "enabled", host.flagRemoveNonUpdatedStorage.IsSet())
-
-	host.flagCreateNFTThroughExecByCaller.SetValue(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
-	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
-
-	host.flagFixFailExecutionOnError.SetValue(epoch >= host.fixFailExecutionOnErrorEnableEpoch)
-	log.Debug("Arwen VM: fix fail execution on error", "enabled", host.flagFixFailExecutionOnError.IsSet())
-
-	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
-
-	host.flagDisableExecByCaller.SetValue(epoch >= host.disableExecByCallerEnableEpoch)
-	log.Debug("Arwen VM: disable execute by caller endpoints", "enabled", host.flagDisableExecByCaller.IsSet())
-
-	host.flagRefactorContext.SetValue(epoch >= host.refactorContextEnableEpoch)
-	log.Debug("Arwen VM: refactor context", "enabled", host.flagRefactorContext.IsSet())
-
-	host.flagFixAsyncCallArguments.SetValue(epoch >= host.fixAsnycCallArgumentsEnableEpoch)
-	log.Debug("Arwen VM: fix asnyccall arguments", "enabled", host.flagFixAsyncCallArguments.IsSet())
-}
-
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
-	return host.flagFixOOGReturnCode.IsSet()
+	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabled()
 }
 
 // FixFailExecutionEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixFailExecutionEnabled() bool {
-	return host.flagFixFailExecutionOnError.IsSet()
+	return host.enableEpochsHandler.IsFailExecutionOnEveryAPIErrorFlagEnabled()
 }
 
 // CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
-	return host.flagCreateNFTThroughExecByCaller.IsSet()
+	return host.enableEpochsHandler.IsCreateNFTThroughExecByCallerFlagEnabled()
 }
 
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
-	return host.flagDisableExecByCaller.IsSet()
+	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabled()
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {

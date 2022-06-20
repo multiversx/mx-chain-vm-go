@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	arwenMock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
@@ -58,7 +59,8 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
 			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
@@ -122,7 +124,8 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
 
 			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -210,7 +213,8 @@ func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
 
 			if !flagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {

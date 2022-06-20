@@ -103,7 +103,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)
