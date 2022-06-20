@@ -6,6 +6,8 @@ import (
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/mock"
+	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
@@ -97,5 +99,25 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	require.NotNil(t, err)
 
 	err = validator.verifyVoidFunction(instance, "wrongParamsAndReturn")
+	require.NotNil(t, err)
+}
+
+func TestFunctionsProtected(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	imports := host.SCAPIMethods
+
+	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
+
+	world := worldmock.NewMockWorld()
+	imb := contextmock.NewInstanceBuilderMock(world)
+	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0)
+
+	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {
+		host := instance.Host
+		instance := contextmock.GetMockInstance(host)
+		return instance
+	})
+
+	err := validator.verifyProtectedFunctions(instance)
 	require.NotNil(t, err)
 }

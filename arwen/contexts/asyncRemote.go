@@ -48,7 +48,7 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 
 	return output.Transfer(
 		asyncCall.GetDestination(),
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		asyncCall.GetGasLimit(),
 		asyncCall.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCall.GetValue()),

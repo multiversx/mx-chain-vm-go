@@ -238,7 +238,7 @@ func (context *asyncContext) finishAsyncLocalCallbackExecution(
 func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {
 	host := context.host
 	runtime := host.Runtime()
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 
 	function, arguments, err := context.callArgsParser.ParseData(string(asyncCall.GetData()))
 	if err != nil {
@@ -296,7 +296,7 @@ func (context *asyncContext) createCallbackInput(
 		// [0, result1, result2, ....]
 		isESDTOnCallBack, esdtFunction, esdtArgs = context.isESDTTransferOnReturnDataWithNoAdditionalData(
 			actualCallbackInitiator,
-			runtime.GetSCAddress(),
+			runtime.GetContextAddress(),
 			vmOutput)
 	} else {
 		returnWithError = true
@@ -352,6 +352,8 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 	contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(oldFunction))
 	contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
+	contractCallInput.Arguments = append(contractCallInput.Arguments, returnCodeToBytes(vmOutput.ReturnCode))
+
 	if len(vmOutput.ReturnData) > 1 {
 		contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
 	}
@@ -361,6 +363,13 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	contractCallInput.Arguments = context.prependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
 
 	context.host.Output().DeleteFirstReturnData()
+}
+
+func returnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
+	if returnCode == vmcommon.Ok {
+		return []byte{0}
+	}
+	return big.NewInt(int64(returnCode)).Bytes()
 }
 
 func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, dataLength int) (uint64, error) {
@@ -382,7 +391,7 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCa
 func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) [][]byte {
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
-		big.NewInt(int64(vmOutput.ReturnCode)).Bytes(),
+		returnCodeToBytes(vmOutput.ReturnCode),
 	}
 	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
@@ -421,7 +430,7 @@ func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGrou
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
-		RecipientAddr: runtime.GetSCAddress(),
+		RecipientAddr: runtime.GetContextAddress(),
 		Function:      group.Callback,
 	}
 
@@ -449,11 +458,11 @@ func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCall
 			OriginalTxHash: runtime.GetOriginalTxHash(),
 			PrevTxHash:     runtime.GetPrevTxHash(),
 		},
-		RecipientAddr: runtime.GetSCAddress(),
+		RecipientAddr: runtime.GetContextAddress(),
 		Function:      context.callback,
 	}
 
-	logAsync.Trace("created context callback input", "sc", runtime.GetSCAddress(), "function", input.Function)
+	logAsync.Trace("created context callback input", "sc", runtime.GetContextAddress(), "function", input.Function)
 	logAsync.Trace("created context callback input gas", "provided", input.GasProvided, "accumulated", context.gasAccumulated)
 	return input
 }
@@ -494,7 +503,7 @@ func (context *asyncContext) computeCallValueFromVMOutput(destinationVMOutput *v
 	}
 
 	returnTransfer := big.NewInt(0)
-	callBackReceiver := context.host.Runtime().GetSCAddress()
+	callBackReceiver := context.host.Runtime().GetContextAddress()
 	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
 	if !ok {
 		return returnTransfer

@@ -31,12 +31,16 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	runtime.SetVMInput(&input.VMInput)
-	runtime.SetSCAddress(address)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput:       input.VMInput,
+		RecipientAddr: address,
+	}
+	runtime.SetVMInput(contractCallInput)
+	runtime.SetCodeAddress(address)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	output.AddTxValueToAccount(address, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	codeDeployInput := arwen.CodeDeployInput{
 		ContractCode:         input.ContractCode,
@@ -111,7 +115,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	code, codeMetadata, err := runtime.ExtractCodeUpgradeFromArgs()
 	if err != nil {
@@ -177,7 +181,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	}
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	err = host.checkGasForGetCode(input, metering)
 	if err != nil {
@@ -319,7 +323,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	storage.PushState()
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	defer func() {
 		vmOutput = host.finishExecuteOnDestContext(err)
@@ -422,9 +426,17 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	managedTypes.InitState()
 	output.PushState()
 
+	librarySCAddress := make([]byte, len(input.RecipientAddr))
+	copy(librarySCAddress, input.RecipientAddr)
+
+	if host.flagRefactorContext.IsSet() {
+		input.RecipientAddr = input.CallerAddr
+	}
+
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
+	runtime.SetCodeAddress(librarySCAddress)
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)

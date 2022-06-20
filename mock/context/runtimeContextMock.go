@@ -11,7 +11,7 @@ var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
 	Err                      error
-	VMInput                  *vmcommon.VMInput
+	VMInput                  *vmcommon.ContractCallInput
 	SCAddress                []byte
 	SCCode                   []byte
 	SCCodeSize               uint64
@@ -21,22 +21,23 @@ type RuntimeContextMock struct {
 	VerifyCode               bool
 	CurrentBreakpointValue   arwen.BreakpointValue
 	PointsUsed               uint64
-	SameContractOnStackCount uint64
+	InstanceCtxID            int
 	MemLoadResult            []byte
 	MemLoadMultipleResult    [][]byte
 	FailCryptoAPI            bool
-	FailBigIntAPI            bool
-	FailBigFloatAPI          bool
 	FailElrondAPI            bool
 	FailElrondSyncExecAPI    bool
+	FailBigIntAPI            bool
+	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
+	AsyncCallInfo            *arwen.AsyncCallInfo
 	RunningInstances         uint64
 	CurrentTxHash            []byte
 	OriginalTxHash           []byte
-	PrevTxHash               []byte
-	HasFunctionResult        bool
 	TraceGasEnabled          bool
 	GasTrace                 map[string]map[string][]uint64
+	SameContractOnStackCount uint64
+	HasFunctionResult        bool
 }
 
 // InitState mocked method
@@ -119,12 +120,12 @@ func (r *RuntimeContextMock) GetVMType() []byte {
 }
 
 // GetVMInput mocked method
-func (r *RuntimeContextMock) GetVMInput() *vmcommon.VMInput {
+func (r *RuntimeContextMock) GetVMInput() *vmcommon.ContractCallInput {
 	return r.VMInput
 }
 
 // SetVMInput mocked method
-func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
+func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	r.VMInput = vmInput
 }
 
@@ -134,12 +135,12 @@ func (r *RuntimeContextMock) CountSameContractInstancesOnStack(address []byte) u
 }
 
 // GetSCAddress mocked method
-func (r *RuntimeContextMock) GetSCAddress() []byte {
+func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 
-// SetSCAddress mocked method
-func (r *RuntimeContextMock) SetSCAddress(scAddress []byte) {
+// SetCodeAddress mocked method
+func (r *RuntimeContextMock) SetCodeAddress(scAddress []byte) {
 	r.SCAddress = scAddress
 }
 

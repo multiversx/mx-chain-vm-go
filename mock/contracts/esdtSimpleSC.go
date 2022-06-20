@@ -31,7 +31,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		}
 
 		input := test.DefaultTestContractCallInput()
-		input.CallerAddr = host.Runtime().GetSCAddress()
+		input.CallerAddr = host.Runtime().GetContextAddress()
 		input.GasProvided = testConfig.GasProvidedToChild
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
@@ -69,7 +69,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 		}
 
 		input := test.DefaultTestContractCallInput()
-		input.CallerAddr = host.Runtime().GetSCAddress()
+		input.CallerAddr = host.Runtime().GetContextAddress()
 		input.GasProvided = testConfig.GasProvidedToChild
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,

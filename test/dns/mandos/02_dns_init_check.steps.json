@@ -27,7 +27,7 @@
             "expect": {
                 "out": [ "''1.1.0" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -47,7 +47,7 @@
             "expect": {
                 "out": [ "address:dns_owner" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

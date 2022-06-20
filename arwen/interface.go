@@ -105,10 +105,10 @@ type RuntimeContext interface {
 
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
-	GetVMInput() *vmcommon.VMInput
-	SetVMInput(vmInput *vmcommon.VMInput)
-	GetSCAddress() []byte
-	SetSCAddress(scAddress []byte)
+	GetVMInput() *vmcommon.ContractCallInput
+	SetVMInput(vmInput *vmcommon.ContractCallInput)
+	GetContextAddress() []byte
+	SetCodeAddress(scAddress []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
 	GetVMType() []byte

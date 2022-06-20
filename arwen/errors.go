@@ -288,6 +288,12 @@ var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed y
 // var ErrAsyncFrameworkPopCallID signals an error in the async fremwork that did not fill the correct call id arguments
 var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsFromArguments")
 
+// ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
+var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
+
+// ErrCallerIsSC signals that caller is a smart contract
+var ErrCallerIsSC = errors.New("caller is a smart contract")
+
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
 

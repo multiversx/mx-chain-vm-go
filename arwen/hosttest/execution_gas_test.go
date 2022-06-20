@@ -153,9 +153,9 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 				verify.Ok().
 					GasRemaining(expectedGasRemaining).
-					GasUsed(test.ParentAddress, testConfig.GasUsedByParent)
+					GasUsed(test.ParentAddress, testConfig.GasUsedByParent+testConfig.GasUsedByChild*numCalls)
 				if numCalls > 0 {
-					verify.GasUsed(test.ChildAddress, testConfig.GasUsedByChild*numCalls)
+					verify.GasUsed(test.ChildAddress, 0)
 				}
 			})
 	}
@@ -1722,12 +1722,22 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 	}
 
 	expectedTransfers := make([]test.TransferEntry, 0)
+	expectedLogs := make([]vmcommon.LogEntry, 0)
 	for transfer := 0; transfer < noOfTransfers; transfer++ {
 		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer)).
 			WithData(big.NewInt(int64(transfer)).Bytes()).
 			WithGasLimit(testConfig.GasProvidedToChild).
 			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
 		expectedTransfers = append(expectedTransfers, expectedTransfer)
+		expectedLogs = append(expectedLogs, vmcommon.LogEntry{
+			Address: test.ParentAddress,
+			Topics: [][]byte{
+				test.ParentAddress,
+				contracts.GetChildAddressForTransfer(transfer),
+				big.NewInt(testConfig.TransferFromParentToChild).Bytes()},
+			Data:       []byte{},
+			Identifier: []byte("transferValueOnly"),
+		})
 	}
 
 	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasProvidedToChild
@@ -1753,7 +1763,8 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 				GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
 				GasRemaining(gasRemaining).
 				ReturnData(contracts.TransferAndExecuteReturnData).
-				Transfers(expectedTransfers...)
+				Transfers(expectedTransfers...).
+				Logs(expectedLogs...)
 		})
 }
 

@@ -27,8 +27,8 @@ const warmCacheSize = 100
 type runtimeContext struct {
 	host               arwen.VMHost
 	instance           wasmer.InstanceHandler
-	vmInput            *vmcommon.VMInput
-	scAddress          []byte
+	vmInput            *vmcommon.ContractCallInput
+	codeAddress        []byte
 	codeHash           []byte
 	codeSize           uint64
 	callFunction       string
@@ -103,8 +103,8 @@ func instanceEvicted(_ interface{}, value interface{}) {
 
 // InitState initializes all the contexts fields with default data.
 func (context *runtimeContext) InitState() {
-	context.vmInput = &vmcommon.VMInput{}
-	context.scAddress = make([]byte, 0)
+	context.vmInput = &vmcommon.ContractCallInput{}
+	context.codeAddress = make([]byte, 0)
 	context.codeHash = make([]byte, 0)
 	context.callFunction = ""
 	context.verifyCode = false
@@ -135,7 +135,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	blockchain := context.host.Blockchain()
-	codeHash := blockchain.GetCodeHash(context.GetSCAddress())
+	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	context.codeHash = codeHash
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
@@ -285,7 +285,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
-	code, err := blockchain.GetCode(context.scAddress)
+	code, err := blockchain.GetCode(context.codeAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -348,8 +348,8 @@ func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 // InitStateFromContractCallInput initializes the state of the runtime context
 // (and the async context) from the provided ContractCallInput.
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
-	context.SetVMInput(&input.VMInput)
-	context.scAddress = input.RecipientAddr
+	context.SetVMInput(input)
+	context.codeAddress = input.RecipientAddr
 	context.callFunction = input.Function
 
 	logRuntime.Trace("init state from call input",
@@ -371,7 +371,7 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 // includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		scAddress:    context.scAddress,
+		codeAddress:  context.codeAddress,
 		codeHash:     context.codeHash,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
@@ -401,7 +401,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.stateStack = context.stateStack[:stateStackLen-1]
 
 	context.SetVMInput(prevState.vmInput)
-	context.scAddress = prevState.scAddress
+	context.codeAddress = prevState.codeAddress
 	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
@@ -471,8 +471,8 @@ func (context *runtimeContext) GetVMType() []byte {
 	return context.vmType
 }
 
-// GetVMInput returns the current VMInput
-func (context *runtimeContext) GetVMInput() *vmcommon.VMInput {
+// GetVMInput returns the vm input for the current context.
+func (context *runtimeContext) GetVMInput() *vmcommon.ContractCallInput {
 	return context.vmInput
 }
 
@@ -487,20 +487,25 @@ func copyESDTTransfer(esdtTransfer *vmcommon.ESDTTransfer) *vmcommon.ESDTTransfe
 	return newESDTTransfer
 }
 
-// SetVMInput sets the current VMInput to the one provided (cloned)
-func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
+// SetVMInput sets the given vm input as the current context vm input.
+func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	if vmInput == nil {
 		context.vmInput = vmInput
 		return
 	}
 
-	context.vmInput = &vmcommon.VMInput{
+	internalVMInput := vmcommon.VMInput{
 		CallType:             vmInput.CallType,
 		GasPrice:             vmInput.GasPrice,
 		GasProvided:          vmInput.GasProvided,
 		GasLocked:            vmInput.GasLocked,
 		CallValue:            big.NewInt(0),
 		ReturnCallAfterError: vmInput.ReturnCallAfterError,
+	}
+	context.vmInput = &vmcommon.ContractCallInput{
+		VMInput:       internalVMInput,
+		RecipientAddr: vmInput.RecipientAddr,
+		Function:      vmInput.Function,
 	}
 
 	if vmInput.CallValue != nil {
@@ -544,14 +549,14 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.VMInput) {
 	}
 }
 
-// GetSCAddress returns the address of the contract currently executed
-func (context *runtimeContext) GetSCAddress() []byte {
-	return context.scAddress
+// GetContextAddress returns the SC address from the current context.
+func (context *runtimeContext) GetContextAddress() []byte {
+	return context.vmInput.RecipientAddr
 }
 
-// SetSCAddress sets the address of the contract currently executed
-func (context *runtimeContext) SetSCAddress(scAddress []byte) {
-	context.scAddress = scAddress
+// SetCodeAddress sets the given address as the scAddress for the current context.
+func (context *runtimeContext) SetCodeAddress(scAddress []byte) {
+	context.codeAddress = scAddress
 }
 
 // GetCurrentTxHash returns the hash of the current transaction, as specified by the current VMInput.
@@ -668,6 +673,12 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
+	err = context.validator.verifyProtectedFunctions(context.instance)
+	if err != nil {
+		logRuntime.Trace("verify contract code", "error", err)
+		return err
+	}
+
 	logRuntime.Trace("verified contract code")
 
 	return nil
@@ -757,7 +768,7 @@ func (context *runtimeContext) cleanInstanceWhenError() {
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
 // provided SC address is already in execution, below the current instance.
 func (context *runtimeContext) isContractOrCodeHashOnTheStack() bool {
-	if context.isScAddressOnTheStack(context.scAddress) {
+	if context.isScAddressOnTheStack(context.codeAddress) {
 		return true
 	}
 	return context.isCodeHashOnTheStack(context.codeHash)
@@ -774,7 +785,7 @@ func (context *runtimeContext) isCodeHashOnTheStack(codeHash []byte) bool {
 
 func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
 	for _, state := range context.stateStack {
-		if bytes.Equal(scAddress, state.scAddress) {
+		if bytes.Equal(scAddress, state.codeAddress) {
 			return true
 		}
 	}
@@ -786,7 +797,7 @@ func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
 func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte) uint64 {
 	count := uint64(0)
 	for _, state := range context.stateStack {
-		if bytes.Equal(address, state.scAddress) {
+		if bytes.Equal(address, state.vmInput.RecipientAddr) {
 			count += 1
 		}
 	}
@@ -969,7 +980,7 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 
 // PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
 func (context *runtimeContext) PopFirstArgumentFromVMInput() ([]byte, error) {
-	return PopFirstArgumentFromVMInput(context.vmInput)
+	return PopFirstArgumentFromVMInput(&context.vmInput.VMInput)
 }
 
 // PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used

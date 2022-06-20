@@ -19,18 +19,18 @@ func (ae *ArwenTestExecutor) checkTxResults(
 ) error {
 
 	if !blResult.Status.Check(big.NewInt(int64(output.ReturnCode))) {
-		return fmt.Errorf("result code mismatch. Tx %s. Want: %s. Have: %d (%s). Message: %s",
+		return fmt.Errorf("result code mismatch. Tx '%s'. Want: %s. Have: %d (%s). Message: %s",
 			txIndex, blResult.Status.Original, int(output.ReturnCode), output.ReturnCode.String(), output.ReturnMessage)
 	}
 
 	if !blResult.Message.Check([]byte(output.ReturnMessage)) {
-		return fmt.Errorf("result message mismatch. Tx %s. Want: %s. Have: %s",
+		return fmt.Errorf("result message mismatch. Tx '%s'. Want: %s. Have: %s",
 			txIndex, blResult.Message.Original, output.ReturnMessage)
 	}
 
 	// check result
 	if !blResult.Out.CheckList(output.ReturnData) {
-		return fmt.Errorf("result mismatch. Tx %s. Want: %s. Have: %s",
+		return fmt.Errorf("result mismatch. Tx '%s'. Want: %s. Have: %s",
 			txIndex,
 			checkBytesListPretty(blResult.Out),
 			ae.exprReconstructor.ReconstructList(output.ReturnData, er.NoHint))
@@ -38,14 +38,14 @@ func (ae *ArwenTestExecutor) checkTxResults(
 
 	// check refund
 	if !blResult.Refund.Check(output.GasRefund) {
-		return fmt.Errorf("result gas refund mismatch. Tx %s. Want: %s. Have: 0x%x",
+		return fmt.Errorf("result gas refund mismatch. Tx '%s'. Want: %s. Have: 0x%x",
 			txIndex, blResult.Refund.Original, output.GasRefund)
 	}
 
 	// check gas
 	// unlike other checks, if unspecified the remaining gas check is ignored
 	if checkGas && !blResult.Gas.IsUnspecified() && !blResult.Gas.Check(output.GasRemaining) {
-		return fmt.Errorf("result gas mismatch. Tx %s. Want: %s. Got: %d (0x%x)",
+		return fmt.Errorf("result gas mismatch. Tx '%s'. Want: %s. Got: %d (0x%x)",
 			txIndex,
 			blResult.Gas.Original,
 			output.GasRemaining,
@@ -67,7 +67,7 @@ func (ae *ArwenTestExecutor) checkTxLogs(
 
 	// this is the real log check
 	if len(actualLogs) < len(expectedLogs.List) {
-		return fmt.Errorf("too few logs. Tx %s. Want:%d. Got:%d",
+		return fmt.Errorf("too few logs. Tx '%s'. Want:%d. Got:%d",
 			txIndex,
 			len(expectedLogs.List),
 			len(actualLogs))
@@ -81,7 +81,7 @@ func (ae *ArwenTestExecutor) checkTxLogs(
 				return err
 			}
 		} else if !expectedLogs.MoreAllowedAtEnd {
-			return fmt.Errorf("unexpected log. Tx %s. Log index: %d. Log:%s",
+			return fmt.Errorf("unexpected log. Tx '%s'. Log index: %d. Log:\n%s",
 				txIndex,
 				i,
 				mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)),
@@ -98,28 +98,28 @@ func (ae *ArwenTestExecutor) checkTxLog(
 	expectedLog *mj.LogEntry,
 	actualLog *vmi.LogEntry) error {
 	if !expectedLog.Address.Check(actualLog.Address) {
-		return fmt.Errorf("bad log address. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+		return fmt.Errorf("bad log address. Tx '%s'. Log index: %d. Want:\n%s\nGot:\n%s",
 			txIndex,
 			logIndex,
 			mjwrite.LogToString(expectedLog),
 			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
 	}
 	if !expectedLog.Endpoint.Check(actualLog.Identifier) {
-		return fmt.Errorf("bad log identifier. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+		return fmt.Errorf("bad log identifier. Tx '%s'. Log index: %d. Want:\n%s\nGot:\n%s",
 			txIndex,
 			logIndex,
 			mjwrite.LogToString(expectedLog),
 			mjwrite.LogToString(ae.convertLogToTestFormat(actualLog)))
 	}
 	if !expectedLog.Topics.CheckList(actualLog.Topics) {
-		return fmt.Errorf("bad log topics. Tx %s. Log index: %d. Want: %s. Have: %s",
+		return fmt.Errorf("bad log topics. Tx '%s'. Log index: %d. Want: %s. Have: %s",
 			txIndex,
 			logIndex,
 			checkBytesListPretty(expectedLog.Topics),
 			ae.exprReconstructor.ReconstructList(actualLog.Topics, er.NoHint))
 	}
 	if !expectedLog.Data.Check(actualLog.Data) {
-		return fmt.Errorf("bad log data. Tx %s. Log index: %d. Want:\n%s\nGot:\n%s",
+		return fmt.Errorf("bad log data. Tx '%s'. Log index: %d. Want:\n%s\nGot:\n%s",
 			txIndex,
 			logIndex,
 			mjwrite.LogToString(expectedLog),

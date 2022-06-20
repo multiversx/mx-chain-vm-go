@@ -61,6 +61,16 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_1___________________s1",
+                            "40,000,000,002"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:delegation",
                         "endpoint": "str:purchaseStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000009",
@@ -92,6 +102,16 @@
                 "out": [],
                 "status": "",
                 "logs": [
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_1___________________s1",
+                            "30,000,000,003"
+                        ],
+                        "data": ""
+                    },
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:purchaseStake",
