@@ -104,6 +104,7 @@ func NewRuntimeContext(
 func instanceEvicted(_ interface{}, value interface{}) {
 	localContract, ok := value.(instanceAndMemory)
 	if !ok {
+		value = nil
 		return
 	}
 
