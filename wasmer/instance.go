@@ -5,6 +5,8 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const OPCODE_COUNT = 448
@@ -263,7 +265,9 @@ func (instance *Instance) Clean() {
 
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
+			instance.Memory = nil
 		}
+		instance.instance = nil
 	}
 }
 
@@ -341,6 +345,10 @@ func (instance *Instance) GetMemory() MemoryHandler {
 
 // SetMemory sets the memory for the instance returns true if success
 func (instance *Instance) SetMemory(cleanMemory []byte) bool {
+	if check.IfNil(instance.GetMemory()) {
+		return false
+	}
+
 	instanceMemory := instance.GetMemory().Data()
 	if len(instanceMemory) != len(cleanMemory) {
 		// TODO shrink the instance memory instead and return true

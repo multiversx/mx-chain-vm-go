@@ -108,6 +108,7 @@ func instanceEvicted(_ interface{}, value interface{}) {
 	}
 
 	localContract.instance.Clean()
+	localContract.instance = nil
 	localContract.memory = nil
 }
 
