@@ -1,8 +1,6 @@
 package host
 
 import (
-	"strings"
-
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 )
 
@@ -21,9 +19,7 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 	}
 
 	log.Trace("wasmer execution error", "err", executionErr)
-	if strings.Contains(executionErr.Error(), "unknown") {
-		log.Error("THIS IS BAD")
-	}
+	runtime.AddError(executionErr)
 	return arwen.ErrExecutionFailed
 }
 

@@ -284,10 +284,21 @@ func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
+		cFree(instance.instance)
+		cFree(instance.DataPointer)
+
+		instance.Exports = nil
+		instance.Signatures = nil
+
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
 			instance.Memory = nil
 		}
+
+		if !check.IfNil(&instance.InstanceCtx) {
+			instance.InstanceCtx.Destroy()
+		}
+
 		instance.instance = nil
 		instance.Data = nil
 		instance.DataPointer = nil

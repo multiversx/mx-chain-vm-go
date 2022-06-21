@@ -217,3 +217,17 @@ func (instanceContext *InstanceContext) Memory() MemoryHandler {
 func (instanceContext *InstanceContext) Data() unsafe.Pointer {
 	return cWasmerInstanceContextDataGet(instanceContext.context)
 }
+
+// Destroy will free the memory from the c pointers
+func (instanceContext *InstanceContext) Destroy() {
+	if instanceContext.memory != nil {
+		instanceContext.memory.Destroy()
+		instanceContext.memory = nil
+	}
+	cFree(instanceContext.context)
+}
+
+// IsInterfaceNil returns true if underlying object is nil
+func (instanceContext *InstanceContext) IsInterfaceNil() bool {
+	return instanceContext == nil
+}
