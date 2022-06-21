@@ -270,14 +270,15 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	success := localContract.instance.SetMemory(localContract.memory)
+	copyInstance := localContract.instance.ShallowCopy()
+	success := copyInstance.SetMemory(localContract.memory)
 	if !success {
 		// we must remove instance, which cleans it to free the memory
 		context.warmInstanceCache.Remove(context.codeHash)
 		return false
 	}
 
-	context.instance = localContract.instance
+	context.instance = copyInstance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
@@ -334,7 +335,7 @@ func (context *runtimeContext) saveWarmInstance() {
 	copy(localMemory, instanceMemory)
 
 	localContract := instanceAndMemory{
-		instance: context.instance,
+		instance: context.instance.ShallowCopy(),
 		memory:   localMemory,
 	}
 
