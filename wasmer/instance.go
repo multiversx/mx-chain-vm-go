@@ -260,13 +260,24 @@ func (instance *Instance) SetContextData(data uintptr) {
 }
 
 func (instance *Instance) Copy() (InstanceHandler, error) {
-	copyInstance, err := newInstance(instance.instance)
-	if copyInstance.instance != nil && copyInstance.Memory != nil {
+	copyInstance := &Instance{}
+	copyInstance.Exports = make(ExportsMap)
+	copyInstance.Signatures = make(ExportSignaturesMap)
+
+	for key, value := range instance.Exports {
+		copyInstance.Exports[key] = value
+	}
+
+	for key, value := range instance.Signatures {
+		copyInstance.Signatures[key] = value
+	}
+
+	if instance.instance != nil && instance.Memory != nil {
 		c_instance_context := cWasmerInstanceContextGet(instance.instance)
 		copyInstance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
 
-	return copyInstance, err
+	return copyInstance, nil
 }
 
 func (instance *Instance) Clean() {

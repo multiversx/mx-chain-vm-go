@@ -233,7 +233,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode || len(context.codeHash) == 0 {
 		context.codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
-			context.cleanInstanceWhenError()
+			context.CleanInstanceWhenError()
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -245,7 +245,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
-			context.cleanInstanceWhenError()
+			context.CleanInstanceWhenError()
 			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -945,7 +945,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.GetExports()
 }
 
-func (context *runtimeContext) cleanInstanceWhenError() {
+func (context *runtimeContext) CleanInstanceWhenError() {
 	if context.instance == nil {
 		return
 	}

@@ -199,6 +199,8 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
 
+	//	host.runtimeContext.CleanInstanceWhenError()
+
 	return
 }
 
