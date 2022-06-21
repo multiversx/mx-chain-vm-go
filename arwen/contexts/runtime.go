@@ -151,10 +151,10 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	context.codeHash = codeHash
-	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
+	/*warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		return nil
-	}
+	}*/
 
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
@@ -320,25 +320,27 @@ func (context *runtimeContext) saveCompiledCode() {
 }
 
 func (context *runtimeContext) saveWarmInstance() {
-	if context.isContractOrCodeHashOnTheStack() {
-		return
-	}
+	/*
+		if context.isContractOrCodeHashOnTheStack() {
+			return
+		}
 
-	if check.IfNil(context.instance.GetMemory()) {
-		return
-	}
+		if check.IfNil(context.instance.GetMemory()) {
+			return
+		}
 
-	instanceMemory := context.instance.GetMemory().Data()
+		instanceMemory := context.instance.GetMemory().Data()
 
-	localMemory := make([]byte, len(instanceMemory))
-	copy(localMemory, instanceMemory)
+		localMemory := make([]byte, len(instanceMemory))
+		copy(localMemory, instanceMemory)
 
-	localContract := instanceAndMemory{
-		instance: context.instance,
-		memory:   localMemory,
-	}
+		localContract := instanceAndMemory{
+			instance: context.instance,
+			memory:   localMemory,
+		}
 
-	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
+		context.warmInstanceCache.Put(context.codeHash, localContract, 1)
+	*/
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
