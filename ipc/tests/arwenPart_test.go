@@ -15,6 +15,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_3/mock/world"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -74,6 +75,12 @@ func doContractRequest(
 			GasSchedule:              config.MakeGasMapForTests(),
 			ElrondProtectedKeyPrefix: []byte("ELROND"),
 			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+				IsSCDeployFlagEnabledField:            true,
+				IsAheadOfTimeGasUsageFlagEnabledField: true,
+				IsRepairCallbackFlagEnabledField:      true,
+				IsBuiltInFunctionsFlagEnabledField:    true,
+			},
 		}
 
 		part, err := arwenpart.NewArwenPart(

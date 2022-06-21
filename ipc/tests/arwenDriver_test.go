@@ -12,6 +12,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -112,6 +113,12 @@ func newDriver(tb testing.TB, blockchain *contextmock.BlockchainHookStub) *nodep
 				GasSchedule:              config.MakeGasMapForTests(),
 				ElrondProtectedKeyPrefix: []byte("ELROND"),
 				BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+				EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+					IsSCDeployFlagEnabledField:            true,
+					IsAheadOfTimeGasUsageFlagEnabledField: true,
+					IsRepairCallbackFlagEnabledField:      true,
+					IsBuiltInFunctionsFlagEnabledField:    true,
+				},
 			},
 		},
 		nodepart.Config{MaxLoopTime: 1000},
