@@ -265,6 +265,7 @@ func (instance *Instance) ShallowCopy() InstanceHandler {
 		Exports:     instance.Exports,
 		Signatures:  instance.Signatures,
 		InstanceCtx: instance.InstanceCtx,
+		Memory:      instance.Memory,
 	}
 
 	return copyInstance

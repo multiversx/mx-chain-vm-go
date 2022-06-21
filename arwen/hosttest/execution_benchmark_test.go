@@ -29,7 +29,7 @@ func Test_RunERC20Benchmark(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runERC20Benchmark(t, 1000, 4, false)
+	runERC20Benchmark(t, 1000, 100, false)
 }
 
 func Test_RunERC20BenchmarkFail(t *testing.T) {
