@@ -469,10 +469,10 @@ func (context *runtimeContext) popInstance(codeHash []byte) {
 		return
 	}
 
-	//if !check.IfNil(context.instance) && context.isCodeHashOnTheStack(codeHash) {
-	context.instance.Clean()
-	context.instance = nil
-	//}
+	if !check.IfNil(context.instance) {
+		context.instance.Clean()
+		context.instance = nil
+	}
 
 	context.instance = prevInstance
 }
