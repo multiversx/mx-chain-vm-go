@@ -268,6 +268,8 @@ func (instance *Instance) Clean() {
 			instance.Memory = nil
 		}
 		instance.instance = nil
+		instance.Data = nil
+		instance.DataPointer = nil
 	}
 }
 

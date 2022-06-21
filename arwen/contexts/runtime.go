@@ -101,12 +101,15 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(_ interface{}, value interface{}) {
+func instanceEvicted(key interface{}, value interface{}) {
 	localContract, ok := value.(instanceAndMemory)
 	if !ok {
 		value = nil
 		return
 	}
+
+	keyAsBytes := key.([]byte)
+	logRuntime.Debug("warm instance evicted", "address", keyAsBytes)
 
 	localContract.instance.Clean()
 	localContract.instance = nil
@@ -276,9 +279,12 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	success := localContract.instance.SetMemory(localContract.memory)
 	if !success {
 		// we must remove instance, which cleans it to free the memory
+		logRuntime.Warn("WARM INSTANCE MEMORY CORRUPTED", "address", context.codeAddress)
 		context.warmInstanceCache.Remove(context.codeHash)
 		return false
 	}
+
+	logRuntime.Debug("warm instance memory", "address", context.codeAddress, "memory", localContract.memory)
 
 	context.instance = localContract.instance
 	context.SetPointsUsed(0)
