@@ -224,7 +224,7 @@ func (instanceContext *InstanceContext) Destroy() {
 		instanceContext.memory.Destroy()
 		instanceContext.memory = nil
 	}
-	cFree(instanceContext.context)
+	cFree(unsafe.Pointer(instanceContext.context))
 }
 
 // IsInterfaceNil returns true if underlying object is nil

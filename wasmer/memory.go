@@ -91,7 +91,7 @@ func (memory *Memory) Grow(numberOfPages uint32) error {
 func (memory *Memory) Destroy() {
 	if memory.memory != nil {
 		cWasmerMemoryDestroy(memory.memory)
-		cFree(memory.memory)
+		cFree(unsafe.Pointer(memory.memory))
 	}
 }
 
