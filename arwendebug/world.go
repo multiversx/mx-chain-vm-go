@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 )
 
 type worldDataModel struct {
@@ -52,6 +53,12 @@ func getHostParameters() *arwen.VMHostParameters {
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsSCDeployFlagEnabledField:            true,
+			IsAheadOfTimeGasUsageFlagEnabledField: true,
+			IsRepairCallbackFlagEnabledField:      true,
+			IsBuiltInFunctionsFlagEnabledField:    true,
+		},
 	}
 }
 

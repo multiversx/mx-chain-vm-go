@@ -14,6 +14,7 @@ import (
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,6 +73,12 @@ func doContractRequest(
 			BlockGasLimit:            uint64(10000000),
 			GasSchedule:              config.MakeGasMapForTests(),
 			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+				IsSCDeployFlagEnabledField:            true,
+				IsAheadOfTimeGasUsageFlagEnabledField: true,
+				IsRepairCallbackFlagEnabledField:      true,
+				IsBuiltInFunctionsFlagEnabledField:    true,
+			},
 		}
 
 		part, err := arwenpart.NewArwenPart(

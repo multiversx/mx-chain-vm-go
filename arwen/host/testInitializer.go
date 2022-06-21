@@ -18,6 +18,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 	"github.com/pelletier/go-toml"
 	"github.com/stretchr/testify/require"
 )
@@ -210,7 +211,12 @@ func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) *vmHost
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		UseWarmInstance:          false,
-		DynGasLockEnableEpoch:    0,
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsSCDeployFlagEnabledField:            true,
+			IsAheadOfTimeGasUsageFlagEnabledField: true,
+			IsRepairCallbackFlagEnabledField:      true,
+			IsBuiltInFunctionsFlagEnabledField:    true,
+		},
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

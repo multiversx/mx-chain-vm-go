@@ -13,6 +13,7 @@ import (
 	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mandos-go/json/model"
 	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,6 +48,12 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		GasSchedule:              gasSchedule,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsSCDeployFlagEnabledField:            true,
+			IsAheadOfTimeGasUsageFlagEnabledField: true,
+			IsRepairCallbackFlagEnabledField:      true,
+			IsBuiltInFunctionsFlagEnabledField:    true,
+		},
 	})
 	if err != nil {
 		return nil, err

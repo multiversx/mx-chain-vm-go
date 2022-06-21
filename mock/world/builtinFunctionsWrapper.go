@@ -4,6 +4,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of
@@ -29,13 +30,12 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasMap:                            gasMap,
-		MapDNSAddresses:                   dnsMap,
-		Marshalizer:                       WorldMarshalizer,
-		Accounts:                          world.AccountsAdapter,
-		ShardCoordinator:                  world,
-		EpochNotifier:                     &EpochNotifierStub{},
-		SaveNFTToSystemAccountEnableEpoch: 100,
+		GasMap:              gasMap,
+		MapDNSAddresses:     dnsMap,
+		Marshalizer:         WorldMarshalizer,
+		Accounts:            world.AccountsAdapter,
+		ShardCoordinator:    world,
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{},
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)

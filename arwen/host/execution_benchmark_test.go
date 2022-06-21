@@ -10,6 +10,7 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_2/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -92,6 +93,12 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (*vmHost, *worldmock.MockW
 		GasSchedule:              gasMap,
 		ProtocolBuiltinFunctions: make(vmcommon.FunctionNames),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsSCDeployFlagEnabledField:            true,
+			IsAheadOfTimeGasUsageFlagEnabledField: true,
+			IsRepairCallbackFlagEnabledField:      true,
+			IsBuiltInFunctionsFlagEnabledField:    true,
+		},
 	})
 	require.Nil(tb, err)
 

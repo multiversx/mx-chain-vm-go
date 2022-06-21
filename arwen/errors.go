@@ -149,3 +149,6 @@ var ErrInputAndOutputGasDoesNotMatch = errors.New("input and output gas does not
 
 // ErrTransferValueOnESDTCall signals that balance transfer was given in esdt call
 var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
+
+// ErrNilEnableEpochsHandler signals that enable epochs handler is nil
+var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")

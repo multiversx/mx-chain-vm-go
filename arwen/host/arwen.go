@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/crypto/factory"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_2/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -46,21 +46,7 @@ type vmHost struct {
 	gasSchedule              config.GasScheduleMap
 	scAPIMethods             *wasmer.Imports
 	protocolBuiltinFunctions vmcommon.FunctionNames
-
-	arwenV2EnableEpoch uint32
-	flagArwenV2        atomic.Flag
-
-	aotEnableEpoch  uint32
-	flagAheadOfTime atomic.Flag
-
-	dynGasLockEnableEpoch uint32
-	flagDynGasLock        atomic.Flag
-
-	arwenV3EnableEpoch uint32
-	flagArwenV3        atomic.Flag
-
-	eSDTFunctionsEnableEpoch uint32
-	flagESDTFunctions        atomic.Flag
+	enableEpochsHandler      vmcommon.EnableEpochsHandler
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -68,6 +54,9 @@ func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *arwen.VMHostParameters,
 ) (*vmHost, error) {
+	if check.IfNil(hostParameters.EnableEpochsHandler) {
+		return nil, arwen.ErrNilEnableEpochsHandler
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
@@ -81,11 +70,7 @@ func NewArwenVM(
 		gasSchedule:              hostParameters.GasSchedule,
 		scAPIMethods:             nil,
 		protocolBuiltinFunctions: hostParameters.ProtocolBuiltinFunctions,
-		arwenV2EnableEpoch:       hostParameters.ArwenV2EnableEpoch,
-		aotEnableEpoch:           hostParameters.AheadOfTimeEnableEpoch,
-		arwenV3EnableEpoch:       hostParameters.ArwenV3EnableEpoch,
-		dynGasLockEnableEpoch:    hostParameters.DynGasLockEnableEpoch,
-		eSDTFunctionsEnableEpoch: hostParameters.ArwenESDTFunctionsEnableEpoch,
+		enableEpochsHandler:      hostParameters.EnableEpochsHandler,
 	}
 
 	var err error
@@ -208,27 +193,27 @@ func (host *vmHost) BigInt() arwen.BigIntContext {
 
 // IsArwenV2Enabled returns whether the Arwen V2 mode is enabled
 func (host *vmHost) IsArwenV2Enabled() bool {
-	return host.flagArwenV2.IsSet()
+	return host.enableEpochsHandler.IsSCDeployFlagEnabled()
 }
 
 // IsArwenV3Enabled returns whether the V3 features are enabled
 func (host *vmHost) IsArwenV3Enabled() bool {
-	return host.flagArwenV3.IsSet()
+	return host.enableEpochsHandler.IsRepairCallbackFlagEnabled()
 }
 
 // IsAheadOfTimeCompileEnabled returns whether ahead-of-time compilation is enabled
 func (host *vmHost) IsAheadOfTimeCompileEnabled() bool {
-	return host.flagAheadOfTime.IsSet()
+	return host.enableEpochsHandler.IsAheadOfTimeGasUsageFlagEnabled()
 }
 
 // IsDynamicGasLockingEnabled returns whether dynamic gas locking mode is enabled
 func (host *vmHost) IsDynamicGasLockingEnabled() bool {
-	return host.flagDynGasLock.IsSet()
+	return host.enableEpochsHandler.IsSCDeployFlagEnabled()
 }
 
 // IsESDTFunctionsEnabled returns whether ESDT functions are enabled
 func (host *vmHost) IsESDTFunctionsEnabled() bool {
-	return host.flagESDTFunctions.IsSet()
+	return host.enableEpochsHandler.IsBuiltInFunctionsFlagEnabled()
 }
 
 // GetContexts returns the main contexts of the host
@@ -251,21 +236,6 @@ func (host *vmHost) GetContexts() (
 // InitState resets the contexts of the host and reconfigures its flags
 func (host *vmHost) InitState() {
 	host.initContexts()
-	currentEpoch := host.blockChainHook.CurrentEpoch()
-	host.flagArwenV2.SetValue(currentEpoch >= host.arwenV2EnableEpoch)
-	log.Trace("arwenV2", "enabled", host.flagArwenV2.IsSet())
-
-	host.flagAheadOfTime.SetValue(currentEpoch >= host.aotEnableEpoch)
-	log.Trace("aheadOfTime compile", "enabled", host.flagAheadOfTime.IsSet())
-
-	host.flagDynGasLock.SetValue(currentEpoch >= host.dynGasLockEnableEpoch)
-	log.Trace("dynamic gas locking", "enabled", host.flagDynGasLock.IsSet())
-
-	host.flagArwenV3.SetValue(currentEpoch >= host.arwenV3EnableEpoch)
-	log.Trace("arwen v3 improvement", "enabled", host.flagArwenV3.IsSet())
-
-	host.flagESDTFunctions.SetValue(currentEpoch >= host.eSDTFunctionsEnableEpoch)
-	log.Trace("esdt functions", "enabled", host.flagESDTFunctions.IsSet())
 }
 
 func (host *vmHost) initContexts() {
