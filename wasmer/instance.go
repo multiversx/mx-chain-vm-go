@@ -4,8 +4,9 @@ package wasmer
 import "C"
 import (
 	"fmt"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"unsafe"
+
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const OPCODE_COUNT = 448
