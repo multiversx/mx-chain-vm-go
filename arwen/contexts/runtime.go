@@ -276,17 +276,20 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	success := localContract.instance.SetMemory(localContract.memory)
+	copyInstance, err := localContract.instance.Copy()
+	if err != nil {
+		logRuntime.Error("could not deep copy instance")
+		return false
+	}
+
+	success := copyInstance.SetMemory(localContract.memory)
 	if !success {
 		// we must remove instance, which cleans it to free the memory
-		logRuntime.Warn("WARM INSTANCE MEMORY CORRUPTED", "address", context.codeAddress)
 		context.warmInstanceCache.Remove(context.codeHash)
 		return false
 	}
 
-	logRuntime.Debug("warm instance memory", "address", context.codeAddress, "memory", localContract.memory)
-
-	context.instance = localContract.instance
+	context.instance = copyInstance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 
@@ -337,13 +340,18 @@ func (context *runtimeContext) saveWarmInstance() {
 		return
 	}
 
+	copyInstance, err := context.instance.Copy()
+	if err != nil {
+		return
+	}
+
 	instanceMemory := context.instance.GetMemory().Data()
 
 	localMemory := make([]byte, len(instanceMemory))
 	copy(localMemory, instanceMemory)
 
 	localContract := instanceAndMemory{
-		instance: context.instance,
+		instance: copyInstance,
 		memory:   localMemory,
 	}
 

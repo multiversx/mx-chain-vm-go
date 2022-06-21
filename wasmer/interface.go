@@ -18,6 +18,7 @@ type InstanceHandler interface {
 	GetMemory() MemoryHandler
 	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
+	Copy() (InstanceHandler, error)
 	IsInterfaceNil() bool
 }
 

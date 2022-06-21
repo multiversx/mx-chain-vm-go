@@ -131,6 +131,7 @@ func NewArwenVM(
 	if newExecutionTimeout > minExecutionTimeout {
 		host.executionTimeout = newExecutionTimeout
 	}
+	host.executionTimeout = time.Hour
 	imports, err := elrondapi.ElrondEIImports()
 	if err != nil {
 		return nil, err

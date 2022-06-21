@@ -13,7 +13,6 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -37,8 +36,7 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	_ = logger.SetLogLevel("*:ERROR")
-	runERC20Benchmark(t, 2, 100, true)
+	runERC20Benchmark(t, 10, 423, true)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
@@ -76,12 +74,13 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 				transferInput.Arguments = goodArguments
 			}
 		}
+
 		for i := 0; i < nTransfers; i++ {
 			transferInput.GasProvided = gasProvided
 			vmOutput, err := host.RunSmartContractCall(transferInput)
 			require.Nil(tb, err)
 			require.NotNil(tb, vmOutput)
-			if !failTransaction {
+			if !(failTransaction && r%2 == 0) {
 				require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
 				require.Equal(tb, "", vmOutput.ReturnMessage)
 
@@ -89,7 +88,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 			}
 		}
 		elapsedTime := time.Since(start)
-		fmt.Printf("Executing %d ERC20 transfers: %s\n", nTransfers, elapsedTime.String())
+		fmt.Printf("Executing batch %d with %d ERC20 transfers: %s \n", r, nTransfers, elapsedTime.String())
 	}
 
 	if !failTransaction {

@@ -259,6 +259,16 @@ func (instance *Instance) SetContextData(data uintptr) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
+func (instance *Instance) Copy() (InstanceHandler, error) {
+	copyInstance, err := newInstance(instance.instance)
+	if copyInstance.instance != nil && copyInstance.Memory != nil {
+		c_instance_context := cWasmerInstanceContextGet(instance.instance)
+		copyInstance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+	}
+
+	return copyInstance, err
+}
+
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
