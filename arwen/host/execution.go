@@ -61,6 +61,8 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
 
+	host.Runtime().CleanInstance()
+
 	return vmOutput
 }
 
@@ -132,6 +134,8 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
+	host.Runtime().CleanInstance()
+
 	return vmOutput
 }
 
@@ -198,6 +202,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"retCode", vmOutput.ReturnCode,
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
+	host.Runtime().CleanInstance()
 
 	return
 }

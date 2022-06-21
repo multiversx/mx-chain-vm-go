@@ -284,9 +284,6 @@ func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
-		cFree(unsafe.Pointer(instance.instance))
-		cFree(instance.DataPointer)
-
 		instance.Exports = nil
 		instance.Signatures = nil
 

@@ -230,7 +230,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode || len(context.codeHash) == 0 {
 		context.codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
-			context.cleanInstanceWhenError()
+			context.CleanInstance()
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -242,7 +242,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
-			context.cleanInstanceWhenError()
+			context.CleanInstance()
 			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -452,7 +452,7 @@ func (context *runtimeContext) pushInstance() {
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) popInstance(codeHash []byte) {
+func (context *runtimeContext) popInstance(_ []byte) {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -471,7 +471,7 @@ func (context *runtimeContext) popInstance(codeHash []byte) {
 		return
 	}
 
-	if !check.IfNil(context.instance) && context.isCodeHashOnTheStack(codeHash) {
+	if !check.IfNil(context.instance) {
 		context.instance.Clean()
 		context.instance = nil
 	}
@@ -933,12 +933,13 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 	return context.instance.GetExports()
 }
 
-func (context *runtimeContext) cleanInstanceWhenError() {
+// CleanInstance deletes the underlying instance
+func (context *runtimeContext) CleanInstance() {
 	if context.instance == nil {
 		return
 	}
 
-	context.instance.Clean()
+	//context.instance.Clean()
 	context.instance = nil
 
 	logRuntime.Trace("instance cleaned")
