@@ -19,6 +19,7 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 	}
 
 	log.Trace("wasmer execution error", "err", executionErr)
+	runtime.AddError(executionErr)
 	return arwen.ErrExecutionFailed
 }
 

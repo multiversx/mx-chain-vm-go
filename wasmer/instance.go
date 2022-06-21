@@ -4,6 +4,7 @@ package wasmer
 import "C"
 import (
 	"fmt"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"unsafe"
 )
 
@@ -267,6 +268,18 @@ func (instance *Instance) Clean() {
 	}
 }
 
+func (instance *Instance) ShallowCopy() InstanceHandler {
+	copyInstance := &Instance{
+		instance:    instance.instance,
+		Exports:     instance.Exports,
+		Signatures:  instance.Signatures,
+		InstanceCtx: instance.InstanceCtx,
+		Memory:      instance.Memory,
+	}
+
+	return copyInstance
+}
+
 func (instance *Instance) GetPointsUsed() uint64 {
 	return cWasmerInstanceGetPointsUsed(instance.instance)
 }
@@ -341,6 +354,10 @@ func (instance *Instance) GetMemory() MemoryHandler {
 
 // SetMemory sets the memory for the instance returns true if success
 func (instance *Instance) SetMemory(cleanMemory []byte) bool {
+	if check.IfNil(instance.GetMemory()) {
+		return false
+	}
+
 	instanceMemory := instance.GetMemory().Data()
 	if len(instanceMemory) != len(cleanMemory) {
 		// TODO shrink the instance memory instead and return true

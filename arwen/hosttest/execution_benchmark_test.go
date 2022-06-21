@@ -3,6 +3,7 @@ package hosttest
 import (
 	"fmt"
 	"math/big"
+	"strings"
 	"testing"
 	"time"
 
@@ -28,15 +29,22 @@ func Test_RunERC20Benchmark(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runERC20Benchmark(t, 1000, 4)
+	runERC20Benchmark(t, 1000, 100, false)
 }
 
-func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
+func Test_RunERC20BenchmarkFail(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runERC20Benchmark(t, 10, 1000, true)
+}
+
+func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
 	totalTokenSupply := big.NewInt(int64(nTransfers * nRuns))
 	host, mockWorld := deploy(tb, totalTokenSupply)
 
 	gasProvided := uint64(5000000000)
-
 	// Prepare ERC20 transfer call input
 	transferInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
@@ -45,7 +53,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 				receiver,
 				big.NewInt(1).Bytes(),
 			},
-			CallValue:   big.NewInt(10),
+			CallValue:   big.NewInt(0),
 			CallType:    vm.DirectCall,
 			GasPrice:    100000000000000,
 			GasProvided: gasProvided,
@@ -53,28 +61,54 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 		RecipientAddr: scAddress,
 		Function:      "transferToken",
 	}
+	wrongArguments := [][]byte{receiver, big.NewInt(1).Bytes(), []byte("fail")}
+	goodArguments := [][]byte{receiver, big.NewInt(1).Bytes()}
 
 	// Perform ERC20 transfers
 	for r := 0; r < nRuns; r++ {
 		start := time.Now()
+		if failTransaction {
+			if r%2 == 0 {
+				transferInput.Arguments = wrongArguments
+			} else {
+				transferInput.Arguments = goodArguments
+			}
+		}
+
 		for i := 0; i < nTransfers; i++ {
 			transferInput.GasProvided = gasProvided
 			vmOutput, err := host.RunSmartContractCall(transferInput)
 			require.Nil(tb, err)
 			require.NotNil(tb, vmOutput)
-			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
-			require.Equal(tb, "", vmOutput.ReturnMessage)
+			if !(failTransaction && r%2 == 0) {
+				require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
+				require.Equal(tb, "", vmOutput.ReturnMessage)
 
-			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+				_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+			} else {
+				require.False(tb, checkLogsHaveDefinedString(vmOutput.Logs, "unknown"))
+			}
 		}
 		elapsedTime := time.Since(start)
-		fmt.Printf("Executing %d ERC20 transfers: %s\n", nTransfers, elapsedTime.String())
+		fmt.Printf("Executing batch %d with %d ERC20 transfers: %s \n", r, nTransfers, elapsedTime.String())
 	}
 
-	verifyTransfers(tb, mockWorld, totalTokenSupply)
+	if !failTransaction {
+		verifyTransfers(tb, mockWorld, totalTokenSupply)
+	}
+
 	defer func() {
 		host.Reset()
 	}()
+}
+
+func checkLogsHaveDefinedString(logs []*vmcommon.LogEntry, str string) bool {
+	for _, log := range logs {
+		if strings.Contains(string(log.Data), str) {
+			return true
+		}
+	}
+	return false
 }
 
 func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.MockWorld) {
