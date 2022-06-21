@@ -101,15 +101,12 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(key interface{}, value interface{}) {
+func instanceEvicted(_ interface{}, value interface{}) {
 	localContract, ok := value.(instanceAndMemory)
 	if !ok {
 		value = nil
 		return
 	}
-
-	keyAsBytes := key.(string)
-	logRuntime.Debug("warm instance evicted", "address", keyAsBytes)
 
 	localContract.instance.Clean()
 	localContract.instance = nil
