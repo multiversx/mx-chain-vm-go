@@ -3,6 +3,7 @@ package hosttest
 import (
 	"fmt"
 	"math/big"
+	"strings"
 	"testing"
 	"time"
 
@@ -85,6 +86,8 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 				require.Equal(tb, "", vmOutput.ReturnMessage)
 
 				_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+			} else {
+				require.False(tb, checkLogsHaveDefinedString(vmOutput.Logs, "unknown"))
 			}
 		}
 		elapsedTime := time.Since(start)
@@ -98,6 +101,15 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 	defer func() {
 		host.Reset()
 	}()
+}
+
+func checkLogsHaveDefinedString(logs []*vmcommon.LogEntry, str string) bool {
+	for _, log := range logs {
+		if strings.Contains(string(log.Data), str) {
+			return true
+		}
+	}
+	return false
 }
 
 func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.MockWorld) {
