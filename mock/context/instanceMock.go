@@ -104,6 +104,10 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
+// SoftClean mocked method
+func (instance *InstanceMock) SoftClean() {
+}
+
 // GetExports mocked method
 func (instance *InstanceMock) GetExports() wasmer.ExportsMap {
 	return instance.Exports
@@ -156,7 +160,7 @@ func (instance *InstanceMock) SetMemory(_ []byte) bool {
 }
 
 // Copy -
-func (instance *InstanceMock) Copy() wasmer.InstanceHandler {
+func (instance *InstanceMock) ShallowCopy() wasmer.InstanceHandler {
 	return instance
 }
 

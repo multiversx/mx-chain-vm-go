@@ -178,7 +178,7 @@ func (context *managedTypesContext) IsInterfaceNil() bool {
 	return context == nil
 }
 
-// ConsumeGasForBigIntCopy uses gas for Copy operations
+// ConsumeGasForBigIntCopy uses gas for ShallowCopy operations
 func (context *managedTypesContext) ConsumeGasForBigIntCopy(values ...*big.Int) {
 	for _, val := range values {
 		byteLen := val.BitLen() / 8

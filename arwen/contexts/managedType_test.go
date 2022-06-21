@@ -216,7 +216,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	p256UCompressedGasCostMultiplier := managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecHandle2)
 	require.Equal(t, int32(100), p256UCompressedGasCostMultiplier)
 
-	// Copy active state to stack, then clean it. The previous 2 values should not
+	// ShallowCopy active state to stack, then clean it. The previous 2 values should not
 	// be accessible.
 	managedTypesContext.PushState()
 	require.Equal(t, 1, len(managedTypesContext.managedTypesStack))
@@ -292,7 +292,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	p384UCompressedGasCostMultiplier := managedTypesContext.GetUCompressed100xCurveGasCostMultiplier(ecHandle3)
 	require.Equal(t, int32(200), p384UCompressedGasCostMultiplier)
 
-	// Copy active state to stack, then clean it. The previous 3 values should not
+	// ShallowCopy active state to stack, then clean it. The previous 3 values should not
 	// be accessible.
 	managedTypesContext.PushState()
 	require.Equal(t, 2, len(managedTypesContext.managedTypesStack))

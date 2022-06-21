@@ -230,7 +230,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode || len(context.codeHash) == 0 {
 		context.codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
-			context.CleanInstance()
+			context.cleanInstanceWhenError()
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -242,7 +242,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
-			context.CleanInstance()
+			context.cleanInstanceWhenError()
 			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -273,7 +273,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	copyInstance := localContract.instance.Copy()
+	copyInstance := localContract.instance.ShallowCopy()
 	success := copyInstance.SetMemory(localContract.memory)
 	if !success {
 		// we must remove instance, which cleans it to free the memory
@@ -332,7 +332,7 @@ func (context *runtimeContext) saveWarmInstance() {
 		return
 	}
 
-	copyInstance := context.instance.Copy()
+	copyInstance := context.instance.ShallowCopy()
 	instanceMemory := context.instance.GetMemory().Data()
 
 	localMemory := make([]byte, len(instanceMemory))
@@ -939,7 +939,19 @@ func (context *runtimeContext) CleanInstance() {
 		return
 	}
 
-	//context.instance.Clean()
+	context.instance.SoftClean()
+	context.instance = nil
+
+	logRuntime.Trace("instance cleaned")
+	return
+}
+
+func (context *runtimeContext) cleanInstanceWhenError() {
+	if context.instance == nil {
+		return
+	}
+
+	context.instance.Clean()
 	context.instance = nil
 
 	logRuntime.Trace("instance cleaned")

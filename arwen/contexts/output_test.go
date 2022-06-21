@@ -58,7 +58,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	require.True(t, isNew)
 	require.Equal(t, 1, len(outputContext.outputState.OutputAccounts))
 
-	// Copy active state onto the stack.
+	// ShallowCopy active state onto the stack.
 	outputContext.PushState()
 	require.Equal(t, 1, len(outputContext.stateStack))
 
@@ -72,7 +72,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 
 	account.Nonce = 84
 
-	// Copy active state onto the stack, then create a new account with nonce 42.
+	// ShallowCopy active state onto the stack, then create a new account with nonce 42.
 	outputContext.PushState()
 	require.Equal(t, 2, len(outputContext.stateStack))
 

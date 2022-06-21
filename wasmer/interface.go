@@ -11,6 +11,7 @@ type InstanceHandler interface {
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
 	Clean()
+	SoftClean()
 	GetExports() ExportsMap
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
 	GetData() uintptr
@@ -18,7 +19,7 @@ type InstanceHandler interface {
 	GetMemory() MemoryHandler
 	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
-	Copy() InstanceHandler
+	ShallowCopy() InstanceHandler
 	IsInterfaceNil() bool
 }
 

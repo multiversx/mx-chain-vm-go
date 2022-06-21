@@ -259,22 +259,12 @@ func (instance *Instance) SetContextData(data uintptr) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
-func (instance *Instance) Copy() InstanceHandler {
-	copyInstance := &Instance{}
-	copyInstance.Exports = make(ExportsMap)
-	copyInstance.Signatures = make(ExportSignaturesMap)
-
-	for key, value := range instance.Exports {
-		copyInstance.Exports[key] = value
-	}
-
-	for key, value := range instance.Signatures {
-		copyInstance.Signatures[key] = value
-	}
-
-	if instance.instance != nil && instance.Memory != nil {
-		c_instance_context := cWasmerInstanceContextGet(instance.instance)
-		copyInstance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+func (instance *Instance) ShallowCopy() InstanceHandler {
+	copyInstance := &Instance{
+		instance:    instance.instance,
+		Exports:     instance.Exports,
+		Signatures:  instance.Signatures,
+		InstanceCtx: instance.InstanceCtx,
 	}
 
 	return copyInstance
@@ -300,6 +290,15 @@ func (instance *Instance) Clean() {
 		instance.Data = nil
 		instance.DataPointer = nil
 	}
+}
+
+func (instance *Instance) SoftClean() {
+	instance.Exports = nil
+	instance.Signatures = nil
+	instance.instance = nil
+	instance.Data = nil
+	instance.DataPointer = nil
+	instance.InstanceCtx = InstanceContext{}
 }
 
 func (instance *Instance) GetPointsUsed() uint64 {
