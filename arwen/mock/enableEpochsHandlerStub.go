@@ -5,6 +5,7 @@ type EnableEpochsHandlerStub struct {
 	IsESDTMultiTransferFlagEnabledField                  bool
 	IsGlobalMintBurnFlagEnabledField                     bool
 	IsESDTTransferRoleFlagEnabledField                   bool
+	IsBuiltInFunctionsFlagEnabledField                   bool
 	IsBuiltInFunctionOnMetaFlagEnabledField              bool
 	IsOptimizeNFTStoreFlagEnabledField                   bool
 	IsCheckCorrectTokenIDForTransferRoleFlagEnabledField bool
@@ -36,6 +37,11 @@ func (stub *EnableEpochsHandlerStub) IsGlobalMintBurnFlagEnabled() bool {
 // IsESDTTransferRoleFlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsESDTTransferRoleFlagEnabled() bool {
 	return stub.IsESDTTransferRoleFlagEnabledField
+}
+
+// IsBuiltInFunctionsFlagEnabled -
+func (stub *EnableEpochsHandlerStub) IsBuiltInFunctionsFlagEnabled() bool {
+	return stub.IsBuiltInFunctionsFlagEnabledField
 }
 
 // IsBuiltInFunctionOnMetaFlagEnabled -
