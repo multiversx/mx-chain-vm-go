@@ -299,6 +299,7 @@ func (instance *Instance) SoftClean() {
 	instance.instance = nil
 	instance.Data = nil
 	instance.DataPointer = nil
+	instance.Memory = nil
 	instance.InstanceCtx = InstanceContext{}
 }
 
