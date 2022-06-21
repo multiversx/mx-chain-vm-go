@@ -156,8 +156,8 @@ func (instance *InstanceMock) SetMemory(_ []byte) bool {
 }
 
 // Copy -
-func (instance *InstanceMock) Copy() (wasmer.InstanceHandler, error) {
-	return instance, nil
+func (instance *InstanceMock) Copy() wasmer.InstanceHandler {
+	return instance
 }
 
 // IsInterfaceNil -

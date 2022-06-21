@@ -649,10 +649,6 @@ func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 	contextWrapper.ClearStateStackFunc()
 }
 
-func (contextWrapper *RuntimeContextWrapper) CleanInstanceWhenError() {
-
-}
-
 // DisableUseDifferentGasCostFlag calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
 	contextWrapper.DisableUseDifferentGasCostFlag()

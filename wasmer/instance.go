@@ -259,7 +259,7 @@ func (instance *Instance) SetContextData(data uintptr) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
-func (instance *Instance) Copy() (InstanceHandler, error) {
+func (instance *Instance) Copy() InstanceHandler {
 	copyInstance := &Instance{}
 	copyInstance.Exports = make(ExportsMap)
 	copyInstance.Signatures = make(ExportSignaturesMap)
@@ -277,7 +277,7 @@ func (instance *Instance) Copy() (InstanceHandler, error) {
 		copyInstance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
 
-	return copyInstance, nil
+	return copyInstance
 }
 
 func (instance *Instance) Clean() {
