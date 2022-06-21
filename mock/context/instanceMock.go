@@ -150,6 +150,10 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
+func (instance *InstanceMock) ShallowCopy() wasmer.InstanceHandler {
+	return instance
+}
+
 // SetMemory -
 func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true
