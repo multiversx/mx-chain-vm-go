@@ -108,7 +108,7 @@ func instanceEvicted(key interface{}, value interface{}) {
 		return
 	}
 
-	keyAsBytes := key.([]byte)
+	keyAsBytes := key.(string)
 	logRuntime.Debug("warm instance evicted", "address", keyAsBytes)
 
 	localContract.instance.Clean()
