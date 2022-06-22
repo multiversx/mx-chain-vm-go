@@ -95,6 +95,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	vmOutput := output.GetVMOutput()
+	runtime.CleanInstance()
 	return vmOutput, nil
 }
 
@@ -201,7 +202,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"retCode", vmOutput.ReturnCode,
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
-
+	runtime.CleanInstance()
 	return
 }
 
