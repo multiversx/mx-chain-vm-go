@@ -291,6 +291,12 @@ var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsF
 // ErrAsyncNoCallbackForClosure signals that closure can't be obtained
 var ErrAsyncNoCallbackForClosure = errors.New("no callback for closure, cannot call callback directly")
 
+// ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
+var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
+
+// ErrCallerIsSC signals that caller is a smart contract
+var ErrCallerIsSC = errors.New("caller is a smart contract")
+
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
 

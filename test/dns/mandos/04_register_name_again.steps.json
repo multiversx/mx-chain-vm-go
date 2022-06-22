@@ -50,7 +50,7 @@
             "expect": {
                 "out": [ "address:cool_address" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

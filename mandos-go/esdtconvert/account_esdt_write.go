@@ -63,7 +63,7 @@ func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]
 				Type:       uint32(core.Fungible),
 				Properties: MakeESDTUserMetadataBytes(isFrozen),
 				TokenMetaData: &esdt.MetaData{
-					Name:       tokenIdentifier,
+					Name:       []byte{},
 					Nonce:      tokenNonce,
 					Creator:    instance.Creator.Value,
 					Royalties:  uint32(instance.Royalties.Value),

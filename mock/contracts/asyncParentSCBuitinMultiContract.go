@@ -28,7 +28,7 @@ func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 			return instance
 		}
 
-		destinationForBuiltInCall := host.Runtime().GetSCAddress()
+		destinationForBuiltInCall := host.Runtime().GetContextAddress()
 
 		callData := txDataBuilder.NewBuilder()
 		callData.Func(function)

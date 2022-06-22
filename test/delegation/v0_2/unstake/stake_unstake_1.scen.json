@@ -85,6 +85,16 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_1___________________s1",
+                            "567,000,000,000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:delegation",
                         "endpoint": "str:unstake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000002",

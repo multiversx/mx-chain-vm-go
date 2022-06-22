@@ -3,7 +3,7 @@
     "steps": [
         {
             "step": "scCall",
-            "txId": "activate",
+            "txId": "activate-nodes",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -21,6 +21,16 @@
                 "out": [],
                 "status": "",
                 "logs": [
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "sc:auction",
+                            "300,000,000,000,000"
+                        ],
+                        "data": ""
+                    },
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:callBack",
@@ -63,7 +73,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -90,7 +100,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -117,7 +127,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -142,7 +152,7 @@
                     "0"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

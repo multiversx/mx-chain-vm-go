@@ -155,7 +155,7 @@
                             "str:async_call_event_callback"
                         ],
                         "data": {
-                            "0-status": "biguint:0",
+                            "0-status": "nested:0x00",
                             "1-echoed-args": [
                                 "biguint:1",
                                 "biguint:2"

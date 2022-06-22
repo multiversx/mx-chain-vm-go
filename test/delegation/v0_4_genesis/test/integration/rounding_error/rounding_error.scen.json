@@ -116,6 +116,16 @@
                             "''node_address__________________s1"
                         ],
                         "data": "1"
+                    },
+                    {
+                        "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''node_address__________________s1",
+                            "1"
+                        ],
+                        "data": ""
                     }
                 ]
             }

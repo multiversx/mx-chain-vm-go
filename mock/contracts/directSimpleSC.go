@@ -37,13 +37,13 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{
 		runtime := host.Runtime()
 
 		input := test.DefaultTestContractCallInput()
-		input.CallerAddr = runtime.GetSCAddress()
+		input.CallerAddr = runtime.GetContextAddress()
 		input.GasProvided = runtime.GetVMInput().GasProvided / 2
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
 			runtime.Arguments()[0],
 		}
-		input.RecipientAddr = host.Runtime().GetSCAddress()
+		input.RecipientAddr = host.Runtime().GetContextAddress()
 		input.Function = "ESDTLocalBurn"
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
@@ -223,7 +223,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			host.Output().Finish([]byte("fail"))
 		case esdtOnCallbackNewAsync:
 			host.Output().Finish([]byte("new_async"))
-			host.Output().Finish(host.Runtime().GetSCAddress())
+			host.Output().Finish(host.Runtime().GetContextAddress())
 			host.Output().Finish([]byte("wasteGas"))
 		}
 

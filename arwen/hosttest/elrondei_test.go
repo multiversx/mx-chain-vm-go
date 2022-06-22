@@ -17,7 +17,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 	// 1-byte call value
 	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	input := testcommon.DefaultTestContractCallInput()
@@ -96,7 +96,7 @@ func TestElrondEI_int64getArgument(t *testing.T) {
 	code := testcommon.GetTestSCCode("elrondei", "../../")
 	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	input := testcommon.DefaultTestContractCallInput()

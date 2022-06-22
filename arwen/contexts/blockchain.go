@@ -248,7 +248,7 @@ func (context *blockchainContext) CurrentRandomSeed() []byte {
 
 // GetOwnerAddress returns the owner address of the contract being executed.
 func (context *blockchainContext) GetOwnerAddress() ([]byte, error) {
-	scAddress := context.host.Runtime().GetSCAddress()
+	scAddress := context.host.Runtime().GetContextAddress()
 	scAccount, err := context.blockChainHook.GetUserAccount(scAddress)
 	if err != nil || arwen.IfNil(scAccount) {
 		return nil, err

@@ -632,7 +632,7 @@ func v1_5_getSCAddress(context unsafe.Pointer, resultOffset int32) {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
 	metering.UseGasAndAddTracedGas(getSCAddressName, gasToUse)
 
-	owner := runtime.GetSCAddress()
+	owner := runtime.GetContextAddress()
 	err := runtime.MemStore(resultOffset, owner)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
@@ -1017,7 +1017,7 @@ func v1_5_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	dest, err := runtime.MemLoad(destOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
@@ -1235,7 +1235,7 @@ func TransferValueExecuteWithTypedArgs(
 	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 
 	var err error
 	var contractCallInput *vmcommon.ContractCallInput
@@ -1493,7 +1493,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	gasToUse := metering.GasSchedule().ElrondAPICost.TransferValue * uint64(len(transfers))
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 
 	var contractCallInput *vmcommon.ContractCallInput
 	if len(function) > 0 {
@@ -2594,7 +2594,7 @@ func v1_5_writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, 
 		}
 	}
 
-	output.WriteLog(runtime.GetSCAddress(), topics, log)
+	output.WriteLog(runtime.GetContextAddress(), topics, log)
 }
 
 //export v1_5_writeEventLog
@@ -2634,7 +2634,7 @@ func v1_5_writeEventLog(
 	gasToUse = math.AddUint64(gasToUse, gasForData)
 	metering.UseGasAndAddTracedGas(writeEventLogName, gasToUse)
 
-	output.WriteLog(runtime.GetSCAddress(), topics, data)
+	output.WriteLog(runtime.GetContextAddress(), topics, data)
 }
 
 //export v1_5_getBlockTimestamp
@@ -2866,7 +2866,7 @@ func ExecuteOnSameContextWithTypedArgs(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnSameContext
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -2969,7 +2969,7 @@ func ExecuteOnDestContextWithTypedArgs(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteOnDestContext
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -3062,7 +3062,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	gasToUse := metering.GasSchedule().ElrondAPICost.ExecuteReadOnly
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	contractCallInput, err := prepareIndirectContractCallInput(
 		host,
 		sender,
@@ -3141,7 +3141,7 @@ func createContractWithHost(
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	value, err := runtime.MemLoad(valueOffset, arwen.BalanceLen)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
@@ -3267,7 +3267,7 @@ func DeployFromSourceContractWithTypedArgs(
 ) ([]byte, error) {
 	runtime := host.Runtime()
 	metering := host.Metering()
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 
 	blockchain := host.Blockchain()
 	code, err := blockchain.GetCode(sourceContractAddress)
@@ -3353,7 +3353,6 @@ func v1_5_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32
 }
 
 func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte {
-	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
 
@@ -3362,7 +3361,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		arwen.WithFaultAndHost(host, arwen.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHost(host, arwen.ErrInvalidArgument, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 
@@ -3456,7 +3455,7 @@ func prepareIndirectContractCallInput(
 	runtime := host.Runtime()
 	metering := host.Metering()
 
-	if syncExecutionRequired && !host.AreInSameShard(runtime.GetSCAddress(), destination) {
+	if syncExecutionRequired && !host.AreInSameShard(runtime.GetContextAddress(), destination) {
 		return nil, arwen.ErrSyncExecutionNotInSameShard
 	}
 

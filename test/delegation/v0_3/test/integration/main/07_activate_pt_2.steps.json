@@ -41,6 +41,16 @@
                 "logs": [
                     {
                         "address": "sc:delegation",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "''delegator_2___________________s1",
+                            "1,000,000,000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:delegation",
                         "endpoint": "str:withdrawInactiveStake",
                         "topics": [
                             "0x0000000000000000000000000000000000000000000000000000000000000002",
@@ -78,6 +88,16 @@
                             "''delegator_2___________________s1"
                         ],
                         "data": "1,000,000,000"
+                    },
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "sc:auction",
+                            "111,000,000,000,000"
+                        ],
+                        "data": ""
                     },
                     {
                         "address": "sc:delegation",

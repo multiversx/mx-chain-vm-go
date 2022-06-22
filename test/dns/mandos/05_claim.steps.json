@@ -16,7 +16,18 @@
             "expect": {
                 "out": [],
                 "status": "",
-                "logs": [],
+                "logs": [
+                    {
+                        "address": "sc:dns#87",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:dns#87",
+                            "address:dns_owner",
+                            "123,000"
+                        ],
+                        "data": ""
+                    }
+                ],
                 "gas": "*",
                 "refund": "*"
             }

@@ -17,7 +17,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
 
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
@@ -51,7 +51,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
 	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {

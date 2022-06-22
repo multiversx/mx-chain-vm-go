@@ -3,6 +3,7 @@ package arwendebug
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
@@ -33,7 +34,8 @@ func (f *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployRespons
 		return nil, err
 	}
 	defer func() {
-		_ = world.vm.Close()
+		vmAsClose := world.vm.(io.Closer)
+		_ = vmAsClose.Close()
 	}()
 
 	response := world.deploySmartContract(request)
@@ -72,7 +74,8 @@ func (f *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResp
 		return nil, err
 	}
 	defer func() {
-		_ = world.vm.Close()
+		vmAsClose := world.vm.(io.Closer)
+		_ = vmAsClose.Close()
 	}()
 
 	response := world.upgradeSmartContract(request)
@@ -107,7 +110,8 @@ func (f *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error)
 		return nil, err
 	}
 	defer func() {
-		_ = world.vm.Close()
+		vmAsClose := world.vm.(io.Closer)
+		_ = vmAsClose.Close()
 	}()
 
 	response := world.runSmartContract(request)
@@ -141,7 +145,8 @@ func (f *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, 
 		return nil, err
 	}
 	defer func() {
-		_ = world.vm.Close()
+		vmAsClose := world.vm.(io.Closer)
+		_ = vmAsClose.Close()
 	}()
 
 	response := world.querySmartContract(request)
@@ -170,7 +175,8 @@ func (f *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccoun
 		return nil, err
 	}
 	defer func() {
-		_ = world.vm.Close()
+		vmAsClose := world.vm.(io.Closer)
+		_ = vmAsClose.Close()
 	}()
 
 	response := world.createAccount(request)
