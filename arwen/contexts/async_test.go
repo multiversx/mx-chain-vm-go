@@ -166,7 +166,7 @@ func TestAsyncContext_InitStateFromContractCallInput(t *testing.T) {
 		RecipientAddr: contract,
 	}
 
-	host.Runtime().SetSCAddress(contract)
+	host.Runtime().InitStateFromContractCallInput(input)
 	async.InitStateFromInput(input)
 
 	require.Equal(t, input.CallerAddr, async.callerAddr)
@@ -274,7 +274,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 
 	async := makeAsyncContext(t, host, nil)
 
-	runtime.SetSCAddress(leftAddress)
+	initRuntime(runtime, leftAddress)
 	execMode, err := async.determineExecutionMode(rightAddress, []byte("func"))
 	require.Nil(t, err)
 	require.Equal(t, arwen.SyncExecution, execMode)
@@ -288,7 +288,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	require.Equal(t, arwen.AsyncUnknown, execMode)
 
 	host.IsBuiltinFunc = true
-	runtime.SetSCAddress(leftAddress)
+	initRuntime(runtime, leftAddress)
 	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncBuiltinFuncIntraShard, execMode)
@@ -301,7 +301,7 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	outputAccount, _ := host.Output().GetOutputAccount(rightAddress)
 	outputAccount.Code = []byte{}
 
-	runtime.SetSCAddress(leftAddress)
+	initRuntime(runtime, leftAddress)
 	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncUnknown, execMode)
@@ -314,10 +314,16 @@ func TestAsyncContext_DetermineExecutionMode(t *testing.T) {
 	outputAccount, _ = host.Output().GetOutputAccount(rightAddress)
 	outputAccount.Code = []byte{}
 
-	runtime.SetSCAddress(leftAddress)
+	initRuntime(runtime, leftAddress)
 	execMode, err = async.determineExecutionMode(rightAddress, []byte("func"))
 	require.Nil(t, err)
 	require.Equal(t, arwen.AsyncBuiltinFuncCrossShard, execMode)
+}
+
+func initRuntime(runtime arwen.RuntimeContext, address []byte) {
+	runtime.InitStateFromContractCallInput(&vmcommon.ContractCallInput{
+		RecipientAddr: address,
+	})
 }
 
 func TestAsyncContext_IsValidCallbackName(t *testing.T) {
@@ -484,7 +490,7 @@ func TestAsyncContext_SendAsyncCallCrossShard(t *testing.T) {
 		Balance: big.NewInt(88),
 	})
 
-	host.Runtime().SetSCAddress([]byte("smartcontract"))
+	initRuntime(host.Runtime(), []byte("smartcontract"))
 	async := makeAsyncContext(t, host, nil)
 
 	asyncCall := &arwen.AsyncCall{
@@ -851,7 +857,7 @@ func defaultDestOutput_Ok() *vmcommon.VMOutput {
 
 func defaultCallbackInput_BobToAlice(originalVMInput *vmcommon.ContractCallInput) *vmcommon.ContractCallInput {
 	input := arwen.MakeContractCallInput(Bob, Alice, "successCallback", 0)
-	arwen.AddArgument(input, big.NewInt(int64(vmcommon.Ok)).Bytes())
+	arwen.AddArgument(input, []byte{0}) // vmcommon.Ok
 	arwen.AddArgument(input, []byte("first"))
 	arwen.AddArgument(input, []byte("second"))
 	arwen.AddArgument(input, []byte{})
@@ -876,7 +882,7 @@ func defaultOutputDataLengthAsArgs(asyncCall *arwen.AsyncCall, vmOutput *vmcommo
 
 	dataLength := 0
 	if vmOutput.ReturnCode == vmcommon.Ok {
-		dataLength += len(asyncCall.SuccessCallback) + separator
+		dataLength += returnCode + len(asyncCall.SuccessCallback) + separator
 		for _, data := range vmOutput.ReturnData {
 			dataLength += separator
 			dataLength += len(data) * hexSize

@@ -24,7 +24,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 	scBalance := big.NewInt(1000)
 	host, world := test.DefaultTestArwenForCallWithWorldMock(t, code, scBalance)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	err := world.BuiltinFuncs.SetTokenData(
@@ -192,7 +192,7 @@ func TestESDT_GettersAPI(t *testing.T) {
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	host, world := test.DefaultTestArwenWithWorldMock(t)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 
 	initialESDTTokenBalance := uint64(1000)

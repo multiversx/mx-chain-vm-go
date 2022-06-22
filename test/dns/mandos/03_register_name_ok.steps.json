@@ -27,7 +27,7 @@
             "expect": {
                 "out": [ "keccak256:str:coolname0001.elrond" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -49,7 +49,7 @@
             "expect": {
                 "out": [ "0x87" ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }

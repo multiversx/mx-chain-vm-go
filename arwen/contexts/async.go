@@ -109,7 +109,7 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	context.callType = input.CallType
 
 	runtime := context.host.Runtime()
-	context.address = runtime.GetSCAddress()
+	context.address = runtime.GetContextAddress()
 
 	var err error
 	emptyStack := len(context.stateStack) == 0
@@ -893,12 +893,12 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	}
 
 	actualDestination := context.determineDestinationForAsyncCall(destination, data)
-	sameShard := context.host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
+	sameShard := context.host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
 	if context.host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
 			vmInput := runtime.GetVMInput()
 			isESDTTransfer, _, _ := context.isESDTTransferOnReturnDataFromFunctionAndArgs(
-				runtime.GetSCAddress(),
+				runtime.GetContextAddress(),
 				actualDestination,
 				functionName,
 				args)
@@ -924,7 +924,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 }
 
 func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) []byte {
-	if !bytes.Equal(context.host.Runtime().GetSCAddress(), destination) {
+	if !bytes.Equal(context.host.Runtime().GetContextAddress(), destination) {
 		return destination
 	}
 

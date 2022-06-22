@@ -146,7 +146,7 @@ func createGraphContractMockMethod(
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
 		crtFunctionCalled := host.Runtime().Function()
-		logAsync.Trace("Executing graph node", "sc", string(host.Runtime().GetSCAddress()), "func", crtFunctionCalled)
+		logAsync.Trace("Executing graph node", "sc", string(host.Runtime().GetContextAddress()), "func", crtFunctionCalled)
 
 		crtNode, runtimeConfig := getGraphNodeAndItsRuntimeConfig(callGraph, host, crtFunctionCalled, runtimeConfigsForCalls)
 
@@ -187,7 +187,7 @@ func createGraphContractMockMethod(
 		err = host.Metering().UseGasBounded(gasUsed)
 
 		logAsync.Trace("End of call", "gas left", host.Metering().GasLeft(),
-			"function", crtFunctionCalled, "contract", string(host.Runtime().GetSCAddress()))
+			"function", crtFunctionCalled, "contract", string(host.Runtime().GetContextAddress()))
 
 		return instance
 	}
@@ -211,7 +211,7 @@ func produceErrorForPreconfiguredFailure(runtimeConfig *RuntimeConfigOfCall, hos
 }
 
 func getGraphNodeAndItsRuntimeConfig(callGraph *TestCallGraph, host arwen.VMHost, crtFunctionCalled string, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) (*TestCallNode, *RuntimeConfigOfCall) {
-	crtNode := callGraph.FindNode(host.Runtime().GetSCAddress(), crtFunctionCalled)
+	crtNode := callGraph.FindNode(host.Runtime().GetContextAddress(), crtFunctionCalled)
 	var runtimeConfig *RuntimeConfigOfCall
 	if crtNode.IsStartNode {
 		runtimeConfig = &RuntimeConfigOfCall{
@@ -340,7 +340,7 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 	runtime := host.Runtime()
 	metering := host.Metering()
 	async := host.Async()
-	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetSCAddress()))
+	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetContextAddress()))
 
 	/*
 		fmt.Println(
@@ -359,7 +359,7 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 	}
 
 	return &CallFinishDataItem{
-		ContractAndFunction:          string(runtime.GetSCAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
+		ContractAndFunction:          string(runtime.GetContextAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
 		GasProvided:                  runtime.GetVMInput().GasProvided,
 		GasRemaining:                 gasLeft,
 		CallID:                       async.GetCallID(),

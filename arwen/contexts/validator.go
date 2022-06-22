@@ -48,6 +48,25 @@ func (validator *wasmValidator) verifyFunctions(instance wasmer.InstanceHandler)
 	return nil
 }
 
+var protectedFunctions = map[string]bool{
+	"internalVMErrors":  true,
+	"transferValueOnly": true,
+	"writeLog":          true,
+	"signalError":       true,
+	"completedTxEvent":  true}
+
+func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.InstanceHandler) error {
+	for functionName := range instance.GetExports() {
+		_, found := protectedFunctions[functionName]
+		if found {
+			return arwen.ErrContractInvalid
+		}
+
+	}
+
+	return nil
+}
+
 func (validator *wasmValidator) verifyVoidFunction(instance wasmer.InstanceHandler, functionName string) error {
 	inArity, err := validator.getInputArity(instance, functionName)
 	if err != nil {

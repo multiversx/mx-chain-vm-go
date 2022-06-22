@@ -39,7 +39,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 			return instance
 		}
 
-		destination := host.Runtime().GetSCAddress()
+		destination := host.Runtime().GetContextAddress()
 		function := string("recursiveAsyncCall")
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 

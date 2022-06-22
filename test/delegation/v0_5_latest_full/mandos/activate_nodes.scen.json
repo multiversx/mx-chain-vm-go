@@ -78,7 +78,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -133,7 +133,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -189,7 +189,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -223,7 +223,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -237,7 +237,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond unStaked",
+            "txId": "unBond unStaked 1",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -252,6 +252,16 @@
                 "out": [],
                 "status": "",
                 "logs": [
+                    {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:auction",
+                            "sc:delegation",
+                            "100,000,000,000,000"
+                        ],
+                        "data": ""
+                    },
                     {
                         "address": "sc:delegation",
                         "endpoint": "str:callBack",
@@ -294,7 +304,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -313,7 +323,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond unStaked",
+            "txId": "unBond unStaked 2",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -341,7 +351,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unBond unStaked",
+            "txId": "unBond unStaked 3",
             "tx": {
                 "from": "address:node_address",
                 "to": "sc:delegation",
@@ -389,7 +399,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
@@ -442,7 +452,7 @@
                     "7"
                 ],
                 "status": "",
-                "logs": [],
+                "logs": "*",
                 "gas": "*",
                 "refund": "*"
             }
