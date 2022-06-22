@@ -14,9 +14,11 @@ import (
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -86,7 +88,11 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 
 				_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 			} else {
-				require.False(tb, checkLogsHaveDefinedString(vmOutput.Logs, "unknown"))
+				isProblem := checkLogsHaveDefinedString(vmOutput.Logs, "unknown")
+				if isProblem {
+					_ = logger.SetLogLevel("*:TRACE")
+				}
+				assert.False(tb, isProblem)
 			}
 		}
 		elapsedTime := time.Since(start)
