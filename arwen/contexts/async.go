@@ -80,6 +80,7 @@ func NewAsyncContext(
 		esdtTransferParser:     esdtTransferParser,
 		contextCallbackEnabled: false,
 		asyncStorageDataPrefix: storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix),
+		callbackParentCall:     nil,
 	}
 
 	return context, nil
@@ -100,6 +101,8 @@ func (context *asyncContext) InitState() {
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 	context.childResults = nil
+	context.asyncStorageDataPrefix = nil
+	context.callbackParentCall = nil
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
