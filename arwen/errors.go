@@ -289,7 +289,7 @@ var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed y
 var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsFromArguments")
 
 // ErrAsyncNoCallbackForClosure signals that closure can't be obtained
-var ErrAsyncNoCallbackForClosure = errors.New("no callback for closure")
+var ErrAsyncNoCallbackForClosure = errors.New("no callback for closure, cannot call callback directly")
 
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
