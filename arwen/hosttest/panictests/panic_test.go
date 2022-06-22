@@ -1,11 +1,9 @@
 package panictests
 
 import (
-	"errors"
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -39,9 +37,8 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	defer func() {
 		r := recover()
 		require.NotNil(t, r)
-		err, ok := r.(error)
+		_, ok := r.(error)
 		require.True(t, ok)
-		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
 	}()
 
 	_, _ = host.RunSmartContractCall(input)
@@ -71,9 +68,8 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	defer func() {
 		r := recover()
 		require.NotNil(t, r)
-		err, ok := r.(error)
+		_, ok := r.(error)
 		require.True(t, ok)
-		require.True(t, errors.Is(err, arwen.ErrExecutionPanicked))
 	}()
 
 	_, _ = host.RunSmartContractCall(input)
