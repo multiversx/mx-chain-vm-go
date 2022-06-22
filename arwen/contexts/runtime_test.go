@@ -765,7 +765,7 @@ func TestRuntimeContext_PopArgumentsFromVMInput(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 
-	vmInput := &vmcommon.VMInput{}
+	vmInput := &vmcommon.ContractCallInput{}
 	runtimeContext.vmInput = vmInput
 
 	vmInput.Arguments = nil

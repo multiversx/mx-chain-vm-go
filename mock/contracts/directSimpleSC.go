@@ -223,7 +223,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			host.Output().Finish([]byte("fail"))
 		case esdtOnCallbackNewAsync:
 			host.Output().Finish([]byte("new_async"))
-			host.Output().Finish(host.Runtime().GetSCAddress())
+			host.Output().Finish(host.Runtime().GetContextAddress())
 			host.Output().Finish([]byte("wasteGas"))
 		}
 

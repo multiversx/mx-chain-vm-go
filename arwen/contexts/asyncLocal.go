@@ -351,7 +351,6 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	contractCallInput.Arguments = make([][]byte, 0, oldArgLen)
 	contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 	contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(oldFunction))
-	contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(vmOutput.ReturnCode)).Bytes())
 	contractCallInput.Arguments = append(contractCallInput.Arguments, returnCodeToBytes(vmOutput.ReturnCode))
 
 	if len(vmOutput.ReturnData) > 1 {

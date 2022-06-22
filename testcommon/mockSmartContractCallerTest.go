@@ -136,7 +136,7 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 
-		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetSCAddress()), "func", host.Runtime().Function(), "gas", gas)
+		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetContextAddress()), "func", host.Runtime().Function(), "gas", gas)
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
 			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)

@@ -579,7 +579,7 @@ func (context *meteringContext) getSCAddress() string {
 
 // PrintState dumps the internal state of the meteringContext to the TRACE output
 func (context *meteringContext) PrintState() {
-	sc := context.host.Runtime().GetSCAddress()
+	sc := context.host.Runtime().GetContextAddress()
 	function := context.host.Runtime().Function()
 	scAccount, _ := context.host.Output().GetOutputAccount(sc)
 	outputAccounts := context.host.Output().GetOutputAccounts()

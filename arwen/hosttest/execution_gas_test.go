@@ -756,7 +756,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			// address as its first argument.
 			host.Runtime().StartWasmerInstance(test.ParentAddress, testConfig.GasUsedByParent, false)
 
-			fakeInput := host.Runtime().GetVMInput()
+			fakeInput := &host.Runtime().GetVMInput().VMInput
 			fakeInput.GasProvided = 1000
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 

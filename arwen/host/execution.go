@@ -390,7 +390,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		output.PopSetActiveState()
 	}
 
-	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetSCAddress()), "function", runtime.Function())
+	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetContextAddress()), "function", runtime.Function())
 	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract, "gas remaining", vmOutput.GasRemaining)
 
 	isAsyncCall := runtime.GetVMInput().CallType == vm.AsynchronousCall
@@ -429,9 +429,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	if host.flagRefactorContext.IsSet() {
-		input.RecipientAddr = input.CallerAddr
-	}
+	input.RecipientAddr = input.CallerAddr
 
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
@@ -974,9 +972,9 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 	callerCallID := async.GetCallerCallID()
 
 	asyncCall, isLegacy, err := async.UpdateCurrentAsyncCallStatus(
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		callerCallID,
-		runtime.GetVMInput())
+		&runtime.GetVMInput().VMInput)
 	if err != nil {
 		log.Trace("UpdateCurrentCallStatus failed", "error", err)
 		return err

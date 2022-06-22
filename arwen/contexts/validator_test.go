@@ -110,7 +110,7 @@ func TestFunctionsProtected(t *testing.T) {
 
 	world := worldmock.NewMockWorld()
 	imb := contextmock.NewInstanceBuilderMock(world)
-	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0)
+	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
 	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {
 		host := instance.Host
