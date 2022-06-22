@@ -646,15 +646,15 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
-	contextWrapper.ClearStateStackFunc()
+	contextWrapper.runtimeContext.ClearStateStack()
 }
 
 // DisableUseDifferentGasCostFlag calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
-	contextWrapper.DisableUseDifferentGasCostFlag()
+	contextWrapper.runtimeContext.DisableUseDifferentGasCostFlag()
 }
 
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
-	contextWrapper.CleanInstance()
+	contextWrapper.runtimeContext.CleanInstance()
 }
