@@ -67,7 +67,7 @@
             "step": "checkState",
             "accounts": {
                 "address:a_user": {
-                    "nonce": "3",
+                    "nonce": "1",
                     "balance": "1000"
                 },
                 "sc:vault": {
