@@ -141,29 +141,22 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
 
-		managed := host.ManagedTypes()
-		closureHandle := managed.NewManagedBuffer()
-		elrondapi.GetCallbackClosureWithHost(host, closureHandle)
-		closure, err := managed.GetBytes(closureHandle)
-		// closure, err := host.Async().GetCallbackClosure() // !!!
-		if err != nil {
-			host.Runtime().SignalUserError("can't get closure")
-			return instance
-		}
-
 		if !testConfig.IsLegacyAsync {
+			managed := host.ManagedTypes()
+			closureHandle := managed.NewManagedBuffer()
+			elrondapi.GetCallbackClosureWithHost(host, closureHandle)
+			closure, err := managed.GetBytes(closureHandle)
+			if err != nil {
+				host.Runtime().SignalUserError("can't get closure")
+				return instance
+			}
 			if err != nil || !bytes.Equal(closure, ExpectedClosure) {
 				host.Runtime().SignalUserError("can't get closure")
 				return instance
 			}
-		} else {
-			if err != nil || (closure != nil && len(closure) != 0) {
-				host.Runtime().SignalUserError("no closure should be present")
-				return instance
-			}
 		}
 
-		err = host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
 			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 			return instance

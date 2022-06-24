@@ -101,7 +101,6 @@ func (context *asyncContext) InitState() {
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 	context.childResults = nil
-	context.asyncStorageDataPrefix = nil
 	context.callbackParentCall = nil
 }
 
@@ -263,6 +262,11 @@ func (context *asyncContext) Clone() arwen.AsyncContext {
 		callsCounter:                 context.callsCounter,
 		totalCallsCounter:            context.totalCallsCounter,
 		childResults:                 context.childResults,
+		host:                         context.host,
+		marshalizer:                  context.marshalizer,
+		callArgsParser:               context.callArgsParser,
+		esdtTransferParser:           context.esdtTransferParser,
+		stateStack:                   context.stateStack,
 	}
 }
 
@@ -997,11 +1001,20 @@ func (context *asyncContext) SetCallbackParentCall(asyncCall *arwen.AsyncCall) {
 
 // GetCallbackClosure gets the async call callback closure
 func (context *asyncContext) GetCallbackClosure() ([]byte, error) {
-	asyncCall := context.callbackParentCall
-	if asyncCall == nil {
+	if context.callbackParentCall == nil {
+		stackContext := context.Clone()
+		stackContext, err := stackContext.(*asyncContext).loadParentContextFromStackOrStorage()
+		if err != nil {
+			return nil, arwen.ErrAsyncNoCallbackForClosure
+		}
+		context.callbackParentCall = stackContext.(*asyncContext).
+			GetAsyncCallByCallID(context.callerCallID).
+			asyncCall
+	}
+	if context.callbackParentCall == nil {
 		return nil, arwen.ErrAsyncNoCallbackForClosure
 	}
-	return asyncCall.CallbackClosure, nil
+	return context.callbackParentCall.CallbackClosure, nil
 }
 
 // DebugCallIDAsString - just for debug purposes

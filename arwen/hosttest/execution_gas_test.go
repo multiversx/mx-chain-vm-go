@@ -467,6 +467,7 @@ func testGasUsed_AsyncCall(t *testing.T, isLegacy bool) {
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("performAsyncCall").
 			WithArguments([]byte{0}).
+			WithCurrentTxHash([]byte{1, 2, 3}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)

@@ -72,8 +72,8 @@ func TestRustPromisesFeatures(t *testing.T) {
 }
 
 // TODO: debug, then delete
-func TestRustPromisesFeaturesCallbackDirectly(t *testing.T) {
-	runAllTestsInFolder(t, "features/composability/mandos-promises/promises_call_callback_directly.scen.json")
+func TestRustPromisesFeaturesDebug(t *testing.T) {
+	runAllTestsInFolder(t, "features/composability/mandos-promises/promises_call_async_retrieve_egld.scen.json")
 }
 
 func TestRustFormattedMessageFeatures(t *testing.T) {

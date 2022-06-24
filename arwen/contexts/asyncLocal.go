@@ -115,8 +115,6 @@ func (context *asyncContext) executeSyncCallback(
 	gasAccumulated uint64,
 	destinationErr error,
 ) (*vmcommon.VMOutput, bool, error) {
-
-	context.SetCallbackParentCall(asyncCall)
 	callbackInput, err := context.createCallbackInput(asyncCall, destinationVMOutput, gasAccumulated, destinationErr)
 	if err != nil {
 		logAsync.Trace("executeSyncCallback", "error", err)
