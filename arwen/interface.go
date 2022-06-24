@@ -146,6 +146,7 @@ type RuntimeContext interface {
 	BigIntAPIErrorShouldFailExecution() bool
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
+	CleanInstance()
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
