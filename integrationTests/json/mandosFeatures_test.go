@@ -71,6 +71,11 @@ func TestRustPromisesFeatures(t *testing.T) {
 	runAllTestsInFolder(t, "features/composability/mandos-promises")
 }
 
+// TODO: debug, then delete
+func TestRustPromisesFeaturesDebug(t *testing.T) {
+	runAllTestsInFolder(t, "features/composability/mandos-promises/promises_call_async_retrieve_egld.scen.json")
+}
+
 func TestRustFormattedMessageFeatures(t *testing.T) {
 	runAllTestsInFolder(t, "features/formatted-message-features/mandos")
 }

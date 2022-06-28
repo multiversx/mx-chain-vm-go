@@ -99,6 +99,7 @@ const (
     SetAsyncCallback     = 100000
     SetAsyncGroupCallback   = 100000
     SetAsyncContextCallback = 100000
+    GetCallbackClosure      = 100000
     ExecuteReadOnly      = 160000
     CreateContract       = 300000
     GetReturnData        = 100
@@ -794,6 +795,7 @@ const (
     SetAsyncCallback     = 100000
     SetAsyncGroupCallback   = 100000
     SetAsyncContextCallback = 100000
+    GetCallbackClosure      = 100000
     ExecuteReadOnly      = 160000
     CreateContract       = 300000
     GetReturnData        = 100

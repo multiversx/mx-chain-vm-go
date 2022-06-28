@@ -19,6 +19,8 @@ type AsyncCall struct {
 	ValueBytes      []byte
 	SuccessCallback string
 	ErrorCallback   string
+
+	CallbackClosure []byte
 }
 
 // Clone creates a deep clone of the AsyncCall
@@ -143,6 +145,7 @@ func (ac *AsyncCall) toSerializable() *SerializableAsyncCall {
 		ValueBytes:      ac.ValueBytes,
 		SuccessCallback: ac.SuccessCallback,
 		ErrorCallback:   ac.ErrorCallback,
+		CallbackClosure: ac.CallbackClosure,
 	}
 }
 
@@ -166,5 +169,6 @@ func (serAsyncCall *SerializableAsyncCall) fromSerializable() *AsyncCall {
 		ValueBytes:      serAsyncCall.ValueBytes,
 		SuccessCallback: serAsyncCall.SuccessCallback,
 		ErrorCallback:   serAsyncCall.ErrorCallback,
+		CallbackClosure: serAsyncCall.CallbackClosure,
 	}
 }

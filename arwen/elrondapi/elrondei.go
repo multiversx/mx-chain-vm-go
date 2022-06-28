@@ -1614,7 +1614,8 @@ func CreateAsyncCallWithHost(host arwen.VMHost,
 		successFunc,
 		errorFunc,
 		gas,
-		extraGasForCallback)
+		extraGasForCallback,
+		nil)
 }
 
 // CreateAsyncCallWithTypedArgs - createAsyncCall with arguments already read from memory
@@ -1625,7 +1626,8 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 	successFunc []byte,
 	errorFunc []byte,
 	gas int64,
-	extraGasForCallback int64) int32 {
+	extraGasForCallback int64,
+	callbackClosure []byte) int32 {
 
 	metering := host.Metering()
 	runtime := host.Runtime()
@@ -1645,6 +1647,7 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 		SuccessCallback: string(successFunc),
 		ErrorCallback:   string(errorFunc),
 		GasLocked:       uint64(extraGasForCallback),
+		CallbackClosure: callbackClosure,
 	}
 
 	if asyncCall.HasDefinedAnyCallback() {

@@ -32,6 +32,7 @@ message SerializableAsyncCall {
     bytes ValueBytes = 9;
     string SuccessCallback = 10;
     string ErrorCallback = 11;
+    bytes CallbackClosure = 12;
 }
 
 message SerializableAsyncCallGroup {

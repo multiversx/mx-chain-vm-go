@@ -25,10 +25,9 @@ func ForwardAsyncCallParentBuiltinMock(instanceMock *mock.InstanceMock, config i
 		arguments := host.Runtime().Arguments()
 		destination := arguments[0]
 		function := arguments[1]
-		legacy := arguments[2]
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		if big.NewInt(0).SetBytes(legacy).Int64() == 1 {
+		if testConfig.IsLegacyAsync {
 			err = host.Async().RegisterLegacyAsyncCall(destination, function, value)
 		} else {
 			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{

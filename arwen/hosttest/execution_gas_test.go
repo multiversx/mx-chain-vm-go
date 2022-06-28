@@ -42,6 +42,9 @@ func makeTestConfig() *test.TestConfig {
 		TransferToThirdParty: 3,
 		TransferToVault:      4,
 		ESDTTokensToTransfer: 0,
+
+		SuccessCallback: "myCallBack",
+		ErrorCallback:   "myCallBack",
 	}
 }
 
@@ -446,10 +449,7 @@ func testGasUsed_AsyncCall(t *testing.T, isLegacy bool) {
 	gasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback
 	gasUsedByChild := testConfig.GasUsedByChild
 
-	asyncCallType := NewAsyncCallType
-	if isLegacy {
-		asyncCallType = LegacyAsyncCallType
-	}
+	testConfig.IsLegacyAsync = isLegacy
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -466,7 +466,8 @@ func testGasUsed_AsyncCall(t *testing.T, isLegacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("performAsyncCall").
-			WithArguments([]byte{0}, asyncCallType).
+			WithArguments([]byte{0}).
+			WithCurrentTxHash([]byte{1, 2, 3}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
@@ -521,12 +522,11 @@ func testGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T, isLegacy bool) {
 	asyncCallData.Bytes([]byte{0})
 	asyncChildArgs := asyncCallData.ToBytes()
 
-	asyncCallType := LegacyAsyncCallType
 	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasToLock
 	gasLocked := testConfig.GasToLock
 
+	testConfig.IsLegacyAsync = isLegacy
 	if !isLegacy {
-		asyncCallType = NewAsyncCallType
 		gasForAsyncCall -= testConfig.GasLockCost
 		gasLocked += testConfig.GasLockCost
 	}
@@ -562,7 +562,7 @@ func testGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T, isLegacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("performAsyncCall").
-			WithArguments([]byte{0}, asyncCallType).
+			WithArguments([]byte{0}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
@@ -702,13 +702,23 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 		})
 }
 
-func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
+func TestGasUsed_AsyncCall_CrossShard_CallBack_LegacyAsyncCall(t *testing.T) {
+	testGasUsed_AsyncCall_CrossShard_CallBack(t, true)
+}
+
+func TestGasUsed_AsyncCall_CrossShard_CallBack_AsyncCall(t *testing.T) {
+	testGasUsed_AsyncCall_CrossShard_CallBack(t, false)
+}
+
+func testGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T, isLegacy bool) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	gasUsedByParent := testConfig.GasUsedByParent
 	gasUsedByChild := testConfig.GasUsedByChild
 	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	testConfig.IsLegacyAsync = isLegacy
 
 	parentContract := test.CreateMockContractOnShard(test.ParentAddress, 0).
 		WithBalance(testConfig.ParentBalance).
@@ -719,7 +729,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 	callerCallID := []byte{3, 2, 1}
 	callbackAsyncInitiatorCallID := []byte{4, 5, 6}
 	arguments := [][]byte{callID, callerCallID, callbackAsyncInitiatorCallID,
-		{0}, []byte("thirdparty"), []byte("vault")}
+		{1}, []byte("thirdparty"), []byte("vault"), {0}}
 
 	// async cross shard callback child -> parent
 	test.BuildMockInstanceCallTest(t).
@@ -760,7 +770,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			fakeInput.GasProvided = 1000
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 
-			contracts.RegisterAsyncCallToChild(host, testConfig, arguments)
+			contracts.RegisterAsyncCallToChild(host, testConfig, arguments[3:])
 			host.Async().SetCallID(callbackAsyncInitiatorCallID)
 			host.Async().SetCallIDForCallInGroup(0, 0, callerCallID)
 			host.Async().Save()
@@ -795,12 +805,7 @@ func inShardBuiltinCall(t *testing.T, legacy bool) {
 	expectedGasUsedByParent := testConfig.GasUsedByParent + testConfig.GasUsedByCallback + gasUsedByBuiltinClaim
 	expectedGasUsedByChild := uint64(0)
 
-	var callType []byte
-	if legacy {
-		callType = arwen.One.Bytes()
-	} else {
-		callType = arwen.Zero.Bytes()
-	}
+	testConfig.IsLegacyAsync = legacy
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -813,7 +818,7 @@ func inShardBuiltinCall(t *testing.T, legacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("builtinClaim"), callType).
+			WithArguments(test.UserAddress, []byte("builtinClaim")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -830,12 +835,25 @@ func inShardBuiltinCall(t *testing.T, legacy bool) {
 		})
 }
 
-func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
+func TestGasUsed_BuiltinCallFail_LegacyAsyncCall(t *testing.T) {
+	testGasUsed_BuiltinCallFail(t, true)
+}
+
+func TestGasUsed_BuiltinCallFail_AsyncCall(t *testing.T) {
+	testGasUsed_BuiltinCallFail(t, false)
+}
+
+func testGasUsed_BuiltinCallFail(t *testing.T, isLegacy bool) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
 	gasProvidedForBuiltinCall := testConfig.GasProvided - testConfig.GasUsedByParent - testConfig.GasLockCost
 	expectedGasUsedByParent := testConfig.GasUsedByParent + gasProvidedForBuiltinCall + testConfig.GasUsedByCallback
+
+	testConfig.IsLegacyAsync = isLegacy
+	if !isLegacy {
+		expectedGasUsedByParent -= testConfig.GasLockCost
+	}
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -848,7 +866,7 @@ func TestGasUsed_LegacyAsyncCall_BuiltinCallFail(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("forwardAsyncCall").
-			WithArguments(test.UserAddress, []byte("builtinFail"), arwen.One.Bytes()).
+			WithArguments(test.UserAddress, []byte("builtinFail")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -870,6 +888,8 @@ func TestGasUsed_LegacyAsyncCall_CrossShard_BuiltinCall(t *testing.T) {
 	testConfig.GasProvided = 1000
 
 	expectedGasUsedByParent := testConfig.GasUsedByParent + gasUsedByBuiltinClaim
+
+	testConfig.IsLegacyAsync = true
 
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -961,11 +981,10 @@ func testGasUsed_AsyncCall_ChildFails(t *testing.T, isLegacy bool) {
 	testConfig := makeTestConfig()
 	testConfig.GasProvided = 1000
 
-	asyncCallType := LegacyAsyncCallType
+	testConfig.IsLegacyAsync = isLegacy
 	expectedGasUsedByParent := testConfig.GasProvided - testConfig.GasToLock + testConfig.GasUsedByCallback
 
 	if !isLegacy {
-		asyncCallType = NewAsyncCallType
 		expectedGasUsedByParent -= testConfig.GasLockCost
 	}
 
@@ -984,7 +1003,7 @@ func testGasUsed_AsyncCall_ChildFails(t *testing.T, isLegacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("performAsyncCall").
-			WithArguments(arwen.One.Bytes(), asyncCallType).
+			WithArguments(arwen.One.Bytes()).
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
@@ -1031,9 +1050,8 @@ func testGasUsed_AsyncCall_CallBackFails(t *testing.T, isLegacy bool) {
 	var expectedRemainingGas uint64
 	expectedGasUsedByChild := testConfig.GasUsedByChild
 
-	asyncCallType := LegacyAsyncCallType
+	testConfig.IsLegacyAsync = isLegacy
 	if !isLegacy {
-		asyncCallType = NewAsyncCallType
 		expectedGasUsedByParent =
 			testConfig.GasUsedByParent +
 				testConfig.GasProvidedToChild +
@@ -1064,7 +1082,7 @@ func testGasUsed_AsyncCall_CallBackFails(t *testing.T, isLegacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("performAsyncCall").
-			WithArguments([]byte{3}, asyncCallType).
+			WithArguments([]byte{3}).
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
@@ -1846,6 +1864,8 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 
 func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
 	testConfig := makeTestConfig()
+	testConfig.SuccessCallback = "callBack"
+	testConfig.ErrorCallback = "callBack"
 	testConfig.GasProvided = 1000
 
 	test.BuildMockInstanceCallTest(t).
@@ -1927,7 +1947,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 			vmOutput := test.MakeEmptyVMOutput()
 			if acntRecv != nil {
 				test.AddFinishData(vmOutput, []byte("ok"))
-				vmOutput.GasRemaining = vmInput.GasProvided - 120
+				vmOutput.GasRemaining = vmInput.GasProvided - mockClaimBuiltin.GasCost
 				return vmOutput, nil
 			}
 
@@ -1938,7 +1958,7 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 				0,
 				[]byte("message"),
 			)
-			account.OutputTransfers[0].GasLimit = vmInput.GasProvided - 120
+			account.OutputTransfers[0].GasLimit = vmInput.GasProvided - mockClaimBuiltin.GasCost
 			vmOutput.GasRemaining = 0
 			return vmOutput, nil
 		},
@@ -1968,6 +1988,7 @@ func setAsyncCosts(host arwen.VMHost, gasLockCost uint64) {
 	host.Metering().GasSchedule().ElrondAPICost.CreateAsyncCall = 0
 	host.Metering().GasSchedule().ElrondAPICost.SetAsyncCallback = 0
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
+	host.Metering().GasSchedule().ElrondAPICost.GetCallbackClosure = 0
 	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLockCost
 }
 

@@ -45,6 +45,7 @@ type asyncContext struct {
 	callbackAsyncInitiatorCallID []byte
 
 	asyncStorageDataPrefix []byte
+	callbackParentCall     *arwen.AsyncCall
 }
 
 // NewAsyncContext creates a new asyncContext.
@@ -79,6 +80,7 @@ func NewAsyncContext(
 		esdtTransferParser:     esdtTransferParser,
 		contextCallbackEnabled: false,
 		asyncStorageDataPrefix: storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix),
+		callbackParentCall:     nil,
 	}
 
 	return context, nil
@@ -99,6 +101,7 @@ func (context *asyncContext) InitState() {
 	context.callsCounter = 0
 	context.totalCallsCounter = 0
 	context.childResults = nil
+	context.callbackParentCall = nil
 }
 
 // InitStateFromInput initializes the internal state of the AsyncContext with
@@ -259,6 +262,11 @@ func (context *asyncContext) Clone() arwen.AsyncContext {
 		callsCounter:                 context.callsCounter,
 		totalCallsCounter:            context.totalCallsCounter,
 		childResults:                 context.childResults,
+		host:                         context.host,
+		marshalizer:                  context.marshalizer,
+		callArgsParser:               context.callArgsParser,
+		esdtTransferParser:           context.esdtTransferParser,
+		stateStack:                   context.stateStack,
 	}
 }
 
@@ -366,19 +374,35 @@ func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]b
 	}, args...)
 }
 
-type asyncCallInfo struct {
+type asyncCallLocation struct {
 	asyncCall  *arwen.AsyncCall
 	groupIndex int
 	callIndex  int
 	err        error
 }
 
+func (callInfo *asyncCallLocation) GetAsyncCall() *arwen.AsyncCall {
+	return callInfo.asyncCall
+}
+
+func (callInfo *asyncCallLocation) GetGroupIndex() int {
+	return callInfo.groupIndex
+}
+
+func (callInfo *asyncCallLocation) GetCallIndex() int {
+	return callInfo.callIndex
+}
+
+func (callInfo *asyncCallLocation) GetError() error {
+	return callInfo.err
+}
+
 // GetAsyncCallByCallID gets from the context the call with the given callID
-func (context *asyncContext) GetAsyncCallByCallID(callID []byte) *asyncCallInfo {
+func (context *asyncContext) GetAsyncCallByCallID(callID []byte) arwen.AsyncCallLocation {
 	for groupIndex, group := range context.asyncCallGroups {
 		for callIndex, callInGroup := range group.AsyncCalls {
 			if bytes.Equal(callInGroup.CallID, callID) {
-				return &asyncCallInfo{
+				return &asyncCallLocation{
 					asyncCall:  callInGroup,
 					groupIndex: groupIndex,
 					callIndex:  callIndex,
@@ -388,7 +412,7 @@ func (context *asyncContext) GetAsyncCallByCallID(callID []byte) *asyncCallInfo 
 		}
 	}
 
-	return &asyncCallInfo{
+	return &asyncCallLocation{
 		asyncCall:  nil,
 		groupIndex: -1,
 		callIndex:  -1,
@@ -701,8 +725,8 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	}
 
 	asyncCallInfo := loadedContext.GetAsyncCallByCallID(callID)
-	call := asyncCallInfo.asyncCall
-	err = asyncCallInfo.err
+	call := asyncCallInfo.GetAsyncCall()
+	err = asyncCallInfo.GetError()
 	if err != nil {
 		return nil, false, err
 	}
@@ -786,9 +810,9 @@ func (context *asyncContext) computeGasLimitForLegacyAsyncCall(gasToLock uint64)
 // DeleteAsyncCallAndCleanGroup deletes the specified async call and the group if this is the last call
 func (context *asyncContext) DeleteAsyncCallAndCleanGroup(callID []byte) error {
 	asyncCallInfo := context.GetAsyncCallByCallID(callID)
-	groupIndex := asyncCallInfo.groupIndex
-	callIndex := asyncCallInfo.callIndex
-	err := asyncCallInfo.err
+	groupIndex := asyncCallInfo.GetGroupIndex()
+	callIndex := asyncCallInfo.GetCallIndex()
+	err := asyncCallInfo.GetError()
 	if err != nil {
 		return err
 	}
@@ -814,16 +838,16 @@ func (context *asyncContext) callCallback(callID []byte, vmOutput *vmcommon.VMOu
 	}
 
 	gasAccumulated := context.gasAccumulated
-	context, _ = context.loadParentContextFromStackOrStorage()
-	asyncCallInfo := context.GetAsyncCallByCallID(callID)
-	asyncCall := asyncCallInfo.asyncCall
-	errLoad := asyncCallInfo.err
+	loadedContext, _ := context.LoadParentContextFromStackOrStorage()
+	asyncCallInfo := loadedContext.GetAsyncCallByCallID(callID)
+	asyncCall := asyncCallInfo.GetAsyncCall()
+	errLoad := asyncCallInfo.GetError()
 	if errLoad != nil {
 		return false, nil, errLoad
 	}
 
 	context.host.Metering().DisableRestoreGas()
-	isComplete, callbackVMOutput := context.executeSyncCallbackAndFinishOutput(asyncCall, vmOutput, nil, gasAccumulated, err)
+	isComplete, callbackVMOutput := loadedContext.ExecuteSyncCallbackAndFinishOutput(asyncCall, vmOutput, nil, gasAccumulated, err)
 	context.host.Metering().EnableRestoreGas()
 	return isComplete, callbackVMOutput, nil
 }
@@ -984,6 +1008,29 @@ func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]by
 func (context *asyncContext) HasLegacyGroup() bool {
 	_, hasLegacyGroup := context.GetCallGroup(arwen.LegacyAsyncCallGroupID)
 	return hasLegacyGroup
+}
+
+// SetCallbackParentCall sets the async call that triggered the callback (used for callback closure)
+func (context *asyncContext) SetCallbackParentCall(asyncCall *arwen.AsyncCall) {
+	context.callbackParentCall = asyncCall
+}
+
+// GetCallbackClosure gets the async call callback closure
+func (context *asyncContext) GetCallbackClosure() ([]byte, error) {
+	if context.callbackParentCall == nil {
+		stackContext := context.Clone()
+		stackContext, err := stackContext.LoadParentContextFromStackOrStorage()
+		if err != nil {
+			return nil, arwen.ErrAsyncNoCallbackForClosure
+		}
+		context.callbackParentCall = stackContext.
+			GetAsyncCallByCallID(context.callerCallID).
+			GetAsyncCall()
+	}
+	if context.callbackParentCall == nil {
+		return nil, arwen.ErrAsyncNoCallbackForClosure
+	}
+	return context.callbackParentCall.CallbackClosure, nil
 }
 
 // DebugCallIDAsString - just for debug purposes

@@ -24,7 +24,8 @@ package elrondapi
 // extern void		v1_5_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
 // extern void		v1_5_managedDeleteContract(void *context, int32_t dstHandle, long long gas, int32_t argsHandle);
 // extern void		v1_5_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t	v1_5_managedCreateAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback);
+// extern int32_t	v1_5_managedCreateAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback, int32_t callbackClosureHandle);
+// extern void		v1_5_managedGetCallbackClosure(void *context, int32_t callbackClosureHandle);
 //
 // extern void		v1_5_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
 // extern void		v1_5_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
@@ -55,35 +56,36 @@ import (
 )
 
 const (
-	managedSCAddressName                   = "managedSCAddress"
-	managedOwnerAddressName                = "managedOwnerAddress"
-	managedCallerName                      = "managedCaller"
-	managedSignalErrorName                 = "managedSignalError"
-	managedWriteLogName                    = "managedWriteLog"
-	managedMultiTransferESDTNFTExecuteName = "managedMultiTransferESDTNFTExecute"
-	managedTransferValueExecuteName        = "managedTransferValueExecute"
-	managedExecuteOnDestContextName        = "managedExecuteOnDestContext"
-	managedExecuteOnSameContextName        = "managedExecuteOnSameContext"
-	managedExecuteReadOnlyName             = "managedExecuteReadOnly"
-	managedCreateContractName              = "managedCreateContract"
-	managedDeployFromSourceContractName    = "managedDeployFromSourceContract"
-	managedUpgradeContractName             = "managedUpgradeContract"
-	managedUpgradeFromSourceContractName   = "managedUpgradeFromSourceContract"
-	managedAsyncCallName                   = "managedAsyncCall"
-	managedCreateAsyncCallName             = "managedCreateAsyncCall"
-	setManagedAsyncContextCallbackName     = "setManagedAsyncContextCallback"
-	managedGetMultiESDTCallValueName       = "managedGetMultiESDTCallValue"
-	managedGetESDTBalanceName              = "managedGetESDTBalance"
-	managedGetESDTTokenDataName            = "managedGetESDTTokenData"
-	managedGetReturnDataName               = "managedGetReturnData"
-	managedGetPrevBlockRandomSeedName      = "managedGetPrevBlockRandomSeed"
-	managedGetBlockRandomSeedName          = "managedGetBlockRandomSeed"
-	managedGetStateRootHashName            = "managedGetStateRootHash"
-	managedGetOriginalTxHashName           = "managedGetOriginalTxHash"
-	managedIsESDTFrozenName                = "managedIsESDTFrozen"
-	managedIsESDTLimitedTransferName       = "managedIsESDTLimitedTransfer"
-	managedIsESDTPausedName                = "managedIsESDTPaused"
-	managedBufferToHexName                 = "managedBufferToHex"
+	managedSCAddressName                    = "managedSCAddress"
+	managedOwnerAddressName                 = "managedOwnerAddress"
+	managedCallerName                       = "managedCaller"
+	managedSignalErrorName                  = "managedSignalError"
+	managedWriteLogName                     = "managedWriteLog"
+	managedMultiTransferESDTNFTExecuteName  = "managedMultiTransferESDTNFTExecute"
+	managedTransferValueExecuteName         = "managedTransferValueExecute"
+	managedExecuteOnDestContextName         = "managedExecuteOnDestContext"
+	managedExecuteOnDestContextByCallerName = "managedExecuteOnDestContextByCaller"
+	managedExecuteOnSameContextName         = "managedExecuteOnSameContext"
+	managedExecuteReadOnlyName              = "managedExecuteReadOnly"
+	managedCreateContractName               = "managedCreateContract"
+	managedDeployFromSourceContractName     = "managedDeployFromSourceContract"
+	managedUpgradeContractName              = "managedUpgradeContract"
+	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
+	managedAsyncCallName                    = "managedAsyncCall"
+	managedCreateAsyncCallName              = "managedCreateAsyncCall"
+	managedGetCallbackClosure               = "managedGetCallbackClosure"
+	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
+	managedGetESDTBalanceName               = "managedGetESDTBalance"
+	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
+	managedGetReturnDataName                = "managedGetReturnData"
+	managedGetPrevBlockRandomSeedName       = "managedGetPrevBlockRandomSeed"
+	managedGetBlockRandomSeedName           = "managedGetBlockRandomSeed"
+	managedGetStateRootHashName             = "managedGetStateRootHash"
+	managedGetOriginalTxHashName            = "managedGetOriginalTxHash"
+	managedIsESDTFrozenName                 = "managedIsESDTFrozen"
+	managedIsESDTLimitedTransferName        = "managedIsESDTLimitedTransfer"
+	managedIsESDTPausedName                 = "managedIsESDTPaused"
+	managedBufferToHexName                  = "managedBufferToHex"
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
@@ -171,6 +173,11 @@ func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("managedCreateAsyncCall", v1_5_managedCreateAsyncCall, C.v1_5_managedCreateAsyncCall)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = imports.Append("managedGetCallbackClosure", v1_5_managedGetCallbackClosure, C.v1_5_managedGetCallbackClosure)
 	if err != nil {
 		return nil, err
 	}
@@ -598,6 +605,7 @@ func v1_5_managedCreateAsyncCall(
 	errorLength int32,
 	gas int64,
 	extraGasForCallback int64,
+	callbackClosureHandle int32,
 ) int32 {
 
 	host := arwen.GetVMHost(context)
@@ -627,6 +635,11 @@ func v1_5_managedCreateAsyncCall(
 		return 1
 	}
 
+	callbackClosure, err := managedType.GetBytes(callbackClosureHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
 	return CreateAsyncCallWithTypedArgs(host,
 		vmInput.destination,
 		value.Bytes(),
@@ -634,7 +647,39 @@ func v1_5_managedCreateAsyncCall(
 		successFunc,
 		errorFunc,
 		gas,
-		extraGasForCallback)
+		extraGasForCallback,
+		callbackClosure)
+}
+
+//export v1_5_managedGetCallbackClosure
+func v1_5_managedGetCallbackClosure(
+	context unsafe.Pointer,
+	callbackClosureHandle int32,
+) {
+	host := arwen.GetVMHost(context)
+	GetCallbackClosureWithHost(host, callbackClosureHandle)
+}
+
+func GetCallbackClosureWithHost(
+	host arwen.VMHost,
+	callbackClosureHandle int32,
+) {
+	runtime := host.Runtime()
+	async := host.Async()
+	metering := host.Metering()
+	managedTypes := host.ManagedTypes()
+
+	metering.StartGasTracing(managedGetCallbackClosure)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallbackClosure
+	metering.UseAndTraceGas(gasToUse)
+
+	callbackClosure, err := async.GetCallbackClosure()
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	managedTypes.SetBytes(callbackClosureHandle, callbackClosure)
 }
 
 //export v1_5_managedUpgradeFromSourceContract

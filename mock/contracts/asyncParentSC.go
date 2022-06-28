@@ -15,6 +15,7 @@ import (
 
 var AsyncChildFunction = "transferToThirdParty"
 var AsyncChildData = " there"
+var ExpectedClosure = []byte{4, 5, 6}
 
 // PerformAsyncCallParentMock is an exposed mock contract method
 func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
@@ -42,6 +43,12 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 			return instance
 		}
 
+		_, err = host.Async().GetCallbackClosure()
+		if err != arwen.ErrAsyncNoCallbackForClosure {
+			host.Runtime().SignalUserError("should not be a closure")
+			return instance
+		}
+
 		err = RegisterAsyncCallToChild(host, testConfig, host.Runtime().Arguments())
 		if err != nil {
 			host.Runtime().SignalUserError(err.Error())
@@ -64,16 +71,17 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 
 	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 	async := host.Async()
-	if len(arguments) > 1 && arguments[1][0] == 1 {
+	if !testConfig.IsLegacyAsync {
 		err := host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
 			Status:          arwen.AsyncCallPending,
 			Destination:     testConfig.GetChildAddress(),
 			Data:            callData.ToBytes(),
 			ValueBytes:      value,
-			SuccessCallback: "myCallBack",
-			ErrorCallback:   "myCallBack",
+			SuccessCallback: testConfig.SuccessCallback,
+			ErrorCallback:   testConfig.ErrorCallback,
 			GasLimit:        testConfig.GasProvidedToChild,
 			GasLocked:       testConfig.GasToLock,
+			CallbackClosure: ExpectedClosure,
 		})
 		if err != nil {
 			return err
@@ -127,12 +135,26 @@ func SimpleCallbackMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 // CallBackParentMock is an exposed mock contract method
 func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-
 	callbackFunc := func() *mock.InstanceMock {
 		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		arguments := host.Runtime().Arguments()
+
+		if !testConfig.IsLegacyAsync {
+			managed := host.ManagedTypes()
+			closureHandle := managed.NewManagedBuffer()
+			elrondapi.GetCallbackClosureWithHost(host, closureHandle)
+			closure, err := managed.GetBytes(closureHandle)
+			if err != nil {
+				host.Runtime().SignalUserError("can't get closure")
+				return instance
+			}
+			if err != nil || !bytes.Equal(closure, ExpectedClosure) {
+				host.Runtime().SignalUserError("can't get closure")
+				return instance
+			}
+		}
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByCallback)
 		if err != nil {
