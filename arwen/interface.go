@@ -373,11 +373,27 @@ type AsyncContext interface {
 	SetCallbackParentCall(asyncCall *AsyncCall)
 	GetCallbackClosure() ([]byte, error)
 
+	GetAsyncCallByCallID(callID []byte) AsyncCallLocation
+	LoadParentContextFromStackOrStorage() (AsyncContext, error)
+	ExecuteSyncCallbackAndFinishOutput(
+		asyncCall *AsyncCall,
+		vmOutput *vmcommon.VMOutput,
+		destinationCallInput *vmcommon.ContractCallInput,
+		gasAccumulated uint64,
+		err error) (bool, *vmcommon.VMOutput)
+
 	/*
 		for tests / test framework usage
 	*/
 	SetCallID(callID []byte)
 	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
+}
+
+type AsyncCallLocation interface {
+	GetAsyncCall() *AsyncCall
+	GetGroupIndex() int
+	GetCallIndex() int
+	GetError() error
 }
 
 // GasTracing defines the functionality needed for a gas tracing

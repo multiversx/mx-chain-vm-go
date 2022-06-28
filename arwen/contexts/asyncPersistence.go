@@ -62,7 +62,7 @@ func (context *asyncContext) DeleteFromAddress(address []byte) error {
 	return err
 }
 
-func (context *asyncContext) loadParentContextFromStackOrStorage() (*asyncContext, error) {
+func (context *asyncContext) LoadParentContextFromStackOrStorage() (arwen.AsyncContext, error) {
 	if context.callType != vm.AsynchronousCallBack {
 		return context.loadFromStackOrStorage(context.callerAddr, context.callerCallID)
 	}

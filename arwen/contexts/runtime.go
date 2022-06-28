@@ -203,6 +203,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	}
 
 	context.instance = newInstance
+	context.MustVerifyNextContractCode()
 
 	if newCode || len(context.codeHash) == 0 {
 		context.codeHash, err = context.host.Crypto().Sha256(contract)
