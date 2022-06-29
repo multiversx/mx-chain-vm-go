@@ -90,7 +90,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 			} else {
 				isProblem := checkLogsHaveDefinedString(vmOutput.Logs, "unknown")
 				if isProblem {
-					_ = logger.SetLogLevel("*:TRACE")
+					_ = logger.SetLogLevel("*:ERROR")
 				}
 				assert.False(tb, isProblem)
 			}

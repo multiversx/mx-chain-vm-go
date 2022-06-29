@@ -467,9 +467,14 @@ func (context *runtimeContext) popInstance(codeHash []byte) {
 		return
 	}
 
-	if !check.IfNil(context.instance) && context.isCodeHashOnTheStack(codeHash) {
-		context.instance.Clean()
-		context.instance = nil
+	if !check.IfNil(context.instance) {
+		if context.isCodeHashOnTheStack(codeHash) {
+			context.instance.Clean()
+			context.instance = nil
+		} else {
+			context.instance.ShallowClean()
+			context.instance = nil
+		}
 	}
 
 	context.instance = prevInstance
@@ -938,6 +943,16 @@ func (context *runtimeContext) cleanInstanceWhenError() {
 	context.instance = nil
 
 	logRuntime.Trace("instance cleaned")
+	return
+}
+
+func (context *runtimeContext) ShallowClean() {
+	if check.IfNil(context.instance) {
+		return
+	}
+
+	context.instance.ShallowClean()
+	context.instance = nil
 	return
 }
 

@@ -154,6 +154,9 @@ func (instance *InstanceMock) ShallowCopy() wasmer.InstanceHandler {
 	return instance
 }
 
+func (instance *InstanceMock) ShallowClean() {
+}
+
 // SetMemory -
 func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true

@@ -157,6 +157,7 @@ type RuntimeContext interface {
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
+	ShallowClean()
 	DisableUseDifferentGasCostFlag()
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }

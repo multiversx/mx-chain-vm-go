@@ -351,6 +351,9 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
 
+func (r *RuntimeContextMock) ShallowClean() {
+}
+
 // DisableUseDifferentGasCostFlag mocked method
 func (r *RuntimeContextMock) DisableUseDifferentGasCostFlag() {
 }

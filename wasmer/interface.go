@@ -11,6 +11,7 @@ type InstanceHandler interface {
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
 	Clean()
+	ShallowClean()
 	ShallowCopy() InstanceHandler
 	GetExports() ExportsMap
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)

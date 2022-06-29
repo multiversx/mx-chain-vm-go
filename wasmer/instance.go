@@ -267,16 +267,35 @@ func (instance *Instance) Clean() {
 			instance.Memory.Destroy()
 		}
 	}
+	instance.Data = nil
+	instance.DataPointer = nil
+	instance.Exports = nil
+	instance.Signatures = nil
+}
+
+func (instance *Instance) ShallowClean() {
+	instance.Memory = nil
+	instance.Data = nil
+	instance.DataPointer = nil
+	instance.Exports = nil
+	instance.Signatures = nil
 }
 
 func (instance *Instance) ShallowCopy() InstanceHandler {
 	copyInstance := &Instance{
-		instance:    instance.instance,
-		Exports:     instance.Exports,
-		Signatures:  instance.Signatures,
-		InstanceCtx: instance.InstanceCtx,
-		Memory:      instance.Memory,
+		instance:   instance.instance,
+		Exports:    make(ExportsMap),
+		Signatures: make(ExportSignaturesMap),
+		Memory:     instance.Memory,
 	}
+	for k, v := range instance.Exports {
+		copyInstance.Exports[k] = v
+	}
+	for k, v := range instance.Signatures {
+		copyInstance.Signatures[k] = v
+	}
+	c_instance_context := cWasmerInstanceContextGet(instance.instance)
+	copyInstance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 
 	return copyInstance
 }
