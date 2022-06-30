@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -140,7 +141,51 @@ func TestTimeoutAndPanicsInParallel(t *testing.T) {
 		go func() {
 			TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
 		}()
-		time.Sleep(2 * time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 	}
+	time.Sleep(5 * time.Second)
+}
+
+func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
+	numParallel := 100
+	hosts := make([]arwen.VMHost, numParallel)
+	blockchains := make([]*mock.BlockchainHookStub, numParallel)
+	for k := 0; k < numParallel; k++ {
+		code := test.GetTestSCCode("counter", "../../../")
+		hosts[k], blockchains[k] = test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+			var i *int
+			i = nil
+
+			// dereference a nil pointer
+			time.Sleep(time.Second)
+			*i = *i + 1
+			return nil, nil
+		}
+	}
+
+	defer func() {
+		for _, vm := range hosts {
+			vm.Reset()
+		}
+	}()
+
+	for k := 0; k < numParallel; k++ {
+		go func(idx int) {
+			input := test.CreateTestContractCallInputBuilder().
+				WithGasProvided(1000000).
+				WithFunction(increment).
+				Build()
+			// Ensure that no more panic
+			defer func() {
+				r := recover()
+				require.Nil(t, r)
+			}()
+
+			_, err := hosts[idx].RunSmartContractCall(input)
+			require.NotNil(t, err)
+		}(k)
+	}
+
 	time.Sleep(5 * time.Second)
 }
