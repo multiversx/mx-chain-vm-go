@@ -553,7 +553,9 @@ func (context *runtimeContext) FailExecution(err error) {
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(breakpoint)
+	if !check.IfNil(context.instance) {
+		context.SetRuntimeBreakpointValue(breakpoint)
+	}
 
 	traceMessage := message
 	if err != nil {
@@ -862,7 +864,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
-	if context.instance == nil {
+	if check.IfNil(context.instance) {
 		return
 	}
 
