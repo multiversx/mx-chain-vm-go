@@ -101,3 +101,36 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	_, err := host.RunSmartContractCall(input)
 	require.Equal(t, err, arwen.ErrExecutionFailedWithTimeout)
 }
+
+func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../../")
+	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+
+	defer func() {
+		host.Reset()
+	}()
+
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		var i *int
+		i = nil
+
+		// dereference a nil pointer
+		time.Sleep(time.Second)
+		*i = *i + 1
+		return nil, nil
+	}
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(1000000).
+		WithFunction(increment).
+		Build()
+
+	// Ensure that no more panic
+	defer func() {
+		r := recover()
+		require.Nil(t, r)
+	}()
+
+	_, err := host.RunSmartContractCall(input)
+	require.Equal(t, err, arwen.ErrExecutionFailedWithTimeout)
+}
