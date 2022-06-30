@@ -2,6 +2,7 @@ package panictests
 
 import (
 	"math/big"
+	"sync"
 	"testing"
 	"time"
 
@@ -92,8 +93,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 		WithFunction(increment).
 		Build()
 
-	// Ensure that host.RunSmartContractCall() still panics, but the panic is a
-	// wrapped error.
+	// Ensure that panics are not thrown
 	defer func() {
 		r := recover()
 		require.Nil(t, r)
@@ -126,7 +126,7 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 		WithFunction(increment).
 		Build()
 
-	// Ensure that no more panic
+	// Ensure that panics are not thrown
 	defer func() {
 		r := recover()
 		require.Nil(t, r)
@@ -170,6 +170,8 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 		}
 	}()
 
+	wg := sync.WaitGroup{}
+	wg.Add(numParallel)
 	for k := 0; k < numParallel; k++ {
 		go func(idx int) {
 			input := test.CreateTestContractCallInputBuilder().
@@ -184,8 +186,9 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 
 			_, err := hosts[idx].RunSmartContractCall(input)
 			require.NotNil(t, err)
+			wg.Done()
 		}(k)
 	}
 
-	time.Sleep(5 * time.Second)
+	wg.Wait()
 }
