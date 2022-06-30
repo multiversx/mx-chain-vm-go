@@ -134,3 +134,12 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	_, err := host.RunSmartContractCall(input)
 	require.Equal(t, err, arwen.ErrExecutionFailedWithTimeout)
 }
+
+func TestTimeoutAndPanicsInParallel(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		go func() {
+			TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
+		}()
+	}
+	time.Sleep(5 * time.Second)
+}
