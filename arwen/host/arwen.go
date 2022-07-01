@@ -2,7 +2,6 @@ package host
 
 import (
 	"context"
-	"fmt"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -389,14 +388,15 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
-	errChan := make(chan error, 1)
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
+				err = arwen.ErrExecutionPanicked
 			}
+			host.Runtime().CleanInstance()
+			close(done)
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
@@ -410,20 +410,15 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
 		host.logFromGasTracer("init")
-
-		close(done)
 	}()
 
 	select {
 	case <-done:
 		return
 	case <-ctx.Done():
-		err = arwen.ErrExecutionFailedWithTimeout
-		host.Runtime().FailExecution(err)
+		host.Runtime().FailExecution(arwen.ErrExecutionFailedWithTimeout)
 		<-done
-	case err = <-errChan:
-		host.Runtime().FailExecution(err)
-		panic(err)
+		err = arwen.ErrExecutionFailedWithTimeout
 	}
 
 	return
@@ -448,14 +443,16 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
-	errChan := make(chan error, 1)
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				errChan <- fmt.Errorf("%w: %v", arwen.ErrExecutionPanicked, r)
+				err = arwen.ErrExecutionPanicked
 			}
+
+			host.Runtime().CleanInstance()
+			close(done)
 		}()
 
 		isUpgrade := input.Function == arwen.UpgradeFunctionName
@@ -476,8 +473,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
 		host.logFromGasTracer(input.Function)
-
-		close(done)
 	}()
 
 	select {
@@ -490,15 +485,9 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		// basic block in order to close the WASM instance cleanly. This is done by
 		// reading the `done` channel once more, awaiting the call to `close(done)`
 		// from above.
-		err = arwen.ErrExecutionFailedWithTimeout
-		host.Runtime().FailExecution(err)
+		host.Runtime().FailExecution(arwen.ErrExecutionFailedWithTimeout)
 		<-done
-	case err = <-errChan:
-		// Terminated due to a panic outside of the SC, namely either in Wasmer, in the
-		// VM, in the EEI or in the blockchain hooks. The `done` channel is not
-		// read again, because the call to `close(done)` will not happen anymore.
-		host.Runtime().FailExecution(err)
-		panic(err)
+		err = arwen.ErrExecutionFailedWithTimeout
 	}
 
 	return
