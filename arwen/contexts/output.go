@@ -298,6 +298,10 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 
 	if value.Cmp(arwen.Zero) > 0 {
+		if context.host.Runtime().ReadOnly() && context.host.CheckExecuteReadOnly() {
+			return arwen.ErrInvalidCallOnReadOnlyMode
+		}
+
 		context.WriteLogWithIdentifier(
 			context.host.Runtime().GetContextAddress(),
 			[][]byte{sender, destination, value.Bytes()},

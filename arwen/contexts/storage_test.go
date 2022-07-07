@@ -231,7 +231,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	mockRuntime.SetReadOnly(true)
 	value = val2
 	storageStatus, err = storageContext.SetStorage(key, value)
-	require.Nil(t, err)
+	require.Equal(t, err, arwen.ErrCannotWriteOnReadOnly)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	foundValue, _ = storageContext.GetStorage(key)
 	require.Equal(t, []byte{}, foundValue)

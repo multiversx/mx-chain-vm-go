@@ -58,6 +58,7 @@ type VMHost interface {
 	FixFailExecutionEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
 	DisableExecByCaller() bool
+	CheckExecuteReadOnly() bool
 	Reset()
 }
 
