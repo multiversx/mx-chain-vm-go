@@ -41,7 +41,7 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "*",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:forwarder",
