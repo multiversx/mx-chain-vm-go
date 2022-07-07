@@ -308,6 +308,11 @@ func (vhs *VMHostStub) DisableExecByCaller() bool {
 	return true
 }
 
+// CheckExecuteReadOnly mocked method
+func (vhs *VMHostStub) CheckExecuteReadOnly() bool {
+	return true
+}
+
 // Close -
 func (vhs *VMHostStub) Close() error {
 	return nil

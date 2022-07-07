@@ -137,6 +137,7 @@ type VMHostParameters struct {
 	ManagedCryptoAPIEnableEpoch                     uint32
 	DisableExecByCallerEnableEpoch                  uint32
 	RefactorContextEnableEpoch                      uint32
+	CheckExecuteReadOnlyEnableEpoch                 uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract

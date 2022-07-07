@@ -78,6 +78,9 @@ type vmHost struct {
 
 	fixAsnycCallArgumentsEnableEpoch uint32
 	flagFixAsyncCallArguments        atomic.Flag
+
+	checkExecuteReadOnlyEnableEpoch     uint32
+	flagCheckExecuteReadOnlyEnableEpoch atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -124,6 +127,7 @@ func NewArwenVM(
 		disableExecByCallerEnableEpoch:                  hostParameters.DisableExecByCallerEnableEpoch,
 		refactorContextEnableEpoch:                      hostParameters.RefactorContextEnableEpoch,
 		fixAsnycCallArgumentsEnableEpoch:                hostParameters.ManagedCryptoAPIEnableEpoch,
+		checkExecuteReadOnlyEnableEpoch:                 hostParameters.CheckExecuteReadOnlyEnableEpoch,
 	}
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
@@ -572,6 +576,9 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagFixAsyncCallArguments.SetValue(epoch >= host.fixAsnycCallArgumentsEnableEpoch)
 	log.Debug("Arwen VM: fix asnyccall arguments", "enabled", host.flagFixAsyncCallArguments.IsSet())
+
+	host.flagCheckExecuteReadOnlyEnableEpoch.SetValue(epoch >= host.checkExecuteReadOnlyEnableEpoch)
+	log.Debug("Arwen VM: check execute read only mode", "enabled", host.flagCheckExecuteReadOnlyEnableEpoch.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
@@ -592,6 +599,11 @@ func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
 	return host.flagDisableExecByCaller.IsSet()
+}
+
+// CheckExecuteReadOnly returns true if the corresponding flag is set
+func (host *vmHost) CheckExecuteReadOnly() bool {
+	return host.flagCheckExecuteReadOnlyEnableEpoch.IsSet()
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {
