@@ -671,7 +671,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 		return nil, 0, arwen.ErrFailedTransfer
 	}
 
-	if host.CheckExecuteReadOnly() {
+	if host.Runtime().ReadOnly() && host.CheckExecuteReadOnly() {
 		return nil, 0, arwen.ErrInvalidCallOnReadOnlyMode
 	}
 
@@ -745,7 +745,7 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	metering := host.Metering()
 
-	if host.CheckExecuteReadOnly() {
+	if host.Runtime().ReadOnly() && host.CheckExecuteReadOnly() {
 		return nil, nil, arwen.ErrInvalidCallOnReadOnlyMode
 	}
 
