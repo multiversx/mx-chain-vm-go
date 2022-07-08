@@ -263,3 +263,13 @@ func (b *BlockchainHookStub) RevertToSnapshot(snapshot int) error {
 	}
 	return nil
 }
+
+// IsPaused -
+func (b *BlockchainHookStub) IsPaused(_ []byte) bool {
+	return false
+}
+
+// IsLimitedTransfer -
+func (b *BlockchainHookStub) IsLimitedTransfer(_ []byte) bool {
+	return false
+}
