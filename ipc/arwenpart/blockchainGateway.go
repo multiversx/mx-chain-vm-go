@@ -469,6 +469,16 @@ func (blockchain *BlockchainHookGateway) GetESDTToken(address []byte, tokenID []
 	return response.Result, response.GetError()
 }
 
+// IsPaused not used in v1.3
+func (blockchain *BlockchainHookGateway) IsPaused(_ []byte) bool {
+	return false
+}
+
+// IsLimitedTransfer not used in v1.3
+func (blockchain *BlockchainHookGateway) IsLimitedTransfer(_ []byte) bool {
+	return false
+}
+
 // IsInterfaceNil forwards a message to the actual hook
 func (blockchain *BlockchainHookGateway) IsInterfaceNil() bool {
 	return blockchain == nil
