@@ -53,6 +53,7 @@
         },
         {
             "step": "checkState",
+            "id": "check-1",
             "comment": "check after tx 1",
             "accounts": {
                 "address:A": {

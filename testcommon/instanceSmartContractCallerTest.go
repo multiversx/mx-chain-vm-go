@@ -55,8 +55,9 @@ type InstancesTestTemplate struct {
 func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
 	return &InstancesTestTemplate{
 		testTemplateConfig: testTemplateConfig{
-			tb:       tb,
-			useMocks: false,
+			tb:                       tb,
+			useMocks:                 false,
+			wasmerSIGSEGVPassthrough: false,
 		},
 		setup: func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
 	}
@@ -86,6 +87,12 @@ func (callerTest *InstancesTestTemplate) WithGasSchedule(gasSchedule config.GasS
 	return callerTest
 }
 
+// WithWasmerSIGSEGVPassthrough sets the wasmerSIGSEGVPassthrough flag
+func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *InstancesTestTemplate {
+	callerTest.wasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
+	return callerTest
+}
+
 // AndAssertResults starts the test and asserts the results
 func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
@@ -93,7 +100,7 @@ func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arw
 }
 
 func runTestWithInstances(callerTest *InstancesTestTemplate) {
-	host, blockchainHookStub := defaultTestArwenForContracts(callerTest.tb, callerTest.contracts, callerTest.gasSchedule)
+	host, blockchainHookStub := defaultTestArwenForContracts(callerTest.tb, callerTest.contracts, callerTest.gasSchedule, callerTest.wasmerSIGSEGVPassthrough)
 	defer func() {
 		host.Reset()
 	}()

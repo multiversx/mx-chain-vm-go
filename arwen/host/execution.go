@@ -32,12 +32,16 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	runtime.SetVMInput(&input.VMInput)
-	runtime.SetSCAddress(address)
+	contractCallInput := &vmcommon.ContractCallInput{
+		VMInput:       input.VMInput,
+		RecipientAddr: address,
+	}
+	runtime.SetVMInput(contractCallInput)
+	runtime.SetCodeAddress(address)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	output.AddTxValueToAccount(address, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	codeDeployInput := arwen.CodeDeployInput{
 		ContractCode:         input.ContractCode,
@@ -108,7 +112,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	code, codeMetadata, err := runtime.ExtractCodeUpgradeFromArgs()
 	if err != nil {
@@ -154,7 +158,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	runtime.InitStateFromContractCallInput(input)
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	err := host.checkGasForGetCode(input, metering)
 	if err != nil {
@@ -274,7 +278,7 @@ func (host *vmHost) executeOnDestContextNoBuiltinFunction(input *vmcommon.Contra
 	metering.InitStateFromContractCallInput(&input.VMInput)
 
 	storage.PushState()
-	storage.SetAddress(runtime.GetSCAddress())
+	storage.SetAddress(runtime.GetContextAddress())
 
 	defer func() {
 		vmOutput = host.finishExecuteOnDestContext(err)
@@ -361,9 +365,17 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (asy
 	managedTypes.InitState()
 	output.PushState()
 
+	librarySCAddress := make([]byte, len(input.RecipientAddr))
+	copy(librarySCAddress, input.RecipientAddr)
+
+	if host.flagRefactorContext.IsSet() {
+		input.RecipientAddr = input.CallerAddr
+	}
+
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()
 	runtime.InitStateFromContractCallInput(input)
+	runtime.SetCodeAddress(librarySCAddress)
 
 	metering.PushState()
 	metering.InitStateFromContractCallInput(&input.VMInput)
@@ -659,6 +671,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 		return nil, 0, arwen.ErrFailedTransfer
 	}
 
+	if host.Runtime().ReadOnly() && host.CheckExecuteReadOnly() {
+		return nil, 0, arwen.ErrInvalidCallOnReadOnlyMode
+	}
+
 	_, _, metering, _, runtime, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -728,6 +744,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	metering := host.Metering()
+
+	if host.Runtime().ReadOnly() && host.CheckExecuteReadOnly() {
+		return nil, nil, arwen.ErrInvalidCallOnReadOnlyMode
+	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(input)
 	if err != nil {
@@ -883,14 +903,12 @@ func (host *vmHost) callSCMethod() error {
 
 	switch callType {
 	case vm.AsynchronousCall:
-		pendingMap, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
+		_, paiErr := host.processAsyncInfo(runtime.GetAsyncContextInfo())
 		if paiErr != nil {
 			log.Trace("call SC method failed", "error", paiErr)
 			return paiErr
 		}
-		if len(pendingMap.AsyncContextMap) == 0 {
-			err = host.sendCallbackToCurrentCaller()
-		}
+		err = host.sendCallbackToCurrentCaller()
 	case vm.AsynchronousCallBack:
 		err = host.processCallbackStack()
 	default:

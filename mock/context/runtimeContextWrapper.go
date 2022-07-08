@@ -18,13 +18,13 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetCustomCallFunctionFunc func(callFunction string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetVMInputFunc func() *vmcommon.VMInput
+	GetVMInputFunc func() *vmcommon.ContractCallInput
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetVMInputFunc func(vmInput *vmcommon.VMInput)
+	SetVMInputFunc func(vmInput *vmcommon.ContractCallInput)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCAddressFunc func() []byte
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetSCAddressFunc func(scAddress []byte)
+	SetCodeAddressFunc func(scAddress []byte)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetSCCodeFunc func() ([]byte, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -104,6 +104,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	BigIntAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	BigFloatAPIErrorShouldFailExecutionFunc func() bool
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ExecuteAsyncCallFunc func(address []byte, data []byte, value []byte) error
@@ -143,20 +145,20 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.SetCustomCallFunction(callFunction)
 	}
 
-	runtimeWrapper.GetVMInputFunc = func() *vmcommon.VMInput {
+	runtimeWrapper.GetVMInputFunc = func() *vmcommon.ContractCallInput {
 		return runtimeWrapper.runtimeContext.GetVMInput()
 	}
 
-	runtimeWrapper.SetVMInputFunc = func(vmInput *vmcommon.VMInput) {
+	runtimeWrapper.SetVMInputFunc = func(vmInput *vmcommon.ContractCallInput) {
 		runtimeWrapper.runtimeContext.SetVMInput(vmInput)
 	}
 
 	runtimeWrapper.GetSCAddressFunc = func() []byte {
-		return runtimeWrapper.runtimeContext.GetSCAddress()
+		return runtimeWrapper.runtimeContext.GetContextAddress()
 	}
 
-	runtimeWrapper.SetSCAddressFunc = func(scAddress []byte) {
-		runtimeWrapper.runtimeContext.SetSCAddress(scAddress)
+	runtimeWrapper.SetCodeAddressFunc = func(scAddress []byte) {
+		runtimeWrapper.runtimeContext.SetCodeAddress(scAddress)
 	}
 
 	runtimeWrapper.GetSCCodeFunc = func() ([]byte, error) {
@@ -315,6 +317,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.BigIntAPIErrorShouldFailExecution()
 	}
 
+	runtimeWrapper.BigFloatAPIErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.BigFloatAPIErrorShouldFailExecution()
+	}
+
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 	}
@@ -374,23 +380,23 @@ func (contextWrapper *RuntimeContextWrapper) SetCustomCallFunction(callFunction 
 }
 
 // GetVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetVMInput() *vmcommon.VMInput {
+func (contextWrapper *RuntimeContextWrapper) GetVMInput() *vmcommon.ContractCallInput {
 	return contextWrapper.GetVMInputFunc()
 }
 
 // SetVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetVMInput(vmInput *vmcommon.VMInput) {
+func (contextWrapper *RuntimeContextWrapper) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	contextWrapper.SetVMInputFunc(vmInput)
 }
 
-// GetSCAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetSCAddress() []byte {
+// GetContextAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetContextAddress() []byte {
 	return contextWrapper.GetSCAddressFunc()
 }
 
-// SetSCAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetSCAddress(scAddress []byte) {
-	contextWrapper.SetSCAddressFunc(scAddress)
+// SetCodeAddress calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetCodeAddress(scAddress []byte) {
+	contextWrapper.SetCodeAddressFunc(scAddress)
 }
 
 // GetSCCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -588,6 +594,11 @@ func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution()
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
 }
 
+// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
+	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
+}
+
 // ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return contextWrapper.ManagedBufferAPIErrorShouldFailExecution()
@@ -635,15 +646,15 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
-	contextWrapper.ClearStateStackFunc()
+	contextWrapper.runtimeContext.ClearStateStack()
 }
 
 // DisableUseDifferentGasCostFlag calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) DisableUseDifferentGasCostFlag() {
-	contextWrapper.DisableUseDifferentGasCostFlag()
+	contextWrapper.runtimeContext.DisableUseDifferentGasCostFlag()
 }
 
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
-	contextWrapper.CleanInstance()
+	contextWrapper.runtimeContext.CleanInstance()
 }

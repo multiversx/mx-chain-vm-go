@@ -195,8 +195,23 @@ func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 	return true
 }
 
+// FixFailExecutionEnabled mocked method
+func (host *VMHostMock) FixFailExecutionEnabled() bool {
+	return true
+}
+
 // CreateNFTOnExecByCallerEnabled mocked method
 func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
+	return true
+}
+
+// DisableExecByCaller mocked method
+func (host *VMHostMock) DisableExecByCaller() bool {
+	return true
+}
+
+// CheckExecuteReadOnly mocked method
+func (host *VMHostMock) CheckExecuteReadOnly() bool {
 	return true
 }
 

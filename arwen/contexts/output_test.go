@@ -7,7 +7,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,7 +45,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 
 	host := &contextmock.VMHostStub{}
 	host.RuntimeCalled = func() arwen.RuntimeContext {
-		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	}
 	outputContext, _ := NewOutputContext(host)
 
@@ -187,32 +187,38 @@ func TestOutputContext_MergeCompleteAccounts(t *testing.T) {
 		Data:     []byte("data1"),
 	}
 	left := &vmcommon.OutputAccount{
-		Address:         []byte("addr1"),
-		Nonce:           1,
-		Balance:         big.NewInt(1000),
-		BalanceDelta:    big.NewInt(10000),
-		StorageUpdates:  nil,
-		Code:            []byte("code1"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1},
+		Address:                 []byte("addr1"),
+		Nonce:                   1,
+		Balance:                 big.NewInt(1000),
+		BalanceDelta:            big.NewInt(10000),
+		StorageUpdates:          nil,
+		Code:                    []byte("code1"),
+		OutputTransfers:         []vmcommon.OutputTransfer{transfer1},
+		BytesAddedToStorage:     10,
+		BytesDeletedFromStorage: 5,
 	}
 	right := &vmcommon.OutputAccount{
-		Address:         []byte("addr2"),
-		Nonce:           2,
-		Balance:         big.NewInt(2000),
-		BalanceDelta:    big.NewInt(20000),
-		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:            []byte("code2"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
+		Address:                 []byte("addr2"),
+		Nonce:                   2,
+		Balance:                 big.NewInt(2000),
+		BalanceDelta:            big.NewInt(20000),
+		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:                    []byte("code2"),
+		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
+		BytesAddedToStorage:     4,
+		BytesDeletedFromStorage: 12,
 	}
 
 	expected := &vmcommon.OutputAccount{
-		Address:         []byte("addr2"),
-		Nonce:           2,
-		Balance:         big.NewInt(2000),
-		BalanceDelta:    big.NewInt(20000),
-		StorageUpdates:  map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
-		Code:            []byte("code2"),
-		OutputTransfers: []vmcommon.OutputTransfer{transfer1, transfer1},
+		Address:                 []byte("addr2"),
+		Nonce:                   2,
+		Balance:                 big.NewInt(2000),
+		BalanceDelta:            big.NewInt(20000),
+		StorageUpdates:          map[string]*vmcommon.StorageUpdate{"key": {Data: []byte("data"), Offset: []byte("offset")}},
+		Code:                    []byte("code2"),
+		OutputTransfers:         []vmcommon.OutputTransfer{transfer1, transfer1},
+		BytesAddedToStorage:     left.BytesAddedToStorage,
+		BytesDeletedFromStorage: right.BytesDeletedFromStorage,
 	}
 
 	mergeOutputAccounts(left, right)
@@ -367,7 +373,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 	host := &contextmock.VMHostMock{
 		MeteringContext: &contextmock.MeteringContextMock{},
 		RuntimeContext: &contextmock.RuntimeContextMock{
-			VMInput: &vmcommon.VMInput{},
+			VMInput: &vmcommon.ContractCallInput{},
 		},
 	}
 
@@ -395,7 +401,7 @@ func TestOutputContext_Transfer(t *testing.T) {
 	valueToTransfer := big.NewInt(1000)
 
 	host := &contextmock.VMHostMock{}
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	mockWorld := worldmock.NewMockWorld()
 	mockWorld.AcctMap.PutAccount(&worldmock.Account{
 		Address: sender,
@@ -440,7 +446,7 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 	outputContext, _ := NewOutputContext(host)
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
 
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	host.OutputContext = outputContext
 	host.BlockchainContext = blockchainContext
 
@@ -509,7 +515,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 
 	host.OutputContext = oc
 	host.BlockchainContext = bc
-	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.VMInput{}}
+	host.RuntimeContext = &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 
 	valueToTransfer := big.NewInt(10)
 	err := oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)

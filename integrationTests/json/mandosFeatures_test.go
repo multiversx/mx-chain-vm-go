@@ -2,14 +2,25 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
+
+func TestRustAllocFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/alloc-features/mandos")
+}
 
 func TestRustBasicFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/basic-features/mandos")
+	runTestsInFolder(t, "features/basic-features/mandos", []string{
+		"features/basic-features/mandos/storage_mapper_fungible_token.scen.json"})
 }
 
 func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
@@ -29,6 +40,14 @@ func TestRustBasicFeaturesLegacy(t *testing.T) {
 	runAllTestsInFolder(t, "features/basic-features-legacy/mandos")
 }
 
+func TestRustBigFloatFeatures(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runAllTestsInFolder(t, "features/big-float-features/mandos")
+}
+
 func TestRustPayableFeaturesLatest(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
@@ -39,6 +58,10 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 
 func TestRustComposability(t *testing.T) {
 	runAllTestsInFolder(t, "features/composability/mandos")
+}
+
+func TestRustFormattedMessageFeatures(t *testing.T) {
+	runAllTestsInFolder(t, "features/formatted-message-features/mandos")
 }
 
 // For debugging:
@@ -88,3 +111,13 @@ func TestTimelocks(t *testing.T) {
 // 		t.Error(err)
 // 	}
 // }
+
+func TestForwarderTransfExec(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_nft.scen.json")
+	require.Nil(t, err)
+}
+
+func TestForwarderTransfExecMultiReject(t *testing.T) {
+	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_multi_transfer.scen.json")
+	require.Nil(t, err)
+}

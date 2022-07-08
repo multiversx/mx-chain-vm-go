@@ -110,6 +110,20 @@ func (v *VMOutputVerifier) HasRuntimeErrors(messages ...string) *VMOutputVerifie
 	return v
 }
 
+// HasRuntimeErrorAndInfo verifies if the provided errors are present in the runtime context
+func (v *VMOutputVerifier) HasRuntimeErrorAndInfo(message string, otherInfo string) *VMOutputVerifier {
+	errorFound := false
+	require.NotNil(v.T, v.AllErrors)
+	errors, otherInfos := v.AllErrors.GetAllErrorsAndOtherInfo()
+	for index, err := range errors {
+		if strings.HasPrefix(err.Error(), message) && strings.HasPrefix(otherInfos[index], otherInfo) {
+			errorFound = true
+		}
+	}
+	require.True(v.T, errorFound, fmt.Sprintf("No error with message '%s' found", message))
+	return v
+}
+
 // GasUsed verifies if GasUsed of the specified account is the same as the provided one
 func (v *VMOutputVerifier) GasUsed(address []byte, gas uint64) *VMOutputVerifier {
 	account := v.VmOutput.OutputAccounts[string(address)]
@@ -314,6 +328,36 @@ func (v *VMOutputVerifier) Transfers(transfers ...TransferEntry) *VMOutputVerifi
 	}
 	require.Equal(v.T, 0, len(transfersMap), "Transfers asserted, but not present in VMOutput")
 
+	return v
+}
+
+// Logs verifies if Logs is the same as the provided one
+func (v *VMOutputVerifier) Logs(logs ...vmcommon.LogEntry) *VMOutputVerifier {
+	require.Equal(v.T, len(logs), len(v.VmOutput.Logs), "Logs")
+	for idx := range v.VmOutput.Logs {
+		require.Equal(v.T, logs[idx].Address, v.VmOutput.Logs[idx].Address, "Logs.Address")
+		require.Equal(v.T, logs[idx].Topics, v.VmOutput.Logs[idx].Topics, "Logs.Topics")
+		require.Equal(v.T, logs[idx].Data, v.VmOutput.Logs[idx].Data, "Logs.Data")
+		require.Equal(v.T, logs[idx].Identifier, v.VmOutput.Logs[idx].Identifier, "Logs.Identifier")
+	}
+	return v
+}
+
+// BytesAddedToStorage verifies the number of bytes added to storage
+func (v *VMOutputVerifier) BytesAddedToStorage(address []byte, bytesAdded int) *VMOutputVerifier {
+	account := v.VmOutput.OutputAccounts[string(address)]
+	errMsg := formatErrorForAccount("BytesAddedToStorage", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, bytesAdded, int(account.BytesAddedToStorage), errMsg)
+	return v
+}
+
+// BytesDeletedFromStorage verifies the number of bytes deleted from storage
+func (v *VMOutputVerifier) BytesDeletedFromStorage(address []byte, bytesDelted int) *VMOutputVerifier {
+	account := v.VmOutput.OutputAccounts[string(address)]
+	errMsg := formatErrorForAccount("BytesAddedToStorage", address)
+	require.NotNil(v.T, account, errMsg)
+	require.Equal(v.T, bytesDelted, int(account.BytesDeletedFromStorage), errMsg)
 	return v
 }
 

@@ -73,7 +73,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int) {
 
 	verifyTransfers(tb, mockWorld, totalTokenSupply)
 	defer func() {
-		_ = host.Close()
+		host.Reset()
 	}()
 }
 
@@ -104,6 +104,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
+		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)
 

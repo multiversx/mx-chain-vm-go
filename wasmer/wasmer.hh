@@ -832,6 +832,10 @@ const wasmer_memory_t *wasmer_instance_context_memory(const wasmer_instance_cont
 /// ```
 void wasmer_instance_destroy(wasmer_instance_t *instance);
 
+void wasmer_instance_disable_rkyv();
+
+void wasmer_instance_enable_rkyv();
+
 /// Gets all the exports of the given WebAssembly instance.
 ///
 /// This function stores a Rust vector of exports into `exports` as an
@@ -1169,6 +1173,8 @@ wasmer_result_t wasmer_serialized_module_from_bytes(wasmer_serialized_module_t *
                                                     uint32_t serialized_module_bytes_length);
 
 void wasmer_set_opcode_costs(const uint32_t *opcode_costs_pointer);
+
+void wasmer_set_sigsegv_passthrough();
 
 /// Frees memory for the given Table
 void wasmer_table_destroy(wasmer_table_t *table);

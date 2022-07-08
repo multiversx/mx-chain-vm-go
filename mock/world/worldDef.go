@@ -46,6 +46,8 @@ type MockWorld struct {
 	LastCreatedContractAddress []byte
 	CompiledCode               map[string][]byte
 	BuiltinFuncs               *BuiltinFunctionsWrapper
+	IsPausedValue              bool
+	IsLimitedTransferValue     bool
 }
 
 // NewMockWorld creates a new MockWorld instance

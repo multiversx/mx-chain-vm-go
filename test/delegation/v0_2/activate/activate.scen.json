@@ -73,6 +73,16 @@
                 "status": "",
                 "logs": [
                     {
+                        "address": "sc:auction",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:delegation",
+                            "sc:auction",
+                            "789,000,000,000"
+                        ],
+                        "data": ""
+                    },
+                    {
                         "address": "sc:delegation",
                         "endpoint": "str:callBack",
                         "topics": [

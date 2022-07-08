@@ -11,7 +11,7 @@ var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
 	Err                    error
-	VMInput                *vmcommon.VMInput
+	VMInput                *vmcommon.ContractCallInput
 	SCAddress              []byte
 	SCCode                 []byte
 	SCCodeSize             uint64
@@ -28,6 +28,7 @@ type RuntimeContextMock struct {
 	FailElrondAPI          bool
 	FailElrondSyncExecAPI  bool
 	FailBigIntAPI          bool
+	FailBigFloatAPI        bool
 	FailManagedBuffersAPI  bool
 	AsyncCallInfo          *arwen.AsyncCallInfo
 	RunningInstances       uint64
@@ -117,22 +118,22 @@ func (r *RuntimeContextMock) GetVMType() []byte {
 }
 
 // GetVMInput mocked method
-func (r *RuntimeContextMock) GetVMInput() *vmcommon.VMInput {
+func (r *RuntimeContextMock) GetVMInput() *vmcommon.ContractCallInput {
 	return r.VMInput
 }
 
 // SetVMInput mocked method
-func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.VMInput) {
+func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	r.VMInput = vmInput
 }
 
-// GetSCAddress mocked method
-func (r *RuntimeContextMock) GetSCAddress() []byte {
+// GetContextAddress mocked method
+func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
 
-// SetSCAddress mocked method
-func (r *RuntimeContextMock) SetSCAddress(scAddress []byte) {
+// SetCodeAddress mocked method
+func (r *RuntimeContextMock) SetCodeAddress(scAddress []byte) {
 	r.SCAddress = scAddress
 }
 
@@ -291,6 +292,11 @@ func (r *RuntimeContextMock) CryptoAPIErrorShouldFailExecution() bool {
 // BigIntAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) BigIntAPIErrorShouldFailExecution() bool {
 	return r.FailBigIntAPI
+}
+
+// BigFloatAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) BigFloatAPIErrorShouldFailExecution() bool {
+	return r.FailBigFloatAPI
 }
 
 // ManagedBufferAPIErrorShouldFailExecution mocked method

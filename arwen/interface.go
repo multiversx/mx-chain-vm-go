@@ -55,7 +55,10 @@ type VMHost interface {
 	InitState()
 
 	FixOOGReturnCodeEnabled() bool
+	FixFailExecutionEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
+	DisableExecByCaller() bool
+	CheckExecuteReadOnly() bool
 	Reset()
 }
 
@@ -91,6 +94,8 @@ type BlockchainContext interface {
 	SaveCompiledCode(codeHash []byte, code []byte)
 	GetCompiledCode(codeHash []byte) (bool, []byte)
 	GetESDTToken(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	IsLimitedTransfer(tokenID []byte) bool
+	IsPaused(tokenID []byte) bool
 	GetUserAccount(address []byte) (vmcommon.UserAccountHandler, error)
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetSnapshot() int
@@ -103,10 +108,10 @@ type RuntimeContext interface {
 
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
-	GetVMInput() *vmcommon.VMInput
-	SetVMInput(vmInput *vmcommon.VMInput)
-	GetSCAddress() []byte
-	SetSCAddress(scAddress []byte)
+	GetVMInput() *vmcommon.ContractCallInput
+	SetVMInput(vmInput *vmcommon.ContractCallInput)
+	GetContextAddress() []byte
+	SetCodeAddress(scAddress []byte)
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
 	GetVMType() []byte
@@ -146,9 +151,10 @@ type RuntimeContext interface {
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
+	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
-
+	CleanInstance()
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
@@ -165,11 +171,19 @@ type ManagedTypesContext interface {
 	ConsumeGasForThisIntNumberOfBytes(byteLen int)
 	ConsumeGasForBytes(bytes []byte)
 	ConsumeGasForBigIntCopy(values ...*big.Int)
+	ConsumeGasForBigFloatCopy(values ...*big.Float)
 	NewBigInt(value *big.Int) int32
 	NewBigIntFromInt64(int64Value int64) int32
 	GetBigIntOrCreate(handle int32) *big.Int
 	GetBigInt(id int32) (*big.Int, error)
 	GetTwoBigInt(handle1 int32, handle2 int32) (*big.Int, *big.Int, error)
+	PutBigFloat(value *big.Float) (int32, error)
+	BigFloatPrecIsNotValid(precision uint) bool
+	BigFloatExpIsNotValid(exponent int) bool
+	EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool
+	GetBigFloatOrCreate(handle int32) (*big.Float, error)
+	GetBigFloat(handle int32) (*big.Float, error)
+	GetTwoBigFloats(handle1 int32, handle2 int32) (*big.Float, *big.Float, error)
 	PutEllipticCurve(ec *elliptic.CurveParams) int32
 	GetEllipticCurve(handle int32) (*elliptic.CurveParams, error)
 	GetEllipticCurveSizeOfField(ecHandle int32) int32
@@ -213,6 +227,7 @@ type OutputContext interface {
 	SetReturnMessage(message string)
 	ReturnData() [][]byte
 	ClearReturnData()
+	RemoveReturnData(index uint32)
 	Finish(data []byte)
 	PrependFinish(data []byte)
 	DeleteFirstReturnData()

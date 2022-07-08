@@ -23,8 +23,14 @@ var ErrSignalError = errors.New("error signalled by smartcontract")
 // ErrExecutionFailed signals that the execution failed
 var ErrExecutionFailed = errors.New("execution failed")
 
+// ErrExecutionPanicked signals that the execution failed irrecoverably
+var ErrExecutionPanicked = errors.New("VM execution panicked")
+
 // ErrExecutionFailedWithTimeout signals that the execution failed with timeout
 var ErrExecutionFailedWithTimeout = errors.New("execution failed with timeout")
+
+// ErrMemoryLimit signals that too much memory was allocated by the contract
+var ErrMemoryLimit = errors.New("memory limit reached")
 
 // ErrBadBounds signals that a certain variable is out of bounds
 var ErrBadBounds = errors.New("bad bounds")
@@ -156,6 +162,12 @@ var ErrTransferValueOnESDTCall = errors.New("transfer value on esdt call")
 // ErrNoBigIntUnderThisHandle signals that there is no bigInt for the given handle
 var ErrNoBigIntUnderThisHandle = errors.New("no bigInt under the given handle")
 
+// ErrNoBigFloatUnderThisHandle signals that there is no bigInt for the given handle
+var ErrNoBigFloatUnderThisHandle = errors.New("no bigFloat under the given handle")
+
+// ErrPositiveExponent signals that the exponent is greater or equal to 0
+var ErrPositiveExponent = errors.New("exponent must be negative")
+
 // ErrLengthOfBufferNotCorrect signals that length of the buffer is not correct
 var ErrLengthOfBufferNotCorrect = errors.New("length of buffer is not correct")
 
@@ -183,8 +195,44 @@ var ErrNilBlockChainHook = errors.New("nil blockchain hook")
 // ErrTooManyESDTTransfers signals that too many ESDT transfers are in sc call
 var ErrTooManyESDTTransfers = errors.New("too many ESDT transfers")
 
+// ErrInfinityFloatOperation signals that operations with infinity are not allowed
+var ErrInfinityFloatOperation = errors.New("infinity operations are not allowed")
+
+// ErrBigFloatWrongPrecision signals that the precision has a wrong value
+var ErrBigFloatWrongPrecision = errors.New("precision of the big float must be 53")
+
+// ErrAllOperandsAreEqualToZero signals that all operands are equal to 0
+var ErrAllOperandsAreEqualToZero = errors.New("all operands are equal to 0")
+
+// ErrExponentTooBigOrTooSmall signals that the exponent is too big or too small
+var ErrExponentTooBigOrTooSmall = errors.New("exponent is either too small or too big")
+
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 
+// ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
+var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
+
+// ErrCallNotAllowedOnCallback  signals that call is not allowed on callback
+var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
+
+// ErrCallerIsSC signals that caller is a smart contract
+var ErrCallerIsSC = errors.New("caller is a smart contract")
+
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
+
+// ErrNilESDTData is given when ESDT data is missing
+var ErrNilESDTData = errors.New("nil esdt data")
+
+// ErrInvalidArgument is given when argument is invalid
+var ErrInvalidArgument = errors.New("invalid argument")
+
+// ErrInvalidTokenIndex is given when argument is invalid
+var ErrInvalidTokenIndex = errors.New("invalid token index")
+
+// ErrInvalidBuiltInFunctionCall signals that built in function was used in the wrong context
+var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")
+
+// ErrCannotWriteOnReadOnly signals that write operation on read only is not allowed
+var ErrCannotWriteOnReadOnly = errors.New("cannot write on read only mode")

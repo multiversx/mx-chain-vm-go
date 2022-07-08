@@ -7,8 +7,38 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
 )
+
+func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(*AsyncCallTestConfig)
+	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+
+		host.Metering().UseGas(testConfig.GasUsedByChild)
+
+		runtime := host.Runtime()
+		output := host.Output()
+
+		vmInput := runtime.GetVMInput()
+		scAddress := host.Runtime().GetContextAddress()
+		arguments := host.Runtime().Arguments()
+
+		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
+
+		output.Transfer(
+			vmInput.CallerAddr,
+			scAddress,
+			0,
+			0,
+			valueToTransfer,
+			nil,
+			vm.DirectCall)
+		return instance
+	})
+}
 
 // TransferToThirdPartyAsyncChildMock is an exposed mock contract method
 func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config interface{}) {
@@ -37,7 +67,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			return instance
 		}
 
-		scAddress := host.Runtime().GetSCAddress()
+		scAddress := host.Runtime().GetContextAddress()
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 		err = outputContext.Transfer(
 			test.ThirdPartyAddress,
@@ -64,6 +94,16 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 
 		host.Storage().SetStorage(test.ChildKey, test.ChildData)
 
+		return instance
+	})
+}
+
+// ExecutedOnSameContextByCallback is an exposed mock contract method
+func ExecutedOnSameContextByCallback(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("executedOnSameContextByCallback", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Storage().SetStorage(test.ParentKeyB, test.ParentDataA)
 		return instance
 	})
 }

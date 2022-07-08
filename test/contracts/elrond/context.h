@@ -43,6 +43,8 @@ int	mBufferStorageStore(int keyHandle, int mBufferHandle);
 int	mBufferStorageLoad(int keyHandle, int mBufferHandle);
 int	mBufferGetArgument(int id, int mBufferHandle);
 int	mBufferFinish(int mBufferHandle);
+int	mBufferToBigFloat(int mBufferHandle, int bigFloatHandle);
+int	mBufferFromBigFloat(int mBufferHandle, int bigFloatHandle);
 
 // Call-related functions
 void getCaller(byte *callerAddress);
@@ -126,6 +128,7 @@ long long getBlockTimestamp();
 int getBlockHash(long long nonce, byte *hash);
 
 // Argument-related functions
+long long smallIntGetUnsignedArgument(int argumentIndex);
 int getNumArguments();
 int getArgument(int argumentIndex, byte *argument);
 long long int64getArgument(int argumentIndex);

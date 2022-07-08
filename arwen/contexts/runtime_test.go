@@ -29,6 +29,8 @@ var vmType = []byte("type")
 func MakeAPIImports() *wasmer.Imports {
 	imports, _ := elrondapi.ElrondEIImports()
 	imports, _ = elrondapi.BigIntImports(imports)
+	imports, _ = elrondapi.BigFloatImports(imports)
+	imports, _ = elrondapi.ManagedBufferImports(imports)
 	imports, _ = elrondapi.SmallIntImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
 	return imports
@@ -62,6 +64,7 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		epochNotifier,
 		0,
+		0,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -74,8 +77,8 @@ func TestNewRuntimeContext(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
-	require.Equal(t, []byte{}, runtimeContext.scAddress)
+	require.Equal(t, &vmcommon.ContractCallInput{}, runtimeContext.vmInput)
+	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
 	require.Nil(t, runtimeContext.asyncCallInfo)
@@ -87,15 +90,15 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	defer runtimeContext.ClearWarmInstanceCache()
 
 	runtimeContext.vmInput = nil
-	runtimeContext.scAddress = []byte("some address")
+	runtimeContext.codeAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
 	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
 
 	runtimeContext.InitState()
 
-	require.Equal(t, &vmcommon.VMInput{}, runtimeContext.vmInput)
-	require.Equal(t, []byte{}, runtimeContext.scAddress)
+	require.Equal(t, &vmcommon.ContractCallInput{}, runtimeContext.vmInput)
+	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
 	require.Nil(t, runtimeContext.asyncCallInfo)
@@ -187,7 +190,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 
 	runtimeContext.InitStateFromContractCallInput(callInput)
 	require.Equal(t, []byte("caller"), runtimeContext.GetVMInput().CallerAddr)
-	require.Equal(t, []byte("recipient"), runtimeContext.GetSCAddress())
+	require.Equal(t, []byte("recipient"), runtimeContext.GetContextAddress())
 	require.Equal(t, "test function", runtimeContext.Function())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
 	require.Equal(t, arguments, runtimeContext.Arguments())
@@ -198,16 +201,18 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	require.Equal(t, uint32(core.NonFungible), runtimeInput.ESDTTransfers[0].ESDTTokenType)
 	require.Equal(t, uint64(94), runtimeInput.ESDTTransfers[0].ESDTTokenNonce)
 
-	vmInput2 := vmcommon.VMInput{
-		CallerAddr: []byte("caller2"),
-		Arguments:  arguments,
-		CallValue:  big.NewInt(0),
+	vmInput2 := vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr: []byte("caller2"),
+			Arguments:  arguments,
+			CallValue:  big.NewInt(0),
+		},
 	}
 	runtimeContext.SetVMInput(&vmInput2)
 	require.Equal(t, []byte("caller2"), runtimeContext.GetVMInput().CallerAddr)
 
-	runtimeContext.SetSCAddress([]byte("smartcontract"))
-	require.Equal(t, []byte("smartcontract"), runtimeContext.GetSCAddress())
+	runtimeContext.SetCodeAddress([]byte("smartcontract"))
+	require.Equal(t, []byte("smartcontract"), runtimeContext.codeAddress)
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
@@ -266,20 +271,20 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
 	// change state
-	runtimeContext.SetSCAddress([]byte("dummy"))
+	runtimeContext.SetCodeAddress([]byte("dummy"))
 	runtimeContext.SetVMInput(nil)
 	runtimeContext.SetReadOnly(true)
 
-	require.Equal(t, []byte("dummy"), runtimeContext.GetSCAddress())
+	require.Equal(t, []byte("dummy"), runtimeContext.codeAddress)
 	require.Nil(t, runtimeContext.GetVMInput())
 	require.True(t, runtimeContext.ReadOnly())
 
 	runtimeContext.PopSetActiveState()
 
 	// check state was restored correctly
-	require.Equal(t, scAddress, runtimeContext.GetSCAddress())
+	require.Equal(t, scAddress, runtimeContext.GetContextAddress())
 	require.Equal(t, funcName, runtimeContext.Function())
-	require.Equal(t, &vmInput, runtimeContext.GetVMInput())
+	require.Equal(t, input, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
 

@@ -58,11 +58,13 @@ func newVMOutput() *vmcommon.VMOutput {
 // NewVMOutputAccount creates a new output account and sets the given address
 func NewVMOutputAccount(address []byte) *vmcommon.OutputAccount {
 	return &vmcommon.OutputAccount{
-		Address:        address,
-		Nonce:          0,
-		BalanceDelta:   big.NewInt(0),
-		Balance:        nil,
-		StorageUpdates: make(map[string]*vmcommon.StorageUpdate),
+		Address:                 address,
+		Nonce:                   0,
+		BalanceDelta:            big.NewInt(0),
+		Balance:                 nil,
+		StorageUpdates:          make(map[string]*vmcommon.StorageUpdate),
+		BytesAddedToStorage:     0,
+		BytesDeletedFromStorage: 0,
 	}
 }
 
@@ -201,6 +203,15 @@ func (context *outputContext) ClearReturnData() {
 	context.outputState.ReturnData = make([][]byte, 0)
 }
 
+// RemoveReturnData removes the return data item located at the specified index
+func (context *outputContext) RemoveReturnData(index uint32) {
+	returnData := context.outputState.ReturnData
+	if index >= uint32(len(returnData)) {
+		return
+	}
+	context.outputState.ReturnData = append(returnData[:index], returnData[index+1:]...)
+}
+
 // SelfDestruct does nothing
 // TODO change comment when the function is implemented
 func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
@@ -223,8 +234,8 @@ func (context *outputContext) DeleteFirstReturnData() {
 	}
 }
 
-// WriteLog creates a new LogEntry and appends it to the logs of the current output state.
-func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+// WriteLogWithIdentifier creates a new LogEntry and appends it to the logs of the current output state.
+func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]byte, data []byte, identifier []byte) {
 	if context.host.Runtime().ReadOnly() {
 		logOutput.Trace("log entry", "error", "cannot write logs in readonly mode")
 		return
@@ -233,7 +244,7 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 	newLogEntry := &vmcommon.LogEntry{
 		Address:    address,
 		Data:       data,
-		Identifier: []byte(context.host.Runtime().Function()),
+		Identifier: identifier,
 	}
 	logOutput.Trace("log entry", "address", address, "data", data)
 
@@ -246,6 +257,11 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 
 	context.outputState.Logs = append(context.outputState.Logs, newLogEntry)
 	logOutput.Trace("log entry", "endpoint", newLogEntry.Identifier, "topics", newLogEntry.Topics)
+}
+
+// WriteLog creates a new LogEntry and appends it to the logs of the current output state.
+func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
+	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().Function()))
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -280,6 +296,19 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
+
+	if value.Cmp(arwen.Zero) > 0 {
+		if context.host.Runtime().ReadOnly() && context.host.CheckExecuteReadOnly() {
+			return arwen.ErrInvalidCallOnReadOnlyMode
+		}
+
+		context.WriteLogWithIdentifier(
+			context.host.Runtime().GetContextAddress(),
+			[][]byte{sender, destination, value.Bytes()},
+			[]byte{},
+			[]byte("transferValueOnly"),
+		)
+	}
 
 	return nil
 }
@@ -469,28 +498,17 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
-	var message string
-
 	runtime := context.host.Runtime()
 	runtime.AddError(err, runtime.Function())
 
-	if errors.Is(err, arwen.ErrSignalError) {
-		message = context.ReturnMessage()
-	} else {
-		if len(context.outputState.ReturnMessage) > 0 {
-			// another return message was already set previously
-			message = context.outputState.ReturnMessage
-		} else {
-			message = err.Error()
-		}
-	}
-
 	returnCode := context.resolveReturnCodeFromError(err)
+	returnMessage := context.resolveReturnMessageFromError(err)
+
 	vmOutput := &vmcommon.VMOutput{
 		GasRemaining:  0,
 		GasRefund:     big.NewInt(0),
 		ReturnCode:    returnCode,
-		ReturnMessage: message,
+		ReturnMessage: returnMessage,
 	}
 
 	context.host.Metering().UpdateGasStateOnFailure(vmOutput)
@@ -507,6 +525,22 @@ func (context *outputContext) removeNonUpdatedCode() {
 			account.CodeDeployerAddress = nil
 		}
 	}
+}
+
+func (context *outputContext) resolveReturnMessageFromError(err error) string {
+	if errors.Is(err, arwen.ErrSignalError) {
+		return context.ReturnMessage()
+	}
+	if errors.Is(err, arwen.ErrMemoryLimit) {
+		// ErrMemoryLimit will still produce the 'execution failed' message.
+		return arwen.ErrExecutionFailed.Error()
+	}
+	if len(context.outputState.ReturnMessage) > 0 {
+		// Another return message was already set.
+		return context.outputState.ReturnMessage
+	}
+
+	return err.Error()
 }
 
 func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.ReturnCode {
@@ -633,6 +667,13 @@ func mergeOutputAccounts(
 
 	if rightAccount.CodeDeployerAddress != nil {
 		leftAccount.CodeDeployerAddress = rightAccount.CodeDeployerAddress
+	}
+
+	if rightAccount.BytesAddedToStorage > leftAccount.BytesAddedToStorage {
+		leftAccount.BytesAddedToStorage = rightAccount.BytesAddedToStorage
+	}
+	if rightAccount.BytesDeletedFromStorage > leftAccount.BytesDeletedFromStorage {
+		leftAccount.BytesDeletedFromStorage = rightAccount.BytesDeletedFromStorage
 	}
 }
 

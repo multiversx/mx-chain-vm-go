@@ -19,6 +19,7 @@ type WrappableError interface {
 	GetBaseError() error
 	GetLastError() error
 	GetAllErrors() []error
+	GetAllErrorsAndOtherInfo() ([]error, []string)
 
 	Unwrap() error
 	Is(target error) bool
@@ -86,6 +87,18 @@ func (werr *wrappableError) GetAllErrors() []error {
 	return allErrors
 }
 
+// GetAllErrorsAndOtherInfo gets all the wrapped errors + otherInfos
+func (werr *wrappableError) GetAllErrorsAndOtherInfo() ([]error, []string) {
+	errs := werr.errsWithLocation
+	allErrors := make([]error, 0)
+	allOtherInfo := make([]string, 0)
+	for _, err := range errs {
+		allErrors = append(allErrors, err.err)
+		allOtherInfo = append(allOtherInfo, err.otherInfo...)
+	}
+	return allErrors, allOtherInfo
+}
+
 func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLevels int, otherInfo ...string) *wrappableError {
 	newErrs := make([]errorWithLocation, len(werr.errsWithLocation))
 	copy(newErrs, werr.errsWithLocation)
@@ -109,7 +122,11 @@ func (werr *wrappableError) wrapWithErrorWithSkipLevels(err error, skipStackLeve
 
 func createErrorWithLocation(err error, skipStackLevels int, otherInfo ...string) errorWithLocation {
 	_, file, line, _ := runtime.Caller(skipStackLevels)
-	locationLine := fmt.Sprintf("%s:%d", file, line)
+
+	splitString := strings.Split(file, "/")
+	fileName := splitString[len(splitString)-1]
+	locationLine := fmt.Sprintf("%s:%d", fileName, line)
+
 	errWithLocation := errorWithLocation{err: err, location: locationLine, otherInfo: otherInfo}
 	return errWithLocation
 }

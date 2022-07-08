@@ -41,13 +41,20 @@
                 "logs": [
                     {
                         "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "sc:vault",
+                            "1000"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "1000",
-                            "0"
+                            "1000"
                         ],
                         "data": ""
                     },
@@ -85,13 +92,20 @@
                 "logs": [
                     {
                         "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "sc:vault",
+                            "500"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "500",
-                            "0"
+                            "500"
                         ],
                         "data": ""
                     },
@@ -105,13 +119,20 @@
                     },
                     {
                         "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "sc:vault",
+                            "500"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "500",
-                            "0"
+                            "500"
                         ],
                         "data": ""
                     },

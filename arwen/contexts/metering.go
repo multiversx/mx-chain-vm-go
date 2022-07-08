@@ -175,7 +175,7 @@ func (context *meteringContext) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
 
-	account, _ := output.GetOutputAccount(runtime.GetSCAddress())
+	account, _ := output.GetOutputAccount(runtime.GetContextAddress())
 	account.GasUsed = math.AddUint64(account.GasUsed, context.GetGasProvided())
 	logMetering.Trace("UpdateGasStateOnFailure", "gas used", account.GasUsed)
 	logMetering.Trace("UpdateGasStateOnFailure", "instance gas left", context.GasLeft())
@@ -185,7 +185,7 @@ func (context *meteringContext) updateSCGasUsed() {
 	runtime := context.host.Runtime()
 	output := context.host.Output()
 
-	currentAccountAddress := runtime.GetSCAddress()
+	currentAccountAddress := runtime.GetContextAddress()
 	currentContractAccount, _ := output.GetOutputAccount(currentAccountAddress)
 	outputAccounts := context.host.Output().GetOutputAccounts()
 
@@ -248,7 +248,7 @@ func (context *meteringContext) getCurrentTotalUsedGas() uint64 {
 
 func (context *meteringContext) getGasUsedByAllOtherAccounts(outputAccounts map[string]*vmcommon.OutputAccount) uint64 {
 	gasUsedAndTransferred := uint64(0)
-	currentAccountAddress := string(context.host.Runtime().GetSCAddress())
+	currentAccountAddress := string(context.host.Runtime().GetContextAddress())
 	for address, account := range outputAccounts {
 		gasTransferred := context.getGasTransferredByAccount(account)
 
@@ -542,5 +542,5 @@ func (context *meteringContext) addToGasTrace(functionName string, usedGas uint6
 }
 
 func (context *meteringContext) getSCAddress() string {
-	return string(context.host.Runtime().GetSCAddress())
+	return string(context.host.Runtime().GetContextAddress())
 }

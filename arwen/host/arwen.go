@@ -2,7 +2,7 @@ package host
 
 import (
 	"context"
-	"errors"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -21,20 +21,22 @@ import (
 )
 
 var log = logger.GetOrCreate("arwen/host")
+var logGasTrace = logger.GetOrCreate("gasTrace")
 
 // MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
 var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
-const executionTimeout = time.Second
+const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.
 type vmHost struct {
-	cryptoHook      crypto.VMCrypto
-	mutExecution    sync.RWMutex
-	closingInstance bool
+	cryptoHook       crypto.VMCrypto
+	mutExecution     sync.RWMutex
+	closingInstance  bool
+	executionTimeout time.Duration
 
 	ethInput []byte
 
@@ -61,6 +63,24 @@ type vmHost struct {
 
 	createNFTThroughExecByCallerEnableEpoch uint32
 	flagCreateNFTThroughExecByCaller        atomic.Flag
+
+	fixFailExecutionOnErrorEnableEpoch uint32
+	flagFixFailExecutionOnError        atomic.Flag
+
+	useDifferentGasCostForReadingCachedStorageEpoch uint32
+	flagUseDifferentGasCostForCachedStorage         atomic.Flag
+
+	disableExecByCallerEnableEpoch uint32
+	flagDisableExecByCaller        atomic.Flag
+
+	refactorContextEnableEpoch uint32
+	flagRefactorContext        atomic.Flag
+
+	fixAsnycCallArgumentsEnableEpoch uint32
+	flagFixAsyncCallArguments        atomic.Flag
+
+	checkExecuteReadOnlyEnableEpoch     uint32
+	flagCheckExecuteReadOnlyEnableEpoch atomic.Flag
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -97,20 +117,34 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
-		multiESDTTransferAsyncCallBackEnableEpoch: hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
-		fixOOGReturnCodeEnableEpoch:               hostParameters.FixOOGReturnCodeEnableEpoch,
-		removeNonUpdatedStorageEnableEpoch:        hostParameters.RemoveNonUpdatedStorageEnableEpoch,
-		createNFTThroughExecByCallerEnableEpoch:   hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		executionTimeout:     minExecutionTimeout,
+		multiESDTTransferAsyncCallBackEnableEpoch:       hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch,
+		fixOOGReturnCodeEnableEpoch:                     hostParameters.FixOOGReturnCodeEnableEpoch,
+		removeNonUpdatedStorageEnableEpoch:              hostParameters.RemoveNonUpdatedStorageEnableEpoch,
+		createNFTThroughExecByCallerEnableEpoch:         hostParameters.CreateNFTThroughExecByCallerEnableEpoch,
+		fixFailExecutionOnErrorEnableEpoch:              hostParameters.FixFailExecutionOnErrorEnableEpoch,
+		useDifferentGasCostForReadingCachedStorageEpoch: hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+		disableExecByCallerEnableEpoch:                  hostParameters.DisableExecByCallerEnableEpoch,
+		refactorContextEnableEpoch:                      hostParameters.RefactorContextEnableEpoch,
+		fixAsnycCallArgumentsEnableEpoch:                hostParameters.ManagedCryptoAPIEnableEpoch,
+		checkExecuteReadOnlyEnableEpoch:                 hostParameters.CheckExecuteReadOnlyEnableEpoch,
 	}
 
-	var err error
-
+	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
+	if newExecutionTimeout > minExecutionTimeout {
+		host.executionTimeout = newExecutionTimeout
+	}
 	imports, err := elrondapi.ElrondEIImports()
 	if err != nil {
 		return nil, err
 	}
 
 	imports, err = elrondapi.BigIntImports(imports)
+	if err != nil {
+		return nil, err
+	}
+
+	imports, err = elrondapi.BigFloatImports(imports)
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +187,7 @@ func NewArwenVM(
 		host.builtInFuncContainer,
 		hostParameters.EpochNotifier,
 		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
+		hostParameters.ManagedCryptoAPIEnableEpoch,
 	)
 	if err != nil {
 		return nil, err
@@ -193,6 +228,11 @@ func NewArwenVM(
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
+	wasmer.SetRkyvSerializationEnabled(true)
+
+	if hostParameters.WasmerSIGSEGVPassthrough {
+		wasmer.SetSIGSEGVPassthrough()
+	}
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
@@ -235,7 +275,7 @@ func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
 }
 
-// BigInt returns the BigIntContext instance of the host
+// ManagedTypes returns the ManagedTypeContext instance of the host
 func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
 	return host.managedTypesContext
 }
@@ -341,7 +381,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		return nil, arwen.ErrVMIsClosing
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	host.setGasTracerEnabledIfLogIsTrace()
+	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
 
 	log.Trace("RunSmartContractCreate begin",
@@ -351,14 +392,15 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
-	errChan := make(chan error, 1)
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				errChan <- errors.New("VM execution panicked")
+				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
+				err = arwen.ErrExecutionPanicked
 			}
+			host.Runtime().CleanInstance()
+			close(done)
 		}()
 
 		vmOutput = host.doRunSmartContractCreate(input)
@@ -371,21 +413,18 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
-
-		close(done)
+		host.logFromGasTracer("init")
 	}()
 
 	select {
 	case <-done:
 		return
 	case <-ctx.Done():
+		host.Runtime().FailExecution(arwen.ErrExecutionFailedWithTimeout)
+		<-done
 		err = arwen.ErrExecutionFailedWithTimeout
-		host.Runtime().FailExecution(err)
-	case err = <-errChan:
-		host.Runtime().FailExecution(err)
 	}
 
-	<-done
 	return
 }
 
@@ -398,7 +437,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		return nil, arwen.ErrVMIsClosing
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	host.setGasTracerEnabledIfLogIsTrace()
+	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
 
 	log.Trace("RunSmartContractCall begin",
@@ -407,14 +447,16 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		"gasLocked", input.GasLocked)
 
 	done := make(chan struct{})
-	errChan := make(chan error, 1)
 	go func() {
 		defer func() {
 			r := recover()
 			if r != nil {
-				log.Error("VM execution panicked", "error", r)
-				errChan <- errors.New("VM execution panicked")
+				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
+				err = arwen.ErrExecutionPanicked
 			}
+
+			host.Runtime().CleanInstance()
+			close(done)
 		}()
 
 		isUpgrade := input.Function == arwen.UpgradeFunctionName
@@ -434,21 +476,24 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
-
-		close(done)
+		host.logFromGasTracer(input.Function)
 	}()
 
 	select {
 	case <-done:
+		// Normal termination.
 		return
 	case <-ctx.Done():
+		// Terminated due to timeout. The VM sets the `ExecutionFailed` breakpoint
+		// in Wasmer. Also, the VM must wait for Wasmer to reach the end of a WASM
+		// basic block in order to close the WASM instance cleanly. This is done by
+		// reading the `done` channel once more, awaiting the call to `close(done)`
+		// from above.
+		host.Runtime().FailExecution(arwen.ErrExecutionFailedWithTimeout)
+		<-done
 		err = arwen.ErrExecutionFailedWithTimeout
-		host.Runtime().FailExecution(err)
-	case err = <-errChan:
-		host.Runtime().FailExecution(err)
 	}
 
-	<-done
 	return
 }
 
@@ -516,6 +561,24 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagCreateNFTThroughExecByCaller.SetValue(epoch >= host.createNFTThroughExecByCallerEnableEpoch)
 	log.Debug("Arwen VM: create NFT through exec by caller", "enabled", host.flagCreateNFTThroughExecByCaller.IsSet())
+
+	host.flagFixFailExecutionOnError.SetValue(epoch >= host.fixFailExecutionOnErrorEnableEpoch)
+	log.Debug("Arwen VM: fix fail execution on error", "enabled", host.flagFixFailExecutionOnError.IsSet())
+
+	host.flagUseDifferentGasCostForCachedStorage.SetValue(epoch >= host.useDifferentGasCostForReadingCachedStorageEpoch)
+	log.Debug("Arwen VM: use different gas costs when reading cached storage", "enabled", host.flagUseDifferentGasCostForCachedStorage.IsSet())
+
+	host.flagDisableExecByCaller.SetValue(epoch >= host.disableExecByCallerEnableEpoch)
+	log.Debug("Arwen VM: disable execute by caller endpoints", "enabled", host.flagDisableExecByCaller.IsSet())
+
+	host.flagRefactorContext.SetValue(epoch >= host.refactorContextEnableEpoch)
+	log.Debug("Arwen VM: refactor context", "enabled", host.flagRefactorContext.IsSet())
+
+	host.flagFixAsyncCallArguments.SetValue(epoch >= host.fixAsnycCallArgumentsEnableEpoch)
+	log.Debug("Arwen VM: fix asnyccall arguments", "enabled", host.flagFixAsyncCallArguments.IsSet())
+
+	host.flagCheckExecuteReadOnlyEnableEpoch.SetValue(epoch >= host.checkExecuteReadOnlyEnableEpoch)
+	log.Debug("Arwen VM: check execute read only mode", "enabled", host.flagCheckExecuteReadOnlyEnableEpoch.IsSet())
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
@@ -523,7 +586,48 @@ func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.flagFixOOGReturnCode.IsSet()
 }
 
-//CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
+// FixFailExecutionEnabled returns true if the corresponding flag is set
+func (host *vmHost) FixFailExecutionEnabled() bool {
+	return host.flagFixFailExecutionOnError.IsSet()
+}
+
+// CreateNFTOnExecByCallerEnabled returns true if the corresponding flag is set
 func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 	return host.flagCreateNFTThroughExecByCaller.IsSet()
+}
+
+// DisableExecByCaller returns true if the corresponding flag is set
+func (host *vmHost) DisableExecByCaller() bool {
+	return host.flagDisableExecByCaller.IsSet()
+}
+
+// CheckExecuteReadOnly returns true if the corresponding flag is set
+func (host *vmHost) CheckExecuteReadOnly() bool {
+	return host.flagCheckExecuteReadOnlyEnableEpoch.IsSet()
+}
+
+func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {
+	host.Metering().SetGasTracing(false)
+	if logGasTrace.GetLevel() == logger.LogTrace {
+		host.Metering().SetGasTracing(true)
+	}
+}
+
+func (host *vmHost) logFromGasTracer(functionName string) {
+	if logGasTrace.GetLevel() == logger.LogTrace {
+		scGasTrace := host.meteringContext.GetGasTrace()
+		totalGasUsedByAPIs := 0
+		for scAddress, gasTrace := range scGasTrace {
+			logGasTrace.Trace("Gas Trace for", "SC Address", scAddress, "function", functionName)
+			for apiName, value := range gasTrace {
+				totalGasUsed := uint64(0)
+				for _, usedGas := range value {
+					totalGasUsed += usedGas
+				}
+				logGasTrace.Trace("Gas Trace for", "apiName", apiName, "totalGasUsed", totalGasUsed, "numberOfCalls", len(value))
+				totalGasUsedByAPIs += int(totalGasUsed)
+			}
+			logGasTrace.Trace("Gas Trace for", "TotalGasUsedByAPIs", totalGasUsedByAPIs)
+		}
+	}
 }

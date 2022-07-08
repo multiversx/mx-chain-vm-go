@@ -58,6 +58,15 @@ func (er *ExprReconstructor) ReconstructFromUint64(value uint64) string {
 	return er.Reconstruct(big.NewInt(0).SetUint64(value).Bytes(), NumberHint)
 }
 
+func (er *ExprReconstructor) ReconstructList(values [][]byte, hint ExprReconstructorHint) string {
+	var strs []string
+	for _, value := range values {
+		strs = append(strs, "\""+er.Reconstruct(value, hint)+"\"")
+	}
+
+	return "[" + strings.Join(strs, ", ") + "]"
+}
+
 func unknownByteArrayPretty(bytes []byte) string {
 	if len(bytes) == 0 {
 		return ""

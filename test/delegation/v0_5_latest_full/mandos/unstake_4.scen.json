@@ -201,7 +201,7 @@
                     "balance": "1,000,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "''delegation stake unbond"
+                    "asyncCallData": "str:delegation stake unbond"
                 },
                 "+": ""
             }
@@ -309,7 +309,7 @@
                     "balance": "200,000,000,000,000",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "''delegation stake unbond"
+                    "asyncCallData": "str:delegation stake unbond"
                 },
                 "+": ""
             }

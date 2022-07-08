@@ -133,9 +133,9 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				verify.
 					Ok().
 					GasRemaining(expectedGasRemaining).
-					GasUsed(test.ParentAddress, simpleGasTestConfig.GasUsedByParent)
+					GasUsed(test.ParentAddress, simpleGasTestConfig.GasUsedByParent+simpleGasTestConfig.GasUsedByChild*numCalls)
 				if numCalls > 0 {
-					verify.GasUsed(test.ChildAddress, simpleGasTestConfig.GasUsedByChild*numCalls)
+					verify.GasUsed(test.ChildAddress, 0)
 				}
 			})
 	}
@@ -407,9 +407,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.
-				Ok().
-				HasRuntimeErrors("forced fail")
+			verify.ReturnCode(vmcommon.ExecutionFailed)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -588,6 +586,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithCallerAddr(test.ParentAddress).
 			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
 			WithGasProvided(gasForAsyncCall).
 			WithFunction(contracts.AsyncChildFunction).
 			WithArguments(
@@ -620,6 +619,59 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 						WithValue(big.NewInt(testConfig.TransferToVault)),
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
 						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
+						WithGasLimit(gasForAsyncCall-gasUsedByChild).
+						WithCallType(vm.AsynchronousCallBack).
+						WithValue(big.NewInt(0)),
+				)
+		})
+}
+
+func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
+	testConfig := asyncTestConfig
+	gasUsedByChild := testConfig.GasUsedByChild
+	gasUsedByParent := testConfig.GasUsedByParent
+	gasForAsyncCall := testConfig.GasProvided - gasUsedByParent - testConfig.GasLockCost
+
+	// async cross-shard parent -> child
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractOnShard(test.ChildAddress, 1).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.TransferToAsyncParentOnCallbackChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ParentAddress).
+			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
+			WithGasProvided(gasForAsyncCall).
+			WithFunction(contracts.AsyncChildFunction).
+			WithArguments(
+				big.NewInt(testConfig.TransferToThirdParty).Bytes()).
+			WithCallType(vm.AsynchronousCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
+			world.CurrentBlockInfo.BlockRound = 1
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				GasUsed(test.ChildAddress, gasUsedByChild).
+				GasRemaining(0).
+				ReturnData().
+				Transfers(
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithGasLimit(0).
+						WithCallType(vm.DirectCall).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
+						WithData(computeReturnDataForCallback(vmcommon.Ok, nil)).
 						WithGasLimit(gasForAsyncCall-gasUsedByChild).
 						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
@@ -1214,7 +1266,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				HasRuntimeErrors("tokenize failed")
+				HasRuntimeErrors("sending value to non payable contract")
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
@@ -1294,12 +1346,22 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 	}
 
 	expectedTransfers := make([]test.TransferEntry, 0)
+	expectedLogs := make([]vmcommon.LogEntry, 0)
 	for transfer := 0; transfer < noOfTransfers; transfer++ {
 		expectedTransfer := test.CreateTransferEntry(test.ParentAddress, contracts.GetChildAddressForTransfer(transfer)).
 			WithData(big.NewInt(int64(transfer)).Bytes()).
 			WithGasLimit(testConfig.GasTransferToChild).
 			WithValue(big.NewInt(testConfig.TransferFromParentToChild))
 		expectedTransfers = append(expectedTransfers, expectedTransfer)
+		expectedLogs = append(expectedLogs, vmcommon.LogEntry{
+			Address: test.ParentAddress,
+			Topics: [][]byte{
+				test.ParentAddress,
+				contracts.GetChildAddressForTransfer(transfer),
+				big.NewInt(testConfig.TransferFromParentToChild).Bytes()},
+			Data:       []byte{},
+			Identifier: []byte("transferValueOnly"),
+		})
 	}
 
 	gasRemaining := testConfig.GasProvided - testConfig.GasUsedByParent - uint64(noOfTransfers)*testConfig.GasTransferToChild
@@ -1325,7 +1387,8 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 				GasUsed(test.ParentAddress, testConfig.GasUsedByParent).
 				GasRemaining(gasRemaining).
 				ReturnData(contracts.TransferAndExecuteReturnData).
-				Transfers(expectedTransfers...)
+				Transfers(expectedTransfers...).
+				Logs(expectedLogs...)
 		})
 }
 
@@ -1392,6 +1455,7 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 				WithRecipientAddr(test.ParentAddress).
 				WithFunction("foo").
 				WithGasProvided(gasLimit).
+				WithArguments(test.ChildAddress).
 				Build()).
 			WithGasSchedule(gasSchedule).
 			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1404,6 +1468,96 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 				}
 			})
 	}
+}
+
+func TestGasUsed_AsyncESDTTransfer(t *testing.T) {
+	var parentAccount *worldmock.Account
+	initialESDTTokenBalance := uint64(100)
+
+	testConfig := asyncTestConfig
+	testConfig.ESDTTokensToTransfer = 5
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress).
+				WithMethods(contracts.ExecESDTTransferInAsyncCall, contracts.EvilCallback),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress2).
+				WithMethods(contracts.WasteGasChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("esdtTransferInAsyncCall").
+			WithArguments(test.UserAddress2).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
+			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
+			world.AcctMap.CreateAccount(test.UserAddress2, world)
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnMessage("execution by caller failed")
+
+			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
+
+			childAccount := world.AcctMap.GetAccount(test.UserAddress2)
+			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
+			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
+		})
+}
+
+func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
+	testConfig := asyncTestConfig
+	testConfig.GasProvided = 1000
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress).
+				WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallbackWithOnSameContext),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithOwnerAddress(test.UserAddress2).
+				WithMethods(contracts.TransferToThirdPartyAsyncChildMock, contracts.ExecutedOnSameContextByCallback),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("performAsyncCall").
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+			world.AcctMap.CreateAccount(test.UserAddress, world)
+			world.AcctMap.CreateAccount(test.UserAddress2, world)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				Storage(
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyA).WithValue(test.ParentDataA),
+					// overriden by ExecutedOnSameContextByCallback called from CallbackWithOnSameContext
+					test.CreateStoreEntry(test.ParentAddress).WithKey(test.ParentKeyB).WithValue(test.ParentDataA),
+					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
+				)
+		})
 }
 
 type MockClaimBuiltin struct {
@@ -1462,7 +1616,7 @@ func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {
-	retData := []byte("@" + hex.EncodeToString([]byte(returnCode.String())))
+	retData := []byte("@" + core.ConvertToEvenHex(int(returnCode)))
 	for _, data := range returnData {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}

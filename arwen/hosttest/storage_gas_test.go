@@ -149,15 +149,22 @@ func computeExpectedGasForGetStorage(key []byte, value []byte, flagEnabled bool)
 }
 
 func TestGasUsed_SetStorage_FlagEnabled(t *testing.T) {
-	setStorage(t, true)
+	setStorage(t, smallKey, true)
 }
 
 func TestGasUsed_SetStorage_FlagDisabled(t *testing.T) {
-	setStorage(t, false)
+	setStorage(t, smallKey, false)
 }
 
-func setStorage(t *testing.T, flagEnabled bool) {
-	key := []byte("testKey")
+func TestGasUsed_SetStorage_BigKey_FlagEnabled(t *testing.T) {
+	setStorage(t, bigKey, true)
+}
+
+func TestGasUsed_SetStorage_BigKey_FlagDisabled(t *testing.T) {
+	setStorage(t, bigKey, false)
+}
+
+func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 	value := []byte("testValue")
 
 	storageStoreGas := uint64(10)
@@ -166,8 +173,14 @@ func setStorage(t *testing.T, flagEnabled bool) {
 	var expectedUsedGas uint64
 	if flagEnabled {
 		expectedUsedGas = 2 * storageStoreGas
+		if len(key) > arwen.AddressLen {
+			expectedUsedGas += uint64(len(key) - arwen.AddressLen)
+		}
 	} else {
 		expectedUsedGas = 2*storageStoreGas + uint64(len(value))*dataCopyGas
+		if len(key) > arwen.AddressLen {
+			expectedUsedGas += 2 * uint64(len(key)-arwen.AddressLen)
+		}
 	}
 
 	test.BuildMockInstanceCallTest(t).
@@ -205,5 +218,87 @@ func setStorage(t *testing.T, flagEnabled bool) {
 				Ok().
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				GasRemaining(simpleGasTestConfig.GasProvided - expectedUsedGas)
+		})
+}
+
+var expectedAddByParent = len(contracts.TestStorageValue1) +
+	len(contracts.TestStorageValue2)
+
+var expectedDeletedByParent = (len(contracts.TestStorageValue1) - len(contracts.TestStorageValue2)) +
+	(len(contracts.TestStorageValue2) - len(contracts.TestStorageValue3))
+
+var expectedAddByChild = len(contracts.TestStorageValue2) +
+	(len(contracts.TestStorageValue1) - len(contracts.TestStorageValue2)) +
+	len(contracts.TestStorageValue1)
+
+var expectedDeletedByChild = len(contracts.TestStorageValue1) - len(contracts.TestStorageValue4)
+
+func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(simpleGasTestConfig.ParentBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ParentSetStorageMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(simpleGasTestConfig.ChildBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ChildSetStorageMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithFunction("parentSetStorage").
+			WithArguments([]byte{0}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				BytesAddedToStorage(test.ParentAddress,
+					expectedAddByParent+expectedAddByChild).
+				BytesAddedToStorage(test.ChildAddress,
+					0).
+				BytesDeletedFromStorage(test.ParentAddress,
+					expectedDeletedByParent+expectedDeletedByChild).
+				BytesDeletedFromStorage(test.ChildAddress,
+					0)
+		})
+}
+
+func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(simpleGasTestConfig.ParentBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ParentSetStorageMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(simpleGasTestConfig.ChildBalance).
+				WithConfig(simpleGasTestConfig).
+				WithMethods(contracts.ChildSetStorageMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(simpleGasTestConfig.GasProvided).
+			WithFunction("parentSetStorage").
+			WithArguments([]byte{1}).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				BytesAddedToStorage(test.ParentAddress,
+					expectedAddByParent).
+				BytesAddedToStorage(test.ChildAddress,
+					expectedAddByChild).
+				BytesDeletedFromStorage(test.ParentAddress,
+					expectedDeletedByParent).
+				BytesDeletedFromStorage(test.ChildAddress,
+					expectedDeletedByChild)
 		})
 }

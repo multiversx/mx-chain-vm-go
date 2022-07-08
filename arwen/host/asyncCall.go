@@ -118,7 +118,7 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 }
 
 func (host *vmHost) determineDestinationForAsyncCall(asyncCallInfo arwen.AsyncCallInfoHandler) []byte {
-	if !bytes.Equal(host.Runtime().GetSCAddress(), asyncCallInfo.GetDestination()) {
+	if !bytes.Equal(host.Runtime().GetContextAddress(), asyncCallInfo.GetDestination()) {
 		return asyncCallInfo.GetDestination()
 	}
 
@@ -150,10 +150,10 @@ func (host *vmHost) determineAsyncCallExecutionMode(asyncCallInfo *arwen.AsyncCa
 
 	actualDestination := host.determineDestinationForAsyncCall(asyncCallInfo)
 
-	sameShard := host.AreInSameShard(runtime.GetSCAddress(), actualDestination)
+	sameShard := host.AreInSameShard(runtime.GetContextAddress(), actualDestination)
 	if host.IsBuiltinFunctionName(functionName) {
 		if sameShard {
-			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetSCAddress(), actualDestination, functionName, args)
+			isESDTTransfer, _, _ := host.isESDTTransferOnReturnDataFromFunctionAndArgs(runtime.GetContextAddress(), actualDestination, functionName, args)
 			if isESDTTransfer && runtime.GetVMInput().CallType == vm.AsynchronousCall &&
 				bytes.Equal(runtime.GetVMInput().CallerAddr, actualDestination) {
 				return arwen.ESDTTransferOnCallBack, nil
@@ -260,7 +260,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 
 	err := output.Transfer(
 		asyncCallInfo.GetDestination(),
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		asyncCallInfo.GetGasLimit(),
 		asyncCallInfo.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCallInfo.GetValueBytes()),
@@ -280,6 +280,13 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 	return nil
 }
 
+func (host *vmHost) returnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
+	if host.flagFixAsyncCallArguments.IsSet() && returnCode == vmcommon.Ok {
+		return []byte{0}
+	}
+	return big.NewInt(int64(returnCode)).Bytes()
+}
+
 // TODO add locked gas during future refactoring, if needed
 func (host *vmHost) sendCallbackToCurrentCaller() error {
 	runtime := host.Runtime()
@@ -287,17 +294,27 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	metering := host.Metering()
 	currentCall := runtime.GetVMInput()
 
-	retData := []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
+	retData := []byte("@" + core.ConvertToEvenHex(int(output.ReturnCode())))
+	if !host.flagFixAsyncCallArguments.IsSet() {
+		// the legacy implementation was using the message string instead of the code
+		retData = []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
+	}
+
 	for _, data := range output.ReturnData() {
 		retData = append(retData, []byte("@"+hex.EncodeToString(data))...)
 	}
 
+	valueToTransfer := currentCall.CallValue
+	if host.flagUseDifferentGasCostForCachedStorage.IsSet() {
+		valueToTransfer = big.NewInt(0)
+	}
+
 	err := output.Transfer(
 		currentCall.CallerAddr,
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		metering.GasLeft(),
 		0,
-		currentCall.CallValue,
+		valueToTransfer,
 		retData,
 		vm.AsynchronousCallBack,
 	)
@@ -320,7 +337,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 
 	err := output.Transfer(
 		callerAddress,
-		runtime.GetSCAddress(),
+		runtime.GetContextAddress(),
 		metering.GasLeft(),
 		0,
 		currentCall.CallValue,
@@ -338,7 +355,7 @@ func (host *vmHost) sendStorageCallbackToDestination(callerAddress, returnData [
 
 func (host *vmHost) createDestinationContractCallInput(asyncCallInfo arwen.AsyncCallInfoHandler) (*vmcommon.ContractCallInput, error) {
 	runtime := host.Runtime()
-	sender := runtime.GetSCAddress()
+	sender := runtime.GetContextAddress()
 	metering := host.Metering()
 
 	argParser := parsers.NewCallArgsParser()
@@ -372,7 +389,7 @@ func (host *vmHost) computeCallValueFromLastOutputTransfer(destinationVMOutput *
 	}
 
 	returnTransfer := big.NewInt(0)
-	callBackReceiver := host.Runtime().GetSCAddress()
+	callBackReceiver := host.Runtime().GetContextAddress()
 	outAcc, ok := destinationVMOutput.OutputAccounts[string(callBackReceiver)]
 	if !ok {
 		return returnTransfer
@@ -406,13 +423,13 @@ func (host *vmHost) createCallbackContractCallInput(
 	esdtArgs := make([][]byte, 0)
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
-		big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes(),
+		host.returnCodeToBytes(destinationVMOutput.ReturnCode),
 	}
 	returnWithError := false
 	if destinationErr == nil && destinationVMOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:
 		// [0, result1, result2, ....]
-		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnReturnDataWithNoAdditionalData(callbackInitiator, runtime.GetSCAddress(), destinationVMOutput)
+		isESDTOnCallBack, functionName, esdtArgs = host.isESDTTransferOnReturnDataWithNoAdditionalData(callbackInitiator, runtime.GetContextAddress(), destinationVMOutput)
 		arguments = append(arguments, destinationVMOutput.ReturnData...)
 	} else {
 		// when execution returned error, callBack arguments are:
@@ -445,7 +462,7 @@ func (host *vmHost) createCallbackContractCallInput(
 			OriginalTxHash:       runtime.GetOriginalTxHash(),
 			ReturnCallAfterError: returnWithError,
 		},
-		RecipientAddr: runtime.GetSCAddress(),
+		RecipientAddr: runtime.GetContextAddress(),
 		Function:      callbackFunction,
 	}
 
@@ -454,7 +471,8 @@ func (host *vmHost) createCallbackContractCallInput(
 		contractCallInput.Arguments = make([][]byte, 0, len(arguments))
 		contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 		contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(callbackFunction))
-		contractCallInput.Arguments = append(contractCallInput.Arguments, big.NewInt(int64(destinationVMOutput.ReturnCode)).Bytes())
+		returnCodeData := host.returnCodeToBytes(destinationVMOutput.ReturnCode)
+		contractCallInput.Arguments = append(contractCallInput.Arguments, returnCodeData)
 		if len(destinationVMOutput.ReturnData) > 1 {
 			contractCallInput.Arguments = append(contractCallInput.Arguments, destinationVMOutput.ReturnData[1:]...)
 		}

@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"bytes"
 	"crypto/elliptic"
 	"encoding/binary"
 	"errors"
@@ -12,6 +13,15 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
+
+const bigFloatPrecision = 53
+const encodedBigFloatMaxByteLen = 18
+const bigFloatMaxExponent = 65025
+const bigFloatMinExponent = -65025
+
+var positiveEncodedBigFloatPrefix = [...]byte{1, 10, 0, 0, 0, 53}
+var negativeEncodedBigFloatPrefix = [...]byte{1, 11, 0, 0, 0, 53}
+var encodedZeroBigFloat = [...]byte{1, 8, 0, 0, 0, 53}
 
 const maxBigIntByteLenForNormalCost = 32
 const p224CurveMultiplier = 100
@@ -29,10 +39,12 @@ const p256CurveUnmarshalCompressedMultiplier = 100
 const p384CurveUnmarshalCompressedMultiplier = 200
 const p521CurveUnmarshalCompressedMultiplier = 400
 
+const minEncodedBigFloatLength = 6
 const handleLen = 4
 
 type managedBufferMap map[int32][]byte
 type bigIntMap map[int32]*big.Int
+type bigFloatMap map[int32]*big.Float
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type managedTypesContext struct {
@@ -43,9 +55,10 @@ type managedTypesContext struct {
 }
 
 type managedTypesState struct {
-	bigIntValues  bigIntMap
-	ecValues      ellipticCurveMap
-	mBufferValues managedBufferMap
+	bigIntValues   bigIntMap
+	bigFloatValues bigFloatMap
+	ecValues       ellipticCurveMap
+	mBufferValues  managedBufferMap
 }
 
 // NewManagedTypesContext creates a new managedTypesContext
@@ -53,9 +66,10 @@ func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
 	context := &managedTypesContext{
 		host: host,
 		managedTypesValues: managedTypesState{
-			bigIntValues:  make(bigIntMap),
-			ecValues:      make(ellipticCurveMap),
-			mBufferValues: make(managedBufferMap),
+			bigIntValues:   make(bigIntMap),
+			bigFloatValues: make(bigFloatMap),
+			ecValues:       make(ellipticCurveMap),
+			mBufferValues:  make(managedBufferMap),
 		},
 		managedTypesStack:   make([]managedTypesState, 0),
 		randomnessGenerator: nil,
@@ -88,18 +102,20 @@ func (context *managedTypesContext) GetRandReader() io.Reader {
 // InitState initializes the underlying values map
 func (context *managedTypesContext) InitState() {
 	context.managedTypesValues = managedTypesState{
-		bigIntValues:  make(bigIntMap),
-		ecValues:      make(ellipticCurveMap),
-		mBufferValues: make(managedBufferMap)}
+		bigIntValues:   make(bigIntMap),
+		bigFloatValues: make(bigFloatMap),
+		ecValues:       make(ellipticCurveMap),
+		mBufferValues:  make(managedBufferMap)}
 }
 
 // PushState appends the values map to the state stack
 func (context *managedTypesContext) PushState() {
-	newBigIntState, newEcState, newmBufferState := context.clone()
+	newBigIntState, newBigFloatState, newEcState, newmBufferState := context.clone()
 	context.managedTypesStack = append(context.managedTypesStack, managedTypesState{
-		bigIntValues:  newBigIntState,
-		ecValues:      newEcState,
-		mBufferValues: newmBufferState,
+		bigIntValues:   newBigIntState,
+		bigFloatValues: newBigFloatState,
+		ecValues:       newEcState,
+		mBufferValues:  newmBufferState,
 	})
 }
 
@@ -109,11 +125,14 @@ func (context *managedTypesContext) PopSetActiveState() {
 	if managedTypesStackLen == 0 {
 		return
 	}
+
 	prevState := context.managedTypesStack[managedTypesStackLen-1]
 	prevBigIntValues := prevState.bigIntValues
+	prevBigFloatValues := prevState.bigFloatValues
 	prevEcValues := prevState.ecValues
 	prevmBufferValues := prevState.mBufferValues
 	context.managedTypesValues.bigIntValues = prevBigIntValues
+	context.managedTypesValues.bigFloatValues = prevBigFloatValues
 	context.managedTypesValues.ecValues = prevEcValues
 	context.managedTypesValues.mBufferValues = prevmBufferValues
 	context.managedTypesStack = context.managedTypesStack[:managedTypesStackLen-1]
@@ -134,12 +153,16 @@ func (context *managedTypesContext) ClearStateStack() {
 	context.randomnessGenerator = nil
 }
 
-func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, managedBufferMap) {
+func (context *managedTypesContext) clone() (bigIntMap, bigFloatMap, ellipticCurveMap, managedBufferMap) {
 	newBigIntState := make(bigIntMap, len(context.managedTypesValues.bigIntValues))
+	newBigFloatState := make(bigFloatMap, len(context.managedTypesValues.bigFloatValues))
 	newEcState := make(ellipticCurveMap, len(context.managedTypesValues.ecValues))
 	newmBufferState := make(managedBufferMap, len(context.managedTypesValues.mBufferValues))
 	for bigIntHandle, bigInt := range context.managedTypesValues.bigIntValues {
 		newBigIntState[bigIntHandle] = big.NewInt(0).Set(bigInt)
+	}
+	for bigFloatHandle, bigFloat := range context.managedTypesValues.bigFloatValues {
+		newBigFloatState[bigFloatHandle] = big.NewFloat(0).Set(bigFloat)
 	}
 	for ecHandle, ec := range context.managedTypesValues.ecValues {
 		newEcState[ecHandle] = ec
@@ -147,7 +170,7 @@ func (context *managedTypesContext) clone() (bigIntMap, ellipticCurveMap, manage
 	for mBufferHandle, mBuffer := range context.managedTypesValues.mBufferValues {
 		newmBufferState[mBufferHandle] = mBuffer
 	}
-	return newBigIntState, newEcState, newmBufferState
+	return newBigIntState, newBigFloatState, newEcState, newmBufferState
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
@@ -191,6 +214,11 @@ func (context *managedTypesContext) ConsumeGasForThisBigIntNumberOfBytes(byteLen
 		gasToUse = gasToUseBigInt.Uint64()
 	}
 	metering.UseAndTraceGas(gasToUse)
+}
+
+// ConsumeGasForBigFloatCopy uses gas for the given big float values
+func (context *managedTypesContext) ConsumeGasForBigFloatCopy(values ...*big.Float) {
+	context.ConsumeGasForThisIntNumberOfBytes(encodedBigFloatMaxByteLen * len(values))
 }
 
 // BIGINT
@@ -238,6 +266,111 @@ func (context *managedTypesContext) newBigIntNoCopy(value *big.Int) int32 {
 	}
 	context.managedTypesValues.bigIntValues[newHandle] = value
 	return newHandle
+}
+
+// BIG FLOAT
+
+// BigFloatPrecIsNotValid checks if the precision of a big float is not valid (not equal to 53)
+func (context *managedTypesContext) BigFloatPrecIsNotValid(precision uint) bool {
+	return precision != bigFloatPrecision
+}
+
+// BigFloatExpIsNotValid checks if the exponent of a big float is not valid (smaller than -65025 or bigger than 65025)
+func (context *managedTypesContext) BigFloatExpIsNotValid(exponent int) bool {
+	return exponent < bigFloatMinExponent || exponent > bigFloatMaxExponent
+}
+
+// EncodedBigFloatIsNotValid checks if an encoded big float is not valid
+func (context *managedTypesContext) EncodedBigFloatIsNotValid(encodedBigFloat []byte) bool {
+	length := len(encodedBigFloat)
+	if length < minEncodedBigFloatLength {
+		return true
+	} else if length == minEncodedBigFloatLength && !bytes.Equal(encodedBigFloat, encodedZeroBigFloat[:]) {
+		return true
+	}
+
+	return !bytes.Equal(encodedBigFloat[:minEncodedBigFloatLength], positiveEncodedBigFloatPrefix[:]) &&
+		!bytes.Equal(encodedBigFloat[:minEncodedBigFloatLength], negativeEncodedBigFloatPrefix[:])
+}
+
+// GetBigFloatOrCreate returns the value at the given handle. If there is no value under that value, it will set a new one with value 0
+func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Float, error) {
+	value, ok := context.managedTypesValues.bigFloatValues[handle]
+	if !ok {
+		value = big.NewFloat(0)
+		context.managedTypesValues.bigFloatValues[handle] = value
+	}
+	if value.IsInf() {
+		return nil, arwen.ErrInfinityFloatOperation
+	} else {
+		exponent := value.MantExp(nil)
+		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+			return nil, arwen.ErrExponentTooBigOrTooSmall
+		}
+	}
+	return value, nil
+}
+
+// GetBigFloat returns the value at the given handle. If there is no value under that handle, it will return error
+func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error) {
+	value, ok := context.managedTypesValues.bigFloatValues[handle]
+	if !ok {
+		return nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	if value.IsInf() {
+		return nil, arwen.ErrInfinityFloatOperation
+	} else {
+		exponent := value.MantExp(nil)
+		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+			return nil, arwen.ErrExponentTooBigOrTooSmall
+		}
+	}
+	return value, nil
+}
+
+// GetTwoBigFloats returns the values at the two given handles. If there is at least one missing value, it will return error
+func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32) (*big.Float, *big.Float, error) {
+	bigFloatValues := context.managedTypesValues.bigFloatValues
+	value1, ok := bigFloatValues[handle1]
+	if !ok {
+		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	value2, ok := bigFloatValues[handle2]
+	if !ok {
+		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+	}
+	if value1.IsInf() || value2.IsInf() {
+		return nil, nil, arwen.ErrInfinityFloatOperation
+	} else {
+		exponent1 := value1.MantExp(nil)
+		exponent2 := value2.MantExp(nil)
+		if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
+			return nil, nil, arwen.ErrExponentTooBigOrTooSmall
+
+		}
+	}
+	return value1, value2, nil
+}
+
+// PutBigFloat adds the given value to the current values map and returns the handle. Returns error if exponent is incorrect
+func (context *managedTypesContext) PutBigFloat(value *big.Float) (int32, error) {
+	if value == nil {
+		value = big.NewFloat(0)
+	}
+	exponent := value.MantExp(nil)
+	if exponent > 65025 || exponent < -65025 {
+		return 0, arwen.ErrExponentTooBigOrTooSmall
+	}
+	newHandle := int32(len(context.managedTypesValues.bigFloatValues))
+	for {
+		if _, ok := context.managedTypesValues.bigFloatValues[newHandle]; !ok {
+			break
+		}
+		newHandle++
+	}
+
+	context.managedTypesValues.bigFloatValues[newHandle] = new(big.Float).Set(value)
+	return newHandle, nil
 }
 
 // NewBigInt adds the given value to the current values map and returns the handle

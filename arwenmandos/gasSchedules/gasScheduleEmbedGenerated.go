@@ -1,4 +1,4 @@
-package gasschedules 
+package gasschedules
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
@@ -100,6 +100,8 @@ const (
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100    
 
 [EthAPICost]
     UseGas              = 100
@@ -181,6 +183,26 @@ const (
     BigIntGetExternalBalance    = 10000
     CopyPerByteForTooBig        = 1000
 
+    [BigFloatAPICost]
+    BigFloatNewFromParts = 3000
+    BigFloatAdd          = 7000
+    BigFloatSub          = 7000
+    BigFloatMul          = 7000
+    BigFloatDiv          = 7000
+    BigFloatTruncate     = 5000
+    BigFloatNeg          = 5000
+    BigFloatClone        = 5000
+    BigFloatCmp          = 4000
+    BigFloatAbs          = 5000
+    BigFloatSqrt         = 7000
+    BigFloatPow          = 10000
+    BigFloatFloor        = 5000
+    BigFloatCeil         = 5000
+    BigFloatIsInt        = 3000
+    BigFloatSetBigInt    = 3000
+    BigFloatSetInt64     = 1000
+    BigFloatGetConst     = 1000
+    
 [CryptoAPICost]
     SHA256                 = 1000000
     Keccak256              = 1000000
@@ -198,7 +220,7 @@ const (
     UnmarshalECC           = 20000
     UnmarshalCompressedECC = 270000
     GenerateKeyECC         = 7000000
-    EncodeDERSig           = 1000000
+    EncodeDERSig           = 10000000
 
 [ManagedBufferAPICost]
     MBufferNew                   = 2000
@@ -214,8 +236,10 @@ const (
     MBufferToBigIntSigned        = 10000
     MBufferFromBigIntUnsigned    = 4000
     MBufferFromBigIntSigned      = 10000
-    MBufferStorageStore          = 250000
-    MBufferStorageLoad           = 100000
+    MBufferToBigFloat            = 2000
+    MBufferFromBigFloat          = 2000
+    MBufferStorageStore          = 75000
+    MBufferStorageLoad           = 50000
     MBufferGetArgument           = 1000
     MBufferFinish                = 1000
     MBufferSetRandom             = 6000
@@ -766,6 +790,8 @@ const (
     GetReturnData        = 100
     GetNumReturnData     = 100
     GetReturnDataSize    = 100
+    CleanReturnData      = 100
+    DeleteFromReturnData = 100
     GetOriginalTxHash    = 10000
 
 [EthAPICost]
@@ -848,6 +874,26 @@ const (
     BigIntGetExternalBalance    = 10000
     CopyPerByteForTooBig        = 1000
 
+    [BigFloatAPICost]
+    BigFloatNewFromParts = 3000
+    BigFloatAdd          = 7000
+    BigFloatSub          = 7000
+    BigFloatMul          = 7000
+    BigFloatDiv          = 7000
+    BigFloatTruncate     = 5000
+    BigFloatNeg          = 5000
+    BigFloatClone        = 5000
+    BigFloatCmp          = 4000
+    BigFloatAbs          = 5000
+    BigFloatSqrt         = 7000
+    BigFloatPow          = 10000
+    BigFloatFloor        = 5000
+    BigFloatCeil         = 5000
+    BigFloatIsInt        = 3000
+    BigFloatSetBigInt    = 3000
+    BigFloatSetInt64     = 1000
+    BigFloatGetConst     = 1000
+    
 [CryptoAPICost]
     SHA256                 = 1000000
     Keccak256              = 1000000
@@ -881,6 +927,8 @@ const (
     MBufferToBigIntSigned        = 5000
     MBufferFromBigIntUnsigned    = 2000
     MBufferFromBigIntSigned      = 5000
+    MBufferToBigFloat            = 2000
+    MBufferFromBigFloat          = 2000
     MBufferStorageStore          = 75000
     MBufferStorageLoad           = 50000
     MBufferGetArgument           = 1000

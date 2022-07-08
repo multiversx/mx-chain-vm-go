@@ -41,13 +41,11 @@
                 "logs": [
                     {
                         "address": "sc:vault",
-                        "endpoint": "str:accept_funds",
+                        "endpoint": "str:transferValueOnly",
                         "topics": [
-                            "str:accept_funds",
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "1",
-                            "0"
+                            "sc:forwarder",
+                            "sc:vault",
+                            "1"
                         ],
                         "data": ""
                     },
@@ -56,10 +54,26 @@
                         "endpoint": "str:accept_funds",
                         "topics": [
                             "str:accept_funds",
-                            "str:EGLD",
-                            "str:FungibleESDT",
-                            "1",
-                            "0"
+                            "1"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:transferValueOnly",
+                        "topics": [
+                            "sc:forwarder",
+                            "sc:vault",
+                            "1"
+                        ],
+                        "data": ""
+                    },
+                    {
+                        "address": "sc:vault",
+                        "endpoint": "str:accept_funds",
+                        "topics": [
+                            "str:accept_funds",
+                            "1"
                         ],
                         "data": ""
                     }

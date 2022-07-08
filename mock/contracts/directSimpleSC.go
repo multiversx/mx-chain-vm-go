@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -35,13 +36,13 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{
 		runtime := host.Runtime()
 
 		input := test.DefaultTestContractCallInput()
-		input.CallerAddr = runtime.GetSCAddress()
+		input.CallerAddr = runtime.GetContextAddress()
 		input.GasProvided = runtime.GetVMInput().GasProvided / 2
 		input.Arguments = [][]byte{
 			test.ESDTTestTokenName,
 			runtime.Arguments()[0],
 		}
-		input.RecipientAddr = host.Runtime().GetSCAddress()
+		input.RecipientAddr = host.Runtime().GetContextAddress()
 		input.Function = "ESDTLocalBurn"
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
@@ -212,6 +213,56 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			host.Runtime().FailExecution(err)
 		}
 
+		return instance
+	})
+}
+
+var TestStorageValue1 = []byte{1, 2, 3, 4}
+var TestStorageValue2 = []byte{1, 2, 3}
+var TestStorageValue3 = []byte{1, 2}
+var TestStorageValue4 = []byte{1}
+
+// ParentSetStorageMock is an exposed mock contract method
+func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
+	testConfig := config.(DirectCallGasTestConfig)
+	instanceMock.AddMockMethod("parentSetStorage", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Storage().SetStorage(test.ParentKeyA, TestStorageValue1) // add
+		host.Storage().SetStorage(test.ParentKeyA, TestStorageValue2) // delete
+		host.Storage().SetStorage(test.ParentKeyB, TestStorageValue2) // add
+		host.Storage().SetStorage(test.ParentKeyB, TestStorageValue3) // delete
+
+		input := test.DefaultTestContractCallInput()
+		input.GasProvided = testConfig.GasProvidedToChild
+		input.CallerAddr = instance.Address
+		input.RecipientAddr = test.ChildAddress
+		input.Function = "childSetStorage"
+
+		arguments := host.Runtime().Arguments()
+		var returnValue int32
+		if bytes.Equal(arguments[0], []byte{0}) {
+			returnValue = ExecuteOnSameContextInMockContracts(host, input)
+		} else {
+			returnValue = ExecuteOnDestContextInMockContracts(host, input)
+		}
+		if returnValue != 0 {
+			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+		}
+
+		return instance
+	})
+}
+
+// ChildSetStorageMock is an exposed mock contract method
+func ChildSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("childSetStorage", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Storage().SetStorage(test.ChildKey, TestStorageValue2)  // add
+		host.Storage().SetStorage(test.ChildKey, TestStorageValue1)  // add
+		host.Storage().SetStorage(test.ChildKeyB, TestStorageValue1) // add
+		host.Storage().SetStorage(test.ChildKeyB, TestStorageValue4) // delete
 		return instance
 	})
 }

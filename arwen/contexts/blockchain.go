@@ -250,7 +250,7 @@ func (context *blockchainContext) CurrentRandomSeed() []byte {
 
 // GetOwnerAddress returns the address of the owner of the SC that is set in the runtime context
 func (context *blockchainContext) GetOwnerAddress() ([]byte, error) {
-	scAddress := context.host.Runtime().GetSCAddress()
+	scAddress := context.host.Runtime().GetContextAddress()
 	scAccount, err := context.blockChainHook.GetUserAccount(scAddress)
 	if err != nil || arwen.IfNil(scAccount) {
 		return nil, err
@@ -341,4 +341,14 @@ func (context *blockchainContext) GetSnapshot() int {
 // RevertToSnapshot - reverts to the specified snapshot via blockchain hook
 func (context *blockchainContext) RevertToSnapshot(snapshot int) {
 	_ = context.blockChainHook.RevertToSnapshot(snapshot)
+}
+
+// IsLimitedTransfer returns true if token transfers are limited
+func (context *blockchainContext) IsLimitedTransfer(tokenID []byte) bool {
+	return context.blockChainHook.IsLimitedTransfer(tokenID)
+}
+
+// IsPaused returns true if tokenID is paused
+func (context *blockchainContext) IsPaused(tokenID []byte) bool {
+	return context.blockChainHook.IsPaused(tokenID)
 }

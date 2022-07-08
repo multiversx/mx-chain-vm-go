@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
 	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -30,7 +31,7 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 		host.Output().Finish(test.ParentFinishA)
 		host.Output().Finish(test.ParentFinishB)
 
-		scAddress := host.Runtime().GetSCAddress()
+		scAddress := host.Runtime().GetContextAddress()
 		transferValue := big.NewInt(testConfig.TransferToThirdParty)
 		err := host.Output().Transfer(test.ThirdPartyAddress, scAddress, 0, 0, transferValue, []byte("hello"), 0)
 		require.Nil(t, err)
@@ -115,6 +116,29 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 	})
 }
 
+// CallbackWithOnSameContext is an exposed mock contract method
+func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		retVal := elrondapi.ExecuteOnSameContextWithTypedArgs(
+			host,
+			int64(host.Metering().GasLeft()),
+			big.NewInt(0),
+			[]byte("executedOnSameContextByCallback"),
+			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
+			[][]byte{},
+		)
+
+		if retVal != 0 {
+			host.Runtime().SignalUserError("execution by caller failed")
+			return instance
+		}
+
+		return instance
+	})
+}
+
 func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
 	if behavior.Cmp(big.NewInt(3)) == 0 {
 		host.Runtime().SignalUserError("callBack error")
@@ -157,7 +181,7 @@ func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
 	err := error(nil)
 	if mustTransferToVault(arguments) {
 		valueToTransfer := big.NewInt(4)
-		err = host.Output().Transfer(test.VaultAddress, host.Runtime().GetSCAddress(), 0, 0, valueToTransfer, arguments[1], 0)
+		err = host.Output().Transfer(test.VaultAddress, host.Runtime().GetContextAddress(), 0, 0, valueToTransfer, arguments[1], 0)
 	}
 
 	return err

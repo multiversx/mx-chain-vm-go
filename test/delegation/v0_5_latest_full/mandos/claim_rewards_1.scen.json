@@ -181,7 +181,7 @@
                     "balance": "16,666,833",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "''delegation rewards claim"
+                    "asyncCallData": "str:delegation rewards claim"
                 },
                 "address:delegator2": {
                     "nonce": "*",
