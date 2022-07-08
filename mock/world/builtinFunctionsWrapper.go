@@ -36,6 +36,7 @@ func NewBuiltinFunctionsWrapper(
 		ShardCoordinator:                  world,
 		EpochNotifier:                     &EpochNotifierStub{},
 		SaveNFTToSystemAccountEnableEpoch: 100,
+		GuardedAccountHandler:             world.GuardedAccountHandler,
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)

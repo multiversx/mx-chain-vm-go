@@ -37,23 +37,26 @@ type MockWorld struct {
 	LastCreatedContractAddress []byte
 	CompiledCode               map[string][]byte
 	BuiltinFuncs               *BuiltinFunctionsWrapper
+	GuardedAccountHandler      vmcommon.GuardedAccountHandler
 }
 
 // NewMockWorld creates a new MockWorld instance
 func NewMockWorld() *MockWorld {
 	accountMap := NewAccountMap()
 	world := &MockWorld{
-		SelfShardID:       0,
-		AcctMap:           accountMap,
-		AccountsAdapter:   nil,
-		PreviousBlockInfo: nil,
-		CurrentBlockInfo:  nil,
-		Blockhashes:       nil,
-		NewAddressMocks:   nil,
-		CompiledCode:      make(map[string][]byte),
-		BuiltinFuncs:      nil,
+		SelfShardID:           0,
+		AcctMap:               accountMap,
+		AccountsAdapter:       nil,
+		PreviousBlockInfo:     nil,
+		CurrentBlockInfo:      nil,
+		Blockhashes:           nil,
+		NewAddressMocks:       nil,
+		CompiledCode:          make(map[string][]byte),
+		BuiltinFuncs:          nil,
+		GuardedAccountHandler: nil,
 	}
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
+	world.GuardedAccountHandler = NewMockGuardedAccountHandler()
 
 	return world
 }
