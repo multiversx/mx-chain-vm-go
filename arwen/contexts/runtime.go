@@ -931,6 +931,9 @@ func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback
 
 // ExecuteAsyncCall locks the necessary gas and sets the async call info and a runtime breakpoint value.
 func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
+	if context.ReadOnly() && context.host.CheckExecuteReadOnly() {
+		return arwen.ErrInvalidCallOnReadOnlyMode
+	}
 	metering := context.host.Metering()
 	err := metering.UseGasForAsyncStep()
 	if err != nil {

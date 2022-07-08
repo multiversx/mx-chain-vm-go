@@ -228,8 +228,11 @@ var ErrNilESDTData = errors.New("nil esdt data")
 // ErrInvalidArgument is given when argument is invalid
 var ErrInvalidArgument = errors.New("invalid argument")
 
-// ErrInvalidArgument is given when argument is invalid
+// ErrInvalidTokenIndex is given when argument is invalid
 var ErrInvalidTokenIndex = errors.New("invalid token index")
 
 // ErrInvalidBuiltInFunctionCall signals that built in function was used in the wrong context
 var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")
+
+// ErrCannotWriteOnReadOnly signals that write operation on read only is not allowed
+var ErrCannotWriteOnReadOnly = errors.New("cannot write on read only mode")
