@@ -603,8 +603,8 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	_, ok := host.activationEpochMap[epoch]
 	if ok {
-		host.Blockchain().ClearCompiledCodes()
 		host.Runtime().ClearWarmInstanceCache()
+		host.Blockchain().ClearCompiledCodes()
 	}
 }
 
