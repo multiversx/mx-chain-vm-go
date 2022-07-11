@@ -352,3 +352,8 @@ func (context *blockchainContext) IsLimitedTransfer(tokenID []byte) bool {
 func (context *blockchainContext) IsPaused(tokenID []byte) bool {
 	return context.blockChainHook.IsPaused(tokenID)
 }
+
+// ClearCompiledCodes returns true if tokenID is paused
+func (context *blockchainContext) ClearCompiledCodes() {
+	context.blockChainHook.ClearCompiledCodes()
+}

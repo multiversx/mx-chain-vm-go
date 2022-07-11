@@ -198,3 +198,7 @@ func (b *BlockchainContextMock) IsLimitedTransfer(_ []byte) bool {
 func (b *BlockchainContextMock) IsPaused(_ []byte) bool {
 	return false
 }
+
+// ClearCompiledCodes -
+func (b *BlockchainContextMock) ClearCompiledCodes() {
+}
