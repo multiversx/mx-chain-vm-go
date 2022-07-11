@@ -353,7 +353,7 @@ func (context *blockchainContext) IsPaused(tokenID []byte) bool {
 	return context.blockChainHook.IsPaused(tokenID)
 }
 
-// ClearCompiledCodes returns true if tokenID is paused
+// ClearCompiledCodes cleans the compiled codes cache
 func (context *blockchainContext) ClearCompiledCodes() {
 	context.blockChainHook.ClearCompiledCodes()
 }
