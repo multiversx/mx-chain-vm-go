@@ -16,6 +16,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/process/smartContract/hooks"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
@@ -989,11 +990,8 @@ func AddAsyncParamsToVmOutput(
 
 			callData := txDataBuilder.NewBuilder()
 			callData.Func(function)
-			callData.Bytes(asyncParams[0]) // callID
-			callData.Bytes(asyncParams[1]) // callerCallID
-			if len(asyncParams) > 2 {
-				callData.Bytes(asyncParams[2]) // callbackAsyncInitiatorCallID
-				callData.Bytes(asyncParams[3]) // gasAccumulated
+			for _, asyncParam := range asyncParams {
+				callData.Bytes(asyncParam)
 			}
 
 			for _, arg := range args {
@@ -1012,4 +1010,13 @@ func AddAsyncParamsToVmOutput(
 	}
 
 	return nil
+}
+
+func GenerateNewCallID(parentCallID []byte, suffix []byte) []byte {
+	newCallID := append(parentCallID, suffix...)
+	newCallID, err := hooks.NewVMCryptoHook().Sha256(newCallID)
+	if err != nil {
+		return []byte{}
+	}
+	return newCallID
 }
