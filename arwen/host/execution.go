@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -296,6 +297,18 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 
 	if postBuiltinInput != nil {
 		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
+	}
+
+	// TODO matei-p reuse maybe logic from sendAsyncCallCrossShard() to prepend for builtinOutput (async call type)
+	err = contexts.AddAsyncParamsToVmOutput(
+		input.RecipientAddr,
+		asyncPrefixArgs,
+		vm.AsynchronousCall,
+		host.callArgsParser.ParseData,
+		builtinOutput)
+	if err != nil {
+		log.Trace("ExecuteOnDestContext builtin function", "error", err)
+		return nil, nil, err
 	}
 
 	output.AddToActiveState(builtinOutput)

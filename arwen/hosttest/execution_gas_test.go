@@ -1482,7 +1482,7 @@ func testGasUsed_ESDTTransferInCallbackAndTryNewAsync(t *testing.T, isLegacy boo
 
 	testConfig.ESDTTokensToTransfer = 5
 	// callback will failed because it will not be allowed to make an new async call (TODO matei-p possible in R2 of promises)
-	testConfig.CallbackESDTTokensToTransfer = 0
+	testConfig.CallbackESDTTokensToTransfer = 1
 
 	var expectedGasUsedByParent uint64
 	var expectedRemainingGas uint64
@@ -1536,11 +1536,11 @@ func testGasUsed_ESDTTransferInCallbackAndTryNewAsync(t *testing.T, isLegacy boo
 				GasRemaining(expectedRemainingGas)
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer+testConfig.CallbackESDTTokensToTransfer, parentESDTBalance)
+			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, testConfig.ESDTTokensToTransfer-testConfig.CallbackESDTTokensToTransfer, childESDTBalance)
+			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
 		})
 }
 
