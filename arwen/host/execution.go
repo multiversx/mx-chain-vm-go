@@ -299,7 +299,7 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
 	}
 
-	// TODO matei-p reuse maybe logic from sendAsyncCallCrossShard() to prepend for builtinOutput (async call type)
+	// TODO matei-p
 	err = contexts.AddAsyncParamsToVmOutput(
 		input.RecipientAddr,
 		asyncPrefixArgs,
