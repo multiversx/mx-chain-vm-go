@@ -43,18 +43,18 @@ func NewBuiltinFunctionsWrapper(
 		return nil, err
 	}
 
-	builtinFuncs, err := builtinFuncFactory.CreateBuiltInFunctionContainer()
+	err = builtinFuncFactory.CreateBuiltInFunctionContainer()
 	if err != nil {
 		return nil, err
 	}
 
-	err = builtInFunctions.SetPayableHandler(builtinFuncs, world)
+	err = builtinFuncFactory.SetPayableHandler(world)
 	if err != nil {
 		return nil, err
 	}
 
 	builtinFuncsWrapper := &BuiltinFunctionsWrapper{
-		Container:       builtinFuncs,
+		Container:       builtinFuncFactory.BuiltInFunctionContainer(),
 		MapDNSAddresses: argsBuiltIn.MapDNSAddresses,
 		World:           world,
 	}
