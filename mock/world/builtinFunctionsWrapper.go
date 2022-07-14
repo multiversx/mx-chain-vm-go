@@ -33,12 +33,13 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasMap:           gasMap,
-		MapDNSAddresses:  dnsMap,
-		Marshalizer:      WorldMarshalizer,
-		Accounts:         world.AccountsAdapter,
-		ShardCoordinator: world,
-		EpochNotifier:    &EpochNotifierStub{},
+		GasMap:                           gasMap,
+		MapDNSAddresses:                  dnsMap,
+		Marshalizer:                      WorldMarshalizer,
+		Accounts:                         world.AccountsAdapter,
+		ShardCoordinator:                 world,
+		EpochNotifier:                    &EpochNotifierStub{},
+		MaxNumOfAddressesForTransferRole: 100,
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)
