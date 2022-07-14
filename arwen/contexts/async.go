@@ -422,12 +422,7 @@ func (context *asyncContext) GetAsyncCallByCallID(callID []byte) arwen.AsyncCall
 
 func (context *asyncContext) generateNewCallID() []byte {
 	context.totalCallsCounter++
-	newCallID := append(context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes()...)
-	newCallID, err := context.host.Crypto().Sha256(newCallID)
-	if err != nil {
-		return []byte{}
-	}
-	return newCallID
+	return GenerateNewCallID(context.host.Crypto(), context.callID, big.NewInt(int64(context.totalCallsCounter)).Bytes())
 }
 
 func (context *asyncContext) incrementCallsCounter() {

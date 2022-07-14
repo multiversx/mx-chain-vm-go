@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -16,7 +17,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/process/smartContract/hooks"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
@@ -1012,9 +1012,9 @@ func AddAsyncParamsToVmOutput(
 	return nil
 }
 
-func GenerateNewCallID(parentCallID []byte, suffix []byte) []byte {
+func GenerateNewCallID(hasher crypto.Hasher, parentCallID []byte, suffix []byte) []byte {
 	newCallID := append(parentCallID, suffix...)
-	newCallID, err := hooks.NewVMCryptoHook().Sha256(newCallID)
+	newCallID, err := hasher.Sha256(newCallID)
 	if err != nil {
 		return []byte{}
 	}
