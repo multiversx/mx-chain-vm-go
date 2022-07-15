@@ -103,7 +103,7 @@ func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 	transferData.Bytes(context.callerCallID)
 	transferData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())
 
-	transferData.Int64(int64(returnCode))
+	transferData.Bytes(returnCodeToBytes(returnCode))
 	if returnCode == vmcommon.Ok {
 		for _, data := range returnData {
 			transferData.Bytes(data)
