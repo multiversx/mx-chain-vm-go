@@ -37,6 +37,8 @@ func NewBuiltinFunctionsWrapper(
 		EpochNotifier:                     &EpochNotifierStub{},
 		SaveNFTToSystemAccountEnableEpoch: 100,
 		MaxNumOfAddressesForTransferRole:  100,
+		FixAsyncCallbackCheckEnableEpoch:  100,
+		CheckFunctionArgumentEnableEpoch:  100,
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)
