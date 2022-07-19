@@ -33,12 +33,13 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasMap:           gasMap,
-		MapDNSAddresses:  dnsMap,
-		Marshalizer:      WorldMarshalizer,
-		Accounts:         world.AccountsAdapter,
-		ShardCoordinator: world,
-		EpochNotifier:    &EpochNotifierStub{},
+		GasMap:                           gasMap,
+		MapDNSAddresses:                  dnsMap,
+		Marshalizer:                      WorldMarshalizer,
+		Accounts:                         world.AccountsAdapter,
+		ShardCoordinator:                 world,
+		EpochNotifier:                    &EpochNotifierStub{},
+		MaxNumOfAddressesForTransferRole: 100,
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)
@@ -46,18 +47,18 @@ func NewBuiltinFunctionsWrapper(
 		return nil, err
 	}
 
-	builtinFuncs, err := builtinFuncFactory.CreateBuiltInFunctionContainer()
+	err = builtinFuncFactory.CreateBuiltInFunctionContainer()
 	if err != nil {
 		return nil, err
 	}
 
-	err = builtInFunctions.SetPayableHandler(builtinFuncs, world)
+	err = builtinFuncFactory.SetPayableHandler(world)
 	if err != nil {
 		return nil, err
 	}
 
 	builtinFuncsWrapper := &BuiltinFunctionsWrapper{
-		Container:       builtinFuncs,
+		Container:       builtinFuncFactory.BuiltInFunctionContainer(),
 		MapDNSAddresses: argsBuiltIn.MapDNSAddresses,
 		World:           world,
 	}

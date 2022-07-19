@@ -136,16 +136,6 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-func TestTimeoutAndPanicsInParallel(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		go func() {
-			TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t)
-		}()
-		time.Sleep(5 * time.Millisecond)
-	}
-	time.Sleep(5 * time.Second)
-}
-
 func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	numParallel := 100
 	hosts := make([]arwen.VMHost, numParallel)
