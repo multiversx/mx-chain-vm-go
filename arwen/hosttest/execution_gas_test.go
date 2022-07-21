@@ -1592,15 +1592,15 @@ func testGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T, isLegacy bo
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
-			verify.Ok().
-				HasRuntimeErrors("tokenize failed")
+			verify.
+				Ok()
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, initialESDTTokenBalance-testConfig.ESDTTokensToTransfer, parentESDTBalance)
+			require.Equal(t, initialESDTTokenBalance-(testConfig.ESDTTokensToTransfer-testConfig.CallbackESDTTokensToTransfer), parentESDTBalance)
 
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
 			childESDTBalance, _ := childAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
-			require.Equal(t, testConfig.ESDTTokensToTransfer, childESDTBalance)
+			require.Equal(t, testConfig.ESDTTokensToTransfer-testConfig.CallbackESDTTokensToTransfer, childESDTBalance)
 		})
 }
 
