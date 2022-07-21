@@ -37,11 +37,8 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [
-                    "1",
-                    "2"
-                ],
-                "status": "",
+                "status": "10",
+                "message": "str:execution failed",
                 "gas": "*",
                 "refund": "*"
             }

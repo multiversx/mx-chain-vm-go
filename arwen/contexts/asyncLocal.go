@@ -350,7 +350,7 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	contractCallInput.Arguments = make([][]byte, 0, oldArgLen)
 	contractCallInput.Arguments = append(contractCallInput.Arguments, esdtArgs...)
 	contractCallInput.Arguments = append(contractCallInput.Arguments, []byte(oldFunction))
-	contractCallInput.Arguments = append(contractCallInput.Arguments, returnCodeToBytes(vmOutput.ReturnCode))
+	contractCallInput.Arguments = append(contractCallInput.Arguments, ReturnCodeToBytes(vmOutput.ReturnCode))
 
 	if len(vmOutput.ReturnData) > 1 {
 		contractCallInput.Arguments = append(contractCallInput.Arguments, vmOutput.ReturnData[1:]...)
@@ -363,7 +363,7 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	context.host.Output().DeleteFirstReturnData()
 }
 
-func returnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
+func ReturnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
 	if returnCode == vmcommon.Ok {
 		return []byte{0}
 	}
@@ -389,7 +389,7 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCa
 func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) [][]byte {
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
-		returnCodeToBytes(vmOutput.ReturnCode),
+		ReturnCodeToBytes(vmOutput.ReturnCode),
 	}
 	if err == nil && vmOutput.ReturnCode == vmcommon.Ok {
 		// when execution went Ok, callBack arguments are:

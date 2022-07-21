@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/contexts"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -22,7 +23,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		if errs != nil {
 			log.Trace("doRunSmartContractCreate full error list", "error", errs)
 		}
-		host.Runtime().CleanInstance()
 	}()
 
 	_, blockchain, metering, output, runtime, _, storage := host.GetContexts()
@@ -103,7 +103,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		if errs != nil {
 			log.Trace("doRunSmartContractUpgrade full error list", "error", errs)
 		}
-		host.Runtime().CleanInstance()
 	}()
 
 	_, _, metering, output, runtime, _, storage := host.GetContexts()
@@ -170,7 +169,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errs)
 		}
-		host.Runtime().CleanInstance()
 	}()
 
 	_, _, metering, output, runtime, async, storage := host.GetContexts()
@@ -296,6 +294,17 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 
 	if postBuiltinInput != nil {
 		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
+	}
+
+	err = contexts.AddAsyncParamsToVmOutput(
+		input.RecipientAddr,
+		asyncPrefixArgs,
+		vm.AsynchronousCall,
+		host.callArgsParser.ParseData,
+		builtinOutput)
+	if err != nil {
+		log.Trace("ExecuteOnDestContext builtin function", "error", err)
+		return nil, nil, err
 	}
 
 	output.AddToActiveState(builtinOutput)
@@ -748,6 +757,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 		return nil, 0, arwen.ErrFailedTransfer
 	}
 
+	if host.Runtime().ReadOnly() {
+		return nil, 0, arwen.ErrInvalidCallOnReadOnlyMode
+	}
+
 	_, _, metering, _, runtime, _, _ := host.GetContexts()
 
 	esdtTransferInput := &vmcommon.ContractCallInput{
@@ -817,6 +830,10 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	metering := host.Metering()
+
+	if host.Runtime().ReadOnly() {
+		return nil, nil, arwen.ErrInvalidCallOnReadOnlyMode
+	}
 
 	vmOutput, err := host.Blockchain().ProcessBuiltInFunction(input)
 	if err != nil {
