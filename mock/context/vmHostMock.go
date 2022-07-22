@@ -216,6 +216,11 @@ func (host *VMHostMock) DisableExecByCaller() bool {
 	return true
 }
 
+// CheckExecuteReadOnly mocked method
+func (host *VMHostMock) CheckExecuteReadOnly() bool {
+	return true
+}
+
 // Close -
 func (host *VMHostMock) Close() error {
 	return nil

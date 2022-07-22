@@ -59,6 +59,7 @@ type VMHost interface {
 	FixFailExecutionEnabled() bool
 	CreateNFTOnExecByCallerEnabled() bool
 	DisableExecByCaller() bool
+	CheckExecuteReadOnly() bool
 	Reset()
 }
 
@@ -100,6 +101,7 @@ type BlockchainContext interface {
 	ProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 	GetSnapshot() int
 	RevertToSnapshot(snapshot int)
+	ClearCompiledCodes()
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context

@@ -51,6 +51,7 @@ type vmHost struct {
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	enableEpochsHandler  vmcommon.EnableEpochsHandler
+	activationEpochMap   map[uint32]struct{}
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -90,6 +91,8 @@ func NewArwenVM(
 		executionTimeout:     minExecutionTimeout,
 		enableEpochsHandler:  hostParameters.EnableEpochsHandler,
 	}
+
+	host.activationEpochMap = createActivationMap(hostParameters)
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {
@@ -192,8 +195,26 @@ func NewArwenVM(
 	}
 
 	host.initContexts()
+	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
 	return host, nil
+}
+
+func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {
+	activationMap := make(map[uint32]struct{})
+
+	activationMap[hostParameters.CheckExecuteReadOnlyEnableEpoch] = struct{}{}
+	activationMap[hostParameters.DisableExecByCallerEnableEpoch] = struct{}{}
+	activationMap[hostParameters.RefactorContextEnableEpoch] = struct{}{}
+	activationMap[hostParameters.FixFailExecutionOnErrorEnableEpoch] = struct{}{}
+	activationMap[hostParameters.ManagedCryptoAPIEnableEpoch] = struct{}{}
+	activationMap[hostParameters.CreateNFTThroughExecByCallerEnableEpoch] = struct{}{}
+	activationMap[hostParameters.FixOOGReturnCodeEnableEpoch] = struct{}{}
+	activationMap[hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch] = struct{}{}
+	activationMap[hostParameters.RemoveNonUpdatedStorageEnableEpoch] = struct{}{}
+	activationMap[hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch] = struct{}{}
+
+	return activationMap
 }
 
 // GetVersion returns the Arwen version string
@@ -509,6 +530,15 @@ func (host *vmHost) SetBuiltInFunctionsContainer(builtInFuncs vmcommon.BuiltInFu
 	host.builtInFuncContainer = builtInFuncs
 }
 
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
+	_, ok := host.activationEpochMap[epoch]
+	if ok {
+		host.Runtime().ClearWarmInstanceCache()
+		host.Blockchain().ClearCompiledCodes()
+	}
+}
+
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
 func (host *vmHost) FixOOGReturnCodeEnabled() bool {
 	return host.enableEpochsHandler.IsFixOOGReturnCodeFlagEnabled()
@@ -527,6 +557,11 @@ func (host *vmHost) CreateNFTOnExecByCallerEnabled() bool {
 // DisableExecByCaller returns true if the corresponding flag is set
 func (host *vmHost) DisableExecByCaller() bool {
 	return host.enableEpochsHandler.IsDisableExecByCallerFlagEnabled()
+}
+
+// CheckExecuteReadOnly returns true if the corresponding flag is set
+func (host *vmHost) CheckExecuteReadOnly() bool {
+	return host.enableEpochsHandler.IsCheckExecuteOnReadOnlyFlagEnabled()
 }
 
 func (host *vmHost) setGasTracerEnabledIfLogIsTrace() {

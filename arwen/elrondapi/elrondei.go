@@ -3031,9 +3031,14 @@ func ExecuteReadOnlyWithTypedArguments(
 		return 1
 	}
 
+	wasReadOnly := runtime.ReadOnly()
 	runtime.SetReadOnly(true)
 	_, _, err = host.ExecuteOnDestContext(contractCallInput)
 	runtime.SetReadOnly(false)
+	if host.CheckExecuteReadOnly() {
+		runtime.SetReadOnly(wasReadOnly)
+	}
+
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
