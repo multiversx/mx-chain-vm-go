@@ -60,26 +60,20 @@ func AddAsyncParamsToVmOutput(
 				continue
 			}
 
-			function, args, err := parseDataFunc(string(outTransfer.Data))
+			newData, err := AppendAsyncParamsToCallData(
+				asyncParams,
+				outTransfer.Data,
+				parseDataFunc)
+
 			if err != nil {
 				return err
-			}
-
-			callData := txDataBuilder.NewBuilder()
-			callData.Func(function)
-			for _, asyncParam := range asyncParams {
-				callData.Bytes(asyncParam)
-			}
-
-			for _, arg := range args {
-				callData.Bytes(arg)
 			}
 
 			outAcc.OutputTransfers[t] = vmcommon.OutputTransfer{
 				Value:         outTransfer.Value,
 				GasLimit:      outTransfer.GasLimit,
 				GasLocked:     outTransfer.GasLocked,
-				Data:          callData.ToBytes(),
+				Data:          newData,
 				CallType:      outTransfer.CallType,
 				SenderAddress: outTransfer.SenderAddress,
 			}
@@ -87,6 +81,50 @@ func AddAsyncParamsToVmOutput(
 	}
 
 	return nil
+}
+
+func AppendAsyncParamsToCallData(
+	asyncParams [][]byte,
+	data []byte,
+	parseDataFunc func(data string) (string, [][]byte, error)) ([]byte, error) {
+	function, args, err := parseDataFunc(string(data))
+	if err != nil {
+		return nil, err
+	}
+
+	callData := txDataBuilder.NewBuilder()
+	callData.Func(function)
+	for _, asyncParam := range asyncParams {
+		callData.Bytes(asyncParam)
+	}
+
+	for _, arg := range args {
+		callData.Bytes(arg)
+	}
+
+	return callData.ToBytes(), nil
+}
+
+func AppendAsyncParamsToArguments(
+	asyncParams [][]byte,
+	data []byte,
+	parseArgumentsFunc func(data string) ([][]byte, error)) ([]byte, error) {
+	args, err := parseArgumentsFunc(string(data))
+	if err != nil {
+		return nil, err
+	}
+
+	callData := txDataBuilder.NewBuilder()
+	for _, asyncParam := range asyncParams {
+		callData.Bytes(asyncParam)
+	}
+
+	// args string start with a @ so first parsed argument will be empty always
+	for _, arg := range args[1:] {
+		callData.Bytes(arg)
+	}
+
+	return callData.ToBytes(), nil
 }
 
 func GenerateNewCallID(hasher crypto.Hasher, parentCallID []byte, suffix []byte) []byte {
