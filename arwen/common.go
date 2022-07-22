@@ -126,6 +126,7 @@ type VMHostParameters struct {
 	ESDTTransferParser                  vmcommon.ESDTTransferParser
 	ElrondProtectedKeyPrefix            []byte
 	WasmerSIGSEGVPassthrough            bool
+	EpochNotifier                       vmcommon.EpochNotifier
 	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
 	TimeOutForSCExecutionInMilliseconds uint32
 }

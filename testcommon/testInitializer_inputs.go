@@ -322,6 +322,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:     true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
@@ -333,6 +334,8 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 			IsESDTTransferRoleFlagEnabledField:               true,
 			IsESDTMetadataContinuousCleanupFlagEnabledField:  true,
 			IsGlobalMintBurnFlagEnabledField:                 true,
+			IsCheckFunctionArgumentFlagEnabledField:          true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
 		},
 		WasmerSIGSEGVPassthrough: false,
 	})
@@ -367,6 +370,7 @@ func DefaultTestArwenWithGasSchedule(
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
@@ -381,6 +385,8 @@ func DefaultTestArwenWithGasSchedule(
 			IsESDTTransferRoleFlagEnabledField:                   true,
 			IsESDTMetadataContinuousCleanupFlagEnabledField:      true,
 			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 	})

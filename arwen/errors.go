@@ -207,6 +207,9 @@ var ErrAllOperandsAreEqualToZero = errors.New("all operands are equal to 0")
 // ErrExponentTooBigOrTooSmall signals that the exponent is too big or too small
 var ErrExponentTooBigOrTooSmall = errors.New("exponent is either too small or too big")
 
+// ErrNilEpochNotifier signals that epoch notifier is nil
+var ErrNilEpochNotifier = errors.New("nil epoch notifier")
+
 // ErrNilEnableEpochsHandler signals that enable epochs handler is nil
 var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
 

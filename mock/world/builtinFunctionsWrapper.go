@@ -34,11 +34,11 @@ func NewBuiltinFunctionsWrapper(
 	dnsMap := makeDNSAddresses(numDNSAddresses)
 
 	argsBuiltIn := builtInFunctions.ArgsCreateBuiltInFunctionContainer{
-		GasMap:           gasMap,
-		MapDNSAddresses:  dnsMap,
-		Marshalizer:      WorldMarshalizer,
-		Accounts:         world.AccountsAdapter,
-		ShardCoordinator: world,
+		GasMap:                           gasMap,
+		MapDNSAddresses:                  dnsMap,
+		Marshalizer:                      WorldMarshalizer,
+		Accounts:                         world.AccountsAdapter,
+		ShardCoordinator:                 world,
 		MaxNumOfAddressesForTransferRole: 100,
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
@@ -60,6 +60,8 @@ func NewBuiltinFunctionsWrapper(
 			IsESDTMultiTransferFlagEnabledField:                  true,
 			IsRepairCallbackFlagEnabledField:                     true,
 			IsAheadOfTimeGasUsageFlagEnabledField:                true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 	}
 

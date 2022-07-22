@@ -77,6 +77,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 		ESDTTransferParser:       esdtTransferParser,
+		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
@@ -97,6 +98,8 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 			IsESDTMultiTransferFlagEnabledField:                  true,
 			IsRepairCallbackFlagEnabledField:                     true,
 			IsAheadOfTimeGasUsageFlagEnabledField:                true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 		WasmerSIGSEGVPassthrough: false,
 	})

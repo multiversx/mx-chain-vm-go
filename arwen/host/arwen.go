@@ -72,6 +72,9 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.BuiltInFuncContainer) {
 		return nil, arwen.ErrNilBuiltInFunctionsContainer
 	}
+	if check.IfNil(hostParameters.EpochNotifier) {
+		return nil, arwen.ErrNilEpochNotifier
+	}
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, arwen.ErrNilEnableEpochsHandler
 	}
@@ -203,16 +206,16 @@ func NewArwenVM(
 func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {
 	activationMap := make(map[uint32]struct{})
 
-	activationMap[hostParameters.CheckExecuteReadOnlyEnableEpoch] = struct{}{}
-	activationMap[hostParameters.DisableExecByCallerEnableEpoch] = struct{}{}
-	activationMap[hostParameters.RefactorContextEnableEpoch] = struct{}{}
-	activationMap[hostParameters.FixFailExecutionOnErrorEnableEpoch] = struct{}{}
-	activationMap[hostParameters.ManagedCryptoAPIEnableEpoch] = struct{}{}
-	activationMap[hostParameters.CreateNFTThroughExecByCallerEnableEpoch] = struct{}{}
-	activationMap[hostParameters.FixOOGReturnCodeEnableEpoch] = struct{}{}
-	activationMap[hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch] = struct{}{}
-	activationMap[hostParameters.RemoveNonUpdatedStorageEnableEpoch] = struct{}{}
-	activationMap[hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.CheckExecuteReadOnlyEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.DisableExecByCallerEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.RefactorContextEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.FixFailExecutionOnErrorEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.ManagedCryptoAPIEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.CreateNFTThroughExecByCallerEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.FixOOGReturnCodeEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.MultiESDTTransferAsyncCallBackEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.RemoveNonUpdatedStorageEnableEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.UseDifferentGasCostForReadingCachedStorageEpoch()] = struct{}{}
 
 	return activationMap
 }

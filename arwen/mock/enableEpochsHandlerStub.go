@@ -22,6 +22,19 @@ type EnableEpochsHandlerStub struct {
 	IsRepairCallbackFlagEnabledField                     bool
 	IsDisableExecByCallerFlagEnabledField                bool
 	IsRefactorContextFlagEnabledField                    bool
+	IsCheckFunctionArgumentFlagEnabledField              bool
+	IsCheckExecuteOnReadOnlyFlagEnabledField             bool
+	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
+	FixOOGReturnCodeEnableEpochField                     uint32
+	RemoveNonUpdatedStorageEnableEpochField              uint32
+	CreateNFTThroughExecByCallerEnableEpochField         uint32
+	UseDifferentGasCostForReadingCachedStorageEpochField uint32
+	FixFailExecutionOnErrorEnableEpochField              uint32
+	TimeOutForSCExecutionInMillisecondsField             uint32
+	ManagedCryptoAPIEnableEpochField                     uint32
+	DisableExecByCallerEnableEpochField                  uint32
+	RefactorContextEnableEpochField                      uint32
+	CheckExecuteReadOnlyEnableEpochField                 uint32
 }
 
 // IsESDTMultiTransferFlagEnabled -
@@ -122,6 +135,71 @@ func (stub *EnableEpochsHandlerStub) IsDisableExecByCallerFlagEnabled() bool {
 // IsRefactorContextFlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsRefactorContextFlagEnabled() bool {
 	return stub.IsRefactorContextFlagEnabledField
+}
+
+// IsCheckFunctionArgumentFlagEnabled -
+func (stub *EnableEpochsHandlerStub) IsCheckFunctionArgumentFlagEnabled() bool {
+	return stub.IsCheckFunctionArgumentFlagEnabledField
+}
+
+// IsCheckExecuteOnReadOnlyFlagEnabled -
+func (stub *EnableEpochsHandlerStub) IsCheckExecuteOnReadOnlyFlagEnabled() bool {
+	return stub.IsCheckExecuteOnReadOnlyFlagEnabledField
+}
+
+// MultiESDTTransferAsyncCallBackEnableEpoch -
+func (stub *EnableEpochsHandlerStub) MultiESDTTransferAsyncCallBackEnableEpoch() uint32 {
+	return stub.MultiESDTTransferAsyncCallBackEnableEpochField
+}
+
+// FixOOGReturnCodeEnableEpoch -
+func (stub *EnableEpochsHandlerStub) FixOOGReturnCodeEnableEpoch() uint32 {
+	return stub.FixOOGReturnCodeEnableEpochField
+}
+
+// RemoveNonUpdatedStorageEnableEpoch -
+func (stub *EnableEpochsHandlerStub) RemoveNonUpdatedStorageEnableEpoch() uint32 {
+	return stub.RemoveNonUpdatedStorageEnableEpochField
+}
+
+// CreateNFTThroughExecByCallerEnableEpoch -
+func (stub *EnableEpochsHandlerStub) CreateNFTThroughExecByCallerEnableEpoch() uint32 {
+	return stub.CreateNFTThroughExecByCallerEnableEpochField
+}
+
+// UseDifferentGasCostForReadingCachedStorageEpoch -
+func (stub *EnableEpochsHandlerStub) UseDifferentGasCostForReadingCachedStorageEpoch() uint32 {
+	return stub.UseDifferentGasCostForReadingCachedStorageEpochField
+}
+
+// FixFailExecutionOnErrorEnableEpoch -
+func (stub *EnableEpochsHandlerStub) FixFailExecutionOnErrorEnableEpoch() uint32 {
+	return stub.FixFailExecutionOnErrorEnableEpochField
+}
+
+// TimeOutForSCExecutionInMilliseconds -
+func (stub *EnableEpochsHandlerStub) TimeOutForSCExecutionInMilliseconds() uint32 {
+	return stub.TimeOutForSCExecutionInMillisecondsField
+}
+
+// ManagedCryptoAPIEnableEpoch -
+func (stub *EnableEpochsHandlerStub) ManagedCryptoAPIEnableEpoch() uint32 {
+	return stub.ManagedCryptoAPIEnableEpochField
+}
+
+// DisableExecByCallerEnableEpoch -
+func (stub *EnableEpochsHandlerStub) DisableExecByCallerEnableEpoch() uint32 {
+	return stub.DisableExecByCallerEnableEpochField
+}
+
+// RefactorContextEnableEpoch -
+func (stub *EnableEpochsHandlerStub) RefactorContextEnableEpoch() uint32 {
+	return stub.RefactorContextEnableEpochField
+}
+
+// CheckExecuteReadOnlyEnableEpoch -
+func (stub *EnableEpochsHandlerStub) CheckExecuteReadOnlyEnableEpoch() uint32 {
+	return stub.CheckExecuteReadOnlyEnableEpochField
 }
 
 // IsInterfaceNil -
