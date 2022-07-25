@@ -120,8 +120,12 @@ func AppendAsyncParamsToArguments(
 	}
 
 	// args string start with a @ so first parsed argument will be empty always
-	for _, arg := range args[1:] {
-		callData.Bytes(arg)
+	if len(args) != 0 {
+		for _, arg := range args[1:] {
+			callData.Bytes(arg)
+		}
+	} else {
+		callData.Bytes([]byte{})
 	}
 
 	return callData.ToBytes(), nil
