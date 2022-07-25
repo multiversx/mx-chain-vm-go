@@ -33,6 +33,7 @@ type EnableEpochsHandlerStub struct {
 	DisableExecByCallerEnableEpochField                  uint32
 	RefactorContextEnableEpochField                      uint32
 	CheckExecuteReadOnlyEnableEpochField                 uint32
+	StorageAPICostOptimizationEnableEpochField           uint32
 }
 
 // IsESDTMultiTransferFlagEnabled -
@@ -188,6 +189,11 @@ func (stub *EnableEpochsHandlerStub) RefactorContextEnableEpoch() uint32 {
 // CheckExecuteReadOnlyEnableEpoch -
 func (stub *EnableEpochsHandlerStub) CheckExecuteReadOnlyEnableEpoch() uint32 {
 	return stub.CheckExecuteReadOnlyEnableEpochField
+}
+
+// StorageAPICostOptimizationEnableEpoch -
+func (stub *EnableEpochsHandlerStub) StorageAPICostOptimizationEnableEpoch() uint32 {
+	return stub.StorageAPICostOptimizationEnableEpochField
 }
 
 // IsInterfaceNil -
