@@ -28,9 +28,7 @@ type EnableEpochsHandlerStub struct {
 	FixOOGReturnCodeEnableEpochField                     uint32
 	RemoveNonUpdatedStorageEnableEpochField              uint32
 	CreateNFTThroughExecByCallerEnableEpochField         uint32
-	UseDifferentGasCostForReadingCachedStorageEpochField uint32
 	FixFailExecutionOnErrorEnableEpochField              uint32
-	TimeOutForSCExecutionInMillisecondsField             uint32
 	ManagedCryptoAPIEnableEpochField                     uint32
 	DisableExecByCallerEnableEpochField                  uint32
 	RefactorContextEnableEpochField                      uint32
@@ -167,19 +165,9 @@ func (stub *EnableEpochsHandlerStub) CreateNFTThroughExecByCallerEnableEpoch() u
 	return stub.CreateNFTThroughExecByCallerEnableEpochField
 }
 
-// UseDifferentGasCostForReadingCachedStorageEpoch -
-func (stub *EnableEpochsHandlerStub) UseDifferentGasCostForReadingCachedStorageEpoch() uint32 {
-	return stub.UseDifferentGasCostForReadingCachedStorageEpochField
-}
-
 // FixFailExecutionOnErrorEnableEpoch -
 func (stub *EnableEpochsHandlerStub) FixFailExecutionOnErrorEnableEpoch() uint32 {
 	return stub.FixFailExecutionOnErrorEnableEpochField
-}
-
-// TimeOutForSCExecutionInMilliseconds -
-func (stub *EnableEpochsHandlerStub) TimeOutForSCExecutionInMilliseconds() uint32 {
-	return stub.TimeOutForSCExecutionInMillisecondsField
 }
 
 // ManagedCryptoAPIEnableEpoch -

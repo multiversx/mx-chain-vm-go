@@ -215,7 +215,7 @@ func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]stru
 	activationMap[hostParameters.EnableEpochsHandler.FixOOGReturnCodeEnableEpoch()] = struct{}{}
 	activationMap[hostParameters.EnableEpochsHandler.MultiESDTTransferAsyncCallBackEnableEpoch()] = struct{}{}
 	activationMap[hostParameters.EnableEpochsHandler.RemoveNonUpdatedStorageEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.UseDifferentGasCostForReadingCachedStorageEpoch()] = struct{}{}
+	activationMap[hostParameters.EnableEpochsHandler.StorageAPICostOptimizationEnableEpoch()] = struct{}{}
 
 	return activationMap
 }
