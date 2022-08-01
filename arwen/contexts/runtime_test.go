@@ -759,34 +759,3 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
 }
-
-func TestRuntimeContext_PopArgumentsFromVMInput(t *testing.T) {
-	t.Parallel()
-	host := InitializeArwenAndWasmer()
-	runtimeContext := makeDefaultRuntimeContext(t, host)
-
-	vmInput := &vmcommon.ContractCallInput{}
-	runtimeContext.vmInput = vmInput
-
-	vmInput.Arguments = nil
-	arg, err := runtimeContext.PopFirstArgumentFromVMInput()
-	require.Nil(t, arg)
-	require.ErrorIs(t, err, arwen.ErrInvalidAsyncArgsList)
-
-	vmInput.Arguments = make([][]byte, 0)
-	arg, err = runtimeContext.PopFirstArgumentFromVMInput()
-	require.Nil(t, arg)
-	require.ErrorIs(t, err, arwen.ErrInvalidAsyncArgsList)
-
-	vmInput.Arguments = make([][]byte, 1)
-	vmInput.Arguments[0] = []byte("test")
-	arg, err = runtimeContext.PopFirstArgumentFromVMInput()
-	require.Equal(t, []byte("test"), arg)
-	require.Nil(t, err)
-	require.NotNil(t, vmInput.Arguments)
-	require.Len(t, vmInput.Arguments, 0)
-
-	arg, err = runtimeContext.PopFirstArgumentFromVMInput()
-	require.Nil(t, arg)
-	require.ErrorIs(t, err, arwen.ErrInvalidAsyncArgsList)
-}

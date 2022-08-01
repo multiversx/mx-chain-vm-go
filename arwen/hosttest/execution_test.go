@@ -1984,9 +1984,11 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	childInput.CallValue = big.NewInt(99)
 	childInput.Function = "childFunction"
 	childInput.RecipientAddr = test.ChildAddress
+	childInput.AsyncArguments = &vmcommon.AsyncArguments{
+		CallID:       []byte{},
+		CallerCallID: []byte{},
+	}
 	childInput.Arguments = [][]byte{
-		[]byte("dummyCallID"),
-		[]byte("dummyCallerCallID"),
 		[]byte("some data"),
 		[]byte("argument"),
 		[]byte("another argument"),
@@ -2694,11 +2696,11 @@ func TestExecution_AsyncCall_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 198460).
+				GasUsed(test.ParentAddress, 198656).
 				GasUsed(test.ChildAddress, 1297).
 				// TODO Why is there a minuscule amount of gas remaining after the callback
 				// fails? This is supposed to be 0.
-				GasRemaining(243).
+				GasRemaining(47).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
@@ -2751,9 +2753,9 @@ func TestExecution_AsyncCall_Promises_CallBackFails(t *testing.T) {
 				// TODO matei-p enable this for R2
 				//UserError().
 				//ReturnMessage("callBack error").
-				GasUsed(test.ParentAddress, 106617).
+				GasUsed(test.ParentAddress, 106813).
 				GasUsed(test.ChildAddress, 1297).
-				GasRemaining(92086).
+				GasRemaining(91890).
 				BalanceDelta(test.ThirdPartyAddress, 6).
 				BalanceDelta(test.ChildAddress, big.NewInt(0).Sub(big.NewInt(1), big.NewInt(1)).Int64()).
 				// 'user error' is no longer present because of the commented lines in finishAsyncLocalExecution() / ascynLocal.go
@@ -2977,7 +2979,10 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 						_, err := host.Storage().SetStorage([]byte("parent"), []byte("parent storage"))
 						require.Nil(t, err)
 						childInput := test.DefaultTestContractCallInput()
-						childInput.Arguments = make([][]byte, 2)
+						childInput.AsyncArguments = &vmcommon.AsyncArguments{
+							CallID:       []byte{},
+							CallerCallID: []byte{},
+						}
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ChildAddress
 						childInput.CallValue = big.NewInt(4)

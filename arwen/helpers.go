@@ -11,9 +11,7 @@ import (
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/pelletier/go-toml"
 )
 
@@ -280,27 +278,27 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	return true
 }
 
-// PrependToArguments adds new arguments in front of the existing ones
-func PrependToArguments(input *vmcommon.ContractCallInput, toPrepend ...[]byte) {
-	input.Arguments = append(toPrepend, input.Arguments...)
-}
+// // PrependToArguments adds new arguments in front of the existing ones
+// func PrependToArguments(input *vmcommon.ContractCallInput, toPrepend ...[]byte) {
+// 	input.Arguments = append(toPrepend, input.Arguments...)
+// }
 
-// SplitPrefixArguments splits arguments in two arrays of arguments
-func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
-	if len(arguments) < numberOfArgsToRemove {
-		return nil, nil
-	}
-	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
-}
+// // SplitPrefixArguments splits arguments in two arrays of arguments
+// func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
+// 	if len(arguments) < numberOfArgsToRemove {
+// 		return nil, nil
+// 	}
+// 	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
+// }
 
-// PopCallIDsFromArguments removes async infrastructure arguments from the arguments list
-func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
-	asyncPrefixArgsNumber := 2
-	if input.CallType == vm.AsynchronousCallBack {
-		asyncPrefixArgsNumber = 4
-	}
+// // PopCallIDsFromArguments removes async infrastructure arguments from the arguments list
+// func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
+// 	asyncPrefixArgsNumber := 2
+// 	if input.CallType == vm.AsynchronousCallBack {
+// 		asyncPrefixArgsNumber = 4
+// 	}
 
-	var asyncPrefixArgs [][]byte
-	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
-	return asyncPrefixArgs
-}
+// 	var asyncPrefixArgs [][]byte
+// 	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
+// 	return asyncPrefixArgs
+// }

@@ -604,11 +604,6 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 	return contextWrapper.GetPrevTxHash()
 }
 
-// PopFirstArgumentFromVMInput calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) PopFirstArgumentFromVMInput() ([]byte, error) {
-	return contextWrapper.PopFirstArgumentFromVMInput()
-}
-
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.runtimeContext.CleanInstance()

@@ -250,9 +250,6 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 		return nil, arwen.ErrNotEnoughGas
 	}
 
-	// send the callID to a local async call
-	asyncCall.CallID, arguments = context.PrependArgumentsForAsyncContext(arguments)
-
 	contractCallInput := &vmcommon.ContractCallInput{
 		VMInput: vmcommon.VMInput{
 			CallerAddr:     sender,
@@ -269,6 +266,8 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 		RecipientAddr: asyncCall.GetDestination(),
 		Function:      function,
 	}
+	context.SetAsyncArgumentsForCall(contractCallInput)
+	asyncCall.CallID = contractCallInput.AsyncArguments.CallID
 
 	return contractCallInput, nil
 }
@@ -284,7 +283,7 @@ func (context *asyncContext) createCallbackInput(
 
 	actualCallbackInitiator := context.determineDestinationForAsyncCall(asyncCall.GetDestination(), asyncCall.GetData())
 
-	arguments := context.getArgumentsForCallback(asyncCall, vmOutput, gasAccumulated, destinationErr)
+	arguments := context.getArgumentsForCallback(vmOutput, destinationErr)
 
 	esdtFunction := ""
 	isESDTOnCallBack := false
@@ -327,6 +326,7 @@ func (context *asyncContext) createCallbackInput(
 		RecipientAddr: context.address,
 		Function:      callbackFunction,
 	}
+	context.SetAsyncArgumentsForCallback(contractCallInput, asyncCall, gasAccumulated)
 
 	if isESDTOnCallBack {
 		context.updateContractInputForESDTOnCallback(contractCallInput, esdtFunction, esdtArgs, vmOutput, asyncCall, gasAccumulated)
@@ -358,7 +358,7 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	if context.isSameShardNFTTransfer(contractCallInput) {
 		contractCallInput.RecipientAddr = contractCallInput.CallerAddr
 	}
-	contractCallInput.Arguments = context.prependCallbackArgumentsForAsyncContext(contractCallInput.Arguments, asyncCall, gasAccumulated)
+	context.SetAsyncArgumentsForCallback(contractCallInput, asyncCall, gasAccumulated)
 
 	context.host.Output().DeleteFirstReturnData()
 }
@@ -386,7 +386,7 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCa
 	return gasLimit, nil
 }
 
-func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, gasAccumulated uint64, err error) [][]byte {
+func (context *asyncContext) getArgumentsForCallback(vmOutput *vmcommon.VMOutput, err error) [][]byte {
 	// always provide return code as the first argument to callback function
 	arguments := [][]byte{
 		ReturnCodeToBytes(vmOutput.ReturnCode),
@@ -401,7 +401,7 @@ func (context *asyncContext) getArgumentsForCallback(asyncCall *arwen.AsyncCall,
 		arguments = append(arguments, []byte(vmOutput.ReturnMessage))
 	}
 
-	return context.prependCallbackArgumentsForAsyncContext(arguments, asyncCall, gasAccumulated)
+	return arguments
 }
 
 func (context *asyncContext) isSameShardNFTTransfer(contractCallInput *vmcommon.ContractCallInput) bool {

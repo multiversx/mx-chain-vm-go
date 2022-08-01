@@ -24,7 +24,7 @@ type OutputContextStub struct {
 	GetOutputAccountCalled            func(address []byte) (*vmcommon.OutputAccount, bool)
 	DeleteOutputAccountCalled         func(address []byte)
 	WriteLogCalled                    func(address []byte, topics [][]byte, data []byte)
-	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte) error
+	TransferCalled                    func(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte) error
 	TransferESDTCalled                func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, input *vmcommon.ContractCallInput) (uint64, error)
 	GetRefundCalled                   func() uint64
 	SetRefundCalled                   func(refund uint64)
@@ -151,9 +151,9 @@ func (o *OutputContextStub) TransferValueOnly(destination []byte, sender []byte,
 }
 
 // Transfer mocked method
-func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, _ vm.CallType) error {
+func (o *OutputContextStub) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, _ vm.CallType) error {
 	if o.TransferCalled != nil {
-		return o.TransferCalled(destination, sender, gasLimit, gasLocked, value, input)
+		return o.TransferCalled(destination, sender, gasLimit, gasLocked, value, asyncData, input)
 	}
 
 	return nil

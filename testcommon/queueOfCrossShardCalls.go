@@ -11,6 +11,7 @@ type CrossShardCall struct {
 	CallerAddress []byte
 	StartNode     *TestCallNode
 	CallType      vm.CallType
+	AsyncData     []byte
 	Data          []byte
 	ParentsPath   []*TestCallNode
 }
@@ -26,13 +27,15 @@ func NewCrossShardCallQueue() *CrossShardCallsQueue {
 }
 
 // Enqueue -
-func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType, data []byte) {
-	callToEnqueue := createCrossShardCall(startNode, callerAddress, callType, data)
+func (queue *CrossShardCallsQueue) Enqueue(callerAddress []byte, startNode *TestCallNode, callType vm.CallType,
+	asyncData []byte, data []byte) {
+	callToEnqueue := createCrossShardCall(startNode, callerAddress, callType, asyncData, data)
 	queue.Data = append(queue.Data, callToEnqueue)
 	sort.Stable(queue)
 }
 
-func createCrossShardCall(startNode *TestCallNode, callerAddress []byte, callType vm.CallType, data []byte) *CrossShardCall {
+func createCrossShardCall(startNode *TestCallNode, callerAddress []byte, callType vm.CallType,
+	asyncData []byte, data []byte) *CrossShardCall {
 	parentsPath := make([]*TestCallNode, 0)
 	crtNode := startNode
 	for crtNode.Parent != nil {
@@ -47,6 +50,7 @@ func createCrossShardCall(startNode *TestCallNode, callerAddress []byte, callTyp
 		CallerAddress: callerAddress,
 		StartNode:     startNode,
 		CallType:      callType,
+		AsyncData:     asyncData,
 		Data:          data,
 		ParentsPath:   parentsPath,
 	}
@@ -55,7 +59,8 @@ func createCrossShardCall(startNode *TestCallNode, callerAddress []byte, callTyp
 
 // Requeue -
 func (queue *CrossShardCallsQueue) Requeue(crossShardCall *CrossShardCall) {
-	queue.Enqueue(crossShardCall.CallerAddress, crossShardCall.StartNode, crossShardCall.CallType, crossShardCall.Data)
+	queue.Enqueue(crossShardCall.CallerAddress, crossShardCall.StartNode, crossShardCall.CallType,
+		crossShardCall.AsyncData, crossShardCall.Data)
 }
 
 // Top -

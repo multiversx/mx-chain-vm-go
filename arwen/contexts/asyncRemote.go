@@ -19,8 +19,8 @@ func (context *asyncContext) SendCrossShardCallback(
 ) error {
 	sender := context.address
 	destination := context.callerAddr
-	data := context.createCallbackArgumentsForCrossShardCallback(returnCode, returnData, returnMessage)
-	return sendCrossShardCallback(context.host, sender, destination, data)
+	asyncData, data := context.createDataForCrossShardCallback(returnCode, returnData, returnMessage)
+	return sendCrossShardCallback(context.host, sender, destination, asyncData, data)
 }
 
 func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall) error {
@@ -34,14 +34,14 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 	}
 
 	context.incrementCallsCounter()
-	newCallID := context.generateNewCallID()
-	callData := txDataBuilder.NewBuilder()
-	callData.Func(function)
-	callData.Bytes(newCallID)
-	callData.Bytes(context.GetCallID())
 
+	newCallID := context.generateNewCallID()
 	asyncCall.CallID = newCallID
 
+	asyncData := createAsyncDataForAsyncCall(newCallID, context.GetCallID())
+
+	callData := txDataBuilder.NewBuilder()
+	callData.Func(function)
 	for _, argument := range arguments {
 		callData.Bytes(argument)
 	}
@@ -52,12 +52,20 @@ func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall)
 		asyncCall.GetGasLimit(),
 		asyncCall.GetGasLocked(),
 		big.NewInt(0).SetBytes(asyncCall.GetValue()),
+		asyncData,
 		callData.ToBytes(),
 		vm.AsynchronousCall,
 	)
 }
 
-func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte, data []byte) error {
+func createAsyncDataForAsyncCall(newCallID []byte, currentCallID []byte) []byte {
+	asyncData := txDataBuilder.NewBuilder()
+	asyncData.Bytes(newCallID)
+	asyncData.Bytes(currentCallID)
+	return asyncData.ToBytes()
+}
+
+func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte, asyncData []byte, data []byte) error {
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()
@@ -71,6 +79,7 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 		gasLeft,
 		0,
 		big.NewInt(0),
+		asyncData,
 		data,
 		vm.AsynchronousCallBack,
 	)
@@ -88,21 +97,20 @@ func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte
 	return nil
 }
 
-func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
+func (context *asyncContext) createDataForCrossShardCallback(
 	returnCode vmcommon.ReturnCode,
 	returnData [][]byte,
 	returnMessage string,
-) []byte {
-	transferData := txDataBuilder.NewBuilder()
+) ([]byte, []byte) {
+	asyncData := txDataBuilder.NewBuilder()
+	asyncData.Bytes(context.generateNewCallID())
+	asyncData.Bytes(context.callID)
+	asyncData.Bytes(context.callerCallID)
+	asyncData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())
 
+	transferData := txDataBuilder.NewBuilder()
 	// This is just a placeholder, necessary not to break decoding, it's not used anywhere.
 	transferData.Func(callbackNamePlaceholder)
-
-	transferData.Bytes(context.generateNewCallID())
-	transferData.Bytes(context.callID)
-	transferData.Bytes(context.callerCallID)
-	transferData.Bytes(big.NewInt(int64(context.gasAccumulated)).Bytes())
-
 	transferData.Bytes(ReturnCodeToBytes(returnCode))
 	if returnCode == vmcommon.Ok {
 		for _, data := range returnData {
@@ -111,5 +119,5 @@ func (context *asyncContext) createCallbackArgumentsForCrossShardCallback(
 	} else {
 		transferData.Str(returnMessage)
 	}
-	return transferData.ToBytes()
+	return asyncData.ToBytes(), transferData.ToBytes()
 }

@@ -114,23 +114,21 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 	runtime := context.host.Runtime()
 	context.address = runtime.GetContextAddress()
 
-	var err error
 	emptyStack := len(context.stateStack) == 0
 	if emptyStack && !context.isCallAsync() {
 		context.callID = input.CurrentTxHash
 		context.callerCallID = nil
 	} else {
-		err = context.popCallIDsFromVMInputArgs()
-		if err != nil {
-			return err
+		if input.AsyncArguments == nil {
+			return vmcommon.ErrAsyncParams
 		}
+		context.callID = input.AsyncArguments.CallID
+		context.callerCallID = input.AsyncArguments.CallerCallID
 	}
 
 	if input.CallType == vm.AsynchronousCallBack {
-		err = context.popCallbackInfoFromVMInputArgs()
-		if err != nil {
-			return err
-		}
+		context.callbackAsyncInitiatorCallID = input.AsyncArguments.CallbackAsyncInitiatorCallID
+		context.gasAccumulated = input.AsyncArguments.GasAccumulated
 	}
 
 	if logAsync.GetLevel() == logger.LogTrace {
@@ -145,36 +143,6 @@ func (context *asyncContext) InitStateFromInput(input *vmcommon.ContractCallInpu
 		logAsync.Trace("", "gasAccumulated", context.gasAccumulated)
 	}
 
-	return nil
-}
-
-func (context *asyncContext) popCallIDsFromVMInputArgs() error {
-	runtime := context.host.Runtime()
-	var err error
-	context.callID, err = runtime.PopFirstArgumentFromVMInput()
-	if err != nil {
-		return err
-	}
-	context.callerCallID, err = runtime.PopFirstArgumentFromVMInput()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (context *asyncContext) popCallbackInfoFromVMInputArgs() error {
-	runtime := context.host.Runtime()
-	var err error
-	context.callbackAsyncInitiatorCallID, err = runtime.PopFirstArgumentFromVMInput()
-	if err != nil {
-		return err
-	}
-	var gasBytes []byte
-	gasBytes, err = runtime.PopFirstArgumentFromVMInput()
-	if err != nil {
-		return err
-	}
-	context.gasAccumulated = big.NewInt(0).SetBytes(gasBytes).Uint64()
 	return nil
 }
 
@@ -364,14 +332,28 @@ func (context *asyncContext) SetContextCallback(callbackName string, data []byte
 	return nil
 }
 
-// PrependArgumentsForAsyncContext prepends standard async context arguments to the provided ones
-func (context *asyncContext) PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte) {
+// SetAsyncArgumentsForCall sets standard async context arguments
+func (context *asyncContext) SetAsyncArgumentsForCall(input *vmcommon.ContractCallInput) {
 	newCallID := context.generateNewCallID()
 	context.incrementCallsCounter()
-	return newCallID, append([][]byte{
-		newCallID,
-		context.GetCallID(),
-	}, args...)
+	input.VMInput.AsyncArguments = &vmcommon.AsyncArguments{
+		CallID:       newCallID,
+		CallerCallID: context.GetCallID(),
+	}
+}
+
+// SetAsyncArgumentsForCall sets standard async context arguments
+func (context *asyncContext) SetAsyncArgumentsForCallback(
+	input *vmcommon.ContractCallInput,
+	asyncCall *arwen.AsyncCall,
+	gasAccumulated uint64) {
+	newCallID := context.generateNewCallID()
+	input.VMInput.AsyncArguments = &vmcommon.AsyncArguments{
+		CallID:                       newCallID,
+		CallerCallID:                 asyncCall.CallID,
+		CallbackAsyncInitiatorCallID: context.callID,
+		GasAccumulated:               gasAccumulated,
+	}
 }
 
 type asyncCallLocation struct {
@@ -990,14 +972,14 @@ func (context *asyncContext) accumulateGas(gas uint64) {
 	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
 }
 
-func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {
-	return append([][]byte{
-		context.generateNewCallID(), // new callback id
-		asyncCall.CallID,            // caller call id (original async call destination)
-		context.callID,              // async initiator call id (original async call source)
-		big.NewInt(int64(gasAccumulated)).Bytes(),
-	}, args...)
-}
+// func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {
+// 	return append([][]byte{
+// 		context.generateNewCallID(), // new callback id
+// 		asyncCall.CallID,            // caller call id (original async call destination)
+// 		context.callID,              // async initiator call id (original async call source)
+// 		big.NewInt(int64(gasAccumulated)).Bytes(),
+// 	}, args...)
+// }
 
 // HasLegacyGroup checks if the a legacy async group was created
 func (context *asyncContext) HasLegacyGroup() bool {

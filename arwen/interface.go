@@ -155,7 +155,6 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-	PopFirstArgumentFromVMInput() ([]byte, error)
 
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
@@ -214,7 +213,7 @@ type OutputContext interface {
 	DeleteOutputAccount(address []byte)
 	WriteLog(address []byte, topics [][]byte, data []byte)
 	TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
-	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error
+	Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error
 	TransferESDT(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callInput *vmcommon.ContractCallInput) (uint64, error)
 	GetRefund() uint64
 	SetRefund(refund uint64)
@@ -367,7 +366,11 @@ type AsyncContext interface {
 	SetResults(vmOutput *vmcommon.VMOutput)
 	GetGasAccumulated() uint64
 
-	PrependArgumentsForAsyncContext(args [][]byte) ([]byte, [][]byte)
+	SetAsyncArgumentsForCall(input *vmcommon.ContractCallInput)
+	SetAsyncArgumentsForCallback(
+		input *vmcommon.ContractCallInput,
+		asyncCall *AsyncCall,
+		gasAccumulated uint64)
 
 	HasLegacyGroup() bool
 

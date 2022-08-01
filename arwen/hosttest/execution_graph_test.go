@@ -798,7 +798,7 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 
 	startNode := gasGraph.GetStartNode()
 	crossShardCallsQueue := test.NewCrossShardCallQueue()
-	crossShardCallsQueue.Enqueue(test.UserAddress, startNode, vm.DirectCall, []byte{})
+	crossShardCallsQueue.Enqueue(test.UserAddress, startNode, vm.DirectCall, []byte{}, []byte{})
 
 	computeCallIDs(gasGraph)
 
@@ -847,6 +847,12 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 			arguments = parsedArguments
 		}
 
+		asyncArguments := createAsyncArgumentsFromAsyncData(
+			crossShardCall.AsyncData,
+			crossShardCall.CallType,
+			parsers.NewCallArgsParser().ParseArguments,
+		)
+
 		currentVMOutput, _ = mockInstancesTestTemplate.
 			WithInput(test.CreateTestContractCallInputBuilder().
 				WithCallerAddr(crossShardCall.CallerAddress).
@@ -855,6 +861,7 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 				WithGasProvided(startNode.GasLimit).
 				WithGasLocked(startNode.GasLocked).
 				WithCallType(crossShardCall.CallType).
+				WithAsyncArguments(asyncArguments).
 				WithArguments(arguments...).
 				WithPrevTxHash(big.NewInt(int64(crtTxNumber-1)).Bytes()).
 				WithCurrentTxHash(crtTxHash).
@@ -877,6 +884,30 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 	if assertsConfig.finalAsserts != nil {
 		assertsConfig.finalAsserts(t, world, expectedCallFinishData, callsFinishData)
 	}
+}
+
+func createAsyncArgumentsFromAsyncData(
+	asyncData []byte,
+	callType vm.CallType,
+	parseArgumentsFunc func(data string) ([][]byte, error),
+) *vmcommon.AsyncArguments {
+	if callType == vm.DirectCall {
+		return nil
+	}
+	// produces an empty frist argument
+	parsedArgs, err := parseArgumentsFunc(string(asyncData))
+	if err != nil && len(parsedArgs) < 3 {
+		return nil
+	}
+	asyncArguments := &vmcommon.AsyncArguments{
+		CallID:       parsedArgs[1],
+		CallerCallID: parsedArgs[2],
+	}
+	if callType == vm.AsynchronousCallBack {
+		asyncArguments.CallbackAsyncInitiatorCallID = parsedArgs[3]
+		asyncArguments.GasAccumulated = uint64(big.NewInt(0).SetBytes(parsedArgs[4]).Int64())
+	}
+	return asyncArguments
 }
 
 func computeExpectedErrorsForRound(gasGraph *test.TestCallGraph, startNode *test.TestCallNode) []string {
@@ -1053,7 +1084,8 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 				argParser := parsers.NewCallArgsParser()
 				function, parsedArgs, _ := argParser.ParseData(string(outputTransfer.Data))
 
-				callID := parsedArgs[0]
+				parsedAsync, _ := argParser.ParseArguments(string(outputTransfer.AsyncData))
+				callID := parsedAsync[1]
 
 				var encodedArgs []byte
 				if bytes.Equal(callID, crossShardEdge.To.Call.CallID) {
@@ -1073,7 +1105,8 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 						}
 						encodedArgs = callData.ToBytes()
 					}
-					crossShardCallsQueue.Enqueue(outputTransfer.SenderAddress, crossShardEdge.To, callType, encodedArgs)
+					crossShardCallsQueue.Enqueue(outputTransfer.SenderAddress, crossShardEdge.To,
+						callType, outputTransfer.AsyncData, encodedArgs)
 				}
 			}
 		}

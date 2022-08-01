@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"bytes"
+	"math/big"
 
 	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
@@ -9,61 +9,34 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
-func RemoveAsyncContextArguments(input *vmcommon.VMInput) ([][]byte, error) {
-	var err error
-	if IsCallAsync(input.CallType) {
-		var callID, callerCallID, callbackAsyncInitiatorCallID, gasAccumulated []byte
-		callID, err = PopFirstArgumentFromVMInput(input)
-		if err != nil {
-			return nil, err
-		}
-
-		callerCallID, err = PopFirstArgumentFromVMInput(input)
-		if err != nil {
-			return nil, err
-		}
-
-		if IsCallback(input.CallType) {
-			callbackAsyncInitiatorCallID, err = PopFirstArgumentFromVMInput(input)
-			if err != nil {
-				return nil, err
-			}
-			gasAccumulated, err = PopFirstArgumentFromVMInput(input)
-			if err != nil {
-				return nil, err
-			}
-			return [][]byte{callID, callerCallID, callbackAsyncInitiatorCallID, gasAccumulated}, nil
-		} else {
-			return [][]byte{callID, callerCallID}, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func AddAsyncParamsToVmOutput(
+/*
+	Called to process OutputTransfers created by a
+	direct call (on dest) builtin function call by the VM
+*/
+func AddAsyncArgumentsToOutputTransfers(
 	address []byte,
-	asyncParams [][]byte,
+	asyncParams *vmcommon.AsyncArguments,
 	callType vm.CallType,
-	parseDataFunc func(data string) (string, [][]byte, error),
 	vmOutput *vmcommon.VMOutput) error {
 	if asyncParams == nil {
 		return nil
 	}
 	for _, outAcc := range vmOutput.OutputAccounts {
-		if !bytes.Equal(address, outAcc.Address) {
-			continue
-		}
+		// if !bytes.Equal(address, outAcc.Address) {
+		// 	continue
+		// }
 
 		for t, outTransfer := range outAcc.OutputTransfers {
+			// if !bytes.Equal(address, outTransfer.SenderAddress) {
+			// 	continue
+			// }
 			if outTransfer.CallType != callType {
 				continue
 			}
 
-			newData, err := AppendAsyncParamsToCallData(
+			asyncData, err := createDataFromAsyncParams(
 				asyncParams,
-				outTransfer.Data,
-				parseDataFunc)
+				callType)
 
 			if err != nil {
 				return err
@@ -73,7 +46,8 @@ func AddAsyncParamsToVmOutput(
 				Value:         outTransfer.Value,
 				GasLimit:      outTransfer.GasLimit,
 				GasLocked:     outTransfer.GasLocked,
-				Data:          newData,
+				AsyncData:     asyncData,
+				Data:          outTransfer.Data,
 				CallType:      outTransfer.CallType,
 				SenderAddress: outTransfer.SenderAddress,
 			}
@@ -83,52 +57,139 @@ func AddAsyncParamsToVmOutput(
 	return nil
 }
 
-func AppendAsyncParamsToCallData(
-	asyncParams [][]byte,
-	data []byte,
-	parseDataFunc func(data string) (string, [][]byte, error)) ([]byte, error) {
-	function, args, err := parseDataFunc(string(data))
-	if err != nil {
-		return nil, err
+func createDataFromAsyncParams(
+	asyncParams *vmcommon.AsyncArguments,
+	callType vm.CallType,
+) ([]byte, error) {
+	if asyncParams == nil {
+		if callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack {
+			return nil, vmcommon.ErrAsyncParams
+		} else {
+			return nil, nil
+		}
 	}
 
 	callData := txDataBuilder.NewBuilder()
-	callData.Func(function)
-	for _, asyncParam := range asyncParams {
-		callData.Bytes(asyncParam)
-	}
-
-	for _, arg := range args {
-		callData.Bytes(arg)
+	callData.Bytes(asyncParams.CallID)
+	callData.Bytes(asyncParams.CallerCallID)
+	if callType == vm.AsynchronousCallBack {
+		callData.Bytes(asyncParams.CallbackAsyncInitiatorCallID)
+		callData.Bytes(big.NewInt(int64(asyncParams.GasAccumulated)).Bytes())
 	}
 
 	return callData.ToBytes(), nil
 }
 
-func AppendAsyncParamsToArguments(
+/*
+	Called when a SCR for a callback is created outside the VM
+	(by createAsyncCallBackSCRFromVMOutput())
+	This is the case
+	A)	after an async call executed following a builtin function call,
+	B)	other cases where processing the output trasnfers of a VMOutput did
+		not produce a SCR of type AsynchronousCallBack
+*/
+func AppendAsyncArgumentsToCallbackCallData(
+	hasher crypto.Hasher,
+	data []byte,
+	asyncArguments *vmcommon.AsyncArguments,
+	parseArgumentsFunc func(data string) ([][]byte, error)) ([]byte, error) {
+
+	return appendAsyncParamsToCallData(
+		CreateCallbackAsyncParams(hasher, asyncArguments),
+		data,
+		false,
+		parseArgumentsFunc)
+}
+
+/*
+	Called when a SCR is created from VMOutput in order to recompose
+	async data and call data into a transfer data ready for the SCR
+	(by preprocessOutTransferToSCR())
+*/
+func AppendTransferAsyncDataToCallData(
+	callData []byte,
+	asyncData []byte,
+	parseArgumentsFunc func(data string) ([][]byte, error)) ([]byte, error) {
+
+	var asyncParams [][]byte
+	if asyncData != nil {
+		asyncParams, _ = parseArgumentsFunc(string(asyncData))
+		// string start with a @ so first parsed argument will be empty always
+		asyncParams = asyncParams[1:]
+	}
+
+	return appendAsyncParamsToCallData(
+		asyncParams,
+		callData,
+		true,
+		parseArgumentsFunc)
+}
+
+func appendAsyncParamsToCallData(
 	asyncParams [][]byte,
 	data []byte,
+	hasFunction bool,
 	parseArgumentsFunc func(data string) ([][]byte, error)) ([]byte, error) {
+
+	if data == nil {
+		return nil, nil
+	}
+
 	args, err := parseArgumentsFunc(string(data))
 	if err != nil {
 		return nil, err
 	}
 
+	var functionName string
+	if hasFunction {
+		functionName = string(args[0])
+	}
+
+	// check if there is only one argument and that is 0
+	if len(args) != 0 {
+		args = args[1:]
+	}
+
 	callData := txDataBuilder.NewBuilder()
+
+	if functionName != "" {
+		callData.Func(string(functionName))
+	}
+
 	for _, asyncParam := range asyncParams {
 		callData.Bytes(asyncParam)
 	}
 
-	// args string start with a @ so first parsed argument will be empty always
 	if len(args) != 0 {
-		for _, arg := range args[1:] {
+		for _, arg := range args {
 			callData.Bytes(arg)
 		}
 	} else {
-		callData.Bytes([]byte{})
+		if !hasFunction {
+			callData.Bytes([]byte{})
+		}
 	}
 
 	return callData.ToBytes(), nil
+}
+
+/*
+	Used by when a callback SCR is created
+	1)	after a failure of an async call
+		Async data is extracted (by extractAsyncCallParamsFromTxData()) and then
+		reappended to the new SCR's callback data (by reapendAsyncParamsToTxData())
+	2)	from the last transfer (see useLastTransferAsAsyncCallBackWhenNeeded())
+*/
+func CreateCallbackAsyncParams(hasher crypto.Hasher, asyncParams *vmcommon.AsyncArguments) [][]byte {
+	if asyncParams == nil {
+		return nil
+	}
+	newAsyncParams := make([][]byte, 4)
+	newAsyncParams[0] = GenerateNewCallID(hasher, asyncParams.CallID, []byte{0})
+	newAsyncParams[1] = asyncParams.CallID
+	newAsyncParams[2] = asyncParams.CallerCallID
+	newAsyncParams[3] = []byte{0}
+	return newAsyncParams
 }
 
 func GenerateNewCallID(hasher crypto.Hasher, parentCallID []byte, suffix []byte) []byte {
@@ -138,16 +199,4 @@ func GenerateNewCallID(hasher crypto.Hasher, parentCallID []byte, suffix []byte)
 		return []byte{}
 	}
 	return newCallID
-}
-
-func CreateCallbackAsyncParams(hasher crypto.Hasher, asyncParams [][]byte) [][]byte {
-	if asyncParams == nil {
-		return nil
-	}
-	newAsyncParams := make([][]byte, 4)
-	newAsyncParams[0] = GenerateNewCallID(hasher, asyncParams[0], []byte{0})
-	newAsyncParams[1] = asyncParams[0]
-	newAsyncParams[2] = asyncParams[1]
-	newAsyncParams[3] = []byte{0}
-	return newAsyncParams
 }

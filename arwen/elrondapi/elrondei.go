@@ -1041,7 +1041,7 @@ func v1_5_transferValue(context unsafe.Pointer, destOffset int32, valueOffset in
 		return 1
 	}
 
-	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), data, vm.DirectCall)
+	err = output.Transfer(dest, sender, 0, 0, big.NewInt(0).SetBytes(valueBytes), nil, data, vm.DirectCall)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1282,7 +1282,7 @@ func TransferValueExecuteWithTypedArgs(
 	}
 
 	metering.UseAndTraceGas(uint64(gasLimit))
-	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, []byte(data), vm.DirectCall)
+	err = output.Transfer(dest, sender, uint64(gasLimit), 0, value, nil, []byte(data), vm.DirectCall)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -3521,7 +3521,7 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 }
 
 func executeOnDestContextFromAPI(host arwen.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
-	_, input.Arguments = host.Async().PrependArgumentsForAsyncContext(input.Arguments)
+	host.Async().SetAsyncArgumentsForCall(input)
 	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
 	if err != nil {
 		return nil, err

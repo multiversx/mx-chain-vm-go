@@ -34,6 +34,7 @@ func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, c
 			0,
 			valueToTransfer,
 			nil,
+			nil,
 			vm.DirectCall)
 		return instance
 	})
@@ -78,6 +79,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			0,
 			0,
 			valueToTransfer,
+			nil,
 			arguments[1],
 			0)
 		if err != nil {
@@ -94,6 +96,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 			0,
 			0,
 			valueToTransfer,
+			nil,
 			[]byte{},
 			0)
 		if err != nil {

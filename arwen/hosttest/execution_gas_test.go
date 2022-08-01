@@ -516,7 +516,6 @@ func testGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T, isLegacy bool) {
 
 	asyncCallData := txDataBuilder.NewBuilder()
 	asyncCallData.Func(contracts.AsyncChildFunction)
-	asyncCallData.Bytes(nil) // placeholder for data used by async framework
 	asyncCallData.Int64(testConfig.TransferToThirdParty)
 	asyncCallData.Str(contracts.AsyncChildData)
 	asyncCallData.Bytes([]byte{0})
@@ -548,7 +547,6 @@ func testGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T, isLegacy bool) {
 			WithValue(big.NewInt(testConfig.TransferToThirdParty)),
 		test.CreateTransferEntry(test.ParentAddress, test.ChildAddress).
 			WithData(asyncChildArgs).
-			IgnoreDataItems(1, 2). // we used placeholders in expected data
 			WithGasLimit(gasForAsyncCall).
 			WithGasLocked(gasLocked).
 			WithCallType(vm.AsynchronousCall).
@@ -608,9 +606,10 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 			WithCallValue(testConfig.TransferFromParentToChild).
 			WithGasProvided(gasForAsyncCall).
 			WithFunction(contracts.AsyncChildFunction).
+			WithAsyncArguments(
+				&vmcommon.AsyncArguments{CallID: []byte{0}, CallerCallID: []byte{0}},
+			).
 			WithArguments(
-				[]byte{0}, // placeholder for data used by async framework
-				[]byte{0}, // placeholder for data used by async framework
 				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
 				[]byte(contracts.AsyncChildData),
 				[]byte{0}).
@@ -639,7 +638,6 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 						WithValue(big.NewInt(testConfig.TransferToVault)),
 					test.CreateTransferEntry(test.ChildAddress, test.ParentAddress).
 						WithData(computeReturnDataForCallback(vmcommon.Ok, childAsyncReturnData)).
-						IgnoreDataItems(1, 2, 3, 4). // we used placeholders in expected data
 						WithGasLimit(gasForAsyncCall-testConfig.GasUsedByChild).
 						WithCallType(vm.AsynchronousCallBack).
 						WithValue(big.NewInt(0)),
@@ -667,9 +665,10 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 			WithCallValue(testConfig.TransferFromParentToChild).
 			WithGasProvided(gasForAsyncCall).
 			WithFunction(contracts.AsyncChildFunction).
+			WithAsyncArguments(
+				&vmcommon.AsyncArguments{CallID: []byte{0}, CallerCallID: []byte{0}},
+			).
 			WithArguments(
-				[]byte{0}, // placeholder for data used by async framework
-				[]byte{0}, // placeholder for data used by async framework
 				big.NewInt(testConfig.TransferToThirdParty).Bytes()).
 			WithCallType(vm.AsynchronousCall).
 			Build()).
@@ -725,11 +724,13 @@ func testGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T, isLegacy bool) {
 		WithConfig(testConfig).
 		WithMethods(contracts.PerformAsyncCallParentMock, contracts.CallBackParentMock)
 
-	callID := []byte{1, 2, 3}
-	callerCallID := []byte{3, 2, 1}
-	callbackAsyncInitiatorCallID := []byte{4, 5, 6}
-	arguments := [][]byte{callID, callerCallID, callbackAsyncInitiatorCallID,
-		{1}, []byte("thirdparty"), []byte("vault"), {0}}
+	asyncArguments := &vmcommon.AsyncArguments{
+		CallID:                       []byte{1, 2, 3},
+		CallerCallID:                 []byte{3, 2, 1},
+		CallbackAsyncInitiatorCallID: []byte{4, 5, 6},
+		GasAccumulated:               1,
+	}
+	arguments := [][]byte{[]byte("thirdparty"), []byte("vault"), {0}}
 
 	// async cross shard callback child -> parent
 	test.BuildMockInstanceCallTest(t).
@@ -739,6 +740,7 @@ func testGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T, isLegacy bool) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(gasForAsyncCall - gasUsedByChild + testConfig.GasLockCost).
 			WithFunction("callBack").
+			WithAsyncArguments(asyncArguments).
 			WithArguments(arguments...).
 			WithCallType(vm.AsynchronousCallBack).
 			Build()).
@@ -770,9 +772,9 @@ func testGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T, isLegacy bool) {
 			fakeInput.GasProvided = 1000
 			host.Metering().InitStateFromContractCallInput(fakeInput)
 
-			contracts.RegisterAsyncCallToChild(host, testConfig, arguments[3:])
-			host.Async().SetCallID(callbackAsyncInitiatorCallID)
-			host.Async().SetCallIDForCallInGroup(0, 0, callerCallID)
+			contracts.RegisterAsyncCallToChild(host, testConfig, arguments)
+			host.Async().SetCallID(asyncArguments.CallbackAsyncInitiatorCallID)
+			host.Async().SetCallIDForCallInGroup(0, 0, asyncArguments.CallerCallID)
 			host.Async().Save()
 
 			for _, account := range host.Output().GetVMOutput().OutputAccounts {

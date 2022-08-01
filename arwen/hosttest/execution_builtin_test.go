@@ -225,8 +225,11 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	input.RecipientAddr = exchangeAddress
 	input.Function = core.BuiltInFunctionESDTTransfer
 	input.GasProvided = 10000
+	input.AsyncArguments = &vmcommon.AsyncArguments{
+		CallID:       []byte{},
+		CallerCallID: []byte{},
+	}
 	input.Arguments = [][]byte{
-		{}, {},
 		testToken,
 		big.NewInt(esdtValue).Bytes(),
 		[]byte("validateGetters"),

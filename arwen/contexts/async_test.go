@@ -580,7 +580,7 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// Prepare the input to Alice's callback
 	callbackInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	callbackInput.GasProvided = destOutput.GasRemaining + asyncCall.GasLocked
-	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput) + 4*(32+1)
+	callbackInput.GasProvided -= defaultOutputDataLengthAsArgs(asyncCall, destOutput)
 	callbackInput.GasProvided -= GasForAsyncStep
 	callbackInput.GasLocked = 0
 
@@ -603,9 +603,9 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	// There were two calls to host.ExecuteOnDestContext()
 	require.Len(t, host.StoredInputs, 2)
 
-	_, host.StoredInputs[0].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[0].Arguments, 2)
+	host.StoredInputs[0].AsyncArguments = nil
 	require.Equal(t, destInput, host.StoredInputs[0])
-	_, host.StoredInputs[1].Arguments = arwen.SplitPrefixArguments(host.StoredInputs[1].Arguments, 4)
+	host.StoredInputs[1].AsyncArguments = nil
 	require.Equal(t, callbackInput, host.StoredInputs[1])
 
 	// Verify the final output of the execution; GasRemaining is set to 0 because
@@ -657,7 +657,7 @@ func TestAsyncContext_CreateContractCallInput(t *testing.T) {
 
 	expectedInput := defaultCallInput_AliceToBob(originalVMInput)
 	expectedInput.GasProvided = 2
-	_, input.Arguments = arwen.SplitPrefixArguments(input.Arguments, 2)
+	input.AsyncArguments = nil
 	require.Equal(t, expectedInput, input)
 }
 
@@ -678,12 +678,12 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallSuccessful(t *testing.T
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
 	expectedInput := defaultCallbackInput_BobToAlice(originalVMInput)
 	expectedInput.GasProvided = expectedGasProvided
-	_, callbackInput.Arguments = arwen.SplitPrefixArguments(callbackInput.Arguments, 4)
+	callbackInput.AsyncArguments = nil
 	require.Equal(t, expectedInput, callbackInput)
 }
 
@@ -702,7 +702,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	require.Nil(t, err)
 
 	expectedGasProvided := asyncCall.GasLocked + vmOutput.GasRemaining
-	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput) + 2*(32+2)
+	expectedGasProvided -= defaultOutputDataLengthAsArgs(asyncCall, vmOutput)
 	expectedGasProvided -= host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 
 	expectedInput := arwen.MakeContractCallInput(Bob, Alice, "errorCallback", 0)
@@ -712,7 +712,7 @@ func TestAsyncContext_CreateCallbackInput_DestinationCallFailed(t *testing.T) {
 	expectedInput.GasProvided = expectedGasProvided
 	expectedInput.CallType = vm.AsynchronousCallBack
 	expectedInput.ReturnCallAfterError = true
-	_, callbackInput.Arguments = arwen.SplitPrefixArguments(callbackInput.Arguments, 4)
+	callbackInput.AsyncArguments = nil
 	require.Equal(t, expectedInput, callbackInput)
 }
 

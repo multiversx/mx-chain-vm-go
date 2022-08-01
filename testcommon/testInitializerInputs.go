@@ -521,6 +521,12 @@ func (contractInput *ContractCallInputBuilder) WithArguments(arguments ...[]byte
 	return contractInput
 }
 
+// WithAsyncArguments provides the async arguments to be called for ContractCallInputBuilder
+func (contractInput *ContractCallInputBuilder) WithAsyncArguments(arguments *vmcommon.AsyncArguments) *ContractCallInputBuilder {
+	contractInput.ContractCallInput.VMInput.AsyncArguments = arguments
+	return contractInput
+}
+
 // WithCallType provides the arguments to be called for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithCallType(callType vm.CallType) *ContractCallInputBuilder {
 	contractInput.ContractCallInput.VMInput.CallType = callType

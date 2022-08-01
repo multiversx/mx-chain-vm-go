@@ -327,11 +327,16 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error {
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error {
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
 	if err != nil {
 		return err
+	}
+
+	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) &&
+		(asyncData == nil || len(asyncData) == 0) {
+		return vmcommon.ErrAsyncParams
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
@@ -339,6 +344,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		Value:         big.NewInt(0).Set(value),
 		GasLimit:      gasLimit,
 		GasLocked:     gasLocked,
+		AsyncData:     asyncData,
 		Data:          input,
 		CallType:      callType,
 		SenderAddress: sender,

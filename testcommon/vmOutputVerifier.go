@@ -413,6 +413,8 @@ func extractFunctionAndArgsFromTransfer(transfersForAccount []vmcommon.OutputTra
 func requireEqualTransfersWithoutData(outputAccount *vmcommon.OutputAccount, index int, transfersForAccount []vmcommon.OutputTransfer, v *VMOutputVerifier, errMsg string) {
 	transfersForAccount[index].Data = nil
 	outputAccount.OutputTransfers[index].Data = nil
+	transfersForAccount[index].AsyncData = nil
+	outputAccount.OutputTransfers[index].AsyncData = nil
 	require.Equal(v.T, transfersForAccount[index], outputAccount.OutputTransfers[index], errMsg)
 }
 

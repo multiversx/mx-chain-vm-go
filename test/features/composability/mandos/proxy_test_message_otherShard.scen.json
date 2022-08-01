@@ -60,7 +60,7 @@
                     "balance": "0",
                     "storage": {},
                     "code": "",
-                    "asyncCallData": "str:messageMe@6108555c9fef18e532d10ecfa558d8f36e2ea7acbbeace72acc48b3c347106b7@312e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
+                    "asyncCallData": "str:messageMe@01@02@030303@fefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefe"
                 }
             }
         }

@@ -279,13 +279,6 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	output := host.Output()
 
-	asyncPrefixArgs := arwen.PopCallIDsFromArguments(input)
-	if asyncPrefixArgs == nil {
-		err := arwen.ErrAsyncFrameworkPopCallID
-		log.Trace("ExecuteOnDestContext builtin function", "error", err)
-		return nil, nil, err
-	}
-
 	postBuiltinInput, builtinOutput, err := host.callBuiltinFunction(input)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
@@ -293,14 +286,13 @@ func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput)
 	}
 
 	if postBuiltinInput != nil {
-		arwen.PrependToArguments(postBuiltinInput, asyncPrefixArgs...)
+		postBuiltinInput.AsyncArguments = input.AsyncArguments
 	}
 
-	err = contexts.AddAsyncParamsToVmOutput(
+	err = contexts.AddAsyncArgumentsToOutputTransfers(
 		input.RecipientAddr,
-		asyncPrefixArgs,
+		input.AsyncArguments,
 		vm.AsynchronousCall,
-		host.callArgsParser.ParseData,
 		builtinOutput)
 	if err != nil {
 		log.Trace("ExecuteOnDestContext builtin function", "error", err)
@@ -576,7 +568,7 @@ func (host *vmHost) CreateNewContract(input *vmcommon.ContractCreateInput) (newC
 	}
 
 	var isChildComplete bool
-	_, initCallInput.Arguments = host.Async().PrependArgumentsForAsyncContext(initCallInput.Arguments)
+	host.Async().SetAsyncArgumentsForCall(initCallInput)
 	_, isChildComplete, err = host.ExecuteOnDestContext(initCallInput)
 	if err != nil {
 		return

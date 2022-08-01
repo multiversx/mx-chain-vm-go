@@ -353,11 +353,6 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 
-// PopFirstArgumentFromVMInput mocked method
-func (r *RuntimeContextMock) PopFirstArgumentFromVMInput() ([]byte, error) {
-	return nil, nil
-}
-
 // CleanInstance mocked method
 func (r *RuntimeContextMock) CleanInstance() {
 }

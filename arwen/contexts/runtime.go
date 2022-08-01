@@ -906,21 +906,6 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 	return ok
 }
 
-// PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
-func (context *runtimeContext) PopFirstArgumentFromVMInput() ([]byte, error) {
-	return PopFirstArgumentFromVMInput(&context.vmInput.VMInput)
-}
-
-// PopFirstArgumentFromVMInput removes and returns the first argument from the args list, it's used
-func PopFirstArgumentFromVMInput(vmInput *vmcommon.VMInput) ([]byte, error) {
-	if len(vmInput.Arguments) == 0 {
-		return nil, arwen.ErrInvalidAsyncArgsList
-	}
-	firstArg := vmInput.Arguments[0]
-	vmInput.Arguments = vmInput.Arguments[1:]
-	return firstArg, nil
-}
-
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
 }
