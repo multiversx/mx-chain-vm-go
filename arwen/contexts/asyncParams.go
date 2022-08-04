@@ -116,6 +116,8 @@ func AppendTransferAsyncDataToCallData(
 		asyncParams, _ = parseArgumentsFunc(string(asyncData))
 		// string start with a @ so first parsed argument will be empty always
 		asyncParams = asyncParams[1:]
+	} else {
+		return callData, nil
 	}
 
 	return appendAsyncParamsToCallData(
