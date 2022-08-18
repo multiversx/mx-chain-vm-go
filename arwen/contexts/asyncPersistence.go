@@ -11,6 +11,10 @@ import (
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
 func (context *asyncContext) Save() error {
+	// if context.asyncCallGroups == nil || len(context.asyncCallGroups) == 0 {
+	// 	return nil
+	// }
+
 	address := context.address
 	callID := context.callID
 	storage := context.host.Storage()
@@ -25,7 +29,7 @@ func (context *asyncContext) Save() error {
 		return err
 	}
 
-	_, err = storage.SetProtectedStorageToAddress(address, storageKey, data)
+	_, err = storage.SetProtectedStorageToAddressUnmetered(address, storageKey, data)
 	if err != nil {
 		return err
 	}
@@ -47,18 +51,10 @@ func (context *asyncContext) LoadParentContext() error {
 }
 
 // Delete deletes the persisted state of the AsyncContext from the contract storage.
-func (context *asyncContext) Delete() error {
-	storage := context.host.Storage()
-	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, context.callID)
-	_, err := storage.SetProtectedStorage(storageKey, nil)
-	return err
-}
-
-// Delete deletes the persisted state of the AsyncContext from the contract storage.
 func (context *asyncContext) DeleteFromAddress(address []byte) error {
 	storage := context.host.Storage()
 	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, context.callID)
-	_, err := storage.SetProtectedStorageToAddress(address, storageKey, nil)
+	_, err := storage.SetProtectedStorageToAddressUnmetered(address, storageKey, nil)
 	return err
 }
 

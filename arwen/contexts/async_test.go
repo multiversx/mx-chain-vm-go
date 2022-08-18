@@ -434,9 +434,16 @@ func TestAsyncContext_UpdateCurrentCallStatus(t *testing.T) {
 	vmInput.Arguments = [][]byte{{0}}
 	host.Runtime().InitStateFromContractCallInput(vmInput)
 	asyncCall, isLegacy, err = async.UpdateCurrentAsyncCallStatus(contract, []byte("callID_2"), &vmInput.VMInput)
-	require.Nil(t, asyncCall)
-	require.False(t, isLegacy)
-	require.True(t, errors.Is(err, arwen.ErrAsyncCallNotFound))
+	require.Equal(t, asyncCall, &arwen.AsyncCall{
+		Status:          arwen.AsyncCallResolved,
+		Destination:     contract,
+		SuccessCallback: arwen.CallbackFunctionName,
+		ErrorCallback:   arwen.CallbackFunctionName,
+		GasLimit:        vmInput.GasProvided,
+		GasLocked:       vmInput.GasLocked,
+	})
+	require.True(t, isLegacy)
+	require.Nil(t, err)
 
 	// CallType == AsynchronousCallback, but this time there is a corresponding AsyncCall
 	// registered, causing async.UpdateCurrentCallStatus() to find and update the AsyncCall

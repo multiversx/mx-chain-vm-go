@@ -302,6 +302,7 @@ type StorageContext interface {
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
+	SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
 	GetVmProtectedPrefix(prefix string) []byte
 }
@@ -342,7 +343,6 @@ type AsyncContext interface {
 
 	LoadParentContext() error
 	Save() error
-	Delete() error
 	DeleteFromAddress(address []byte) error
 
 	GetCallID() []byte

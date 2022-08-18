@@ -376,7 +376,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	if !async.IsComplete() {
 		saveErr := async.Save()
 		if saveErr != nil {
-			vmOutput = output.CreateVMOutputInCaseOfError(executeErr)
+			vmOutput = output.CreateVMOutputInCaseOfError(saveErr)
 		}
 	}
 
@@ -987,9 +987,13 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 		runtime.GetContextAddress(),
 		callerCallID,
 		&runtime.GetVMInput().VMInput)
-	if err != nil {
+	if err != nil && !isLegacy {
 		log.Trace("UpdateCurrentCallStatus failed", "error", err)
 		return err
+	}
+
+	if asyncCall == nil {
+		return nil
 	}
 
 	async.SetCallbackParentCall(asyncCall)

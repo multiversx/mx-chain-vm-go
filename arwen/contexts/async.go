@@ -683,19 +683,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		context.marshalizer)
 	if err != nil {
 		if err == arwen.ErrNoStoredAsyncContextFound {
-			var valueBytes []byte = nil
-			if vmInput.CallValue != nil {
-				valueBytes = vmInput.CallValue.Bytes()
-			}
-			return &arwen.AsyncCall{
-				Status:          arwen.AsyncCallResolved,
-				Destination:     address,
-				ValueBytes:      valueBytes,
-				SuccessCallback: arwen.CallbackFunctionName,
-				ErrorCallback:   arwen.CallbackFunctionName,
-				GasLimit:        vmInput.GasProvided,
-				GasLocked:       vmInput.GasLocked,
-			}, true, nil
+			return getLegacyCallback(address, vmInput), true, nil
 		} else {
 			return nil, false, err
 		}
@@ -705,7 +693,11 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	call := asyncCallInfo.GetAsyncCall()
 	err = asyncCallInfo.GetError()
 	if err != nil {
-		return nil, false, err
+		if err == arwen.ErrAsyncCallNotFound {
+			return getLegacyCallback(address, vmInput), true, nil
+		} else {
+			return nil, false, err
+		}
 	}
 
 	// The first argument of the callback is the return code of the destination call
@@ -713,6 +705,22 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	call.UpdateStatus(vmcommon.ReturnCode(destReturnCode))
 
 	return call, false, nil
+}
+
+func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *arwen.AsyncCall {
+	var valueBytes []byte = nil
+	if vmInput.CallValue != nil {
+		valueBytes = vmInput.CallValue.Bytes()
+	}
+	return &arwen.AsyncCall{
+		Status:          arwen.AsyncCallResolved,
+		Destination:     address,
+		ValueBytes:      valueBytes,
+		SuccessCallback: arwen.CallbackFunctionName,
+		ErrorCallback:   arwen.CallbackFunctionName,
+		GasLimit:        vmInput.GasProvided,
+		GasLocked:       vmInput.GasLocked,
+	}
 }
 
 func (context *asyncContext) isMultiLevelAsync(call *arwen.AsyncCall) bool {
