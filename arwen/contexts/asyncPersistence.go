@@ -11,10 +11,6 @@ import (
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
 func (context *asyncContext) Save() error {
-	// if context.asyncCallGroups == nil || len(context.asyncCallGroups) == 0 {
-	// 	return nil
-	// }
-
 	address := context.address
 	callID := context.callID
 	storage := context.host.Storage()
