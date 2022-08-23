@@ -980,15 +980,6 @@ func (context *asyncContext) accumulateGas(gas uint64) {
 	logAsync.Trace("async gas accumulated", "gas", context.gasAccumulated)
 }
 
-// func (context *asyncContext) prependCallbackArgumentsForAsyncContext(args [][]byte, asyncCall *arwen.AsyncCall, gasAccumulated uint64) [][]byte {
-// 	return append([][]byte{
-// 		context.generateNewCallID(), // new callback id
-// 		asyncCall.CallID,            // caller call id (original async call destination)
-// 		context.callID,              // async initiator call id (original async call source)
-// 		big.NewInt(int64(gasAccumulated)).Bytes(),
-// 	}, args...)
-// }
-
 // HasLegacyGroup checks if the a legacy async group was created
 func (context *asyncContext) HasLegacyGroup() bool {
 	_, hasLegacyGroup := context.GetCallGroup(arwen.LegacyAsyncCallGroupID)

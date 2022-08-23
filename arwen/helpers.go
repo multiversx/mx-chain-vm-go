@@ -277,28 +277,3 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 
 	return true
 }
-
-// // PrependToArguments adds new arguments in front of the existing ones
-// func PrependToArguments(input *vmcommon.ContractCallInput, toPrepend ...[]byte) {
-// 	input.Arguments = append(toPrepend, input.Arguments...)
-// }
-
-// // SplitPrefixArguments splits arguments in two arrays of arguments
-// func SplitPrefixArguments(arguments [][]byte, numberOfArgsToRemove int) ([][]byte, [][]byte) {
-// 	if len(arguments) < numberOfArgsToRemove {
-// 		return nil, nil
-// 	}
-// 	return arguments[0:numberOfArgsToRemove], arguments[numberOfArgsToRemove:]
-// }
-
-// // PopCallIDsFromArguments removes async infrastructure arguments from the arguments list
-// func PopCallIDsFromArguments(input *vmcommon.ContractCallInput) [][]byte {
-// 	asyncPrefixArgsNumber := 2
-// 	if input.CallType == vm.AsynchronousCallBack {
-// 		asyncPrefixArgsNumber = 4
-// 	}
-
-// 	var asyncPrefixArgs [][]byte
-// 	asyncPrefixArgs, input.Arguments = SplitPrefixArguments(input.Arguments, asyncPrefixArgsNumber)
-// 	return asyncPrefixArgs
-// }

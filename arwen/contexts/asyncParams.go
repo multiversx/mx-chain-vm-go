@@ -158,10 +158,6 @@ func appendAsyncParamsToCallData(
 		callData.Func(string(functionName))
 	}
 
-	for _, asyncParam := range asyncParams {
-		callData.Bytes(asyncParam)
-	}
-
 	if len(args) != 0 {
 		for _, arg := range args {
 			callData.Bytes(arg)
@@ -170,6 +166,10 @@ func appendAsyncParamsToCallData(
 		if !hasFunction {
 			callData.Bytes([]byte{})
 		}
+	}
+
+	for _, asyncParam := range asyncParams {
+		callData.Bytes(asyncParam)
 	}
 
 	return callData.ToBytes(), nil
