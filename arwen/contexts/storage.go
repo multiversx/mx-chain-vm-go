@@ -13,7 +13,7 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
-const vmStoragePrefix = "VM@"
+const VMStoragePrefix = "VM@"
 
 type storageContext struct {
 	host                          arwen.VMHost
@@ -45,7 +45,7 @@ func NewStorageContext(
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
-		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(vmStoragePrefix)...),
+		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(VMStoragePrefix)...),
 		arwenStorageProtectionEnabled: true,
 	}
 
