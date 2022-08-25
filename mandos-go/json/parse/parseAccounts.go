@@ -38,6 +38,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 		AsyncCallData:   "",
 		ESDTData:        nil,
 		Update:          false,
+		DeveloperReward: mj.JSONBigIntZero(),
 	}
 
 	var err error
@@ -125,6 +126,12 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			acct.Update, err = p.parseBool(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid update flag bool: %w", err)
+			}
+
+		case "developer_rewards":
+			acct.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
+				return nil, errors.New("invalid developer_rewards")
 			}
 		default:
 			return nil, fmt.Errorf("unknown account field: %s", kvp.Key)
