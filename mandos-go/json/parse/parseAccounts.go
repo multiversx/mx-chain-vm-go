@@ -129,7 +129,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			}
 
 		case "developer_rewards":
-			acct.Balance, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			acct.DeveloperReward, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
 				return nil, errors.New("invalid developer_rewards")
 			}
