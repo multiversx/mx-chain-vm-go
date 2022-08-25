@@ -107,7 +107,7 @@ func (a *Account) SetBalance(balance int64) {
 
 // GetDeveloperReward -
 func (a *Account) GetDeveloperReward() *big.Int {
-	return big.NewInt(a.DeveloperReward)
+	return a.DeveloperReward
 }
 
 // GetOwnerAddress -
