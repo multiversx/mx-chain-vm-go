@@ -2,8 +2,9 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/ElrondNetwork/big-int-util v0.1.0 h1:vTMoJ5azhVmr7jhpSD3JUjQdkdyXoEPVkOvhdw1RjV4=
 github.com/ElrondNetwork/big-int-util v0.1.0/go.mod h1:96viBvoTXLjZOhEvE0D+QnAwg1IJLPAK6GVHMbC7Aw4=
 github.com/ElrondNetwork/elrond-go-core v1.0.0/go.mod h1:FQMem7fFF4+8pQ6lVsBZq6yO+smD0nV23P4bJpmPjTo=
-github.com/ElrondNetwork/elrond-go-core v1.1.15-0.20220517131228-41edc685421f h1:GXrCspczDctP5Jd3nHSFwUu2KzKDJea7H6RAX0m0hHc=
-github.com/ElrondNetwork/elrond-go-core v1.1.15-0.20220517131228-41edc685421f/go.mod h1:Yz8JK5sGBctw7+gU8j2mZHbzQ09Ek4XHJ4Uinq1N6nM=
+github.com/ElrondNetwork/elrond-go-core v1.1.7/go.mod h1:O9FkkTT2H9kxCzfn40TbhoCDXzGmUrRVusMomhK/Y3g=
+github.com/ElrondNetwork/elrond-go-core v1.1.13 h1:67o8RRagno509HWJwnyXTShOnLY6PAP3n5ok/B8sgQY=
+github.com/ElrondNetwork/elrond-go-core v1.1.13/go.mod h1:Yz8JK5sGBctw7+gU8j2mZHbzQ09Ek4XHJ4Uinq1N6nM=
 github.com/ElrondNetwork/elrond-go-crypto v1.0.0 h1:ykJ6dNtF3brNs1CB/fUp+OBtwq33akMe8a242t686Ik=
 github.com/ElrondNetwork/elrond-go-crypto v1.0.0/go.mod h1:DGiR7/j1xv729Xg8SsjYaUzWXL5svMd44REXjWS/gAc=
 github.com/ElrondNetwork/elrond-go-logger v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
@@ -11,8 +12,8 @@ github.com/ElrondNetwork/elrond-go-logger v1.0.5/go.mod h1:cBfgx0ST/CJx8jrxJSC5a
 github.com/ElrondNetwork/elrond-go-logger v1.0.7 h1:Ldl1rVS0RGKc1IsW8jIaGCb6Zwei04gsMvyjL05X6mE=
 github.com/ElrondNetwork/elrond-go-logger v1.0.7/go.mod h1:cBfgx0ST/CJx8jrxJSC5aiSrvkGzcnF7sK06RD8mFxQ=
 github.com/ElrondNetwork/elrond-vm-common v1.1.0/go.mod h1:w3i6f8uiuRkE68Ie/gebRcLgTuHqvruJSYrFyZWuLrE=
-github.com/ElrondNetwork/elrond-vm-common v1.3.13-0.20220708125052-5343b3b65f3e h1:2iD3hqTRI6/2RRuUcRCJVOXf18vxEo/kSY2V2USvbOE=
-github.com/ElrondNetwork/elrond-vm-common v1.3.13-0.20220708125052-5343b3b65f3e/go.mod h1:MytqqfkrTb1CLIMRVY6ayAwLe6P8Rleey0tSvSQcljA=
+github.com/ElrondNetwork/elrond-vm-common v1.3.14 h1:iubHO4wMovZNpFn033AnfCCXqpxcdzZv+RZLioo/o04=
+github.com/ElrondNetwork/elrond-vm-common v1.3.14/go.mod h1:seROQuR7RJCoCS7mgRXVAlvjztltY1c+UroAgWr/USE=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=

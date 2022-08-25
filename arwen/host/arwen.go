@@ -81,6 +81,8 @@ type vmHost struct {
 
 	checkExecuteReadOnlyEnableEpoch     uint32
 	flagCheckExecuteReadOnlyEnableEpoch atomic.Flag
+
+	activationEpochMap map[uint32]struct{}
 }
 
 // NewArwenVM creates a new Arwen vmHost
@@ -129,6 +131,8 @@ func NewArwenVM(
 		fixAsnycCallArgumentsEnableEpoch:                hostParameters.ManagedCryptoAPIEnableEpoch,
 		checkExecuteReadOnlyEnableEpoch:                 hostParameters.CheckExecuteReadOnlyEnableEpoch,
 	}
+
+	host.activationEpochMap = createActivationMap(hostParameters)
 
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {
@@ -238,6 +242,23 @@ func NewArwenVM(
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
 	return host, nil
+}
+
+func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {
+	activationMap := make(map[uint32]struct{})
+
+	activationMap[hostParameters.CheckExecuteReadOnlyEnableEpoch] = struct{}{}
+	activationMap[hostParameters.DisableExecByCallerEnableEpoch] = struct{}{}
+	activationMap[hostParameters.RefactorContextEnableEpoch] = struct{}{}
+	activationMap[hostParameters.FixFailExecutionOnErrorEnableEpoch] = struct{}{}
+	activationMap[hostParameters.ManagedCryptoAPIEnableEpoch] = struct{}{}
+	activationMap[hostParameters.CreateNFTThroughExecByCallerEnableEpoch] = struct{}{}
+	activationMap[hostParameters.FixOOGReturnCodeEnableEpoch] = struct{}{}
+	activationMap[hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch] = struct{}{}
+	activationMap[hostParameters.RemoveNonUpdatedStorageEnableEpoch] = struct{}{}
+	activationMap[hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch] = struct{}{}
+
+	return activationMap
 }
 
 // GetVersion returns the Arwen version string
@@ -579,6 +600,12 @@ func (host *vmHost) EpochConfirmed(epoch uint32, _ uint64) {
 
 	host.flagCheckExecuteReadOnlyEnableEpoch.SetValue(epoch >= host.checkExecuteReadOnlyEnableEpoch)
 	log.Debug("Arwen VM: check execute read only mode", "enabled", host.flagCheckExecuteReadOnlyEnableEpoch.IsSet())
+
+	_, ok := host.activationEpochMap[epoch]
+	if ok {
+		host.Runtime().ClearWarmInstanceCache()
+		host.Blockchain().ClearCompiledCodes()
+	}
 }
 
 // FixOOGReturnCodeEnabled returns true if the corresponding flag is set
