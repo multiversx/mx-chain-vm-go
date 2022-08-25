@@ -43,7 +43,7 @@ type CheckAccount struct {
 	CheckESDTData         []*CheckESDTData
 	IgnoreESDT            bool
 	MoreESDTTokensAllowed bool
-	DeveloperReward       JSONBigInt
+	DeveloperReward       JSONCheckBigInt
 }
 
 // CheckStorageKeyValuePair checks a single entry in storage.
