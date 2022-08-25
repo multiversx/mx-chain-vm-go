@@ -4,10 +4,10 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
-	github.com/ElrondNetwork/elrond-go-core v1.1.7
+	github.com/ElrondNetwork/elrond-go-core v1.1.20-0.20220825075514-8e8d8ff0312b
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
-	github.com/ElrondNetwork/elrond-vm-common v1.3.14
+	github.com/ElrondNetwork/elrond-vm-common v1.3.15-0.20220823131107-727e254268b6
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.1
 	github.com/gogo/protobuf v1.3.2
