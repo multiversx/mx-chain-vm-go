@@ -292,6 +292,12 @@ func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
 	)
 }
 
+func cWasmerInstanceResetStackOffset(instance *cWasmerInstanceT) {
+	C.wasmer_instance_reset_stack_offset(
+		(*C.wasmer_instance_t)(instance),
+	)
+}
+
 func cWasmerInstanceExports(instance *cWasmerInstanceT, exports **cWasmerExportsT) {
 	C.wasmer_instance_exports(
 		(*C.wasmer_instance_t)(instance),

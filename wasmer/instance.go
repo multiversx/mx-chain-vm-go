@@ -385,6 +385,7 @@ func (instance *Instance) SetMemory(cleanMemory []byte) bool {
 	}
 
 	copy(instanceMemory, cleanMemory)
+	cWasmerInstanceResetStackOffset(instance.instance)
 	return true
 }
 

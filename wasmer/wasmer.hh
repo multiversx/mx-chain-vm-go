@@ -832,6 +832,8 @@ const wasmer_memory_t *wasmer_instance_context_memory(const wasmer_instance_cont
 /// ```
 void wasmer_instance_destroy(wasmer_instance_t *instance);
 
+void wasmer_instance_reset_stack_offset(wasmer_instance_t *instance);
+
 void wasmer_instance_disable_rkyv();
 
 void wasmer_instance_enable_rkyv();
