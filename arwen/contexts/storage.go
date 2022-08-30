@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 var logStorage = logger.GetOrCreate("arwen/storage")
@@ -21,35 +20,31 @@ type storageContext struct {
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
 	arwenStorageProtectionEnabled bool
-
-	useDifferentGasCostForReadingCachedStorageEpoch uint32
-	flagUseDifferentGasCostForReadingCachedStorage  atomic.Flag
+	enableEpochsHandler           vmcommon.EnableEpochsHandler
 }
 
 // NewStorageContext creates a new storageContext
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
-	epochNotifier vmcommon.EpochNotifier,
 	elrondProtectedKeyPrefix []byte,
-	useDifferentGasCostForReadingCachedStorageEpoch uint32,
+	enableEpochsHandler vmcommon.EnableEpochsHandler,
 ) (*storageContext, error) {
 	if len(elrondProtectedKeyPrefix) == 0 {
 		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
 	}
+	if check.IfNil(enableEpochsHandler) {
+		return nil, arwen.ErrNilEnableEpochsHandler
+	}
+
 	context := &storageContext{
 		host:                          host,
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
 		arwenStorageProtectionEnabled: true,
-		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
+		enableEpochsHandler:           enableEpochsHandler,
 	}
-
-	if check.IfNil(epochNotifier) {
-		return nil, arwen.ErrNilEpochNotifier
-	}
-	epochNotifier.RegisterNotifyHandler(context)
 
 	return context, nil
 }
@@ -115,7 +110,7 @@ func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
 
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
 	metering := context.host.Metering()
-	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
+	gasFlagSet := context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
 	if !usedCache || !gasFlagSet {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
@@ -129,7 +124,7 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 	if extraBytes <= 0 {
 		return
 	}
-	gasFlagSet := context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
+	gasFlagSet := context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
 	if !gasFlagSet || !usedCache {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 		metering.UseGas(gasToUse)
@@ -169,7 +164,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
 	var value []byte
 
-	if context.isElrondReservedKey(key) && context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if context.isElrondReservedKey(key) && context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
 		value, _ = context.blockChainHook.GetStorageData(address, key)
 		return value, false
 	}
@@ -349,7 +344,7 @@ func (context *storageContext) storageUnchanged(length int, usedCache bool) (arw
 func (context *storageContext) computeGasForUnchangedValue(length int, usedCache bool) uint64 {
 	metering := context.host.Metering()
 	useGas := uint64(0)
-	if !usedCache || !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() {
+	if !usedCache || !context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
 		useGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(length))
 	}
 	return useGas
@@ -378,7 +373,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 	extraBytes := len(key) - arwen.AddressLen
 	extraKeyLenGas := uint64(0)
 	if extraBytes > 0 &&
-		(!usedCache || !context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()) {
+		(!usedCache || !context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()) {
 		extraKeyLenGas = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
 	}
 	return extraKeyLenGas
@@ -387,7 +382,7 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 // UseGasForStorageLoad - single spot of gas consumption for storage load
 func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, usedCache bool) {
 	metering := context.host.Metering()
-	if context.flagUseDifferentGasCostForReadingCachedStorage.IsSet() && usedCache {
+	if context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
 		loadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
 	}
 
@@ -396,18 +391,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, l
 
 // IsUseDifferentGasCostFlagSet - getter for flag
 func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
-	return context.flagUseDifferentGasCostForReadingCachedStorage.IsSet()
-}
-
-// DisableUseDifferentGasCostFlag - for tests
-func (context *storageContext) DisableUseDifferentGasCostFlag() {
-	context.flagUseDifferentGasCostForReadingCachedStorage.Reset()
-}
-
-// EpochConfirmed is called whenever a new epoch is confirmed
-func (context *storageContext) EpochConfirmed(epoch uint32, _ uint64) {
-	context.flagUseDifferentGasCostForReadingCachedStorage.SetValue(epoch >= context.useDifferentGasCostForReadingCachedStorageEpoch)
-	log.Debug("Arwen VM: use different gas cost for reading cached storage", "enabled", context.flagUseDifferentGasCostForReadingCachedStorage.IsSet())
+	return context.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
