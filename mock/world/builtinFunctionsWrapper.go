@@ -3,12 +3,12 @@ package worldmock
 import (
 	"bytes"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm/config"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of

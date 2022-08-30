@@ -6,17 +6,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/crypto/factory"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")

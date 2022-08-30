@@ -3,19 +3,19 @@ package arwenmandos
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/mock"
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwenmandos/gasSchedules"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/controller"
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
+	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")

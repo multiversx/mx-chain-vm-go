@@ -1,4 +1,4 @@
-module github.com/ElrondNetwork/arwen-wasm-vm/v1_4
+module github.com/ElrondNetwork/wasm-vm
 
 go 1.13
 
@@ -9,7 +9,7 @@ require (
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
 	github.com/ElrondNetwork/elrond-vm-common v1.3.15-0.20220729115029-e70fd191b2f0
 	github.com/btcsuite/btcd v0.21.0-beta
-	github.com/gin-gonic/gin v1.7.6
+	github.com/gin-gonic/gin v1.8.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.7.1
