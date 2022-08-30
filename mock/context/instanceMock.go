@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
