@@ -6,18 +6,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -138,43 +137,12 @@ func NewArwenVM(
 	if newExecutionTimeout > minExecutionTimeout {
 		host.executionTimeout = newExecutionTimeout
 	}
-	imports, err := elrondapi.ElrondEIImports()
-	if err != nil {
-		return nil, err
-	}
 
-	imports, err = elrondapi.BigIntImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.BigFloatImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.SmallIntImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.ManagedEIImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.ManagedBufferImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = cryptoapi.CryptoImports(imports)
-	if err != nil {
-		return nil, err
-	}
+	imports := elrondapimeta.NewEIFunctions()
+	PopulateAllImports(imports)
 
 	wasmerImports := wasmer.ConvertImports(imports)
-	err = wasmer.SetImports(wasmerImports)
+	err := wasmer.SetImports(wasmerImports)
 	if err != nil {
 		return nil, err
 	}

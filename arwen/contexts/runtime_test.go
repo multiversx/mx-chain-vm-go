@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -27,12 +28,13 @@ const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 var vmType = []byte("type")
 
 func MakeAPIImports() *wasmer.Imports {
-	imports, _ := elrondapi.ElrondEIImports()
-	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = elrondapi.BigFloatImports(imports)
-	imports, _ = elrondapi.ManagedBufferImports(imports)
-	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = cryptoapi.CryptoImports(imports)
+	imports := elrondapimeta.NewEIFunctions()
+	_ = elrondapi.ElrondEIImports(imports)
+	_ = elrondapi.BigIntImports(imports)
+	_ = elrondapi.BigFloatImports(imports)
+	_ = elrondapi.ManagedBufferImports(imports)
+	_ = elrondapi.SmallIntImports(imports)
+	_ = cryptoapi.CryptoImports(imports)
 	return wasmer.ConvertImports(imports)
 }
 
