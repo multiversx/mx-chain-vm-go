@@ -97,15 +97,15 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -207,8 +207,8 @@ func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
-func ElrondEIImports() (*wasmer.Imports, error) {
-	imports := wasmer.NewImports()
+func ElrondEIImports() (*elrondapimeta.EIFunctions, error) {
+	imports := elrondapimeta.NewEIFunctions()
 	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("getSCAddress", v1_4_getSCAddress, C.v1_4_getSCAddress)

@@ -7,6 +7,9 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
@@ -15,9 +18,6 @@ import (
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +33,7 @@ func MakeAPIImports() *wasmer.Imports {
 	imports, _ = elrondapi.ManagedBufferImports(imports)
 	imports, _ = elrondapi.SmallIntImports(imports)
 	imports, _ = cryptoapi.CryptoImports(imports)
-	return imports
+	return wasmer.ConvertImports(imports)
 }
 
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {

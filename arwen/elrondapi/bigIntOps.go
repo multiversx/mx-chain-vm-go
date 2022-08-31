@@ -61,10 +61,10 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -113,7 +113,7 @@ const (
 )
 
 // BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
-func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
+func BigIntImports(imports *elrondapimeta.EIFunctions) (*elrondapimeta.EIFunctions, error) {
 	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("bigIntNew", v1_4_bigIntNew, C.v1_4_bigIntNew)

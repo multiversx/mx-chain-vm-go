@@ -40,10 +40,10 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -71,7 +71,7 @@ const (
 )
 
 // ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
-func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
+func ManagedBufferImports(imports *elrondapimeta.EIFunctions) (*elrondapimeta.EIFunctions, error) {
 	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("mBufferNew", v1_4_mBufferNew, C.v1_4_mBufferNew)
@@ -115,11 +115,6 @@ func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
 	}
 
 	imports, err = imports.Append("mBufferEq", v1_4_mBufferEq, C.v1_4_mBufferEq)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("mBufferSetBytes", v1_4_mBufferSetBytes, C.v1_4_mBufferSetBytes)
 	if err != nil {
 		return nil, err
 	}

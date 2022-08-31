@@ -49,8 +49,8 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 const (
@@ -85,7 +85,7 @@ const (
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
-func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
+func ManagedEIImports(imports *elrondapimeta.EIFunctions) (*elrondapimeta.EIFunctions, error) {
 	imports = imports.Namespace("env")
 
 	imports, err := imports.Append("managedSCAddress", v1_4_managedSCAddress, C.v1_4_managedSCAddress)

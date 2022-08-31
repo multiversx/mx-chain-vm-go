@@ -173,12 +173,13 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	err = wasmer.SetImports(imports)
+	wasmerImports := wasmer.ConvertImports(imports)
+	err = wasmer.SetImports(wasmerImports)
 	if err != nil {
 		return nil, err
 	}
 
-	host.scAPIMethods = imports
+	host.scAPIMethods = wasmerImports
 
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
