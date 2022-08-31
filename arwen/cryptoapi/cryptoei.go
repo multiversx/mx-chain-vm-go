@@ -91,8 +91,8 @@ const (
 )
 
 // CryptoImports adds some crypto imports to the Wasmer Imports map
-func CryptoImports(imports *elrondapimeta.EIFunctions) error {
-	imports = imports.Namespace("env")
+func CryptoImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 	err := imports.Append("sha256", v1_4_sha256, C.v1_4_sha256)
 	if err != nil {
 		return err

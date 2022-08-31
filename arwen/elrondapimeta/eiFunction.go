@@ -14,6 +14,12 @@ const (
 	EIFunctionValueInt64
 )
 
+// EIFunctionReceiver abstracts an EI imports container, where EI functions are registered.
+type EIFunctionReceiver interface {
+	Namespace(namespace string)
+	Append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error
+}
+
 // EIFunction represents a EI function that gets imported in a constract WASM module.
 type EIFunction struct {
 	// An implementation must be of type:
@@ -52,10 +58,8 @@ func NewEIFunctions() *EIFunctions {
 }
 
 // Namespace changes the current namespace of the next imported functions.
-func (imports *EIFunctions) Namespace(namespace string) *EIFunctions {
+func (imports *EIFunctions) Namespace(namespace string) {
 	imports.CurrentNamespace = namespace
-
-	return imports
 }
 
 // Append validates and adds a new imported function to the current structure.

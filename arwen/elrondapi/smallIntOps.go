@@ -49,8 +49,8 @@ const (
 )
 
 // SmallIntImports creates a new wasmer.Imports populated with the small int (int64/uint64) API methods
-func SmallIntImports(imports *elrondapimeta.EIFunctions) error {
-	imports = imports.Namespace("env")
+func SmallIntImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
 	err := imports.Append("smallIntGetUnsignedArgument", v1_4_smallIntGetUnsignedArgument, C.v1_4_smallIntGetUnsignedArgument)
 	if err != nil {

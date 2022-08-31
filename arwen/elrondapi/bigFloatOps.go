@@ -70,8 +70,8 @@ const (
 )
 
 // BigFloatImports creates a new wasmer.Imports populated with the BigFloat API methods
-func BigFloatImports(imports *elrondapimeta.EIFunctions) error {
-	imports = imports.Namespace("env")
+func BigFloatImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
 	err := imports.Append("bigFloatNewFromParts", v1_4_bigFloatNewFromParts, C.v1_4_bigFloatNewFromParts)
 	if err != nil {

@@ -71,8 +71,8 @@ const (
 )
 
 // ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
-func ManagedBufferImports(imports *elrondapimeta.EIFunctions) error {
-	imports = imports.Namespace("env")
+func ManagedBufferImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
 	err := imports.Append("mBufferNew", v1_4_mBufferNew, C.v1_4_mBufferNew)
 	if err != nil {

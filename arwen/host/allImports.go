@@ -7,7 +7,7 @@ import (
 )
 
 // PopulateAllImports fills a function container with all existing EI functions.
-func PopulateAllImports(imports *elrondapimeta.EIFunctions) error {
+func PopulateAllImports(imports elrondapimeta.EIFunctionReceiver) error {
 	err := elrondapi.ElrondEIImports(imports)
 	if err != nil {
 		return err

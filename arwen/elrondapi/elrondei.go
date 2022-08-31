@@ -207,8 +207,8 @@ func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
-func ElrondEIImports(imports *elrondapimeta.EIFunctions) error {
-	imports = imports.Namespace("env")
+func ElrondEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
 	err := imports.Append("getSCAddress", v1_4_getSCAddress, C.v1_4_getSCAddress)
 	if err != nil {

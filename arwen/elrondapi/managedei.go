@@ -85,8 +85,8 @@ const (
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
-func ManagedEIImports(imports *elrondapimeta.EIFunctions) error {
-	imports = imports.Namespace("env")
+func ManagedEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
 	err := imports.Append("managedSCAddress", v1_4_managedSCAddress, C.v1_4_managedSCAddress)
 	if err != nil {
