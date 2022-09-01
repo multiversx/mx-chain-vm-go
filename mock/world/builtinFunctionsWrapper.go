@@ -52,7 +52,6 @@ func NewBuiltinFunctionsWrapper(
 			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
 			IsDisableExecByCallerFlagEnabledField:                true,
 			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsSendAlwaysFlagEnabledField:                         true,
 			IsGlobalMintBurnFlagEnabledField:                     true,
 			IsTransferToMetaFlagEnabledField:                     true,
 			IsCheckFrozenCollectionFlagEnabledField:              true,

@@ -90,7 +90,6 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
 			IsDisableExecByCallerFlagEnabledField:                true,
 			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsSendAlwaysFlagEnabledField:                         true,
 			IsGlobalMintBurnFlagEnabledField:                     true,
 			IsTransferToMetaFlagEnabledField:                     true,
 			IsCheckFrozenCollectionFlagEnabledField:              true,
