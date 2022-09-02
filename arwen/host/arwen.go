@@ -171,7 +171,6 @@ func NewArwenVM(
 		host,
 		blockChainHook,
 		hostParameters.ElrondProtectedKeyPrefix,
-		hostParameters.EnableEpochsHandler,
 	)
 	if err != nil {
 		return nil, err
