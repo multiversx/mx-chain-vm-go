@@ -139,10 +139,13 @@ func NewArwenVM(
 	}
 
 	imports := elrondapimeta.NewEIFunctions()
-	PopulateAllImports(imports)
+	err := PopulateAllImports(imports)
+	if err != nil {
+		return nil, err
+	}
 
 	wasmerImports := wasmer.ConvertImports(imports)
-	err := wasmer.SetImports(wasmerImports)
+	err = wasmer.SetImports(wasmerImports)
 	if err != nil {
 		return nil, err
 	}
