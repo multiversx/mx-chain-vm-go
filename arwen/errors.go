@@ -210,6 +210,9 @@ var ErrExponentTooBigOrTooSmall = errors.New("exponent is either too small or to
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 
+// ErrNilEnableEpochsHandler signals that enable epochs handler is nil
+var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
+
 // ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
 var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
 
