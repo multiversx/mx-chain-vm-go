@@ -38,6 +38,7 @@ type VMHost interface {
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
+	EnableEpochsHandler() vmcommon.EnableEpochsHandler
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -159,7 +160,6 @@ type RuntimeContext interface {
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 
-	DisableUseDifferentGasCostFlag()
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
@@ -304,7 +304,6 @@ type StorageContext interface {
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
-	DisableUseDifferentGasCostFlag()
 	IsUseDifferentGasCostFlagSet() bool
 }
 

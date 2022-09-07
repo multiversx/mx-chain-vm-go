@@ -26,6 +26,7 @@ type VMHostStub struct {
 	OutputCalled                func() arwen.OutputContext
 	MeteringCalled              func() arwen.MeteringContext
 	StorageCalled               func() arwen.StorageContext
+	EnableEpochsHandlerCalled   func() vmcommon.EnableEpochsHandler
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
@@ -160,6 +161,14 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
+	}
+	return nil
+}
+
+// EnableEpochsHandler mocked method
+func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	if vhs.EnableEpochsHandlerCalled != nil {
+		return vhs.EnableEpochsHandlerCalled()
 	}
 	return nil
 }

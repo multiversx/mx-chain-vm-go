@@ -119,25 +119,16 @@ type CodeDeployInput struct {
 
 // VMHostParameters represents the parameters to be passed to VMHost
 type VMHostParameters struct {
-	VMType                                          []byte
-	BlockGasLimit                                   uint64
-	GasSchedule                                     config.GasScheduleMap
-	BuiltInFuncContainer                            vmcommon.BuiltInFunctionContainer
-	ESDTTransferParser                              vmcommon.ESDTTransferParser
-	ElrondProtectedKeyPrefix                        []byte
-	WasmerSIGSEGVPassthrough                        bool
-	EpochNotifier                                   vmcommon.EpochNotifier
-	MultiESDTTransferAsyncCallBackEnableEpoch       uint32
-	FixOOGReturnCodeEnableEpoch                     uint32
-	RemoveNonUpdatedStorageEnableEpoch              uint32
-	CreateNFTThroughExecByCallerEnableEpoch         uint32
-	UseDifferentGasCostForReadingCachedStorageEpoch uint32
-	FixFailExecutionOnErrorEnableEpoch              uint32
-	TimeOutForSCExecutionInMilliseconds             uint32
-	ManagedCryptoAPIEnableEpoch                     uint32
-	DisableExecByCallerEnableEpoch                  uint32
-	RefactorContextEnableEpoch                      uint32
-	CheckExecuteReadOnlyEnableEpoch                 uint32
+	VMType                              []byte
+	BlockGasLimit                       uint64
+	GasSchedule                         config.GasScheduleMap
+	BuiltInFuncContainer                vmcommon.BuiltInFunctionContainer
+	ESDTTransferParser                  vmcommon.ESDTTransferParser
+	ElrondProtectedKeyPrefix            []byte
+	WasmerSIGSEGVPassthrough            bool
+	EpochNotifier                       vmcommon.EpochNotifier
+	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
+	TimeOutForSCExecutionInMilliseconds uint32
 }
 
 // AsyncCallInfo contains the information required to handle the asynchronous call of another SmartContract
