@@ -3243,12 +3243,10 @@ func makeBytecodeWithLocals(numLocals uint64) []byte {
 
 // modifyERC20BytecodeWithCustomTransferEvent rewrites the bytecode of the ERC20
 // contract to change the first bytes of its transferEvent bytes
-func modifyERC20BytecodeWithCustomTransferEvent(erc20Bytecode []byte, replaceBytes []byte) []byte {
+func modifyERC20BytecodeWithCustomTransferEvent(erc20Bytecode []byte, replaceBytes []byte) {
 	transferEventBytecodeOffset := 0x144B
 
 	for i, b := range replaceBytes {
 		erc20Bytecode[transferEventBytecodeOffset+i] = b
 	}
-
-	return erc20Bytecode
 }
