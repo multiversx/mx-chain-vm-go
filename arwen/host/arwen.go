@@ -11,8 +11,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
@@ -101,47 +100,20 @@ func NewArwenVM(
 	if newExecutionTimeout > minExecutionTimeout {
 		host.executionTimeout = newExecutionTimeout
 	}
-	imports, err := elrondapi.ElrondEIImports()
+
+	imports := elrondapimeta.NewEIFunctions()
+	err := PopulateAllImports(imports)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = elrondapi.BigIntImports(imports)
+	wasmerImports := wasmer.ConvertImports(imports)
+	err = wasmer.SetImports(wasmerImports)
 	if err != nil {
 		return nil, err
 	}
 
-	imports, err = elrondapi.BigFloatImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.SmallIntImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.ManagedEIImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = elrondapi.ManagedBufferImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = cryptoapi.CryptoImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	err = wasmer.SetImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	host.scAPIMethods = imports
+	host.scAPIMethods = wasmerImports
 
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
