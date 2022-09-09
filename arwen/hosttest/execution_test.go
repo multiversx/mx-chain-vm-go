@@ -271,27 +271,28 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	ownerNonce := uint64(23)
 	numDeployments := 1000
 
+	tester := test.BuildInstanceCreatorTest(t).
+		WithInput(test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(100000).
+			WithCallValue(88).
+			WithCallerAddr([]byte("owner")).
+			WithContractCode(test.GetTestSCCode("init-simple", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+				return &contextmock.StubAccount{Nonce: ownerNonce}, nil
+			}
+			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+				ownerNonce++
+				return []byte(string(newAddress) + " " + fmt.Sprint(ownerNonce)), nil
+			}
+		})
+
 	for i := 0; i < numDeployments; i++ {
-		test.BuildInstanceCreatorTest(t).
-			WithInput(test.CreateTestContractCreateInputBuilder().
-				WithGasProvided(100000).
-				WithCallValue(88).
-				WithCallerAddr([]byte("owner")).
-				WithContractCode(test.GetTestSCCode("init-simple", "../../")).
-				Build()).
-			WithAddress(newAddress).
-			WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-				stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-					return &contextmock.StubAccount{Nonce: ownerNonce}, nil
-				}
-				stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-					ownerNonce++
-					return []byte(string(newAddress) + " " + fmt.Sprint(ownerNonce)), nil
-				}
-			}).
-			AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-				verify.Ok()
-			})
+		tester.AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+		})
 	}
 }
 
