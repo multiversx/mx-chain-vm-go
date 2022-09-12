@@ -228,6 +228,45 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	return nil
 }
 
+func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
+	if newCode || len(context.codeHash) == 0 {
+		return false
+	}
+
+	if context.isContractOrCodeHashOnTheStack() {
+		return false
+	}
+
+	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
+	if !ok {
+		return false
+	}
+
+	localContract, ok := cachedObject.(instanceAndMemory)
+	if !ok {
+		return false
+	}
+
+	copyInstance := localContract.instance.ShallowCopy()
+	success := copyInstance.SetMemory(localContract.memory)
+	if !success {
+		// we must remove instance, which cleans it to free the memory
+		context.warmInstanceCache.Remove(context.codeHash)
+		return false
+	}
+
+	context.instance = copyInstance
+	context.SetPointsUsed(0)
+	context.instance.SetGasLimit(gasLimit)
+	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
+	hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
+	context.verifyCode = false
+
+	return true
+}
+
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
@@ -254,6 +293,30 @@ func (context *runtimeContext) saveCompiledCode() {
 
 	blockchain := context.host.Blockchain()
 	blockchain.SaveCompiledCode(context.codeHash, compiledCode)
+
+	context.saveWarmInstance()
+}
+
+func (context *runtimeContext) saveWarmInstance() {
+	if context.isContractOrCodeHashOnTheStack() {
+		return
+	}
+
+	if check.IfNil(context.instance.GetMemory()) {
+		return
+	}
+
+	instanceMemory := context.instance.GetMemory().Data()
+
+	localMemory := make([]byte, len(instanceMemory))
+	copy(localMemory, instanceMemory)
+
+	localContract := instanceAndMemory{
+		instance: context.instance.ShallowCopy(),
+		memory:   localMemory,
+	}
+
+	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -382,8 +445,13 @@ func (context *runtimeContext) popInstance(_ []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		context.instance.Clean()
-		context.instance = nil
+		if context.isCodeHashOnTheStack(context.codeHash) {
+			context.instance.Clean()
+			context.instance = nil
+		} else {
+			context.instance.ShallowClean()
+			context.instance = nil
+		}
 	}
 
 	context.instance = prevInstance
@@ -856,6 +924,16 @@ func (context *runtimeContext) CleanInstance() {
 	context.instance = nil
 
 	logRuntime.Trace("instance cleaned")
+	return
+}
+
+func (context *runtimeContext) ShallowClean() {
+	if check.IfNil(context.instance) {
+		return
+	}
+
+	context.instance.ShallowClean()
+	context.instance = nil
 	return
 }
 

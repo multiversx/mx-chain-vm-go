@@ -5,6 +5,8 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const OPCODE_COUNT = 448
@@ -265,6 +267,37 @@ func (instance *Instance) Clean() {
 			instance.Memory.Destroy()
 		}
 	}
+	instance.Data = nil
+	instance.DataPointer = nil
+	instance.Exports = nil
+	instance.Signatures = nil
+}
+
+func (instance *Instance) ShallowClean() {
+	instance.Memory = nil
+	instance.Data = nil
+	instance.DataPointer = nil
+	instance.Exports = nil
+	instance.Signatures = nil
+}
+
+func (instance *Instance) ShallowCopy() InstanceHandler {
+	copyInstance := &Instance{
+		instance:   instance.instance,
+		Exports:    make(ExportsMap),
+		Signatures: make(ExportSignaturesMap),
+		Memory:     instance.Memory,
+	}
+	for k, v := range instance.Exports {
+		copyInstance.Exports[k] = v
+	}
+	for k, v := range instance.Signatures {
+		copyInstance.Signatures[k] = v
+	}
+	c_instance_context := cWasmerInstanceContextGet(instance.instance)
+	copyInstance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+
+	return copyInstance
 }
 
 func (instance *Instance) GetPointsUsed() uint64 {
@@ -341,6 +374,10 @@ func (instance *Instance) GetMemory() MemoryHandler {
 
 // SetMemory sets the memory for the instance returns true if success
 func (instance *Instance) SetMemory(cleanMemory []byte) bool {
+	if check.IfNil(instance.GetMemory()) {
+		return false
+	}
+
 	instanceMemory := instance.GetMemory().Data()
 	if len(instanceMemory) != len(cleanMemory) {
 		// TODO shrink the instance memory instead and return true

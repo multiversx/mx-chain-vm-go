@@ -26,7 +26,7 @@ var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = time.Second
+const minExecutionTimeout = time.Hour
 const internalVMErrors = "internalVMErrors"
 
 // vmHost implements HostContext interface.

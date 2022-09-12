@@ -1,9 +1,9 @@
 package mock
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -646,7 +646,11 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
-	contextWrapper.runtimeContext.ClearStateStack()
+	contextWrapper.ClearStateStackFunc()
+}
+
+func (contextWrapper *RuntimeContextWrapper) ShallowClean() {
+	contextWrapper.runtimeContext.ShallowClean()
 }
 
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

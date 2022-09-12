@@ -14,11 +14,12 @@ func (host *vmHost) handleBreakpointIfAny(executionErr error) error {
 	log.Trace("handleBreakpointIfAny", "value", breakpointValue)
 	if breakpointValue != arwen.BreakpointNone {
 		err := host.handleBreakpoint(breakpointValue)
-		runtime.AddError(err)
+		runtime.AddError(err, runtime.Function())
 		return err
 	}
 
 	log.Trace("wasmer execution error", "err", executionErr)
+	runtime.AddError(executionErr, runtime.Function())
 	return arwen.ErrExecutionFailed
 }
 
