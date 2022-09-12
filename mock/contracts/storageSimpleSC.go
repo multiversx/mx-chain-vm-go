@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 )
 
 // LoadStore is an exposed mock contract method

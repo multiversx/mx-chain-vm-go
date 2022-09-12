@@ -9,19 +9,20 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/config"
-	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/math"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/context"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/testcommon"
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	arwenMock "github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
+	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -270,27 +271,28 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	ownerNonce := uint64(23)
 	numDeployments := 1000
 
+	tester := test.BuildInstanceCreatorTest(t).
+		WithInput(test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(100000).
+			WithCallValue(88).
+			WithCallerAddr([]byte("owner")).
+			WithContractCode(test.GetTestSCCode("init-simple", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+				return &contextmock.StubAccount{Nonce: ownerNonce}, nil
+			}
+			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+				ownerNonce++
+				return []byte(string(newAddress) + " " + fmt.Sprint(ownerNonce)), nil
+			}
+		})
+
 	for i := 0; i < numDeployments; i++ {
-		test.BuildInstanceCreatorTest(t).
-			WithInput(test.CreateTestContractCreateInputBuilder().
-				WithGasProvided(100000).
-				WithCallValue(88).
-				WithCallerAddr([]byte("owner")).
-				WithContractCode(test.GetTestSCCode("init-simple", "../../")).
-				Build()).
-			WithAddress(newAddress).
-			WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-				stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-					return &contextmock.StubAccount{Nonce: ownerNonce}, nil
-				}
-				stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-					ownerNonce++
-					return []byte(string(newAddress) + " " + fmt.Sprint(ownerNonce)), nil
-				}
-			}).
-			AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-				verify.Ok()
-			})
+		tester.AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+		})
 	}
 }
 
@@ -974,7 +976,8 @@ func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcom
 		WithInput(input).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
-				host.Runtime().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -1002,7 +1005,8 @@ func runTestMBufferSetByteSlice(
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			if !enabled {
-				host.Runtime().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {

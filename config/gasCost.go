@@ -1,6 +1,6 @@
 package config
 
-import "github.com/ElrondNetwork/arwen-wasm-vm/v1_4/wasmer"
+import "github.com/ElrondNetwork/wasm-vm/wasmer"
 
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
