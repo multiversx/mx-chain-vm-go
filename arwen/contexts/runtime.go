@@ -135,6 +135,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	context.codeHash = codeHash
+
+	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
+	if warmInstanceUsed {
+		return nil
+	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
 		return nil
