@@ -1,12 +1,12 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var _ arwen.VMHost = (*VMHostStub)(nil)
@@ -19,16 +19,14 @@ type VMHostStub struct {
 	ClearStateStackCalled func()
 	GetVersionCalled      func() string
 
-	CryptoCalled       func() crypto.VMCrypto
-	BlockchainCalled   func() arwen.BlockchainContext
-	RuntimeCalled      func() arwen.RuntimeContext
-	OutputCalled       func() arwen.OutputContext
-	MeteringCalled     func() arwen.MeteringContext
-	AsyncCalled        func() arwen.AsyncContext
-	StorageCalled      func() arwen.StorageContext
-	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
-	ManagedTypesCalled func() arwen.ManagedTypesContext
-
+	CryptoCalled                func() crypto.VMCrypto
+	BlockchainCalled            func() arwen.BlockchainContext
+	RuntimeCalled               func() arwen.RuntimeContext
+	ManagedTypesCalled          func() arwen.ManagedTypesContext
+	OutputCalled                func() arwen.OutputContext
+	MeteringCalled              func() arwen.MeteringContext
+	StorageCalled               func() arwen.StorageContext
+	EnableEpochsHandlerCalled   func() vmcommon.EnableEpochsHandler
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
@@ -159,10 +157,10 @@ func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	return nil
 }
 
-// Async mocked method
-func (vhs *VMHostStub) Async() arwen.AsyncContext {
-	if vhs.AsyncCalled != nil {
-		return vhs.AsyncCalled()
+// EnableEpochsHandler mocked method
+func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	if vhs.EnableEpochsHandlerCalled != nil {
+		return vhs.EnableEpochsHandlerCalled()
 	}
 	return nil
 }

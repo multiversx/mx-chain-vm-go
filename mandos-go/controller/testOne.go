@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
+	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
 // RunSingleJSONTest parses and prepares test, then calls testCallback.

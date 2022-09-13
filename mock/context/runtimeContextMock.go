@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -335,21 +335,6 @@ func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
-	return nil
-}
-
-// ValidateCallbackName mocked method
-func (r *RuntimeContextMock) ValidateCallbackName(callbackName string) error {
-	return nil
-}
-
-// HasFunction mocked method
-func (r *RuntimeContextMock) HasFunction(functionName string) bool {
-	return r.HasFunctionResult
-}
-
-// GetPrevTxHash mocked method
-func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 

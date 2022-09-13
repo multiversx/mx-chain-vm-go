@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/contexts"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -89,7 +89,9 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
-	output.RemoveNonUpdatedStorage()
+	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
+		output.RemoveNonUpdatedStorage()
+	}
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
@@ -213,7 +215,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	output.RemoveNonUpdatedStorage()
+	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
+		output.RemoveNonUpdatedStorage()
+	}
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
@@ -433,7 +437,9 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	input.RecipientAddr = input.CallerAddr
+	if host.enableEpochsHandler.IsRefactorContextFlagEnabled() {
+		input.RecipientAddr = input.CallerAddr
+	}
 
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()

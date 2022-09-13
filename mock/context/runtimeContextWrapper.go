@@ -1,9 +1,9 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -587,21 +587,6 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 	contextWrapper.runtimeContext.ClearStateStack()
-}
-
-// ValidateCallbackName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ValidateCallbackName(callbackName string) error {
-	return contextWrapper.ValidateCallbackName(callbackName)
-}
-
-// HasFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) HasFunction(functionName string) bool {
-	return contextWrapper.HasFunction(functionName)
-}
-
-// GetPrevTxHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
-	return contextWrapper.GetPrevTxHash()
 }
 
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

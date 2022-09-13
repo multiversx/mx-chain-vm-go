@@ -6,13 +6,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 )
 
 const generateGraphs = false

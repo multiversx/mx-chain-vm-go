@@ -5,14 +5,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/esdtconvert"
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/expression/reconstructor"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
+	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
+	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 )
 
 const includeElrondProtectedStorage = false

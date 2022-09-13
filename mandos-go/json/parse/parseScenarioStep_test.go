@@ -3,7 +3,7 @@ package mandosjsonparse
 import (
 	"testing"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	"github.com/stretchr/testify/require"
 )
 

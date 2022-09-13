@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
 )
 
 func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {

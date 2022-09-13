@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 )
 
 var _ arwen.BlockchainContext = (*BlockchainContextMock)(nil)

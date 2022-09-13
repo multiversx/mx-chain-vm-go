@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 )
 
 // TestConfig is configuration for async call tests

@@ -3,10 +3,10 @@ package esdtconvert
 import (
 	"math/big"
 
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
 func MakeESDTUserMetadataBytes(frozen bool) []byte {

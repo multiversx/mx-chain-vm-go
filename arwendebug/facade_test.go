@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"
 )
 

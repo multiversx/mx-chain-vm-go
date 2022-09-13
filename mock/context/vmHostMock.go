@@ -1,12 +1,12 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -18,13 +18,13 @@ type VMHostMock struct {
 
 	EthInput []byte
 
-	BlockchainContext   arwen.BlockchainContext
-	RuntimeContext      arwen.RuntimeContext
-	AsyncContext        arwen.AsyncContext
-	OutputContext       arwen.OutputContext
-	MeteringContext     arwen.MeteringContext
-	StorageContext      arwen.StorageContext
-	ManagedTypesContext arwen.ManagedTypesContext
+	BlockchainContext        arwen.BlockchainContext
+	RuntimeContext           arwen.RuntimeContext
+	OutputContext            arwen.OutputContext
+	MeteringContext          arwen.MeteringContext
+	StorageContext           arwen.StorageContext
+	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
+	ManagedTypesContext      arwen.ManagedTypesContext
 
 	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
@@ -71,7 +71,12 @@ func (host *VMHostMock) Storage() arwen.StorageContext {
 	return host.StorageContext
 }
 
-// BigInt mocked method
+// EnableEpochsHandler mocked method
+func (host *VMHostMock) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	return host.EnableEpochsHandlerField
+}
+
+// ManagedTypes mocked method
 func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }

@@ -5,17 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/mock"
-	gasSchedules "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwenmandos/gasSchedules"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -106,6 +106,7 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)

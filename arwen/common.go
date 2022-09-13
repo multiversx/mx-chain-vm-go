@@ -1,8 +1,8 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
 )
 
 // ArwenVersion returns the current arwen version
@@ -167,6 +167,7 @@ type VMHostParameters struct {
 	ElrondProtectedKeyPrefix            []byte
 	WasmerSIGSEGVPassthrough            bool
 	EpochNotifier                       vmcommon.EpochNotifier
+	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
 	TimeOutForSCExecutionInMilliseconds uint32
 }
 

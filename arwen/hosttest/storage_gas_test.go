@@ -3,11 +3,12 @@ package hosttest
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	arwenMock "github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
 var smallKey = []byte("testKey")
@@ -49,6 +50,11 @@ func loadStorage(t *testing.T, key []byte) {
 			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
+
+			if !flagEnabled {
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+			}
 
 			accountHandler, _ := world.GetUserAccount(test.ParentAddress)
 			(accountHandler.(*worldmock.Account)).Storage[string(key)] = value
@@ -102,6 +108,11 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 			account := world.AcctMap[string(test.UserAddress)]
 			account.Storage[string(key)] = value
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
+
+			if !flagEnabled {
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
@@ -167,6 +178,11 @@ func setStorage(t *testing.T, key []byte) {
 			account := world.AcctMap[string(test.UserAddress)]
 			account.Storage[string(key)] = value
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
+
+			if !flagEnabled {
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+			}
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.

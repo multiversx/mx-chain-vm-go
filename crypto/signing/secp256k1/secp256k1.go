@@ -3,8 +3,8 @@ package secp256k1
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/hashing"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/signing"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
+	"github.com/ElrondNetwork/wasm-vm/crypto/signing"
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"

@@ -6,14 +6,14 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/esdtconvert"
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
+	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.

@@ -102,15 +102,15 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -217,401 +217,390 @@ func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
-func ElrondEIImports() (*wasmer.Imports, error) {
-	imports := wasmer.NewImports()
-	imports = imports.Namespace("env")
+func ElrondEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
-	imports, err := imports.Append("getSCAddress", v1_5_getSCAddress, C.v1_5_getSCAddress)
+	err := imports.Append("getSCAddress", v1_4_getSCAddress, C.v1_4_getSCAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getOwnerAddress", v1_5_getOwnerAddress, C.v1_5_getOwnerAddress)
+	err = imports.Append("getOwnerAddress", v1_4_getOwnerAddress, C.v1_4_getOwnerAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getShardOfAddress", v1_5_getShardOfAddress, C.v1_5_getShardOfAddress)
+	err = imports.Append("getShardOfAddress", v1_4_getShardOfAddress, C.v1_4_getShardOfAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("isSmartContract", v1_5_isSmartContract, C.v1_5_isSmartContract)
+	err = imports.Append("isSmartContract", v1_4_isSmartContract, C.v1_4_isSmartContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getExternalBalance", v1_5_getExternalBalance, C.v1_5_getExternalBalance)
+	err = imports.Append("getExternalBalance", v1_4_getExternalBalance, C.v1_4_getExternalBalance)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getBlockHash", v1_5_blockHash, C.v1_5_blockHash)
+	err = imports.Append("getBlockHash", v1_4_blockHash, C.v1_4_blockHash)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("transferValue", v1_5_transferValue, C.v1_5_transferValue)
+	err = imports.Append("transferValue", v1_4_transferValue, C.v1_4_transferValue)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("transferESDTExecute", v1_5_transferESDTExecute, C.v1_5_transferESDTExecute)
+	err = imports.Append("transferESDTExecute", v1_4_transferESDTExecute, C.v1_4_transferESDTExecute)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("transferESDTNFTExecute", v1_5_transferESDTNFTExecute, C.v1_5_transferESDTNFTExecute)
+	err = imports.Append("transferESDTNFTExecute", v1_4_transferESDTNFTExecute, C.v1_4_transferESDTNFTExecute)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("multiTransferESDTNFTExecute", v1_5_multiTransferESDTNFTExecute, C.v1_5_multiTransferESDTNFTExecute)
+	err = imports.Append("multiTransferESDTNFTExecute", v1_4_multiTransferESDTNFTExecute, C.v1_4_multiTransferESDTNFTExecute)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("transferValueExecute", v1_5_transferValueExecute, C.v1_5_transferValueExecute)
+	err = imports.Append("transferValueExecute", v1_4_transferValueExecute, C.v1_4_transferValueExecute)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("asyncCall", v1_5_asyncCall, C.v1_5_asyncCall)
+	err = imports.Append("asyncCall", v1_4_asyncCall, C.v1_4_asyncCall)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("createAsyncCall", v1_5_createAsyncCall, C.v1_5_createAsyncCall)
+	err = imports.Append("getArgumentLength", v1_4_getArgumentLength, C.v1_4_getArgumentLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrevTxHash", v1_5_getPrevTxHash, C.v1_5_getPrevTxHash)
+	err = imports.Append("getArgument", v1_4_getArgument, C.v1_4_getArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getArgumentLength", v1_5_getArgumentLength, C.v1_5_getArgumentLength)
+	err = imports.Append("getFunction", v1_4_getFunction, C.v1_4_getFunction)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getArgument", v1_5_getArgument, C.v1_5_getArgument)
+	err = imports.Append("getNumArguments", v1_4_getNumArguments, C.v1_4_getNumArguments)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getFunction", v1_5_getFunction, C.v1_5_getFunction)
+	err = imports.Append("storageStore", v1_4_storageStore, C.v1_4_storageStore)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getNumArguments", v1_5_getNumArguments, C.v1_5_getNumArguments)
+	err = imports.Append("storageLoadLength", v1_4_storageLoadLength, C.v1_4_storageLoadLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("storageStore", v1_5_storageStore, C.v1_5_storageStore)
+	err = imports.Append("storageLoad", v1_4_storageLoad, C.v1_4_storageLoad)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("storageLoadLength", v1_5_storageLoadLength, C.v1_5_storageLoadLength)
+	err = imports.Append("storageLoadFromAddress", v1_4_storageLoadFromAddress, C.v1_4_storageLoadFromAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("storageLoad", v1_5_storageLoad, C.v1_5_storageLoad)
+	err = imports.Append("getStorageLock", v1_4_getStorageLock, C.v1_4_getStorageLock)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("storageLoadFromAddress", v1_5_storageLoadFromAddress, C.v1_5_storageLoadFromAddress)
+	err = imports.Append("setStorageLock", v1_4_setStorageLock, C.v1_4_setStorageLock)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getStorageLock", v1_5_getStorageLock, C.v1_5_getStorageLock)
+	err = imports.Append("isStorageLocked", v1_4_isStorageLocked, C.v1_4_isStorageLocked)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("setStorageLock", v1_5_setStorageLock, C.v1_5_setStorageLock)
+	err = imports.Append("clearStorageLock", v1_4_clearStorageLock, C.v1_4_clearStorageLock)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("isStorageLocked", v1_5_isStorageLocked, C.v1_5_isStorageLocked)
+	err = imports.Append("getCaller", v1_4_getCaller, C.v1_4_getCaller)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("clearStorageLock", v1_5_clearStorageLock, C.v1_5_clearStorageLock)
+	err = imports.Append("checkNoPayment", v1_4_checkNoPayment, C.v1_4_checkNoPayment)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getCaller", v1_5_getCaller, C.v1_5_getCaller)
+	err = imports.Append("getCallValue", v1_4_callValue, C.v1_4_callValue)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("checkNoPayment", v1_5_checkNoPayment, C.v1_5_checkNoPayment)
+	err = imports.Append("getESDTValue", v1_4_getESDTValue, C.v1_4_getESDTValue)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getCallValue", v1_5_callValue, C.v1_5_callValue)
+	err = imports.Append("getESDTTokenName", v1_4_getESDTTokenName, C.v1_4_getESDTTokenName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTValue", v1_5_getESDTValue, C.v1_5_getESDTValue)
+	err = imports.Append("getESDTTokenType", v1_4_getESDTTokenType, C.v1_4_getESDTTokenType)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenName", v1_5_getESDTTokenName, C.v1_5_getESDTTokenName)
+	err = imports.Append("getESDTTokenNonce", v1_4_getESDTTokenNonce, C.v1_4_getESDTTokenNonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenType", v1_5_getESDTTokenType, C.v1_5_getESDTTokenType)
+	err = imports.Append("getCallValueTokenName", v1_4_getCallValueTokenName, C.v1_4_getCallValueTokenName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenNonce", v1_5_getESDTTokenNonce, C.v1_5_getESDTTokenNonce)
+	err = imports.Append("getESDTValueByIndex", v1_4_getESDTValueByIndex, C.v1_4_getESDTValueByIndex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getCallValueTokenName", v1_5_getCallValueTokenName, C.v1_5_getCallValueTokenName)
+	err = imports.Append("getESDTTokenNameByIndex", v1_4_getESDTTokenNameByIndex, C.v1_4_getESDTTokenNameByIndex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTValueByIndex", v1_5_getESDTValueByIndex, C.v1_5_getESDTValueByIndex)
+	err = imports.Append("getESDTTokenTypeByIndex", v1_4_getESDTTokenTypeByIndex, C.v1_4_getESDTTokenTypeByIndex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenNameByIndex", v1_5_getESDTTokenNameByIndex, C.v1_5_getESDTTokenNameByIndex)
+	err = imports.Append("getESDTTokenNonceByIndex", v1_4_getESDTTokenNonceByIndex, C.v1_4_getESDTTokenNonceByIndex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenTypeByIndex", v1_5_getESDTTokenTypeByIndex, C.v1_5_getESDTTokenTypeByIndex)
+	err = imports.Append("getCallValueTokenNameByIndex", v1_4_getCallValueTokenNameByIndex, C.v1_4_getCallValueTokenNameByIndex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenNonceByIndex", v1_5_getESDTTokenNonceByIndex, C.v1_5_getESDTTokenNonceByIndex)
+	err = imports.Append("getNumESDTTransfers", v1_4_getNumESDTTransfers, C.v1_4_getNumESDTTransfers)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getCallValueTokenNameByIndex", v1_5_getCallValueTokenNameByIndex, C.v1_5_getCallValueTokenNameByIndex)
+	err = imports.Append("getCurrentESDTNFTNonce", v1_4_getCurrentESDTNFTNonce, C.v1_4_getCurrentESDTNFTNonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getNumESDTTransfers", v1_5_getNumESDTTransfers, C.v1_5_getNumESDTTransfers)
+	err = imports.Append("validateTokenIdentifier", v1_4_validateTokenIdentifier, C.v1_4_validateTokenIdentifier)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getCurrentESDTNFTNonce", v1_5_getCurrentESDTNFTNonce, C.v1_5_getCurrentESDTNFTNonce)
+	err = imports.Append("writeLog", v1_4_writeLog, C.v1_4_writeLog)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("validateTokenIdentifier", v1_5_validateTokenIdentifier, C.v1_5_validateTokenIdentifier)
+	err = imports.Append("writeEventLog", v1_4_writeEventLog, C.v1_4_writeEventLog)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("writeLog", v1_5_writeLog, C.v1_5_writeLog)
+	err = imports.Append("finish", v1_4_returnData, C.v1_4_returnData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("writeEventLog", v1_5_writeEventLog, C.v1_5_writeEventLog)
+	err = imports.Append("signalError", v1_4_signalError, C.v1_4_signalError)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("finish", v1_5_returnData, C.v1_5_returnData)
+	err = imports.Append("getBlockTimestamp", v1_4_getBlockTimestamp, C.v1_4_getBlockTimestamp)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("signalError", v1_5_signalError, C.v1_5_signalError)
+	err = imports.Append("getBlockNonce", v1_4_getBlockNonce, C.v1_4_getBlockNonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getBlockTimestamp", v1_5_getBlockTimestamp, C.v1_5_getBlockTimestamp)
+	err = imports.Append("getBlockRound", v1_4_getBlockRound, C.v1_4_getBlockRound)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getBlockNonce", v1_5_getBlockNonce, C.v1_5_getBlockNonce)
+	err = imports.Append("getBlockEpoch", v1_4_getBlockEpoch, C.v1_4_getBlockEpoch)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getBlockRound", v1_5_getBlockRound, C.v1_5_getBlockRound)
+	err = imports.Append("getBlockRandomSeed", v1_4_getBlockRandomSeed, C.v1_4_getBlockRandomSeed)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getBlockEpoch", v1_5_getBlockEpoch, C.v1_5_getBlockEpoch)
+	err = imports.Append("getStateRootHash", v1_4_getStateRootHash, C.v1_4_getStateRootHash)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getBlockRandomSeed", v1_5_getBlockRandomSeed, C.v1_5_getBlockRandomSeed)
+	err = imports.Append("getPrevBlockTimestamp", v1_4_getPrevBlockTimestamp, C.v1_4_getPrevBlockTimestamp)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getStateRootHash", v1_5_getStateRootHash, C.v1_5_getStateRootHash)
+	err = imports.Append("getPrevBlockNonce", v1_4_getPrevBlockNonce, C.v1_4_getPrevBlockNonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrevBlockTimestamp", v1_5_getPrevBlockTimestamp, C.v1_5_getPrevBlockTimestamp)
+	err = imports.Append("getPrevBlockRound", v1_4_getPrevBlockRound, C.v1_4_getPrevBlockRound)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrevBlockNonce", v1_5_getPrevBlockNonce, C.v1_5_getPrevBlockNonce)
+	err = imports.Append("getPrevBlockEpoch", v1_4_getPrevBlockEpoch, C.v1_4_getPrevBlockEpoch)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrevBlockRound", v1_5_getPrevBlockRound, C.v1_5_getPrevBlockRound)
+	err = imports.Append("getPrevBlockRandomSeed", v1_4_getPrevBlockRandomSeed, C.v1_4_getPrevBlockRandomSeed)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrevBlockEpoch", v1_5_getPrevBlockEpoch, C.v1_5_getPrevBlockEpoch)
+	err = imports.Append("getOriginalTxHash", v1_4_getOriginalTxHash, C.v1_4_getOriginalTxHash)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrevBlockRandomSeed", v1_5_getPrevBlockRandomSeed, C.v1_5_getPrevBlockRandomSeed)
+	err = imports.Append("getGasLeft", v1_4_getGasLeft, C.v1_4_getGasLeft)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getOriginalTxHash", v1_5_getOriginalTxHash, C.v1_5_getOriginalTxHash)
+	err = imports.Append("executeOnDestContext", v1_4_executeOnDestContext, C.v1_4_executeOnDestContext)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getGasLeft", v1_5_getGasLeft, C.v1_5_getGasLeft)
+	err = imports.Append("executeOnDestContextByCaller", v1_4_executeOnDestContextByCaller, C.v1_4_executeOnDestContextByCaller)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("executeOnDestContext", v1_5_executeOnDestContext, C.v1_5_executeOnDestContext)
+	err = imports.Append("executeOnSameContext", v1_4_executeOnSameContext, C.v1_4_executeOnSameContext)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("executeOnSameContext", v1_5_executeOnSameContext, C.v1_5_executeOnSameContext)
+	err = imports.Append("createContract", v1_4_createContract, C.v1_4_createContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("createContract", v1_5_createContract, C.v1_5_createContract)
+	err = imports.Append("deployFromSourceContract", v1_4_deployFromSourceContract, C.v1_4_deployFromSourceContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("deployFromSourceContract", v1_5_deployFromSourceContract, C.v1_5_deployFromSourceContract)
+	err = imports.Append("upgradeContract", v1_4_upgradeContract, C.v1_4_upgradeContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("upgradeContract", v1_5_upgradeContract, C.v1_5_upgradeContract)
+	err = imports.Append("upgradeFromSourceContract", v1_4_upgradeFromSourceContract, C.v1_4_upgradeFromSourceContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("upgradeFromSourceContract", v1_5_upgradeFromSourceContract, C.v1_5_upgradeFromSourceContract)
+	err = imports.Append("executeReadOnly", v1_4_executeReadOnly, C.v1_4_executeReadOnly)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("executeReadOnly", v1_5_executeReadOnly, C.v1_5_executeReadOnly)
+	err = imports.Append("getNumReturnData", v1_4_getNumReturnData, C.v1_4_getNumReturnData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getNumReturnData", v1_5_getNumReturnData, C.v1_5_getNumReturnData)
+	err = imports.Append("getReturnDataSize", v1_4_getReturnDataSize, C.v1_4_getReturnDataSize)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getReturnDataSize", v1_5_getReturnDataSize, C.v1_5_getReturnDataSize)
+	err = imports.Append("getReturnData", v1_4_getReturnData, C.v1_4_getReturnData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getReturnData", v1_5_getReturnData, C.v1_5_getReturnData)
+	err = imports.Append("cleanReturnData", v1_4_cleanReturnData, C.v1_4_cleanReturnData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("cleanReturnData", v1_5_cleanReturnData, C.v1_5_cleanReturnData)
+	err = imports.Append("deleteFromReturnData", v1_4_deleteFromReturnData, C.v1_4_deleteFromReturnData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("deleteFromReturnData", v1_5_deleteFromReturnData, C.v1_5_deleteFromReturnData)
+	err = imports.Append("getESDTBalance", v1_4_getESDTBalance, C.v1_4_getESDTBalance)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTBalance", v1_5_getESDTBalance, C.v1_5_getESDTBalance)
+	err = imports.Append("getESDTTokenData", v1_4_getESDTTokenData, C.v1_4_getESDTTokenData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTTokenData", v1_5_getESDTTokenData, C.v1_5_getESDTTokenData)
+	err = imports.Append("getESDTLocalRoles", v1_4_getESDTLocalRoles, C.v1_4_getESDTLocalRoles)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTLocalRoles", v1_5_getESDTLocalRoles, C.v1_5_getESDTLocalRoles)
+	err = imports.Append("getESDTNFTNameLength", v1_4_getESDTNFTNameLength, C.v1_4_getESDTNFTNameLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTNFTNameLength", v1_5_getESDTNFTNameLength, C.v1_5_getESDTNFTNameLength)
+	err = imports.Append("getESDTNFTAttributeLength", v1_4_getESDTNFTAttributeLength, C.v1_4_getESDTNFTAttributeLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTNFTAttributeLength", v1_5_getESDTNFTAttributeLength, C.v1_5_getESDTNFTAttributeLength)
+	err = imports.Append("getESDTNFTURILength", v1_4_getESDTNFTURILength, C.v1_4_getESDTNFTURILength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getESDTNFTURILength", v1_5_getESDTNFTURILength, C.v1_5_getESDTNFTURILength)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("deleteContract", v1_5_deleteContract, C.v1_5_deleteContract)
-	if err != nil {
-		return nil, err
-	}
-
-	return imports, nil
+	return nil
 }
 
 //export v1_5_getGasLeft

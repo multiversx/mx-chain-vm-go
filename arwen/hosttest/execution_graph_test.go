@@ -7,16 +7,16 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/contexts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
 

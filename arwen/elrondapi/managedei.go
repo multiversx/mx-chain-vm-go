@@ -50,9 +50,9 @@ import (
 
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -89,160 +89,150 @@ const (
 )
 
 // ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
-func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
+func ManagedEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
-	imports, err := imports.Append("managedSCAddress", v1_5_managedSCAddress, C.v1_5_managedSCAddress)
+	err := imports.Append("managedSCAddress", v1_4_managedSCAddress, C.v1_4_managedSCAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedOwnerAddress", v1_5_managedOwnerAddress, C.v1_5_managedOwnerAddress)
+	err = imports.Append("managedOwnerAddress", v1_4_managedOwnerAddress, C.v1_4_managedOwnerAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedCaller", v1_5_managedCaller, C.v1_5_managedCaller)
+	err = imports.Append("managedCaller", v1_4_managedCaller, C.v1_4_managedCaller)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedSignalError", v1_5_managedSignalError, C.v1_5_managedSignalError)
+	err = imports.Append("managedSignalError", v1_4_managedSignalError, C.v1_4_managedSignalError)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedWriteLog", v1_5_managedWriteLog, C.v1_5_managedWriteLog)
+	err = imports.Append("managedWriteLog", v1_4_managedWriteLog, C.v1_4_managedWriteLog)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedMultiTransferESDTNFTExecute", v1_5_managedMultiTransferESDTNFTExecute, C.v1_5_managedMultiTransferESDTNFTExecute)
+	err = imports.Append("managedMultiTransferESDTNFTExecute", v1_4_managedMultiTransferESDTNFTExecute, C.v1_4_managedMultiTransferESDTNFTExecute)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedTransferValueExecute", v1_5_managedTransferValueExecute, C.v1_5_managedTransferValueExecute)
+	err = imports.Append("managedTransferValueExecute", v1_4_managedTransferValueExecute, C.v1_4_managedTransferValueExecute)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedExecuteOnDestContext", v1_5_managedExecuteOnDestContext, C.v1_5_managedExecuteOnDestContext)
+	err = imports.Append("managedExecuteOnDestContext", v1_4_managedExecuteOnDestContext, C.v1_4_managedExecuteOnDestContext)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedExecuteOnSameContext", v1_5_managedExecuteOnSameContext, C.v1_5_managedExecuteOnSameContext)
+	err = imports.Append("managedExecuteOnDestContextByCaller", v1_4_managedExecuteOnDestContextByCaller, C.v1_4_managedExecuteOnDestContextByCaller)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedExecuteReadOnly", v1_5_managedExecuteReadOnly, C.v1_5_managedExecuteReadOnly)
+	err = imports.Append("managedExecuteOnSameContext", v1_4_managedExecuteOnSameContext, C.v1_4_managedExecuteOnSameContext)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedCreateContract", v1_5_managedCreateContract, C.v1_5_managedCreateContract)
+	err = imports.Append("managedExecuteReadOnly", v1_4_managedExecuteReadOnly, C.v1_4_managedExecuteReadOnly)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedDeployFromSourceContract", v1_5_managedDeployFromSourceContract, C.v1_5_managedDeployFromSourceContract)
+	err = imports.Append("managedCreateContract", v1_4_managedCreateContract, C.v1_4_managedCreateContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedUpgradeContract", v1_5_managedUpgradeContract, C.v1_5_managedUpgradeContract)
+	err = imports.Append("managedDeployFromSourceContract", v1_4_managedDeployFromSourceContract, C.v1_4_managedDeployFromSourceContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedUpgradeFromSourceContract", v1_5_managedUpgradeFromSourceContract, C.v1_5_managedUpgradeFromSourceContract)
+	err = imports.Append("managedUpgradeContract", v1_4_managedUpgradeContract, C.v1_4_managedUpgradeContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedDeleteContract", v1_5_managedDeleteContract, C.v1_5_managedDeleteContract)
+	err = imports.Append("managedUpgradeFromSourceContract", v1_4_managedUpgradeFromSourceContract, C.v1_4_managedUpgradeFromSourceContract)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedAsyncCall", v1_5_managedAsyncCall, C.v1_5_managedAsyncCall)
+	err = imports.Append("managedAsyncCall", v1_4_managedAsyncCall, C.v1_4_managedAsyncCall)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedCreateAsyncCall", v1_5_managedCreateAsyncCall, C.v1_5_managedCreateAsyncCall)
+	err = imports.Append("managedGetMultiESDTCallValue", v1_4_managedGetMultiESDTCallValue, C.v1_4_managedGetMultiESDTCallValue)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetCallbackClosure", v1_5_managedGetCallbackClosure, C.v1_5_managedGetCallbackClosure)
+	err = imports.Append("managedGetESDTBalance", v1_4_managedGetESDTBalance, C.v1_4_managedGetESDTBalance)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetMultiESDTCallValue", v1_5_managedGetMultiESDTCallValue, C.v1_5_managedGetMultiESDTCallValue)
+	err = imports.Append("managedGetESDTTokenData", v1_4_managedGetESDTTokenData, C.v1_4_managedGetESDTTokenData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetESDTBalance", v1_5_managedGetESDTBalance, C.v1_5_managedGetESDTBalance)
+	err = imports.Append("managedGetReturnData", v1_4_managedGetReturnData, C.v1_4_managedGetReturnData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetESDTTokenData", v1_5_managedGetESDTTokenData, C.v1_5_managedGetESDTTokenData)
+	err = imports.Append("managedGetPrevBlockRandomSeed", v1_4_managedGetPrevBlockRandomSeed, C.v1_4_managedGetPrevBlockRandomSeed)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetReturnData", v1_5_managedGetReturnData, C.v1_5_managedGetReturnData)
+	err = imports.Append("managedGetBlockRandomSeed", v1_4_managedGetBlockRandomSeed, C.v1_4_managedGetBlockRandomSeed)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetPrevBlockRandomSeed", v1_5_managedGetPrevBlockRandomSeed, C.v1_5_managedGetPrevBlockRandomSeed)
+	err = imports.Append("managedGetStateRootHash", v1_4_managedGetStateRootHash, C.v1_4_managedGetStateRootHash)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetBlockRandomSeed", v1_5_managedGetBlockRandomSeed, C.v1_5_managedGetBlockRandomSeed)
+	err = imports.Append("managedGetOriginalTxHash", v1_4_managedGetOriginalTxHash, C.v1_4_managedGetOriginalTxHash)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetStateRootHash", v1_5_managedGetStateRootHash, C.v1_5_managedGetStateRootHash)
+	err = imports.Append("managedIsESDTFrozen", v1_4_managedIsESDTFrozen, C.v1_4_managedIsESDTFrozen)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGetOriginalTxHash", v1_5_managedGetOriginalTxHash, C.v1_5_managedGetOriginalTxHash)
+	err = imports.Append("managedIsESDTPaused", v1_4_managedIsESDTPaused, C.v1_4_managedIsESDTPaused)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedIsESDTFrozen", v1_5_managedIsESDTFrozen, C.v1_5_managedIsESDTFrozen)
+	err = imports.Append("managedIsESDTLimitedTransfer", v1_4_managedIsESDTLimitedTransfer, C.v1_4_managedIsESDTLimitedTransfer)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedIsESDTPaused", v1_5_managedIsESDTPaused, C.v1_5_managedIsESDTPaused)
+	err = imports.Append("managedBufferToHex", v1_4_managedBufferToHex, C.v1_4_managedBufferToHex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedIsESDTLimitedTransfer", v1_5_managedIsESDTLimitedTransfer, C.v1_5_managedIsESDTLimitedTransfer)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedBufferToHex", v1_5_managedBufferToHex, C.v1_5_managedBufferToHex)
-	if err != nil {
-		return nil, err
-	}
-
-	return imports, nil
+	return nil
 }
 
 //export v1_5_managedSCAddress

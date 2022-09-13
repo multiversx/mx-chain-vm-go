@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	arwen "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/stretchr/testify/require"
 )
 

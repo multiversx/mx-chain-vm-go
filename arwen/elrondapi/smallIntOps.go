@@ -28,9 +28,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 )
 
 const (
@@ -49,72 +49,72 @@ const (
 )
 
 // SmallIntImports creates a new wasmer.Imports populated with the small int (int64/uint64) API methods
-func SmallIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
+func SmallIntImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
-	imports, err := imports.Append("smallIntGetUnsignedArgument", v1_5_smallIntGetUnsignedArgument, C.v1_5_smallIntGetUnsignedArgument)
+	err := imports.Append("smallIntGetUnsignedArgument", v1_4_smallIntGetUnsignedArgument, C.v1_4_smallIntGetUnsignedArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntGetSignedArgument", v1_5_smallIntGetSignedArgument, C.v1_5_smallIntGetSignedArgument)
+	err = imports.Append("smallIntGetSignedArgument", v1_4_smallIntGetSignedArgument, C.v1_4_smallIntGetSignedArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntFinishUnsigned", v1_5_smallIntFinishUnsigned, C.v1_5_smallIntFinishUnsigned)
+	err = imports.Append("smallIntFinishUnsigned", v1_4_smallIntFinishUnsigned, C.v1_4_smallIntFinishUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntFinishSigned", v1_5_smallIntFinishSigned, C.v1_5_smallIntFinishSigned)
+	err = imports.Append("smallIntFinishSigned", v1_4_smallIntFinishSigned, C.v1_4_smallIntFinishSigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntStorageStoreUnsigned", v1_5_smallIntStorageStoreUnsigned, C.v1_5_smallIntStorageStoreUnsigned)
+	err = imports.Append("smallIntStorageStoreUnsigned", v1_4_smallIntStorageStoreUnsigned, C.v1_4_smallIntStorageStoreUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntStorageStoreSigned", v1_5_smallIntStorageStoreSigned, C.v1_5_smallIntStorageStoreSigned)
+	err = imports.Append("smallIntStorageStoreSigned", v1_4_smallIntStorageStoreSigned, C.v1_4_smallIntStorageStoreSigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntStorageLoadUnsigned", v1_5_smallIntStorageLoadUnsigned, C.v1_5_smallIntStorageLoadUnsigned)
+	err = imports.Append("smallIntStorageLoadUnsigned", v1_4_smallIntStorageLoadUnsigned, C.v1_4_smallIntStorageLoadUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("smallIntStorageLoadSigned", v1_5_smallIntStorageLoadSigned, C.v1_5_smallIntStorageLoadSigned)
+	err = imports.Append("smallIntStorageLoadSigned", v1_4_smallIntStorageLoadSigned, C.v1_4_smallIntStorageLoadSigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// the last are just for backwards compatibility:
 
-	imports, err = imports.Append("int64getArgument", v1_5_int64getArgument, C.v1_5_int64getArgument)
+	err = imports.Append("int64getArgument", v1_4_int64getArgument, C.v1_4_int64getArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("int64storageStore", v1_5_int64storageStore, C.v1_5_int64storageStore)
+	err = imports.Append("int64storageStore", v1_4_int64storageStore, C.v1_4_int64storageStore)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("int64storageLoad", v1_5_int64storageLoad, C.v1_5_int64storageLoad)
+	err = imports.Append("int64storageLoad", v1_4_int64storageLoad, C.v1_4_int64storageLoad)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("int64finish", v1_5_int64finish, C.v1_5_int64finish)
+	err = imports.Append("int64finish", v1_4_int64finish, C.v1_4_int64finish)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return imports, nil
+	return nil
 }
 
 //export v1_5_smallIntGetUnsignedArgument

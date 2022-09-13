@@ -61,10 +61,10 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -113,220 +113,220 @@ const (
 )
 
 // BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
-func BigIntImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
+func BigIntImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
-	imports, err := imports.Append("bigIntNew", v1_5_bigIntNew, C.v1_5_bigIntNew)
+	err := imports.Append("bigIntNew", v1_4_bigIntNew, C.v1_4_bigIntNew)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntUnsignedByteLength", v1_5_bigIntUnsignedByteLength, C.v1_5_bigIntUnsignedByteLength)
+	err = imports.Append("bigIntUnsignedByteLength", v1_4_bigIntUnsignedByteLength, C.v1_4_bigIntUnsignedByteLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSignedByteLength", v1_5_bigIntSignedByteLength, C.v1_5_bigIntSignedByteLength)
+	err = imports.Append("bigIntSignedByteLength", v1_4_bigIntSignedByteLength, C.v1_4_bigIntSignedByteLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetUnsignedBytes", v1_5_bigIntGetUnsignedBytes, C.v1_5_bigIntGetUnsignedBytes)
+	err = imports.Append("bigIntGetUnsignedBytes", v1_4_bigIntGetUnsignedBytes, C.v1_4_bigIntGetUnsignedBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetSignedBytes", v1_5_bigIntGetSignedBytes, C.v1_5_bigIntGetSignedBytes)
+	err = imports.Append("bigIntGetSignedBytes", v1_4_bigIntGetSignedBytes, C.v1_4_bigIntGetSignedBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSetUnsignedBytes", v1_5_bigIntSetUnsignedBytes, C.v1_5_bigIntSetUnsignedBytes)
+	err = imports.Append("bigIntSetUnsignedBytes", v1_4_bigIntSetUnsignedBytes, C.v1_4_bigIntSetUnsignedBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSetSignedBytes", v1_5_bigIntSetSignedBytes, C.v1_5_bigIntSetSignedBytes)
+	err = imports.Append("bigIntSetSignedBytes", v1_4_bigIntSetSignedBytes, C.v1_4_bigIntSetSignedBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntIsInt64", v1_5_bigIntIsInt64, C.v1_5_bigIntIsInt64)
+	err = imports.Append("bigIntIsInt64", v1_4_bigIntIsInt64, C.v1_4_bigIntIsInt64)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetInt64", v1_5_bigIntGetInt64, C.v1_5_bigIntGetInt64)
+	err = imports.Append("bigIntGetInt64", v1_4_bigIntGetInt64, C.v1_4_bigIntGetInt64)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSetInt64", v1_5_bigIntSetInt64, C.v1_5_bigIntSetInt64)
+	err = imports.Append("bigIntSetInt64", v1_4_bigIntSetInt64, C.v1_4_bigIntSetInt64)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntAdd", v1_5_bigIntAdd, C.v1_5_bigIntAdd)
+	err = imports.Append("bigIntAdd", v1_4_bigIntAdd, C.v1_4_bigIntAdd)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSub", v1_5_bigIntSub, C.v1_5_bigIntSub)
+	err = imports.Append("bigIntSub", v1_4_bigIntSub, C.v1_4_bigIntSub)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntMul", v1_5_bigIntMul, C.v1_5_bigIntMul)
+	err = imports.Append("bigIntMul", v1_4_bigIntMul, C.v1_4_bigIntMul)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntTDiv", v1_5_bigIntTDiv, C.v1_5_bigIntTDiv)
+	err = imports.Append("bigIntTDiv", v1_4_bigIntTDiv, C.v1_4_bigIntTDiv)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntTMod", v1_5_bigIntTMod, C.v1_5_bigIntTMod)
+	err = imports.Append("bigIntTMod", v1_4_bigIntTMod, C.v1_4_bigIntTMod)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntEDiv", v1_5_bigIntEDiv, C.v1_5_bigIntEDiv)
+	err = imports.Append("bigIntEDiv", v1_4_bigIntEDiv, C.v1_4_bigIntEDiv)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntEMod", v1_5_bigIntEMod, C.v1_5_bigIntEMod)
+	err = imports.Append("bigIntEMod", v1_4_bigIntEMod, C.v1_4_bigIntEMod)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSqrt", v1_5_bigIntSqrt, C.v1_5_bigIntSqrt)
+	err = imports.Append("bigIntSqrt", v1_4_bigIntSqrt, C.v1_4_bigIntSqrt)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntPow", v1_5_bigIntPow, C.v1_5_bigIntPow)
+	err = imports.Append("bigIntPow", v1_4_bigIntPow, C.v1_4_bigIntPow)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntLog2", v1_5_bigIntLog2, C.v1_5_bigIntLog2)
+	err = imports.Append("bigIntLog2", v1_4_bigIntLog2, C.v1_4_bigIntLog2)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntAbs", v1_5_bigIntAbs, C.v1_5_bigIntAbs)
+	err = imports.Append("bigIntAbs", v1_4_bigIntAbs, C.v1_4_bigIntAbs)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntNeg", v1_5_bigIntNeg, C.v1_5_bigIntNeg)
+	err = imports.Append("bigIntNeg", v1_4_bigIntNeg, C.v1_4_bigIntNeg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntSign", v1_5_bigIntSign, C.v1_5_bigIntSign)
+	err = imports.Append("bigIntSign", v1_4_bigIntSign, C.v1_4_bigIntSign)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntCmp", v1_5_bigIntCmp, C.v1_5_bigIntCmp)
+	err = imports.Append("bigIntCmp", v1_4_bigIntCmp, C.v1_4_bigIntCmp)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntNot", v1_5_bigIntNot, C.v1_5_bigIntNot)
+	err = imports.Append("bigIntNot", v1_4_bigIntNot, C.v1_4_bigIntNot)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntAnd", v1_5_bigIntAnd, C.v1_5_bigIntAnd)
+	err = imports.Append("bigIntAnd", v1_4_bigIntAnd, C.v1_4_bigIntAnd)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntOr", v1_5_bigIntOr, C.v1_5_bigIntOr)
+	err = imports.Append("bigIntOr", v1_4_bigIntOr, C.v1_4_bigIntOr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntXor", v1_5_bigIntXor, C.v1_5_bigIntXor)
+	err = imports.Append("bigIntXor", v1_4_bigIntXor, C.v1_4_bigIntXor)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntShr", v1_5_bigIntShr, C.v1_5_bigIntShr)
+	err = imports.Append("bigIntShr", v1_4_bigIntShr, C.v1_4_bigIntShr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntShl", v1_5_bigIntShl, C.v1_5_bigIntShl)
+	err = imports.Append("bigIntShl", v1_4_bigIntShl, C.v1_4_bigIntShl)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntFinishUnsigned", v1_5_bigIntFinishUnsigned, C.v1_5_bigIntFinishUnsigned)
+	err = imports.Append("bigIntFinishUnsigned", v1_4_bigIntFinishUnsigned, C.v1_4_bigIntFinishUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntFinishSigned", v1_5_bigIntFinishSigned, C.v1_5_bigIntFinishSigned)
+	err = imports.Append("bigIntFinishSigned", v1_4_bigIntFinishSigned, C.v1_4_bigIntFinishSigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntStorageStoreUnsigned", v1_5_bigIntStorageStoreUnsigned, C.v1_5_bigIntStorageStoreUnsigned)
+	err = imports.Append("bigIntStorageStoreUnsigned", v1_4_bigIntStorageStoreUnsigned, C.v1_4_bigIntStorageStoreUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntStorageLoadUnsigned", v1_5_bigIntStorageLoadUnsigned, C.v1_5_bigIntStorageLoadUnsigned)
+	err = imports.Append("bigIntStorageLoadUnsigned", v1_4_bigIntStorageLoadUnsigned, C.v1_4_bigIntStorageLoadUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetUnsignedArgument", v1_5_bigIntGetUnsignedArgument, C.v1_5_bigIntGetUnsignedArgument)
+	err = imports.Append("bigIntGetUnsignedArgument", v1_4_bigIntGetUnsignedArgument, C.v1_4_bigIntGetUnsignedArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetSignedArgument", v1_5_bigIntGetSignedArgument, C.v1_5_bigIntGetSignedArgument)
+	err = imports.Append("bigIntGetSignedArgument", v1_4_bigIntGetSignedArgument, C.v1_4_bigIntGetSignedArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetCallValue", v1_5_bigIntGetCallValue, C.v1_5_bigIntGetCallValue)
+	err = imports.Append("bigIntGetCallValue", v1_4_bigIntGetCallValue, C.v1_4_bigIntGetCallValue)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetESDTCallValue", v1_5_bigIntGetESDTCallValue, C.v1_5_bigIntGetESDTCallValue)
+	err = imports.Append("bigIntGetESDTCallValue", v1_4_bigIntGetESDTCallValue, C.v1_4_bigIntGetESDTCallValue)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetESDTExternalBalance", v1_5_bigIntGetESDTExternalBalance, C.v1_5_bigIntGetESDTExternalBalance)
+	err = imports.Append("bigIntGetESDTExternalBalance", v1_4_bigIntGetESDTExternalBalance, C.v1_4_bigIntGetESDTExternalBalance)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetExternalBalance", v1_5_bigIntGetExternalBalance, C.v1_5_bigIntGetExternalBalance)
+	err = imports.Append("bigIntGetExternalBalance", v1_4_bigIntGetExternalBalance, C.v1_4_bigIntGetExternalBalance)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntGetESDTCallValueByIndex", v1_5_bigIntGetESDTCallValueByIndex, C.v1_5_bigIntGetESDTCallValueByIndex)
+	err = imports.Append("bigIntGetESDTCallValueByIndex", v1_4_bigIntGetESDTCallValueByIndex, C.v1_4_bigIntGetESDTCallValueByIndex)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigIntToString", v1_5_bigIntToString, C.v1_5_bigIntToString)
+	err = imports.Append("bigIntToString", v1_4_bigIntToString, C.v1_4_bigIntToString)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return imports, nil
+	return nil
 }
 
 //export v1_5_bigIntGetUnsignedArgument

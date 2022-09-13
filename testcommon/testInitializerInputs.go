@@ -12,16 +12,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	arwenHost "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/host"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
@@ -329,7 +330,21 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:     true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
+			IsFixOOGReturnCodeFlagEnabledField:               true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:        true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
+			IsManagedCryptoAPIsFlagEnabledField:              true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
+			IsESDTTransferRoleFlagEnabledField:               true,
+			IsSendAlwaysFlagEnabledField:                     true,
+			IsGlobalMintBurnFlagEnabledField:                 true,
+			IsCheckFunctionArgumentFlagEnabledField:          true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
+		},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)
@@ -363,7 +378,24 @@ func DefaultTestArwenWithGasSchedule(
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:         true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+			IsFixOOGReturnCodeFlagEnabledField:                   true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+			IsManagedCryptoAPIsFlagEnabledField:                  true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+			IsRefactorContextFlagEnabledField:                    true,
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsDisableExecByCallerFlagEnabledField:                true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsSendAlwaysFlagEnabledField:                         true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+		},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 	})
 	require.Nil(tb, err)

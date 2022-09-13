@@ -10,14 +10,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwenmandos"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
+	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"
 )
 

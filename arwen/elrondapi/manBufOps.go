@@ -40,10 +40,10 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -71,130 +71,125 @@ const (
 )
 
 // ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
-func ManagedBufferImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
+func ManagedBufferImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
-	imports, err := imports.Append("mBufferNew", v1_5_mBufferNew, C.v1_5_mBufferNew)
+	err := imports.Append("mBufferNew", v1_4_mBufferNew, C.v1_4_mBufferNew)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferNewFromBytes", v1_5_mBufferNewFromBytes, C.v1_5_mBufferNewFromBytes)
+	err = imports.Append("mBufferNewFromBytes", v1_4_mBufferNewFromBytes, C.v1_4_mBufferNewFromBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferGetLength", v1_5_mBufferGetLength, C.v1_5_mBufferGetLength)
+	err = imports.Append("mBufferGetLength", v1_4_mBufferGetLength, C.v1_4_mBufferGetLength)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferSetBytes", v1_5_mBufferSetBytes, C.v1_5_mBufferSetBytes)
+	err = imports.Append("mBufferSetBytes", v1_4_mBufferSetBytes, C.v1_4_mBufferSetBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferSetByteSlice", v1_5_mBufferSetByteSlice, C.v1_5_mBufferSetByteSlice)
+	err = imports.Append("mBufferSetByteSlice", v1_4_mBufferSetByteSlice, C.v1_4_mBufferSetByteSlice)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferGetBytes", v1_5_mBufferGetBytes, C.v1_5_mBufferGetBytes)
+	err = imports.Append("mBufferGetBytes", v1_4_mBufferGetBytes, C.v1_4_mBufferGetBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferGetByteSlice", v1_5_mBufferGetByteSlice, C.v1_5_mBufferGetByteSlice)
+	err = imports.Append("mBufferGetByteSlice", v1_4_mBufferGetByteSlice, C.v1_4_mBufferGetByteSlice)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferCopyByteSlice", v1_5_mBufferCopyByteSlice, C.v1_5_mBufferCopyByteSlice)
+	err = imports.Append("mBufferCopyByteSlice", v1_4_mBufferCopyByteSlice, C.v1_4_mBufferCopyByteSlice)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferEq", v1_5_mBufferEq, C.v1_5_mBufferEq)
+	err = imports.Append("mBufferEq", v1_4_mBufferEq, C.v1_4_mBufferEq)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferSetBytes", v1_5_mBufferSetBytes, C.v1_5_mBufferSetBytes)
+	err = imports.Append("mBufferAppend", v1_4_mBufferAppend, C.v1_4_mBufferAppend)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferAppend", v1_5_mBufferAppend, C.v1_5_mBufferAppend)
+	err = imports.Append("mBufferAppendBytes", v1_4_mBufferAppendBytes, C.v1_4_mBufferAppendBytes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferAppendBytes", v1_5_mBufferAppendBytes, C.v1_5_mBufferAppendBytes)
+	err = imports.Append("mBufferToBigIntUnsigned", v1_4_mBufferToBigIntUnsigned, C.v1_4_mBufferToBigIntUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferToBigIntUnsigned", v1_5_mBufferToBigIntUnsigned, C.v1_5_mBufferToBigIntUnsigned)
+	err = imports.Append("mBufferToBigIntSigned", v1_4_mBufferToBigIntSigned, C.v1_4_mBufferToBigIntSigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferToBigIntSigned", v1_5_mBufferToBigIntSigned, C.v1_5_mBufferToBigIntSigned)
+	err = imports.Append("mBufferFromBigIntUnsigned", v1_4_mBufferFromBigIntUnsigned, C.v1_4_mBufferFromBigIntUnsigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferFromBigIntUnsigned", v1_5_mBufferFromBigIntUnsigned, C.v1_5_mBufferFromBigIntUnsigned)
+	err = imports.Append("mBufferFromBigIntSigned", v1_4_mBufferFromBigIntSigned, C.v1_4_mBufferFromBigIntSigned)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferFromBigIntSigned", v1_5_mBufferFromBigIntSigned, C.v1_5_mBufferFromBigIntSigned)
+	err = imports.Append("mBufferToBigFloat", v1_4_mBufferToBigFloat, C.v1_4_mBufferToBigFloat)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferToBigFloat", v1_5_mBufferToBigFloat, C.v1_5_mBufferToBigFloat)
+	err = imports.Append("mBufferFromBigFloat", v1_4_mBufferFromBigFloat, C.v1_4_mBufferFromBigFloat)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferFromBigFloat", v1_5_mBufferFromBigFloat, C.v1_5_mBufferFromBigFloat)
+	err = imports.Append("mBufferStorageStore", v1_4_mBufferStorageStore, C.v1_4_mBufferStorageStore)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferStorageStore", v1_5_mBufferStorageStore, C.v1_5_mBufferStorageStore)
+	err = imports.Append("mBufferStorageLoad", v1_4_mBufferStorageLoad, C.v1_4_mBufferStorageLoad)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferStorageLoad", v1_5_mBufferStorageLoad, C.v1_5_mBufferStorageLoad)
+	err = imports.Append("mBufferStorageLoadFromAddress", v1_4_mBufferStorageLoadFromAddress, C.v1_4_mBufferStorageLoadFromAddress)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferStorageLoadFromAddress", v1_5_mBufferStorageLoadFromAddress, C.v1_5_mBufferStorageLoadFromAddress)
+	err = imports.Append("mBufferGetArgument", v1_4_mBufferGetArgument, C.v1_4_mBufferGetArgument)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferGetArgument", v1_5_mBufferGetArgument, C.v1_5_mBufferGetArgument)
+	err = imports.Append("mBufferFinish", v1_4_mBufferFinish, C.v1_4_mBufferFinish)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferFinish", v1_5_mBufferFinish, C.v1_5_mBufferFinish)
+	err = imports.Append("mBufferSetRandom", v1_4_mBufferSetRandom, C.v1_4_mBufferSetRandom)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("mBufferSetRandom", v1_5_mBufferSetRandom, C.v1_5_mBufferSetRandom)
-	if err != nil {
-		return nil, err
-	}
-
-	return imports, nil
+	return nil
 }
 
 //export v1_5_mBufferNew

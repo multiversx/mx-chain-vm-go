@@ -4,10 +4,10 @@ import (
 	"encoding/hex"
 	"testing"
 
-	mei "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/expression/interpreter"
-	mer "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/fileresolver"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/orderedjson"
+	mei "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/interpreter"
+	mer "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
+	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
+	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
 	"github.com/stretchr/testify/require"
 )
 

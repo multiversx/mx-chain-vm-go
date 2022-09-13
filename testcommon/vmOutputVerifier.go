@@ -8,11 +8,11 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/stretchr/testify/require"
 )
 

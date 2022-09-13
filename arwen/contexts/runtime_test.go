@@ -7,17 +7,18 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/cryptoapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/factory"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
+	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,13 +28,14 @@ const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 var vmType = []byte("type")
 
 func MakeAPIImports() *wasmer.Imports {
-	imports, _ := elrondapi.ElrondEIImports()
-	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = elrondapi.BigFloatImports(imports)
-	imports, _ = elrondapi.ManagedBufferImports(imports)
-	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = cryptoapi.CryptoImports(imports)
-	return imports
+	imports := elrondapimeta.NewEIFunctions()
+	_ = elrondapi.ElrondEIImports(imports)
+	_ = elrondapi.BigIntImports(imports)
+	_ = elrondapi.BigFloatImports(imports)
+	_ = elrondapi.ManagedBufferImports(imports)
+	_ = elrondapi.SmallIntImports(imports)
+	_ = cryptoapi.CryptoImports(imports)
+	return wasmer.ConvertImports(imports)
 }
 
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {
@@ -62,7 +64,6 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		epochNotifier,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)

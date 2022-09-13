@@ -8,14 +8,14 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -57,7 +57,6 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	epochNotifier vmcommon.EpochNotifier,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -79,11 +78,6 @@ func NewRuntimeContext(
 	if err != nil {
 		return nil, err
 	}
-
-	if check.IfNil(epochNotifier) {
-		return nil, arwen.ErrNilEpochNotifier
-	}
-	epochNotifier.RegisterNotifyHandler(context)
 
 	context.instanceBuilder = &WasmerInstanceBuilder{}
 	context.InitState()
@@ -600,10 +594,29 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	err = context.validator.verifyProtectedFunctions(context.instance)
-	if err != nil {
-		logRuntime.Trace("verify contract code", "error", err)
-		return err
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	if !enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
+		err = context.checkBackwardCompatibility()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
+	if !enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
+		err = context.checkIfContainsNewManagedCryptoAPI()
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
+	}
+
+	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
+		err = context.validator.verifyProtectedFunctions(context.instance)
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
 	}
 
 	logRuntime.Trace("verified contract code")
@@ -880,34 +893,6 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 // GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
-}
-
-// ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
-func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
-	err := context.validator.verifyValidFunctionName(callbackName)
-	if err != nil {
-		return arwen.ErrInvalidFunctionName
-	}
-	if callbackName == arwen.InitFunctionName {
-		return arwen.ErrInvalidFunctionName
-	}
-	if context.host.IsBuiltinFunctionName(callbackName) {
-		return arwen.ErrCannotUseBuiltinAsCallback
-	}
-	if !context.HasFunction(callbackName) {
-		return arwen.ErrFuncNotFound
-	}
-
-	return nil
-}
-
-func (context *runtimeContext) HasFunction(functionName string) bool {
-	_, ok := context.instance.GetExports()[functionName]
-	return ok
-}
-
-// EpochConfirmed is called whenever a new epoch is confirmed
-func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
