@@ -30,4 +30,4 @@ jobs:
     - name: Test
       run: |
           install_name_tool -id $(pwd)/wasmer/libwasmer_darwin_amd64.dylib wasmer/libwasmer_darwin_amd64.dylib
-          cd ./arwen && go test .
+          make test
