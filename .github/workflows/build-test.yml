@@ -29,4 +29,4 @@ jobs:
           make build
     - name: Test
       run: |
-          make test-short
+          cd ./arwen && go test .
