@@ -29,6 +29,4 @@ jobs:
       uses: actions/checkout@v2
     - name: Test
       run: |
-          export ARWEN_PATH=${GITHUB_WORKSPACE}/Arwen/arwen
-          mkdir ${GITHUB_WORKSPACE}/Arwen
-          make test
+          make test-short
