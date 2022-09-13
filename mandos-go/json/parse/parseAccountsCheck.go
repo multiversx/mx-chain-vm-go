@@ -122,10 +122,10 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 			if err != nil {
 				return nil, fmt.Errorf("invalid asyncCallData: %w", err)
 			}
-		case "developer_rewards":
+		case "developerRewards":
 			acct.DeveloperReward, err = p.processCheckBigInt(kvp.Value, bigIntUnsignedBytes)
 			if err != nil {
-				return nil, fmt.Errorf("invalid developer_rewards: %w", err)
+				return nil, fmt.Errorf("invalid developerRewards: %w", err)
 			}
 
 		default:
