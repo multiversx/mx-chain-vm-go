@@ -29,5 +29,5 @@ jobs:
           make build
     - name: Test
       run: |
-          export DYLD_LIBRARY_PATH=$(pwd)/wasmer
+          install_name_tool -id $(pwd)/wasmer/libwasmer_darwin_amd64.dylib @executable_path/libwasmer_darwin_amd64.dylib
           cd ./arwen && go test .
