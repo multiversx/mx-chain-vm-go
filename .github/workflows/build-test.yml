@@ -24,12 +24,12 @@ jobs:
       uses: actions/checkout@v2
     - name: Build
       run: |
-          lscpu
+          sysctl -a | grep machdep.cpu
           go env
           make build
     - name: Test
       run: |
-          lscpu
+          sysctl -a | grep machdep.cpu
           install_name_tool -id $(pwd)/wasmer/libwasmer_darwin_amd64.dylib wasmer/libwasmer_darwin_amd64.dylib
           install_name_tool -id $(pwd)/wasmer/libwasmer_darwin_arm64.dylib wasmer/libwasmer_darwin_arm64.dylib
           make test
