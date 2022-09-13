@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/fuzz/util"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/controller"
+	fuzzutil "github.com/ElrondNetwork/wasm-vm/fuzz/util"
+	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
 

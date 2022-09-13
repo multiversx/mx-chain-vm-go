@@ -39,9 +39,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 const (

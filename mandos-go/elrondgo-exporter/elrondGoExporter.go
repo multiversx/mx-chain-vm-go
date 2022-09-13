@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/controller"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/esdtconvert"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
+	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
 var errFirstStepMustSetState = errors.New("first step must be of type SetState")

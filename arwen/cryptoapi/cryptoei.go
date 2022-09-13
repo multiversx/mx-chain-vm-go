@@ -50,10 +50,10 @@ import (
 	"crypto/elliptic"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/signing/secp256k1"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
+	"github.com/ElrondNetwork/wasm-vm/math"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 const blsPublicKeyLength = 96

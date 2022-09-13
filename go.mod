@@ -1,4 +1,4 @@
-module github.com/ElrondNetwork/arwen-wasm-vm/v1_5
+module github.com/ElrondNetwork/wasm-vm
 
 go 1.13
 

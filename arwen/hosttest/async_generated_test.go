@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
 func TestGraph_Generated(t *testing.T) {

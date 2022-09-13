@@ -1,7 +1,7 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 

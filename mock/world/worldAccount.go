@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/hashing"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )

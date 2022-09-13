@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math/big"
 
-	er "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/expression/reconstructor"
-	mjwrite "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/model"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/orderedjson"
+	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
+	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 

@@ -3,7 +3,7 @@ package worldmock
 import (
 	"bytes"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"

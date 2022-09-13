@@ -3,7 +3,7 @@ package gasschedules
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/pelletier/go-toml"
 )
 

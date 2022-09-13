@@ -3,7 +3,7 @@ package hosttest
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/stretchr/testify/assert"
 )
 
