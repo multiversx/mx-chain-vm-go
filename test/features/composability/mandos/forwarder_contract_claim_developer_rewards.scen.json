@@ -78,17 +78,18 @@
                     "owner": "address:owner"
                 },
                 "address:not_owner": {
-                    "nonce": "1",
-                    "balance": "0"
+                    "balance": "0",
+                    "nonce": "1"
                 },
                 "address:owner": {
-                    "nonce": "1",
-                    "balance": "0"
+                    "balance": "0",
+                    "nonce": "1"
                 },
                 "sc:child": {
                     "balance": "500",
                     "code": "file:../vault/output/vault.wasm",
-                    "owner": "sc:forwarder"
+                    "owner": "sc:forwarder",
+                    "developerRewards": "0"
                 },
                 "sc:not_child": {
                     "balance": "500",
