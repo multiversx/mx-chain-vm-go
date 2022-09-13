@@ -27,7 +27,7 @@ type Address = []byte
 var owner = Address("owner")
 var receiver = Address("receiver")
 var scAddress = Address("erc20")
-var gasProvided = uint64(5000000000)
+var gasProvided = uint64(5_000_000_000)
 
 func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
@@ -50,7 +50,7 @@ func Test_WarmInstancesMemoryUsage(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageBenchmark(t, 10, 1000)
+	runMemoryUsageBenchmark(t, 150, 100)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
@@ -142,7 +142,6 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 			require.Nil(tb, err)
 			require.NotNil(tb, vmOutput)
 			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
-			require.Equal(tb, "", vmOutput.ReturnMessage)
 
 			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 		}
@@ -257,7 +256,8 @@ func createERC20Key(accountName string) string {
 func createAddress(i int) Address {
 	address := make(Address, 0)
 	address = append(address, scAddress...)
-	address = append(address, '0'+byte(i))
+	bytes := big.NewInt(int64(i)).Bytes()
+	address = append(address, bytes...)
 	return address
 }
 
@@ -272,7 +272,7 @@ func createTransferInput(i int) *vmcommon.ContractCallInput {
 			},
 			CallValue:   big.NewInt(10),
 			CallType:    vm.DirectCall,
-			GasPrice:    100000000000000,
+			GasPrice:    10_000_000_000_000,
 			GasProvided: gasProvided,
 		},
 		RecipientAddr: createAddress(i),

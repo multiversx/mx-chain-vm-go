@@ -182,6 +182,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
+	context.saveWarmInstance()
 	logRuntime.Trace("new instance created", "code", "cached compilation")
 	return true
 }
