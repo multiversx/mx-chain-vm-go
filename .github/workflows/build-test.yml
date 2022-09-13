@@ -13,9 +13,6 @@ jobs:
         include:
           - os: ubuntu-18.04
             go-version: 1.15.x
-          - runtime: osx-x64
-            os: macos-11
-            go-version: 1.15.x
           - runtime: osx-arm64
             os: macos-11
             go-version: 1.15.x
