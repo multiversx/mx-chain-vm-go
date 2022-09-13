@@ -61,7 +61,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
+		EnableEpochsHandler:      &worldmock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
 	}
 }

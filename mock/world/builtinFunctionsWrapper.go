@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 )
 
@@ -40,7 +39,7 @@ func NewBuiltinFunctionsWrapper(
 		Accounts:                         world.AccountsAdapter,
 		ShardCoordinator:                 world,
 		MaxNumOfAddressesForTransferRole: 100,
-		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+		EnableEpochsHandler: &EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
 			IsFixOOGReturnCodeFlagEnabledField:                   true,

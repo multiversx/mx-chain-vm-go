@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 )
 
 // ErrInvalidAccount signals that a certain account does not exist

@@ -53,7 +53,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
+		EnableEpochsHandler:      &worldmock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	if err != nil {

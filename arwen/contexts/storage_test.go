@@ -8,7 +8,6 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
@@ -20,7 +19,7 @@ var elrondReservedTestPrefix = []byte("RESERVED")
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 	host := &contextmock.VMHostMock{
@@ -67,7 +66,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
@@ -124,7 +123,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 		Data:   []byte("some data"),
 	}
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
@@ -157,7 +156,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	mockMetering.BlockGasLimitMock = uint64(15000)
 	mockMetering.GasLeftMock = 20000
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
@@ -300,7 +299,7 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	mockMetering.SetGasSchedule(gasMap)
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 	host := &contextmock.VMHostMock{
@@ -365,7 +364,7 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	mockMetering.BlockGasLimitMock = uint64(15000)
 	mockMetering.GasLeftMock = 20000
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
@@ -422,7 +421,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
@@ -468,7 +467,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
@@ -484,7 +483,7 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 

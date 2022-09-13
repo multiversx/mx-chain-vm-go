@@ -331,7 +331,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+		EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:     true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
 			IsFixOOGReturnCodeFlagEnabledField:               true,
@@ -379,7 +379,7 @@ func DefaultTestArwenWithGasSchedule(
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+		EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
 			IsFixOOGReturnCodeFlagEnabledField:                   true,
