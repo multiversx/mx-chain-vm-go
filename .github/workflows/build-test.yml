@@ -29,4 +29,5 @@ jobs:
           make build
     - name: Test
       run: |
+          export DYLD_LIBRARY_PATH=$(realpath -s wasmer)
           cd ./arwen && go test .
