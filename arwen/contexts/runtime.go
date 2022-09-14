@@ -250,7 +250,6 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
-
 	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
 	if !ok {
 		return false
@@ -330,7 +329,6 @@ func (context *runtimeContext) saveWarmInstance() {
 		instance: context.instance.ShallowCopy(),
 		memory:   localMemory,
 	}
-
 	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
 	//fmt.Println("Put into L1 cache (Warm)")
 }
