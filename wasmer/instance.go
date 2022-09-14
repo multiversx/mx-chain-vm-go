@@ -261,6 +261,7 @@ func (instance *Instance) SetContextData(data uintptr) {
 
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
+		fmt.Println("Cleaning instance...")
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {

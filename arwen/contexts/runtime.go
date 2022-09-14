@@ -89,7 +89,7 @@ func instanceEvicted(_ interface{}, value interface{}) {
 	if !ok {
 		return
 	}
-
+	fmt.Println("Warm Instance Evicted")
 	localContract.instance.Clean()
 	localContract.memory = nil
 }
@@ -242,7 +242,6 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
-
 	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
 	if !ok {
 		return false
@@ -269,6 +268,8 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
+
+	fmt.Println("Get from L1 cache (Warm)")
 
 	return true
 }
@@ -321,7 +322,7 @@ func (context *runtimeContext) saveWarmInstance() {
 		instance: context.instance.ShallowCopy(),
 		memory:   localMemory,
 	}
-
+	fmt.Println("Put into L1 cache (Warm)")
 	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
 }
 

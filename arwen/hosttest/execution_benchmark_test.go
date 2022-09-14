@@ -3,6 +3,7 @@ package hosttest
 import (
 	"fmt"
 	"math/big"
+	"math/rand"
 	"strings"
 	"testing"
 	"time"
@@ -50,7 +51,15 @@ func Test_WarmInstancesMemoryUsage(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageBenchmark(t, 150, 100)
+	runMemoryUsageBenchmark(t, 10_000, 1)
+}
+
+func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	runMemoryUsageFuzzyBenchmark(t, 7593, 10)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
@@ -123,6 +132,81 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 	}()
 }
 
+func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int) {
+	totalTokenSupply := big.NewInt(int64(nTransfers))
+	mockWorld, ownerAccount, host, err := prepare(tb)
+	require.Nil(tb, err)
+
+	defer func() {
+		host.Reset()
+	}()
+
+	deployNContracts(tb, nContracts, mockWorld, ownerAccount, host, totalTokenSupply)
+	fmt.Println("Deploy completed")
+
+	// create map of contracts/transfers
+	availableContracts := make([]int, nContracts)
+	remainingTransfers := make(map[int]int, nContracts)
+	for i := 0; i < nContracts; i++ {
+		availableContracts[i] = i
+		remainingTransfers[i] = nTransfers
+	}
+
+	// prepare rand
+	seed := rand.NewSource(time.Now().UnixNano())
+	rand := rand.New(seed)
+
+	for len(availableContracts) != 0 {
+		contract := availableContracts[rand.Intn(len(availableContracts))]
+		transfers := rand.Intn(remainingTransfers[contract]) + 1
+
+		fmt.Printf("Executing %d transfers for contract %d\n", transfers, contract)
+		for i := 0; i < transfers; i++ {
+			transferInput := createTransferInput(contract)
+
+			vmOutput, err := host.RunSmartContractCall(transferInput)
+			require.Nil(tb, err)
+			require.NotNil(tb, vmOutput)
+			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
+
+			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
+		}
+		fmt.Printf("Executed %d ERC20 transfers for contract %d\n", transfers, contract)
+
+		// update changes
+		remainingTransfers[contract] -= transfers
+		fmt.Printf("Remaining transfers for contract %d: %d transfers\n", contract, remainingTransfers[contract])
+		if remainingTransfers[contract] == 0 {
+			//print("Before delete:", availableContracts)
+			remainingContracts := make([]int, len(availableContracts)-1)
+			j := 0
+			for _, v := range availableContracts {
+				if v == contract {
+					continue
+				}
+				remainingContracts[j] = v
+				j += 1
+			}
+			availableContracts = remainingContracts
+			delete(remainingTransfers, contract)
+			fmt.Printf("Deleted contract %d\n", contract)
+			//print("After delete:", availableContracts)
+		}
+		fmt.Println()
+	}
+	for j := 0; j < nContracts; j++ {
+		verifyTransfers(tb, mockWorld, totalTokenSupply, createAddress(j))
+	}
+}
+
+func print(message string, slice []int) {
+	fmt.Printf("%s", message)
+	for _, c := range slice {
+		fmt.Printf(" %d", c)
+	}
+	fmt.Println()
+}
+
 func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	totalTokenSupply := big.NewInt(int64(nTransfers))
 	mockWorld, ownerAccount, host, err := prepare(tb)
@@ -133,8 +217,9 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	}()
 
 	deployNContracts(tb, nContracts, mockWorld, ownerAccount, host, totalTokenSupply)
-
+	fmt.Println("Deploy completed")
 	for i := 0; i < nContracts; i++ {
+		fmt.Printf("Executing contract %d\n", i)
 		for j := 0; j < nTransfers; j++ {
 			transferInput := createTransferInput(i)
 
@@ -145,7 +230,7 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 
 			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 		}
-		fmt.Printf("Executing %d ERC20 transfers for contract %d\n", nTransfers, i)
+		fmt.Printf("Executed %d ERC20 transfers for contract %d\n", nTransfers, i)
 	}
 	for j := 0; j < nContracts; j++ {
 		verifyTransfers(tb, mockWorld, totalTokenSupply, createAddress(j))
@@ -223,6 +308,7 @@ func deploy(
 func deployNContracts(tb testing.TB, nContracts int, mockWorld *worldmock.MockWorld, ownerAccount *worldmock.Account, host arwen.VMHost, totalTokenSupply *big.Int) {
 	code := testcommon.GetTestSCCode("erc20", "../../")
 	for i := 0; i < nContracts; i++ {
+		fmt.Printf("Deploying contract %d\n", i)
 		modifyERC20BytecodeWithCustomTransferEvent(code, []byte{byte(i)})
 		mockWorld.NewAddressMocks = append(mockWorld.NewAddressMocks, &worldmock.NewAddressMock{
 			CreatorAddress: owner,
