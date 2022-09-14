@@ -1,34 +1,11 @@
 package wasmer
 
 import (
-	"fmt"
-	"reflect"
 	"unsafe"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 )
-
-// ImportedFunctionError represents any kind of errors related to a
-// WebAssembly imported function. It is returned by `Import` or `Imports`
-// functions only.
-type ImportedFunctionError struct {
-	functionName string
-	message      string
-}
-
-// NewImportedFunctionError constructs a new `ImportedFunctionError`,
-// where `functionName` is the name of the imported function, and
-// `message` is the error message. If the error message contains `%s`,
-// then this parameter will be replaced by `functionName`.
-func NewImportedFunctionError(functionName string, message string) *ImportedFunctionError {
-	return &ImportedFunctionError{functionName, message}
-}
-
-// ImportedFunctionError is an actual error. The `Error` function
-// returns the error message.
-func (error *ImportedFunctionError) Error() string {
-	return fmt.Sprintf(error.message, error.functionName)
-}
 
 // Import represents an WebAssembly instance imported function.
 type Import struct {
@@ -97,72 +74,49 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-// Append adds a new imported function to the current set.
-func (imports *Imports) Append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) (*Imports, error) {
-	var importType = reflect.TypeOf(implementation)
-
-	if importType.Kind() != reflect.Func {
-		return nil, NewImportedFunctionError(importName, fmt.Sprintf("Imported function `%%s` must be a function; given `%s`.", importType.Kind()))
+func convertArgType(argType elrondapimeta.EIFunctionValue) cWasmerValueTag {
+	switch argType {
+	case elrondapimeta.EIFunctionValueInt32:
+		return cWasmI32
+	case elrondapimeta.EIFunctionValueInt64:
+		return cWasmI64
 	}
+	return cWasmI32 // unreachable, but might consider adding an error
+}
 
-	var importInputsArity = importType.NumIn()
+func ConvertImports(eiFunctions *elrondapimeta.EIFunctions) *Imports {
+	imports := NewImports()
 
-	if importInputsArity < 1 {
-		return nil, NewImportedFunctionError(importName, "Imported function `%s` must at least have one argument for the instance context.")
-	}
+	for funcName, funcData := range eiFunctions.FunctionMap {
+		implementation := funcData.Implementation
+		cgoPointer := funcData.CgoPointer
+		var importedFunctionPointer *cWasmerImportFuncT
+		var namespace = funcData.Namespace
 
-	if importType.In(0).Kind() != reflect.UnsafePointer {
-		return nil, NewImportedFunctionError(importName, fmt.Sprintf("The instance context of the `%%s` imported function must be of kind `unsafe.Pointer`; given `%s`; is it missing?", importType.In(0).Kind()))
-	}
+		var wasmInputs = make([]cWasmerValueTag, len(funcData.FunctionInputs))
+		for i, input := range funcData.FunctionInputs {
+			wasmInputs[i] = convertArgType(input)
+		}
+		var wasmOutputs = make([]cWasmerValueTag, len(funcData.FunctionOutputs))
+		for i, output := range funcData.FunctionOutputs {
+			wasmOutputs[i] = convertArgType(output)
+		}
 
-	importInputsArity--
-	var importOutputsArity = importType.NumOut()
-	var wasmInputs = make([]cWasmerValueTag, importInputsArity)
-	var wasmOutputs = make([]cWasmerValueTag, importOutputsArity)
+		if imports.imports[namespace] == nil {
+			imports.imports[namespace] = make(map[string]Import)
+		}
 
-	for nth := 0; nth < importInputsArity; nth++ {
-		var importInput = importType.In(nth + 1)
-
-		switch importInput.Kind() {
-		case reflect.Int32:
-			wasmInputs[nth] = cWasmI32
-		case reflect.Int64:
-			wasmInputs[nth] = cWasmI64
-		default:
-			return nil, NewImportedFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
+		imports.imports[namespace][funcName] = Import{
+			implementation,
+			cgoPointer,
+			importedFunctionPointer,
+			wasmInputs,
+			wasmOutputs,
+			namespace,
 		}
 	}
 
-	if importOutputsArity > 1 {
-		return nil, NewImportedFunctionError(importName, "The `%s` imported function must have at most one output value.")
-	} else if importOutputsArity == 1 {
-		switch importType.Out(0).Kind() {
-		case reflect.Int32:
-			wasmOutputs[0] = cWasmI32
-		case reflect.Int64:
-			wasmOutputs[0] = cWasmI64
-		default:
-			return nil, NewImportedFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
-		}
-	}
-
-	var importedFunctionPointer *cWasmerImportFuncT
-	var namespace = imports.currentNamespace
-
-	if imports.imports[namespace] == nil {
-		imports.imports[namespace] = make(map[string]Import)
-	}
-
-	imports.imports[namespace][importName] = Import{
-		implementation,
-		cgoPointer,
-		importedFunctionPointer,
-		wasmInputs,
-		wasmOutputs,
-		namespace,
-	}
-
-	return imports, nil
+	return imports
 }
 
 // Close closes/frees all imported functions that have been registered by Wasmer.

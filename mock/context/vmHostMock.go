@@ -24,6 +24,7 @@ type VMHostMock struct {
 	OutputContext       arwen.OutputContext
 	MeteringContext     arwen.MeteringContext
 	StorageContext      arwen.StorageContext
+	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
 	ManagedTypesContext arwen.ManagedTypesContext
 
 	SCAPIMethods  *wasmer.Imports
@@ -71,7 +72,12 @@ func (host *VMHostMock) Storage() arwen.StorageContext {
 	return host.StorageContext
 }
 
-// BigInt mocked method
+// EnableEpochsHandler mocked method
+func (host *VMHostMock) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	return host.EnableEpochsHandlerField
+}
+
+// ManagedTypes mocked method
 func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }
@@ -202,6 +208,11 @@ func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 // Async mocked method
 func (host *VMHostMock) Async() arwen.AsyncContext {
 	return host.AsyncContext
+}
+
+// FixOOGReturnCodeEnabled mocked method
+func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
+	return true
 }
 
 // StoreInput enqueues the given ContractCallInput

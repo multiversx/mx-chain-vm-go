@@ -3,8 +3,12 @@ package arwenmandos
 import (
 	"fmt"
 
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
@@ -12,9 +16,6 @@ import (
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -76,7 +77,8 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldhook.EpochNotifierStub{},
+		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),
 		WasmerSIGSEGVPassthrough: false,
 	})
 	if err != nil {

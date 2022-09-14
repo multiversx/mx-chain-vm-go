@@ -167,6 +167,7 @@ type VMHostParameters struct {
 	ElrondProtectedKeyPrefix            []byte
 	WasmerSIGSEGVPassthrough            bool
 	EpochNotifier                       vmcommon.EpochNotifier
+	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
 	TimeOutForSCExecutionInMilliseconds uint32
 }
 

@@ -9,6 +9,9 @@ import (
 	"math/big"
 	"testing"
 
+	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
@@ -20,9 +23,6 @@ import (
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -270,27 +270,28 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	ownerNonce := uint64(23)
 	numDeployments := 1000
 
+	tester := test.BuildInstanceCreatorTest(t).
+		WithInput(test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(100000).
+			WithCallValue(88).
+			WithCallerAddr([]byte("owner")).
+			WithContractCode(test.GetTestSCCode("init-simple", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+				return &contextmock.StubAccount{Nonce: ownerNonce}, nil
+			}
+			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+				ownerNonce++
+				return []byte(string(newAddress) + " " + fmt.Sprint(ownerNonce)), nil
+			}
+		})
+
 	for i := 0; i < numDeployments; i++ {
-		test.BuildInstanceCreatorTest(t).
-			WithInput(test.CreateTestContractCreateInputBuilder().
-				WithGasProvided(100000).
-				WithCallValue(88).
-				WithCallerAddr([]byte("owner")).
-				WithContractCode(test.GetTestSCCode("init-simple", "../../")).
-				Build()).
-			WithAddress(newAddress).
-			WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-				stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
-					return &contextmock.StubAccount{Nonce: ownerNonce}, nil
-				}
-				stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-					ownerNonce++
-					return []byte(string(newAddress) + " " + fmt.Sprint(ownerNonce)), nil
-				}
-			}).
-			AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-				verify.Ok()
-			})
+		tester.AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok()
+		})
 	}
 }
 
@@ -957,6 +958,12 @@ func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcom
 
 	test.BuildInstanceCreatorTest(t).
 		WithInput(input).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			if !enabled {
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+			}
+		}).
 		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(retCode)
 		})
@@ -980,6 +987,12 @@ func runTestMBufferSetByteSlice(
 			WithFunction("mBufferSetByteSliceTest").
 			WithArguments([]byte{byte(startPos)}, []byte{byte(copyLen)}).
 			Build()).
+		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+			if !enabled {
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*worldmock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
+			}
+		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(retCode)
 			if retCode == vmcommon.Ok {

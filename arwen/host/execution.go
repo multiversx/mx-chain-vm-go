@@ -89,7 +89,9 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	output.DeployCode(input)
-	output.RemoveNonUpdatedStorage()
+	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
+		output.RemoveNonUpdatedStorage()
+	}
 
 	vmOutput := output.GetVMOutput()
 	return vmOutput, nil
@@ -213,7 +215,9 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		return output.CreateVMOutputInCaseOfError(err)
 	}
 
-	output.RemoveNonUpdatedStorage()
+	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
+		output.RemoveNonUpdatedStorage()
+	}
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
@@ -433,7 +437,9 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 	librarySCAddress := make([]byte, len(input.RecipientAddr))
 	copy(librarySCAddress, input.RecipientAddr)
 
-	input.RecipientAddr = input.CallerAddr
+	if host.enableEpochsHandler.IsRefactorContextFlagEnabled() {
+		input.RecipientAddr = input.CallerAddr
+	}
 
 	copyTxHashesFromContext(runtime, input)
 	runtime.PushState()

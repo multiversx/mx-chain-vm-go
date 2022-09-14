@@ -7,14 +7,15 @@ import (
 	"strings"
 	"testing"
 
-	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
+	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,7 +52,8 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldhook.EpochNotifierStub{},
+		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubNoFlags(),
 		WasmerSIGSEGVPassthrough: false,
 	})
 	if err != nil {

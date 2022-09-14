@@ -26,6 +26,7 @@ type VMHostStub struct {
 	MeteringCalled     func() arwen.MeteringContext
 	AsyncCalled        func() arwen.AsyncContext
 	StorageCalled      func() arwen.StorageContext
+	EnableEpochsHandlerCalled   func() vmcommon.EnableEpochsHandler
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
@@ -155,6 +156,14 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
+	}
+	return nil
+}
+
+// EnableEpochsHandler mocked method
+func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	if vhs.EnableEpochsHandlerCalled != nil {
+		return vhs.EnableEpochsHandlerCalled()
 	}
 	return nil
 }

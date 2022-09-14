@@ -1,9 +1,9 @@
 package mock
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -51,6 +51,14 @@ type RuntimeContextWrapper struct {
 	SetRuntimeBreakpointValueFunc func(value arwen.BreakpointValue)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetRuntimeBreakpointValueFunc func() arwen.BreakpointValue
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetAsyncCallInfoFunc func() *arwen.AsyncCallInfo
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	SetAsyncCallInfoFunc func(asyncCallInfo *arwen.AsyncCallInfo)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	AddAsyncContextCallFunc func(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetAsyncContextFunc func(contextIdentifier []byte) (*arwen.AsyncContext, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	RunningInstancesCountFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)

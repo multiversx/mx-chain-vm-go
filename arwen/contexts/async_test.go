@@ -5,17 +5,17 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-go-core/marshal"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/stretchr/testify/require"
 )
 
@@ -73,16 +73,17 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		epochNotifier)
+	)
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext
 
-	storageContext, _ := NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, world, elrondReservedTestPrefix)
 	host.StorageContext = storageContext
 
 	host.OutputContext, _ = NewOutputContext(host)
 	host.CryptoHook = factory.NewVMCrypto()
-	host.StorageContext, _ = NewStorageContext(host, world, epochNotifier, elrondReservedTestPrefix)
+	host.StorageContext, _ = NewStorageContext(host, world, elrondReservedTestPrefix)
+	host.EnableEpochsHandlerField = worldmock.EnableEpochsHandlerStubNoFlags()
 
 	return host, world
 }

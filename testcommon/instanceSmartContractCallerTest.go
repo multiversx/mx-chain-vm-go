@@ -3,10 +3,10 @@ package testcommon
 import (
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // InstanceTestSmartContract represents the config data for the smart contract instance to be tested
@@ -45,10 +45,12 @@ func (mockSC *InstanceTestSmartContract) WithCode(code []byte) *InstanceTestSmar
 // InstancesTestTemplate holds the data to build a contract call test
 type InstancesTestTemplate struct {
 	testTemplateConfig
-	contracts     []*InstanceTestSmartContract
-	gasSchedule   config.GasScheduleMap
-	setup         func(arwen.VMHost, *contextmock.BlockchainHookStub)
-	assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	contracts          []*InstanceTestSmartContract
+	gasSchedule        config.GasScheduleMap
+	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
+	assertResults      func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host               arwen.VMHost
+	blockchainHookStub *contextmock.BlockchainHookStub
 }
 
 // BuildInstanceCallTest starts the building process for a contract call test
@@ -100,17 +102,18 @@ func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arw
 }
 
 func runTestWithInstances(callerTest *InstancesTestTemplate) {
-	host, blockchainHookStub := defaultTestArwenForContracts(callerTest.tb, callerTest.contracts, callerTest.gasSchedule, callerTest.wasmerSIGSEGVPassthrough)
+	if callerTest.host == nil {
+		callerTest.host, callerTest.blockchainHookStub = defaultTestArwenForContracts(callerTest.tb, callerTest.contracts, callerTest.gasSchedule, callerTest.wasmerSIGSEGVPassthrough)
+		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+	}
 	defer func() {
-		host.Reset()
+		callerTest.host.Reset()
 	}()
 
-	callerTest.setup(host, blockchainHookStub)
+	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)
 
-	vmOutput, err := host.RunSmartContractCall(callerTest.input)
-
-	allErrors := host.Runtime().GetAllErrors()
+	allErrors := callerTest.host.Runtime().GetAllErrors()
 
 	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
-	callerTest.assertResults(host, blockchainHookStub, verify)
+	callerTest.assertResults(callerTest.host, callerTest.blockchainHookStub, verify)
 }
