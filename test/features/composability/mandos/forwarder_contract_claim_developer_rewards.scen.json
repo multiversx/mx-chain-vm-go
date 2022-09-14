@@ -30,7 +30,7 @@
         },
         {
             "step": "scCall",
-            "txId": "fail_claim",
+            "id": "fail_claim",
             "tx": {
                 "from": "address:not_owner",
                 "to": "sc:forwarder",
@@ -51,7 +51,7 @@
         },
         {
             "step": "scCall",
-            "txId": "success_claim",
+            "id": "success_claim",
             "tx": {
                 "from": "address:owner",
                 "to": "sc:forwarder",
@@ -79,21 +79,23 @@
                     "owner": "address:owner"
                 },
                 "address:not_owner": {
+                    "balance": "0",
                     "nonce": "1"
                 },
                 "address:owner": {
+                    "balance": "0",
                     "nonce": "1"
                 },
                 "sc:child": {
                     "balance": "500",
                     "code": "file:../vault/output/vault.wasm",
-                    "owner": "sc:forwarder"
+                    "owner": "sc:forwarder",
+                    "developerRewards": "0"
                 },
                 "sc:not_child": {
                     "balance": "500",
                     "code": "file:../vault/output/vault.wasm",
-                    "owner": "sc:not_owner",
-                    "developerRewards": "0"
+                    "owner": "sc:not_owner"
                 }
             }
         }
