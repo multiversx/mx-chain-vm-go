@@ -114,7 +114,6 @@ func (context *runtimeContext) InitState() {
 // ClearWarmInstanceCache clears all elements from warm instance cache
 func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.warmInstanceCache.Clear()
-	context.CleanInstance()
 	context.instance = nil
 }
 

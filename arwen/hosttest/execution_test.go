@@ -305,10 +305,14 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 
 	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
 	defer func() {
-		host1.Reset()
+		for _, instance := range instanceRecorder1.GetContractInstances(code) {
+			instance.Clean()
+		}
 	}()
 	_, _, _, _, runtimeContext1, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
+	runtimeContextMock.ShallowCleanFunc = func() { return }
+	runtimeContextMock.CleanInstanceFunc = func() { return }
 	host1.SetRuntimeContext(runtimeContextMock)
 
 	for i := 0; i < 5; i++ {
@@ -317,20 +321,21 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	var host1InstancesData = make(map[interface{}]bool)
+	var host1InstancesData = make(map[uintptr]bool)
 	for _, instance := range instanceRecorder1.GetContractInstances(code) {
 		host1InstancesData[instance.GetData()] = true
 	}
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
 	defer func() {
-		host2.Reset()
+		for _, instance := range instanceRecorder2.GetContractInstances(code) {
+			instance.Clean()
+		}
 	}()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
-		return code, nil
-	}
+	runtimeContextMock.ShallowCleanFunc = func() { return }
+	runtimeContextMock.CleanInstanceFunc = func() { return }
 	host2.SetRuntimeContext(runtimeContextMock)
 
 	for i := 0; i < maxUint8AsInt+1; i++ {

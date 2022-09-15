@@ -267,10 +267,7 @@ func (instance *Instance) Clean() {
 			instance.Memory.Destroy()
 		}
 	}
-	instance.Data = nil
-	instance.DataPointer = nil
-	instance.Exports = nil
-	instance.Signatures = nil
+	instance.ShallowClean()
 }
 
 func (instance *Instance) ShallowClean() {
