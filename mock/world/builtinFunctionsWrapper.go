@@ -38,7 +38,7 @@ func NewBuiltinFunctionsWrapper(
 		Marshalizer:                      WorldMarshalizer,
 		Accounts:                         world.AccountsAdapter,
 		ShardCoordinator:                 world,
-		EpochNotifier:                    &EpochNotifierStub{},
+		EnableEpochsHandler:              &EpochNotifierStub{},
 		MaxNumOfAddressesForTransferRole: 100,
 	}
 
