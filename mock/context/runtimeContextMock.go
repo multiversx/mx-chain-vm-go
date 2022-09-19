@@ -1,9 +1,9 @@
 package mock
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -236,26 +236,20 @@ func (r *RuntimeContextMock) GetInstance() wasmer.InstanceHandler {
 	return nil
 }
 
-// GetInstanceExports mocked method
-func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
-	return nil
-}
-
 // ClearWarmInstanceCache mocked method
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
 
-// GetFunctionToCall mocked method
-func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+// FunctionNameChecked mocked method
+func (r *RuntimeContextMock) FunctionNameChecked() (string, error) {
 	if r.Err != nil {
-		return nil, r.Err
+		return "", r.Err
 	}
-	return nil, nil
+	return "", nil
 }
 
-// GetInitFunction mocked method
-func (r *RuntimeContextMock) GetInitFunction() wasmer.ExportedFunctionCallback {
-	return nil
+func (r *RuntimeContextMock) CallSCFunction(functionName string) error {
+	return r.Err
 }
 
 // MemLoad mocked method

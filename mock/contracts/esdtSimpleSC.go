@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
@@ -137,7 +138,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 			err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
 		} else {
 			callbackName := "callBack"
-			if host.Runtime().ValidateCallbackName(callbackName) == arwen.ErrFuncNotFound {
+			if host.Runtime().ValidateCallbackName(callbackName) == elrondapimeta.ErrFuncNotFound {
 				callbackName = ""
 			}
 			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{

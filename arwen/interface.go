@@ -134,9 +134,8 @@ type RuntimeContext interface {
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
 	GetInstance() wasmer.InstanceHandler
-	GetInstanceExports() wasmer.ExportsMap
-	GetInitFunction() wasmer.ExportedFunctionCallback
-	GetFunctionToCall() (wasmer.ExportedFunctionCallback, error)
+	FunctionNameChecked() (string, error)
+	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
 	MemStore(offset int32, data []byte) error

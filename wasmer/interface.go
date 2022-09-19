@@ -11,8 +11,10 @@ type InstanceHandler interface {
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
 	Clean()
-	GetExports() ExportsMap
-	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
+	CallFunction(functionName string) error
+	HasFunction(functionName string) bool
+	GetFunctionNames() []string
+	ValidateVoidFunction(functionName string) error
 	GetData() uintptr
 	GetInstanceCtxMemory() MemoryHandler
 	GetMemory() MemoryHandler
@@ -28,4 +30,8 @@ type MemoryHandler interface {
 	Grow(pages uint32) error
 	Destroy()
 	IsInterfaceNil() bool
+}
+
+type ValidatorContext interface {
+	IsReserved(functionName string) bool
 }

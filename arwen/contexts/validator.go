@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const noArity = -1
@@ -33,13 +33,13 @@ func (validator *wasmValidator) verifyMemoryDeclaration(instance wasmer.Instance
 }
 
 func (validator *wasmValidator) verifyFunctions(instance wasmer.InstanceHandler) error {
-	for functionName := range instance.GetExports() {
+	for _, functionName := range instance.GetFunctionNames() {
 		err := validator.verifyValidFunctionName(functionName)
 		if err != nil {
 			return err
 		}
 
-		err = validator.verifyVoidFunction(instance, functionName)
+		err = instance.ValidateVoidFunction(functionName)
 		if err != nil {
 			return err
 		}
@@ -56,7 +56,7 @@ var protectedFunctions = map[string]bool{
 	"completedTxEvent":  true}
 
 func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.InstanceHandler) error {
-	for functionName := range instance.GetExports() {
+	for _, functionName := range instance.GetFunctionNames() {
 		_, found := protectedFunctions[functionName]
 		if found {
 			return arwen.ErrContractInvalid
@@ -65,40 +65,6 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.Instanc
 	}
 
 	return nil
-}
-
-func (validator *wasmValidator) verifyVoidFunction(instance wasmer.InstanceHandler, functionName string) error {
-	inArity, err := validator.getInputArity(instance, functionName)
-	if err != nil {
-		return err
-	}
-
-	outArity, err := validator.getOutputArity(instance, functionName)
-	if err != nil {
-		return err
-	}
-
-	isVoid := inArity == 0 && outArity == 0
-	if !isVoid {
-		return fmt.Errorf("%w: %s", arwen.ErrFunctionNonvoidSignature, functionName)
-	}
-	return nil
-}
-
-func (validator *wasmValidator) getInputArity(instance wasmer.InstanceHandler, functionName string) (int, error) {
-	signature, ok := instance.GetSignature(functionName)
-	if !ok {
-		return noArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
-	}
-	return signature.InputArity, nil
-}
-
-func (validator *wasmValidator) getOutputArity(instance wasmer.InstanceHandler, functionName string) (int, error) {
-	signature, ok := instance.GetSignature(functionName)
-	if !ok {
-		return noArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
-	}
-	return signature.OutputArity, nil
 }
 
 func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {

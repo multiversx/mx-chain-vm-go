@@ -1,26 +1,19 @@
 #include "../elrond/context.h"
 
-void panic() {
-	byte msg[] = "don't call";
-	signalError(msg, 10);
-}
+// No imports provided on purpose.
+// We are using it in a wasmer instance test, in isolation, with no access to the elrondapi package.
+// It is intended exclusively to test the arity checker.
 
 void goodFunction() {
-	panic();
 }
 
 byte wrongReturn() {
-	panic();
 	return 0;
 }
 
 void wrongParams(int param) {
-	panic();
-	int64finish(param);
 }
 
 void* wrongParamsAndReturn(int q, byte *p) {
-	panic();
-	getArgument(q, p);
 	return 0;
 }

@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -732,7 +733,7 @@ func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
 
 func (host *vmHost) callSCMethodIndirect() error {
 	log.Trace("callSCMethodIndirect")
-	function, err := host.Runtime().GetFunctionToCall()
+	functionName, err := host.Runtime().FunctionNameChecked()
 	if err != nil {
 		if errors.Is(err, arwen.ErrNilCallbackFunction) {
 			return nil
@@ -740,7 +741,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 		return err
 	}
 
-	_, err = function()
+	err = host.Runtime().CallSCFunction(functionName)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -925,12 +926,11 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 
 func (host *vmHost) callInitFunction() error {
 	runtime := host.Runtime()
-	init := runtime.GetInitFunction()
-	if init == nil {
+	if !runtime.HasFunction(arwen.InitFunctionName) {
 		return nil
 	}
 
-	_, err := init()
+	err := runtime.CallSCFunction(arwen.InitFunctionName)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -1050,13 +1050,13 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return false, err
 		}
 
-		function, err := runtime.GetFunctionToCall()
+		functionName, err := runtime.FunctionNameChecked()
 		if err != nil {
-			log.Trace("call SC method failed", "error", err, "src", "GetFunctionToCall")
+			log.Trace("call SC method failed", "error", err, "src", "FunctionNameChecked")
 			return false, err
 		}
 
-		_, err = function()
+		err = runtime.CallSCFunction(functionName)
 		if err != nil {
 			err = host.handleBreakpointIfAny(err)
 			log.Trace("breakpoint detected and handled", "err", err)
@@ -1085,7 +1085,7 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return false, err
 		}
 	} else {
-		return false, arwen.ErrInvalidFunction
+		return false, elrondapimeta.ErrInvalidFunction
 	}
 
 	return true, nil

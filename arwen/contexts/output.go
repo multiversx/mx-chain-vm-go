@@ -5,12 +5,13 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -568,13 +569,13 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
-	if errors.Is(err, arwen.ErrFuncNotFound) {
+	if errors.Is(err, elrondapimeta.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
-	if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
+	if errors.Is(err, elrondapimeta.ErrFunctionNonvoidSignature) {
 		return vmcommon.FunctionWrongSignature
 	}
-	if errors.Is(err, arwen.ErrInvalidFunction) {
+	if errors.Is(err, elrondapimeta.ErrInvalidFunction) {
 		return vmcommon.UserError
 	}
 	if errors.Is(err, arwen.ErrInitFuncCalledInRun) {

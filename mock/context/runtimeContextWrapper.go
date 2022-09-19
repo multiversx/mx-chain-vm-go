@@ -80,11 +80,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceFunc func() wasmer.InstanceHandler
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetInstanceExportsFunc func() wasmer.ExportsMap
+	FunctionNameCheckedFunc func() (string, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetInitFunctionFunc func() wasmer.ExportedFunctionCallback
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetFunctionToCallFunc func() (wasmer.ExportedFunctionCallback, error)
+	CallSCFunctionFunc func(string) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetPointsUsedFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -245,18 +243,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.GetInstanceFunc = func() wasmer.InstanceHandler {
 		return runtimeWrapper.runtimeContext.GetInstance()
-	}
-
-	runtimeWrapper.GetInstanceExportsFunc = func() wasmer.ExportsMap {
-		return runtimeWrapper.runtimeContext.GetInstanceExports()
-	}
-
-	runtimeWrapper.GetInitFunctionFunc = func() wasmer.ExportedFunctionCallback {
-		return runtimeWrapper.runtimeContext.GetInitFunction()
-	}
-
-	runtimeWrapper.GetFunctionToCallFunc = func() (wasmer.ExportedFunctionCallback, error) {
-		return runtimeWrapper.runtimeContext.GetFunctionToCall()
 	}
 
 	runtimeWrapper.GetPointsUsedFunc = func() uint64 {
@@ -487,19 +473,12 @@ func (contextWrapper *RuntimeContextWrapper) GetInstance() wasmer.InstanceHandle
 	return contextWrapper.GetInstanceFunc()
 }
 
-// GetInstanceExports calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetInstanceExports() wasmer.ExportsMap {
-	return contextWrapper.GetInstanceExportsFunc()
+func (contextWrapper *RuntimeContextWrapper) FunctionNameChecked() (string, error) {
+	return contextWrapper.FunctionNameCheckedFunc()
 }
 
-// GetInitFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetInitFunction() wasmer.ExportedFunctionCallback {
-	return contextWrapper.GetInitFunctionFunc()
-}
-
-// GetFunctionToCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
-	return contextWrapper.GetFunctionToCallFunc()
+func (contextWrapper *RuntimeContextWrapper) CallSCFunction(functionName string) error {
+	return contextWrapper.CallSCFunctionFunc(functionName)
 }
 
 // GetPointsUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
