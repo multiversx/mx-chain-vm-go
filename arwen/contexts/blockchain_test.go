@@ -2,6 +2,7 @@ package contexts
 
 import (
 	"errors"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	"math/big"
 	"testing"
 
@@ -186,7 +187,6 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 }
 
 func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 
 	mockCrypto := &contextmock.CryptoHookMock{}
@@ -204,6 +204,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
+	expectedCodeHash, _ := hashing.NewHasher().Sha256(expectedCode)
 
 	// GetCode: Test if error is propagated from blockchain hook
 	outputContext.OutputAccountIsNew = true
@@ -233,7 +234,8 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	outputContext.OutputAccountIsNew = true
 	outputContext.OutputAccountMock = &vmcommon.OutputAccount{}
 	codeHash = blockchainContext.GetCodeHash(address)
-	require.Equal(t, 0, len(codeHash))
+
+	require.Equal(t, len(expectedCodeHash), len(codeHash))
 	require.Nil(t, err)
 
 	// GetCodeSize: Test if error is propagated from blockchain hook
