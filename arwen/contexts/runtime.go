@@ -89,7 +89,7 @@ func instanceEvicted(_ interface{}, value interface{}) {
 	if !ok {
 		return
 	}
-	fmt.Println("Some(Instance)----- Evicted")
+	//fmt.Println("Some(Instance)----- Evicted")
 	localContract.instance.Clean()
 	localContract.memory = nil
 }
@@ -137,20 +137,20 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
-		fmt.Println("warmInstanceUsed")
+		//fmt.Println("warmInstanceUsed")
 		//inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
 		//fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
 		return nil
 	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
-		fmt.Println("compiledCodeUsed")
+		//fmt.Println("compiledCodeUsed")
 		//inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
 		//fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
 		return nil
 	}
 
-	fmt.Println("byteCodeUsed")
+	//fmt.Println("byteCodeUsed")
 	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
 }
 
@@ -277,7 +277,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
-	fmt.Println("Get from L1 cache (Warm)")
+	//fmt.Println("Get from L1 cache (Warm)")
 	return true
 }
 
@@ -332,7 +332,7 @@ func (context *runtimeContext) saveWarmInstance() {
 	}
 
 	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
-	fmt.Println("Put into L1 cache (Warm)")
+	//fmt.Println("Put into L1 cache (Warm)")
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true

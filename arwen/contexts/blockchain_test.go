@@ -5,10 +5,10 @@ import (
 	"math/big"
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -186,6 +186,7 @@ func TestBlockchainContext_GetNonceAndIncrease(t *testing.T) {
 }
 
 func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	mockCrypto := &contextmock.CryptoHookMock{}
