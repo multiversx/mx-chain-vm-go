@@ -6,7 +6,6 @@ import (
 	"fmt"
 	builtinMath "math"
 	"math/big"
-	"reflect"
 	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -139,11 +138,15 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		fmt.Println("warmInstanceUsed")
+		//inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
+		//fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
 		return nil
 	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
 		fmt.Println("compiledCodeUsed")
+		//inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
+		//fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
 		return nil
 	}
 
@@ -233,8 +236,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	context.saveCompiledCode()
 	logRuntime.Trace("new instance created", "code", "bytecode")
-	inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
-	fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
+	//inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
+	//fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
 
 	return nil
 }
@@ -458,16 +461,13 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		if context.isCodeHashOnTheStack(lastCodeHash) {
+		if bytes.Compare(context.codeHash, lastCodeHash) == 0 {
 			context.instance.Clean()
-			context.instance = nil
 		} else {
 			context.instance.ShallowClean()
-			context.instance = nil
 		}
 	}
 
-	//context.instance.ShallowClean()
 	context.instance = prevInstance
 }
 
