@@ -21,7 +21,7 @@ func NewInstanceBuilderRecorderMock() *InstanceBuilderRecorderMock {
 // NewInstanceWithOptions - see InstanceBuilderMock.NewInstanceWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,
-	options wasmer.CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (executorinterface.InstanceHandler, error) {
 	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	if err == nil {
@@ -33,7 +33,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 // NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options wasmer.CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (executorinterface.InstanceHandler, error) {
 	instance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {

@@ -14,7 +14,7 @@ type WasmerInstanceBuilder struct {
 // respecting the provided options
 func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 	contractCode []byte,
-	options wasmer.CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (executorinterface.InstanceHandler, error) {
 	return wasmer.NewInstanceWithOptions(contractCode, options)
 }
@@ -23,7 +23,7 @@ func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 // precompiled machine code, respecting the provided options
 func (builder *WasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options wasmer.CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (executorinterface.InstanceHandler, error) {
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }

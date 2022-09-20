@@ -16,7 +16,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -44,7 +43,7 @@ type runtimeContext struct {
 	instanceStack []executorinterface.InstanceHandler
 
 	validator       *wasmValidator
-	instanceBuilder arwen.InstanceBuilder
+	instanceBuilder executorinterface.InstanceBuilder
 	errors          arwen.WrappableError
 }
 
@@ -118,7 +117,7 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+func (context *runtimeContext) ReplaceInstanceBuilder(builder executorinterface.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
 
@@ -154,7 +153,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
+	options := executorinterface.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -181,7 +180,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
+	options := executorinterface.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),

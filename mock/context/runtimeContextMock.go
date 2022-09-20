@@ -45,7 +45,7 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // ReplaceInstanceBuilder mocked method()
-func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ arwen.InstanceBuilder) {
+func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ executorinterface.InstanceBuilder) {
 }
 
 // StartWasmerInstance mocked method

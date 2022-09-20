@@ -111,16 +111,6 @@ type Instance struct {
 	InstanceCtx InstanceContext
 }
 
-type CompilationOptions struct {
-	GasLimit           uint64
-	UnmeteredLocals    uint64
-	MaxMemoryGrow      uint64
-	MaxMemoryGrowDelta uint64
-	OpcodeTrace        bool
-	Metering           bool
-	RuntimeBreakpoints bool
-}
-
 func newWrappedError(target error) error {
 	var lastError string
 	var err error
@@ -153,7 +143,7 @@ func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
 
 func NewInstanceWithOptions(
 	bytes []byte,
-	options CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
@@ -216,7 +206,7 @@ func (instance *Instance) HasMemory() bool {
 
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 

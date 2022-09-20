@@ -106,7 +106,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ReplaceInstanceBuilderFunc func(builder arwen.InstanceBuilder)
+	ReplaceInstanceBuilderFunc func(builder executorinterface.InstanceBuilder)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -296,7 +296,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 	}
-	runtimeWrapper.ReplaceInstanceBuilderFunc = func(builder arwen.InstanceBuilder) {
+	runtimeWrapper.ReplaceInstanceBuilderFunc = func(builder executorinterface.InstanceBuilder) {
 		runtimeWrapper.runtimeContext.ReplaceInstanceBuilder(builder)
 	}
 
@@ -545,7 +545,7 @@ func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExec
 }
 
 // ReplaceInstanceBuilder calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+func (contextWrapper *RuntimeContextWrapper) ReplaceInstanceBuilder(builder executorinterface.InstanceBuilder) {
 	contextWrapper.ReplaceInstanceBuilderFunc(builder)
 }
 

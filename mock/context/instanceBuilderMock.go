@@ -62,7 +62,7 @@ func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasL
 // instance with the provided contract code.
 func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 	contractCode []byte,
-	options wasmer.CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (executorinterface.InstanceHandler, error) {
 
 	instance, ok := builder.getNewCopyOfStoredInstance(contractCode, options.GasLimit)
@@ -77,7 +77,7 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 // instance with the provided precompiled code.
 func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options wasmer.CompilationOptions,
+	options executorinterface.CompilationOptions,
 ) (executorinterface.InstanceHandler, error) {
 	instance, ok := builder.getNewCopyOfStoredInstance(compiledCode, options.GasLimit)
 	if ok {

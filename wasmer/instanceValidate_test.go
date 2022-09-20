@@ -29,7 +29,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	gasLimit := uint64(100000000)
 	path := "./../test/contracts/signatures/output/signatures.wasm"
 	contractCode := getSCCode(path)
-	options := CompilationOptions{
+	options := executorinterface.CompilationOptions{
 		GasLimit:           gasLimit,
 		OpcodeTrace:        false,
 		Metering:           true,

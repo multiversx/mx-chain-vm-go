@@ -157,7 +157,7 @@ type RuntimeContext interface {
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
 
-	ReplaceInstanceBuilder(builder InstanceBuilder)
+	ReplaceInstanceBuilder(builder executorinterface.InstanceBuilder)
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
@@ -316,12 +316,6 @@ type AsyncCallInfoHandler interface {
 	GetGasLimit() uint64
 	GetGasLocked() uint64
 	GetValueBytes() []byte
-}
-
-// InstanceBuilder defines the functionality needed to create Wasmer instances
-type InstanceBuilder interface {
-	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (executorinterface.InstanceHandler, error)
-	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (executorinterface.InstanceHandler, error)
 }
 
 // AsyncContext defines the functionality needed for interacting with the asynchronous execution context
