@@ -109,7 +109,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -217,7 +217,7 @@ func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
 }
 
 // ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
-func ElrondEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+func ElrondEIImports(imports executorinterface.EIFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("getSCAddress", v1_5_getSCAddress, C.v1_5_getSCAddress)

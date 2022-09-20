@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -102,7 +102,7 @@ func (instance *InstanceMock) CallFunction(functionName string) error {
 		return err
 	}
 
-	return elrondapimeta.ErrFuncNotFound
+	return executorinterface.ErrFuncNotFound
 }
 
 func (instance *InstanceMock) HasFunction(functionName string) bool {

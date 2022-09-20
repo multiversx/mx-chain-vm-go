@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +23,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	// Empty imports on purpose.
 	// We have currently no access to the elrondapi package here, due to cyclic imports.
 	// Fortunately, imports are not necessary for this test.
-	imports := elrondapimeta.NewEIFunctions()
+	imports := executorinterface.NewImportFunctions()
 	SetImports(ConvertImports(imports))
 
 	gasLimit := uint64(100000000)

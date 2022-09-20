@@ -40,7 +40,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -70,7 +70,7 @@ const (
 )
 
 // BigFloatImports creates a new wasmer.Imports populated with the BigFloat API methods
-func BigFloatImports(imports elrondapimeta.EIFunctionReceiver) error {
+func BigFloatImports(imports executorinterface.EIFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)

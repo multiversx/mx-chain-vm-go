@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
@@ -248,6 +248,6 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				FunctionNotFound().
-				HasRuntimeErrorAndInfo(elrondapimeta.ErrInvalidFunction.Error(), "thisDoesNotExist")
+				HasRuntimeErrorAndInfo(executorinterface.ErrInvalidFunction.Error(), "thisDoesNotExist")
 		})
 }

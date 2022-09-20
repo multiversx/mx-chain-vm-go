@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
@@ -138,7 +138,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 			err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
 		} else {
 			callbackName := "callBack"
-			if host.Runtime().ValidateCallbackName(callbackName) == elrondapimeta.ErrFuncNotFound {
+			if host.Runtime().ValidateCallbackName(callbackName) == executorinterface.ErrFuncNotFound {
 				callbackName = ""
 			}
 			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{

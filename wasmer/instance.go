@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 const OPCODE_COUNT = 448
@@ -321,7 +321,7 @@ func (instance *Instance) CallFunction(functionName string) error {
 		return err
 	}
 
-	return elrondapimeta.ErrFuncNotFound
+	return executorinterface.ErrFuncNotFound
 }
 
 func (instance *Instance) HasFunction(functionName string) bool {

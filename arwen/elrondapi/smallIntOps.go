@@ -30,7 +30,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 const (
@@ -49,7 +49,7 @@ const (
 )
 
 // SmallIntImports creates a new wasmer.Imports populated with the small int (int64/uint64) API methods
-func SmallIntImports(imports elrondapimeta.EIFunctionReceiver) error {
+func SmallIntImports(imports executorinterface.EIFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("smallIntGetUnsignedArgument", v1_5_smallIntGetUnsignedArgument, C.v1_5_smallIntGetUnsignedArgument)

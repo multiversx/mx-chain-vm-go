@@ -51,8 +51,8 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -91,7 +91,7 @@ const (
 )
 
 // CryptoImports adds some crypto imports to the Wasmer Imports map
-func CryptoImports(imports elrondapimeta.EIFunctionReceiver) error {
+func CryptoImports(imports executorinterface.EIFunctionReceiver) error {
 	err := imports.Append("sha256", v1_5_sha256, C.v1_5_sha256)
 	if err != nil {
 		return err

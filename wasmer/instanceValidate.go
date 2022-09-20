@@ -3,7 +3,7 @@ package wasmer
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 const noArity = -1
@@ -27,7 +27,7 @@ func (instance *Instance) verifyVoidFunction(functionName string) error {
 
 	isVoid := inArity == 0 && outArity == 0
 	if !isVoid {
-		return fmt.Errorf("%w: %s", elrondapimeta.ErrFunctionNonvoidSignature, functionName)
+		return fmt.Errorf("%w: %s", executorinterface.ErrFunctionNonvoidSignature, functionName)
 	}
 	return nil
 }
@@ -35,7 +35,7 @@ func (instance *Instance) verifyVoidFunction(functionName string) error {
 func (instance *Instance) getInputArity(functionName string) (int, error) {
 	signature, ok := instance.getSignature(functionName)
 	if !ok {
-		return noArity, fmt.Errorf("%w: %s", elrondapimeta.ErrFuncNotFound, functionName)
+		return noArity, fmt.Errorf("%w: %s", executorinterface.ErrFuncNotFound, functionName)
 	}
 	return signature.InputArity, nil
 }
@@ -43,7 +43,7 @@ func (instance *Instance) getInputArity(functionName string) (int, error) {
 func (instance *Instance) getOutputArity(functionName string) (int, error) {
 	signature, ok := instance.getSignature(functionName)
 	if !ok {
-		return noArity, fmt.Errorf("%w: %s", elrondapimeta.ErrFuncNotFound, functionName)
+		return noArity, fmt.Errorf("%w: %s", executorinterface.ErrFuncNotFound, functionName)
 	}
 	return signature.OutputArity, nil
 }

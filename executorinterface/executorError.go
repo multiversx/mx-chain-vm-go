@@ -1,4 +1,4 @@
-package elrondapimeta
+package executorinterface
 
 import (
 	"errors"

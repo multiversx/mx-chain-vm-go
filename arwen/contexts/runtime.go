@@ -14,7 +14,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
@@ -746,7 +746,7 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 		return "", arwen.ErrNilCallbackFunction
 	}
 
-	return "", elrondapimeta.ErrFuncNotFound
+	return "", executorinterface.ErrFuncNotFound
 }
 
 func (context *runtimeContext) CallSCFunction(functionName string) error {
@@ -879,7 +879,7 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
 	if !context.HasFunction(callbackName) {
-		return elrondapimeta.ErrFuncNotFound
+		return executorinterface.ErrFuncNotFound
 	}
 
 	return nil

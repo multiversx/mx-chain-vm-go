@@ -1,4 +1,4 @@
-package elrondapimeta
+package executorinterface
 
 import (
 	"fmt"
@@ -49,8 +49,8 @@ type EIFunctions struct {
 	CurrentNamespace string
 }
 
-// NewEIFunctions constructs a new empty `EIFunctions`.
-func NewEIFunctions() *EIFunctions {
+// NewImportFunctions constructs a new empty `EIFunctions`.
+func NewImportFunctions() *EIFunctions {
 	return &EIFunctions{
 		FunctionMap:      make(map[string]EIFunction),
 		CurrentNamespace: "env",
@@ -67,17 +67,17 @@ func (imports *EIFunctions) Append(importName string, implementation interface{}
 	var importType = reflect.TypeOf(implementation)
 
 	if importType.Kind() != reflect.Func {
-		return NewImportedFunctionError(importName, fmt.Sprintf("Imported function `%%s` must be a function; given `%s`.", importType.Kind()))
+		return NewImportFunctionError(importName, fmt.Sprintf("Imported function `%%s` must be a function; given `%s`.", importType.Kind()))
 	}
 
 	var importInputsArity = importType.NumIn()
 
 	if importInputsArity < 1 {
-		return NewImportedFunctionError(importName, "Imported function `%s` must at least have one argument for the instance context.")
+		return NewImportFunctionError(importName, "Imported function `%s` must at least have one argument for the instance context.")
 	}
 
 	if importType.In(0).Kind() != reflect.UnsafePointer {
-		return NewImportedFunctionError(importName, fmt.Sprintf("The instance context of the `%%s` imported function must be of kind `unsafe.Pointer`; given `%s`; is it missing?", importType.In(0).Kind()))
+		return NewImportFunctionError(importName, fmt.Sprintf("The instance context of the `%%s` imported function must be of kind `unsafe.Pointer`; given `%s`; is it missing?", importType.In(0).Kind()))
 	}
 
 	importInputsArity--
@@ -94,12 +94,12 @@ func (imports *EIFunctions) Append(importName string, implementation interface{}
 		case reflect.Int64:
 			wasmInputs[nth] = EIFunctionValueInt64
 		default:
-			return NewImportedFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
+			return NewImportFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
 		}
 	}
 
 	if importOutputsArity > 1 {
-		return NewImportedFunctionError(importName, "The `%s` imported function must have at most one output value.")
+		return NewImportFunctionError(importName, "The `%s` imported function must have at most one output value.")
 	} else if importOutputsArity == 1 {
 		switch importType.Out(0).Kind() {
 		case reflect.Int32:
@@ -107,14 +107,14 @@ func (imports *EIFunctions) Append(importName string, implementation interface{}
 		case reflect.Int64:
 			wasmOutputs[0] = EIFunctionValueInt64
 		default:
-			return NewImportedFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
+			return NewImportFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
 		}
 	}
 
 	var namespace = imports.CurrentNamespace
 
 	if _, duplicate := imports.FunctionMap[importName]; duplicate {
-		return NewImportedFunctionError(importName, "Duplicate imported function `%s`.")
+		return NewImportFunctionError(importName, "Duplicate imported function `%s`.")
 	}
 
 	imports.FunctionMap[importName] = EIFunction{

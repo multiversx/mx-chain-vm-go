@@ -11,7 +11,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -569,13 +569,13 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
-	if errors.Is(err, elrondapimeta.ErrFuncNotFound) {
+	if errors.Is(err, executorinterface.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
-	if errors.Is(err, elrondapimeta.ErrFunctionNonvoidSignature) {
+	if errors.Is(err, executorinterface.ErrFunctionNonvoidSignature) {
 		return vmcommon.FunctionWrongSignature
 	}
-	if errors.Is(err, elrondapimeta.ErrInvalidFunction) {
+	if errors.Is(err, executorinterface.ErrInvalidFunction) {
 		return vmcommon.UserError
 	}
 	if errors.Is(err, arwen.ErrInitFuncCalledInRun) {

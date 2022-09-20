@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 // Import represents an WebAssembly instance imported function.
@@ -74,17 +74,17 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType elrondapimeta.EIFunctionValue) cWasmerValueTag {
+func convertArgType(argType executorinterface.EIFunctionValue) cWasmerValueTag {
 	switch argType {
-	case elrondapimeta.EIFunctionValueInt32:
+	case executorinterface.EIFunctionValueInt32:
 		return cWasmI32
-	case elrondapimeta.EIFunctionValueInt64:
+	case executorinterface.EIFunctionValueInt64:
 		return cWasmI64
 	}
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
-func ConvertImports(eiFunctions *elrondapimeta.EIFunctions) *Imports {
+func ConvertImports(eiFunctions *executorinterface.EIFunctions) *Imports {
 	imports := NewImports()
 
 	for funcName, funcData := range eiFunctions.FunctionMap {

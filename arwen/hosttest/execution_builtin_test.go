@@ -12,7 +12,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
@@ -119,7 +119,7 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ExecutionFailed().
-				ReturnMessage(elrondapimeta.ErrFuncNotFound.Error()).
+				ReturnMessage(executorinterface.ErrFuncNotFound.Error()).
 				GasRemaining(0)
 		})
 }
@@ -293,7 +293,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 		return vmOutput, nil
 	}
 
-	return nil, elrondapimeta.ErrFuncNotFound
+	return nil, executorinterface.ErrFuncNotFound
 }
 
 func getDummyBuiltinFunctionsContainer() vmcommon.BuiltInFunctionContainer {
