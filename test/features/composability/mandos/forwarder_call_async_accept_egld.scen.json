@@ -22,7 +22,7 @@
         },
         {
             "step": "scCall",
-            "txId": "1",
+            "id": "1",
             "tx": {
                 "from": "address:a_user",
                 "to": "sc:forwarder",
@@ -39,7 +39,7 @@
                 "status": "0",
                 "logs": [
                     {
-                        "address": "sc:vault",
+                        "address": "*",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:forwarder",
