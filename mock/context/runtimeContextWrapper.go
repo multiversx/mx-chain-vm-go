@@ -245,6 +245,14 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.GetInstance()
 	}
 
+	runtimeWrapper.FunctionNameCheckedFunc = func() (string, error) {
+		return runtimeWrapper.runtimeContext.FunctionNameChecked()
+	}
+
+	runtimeWrapper.CallSCFunctionFunc = func(functionName string) error {
+		return runtimeWrapper.runtimeContext.CallSCFunction(functionName)
+	}
+
 	runtimeWrapper.GetPointsUsedFunc = func() uint64 {
 		return runtimeWrapper.runtimeContext.GetPointsUsed()
 	}
