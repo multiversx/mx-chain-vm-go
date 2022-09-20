@@ -6,6 +6,7 @@ import (
 	"fmt"
 	builtinMath "math"
 	"math/big"
+	"reflect"
 	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -89,7 +90,7 @@ func instanceEvicted(_ interface{}, value interface{}) {
 	if !ok {
 		return
 	}
-
+	fmt.Println("Some(Instance)----- Evicted")
 	localContract.instance.Clean()
 	localContract.memory = nil
 }
@@ -137,13 +138,16 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
+		fmt.Println("warmInstanceUsed")
 		return nil
 	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
+		fmt.Println("compiledCodeUsed")
 		return nil
 	}
 
+	fmt.Println("byteCodeUsed")
 	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
 }
 
@@ -229,6 +233,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	context.saveCompiledCode()
 	logRuntime.Trace("new instance created", "code", "bytecode")
+	inner := reflect.ValueOf(context.instance).Elem().FieldByName("instance")
+	fmt.Printf("~Instance: %p ~\n", unsafe.Pointer(inner.Pointer()))
 
 	return nil
 }
@@ -268,13 +274,14 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
-
+	fmt.Println("Get from L1 cache (Warm)")
 	return true
 }
 
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
+
 	code, err := blockchain.GetCode(context.codeAddress)
 	if err != nil {
 		return nil, err
@@ -322,6 +329,7 @@ func (context *runtimeContext) saveWarmInstance() {
 	}
 
 	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
+	fmt.Println("Put into L1 cache (Warm)")
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -430,7 +438,7 @@ func (context *runtimeContext) pushInstance() {
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) popInstance(_ []byte) {
+func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -450,7 +458,7 @@ func (context *runtimeContext) popInstance(_ []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		if context.isCodeHashOnTheStack(context.codeHash) {
+		if context.isCodeHashOnTheStack(lastCodeHash) {
 			context.instance.Clean()
 			context.instance = nil
 		} else {
@@ -459,6 +467,7 @@ func (context *runtimeContext) popInstance(_ []byte) {
 		}
 	}
 
+	//context.instance.ShallowClean()
 	context.instance = prevInstance
 }
 
