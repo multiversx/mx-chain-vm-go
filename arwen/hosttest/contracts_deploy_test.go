@@ -4,13 +4,13 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
-	testcommon "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
 

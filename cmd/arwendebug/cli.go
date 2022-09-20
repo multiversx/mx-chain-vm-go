@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwendebug"
+	"github.com/ElrondNetwork/wasm-vm/arwendebug"
 	"github.com/urfave/cli"
 )
 

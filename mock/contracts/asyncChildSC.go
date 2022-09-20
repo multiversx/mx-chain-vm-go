@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 )
 

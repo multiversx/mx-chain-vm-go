@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )

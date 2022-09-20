@@ -8,7 +8,7 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"

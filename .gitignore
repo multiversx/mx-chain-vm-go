@@ -35,5 +35,8 @@ wasm32-unknown-unknown
 test/contracts/**/target
 test/contracts/**/wasm/target
 
+# Mac
+**/.DS_Store
+
 **/Cargo.lock
 arwen/**/__debug_bin

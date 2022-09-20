@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // InstanceBuilderRecorderMock can be passed to RuntimeContext as an InstanceBuilder to

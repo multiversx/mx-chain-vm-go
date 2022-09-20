@@ -1,10 +1,10 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -26,6 +26,7 @@ type VMHostStub struct {
 	MeteringCalled     func() arwen.MeteringContext
 	AsyncCalled        func() arwen.AsyncContext
 	StorageCalled      func() arwen.StorageContext
+	EnableEpochsHandlerCalled   func() vmcommon.EnableEpochsHandler
 	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
 	ManagedTypesCalled func() arwen.ManagedTypesContext
 
@@ -155,6 +156,14 @@ func (vhs *VMHostStub) Metering() arwen.MeteringContext {
 func (vhs *VMHostStub) Storage() arwen.StorageContext {
 	if vhs.StorageCalled != nil {
 		return vhs.StorageCalled()
+	}
+	return nil
+}
+
+// EnableEpochsHandler mocked method
+func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	if vhs.EnableEpochsHandlerCalled != nil {
+		return vhs.EnableEpochsHandlerCalled()
 	}
 	return nil
 }

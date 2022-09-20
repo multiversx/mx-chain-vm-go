@@ -270,6 +270,9 @@ var ErrExponentTooBigOrTooSmall = errors.New("exponent is either too small or to
 // ErrNilEpochNotifier signals that epoch notifier is nil
 var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 
+// ErrNilEnableEpochsHandler signals that enable epochs handler is nil
+var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
+
 // ErrNoAsyncParentContext signals that load parent was called for an async call
 var ErrNoAsyncParentContext = errors.New("this should not be called for async calls (only callbacks and direct calls)")
 

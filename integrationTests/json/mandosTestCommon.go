@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	am "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwenmandos"
-	mc "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/controller"
+	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
+	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )

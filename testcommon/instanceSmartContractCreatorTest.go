@@ -3,18 +3,20 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
 type TestCreateTemplateConfig struct {
-	t             *testing.T
-	address       []byte
-	input         *vmcommon.ContractCreateInput
-	setup         func(arwen.VMHost, *contextmock.BlockchainHookStub)
-	assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
+	t                  *testing.T
+	address            []byte
+	input              *vmcommon.ContractCreateInput
+	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
+	assertResults      func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host               arwen.VMHost
+	blockchainHookStub *contextmock.BlockchainHookStub
 }
 
 // BuildInstanceCreatorTest starts the building process for a contract creation test
@@ -50,15 +52,16 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(
 }
 
 func (callerTest *TestCreateTemplateConfig) runTest() {
-	host, stubBlockchainHook := DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+	if callerTest.host == nil {
+		callerTest.host, callerTest.blockchainHookStub = DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+	}
 	defer func() {
-		host.Reset()
+		callerTest.host.Reset()
 	}()
 
-	callerTest.setup(host, stubBlockchainHook)
-
-	vmOutput, err := host.RunSmartContractCreate(callerTest.input)
+	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)
 
 	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
-	callerTest.assertResults(stubBlockchainHook, verify)
+	callerTest.assertResults(callerTest.blockchainHookStub, verify)
 }

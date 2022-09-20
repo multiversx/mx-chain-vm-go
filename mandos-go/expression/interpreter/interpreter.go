@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"strings"
 
-	fr "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/fileresolver"
-	oj "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mandos-go/orderedjson"
+	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
+	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 

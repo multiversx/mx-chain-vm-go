@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto/factory"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 

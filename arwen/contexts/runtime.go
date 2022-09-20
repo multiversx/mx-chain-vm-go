@@ -8,14 +8,14 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -57,7 +57,6 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	epochNotifier vmcommon.EpochNotifier,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -79,11 +78,6 @@ func NewRuntimeContext(
 	if err != nil {
 		return nil, err
 	}
-
-	if check.IfNil(epochNotifier) {
-		return nil, arwen.ErrNilEpochNotifier
-	}
-	epochNotifier.RegisterNotifyHandler(context)
 
 	context.instanceBuilder = &WasmerInstanceBuilder{}
 	context.InitState()
@@ -604,6 +598,15 @@ func (context *runtimeContext) VerifyContractCode() error {
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
+	}
+
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
+		err = context.validator.verifyProtectedFunctions(context.instance)
+		if err != nil {
+			logRuntime.Trace("verify contract code", "error", err)
+			return err
+		}
 	}
 
 	logRuntime.Trace("verified contract code")

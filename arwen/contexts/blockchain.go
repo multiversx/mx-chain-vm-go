@@ -3,7 +3,7 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"

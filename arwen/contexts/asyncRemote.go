@@ -3,7 +3,7 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"

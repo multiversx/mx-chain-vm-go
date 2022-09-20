@@ -3,9 +3,9 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
 

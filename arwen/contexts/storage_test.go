@@ -6,24 +6,28 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	contextmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/context"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
 var elrondReservedTestPrefix = []byte("RESERVED")
-var epochNotifier = &worldmock.EpochNotifierStub{}
 
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
-	host := &contextmock.VMHostMock{}
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: enableEpochsHandler,
+	}
 	mockBlockchain := worldmock.NewMockWorld()
 
-	storageContext, err := NewStorageContext(host, mockBlockchain, epochNotifier, elrondReservedTestPrefix)
+	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
 	require.Nil(t, err)
 	require.NotNil(t, storageContext)
 }
@@ -63,15 +67,19 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 	mockMetering.GasLeftMock = 20000
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
 
 	host := &contextmock.VMHostMock{
-		OutputContext:   stubOutput,
-		MeteringContext: mockMetering,
-		RuntimeContext:  mockRuntime,
+		OutputContext:            stubOutput,
+		MeteringContext:          mockMetering,
+		RuntimeContext:           mockRuntime,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 
 	keyA := []byte("keyA")
 	valueA := []byte("valueA")
@@ -116,12 +124,17 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 		Data:   []byte("some data"),
 	}
 
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
+
 	host := &contextmock.VMHostMock{
-		OutputContext: mockOutput,
+		OutputContext:            mockOutput,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
 	mockBlockchainHook := worldmock.NewMockWorld()
-	storageContext, _ := NewStorageContext(host, mockBlockchainHook, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
 
 	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
 	require.Equal(t, 1, len(storageUpdates))
@@ -144,14 +157,18 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	mockMetering.BlockGasLimitMock = uint64(15000)
 	mockMetering.GasLeftMock = 20000
 
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
+
 	host := &contextmock.VMHostMock{
-		OutputContext:   mockOutput,
-		MeteringContext: mockMetering,
-		RuntimeContext:  mockRuntime,
+		OutputContext:            mockOutput,
+		MeteringContext:          mockMetering,
+		RuntimeContext:           mockRuntime,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
-
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
 	val1 := []byte("value")
@@ -283,14 +300,18 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	mockMetering.SetGasSchedule(gasMap)
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
 	host := &contextmock.VMHostMock{
-		OutputContext:   mockOutput,
-		MeteringContext: mockMetering,
-		RuntimeContext:  mockRuntime,
+		OutputContext:            mockOutput,
+		MeteringContext:          mockMetering,
+		RuntimeContext:           mockRuntime,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
 	gasProvided := 100
@@ -344,14 +365,19 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	mockMetering.BlockGasLimitMock = uint64(15000)
 	mockMetering.GasLeftMock = 20000
 
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
+
 	host := &contextmock.VMHostMock{
-		OutputContext:   mockOutput,
-		MeteringContext: mockMetering,
-		RuntimeContext:  mockRuntime,
+		OutputContext:            mockOutput,
+		MeteringContext:          mockMetering,
+		RuntimeContext:           mockRuntime,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 	storageContext.SetAddress(address)
 
 	key := storageContext.GetVmProtectedPrefix("something")
@@ -396,10 +422,15 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
 	mockMetering.BlockGasLimitMock = uint64(15000)
 
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
+
 	host := &contextmock.VMHostMock{
-		OutputContext:   mockOutput,
-		MeteringContext: mockMetering,
-		RuntimeContext:  mockRuntime,
+		OutputContext:            mockOutput,
+		MeteringContext:          mockMetering,
+		RuntimeContext:           mockRuntime,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
 	readable := []byte("readable")
@@ -421,7 +452,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		},
 	}
 
-	storageContext, _ := NewStorageContext(host, bcHook, epochNotifier, elrondReservedTestPrefix)
+	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 	storageContext.SetAddress(scAddress)
 
 	key := []byte("key")
@@ -437,8 +468,15 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 
 func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
 
-	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, epochNotifier, elrondReservedTestPrefix)
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: enableEpochsHandler,
+	}
+
+	storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
 	storageContext.PopSetActiveState()
 
 	require.Equal(t, 0, len(storageContext.stateStack))
@@ -446,8 +484,15 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
+	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
+		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
 
-	storageContext, _ := NewStorageContext(&contextmock.VMHostMock{}, &contextmock.BlockchainHookStub{}, epochNotifier, elrondReservedTestPrefix)
+	host := &contextmock.VMHostMock{
+		EnableEpochsHandlerField: enableEpochsHandler,
+	}
+
+	storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
 	storageContext.PopDiscard()
 
 	require.Equal(t, 0, len(storageContext.stateStack))

@@ -5,12 +5,12 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // StateStack defines the functionality for working with a state stack
@@ -39,6 +39,7 @@ type VMHost interface {
 	Output() OutputContext
 	Metering() MeteringContext
 	Storage() StorageContext
+	EnableEpochsHandler() vmcommon.EnableEpochsHandler
 
 	ExecuteESDTTransfer(destination []byte, sender []byte, esdtTransfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
@@ -304,6 +305,7 @@ type StorageContext interface {
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)
+	IsUseDifferentGasCostFlagSet() bool
 	GetVmProtectedPrefix(prefix string) []byte
 }
 

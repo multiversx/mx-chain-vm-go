@@ -1,7 +1,7 @@
 package arwendebug
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 

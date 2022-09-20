@@ -3,11 +3,11 @@ package hosttest
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/contracts"
-	worldmock "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/mock/world"
-	test "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
 var smallKey = []byte("testKey")

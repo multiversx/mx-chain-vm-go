@@ -39,9 +39,9 @@ import (
 	"math/big"
 	"unsafe"
 
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	arwenMath "github.com/ElrondNetwork/arwen-wasm-vm/v1_5/math"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const (
@@ -70,120 +70,120 @@ const (
 )
 
 // BigFloatImports creates a new wasmer.Imports populated with the BigFloat API methods
-func BigFloatImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
+func BigFloatImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
 
-	imports, err := imports.Append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)
+	err := imports.Append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatNewFromFrac", v1_5_bigFloatNewFromFrac, C.v1_5_bigFloatNewFromFrac)
+	err = imports.Append("bigFloatNewFromFrac", v1_5_bigFloatNewFromFrac, C.v1_5_bigFloatNewFromFrac)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatNewFromSci", v1_5_bigFloatNewFromSci, C.v1_5_bigFloatNewFromSci)
+	err = imports.Append("bigFloatNewFromSci", v1_5_bigFloatNewFromSci, C.v1_5_bigFloatNewFromSci)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatAdd", v1_5_bigFloatAdd, C.v1_5_bigFloatAdd)
+	err = imports.Append("bigFloatAdd", v1_5_bigFloatAdd, C.v1_5_bigFloatAdd)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatSub", v1_5_bigFloatSub, C.v1_5_bigFloatSub)
+	err = imports.Append("bigFloatSub", v1_5_bigFloatSub, C.v1_5_bigFloatSub)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatMul", v1_5_bigFloatMul, C.v1_5_bigFloatMul)
+	err = imports.Append("bigFloatMul", v1_5_bigFloatMul, C.v1_5_bigFloatMul)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatDiv", v1_5_bigFloatDiv, C.v1_5_bigFloatDiv)
+	err = imports.Append("bigFloatDiv", v1_5_bigFloatDiv, C.v1_5_bigFloatDiv)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatTruncate", v1_5_bigFloatTruncate, C.v1_5_bigFloatTruncate)
+	err = imports.Append("bigFloatTruncate", v1_5_bigFloatTruncate, C.v1_5_bigFloatTruncate)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatNeg", v1_5_bigFloatNeg, C.v1_5_bigFloatNeg)
+	err = imports.Append("bigFloatNeg", v1_5_bigFloatNeg, C.v1_5_bigFloatNeg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatClone", v1_5_bigFloatClone, C.v1_5_bigFloatClone)
+	err = imports.Append("bigFloatClone", v1_5_bigFloatClone, C.v1_5_bigFloatClone)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatCmp", v1_5_bigFloatCmp, C.v1_5_bigFloatCmp)
+	err = imports.Append("bigFloatCmp", v1_5_bigFloatCmp, C.v1_5_bigFloatCmp)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatAbs", v1_5_bigFloatAbs, C.v1_5_bigFloatAbs)
+	err = imports.Append("bigFloatAbs", v1_5_bigFloatAbs, C.v1_5_bigFloatAbs)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatSign", v1_5_bigFloatSign, C.v1_5_bigFloatSign)
+	err = imports.Append("bigFloatSign", v1_5_bigFloatSign, C.v1_5_bigFloatSign)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatSqrt", v1_5_bigFloatSqrt, C.v1_5_bigFloatSqrt)
+	err = imports.Append("bigFloatSqrt", v1_5_bigFloatSqrt, C.v1_5_bigFloatSqrt)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatPow", v1_5_bigFloatPow, C.v1_5_bigFloatPow)
+	err = imports.Append("bigFloatPow", v1_5_bigFloatPow, C.v1_5_bigFloatPow)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatFloor", v1_5_bigFloatFloor, C.v1_5_bigFloatFloor)
+	err = imports.Append("bigFloatFloor", v1_5_bigFloatFloor, C.v1_5_bigFloatFloor)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatCeil", v1_5_bigFloatCeil, C.v1_5_bigFloatCeil)
+	err = imports.Append("bigFloatCeil", v1_5_bigFloatCeil, C.v1_5_bigFloatCeil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatSetInt64", v1_5_bigFloatSetInt64, C.v1_5_bigFloatSetInt64)
+	err = imports.Append("bigFloatSetInt64", v1_5_bigFloatSetInt64, C.v1_5_bigFloatSetInt64)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatIsInt", v1_5_bigFloatIsInt, C.v1_5_bigFloatIsInt)
+	err = imports.Append("bigFloatIsInt", v1_5_bigFloatIsInt, C.v1_5_bigFloatIsInt)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatSetBigInt", v1_5_bigFloatSetBigInt, C.v1_5_bigFloatSetBigInt)
+	err = imports.Append("bigFloatSetBigInt", v1_5_bigFloatSetBigInt, C.v1_5_bigFloatSetBigInt)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatGetConstPi", v1_5_bigFloatGetConstPi, C.v1_5_bigFloatGetConstPi)
+	err = imports.Append("bigFloatGetConstPi", v1_5_bigFloatGetConstPi, C.v1_5_bigFloatGetConstPi)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("bigFloatGetConstE", v1_5_bigFloatGetConstE, C.v1_5_bigFloatGetConstE)
+	err = imports.Append("bigFloatGetConstE", v1_5_bigFloatGetConstE, C.v1_5_bigFloatGetConstE)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return imports, err
+	return err
 }
 
 func areAllZero(values ...*big.Float) bool {

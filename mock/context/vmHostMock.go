@@ -1,10 +1,10 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/arwen"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/config"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/crypto"
-	"github.com/ElrondNetwork/arwen-wasm-vm/v1_5/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -24,6 +24,7 @@ type VMHostMock struct {
 	OutputContext       arwen.OutputContext
 	MeteringContext     arwen.MeteringContext
 	StorageContext      arwen.StorageContext
+	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
 	ManagedTypesContext arwen.ManagedTypesContext
 
 	SCAPIMethods  *wasmer.Imports
@@ -71,7 +72,12 @@ func (host *VMHostMock) Storage() arwen.StorageContext {
 	return host.StorageContext
 }
 
-// BigInt mocked method
+// EnableEpochsHandler mocked method
+func (host *VMHostMock) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
+	return host.EnableEpochsHandlerField
+}
+
+// ManagedTypes mocked method
 func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }
@@ -202,6 +208,11 @@ func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 // Async mocked method
 func (host *VMHostMock) Async() arwen.AsyncContext {
 	return host.AsyncContext
+}
+
+// FixOOGReturnCodeEnabled mocked method
+func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
+	return true
 }
 
 // StoreInput enqueues the given ContractCallInput
