@@ -6,22 +6,22 @@ import (
 	"unsafe"
 )
 
-// EIFunctionValue represents EI argument types
-type EIFunctionValue int
+// ImportFunctionValue represents EI argument types
+type ImportFunctionValue int
 
 const (
-	EIFunctionValueInt32 EIFunctionValue = iota
-	EIFunctionValueInt64
+	ImportFunctionValueInt32 ImportFunctionValue = iota
+	ImportFunctionValueInt64
 )
 
-// EIFunctionReceiver abstracts an EI imports container, where EI functions are registered.
-type EIFunctionReceiver interface {
+// ImportFunctionReceiver abstracts an EI imports container, where EI functions are registered.
+type ImportFunctionReceiver interface {
 	Namespace(namespace string)
 	Append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error
 }
 
-// EIFunction represents a EI function that gets imported in a constract WASM module.
-type EIFunction struct {
+// ImportFunction represents a EI function that gets imported in a constract WASM module.
+type ImportFunction struct {
 	// An implementation must be of type:
 	// `func(context unsafe.Pointer, arguments ...interface{}) interface{}`.
 	// It represents the real function implementation written in Go.
@@ -32,38 +32,38 @@ type EIFunction struct {
 	CgoPointer unsafe.Pointer
 
 	// The function implementation signature.
-	FunctionInputs []EIFunctionValue
+	FunctionInputs []ImportFunctionValue
 
 	// The function implementation signature.
-	FunctionOutputs []EIFunctionValue
+	FunctionOutputs []ImportFunctionValue
 
 	// The namespace of the imported function.
 	Namespace string
 }
 
-// EIFunctions holds a collection of EI functions.
-type EIFunctions struct {
-	FunctionMap map[string]EIFunction
+// ImportFunctions holds a collection of EI functions.
+type ImportFunctions struct {
+	FunctionMap map[string]ImportFunction
 
 	// Current namespace where to register the import.
 	CurrentNamespace string
 }
 
 // NewImportFunctions constructs a new empty `EIFunctions`.
-func NewImportFunctions() *EIFunctions {
-	return &EIFunctions{
-		FunctionMap:      make(map[string]EIFunction),
+func NewImportFunctions() *ImportFunctions {
+	return &ImportFunctions{
+		FunctionMap:      make(map[string]ImportFunction),
 		CurrentNamespace: "env",
 	}
 }
 
 // Namespace changes the current namespace of the next imported functions.
-func (imports *EIFunctions) Namespace(namespace string) {
+func (imports *ImportFunctions) Namespace(namespace string) {
 	imports.CurrentNamespace = namespace
 }
 
 // Append validates and adds a new imported function to the current structure.
-func (imports *EIFunctions) Append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error {
+func (imports *ImportFunctions) Append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error {
 	var importType = reflect.TypeOf(implementation)
 
 	if importType.Kind() != reflect.Func {
@@ -82,17 +82,17 @@ func (imports *EIFunctions) Append(importName string, implementation interface{}
 
 	importInputsArity--
 	var importOutputsArity = importType.NumOut()
-	var wasmInputs = make([]EIFunctionValue, importInputsArity)
-	var wasmOutputs = make([]EIFunctionValue, importOutputsArity)
+	var wasmInputs = make([]ImportFunctionValue, importInputsArity)
+	var wasmOutputs = make([]ImportFunctionValue, importOutputsArity)
 
 	for nth := 0; nth < importInputsArity; nth++ {
 		var importInput = importType.In(nth + 1)
 
 		switch importInput.Kind() {
 		case reflect.Int32:
-			wasmInputs[nth] = EIFunctionValueInt32
+			wasmInputs[nth] = ImportFunctionValueInt32
 		case reflect.Int64:
-			wasmInputs[nth] = EIFunctionValueInt64
+			wasmInputs[nth] = ImportFunctionValueInt64
 		default:
 			return NewImportFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
 		}
@@ -103,9 +103,9 @@ func (imports *EIFunctions) Append(importName string, implementation interface{}
 	} else if importOutputsArity == 1 {
 		switch importType.Out(0).Kind() {
 		case reflect.Int32:
-			wasmOutputs[0] = EIFunctionValueInt32
+			wasmOutputs[0] = ImportFunctionValueInt32
 		case reflect.Int64:
-			wasmOutputs[0] = EIFunctionValueInt64
+			wasmOutputs[0] = ImportFunctionValueInt64
 		default:
 			return NewImportFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
 		}
@@ -117,7 +117,7 @@ func (imports *EIFunctions) Append(importName string, implementation interface{}
 		return NewImportFunctionError(importName, "Duplicate imported function `%s`.")
 	}
 
-	imports.FunctionMap[importName] = EIFunction{
+	imports.FunctionMap[importName] = ImportFunction{
 		implementation,
 		cgoPointer,
 		wasmInputs,

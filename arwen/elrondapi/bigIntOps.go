@@ -112,8 +112,8 @@ const (
 	bigIntToStringName                = "bigIntToString"
 )
 
-// BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
-func BigIntImports(imports executorinterface.EIFunctionReceiver) error {
+// BigIntImports populates imports with the BigInt API methods.
+func BigIntImports(imports executorinterface.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("bigIntNew", v1_5_bigIntNew, C.v1_5_bigIntNew)

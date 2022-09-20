@@ -91,7 +91,7 @@ const (
 )
 
 // CryptoImports adds some crypto imports to the Wasmer Imports map
-func CryptoImports(imports executorinterface.EIFunctionReceiver) error {
+func CryptoImports(imports executorinterface.ImportFunctionReceiver) error {
 	err := imports.Append("sha256", v1_5_sha256, C.v1_5_sha256)
 	if err != nil {
 		return err

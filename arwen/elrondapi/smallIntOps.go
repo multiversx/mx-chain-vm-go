@@ -48,8 +48,8 @@ const (
 	int64finishName                  = "int64finish"
 )
 
-// SmallIntImports creates a new wasmer.Imports populated with the small int (int64/uint64) API methods
-func SmallIntImports(imports executorinterface.EIFunctionReceiver) error {
+// SmallIntImports populates imports with the small int (int64/uint64) API methods
+func SmallIntImports(imports executorinterface.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("smallIntGetUnsignedArgument", v1_5_smallIntGetUnsignedArgument, C.v1_5_smallIntGetUnsignedArgument)

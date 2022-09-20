@@ -88,8 +88,8 @@ const (
 	managedBufferToHexName                  = "managedBufferToHex"
 )
 
-// ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
-func ManagedEIImports(imports executorinterface.EIFunctionReceiver) error {
+// ManagedEIImports populates imports with variants of the API methods that use managed types only.
+func ManagedEIImports(imports executorinterface.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("managedSCAddress", v1_5_managedSCAddress, C.v1_5_managedSCAddress)

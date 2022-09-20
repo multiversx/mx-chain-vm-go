@@ -74,17 +74,17 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType executorinterface.EIFunctionValue) cWasmerValueTag {
+func convertArgType(argType executorinterface.ImportFunctionValue) cWasmerValueTag {
 	switch argType {
-	case executorinterface.EIFunctionValueInt32:
+	case executorinterface.ImportFunctionValueInt32:
 		return cWasmI32
-	case executorinterface.EIFunctionValueInt64:
+	case executorinterface.ImportFunctionValueInt64:
 		return cWasmI64
 	}
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
-func ConvertImports(eiFunctions *executorinterface.EIFunctions) *Imports {
+func ConvertImports(eiFunctions *executorinterface.ImportFunctions) *Imports {
 	imports := NewImports()
 
 	for funcName, funcData := range eiFunctions.FunctionMap {

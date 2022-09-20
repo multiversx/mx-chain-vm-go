@@ -70,8 +70,8 @@ const (
 	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
-// ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
-func ManagedBufferImports(imports executorinterface.EIFunctionReceiver) error {
+// ManagedBufferImports populates imports with the ManagedBuffer API methods
+func ManagedBufferImports(imports executorinterface.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("mBufferNew", v1_5_mBufferNew, C.v1_5_mBufferNew)
