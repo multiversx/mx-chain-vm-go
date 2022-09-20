@@ -143,9 +143,7 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	}()
 
 	deployNContracts(tb, nContracts, mockWorld, ownerAccount, host, totalTokenSupply)
-	fmt.Println("Deploy completed")
 
-	// create map of contracts/transfers
 	availableContracts := make([]int, nContracts)
 	remainingTransfers := make(map[int]int, nContracts)
 	for i := 0; i < nContracts; i++ {
@@ -153,7 +151,6 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 		remainingTransfers[i] = nTransfers
 	}
 
-	// prepare rand
 	seed := rand.NewSource(time.Now().UnixNano())
 	rand := rand.New(seed)
 
@@ -172,13 +169,9 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 
 			_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 		}
-		fmt.Printf("Executed %d ERC20 transfers for contract %d\n", transfers, contract)
 
-		// update changes
 		remainingTransfers[contract] -= transfers
-		fmt.Printf("Remaining transfers for contract %d: %d transfers\n", contract, remainingTransfers[contract])
 		if remainingTransfers[contract] == 0 {
-			//print("Before delete:", availableContracts)
 			remainingContracts := make([]int, len(availableContracts)-1)
 			j := 0
 			for _, v := range availableContracts {
@@ -190,22 +183,11 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 			}
 			availableContracts = remainingContracts
 			delete(remainingTransfers, contract)
-			fmt.Printf("Deleted contract %d\n", contract)
-			//print("After delete:", availableContracts)
 		}
-		fmt.Println()
 	}
 	for j := 0; j < nContracts; j++ {
 		verifyTransfers(tb, mockWorld, totalTokenSupply, createAddress(j))
 	}
-}
-
-func print(message string, slice []int) {
-	fmt.Printf("%s", message)
-	for _, c := range slice {
-		fmt.Printf(" %d", c)
-	}
-	fmt.Println()
 }
 
 func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
@@ -239,7 +221,6 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 }
 
 func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMHost, error) {
-	// Prepare the host
 	mockWorld := worldmock.NewMockWorld()
 	ownerAccount := &worldmock.Account{
 		Address: owner,

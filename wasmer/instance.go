@@ -261,13 +261,11 @@ func (instance *Instance) SetContextData(data uintptr) {
 
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
-		//fmt.Printf("~ Cleaning instance %p ~\n", instance.instance)
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
 		}
-		//fmt.Println("Destroyed instance --- x-x")
 	}
 
 	instance.Data = nil
@@ -277,7 +275,6 @@ func (instance *Instance) Clean() {
 }
 
 func (instance *Instance) ShallowClean() {
-	//fmt.Printf("~ Shallow cleaning instance %p ~\n", instance.instance)
 	instance.Memory = nil
 	instance.Data = nil
 	instance.DataPointer = nil
