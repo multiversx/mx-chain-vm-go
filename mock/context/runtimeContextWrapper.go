@@ -3,7 +3,7 @@ package mock
 import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -78,7 +78,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetInstanceFunc func() wasmer.InstanceHandler
+	GetInstanceFunc func() executorinterface.InstanceHandler
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	FunctionNameCheckedFunc func() (string, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -241,7 +241,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.VerifyContractCode()
 	}
 
-	runtimeWrapper.GetInstanceFunc = func() wasmer.InstanceHandler {
+	runtimeWrapper.GetInstanceFunc = func() executorinterface.InstanceHandler {
 		return runtimeWrapper.runtimeContext.GetInstance()
 	}
 
@@ -477,7 +477,7 @@ func (contextWrapper *RuntimeContextWrapper) VerifyContractCode() error {
 }
 
 // GetInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetInstance() wasmer.InstanceHandler {
+func (contextWrapper *RuntimeContextWrapper) GetInstance() executorinterface.InstanceHandler {
 	return contextWrapper.GetInstanceFunc()
 }
 

@@ -3,7 +3,7 @@ package mock
 import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -232,7 +232,7 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance mocked method()
-func (r *RuntimeContextMock) GetInstance() wasmer.InstanceHandler {
+func (r *RuntimeContextMock) GetInstance() executorinterface.InstanceHandler {
 	return nil
 }
 

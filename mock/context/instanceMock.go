@@ -18,7 +18,7 @@ type InstanceMock struct {
 	Data            uintptr
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          wasmer.MemoryHandler
+	Memory          executorinterface.MemoryHandler
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -128,12 +128,12 @@ func (instance *InstanceMock) GetData() uintptr {
 }
 
 // GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() wasmer.MemoryHandler {
+func (instance *InstanceMock) GetInstanceCtxMemory() executorinterface.MemoryHandler {
 	return instance.Memory
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() wasmer.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executorinterface.MemoryHandler {
 	return instance.Memory
 }
 

@@ -1,6 +1,7 @@
 package contexts
 
 import (
+	"github.com/ElrondNetwork/wasm-vm/executorinterface"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -14,7 +15,7 @@ type WasmerInstanceBuilder struct {
 func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 	contractCode []byte,
 	options wasmer.CompilationOptions,
-) (wasmer.InstanceHandler, error) {
+) (executorinterface.InstanceHandler, error) {
 	return wasmer.NewInstanceWithOptions(contractCode, options)
 }
 
@@ -23,6 +24,6 @@ func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 func (builder *WasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options wasmer.CompilationOptions,
-) (wasmer.InstanceHandler, error) {
+) (executorinterface.InstanceHandler, error) {
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }

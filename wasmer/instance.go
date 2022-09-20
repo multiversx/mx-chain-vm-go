@@ -103,7 +103,7 @@ type Instance struct {
 	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
-	Memory MemoryHandler
+	Memory executorinterface.MemoryHandler
 
 	Data        *uintptr
 	DataPointer unsafe.Pointer
@@ -347,12 +347,12 @@ func (instance *Instance) GetData() uintptr {
 }
 
 // GetInstanceCtxMemory returns the memory for the instance context
-func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
+func (instance *Instance) GetInstanceCtxMemory() executorinterface.MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
 // GetMemory returns the memory for the instance
-func (instance *Instance) GetMemory() MemoryHandler {
+func (instance *Instance) GetMemory() executorinterface.MemoryHandler {
 	return instance.Memory
 }
 

@@ -27,7 +27,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           wasmer.InstanceHandler
+	instance           executorinterface.InstanceHandler
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
 	codeHash           []byte
@@ -41,7 +41,7 @@ type runtimeContext struct {
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
-	instanceStack []wasmer.InstanceHandler
+	instanceStack []executorinterface.InstanceHandler
 
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
@@ -49,7 +49,7 @@ type runtimeContext struct {
 }
 
 type instanceAndMemory struct {
-	instance wasmer.InstanceHandler
+	instance executorinterface.InstanceHandler
 	memory   []byte
 }
 
@@ -69,7 +69,7 @@ func NewRuntimeContext(
 		host:          host,
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
+		instanceStack: make([]executorinterface.InstanceHandler, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
 	}
@@ -675,7 +675,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
+func (context *runtimeContext) GetInstance() executorinterface.InstanceHandler {
 	return context.instance
 }
 

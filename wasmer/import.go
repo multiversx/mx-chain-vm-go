@@ -134,7 +134,7 @@ func (imports *Imports) Close() {
 // an imported context.
 type InstanceContext struct {
 	context *cWasmerInstanceContextT
-	memory  MemoryHandler
+	memory  executorinterface.MemoryHandler
 }
 
 // NewInstanceContext creates a new wasmer context given a cWasmerInstance and a memory
@@ -162,7 +162,7 @@ func IntoInstanceContextDirect(instanceContext *cWasmerInstanceContextT) Instanc
 }
 
 // Memory returns the current instance memory.
-func (instanceContext *InstanceContext) Memory() MemoryHandler {
+func (instanceContext *InstanceContext) Memory() executorinterface.MemoryHandler {
 	return instanceContext.memory
 }
 
