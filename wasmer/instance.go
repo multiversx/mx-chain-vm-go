@@ -259,6 +259,7 @@ func (instance *Instance) SetContextData(data uintptr) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
+// Clean cleans instance
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
@@ -274,6 +275,7 @@ func (instance *Instance) Clean() {
 	instance.Signatures = nil
 }
 
+// ShallowClean shallow cleans instance
 func (instance *Instance) ShallowClean() {
 	instance.Memory = nil
 	instance.Data = nil
@@ -282,6 +284,7 @@ func (instance *Instance) ShallowClean() {
 	instance.Signatures = nil
 }
 
+// ShallowCopy shallow copies instance
 func (instance *Instance) ShallowCopy() InstanceHandler {
 	copyInstance := &Instance{
 		instance:   instance.instance,

@@ -2,12 +2,12 @@ package contexts
 
 import (
 	"errors"
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	"math/big"
 	"testing"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"

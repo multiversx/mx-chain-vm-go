@@ -143,7 +143,6 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return nil
 	}
 
-	//fmt.Println("byteCodeUsed")
 	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
 }
 
@@ -928,6 +927,7 @@ func (context *runtimeContext) CleanInstance() {
 	return
 }
 
+// ShallowClean shallow cleans the current instance
 func (context *runtimeContext) ShallowClean() {
 	if check.IfNil(context.instance) {
 		return

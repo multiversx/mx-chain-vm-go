@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 )
 
 // AccountMap is a map from address to Account, also implementing the
