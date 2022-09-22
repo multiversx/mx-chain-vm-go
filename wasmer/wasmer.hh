@@ -945,6 +945,8 @@ wasmer_result_t wasmer_instantiate(wasmer_instance_t **instance,
                                    wasmer_import_t *imports,
                                    int imports_len);
 
+wasmer_result_t wasmer_instantiate_reset(wasmer_instance_t *instance);
+
 wasmer_result_t wasmer_instantiate_with_options(wasmer_instance_t **instance,
                                                 uint8_t *wasm_bytes,
                                                 uint32_t wasm_bytes_len,
