@@ -1,5 +1,6 @@
 package executor
 
+// CompilationOptions contains configurations for instantiating an executor instance.
 type CompilationOptions struct {
 	GasLimit           uint64
 	UnmeteredLocals    uint64
