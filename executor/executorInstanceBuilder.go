@@ -1,4 +1,4 @@
-package executorinterface
+package executor
 
 type CompilationOptions struct {
 	GasLimit           uint64

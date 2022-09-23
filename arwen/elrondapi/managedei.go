@@ -51,7 +51,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -89,7 +89,7 @@ const (
 )
 
 // ManagedEIImports populates imports with variants of the API methods that use managed types only.
-func ManagedEIImports(imports executorinterface.ImportFunctionReceiver) error {
+func ManagedEIImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("managedSCAddress", v1_5_managedSCAddress, C.v1_5_managedSCAddress)

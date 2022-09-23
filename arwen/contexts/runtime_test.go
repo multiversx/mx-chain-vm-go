@@ -15,7 +15,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
@@ -28,7 +28,7 @@ const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 var vmType = []byte("type")
 
 func MakeAPIImports() *wasmer.Imports {
-	imports := executorinterface.NewImportFunctions()
+	imports := executor.NewImportFunctions()
 	_ = elrondapi.ElrondEIImports(imports)
 	_ = elrondapi.BigIntImports(imports)
 	_ = elrondapi.BigFloatImports(imports)
@@ -402,7 +402,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	input.Function = "func"
 	runtimeContext.InitStateFromContractCallInput(input)
 	functionName, err = runtimeContext.FunctionNameChecked()
-	require.Equal(t, executorinterface.ErrFuncNotFound, err)
+	require.Equal(t, executor.ErrFuncNotFound, err)
 	require.Empty(t, functionName)
 
 	hasInitFunction := runtimeContext.HasFunction(arwen.InitFunctionName)

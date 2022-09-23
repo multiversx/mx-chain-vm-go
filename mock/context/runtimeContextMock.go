@@ -3,7 +3,7 @@ package mock
 import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -45,7 +45,7 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // ReplaceInstanceBuilder mocked method()
-func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ executorinterface.InstanceBuilder) {
+func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ executor.InstanceBuilder) {
 }
 
 // StartWasmerInstance mocked method
@@ -232,7 +232,7 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance mocked method()
-func (r *RuntimeContextMock) GetInstance() executorinterface.InstanceHandler {
+func (r *RuntimeContextMock) GetInstance() executor.InstanceHandler {
 	return nil
 }
 

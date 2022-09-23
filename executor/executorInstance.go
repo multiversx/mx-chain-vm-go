@@ -1,4 +1,4 @@
-package executorinterface
+package executor
 
 // InstanceHandler defines the functionality of a Wasmer instance
 type InstanceHandler interface {

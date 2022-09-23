@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -18,7 +18,7 @@ type InstanceMock struct {
 	Data            uintptr
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          executorinterface.MemoryHandler
+	Memory          executor.MemoryHandler
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -103,7 +103,7 @@ func (instance *InstanceMock) CallFunction(functionName string) error {
 		return err
 	}
 
-	return executorinterface.ErrFuncNotFound
+	return executor.ErrFuncNotFound
 }
 
 // HasFunction mocked method
@@ -132,12 +132,12 @@ func (instance *InstanceMock) GetData() uintptr {
 }
 
 // GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executorinterface.MemoryHandler {
+func (instance *InstanceMock) GetInstanceCtxMemory() executor.MemoryHandler {
 	return instance.Memory
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() executorinterface.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executor.MemoryHandler {
 	return instance.Memory
 }
 

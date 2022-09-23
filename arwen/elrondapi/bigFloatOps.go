@@ -40,7 +40,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -70,7 +70,7 @@ const (
 )
 
 // BigFloatImports populates imports with the BigFloat API methods
-func BigFloatImports(imports executorinterface.ImportFunctionReceiver) error {
+func BigFloatImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)

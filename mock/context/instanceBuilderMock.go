@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
@@ -46,7 +46,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, hos
 
 // getNewCopyOfStoredInstance retrieves and initializes a stored Wasmer instance, or
 // nil if it doesn't exist
-func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (executorinterface.InstanceHandler, bool) {
+func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (executor.InstanceHandler, bool) {
 	// this is a map to InstanceMock(s), and copies of these instances will be returned (as the method name indicates)
 	instance, ok := builder.InstanceMap[string(code)]
 	if ok {
@@ -62,8 +62,8 @@ func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasL
 // instance with the provided contract code.
 func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 	contractCode []byte,
-	options executorinterface.CompilationOptions,
-) (executorinterface.InstanceHandler, error) {
+	options executor.CompilationOptions,
+) (executor.InstanceHandler, error) {
 
 	instance, ok := builder.getNewCopyOfStoredInstance(contractCode, options.GasLimit)
 	if ok {
@@ -77,8 +77,8 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 // instance with the provided precompiled code.
 func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options executorinterface.CompilationOptions,
-) (executorinterface.InstanceHandler, error) {
+	options executor.CompilationOptions,
+) (executor.InstanceHandler, error) {
 	instance, ok := builder.getNewCopyOfStoredInstance(compiledCode, options.GasLimit)
 	if ok {
 		return instance, nil

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const OPCODE_COUNT = 448
@@ -103,7 +103,7 @@ type Instance struct {
 	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
-	Memory executorinterface.MemoryHandler
+	Memory executor.MemoryHandler
 
 	Data        *uintptr
 	DataPointer unsafe.Pointer
@@ -143,7 +143,7 @@ func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
 
 func NewInstanceWithOptions(
 	bytes []byte,
-	options executorinterface.CompilationOptions,
+	options executor.CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
@@ -206,7 +206,7 @@ func (instance *Instance) HasMemory() bool {
 
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options executorinterface.CompilationOptions,
+	options executor.CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
@@ -312,7 +312,7 @@ func (instance *Instance) CallFunction(functionName string) error {
 		return err
 	}
 
-	return executorinterface.ErrFuncNotFound
+	return executor.ErrFuncNotFound
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
@@ -342,12 +342,12 @@ func (instance *Instance) GetData() uintptr {
 }
 
 // GetInstanceCtxMemory returns the memory for the instance context
-func (instance *Instance) GetInstanceCtxMemory() executorinterface.MemoryHandler {
+func (instance *Instance) GetInstanceCtxMemory() executor.MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
 // GetMemory returns the memory for the instance
-func (instance *Instance) GetMemory() executorinterface.MemoryHandler {
+func (instance *Instance) GetMemory() executor.MemoryHandler {
 	return instance.Memory
 }
 

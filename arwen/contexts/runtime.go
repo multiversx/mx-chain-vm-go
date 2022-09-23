@@ -14,7 +14,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -26,7 +26,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           executorinterface.InstanceHandler
+	instance           executor.InstanceHandler
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
 	codeHash           []byte
@@ -40,15 +40,15 @@ type runtimeContext struct {
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
-	instanceStack []executorinterface.InstanceHandler
+	instanceStack []executor.InstanceHandler
 
 	validator       *wasmValidator
-	instanceBuilder executorinterface.InstanceBuilder
+	instanceBuilder executor.InstanceBuilder
 	errors          arwen.WrappableError
 }
 
 type instanceAndMemory struct {
-	instance executorinterface.InstanceHandler
+	instance executor.InstanceHandler
 	memory   []byte
 }
 
@@ -68,7 +68,7 @@ func NewRuntimeContext(
 		host:          host,
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]executorinterface.InstanceHandler, 0),
+		instanceStack: make([]executor.InstanceHandler, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
 	}
@@ -117,7 +117,7 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceInstanceBuilder(builder executorinterface.InstanceBuilder) {
+func (context *runtimeContext) ReplaceInstanceBuilder(builder executor.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
 
@@ -153,7 +153,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := executorinterface.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -180,7 +180,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := executorinterface.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -674,7 +674,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() executorinterface.InstanceHandler {
+func (context *runtimeContext) GetInstance() executor.InstanceHandler {
 	return context.instance
 }
 
@@ -745,7 +745,7 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 		return "", arwen.ErrNilCallbackFunction
 	}
 
-	return "", executorinterface.ErrFuncNotFound
+	return "", executor.ErrFuncNotFound
 }
 
 // CallSCFunction will execute the function with given name from the loaded contract.
@@ -879,7 +879,7 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
 	if !context.HasFunction(callbackName) {
-		return executorinterface.ErrFuncNotFound
+		return executor.ErrFuncNotFound
 	}
 
 	return nil

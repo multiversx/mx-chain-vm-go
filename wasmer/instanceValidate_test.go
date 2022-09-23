@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,13 +23,13 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	// Empty imports on purpose.
 	// We have currently no access to the elrondapi package here, due to cyclic imports.
 	// Fortunately, imports are not necessary for this test.
-	imports := executorinterface.NewImportFunctions()
+	imports := executor.NewImportFunctions()
 	SetImports(ConvertImports(imports))
 
 	gasLimit := uint64(100000000)
 	path := "./../test/contracts/signatures/output/signatures.wasm"
 	contractCode := getSCCode(path)
-	options := executorinterface.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		OpcodeTrace:        false,
 		Metering:           true,

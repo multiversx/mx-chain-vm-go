@@ -1,4 +1,4 @@
-package executorinterface
+package executor
 
 import (
 	"fmt"

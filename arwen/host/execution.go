@@ -13,7 +13,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -1085,7 +1085,7 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 			return false, err
 		}
 	} else {
-		return false, executorinterface.ErrInvalidFunction
+		return false, executor.ErrInvalidFunction
 	}
 
 	return true, nil

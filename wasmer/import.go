@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // Import represents an WebAssembly instance imported function.
@@ -74,17 +74,17 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType executorinterface.ImportFunctionValue) cWasmerValueTag {
+func convertArgType(argType executor.ImportFunctionValue) cWasmerValueTag {
 	switch argType {
-	case executorinterface.ImportFunctionValueInt32:
+	case executor.ImportFunctionValueInt32:
 		return cWasmI32
-	case executorinterface.ImportFunctionValueInt64:
+	case executor.ImportFunctionValueInt64:
 		return cWasmI64
 	}
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
-func ConvertImports(eiFunctions *executorinterface.ImportFunctions) *Imports {
+func ConvertImports(eiFunctions *executor.ImportFunctions) *Imports {
 	imports := NewImports()
 
 	for funcName, funcData := range eiFunctions.FunctionMap {
@@ -134,7 +134,7 @@ func (imports *Imports) Close() {
 // an imported context.
 type InstanceContext struct {
 	context *cWasmerInstanceContextT
-	memory  executorinterface.MemoryHandler
+	memory  executor.MemoryHandler
 }
 
 // NewInstanceContext creates a new wasmer context given a cWasmerInstance and a memory
@@ -162,7 +162,7 @@ func IntoInstanceContextDirect(instanceContext *cWasmerInstanceContextT) Instanc
 }
 
 // Memory returns the current instance memory.
-func (instanceContext *InstanceContext) Memory() executorinterface.MemoryHandler {
+func (instanceContext *InstanceContext) Memory() executor.MemoryHandler {
 	return instanceContext.memory
 }
 

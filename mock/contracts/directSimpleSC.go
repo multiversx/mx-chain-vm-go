@@ -8,7 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
@@ -239,7 +239,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			err = async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
 		} else {
 			callbackName := "callBack"
-			if host.Runtime().ValidateCallbackName(callbackName) == executorinterface.ErrFuncNotFound {
+			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
 				callbackName = ""
 			}
 			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{

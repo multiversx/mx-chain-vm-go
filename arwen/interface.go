@@ -10,7 +10,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/executorinterface"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -134,7 +134,7 @@ type RuntimeContext interface {
 	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
-	GetInstance() executorinterface.InstanceHandler
+	GetInstance() executor.InstanceHandler
 	FunctionNameChecked() (string, error)
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
@@ -157,7 +157,7 @@ type RuntimeContext interface {
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
 
-	ReplaceInstanceBuilder(builder executorinterface.InstanceBuilder)
+	ReplaceInstanceBuilder(builder executor.InstanceBuilder)
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
