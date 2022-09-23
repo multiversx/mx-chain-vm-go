@@ -749,6 +749,7 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	return "", elrondapimeta.ErrFuncNotFound
 }
 
+// CallSCFunction will execute the function with given name from the loaded contract.
 func (context *runtimeContext) CallSCFunction(functionName string) error {
 	return context.instance.CallFunction(functionName)
 }

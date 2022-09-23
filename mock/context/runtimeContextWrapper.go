@@ -481,10 +481,12 @@ func (contextWrapper *RuntimeContextWrapper) GetInstance() wasmer.InstanceHandle
 	return contextWrapper.GetInstanceFunc()
 }
 
+// FunctionNameChecked calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) FunctionNameChecked() (string, error) {
 	return contextWrapper.FunctionNameCheckedFunc()
 }
 
+// CallSCFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CallSCFunction(functionName string) error {
 	return contextWrapper.CallSCFunctionFunc(functionName)
 }
@@ -541,7 +543,7 @@ func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution
 
 // ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ManagedBufferAPIErrorShouldFailExecution()
+	return contextWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 }
 
 // ReplaceInstanceBuilder calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -586,17 +588,17 @@ func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
 
 // ValidateCallbackName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ValidateCallbackName(callbackName string) error {
-	return contextWrapper.ValidateCallbackName(callbackName)
+	return contextWrapper.runtimeContext.ValidateCallbackName(callbackName)
 }
 
 // HasFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) HasFunction(functionName string) bool {
-	return contextWrapper.HasFunction(functionName)
+	return contextWrapper.runtimeContext.HasFunction(functionName)
 }
 
 // GetPrevTxHash calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
-	return contextWrapper.GetPrevTxHash()
+	return contextWrapper.runtimeContext.GetPrevTxHash()
 }
 
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

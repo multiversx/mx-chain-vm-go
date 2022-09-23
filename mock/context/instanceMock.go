@@ -96,6 +96,7 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
+// CallFunction mocked method
 func (instance *InstanceMock) CallFunction(functionName string) error {
 	if function, ok := instance.Exports[functionName]; ok {
 		_, err := function()
@@ -105,11 +106,13 @@ func (instance *InstanceMock) CallFunction(functionName string) error {
 	return elrondapimeta.ErrFuncNotFound
 }
 
+// HasFunction mocked method
 func (instance *InstanceMock) HasFunction(functionName string) bool {
 	_, ok := instance.Exports[functionName]
 	return ok
 }
 
+// GetFunctionNames mocked method
 func (instance *InstanceMock) GetFunctionNames() []string {
 	var functionNames []string
 	for functionName := range instance.Exports {
@@ -118,6 +121,7 @@ func (instance *InstanceMock) GetFunctionNames() []string {
 	return functionNames
 }
 
+// GetData mocked method
 func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
@@ -149,7 +153,7 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
-// SetMemory -
+// SetMemory mocked method
 func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true
 }

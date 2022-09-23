@@ -248,6 +248,7 @@ func (r *RuntimeContextMock) FunctionNameChecked() (string, error) {
 	return "", nil
 }
 
+// CallSCFunction mocked method
 func (r *RuntimeContextMock) CallSCFunction(functionName string) error {
 	return r.Err
 }
