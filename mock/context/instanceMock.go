@@ -121,7 +121,7 @@ func (instance *InstanceMock) GetFunctionNames() []string {
 	return functionNames
 }
 
-// GetData mocked method
+// ValidateVoidFunction mocked method
 func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
