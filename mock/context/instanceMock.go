@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -95,23 +96,34 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
-// GetExports mocked method
-func (instance *InstanceMock) GetExports() wasmer.ExportsMap {
-	return instance.Exports
-}
-
-// GetSignature mocked method
-func (instance *InstanceMock) GetSignature(functionName string) (*wasmer.ExportedFunctionSignature, bool) {
-	_, ok := instance.Exports[functionName]
-
-	if !ok {
-		return nil, false
+// CallFunction mocked method
+func (instance *InstanceMock) CallFunction(functionName string) error {
+	if function, ok := instance.Exports[functionName]; ok {
+		_, err := function()
+		return err
 	}
 
-	return &wasmer.ExportedFunctionSignature{
-		InputArity:  0,
-		OutputArity: 0,
-	}, true
+	return elrondapimeta.ErrFuncNotFound
+}
+
+// HasFunction mocked method
+func (instance *InstanceMock) HasFunction(functionName string) bool {
+	_, ok := instance.Exports[functionName]
+	return ok
+}
+
+// GetFunctionNames mocked method
+func (instance *InstanceMock) GetFunctionNames() []string {
+	var functionNames []string
+	for functionName := range instance.Exports {
+		functionNames = append(functionNames, functionName)
+	}
+	return functionNames
+}
+
+// ValidateVoidFunction mocked method
+func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
+	return nil
 }
 
 // GetData mocked method
@@ -141,7 +153,7 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
-// SetMemory -
+// SetMemory mocked method
 func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true
 }

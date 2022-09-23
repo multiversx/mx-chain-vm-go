@@ -3,6 +3,8 @@ package arwen
 import (
 	"errors"
 	"fmt"
+
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 )
 
 // ErrNilVMHost signals that the provided VMHost is nil
@@ -62,26 +64,17 @@ var ErrUpgradeFailed = errors.New("upgrade failed")
 // ErrInvalidUpgradeArguments signals that the upgrade process failed due to invalid arguments
 var ErrInvalidUpgradeArguments = fmt.Errorf("%w (invalid arguments)", ErrUpgradeFailed)
 
-// ErrInvalidFunction signals that the function is invalid
-var ErrInvalidFunction = errors.New("invalid function")
-
 // ErrInitFuncCalledInRun signals that the init func was called directly, which is forbidden
-var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", ErrInvalidFunction)
+var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", elrondapimeta.ErrInvalidFunction)
 
 // ErrCallBackFuncCalledInRun signals that a callback func was called directly, which is forbidden
-var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", ErrInvalidFunction)
+var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", elrondapimeta.ErrInvalidFunction)
 
 // ErrCallBackFuncNotExpected signals that an unexpected callback was received
-var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", ErrInvalidFunction)
-
-// ErrFuncNotFound signals that the the function does not exist
-var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
+var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", elrondapimeta.ErrInvalidFunction)
 
 // ErrInvalidFunctionName signals that the function name is invalid
-var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
-
-// ErrFunctionNonvoidSignature signals that the signature for the function is invalid
-var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvalidFunction)
+var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", elrondapimeta.ErrInvalidFunction)
 
 // ErrContractInvalid signals that the contract code is invalid
 var ErrContractInvalid = fmt.Errorf("invalid contract code")

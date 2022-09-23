@@ -5,6 +5,8 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 )
 
 const OPCODE_COUNT = 448
@@ -313,15 +315,35 @@ func (instance *Instance) IsFunctionImported(name string) bool {
 	return cWasmerInstanceIsFunctionImported(instance.instance, name)
 }
 
-// GetExports returns the exports map for the current instance
-func (instance *Instance) GetExports() ExportsMap {
-	return instance.Exports
+// CallFunction executes given function from loaded contract.
+func (instance *Instance) CallFunction(functionName string) error {
+	if function, ok := instance.Exports[functionName]; ok {
+		_, err := function()
+		return err
+	}
+
+	return elrondapimeta.ErrFuncNotFound
 }
 
-// GetSignature returns the signature for the given functionName
-func (instance *Instance) GetSignature(functionName string) (*ExportedFunctionSignature, bool) {
-	signature, ok := instance.Signatures[functionName]
-	return signature, ok
+// HasFunction checks if loaded contract has a function (endpoint) with given name.
+func (instance *Instance) HasFunction(functionName string) bool {
+	_, ok := instance.Exports[functionName]
+	return ok
+}
+
+// GetFunctionNames loads a list of contract function (endpoint) names. Required for validating reserved names.
+func (instance *Instance) GetFunctionNames() []string {
+	var functionNames []string
+	for functionName := range instance.Exports {
+		functionNames = append(functionNames, functionName)
+	}
+	return functionNames
+}
+
+// ValidateVoidFunction checks that no function (endpoint) of the given contract has any parameters or returns any result.
+// All arguments and results should be transferred via the import functions.
+func (instance *Instance) ValidateVoidFunction(functionName string) error {
+	return instance.verifyVoidFunction(functionName)
 }
 
 // GetData returns a pointer for the current instance's data

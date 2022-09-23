@@ -22,7 +22,6 @@ import (
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -360,9 +359,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}()
 	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
-	runtimeContextMock.GetFunctionToCallFunc = func() (wasmer.ExportedFunctionCallback, error) {
+	runtimeContextMock.FunctionNameCheckedFunc = func() (string, error) {
 		interHostsChan <- "waitForHost2"
-		return runtimeContextMock.GetWrappedRuntimeContext().GetFunctionToCall()
+		return runtimeContextMock.GetWrappedRuntimeContext().FunctionNameChecked()
 	}
 	host1.SetRuntimeContext(runtimeContextMock)
 
@@ -380,12 +379,12 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}()
 	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.GetFunctionToCallFunc = func() (wasmer.ExportedFunctionCallback, error) {
+	runtimeContextMock.FunctionNameCheckedFunc = func() (string, error) {
 		// wait to make sure host1 is running also
 		<-interHostsChan
 		// wait for host1 to finish
 		<-interHostsChan
-		return runtimeContextMock.GetWrappedRuntimeContext().GetFunctionToCall()
+		return runtimeContextMock.GetWrappedRuntimeContext().FunctionNameChecked()
 	}
 	host2.SetRuntimeContext(runtimeContextMock)
 

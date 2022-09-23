@@ -395,18 +395,18 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	}
 	runtimeContext.InitStateFromContractCallInput(input)
 
-	f, err := runtimeContext.GetFunctionToCall()
+	functionName, err := runtimeContext.FunctionNameChecked()
 	require.Nil(t, err)
-	require.NotNil(t, f)
+	require.NotEmpty(t, functionName)
 
 	input.Function = "func"
 	runtimeContext.InitStateFromContractCallInput(input)
-	f, err = runtimeContext.GetFunctionToCall()
-	require.Equal(t, arwen.ErrFuncNotFound, err)
-	require.Nil(t, f)
+	functionName, err = runtimeContext.FunctionNameChecked()
+	require.Equal(t, elrondapimeta.ErrFuncNotFound, err)
+	require.Empty(t, functionName)
 
-	initFunc := runtimeContext.GetInitFunction()
-	require.NotNil(t, initFunc)
+	hasInitFunction := runtimeContext.HasFunction(arwen.InitFunctionName)
+	require.True(t, hasInitFunction)
 
 	runtimeContext.ClearWarmInstanceCache()
 	require.Nil(t, runtimeContext.instance)

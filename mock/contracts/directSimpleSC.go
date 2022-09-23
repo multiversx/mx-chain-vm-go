@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 // WasteGasChildMock is an exposed mock contract method
@@ -238,7 +239,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			err = async.RegisterLegacyAsyncCall(test.ParentAddress, callData.ToBytes(), value)
 		} else {
 			callbackName := "callBack"
-			if host.Runtime().ValidateCallbackName(callbackName) == arwen.ErrFuncNotFound {
+			if host.Runtime().ValidateCallbackName(callbackName) == elrondapimeta.ErrFuncNotFound {
 				callbackName = ""
 			}
 			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{

@@ -14,6 +14,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
@@ -678,12 +679,6 @@ func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
 	return context.instance
 }
 
-// GetInstanceExports returns the objects exported by the WASM bytecode after
-// the current Wasmer instance was started.
-func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
-	return context.instance.GetExports()
-}
-
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
 	if check.IfNil(context.instance) {
@@ -736,12 +731,11 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 	return count
 }
 
-// GetFunctionToCall returns the callable contract method to be executed, as exported by the Wasmer instance.
-func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
-	exports := context.instance.GetExports()
-	logRuntime.Trace("get function to call", "function", context.callFunction)
-	if function, ok := exports[context.callFunction]; ok {
-		return function, nil
+// FunctionNameChecked returns the function name, after checking that it exists in the contract.
+func (context *runtimeContext) FunctionNameChecked() (string, error) {
+	functionName := context.Function()
+	if context.instance.HasFunction(functionName) {
+		return functionName, nil
 	}
 
 	// If the requested function is missing from the contract exports, but is
@@ -749,27 +743,15 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 	// to indicate that, not just a missing function.
 	if context.callFunction == arwen.CallbackFunctionName {
 		logRuntime.Trace("missing function " + arwen.CallbackFunctionName)
-		return nil, arwen.ErrNilCallbackFunction
+		return "", arwen.ErrNilCallbackFunction
 	}
 
-	return nil, arwen.ErrFuncNotFound
+	return "", elrondapimeta.ErrFuncNotFound
 }
 
-// GetInitFunction returns the callable contract method which initializes the
-// contract immediately after deployment.
-func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
-	exports := context.instance.GetExports()
-	if init, ok := exports[arwen.InitFunctionName]; ok {
-		return init
-	}
-
-	return nil
-}
-
-// HasCallbackMethod returns true if the current wasmer instance exports has a callback method.
-func (context *runtimeContext) HasCallbackMethod() bool {
-	_, ok := context.instance.GetExports()[arwen.CallbackFunctionName]
-	return ok
+// CallSCFunction will execute the function with given name from the loaded contract.
+func (context *runtimeContext) CallSCFunction(functionName string) error {
+	return context.instance.CallFunction(functionName)
 }
 
 // IsFunctionImported returns true if the WASM module imports the specified function.
@@ -898,15 +880,15 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
 	if !context.HasFunction(callbackName) {
-		return arwen.ErrFuncNotFound
+		return elrondapimeta.ErrFuncNotFound
 	}
 
 	return nil
 }
 
+// HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (context *runtimeContext) HasFunction(functionName string) bool {
-	_, ok := context.instance.GetExports()[functionName]
-	return ok
+	return context.instance.HasFunction(functionName)
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
