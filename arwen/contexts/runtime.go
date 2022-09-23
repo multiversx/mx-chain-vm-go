@@ -748,6 +748,7 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	return "", executorinterface.ErrFuncNotFound
 }
 
+// CallSCFunction will execute the function with given name from the loaded contract.
 func (context *runtimeContext) CallSCFunction(functionName string) error {
 	return context.instance.CallFunction(functionName)
 }
@@ -884,6 +885,7 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	return nil
 }
 
+// HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (context *runtimeContext) HasFunction(functionName string) bool {
 	return context.instance.HasFunction(functionName)
 }

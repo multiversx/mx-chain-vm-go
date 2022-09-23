@@ -305,6 +305,7 @@ func (instance *Instance) IsFunctionImported(name string) bool {
 	return cWasmerInstanceIsFunctionImported(instance.instance, name)
 }
 
+// CallFunction executes given function from loaded contract.
 func (instance *Instance) CallFunction(functionName string) error {
 	if function, ok := instance.Exports[functionName]; ok {
 		_, err := function()
@@ -314,11 +315,13 @@ func (instance *Instance) CallFunction(functionName string) error {
 	return executorinterface.ErrFuncNotFound
 }
 
+// HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (instance *Instance) HasFunction(functionName string) bool {
 	_, ok := instance.Exports[functionName]
 	return ok
 }
 
+// GetFunctionNames loads a list of contract function (endpoint) names. Required for validating reserved names.
 func (instance *Instance) GetFunctionNames() []string {
 	var functionNames []string
 	for functionName := range instance.Exports {
@@ -327,6 +330,8 @@ func (instance *Instance) GetFunctionNames() []string {
 	return functionNames
 }
 
+// ValidateVoidFunction checks that no function (endpoint) of the given contract has any parameters or returns any result.
+// All arguments and results should be transferred via the import functions.
 func (instance *Instance) ValidateVoidFunction(functionName string) error {
 	return instance.verifyVoidFunction(functionName)
 }

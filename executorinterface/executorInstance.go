@@ -31,7 +31,3 @@ type MemoryHandler interface {
 	Destroy()
 	IsInterfaceNil() bool
 }
-
-type ValidatorContext interface {
-	IsReserved(functionName string) bool
-}

@@ -17,6 +17,7 @@ type Account struct {
 	AsyncCallData   string
 	ESDTData        []*ESDTData
 	Update          bool
+	DeveloperReward JSONBigInt
 }
 
 // StorageKeyValuePair is a json key value pair in the storage map.
@@ -42,6 +43,7 @@ type CheckAccount struct {
 	CheckESDTData         []*CheckESDTData
 	IgnoreESDT            bool
 	MoreESDTTokensAllowed bool
+	DeveloperReward       JSONCheckBigInt
 }
 
 // CheckStorageKeyValuePair checks a single entry in storage.
