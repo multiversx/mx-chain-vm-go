@@ -3,13 +3,13 @@ package contexts
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 var logMetering = logger.GetOrCreate("arwen/metering")
@@ -580,7 +580,7 @@ func (context *meteringContext) getSCAddress() string {
 // PrintState dumps the internal state of the meteringContext to the TRACE output
 func (context *meteringContext) PrintState() {
 	sc := context.host.Runtime().GetContextAddress()
-	function := context.host.Runtime().Function()
+	functionName := context.host.Runtime().FunctionName()
 	scAccount, _ := context.host.Output().GetOutputAccount(sc)
 	outputAccounts := context.host.Output().GetOutputAccounts()
 	gasSpent := context.GasSpentByContract()
@@ -590,7 +590,7 @@ func (context *meteringContext) PrintState() {
 	gasUsed = math.SubUint64(gasUsed, gasTransferred)
 	gasUsed = math.SubUint64(gasUsed, gasUsedByOthers)
 	logMetering.Trace("metering state", "┌----------            sc", string(sc))
-	logMetering.Trace("              ", "|                function", function)
+	logMetering.Trace("              ", "|                function", functionName)
 	logMetering.Trace("              ", "|        initial provided", context.initialGasProvided)
 	logMetering.Trace("              ", "|            initial cost", context.initialCost)
 	logMetering.Trace("              ", "|            gas for exec", context.gasForExecution)

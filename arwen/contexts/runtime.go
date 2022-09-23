@@ -494,7 +494,7 @@ func (context *runtimeContext) GetPrevTxHash() []byte {
 }
 
 // Function returns the name of the contract function to be called next
-func (context *runtimeContext) Function() string {
+func (context *runtimeContext) FunctionName() string {
 	return context.callFunction
 }
 
@@ -732,7 +732,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
-	functionName := context.Function()
+	functionName := context.FunctionName()
 	if context.instance.HasFunction(functionName) {
 		return functionName, nil
 	}

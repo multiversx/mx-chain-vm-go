@@ -399,7 +399,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 		output.PopSetActiveState()
 	}
 
-	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetContextAddress()), "function", runtime.Function())
+	log.Trace("ExecuteOnDestContext finished", "sc", string(runtime.GetContextAddress()), "function", runtime.FunctionName())
 	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract, "gas remaining", vmOutput.GasRemaining)
 
 	isAsyncCall := runtime.GetVMInput().CallType == vm.AsynchronousCall
@@ -497,7 +497,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 }
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
-	functionName := host.Runtime().Function()
+	functionName := host.Runtime().FunctionName()
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
@@ -1043,7 +1043,7 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 
 	// TODO refactor this, and apply this condition in other places where a
 	// function is called
-	if runtime.Function() != "" {
+	if runtime.FunctionName() != "" {
 		err := host.verifyAllowedFunctionCall()
 		if err != nil {
 			log.Trace("call SC method failed", "error", err, "src", "verifyAllowedFunctionCall")
@@ -1093,7 +1093,7 @@ func (host *vmHost) callFunctionAndExecuteAsync() (bool, error) {
 
 func (host *vmHost) verifyAllowedFunctionCall() error {
 	runtime := host.Runtime()
-	functionName := runtime.Function()
+	functionName := runtime.FunctionName()
 
 	isInit := functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 	if isInit {

@@ -3,11 +3,11 @@ package testcommon
 import (
 	"testing"
 
+	logger "github.com/ElrondNetwork/elrond-go-logger"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var logMock = logger.GetOrCreate("arwen/mock")
@@ -136,7 +136,7 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 
-		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetContextAddress()), "func", host.Runtime().Function(), "gas", gas)
+		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetContextAddress()), "func", host.Runtime().FunctionName(), "gas", gas)
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
 			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)

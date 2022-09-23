@@ -187,7 +187,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeContext.InitStateFromContractCallInput(callInput)
 	require.Equal(t, []byte("caller"), runtimeContext.GetVMInput().CallerAddr)
 	require.Equal(t, []byte("recipient"), runtimeContext.GetContextAddress())
-	require.Equal(t, "test function", runtimeContext.Function())
+	require.Equal(t, "test function", runtimeContext.FunctionName())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
 	require.Equal(t, arguments, runtimeContext.Arguments())
 
@@ -279,7 +279,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	// check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetContextAddress())
-	require.Equal(t, funcName, runtimeContext.Function())
+	require.Equal(t, funcName, runtimeContext.FunctionName())
 	require.Equal(t, input, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())

@@ -170,7 +170,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 	}
 
 	runtimeWrapper.FunctionFunc = func() string {
-		return runtimeWrapper.runtimeContext.Function()
+		return runtimeWrapper.runtimeContext.FunctionName()
 	}
 
 	runtimeWrapper.ArgumentsFunc = func() [][]byte {
@@ -381,8 +381,8 @@ func (contextWrapper *RuntimeContextWrapper) GetVMType() []byte {
 	return contextWrapper.GetVMTypeFunc()
 }
 
-// Function calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) Function() string {
+// FunctionName calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) FunctionName() string {
 	return contextWrapper.FunctionFunc()
 }
 

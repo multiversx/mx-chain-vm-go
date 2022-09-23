@@ -2063,7 +2063,7 @@ func v1_5_getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetFunction
 	metering.UseGasAndAddTracedGas(getFunctionName, gasToUse)
 
-	function := runtime.Function()
+	function := runtime.FunctionName()
 	err := runtime.MemStore(functionOffset, []byte(function))
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1

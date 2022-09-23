@@ -115,7 +115,7 @@ type RuntimeContext interface {
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
 	GetVMType() []byte
-	Function() string
+	FunctionName() string
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
