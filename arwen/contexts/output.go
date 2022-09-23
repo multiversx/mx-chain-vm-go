@@ -11,7 +11,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -273,7 +273,7 @@ func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]
 
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
-	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().Function()))
+	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().FunctionName()))
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -517,7 +517,7 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	runtime := context.host.Runtime()
-	runtime.AddError(err, runtime.Function())
+	runtime.AddError(err, runtime.FunctionName())
 
 	returnCode := context.resolveReturnCodeFromError(err)
 	returnMessage := context.resolveReturnMessageFromError(err)
@@ -569,13 +569,13 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
-	if errors.Is(err, elrondapimeta.ErrFuncNotFound) {
+	if errors.Is(err, executor.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
-	if errors.Is(err, elrondapimeta.ErrFunctionNonvoidSignature) {
+	if errors.Is(err, executor.ErrFunctionNonvoidSignature) {
 		return vmcommon.FunctionWrongSignature
 	}
-	if errors.Is(err, elrondapimeta.ErrInvalidFunction) {
+	if errors.Is(err, executor.ErrInvalidFunction) {
 		return vmcommon.UserError
 	}
 	if errors.Is(err, arwen.ErrInitFuncCalledInRun) {

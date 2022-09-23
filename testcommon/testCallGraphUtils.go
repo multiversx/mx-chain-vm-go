@@ -6,13 +6,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 )
 
 const generateGraphs = false
@@ -145,7 +145,7 @@ func createGraphContractMockMethod(
 	testConfig *TestConfig) func() *mock.InstanceMock {
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
-		crtFunctionCalled := host.Runtime().Function()
+		crtFunctionCalled := host.Runtime().FunctionName()
 		logAsync.Trace("Executing graph node", "sc", string(host.Runtime().GetContextAddress()), "func", crtFunctionCalled)
 
 		crtNode, runtimeConfig := getGraphNodeAndItsRuntimeConfig(callGraph, host, crtFunctionCalled, runtimeConfigsForCalls)

@@ -6,7 +6,7 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const noArity = -1
@@ -24,7 +24,7 @@ func newWASMValidator(scAPINames vmcommon.FunctionNames, builtInFuncContainer vm
 	}
 }
 
-func (validator *wasmValidator) verifyMemoryDeclaration(instance wasmer.InstanceHandler) error {
+func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.InstanceHandler) error {
 	if !instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
@@ -32,7 +32,7 @@ func (validator *wasmValidator) verifyMemoryDeclaration(instance wasmer.Instance
 	return nil
 }
 
-func (validator *wasmValidator) verifyFunctions(instance wasmer.InstanceHandler) error {
+func (validator *wasmValidator) verifyFunctions(instance executor.InstanceHandler) error {
 	for _, functionName := range instance.GetFunctionNames() {
 		err := validator.verifyValidFunctionName(functionName)
 		if err != nil {
@@ -55,7 +55,7 @@ var protectedFunctions = map[string]bool{
 	"signalError":       true,
 	"completedTxEvent":  true}
 
-func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.InstanceHandler) error {
+func (validator *wasmValidator) verifyProtectedFunctions(instance executor.InstanceHandler) error {
 	for _, functionName := range instance.GetFunctionNames() {
 		_, found := protectedFunctions[functionName]
 		if found {

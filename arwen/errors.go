@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // ErrNilVMHost signals that the provided VMHost is nil
@@ -65,16 +65,16 @@ var ErrUpgradeFailed = errors.New("upgrade failed")
 var ErrInvalidUpgradeArguments = fmt.Errorf("%w (invalid arguments)", ErrUpgradeFailed)
 
 // ErrInitFuncCalledInRun signals that the init func was called directly, which is forbidden
-var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", elrondapimeta.ErrInvalidFunction)
+var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", executor.ErrInvalidFunction)
 
 // ErrCallBackFuncCalledInRun signals that a callback func was called directly, which is forbidden
-var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", elrondapimeta.ErrInvalidFunction)
+var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", executor.ErrInvalidFunction)
 
 // ErrCallBackFuncNotExpected signals that an unexpected callback was received
-var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", elrondapimeta.ErrInvalidFunction)
+var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", executor.ErrInvalidFunction)
 
 // ErrInvalidFunctionName signals that the function name is invalid
-var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", elrondapimeta.ErrInvalidFunction)
+var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", executor.ErrInvalidFunction)
 
 // ErrContractInvalid signals that the contract code is invalid
 var ErrContractInvalid = fmt.Errorf("invalid contract code")

@@ -13,10 +13,10 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -105,7 +105,7 @@ func NewArwenVM(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	imports := elrondapimeta.NewEIFunctions()
+	imports := executor.NewImportFunctions()
 	err := PopulateAllImports(imports)
 	if err != nil {
 		return nil, err

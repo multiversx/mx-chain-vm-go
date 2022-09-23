@@ -63,7 +63,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -112,8 +112,8 @@ const (
 	bigIntToStringName                = "bigIntToString"
 )
 
-// BigIntImports creates a new wasmer.Imports populated with the BigInt API methods
-func BigIntImports(imports elrondapimeta.EIFunctionReceiver) error {
+// BigIntImports populates imports with the BigInt API methods.
+func BigIntImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("bigIntNew", v1_5_bigIntNew, C.v1_5_bigIntNew)

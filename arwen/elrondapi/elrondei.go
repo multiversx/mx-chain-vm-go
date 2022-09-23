@@ -109,7 +109,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -216,8 +216,8 @@ func failIfMoreThanOneESDTTransfer(context unsafe.Pointer) bool {
 	return false
 }
 
-// ElrondEIImports creates a new wasmer.Imports populated with the ElrondEI API methods
-func ElrondEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+// ElrondEIImports populates imports with the ElrondEI API methods.
+func ElrondEIImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("getSCAddress", v1_5_getSCAddress, C.v1_5_getSCAddress)
@@ -2063,7 +2063,7 @@ func v1_5_getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetFunction
 	metering.UseGasAndAddTracedGas(getFunctionName, gasToUse)
 
-	function := runtime.Function()
+	function := runtime.FunctionName()
 	err := runtime.MemStore(functionOffset, []byte(function))
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1

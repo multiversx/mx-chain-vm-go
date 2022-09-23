@@ -10,6 +10,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -114,7 +115,7 @@ type RuntimeContext interface {
 	GetSCCode() ([]byte, error)
 	GetSCCodeSize() uint64
 	GetVMType() []byte
-	Function() string
+	FunctionName() string
 	Arguments() [][]byte
 	GetCurrentTxHash() []byte
 	GetOriginalTxHash() []byte
@@ -133,7 +134,7 @@ type RuntimeContext interface {
 	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
-	GetInstance() wasmer.InstanceHandler
+	GetInstance() executor.InstanceHandler
 	FunctionNameChecked() (string, error)
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
@@ -156,7 +157,7 @@ type RuntimeContext interface {
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
 
-	ReplaceInstanceBuilder(builder InstanceBuilder)
+	ReplaceInstanceBuilder(builder executor.InstanceBuilder)
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
@@ -315,12 +316,6 @@ type AsyncCallInfoHandler interface {
 	GetGasLimit() uint64
 	GetGasLocked() uint64
 	GetValueBytes() []byte
-}
-
-// InstanceBuilder defines the functionality needed to create Wasmer instances
-type InstanceBuilder interface {
-	NewInstanceWithOptions(contractCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
-	NewInstanceFromCompiledCodeWithOptions(compiledCode []byte, options wasmer.CompilationOptions) (wasmer.InstanceHandler, error)
 }
 
 // AsyncContext defines the functionality needed for interacting with the asynchronous execution context

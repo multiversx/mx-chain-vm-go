@@ -3,11 +3,11 @@ package host
 import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // PopulateAllImports fills a function container with all existing EI functions.
-func PopulateAllImports(imports elrondapimeta.EIFunctionReceiver) error {
+func PopulateAllImports(imports executor.ImportFunctionReceiver) error {
 	err := elrondapi.ElrondEIImports(imports)
 	if err != nil {
 		return err

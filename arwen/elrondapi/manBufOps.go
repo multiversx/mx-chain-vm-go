@@ -42,7 +42,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -70,8 +70,8 @@ const (
 	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
-// ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
-func ManagedBufferImports(imports elrondapimeta.EIFunctionReceiver) error {
+// ManagedBufferImports populates imports with the ManagedBuffer API methods
+func ManagedBufferImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
 	err := imports.Append("mBufferNew", v1_5_mBufferNew, C.v1_5_mBufferNew)

@@ -14,9 +14,8 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -27,7 +26,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           wasmer.InstanceHandler
+	instance           executor.InstanceHandler
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
 	codeHash           []byte
@@ -41,15 +40,15 @@ type runtimeContext struct {
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
-	instanceStack []wasmer.InstanceHandler
+	instanceStack []executor.InstanceHandler
 
 	validator       *wasmValidator
-	instanceBuilder arwen.InstanceBuilder
+	instanceBuilder executor.InstanceBuilder
 	errors          arwen.WrappableError
 }
 
 type instanceAndMemory struct {
-	instance wasmer.InstanceHandler
+	instance executor.InstanceHandler
 	memory   []byte
 }
 
@@ -69,7 +68,7 @@ func NewRuntimeContext(
 		host:          host,
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
+		instanceStack: make([]executor.InstanceHandler, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
 	}
@@ -118,7 +117,7 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+func (context *runtimeContext) ReplaceInstanceBuilder(builder executor.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
 
@@ -154,7 +153,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -181,7 +180,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -495,7 +494,7 @@ func (context *runtimeContext) GetPrevTxHash() []byte {
 }
 
 // Function returns the name of the contract function to be called next
-func (context *runtimeContext) Function() string {
+func (context *runtimeContext) FunctionName() string {
 	return context.callFunction
 }
 
@@ -675,7 +674,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
+func (context *runtimeContext) GetInstance() executor.InstanceHandler {
 	return context.instance
 }
 
@@ -733,7 +732,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
-	functionName := context.Function()
+	functionName := context.FunctionName()
 	if context.instance.HasFunction(functionName) {
 		return functionName, nil
 	}
@@ -746,7 +745,7 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 		return "", arwen.ErrNilCallbackFunction
 	}
 
-	return "", elrondapimeta.ErrFuncNotFound
+	return "", executor.ErrFuncNotFound
 }
 
 // CallSCFunction will execute the function with given name from the loaded contract.
@@ -880,7 +879,7 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 		return arwen.ErrCannotUseBuiltinAsCallback
 	}
 	if !context.HasFunction(callbackName) {
-		return elrondapimeta.ErrFuncNotFound
+		return executor.ErrFuncNotFound
 	}
 
 	return nil

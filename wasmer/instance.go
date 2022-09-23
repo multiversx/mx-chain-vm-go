@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const OPCODE_COUNT = 448
@@ -103,22 +103,12 @@ type Instance struct {
 	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
-	Memory MemoryHandler
+	Memory executor.MemoryHandler
 
 	Data        *uintptr
 	DataPointer unsafe.Pointer
 
 	InstanceCtx InstanceContext
-}
-
-type CompilationOptions struct {
-	GasLimit           uint64
-	UnmeteredLocals    uint64
-	MaxMemoryGrow      uint64
-	MaxMemoryGrowDelta uint64
-	OpcodeTrace        bool
-	Metering           bool
-	RuntimeBreakpoints bool
 }
 
 func newWrappedError(target error) error {
@@ -153,7 +143,7 @@ func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
 
 func NewInstanceWithOptions(
 	bytes []byte,
-	options CompilationOptions,
+	options executor.CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
@@ -216,7 +206,7 @@ func (instance *Instance) HasMemory() bool {
 
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
-	options CompilationOptions,
+	options executor.CompilationOptions,
 ) (*Instance, error) {
 	var c_instance *cWasmerInstanceT
 
@@ -322,7 +312,7 @@ func (instance *Instance) CallFunction(functionName string) error {
 		return err
 	}
 
-	return elrondapimeta.ErrFuncNotFound
+	return executor.ErrFuncNotFound
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
@@ -352,12 +342,12 @@ func (instance *Instance) GetData() uintptr {
 }
 
 // GetInstanceCtxMemory returns the memory for the instance context
-func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
+func (instance *Instance) GetInstanceCtxMemory() executor.MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
 // GetMemory returns the memory for the instance
-func (instance *Instance) GetMemory() MemoryHandler {
+func (instance *Instance) GetMemory() executor.MemoryHandler {
 	return instance.Memory
 }
 
