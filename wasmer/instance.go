@@ -275,6 +275,16 @@ func (instance *Instance) Clean() {
 	instance.Signatures = nil
 }
 
+func (instance *Instance) PrintMemory() {
+	for addr, value := range instance.GetMemory().Data() {
+		if addr%32 == 0 {
+			fmt.Printf("\n%d: ", addr)
+		}
+		fmt.Printf("%d ", value)
+	}
+	fmt.Println()
+}
+
 // ShallowClean shallow cleans instance
 func (instance *Instance) ShallowClean() {
 	instance.Memory = nil
