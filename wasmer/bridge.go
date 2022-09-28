@@ -355,6 +355,11 @@ func cWasmerMemoryDestroy(memory *cWasmerMemoryT) {
 	)
 }
 
+func cWasmerInstanceResetOptions(reset_memories bool, reset_globals bool) {
+	C.wasmer_instance_reset_options(
+		(C.bool)(reset_memories), (C.bool)(reset_globals))
+}
+
 func cCString(string string) *cChar {
 	return (*cChar)(C.CString(string))
 }

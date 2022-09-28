@@ -367,18 +367,18 @@ func (instance *Instance) GetMemory() MemoryHandler {
 }
 
 // SetMemory sets the memory for the instance returns true if success
-func (instance *Instance) SetMemory(cleanMemory []byte) bool {
+func (instance *Instance) SetMemory(data []byte) bool {
 	if check.IfNil(instance.GetMemory()) {
 		return false
 	}
 
 	instanceMemory := instance.GetMemory().Data()
-	if len(instanceMemory) != len(cleanMemory) {
+	if len(instanceMemory) != len(data) {
 		// TODO shrink the instance memory instead and return true
 		return false
 	}
 
-	copy(instanceMemory, cleanMemory)
+	copy(instanceMemory, data)
 	// todo: refactor
 	cWasmerInstantiateReset(instance.instance)
 	return true

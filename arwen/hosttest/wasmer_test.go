@@ -15,7 +15,7 @@ func TestWASMGlobals_NoGlobals(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCodeModule("wasmglobals/noglobals", "noglobals", "../../"))).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/noglobals", "noglobals", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
 			WithFunction("getnumber").
@@ -33,7 +33,7 @@ func TestWASMGlobals_SingleMutable(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCodeModule("wasmglobals/single-mutable", "single-mutable", "../../"))).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/single-mutable", "single-mutable", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
 			WithFunction("getglobal").
@@ -45,13 +45,25 @@ func TestWASMGlobals_SingleMutable(t *testing.T) {
 		})
 }
 
-func TestWASMGlobals_MultipleMutables_WithReset(t *testing.T) {
-	arwen.SetLoggingForTests()
+func TestWASMGlobals_ImportedGlobal(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/imported-global", "imported-global", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("get_imported_global").
+			Build()).
+		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
+}
 
+func TestWASMGlobals_MultipleMutables_WithReset(t *testing.T) {
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCodeModule("wasmglobals/multiple-mutable", "multiple-mutable", "../../"))).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/multiple-mutable", "multiple-mutable", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
 			WithFunction("increment_globals").
@@ -74,7 +86,7 @@ func TestWASMGlobals_SingleImmutable(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCodeModule("wasmglobals/single-immutable", "single-immutable", "../../"))).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/single-immutable", "single-immutable", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
 			WithFunction("getglobal").
