@@ -3,11 +3,11 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
@@ -190,8 +190,10 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	// further and execute the error callback of this AsyncCall.
 	if vmOutput.ReturnCode != vmcommon.Ok {
 		asyncCall.Reject()
-		callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
-		context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, 0)
+		if asyncCall.HasCallback() {
+			callbackVMOutput, _, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, 0, err)
+			context.finishAsyncLocalCallbackExecution(callbackVMOutput, callbackErr, 0)
+		}
 	}
 
 	// The gas that remains after executing the in-shard half of the built-in
