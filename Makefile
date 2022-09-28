@@ -51,6 +51,7 @@ build-test-contracts-wat:
 	cd test/contracts/wasmbacking/imported-global/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-exceeded-max-pages/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-exceeded-pages/output && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-grow/output/ && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-min-pages-greater-than-max-pages/output && wat2wasm --no-check *.wat
 	cd test/contracts/wasmbacking/mem-multiple-max-pages/output/ && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-multiple-pages/output/ && wat2wasm *.wat

@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 func TestWASMGlobals_NoGlobals(t *testing.T) {
@@ -241,4 +242,26 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
+}
+
+func TestWASMMemories_WithGrow(t *testing.T) {
+	arwen.SetLoggingForTests()
+	wasmer.SetInstanceResetOptions(true, true)
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-grow", "mem-grow", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("main").
+			Build())
+
+	assertFunc := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.Ok().ReturnData(
+			big.NewInt(42).Bytes(),
+		)
+	}
+
+	testCase.AndAssertResultsWithoutReset(assertFunc)
+	testCase.AndAssertResultsWithoutReset(assertFunc)
 }

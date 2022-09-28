@@ -5,10 +5,10 @@
   (type (;1;) (func))
   (import "env" "int64finish" (func (;0;) (type 0)))
   (func (;1;) (type 1)
-    global.get 0
+    global.get 1
     i64.const 1
     i64.add
-    global.set 0
+    global.set 1
 
     global.get 1
     call 0
