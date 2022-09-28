@@ -137,18 +137,6 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 		})
 }
 
-func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
-	test.BuildInstanceCreatorTest(t).
-		WithInput(test.CreateTestContractCreateInputBuilder().
-			WithGasProvided(1000).
-			WithContractCode(test.GetTestSCCode("memoryless", "../../")).
-			Build()).
-		WithAddress(newAddress).
-		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.ContractInvalid()
-		})
-}
-
 func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	test.BuildInstanceCreatorTest(t).
 		WithInput(test.CreateTestContractCreateInputBuilder().

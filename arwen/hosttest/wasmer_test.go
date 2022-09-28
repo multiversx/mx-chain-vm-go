@@ -96,9 +96,18 @@ func TestWASMGlobals_SingleImmutable(t *testing.T) {
 		})
 }
 
-// TODO: ?Should we move memoryless test here
+func TestWasmMemories_DeployWithoutMemory(t *testing.T) {
+	test.BuildInstanceCreatorTest(t).
+		WithInput(test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(1000).
+			WithContractCode(test.GetTestSCCodeModule("wasmbacking/memoryless", "memoryless", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
+}
 
-// FIXME: Talk with @Camil about this
 func TestWASMMemories_NoPages(t *testing.T) {
 	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
@@ -107,15 +116,13 @@ func TestWASMMemories_NoPages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-no-pages", "mem-no-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			//verify.ContractInvalid()
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
 
-// FIXME: Talk with @Camil about this
 func TestWASMMemories_NoMaxPages(t *testing.T) {
 	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
@@ -124,10 +131,9 @@ func TestWASMMemories_NoMaxPages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-no-max-pages", "mem-no-max-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			//verify.ContractInvalid()
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
@@ -140,7 +146,7 @@ func TestWASMMemories_SinglePage(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-single-page", "mem-single-page", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
@@ -155,7 +161,7 @@ func TestWASMMemories_MultiplePages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-multiple-pages", "mem-multiple-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
@@ -170,7 +176,7 @@ func TestWASMMemories_MultipleMaxPages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-multiple-max-pages", "mem-multiple-max-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
@@ -185,7 +191,7 @@ func TestWASMMemories_ExceededPages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-exceeded-pages", "mem-exceeded-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
@@ -200,14 +206,13 @@ func TestWASMMemories_ExceededMaxPages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-exceeded-max-pages", "mem-exceeded-max-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
 
-// FIXME: use Hex DUMP to change binary
 func TestWASMMemories_MinPagesGreaterThanMaxPages(t *testing.T) {
 	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
@@ -216,14 +221,13 @@ func TestWASMMemories_MinPagesGreaterThanMaxPages(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-min-pages-greater-than-max-pages", "mem-min-pages-greater-than-max-pages", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
 
-// FIXME: use HEX DUMP to change binary
 func TestWASMMemories_MultipleMemories(t *testing.T) {
 	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
@@ -232,7 +236,7 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 				WithCode(test.GetTestSCCodeModule("wasmbacking/multiple-memories", "multiple-memories", "../../"))).
 		WithInput(test.CreateTestContractCallInputBuilder().
 			WithGasProvided(100000).
-			WithFunction("empty").
+			WithFunction("main").
 			Build()).
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()

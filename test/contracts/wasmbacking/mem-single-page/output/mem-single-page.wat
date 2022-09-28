@@ -8,5 +8,5 @@
 	)
   (memory $mem 1)
   (export "memory" (memory $mem))
-  (export "empty" (func $main))
+  (export "main" (func $main))
 )

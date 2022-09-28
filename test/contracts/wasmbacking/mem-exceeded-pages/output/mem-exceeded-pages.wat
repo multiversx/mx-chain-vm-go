@@ -3,5 +3,5 @@
   (func $main (type $void))
   (memory $mem 42)
   (export "memory" (memory $mem))
-  (export "empty" (func $main))
+  (export "main" (func $main))
 )

@@ -1,3 +1,5 @@
+;; compile with:
+;; wat2wasm --no-check
 (module
   (type $void (func))
   (func $main (type $void))
@@ -6,10 +8,6 @@
   (memory $mem3 3 6)
   (memory $mem4 4 8)
   (memory $mem5 5 10)
-  (export "memory1" (memory $mem1))
-  (export "memory2" (memory $mem2))
-  (export "memory3" (memory $mem3))
-  (export "memory4" (memory $mem4))
-  (export "memory5" (memory $mem5))
-  (export "empty" (func $main))
+  (export "memory" (memory $mem1))
+  (export "main" (func $main))
 )

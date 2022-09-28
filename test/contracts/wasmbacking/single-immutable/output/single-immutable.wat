@@ -1,7 +1,5 @@
-;; This WASM module was compiled with wat2wasm, but subsequently modified with
-;; a HEX editor to change `global.get 0` and `global.set 0` to `global.get 1`
-;; and `global.set 1`. Because global 1 is immutable, wat2wasm would have not
-;; allowed compiling with `global.set 1` (but such a case was intended).
+;; compile with:
+;; wat2wasm --no-check
 (module
   (type (;0;) (func (param i64)))
   (type (;1;) (func))
