@@ -1004,8 +1004,8 @@ func (host *vmHost) callSCMethodAsynchronousCallBack() error {
 
 	async.SetCallbackParentCall(asyncCall)
 
-	callbackName := asyncCall.GetCallbackName()
-	if callbackName != "" {
+	if asyncCall.HasCallback() {
+		callbackName := asyncCall.GetCallbackName()
 		runtime.SetCustomCallFunction(callbackName)
 		isCallComplete, callbackErr := host.callFunctionAndExecuteAsync()
 
