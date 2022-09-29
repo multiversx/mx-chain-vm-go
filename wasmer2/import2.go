@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // ImportedFunctionError represents any kind of errors related to a
@@ -90,17 +90,17 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType elrondapimeta.EIFunctionValue) cWasmerValueTag {
+func convertArgType(argType executor.ImportFunctionValue) cWasmerValueTag {
 	switch argType {
-	case elrondapimeta.EIFunctionValueInt32:
+	case executor.ImportFunctionValueInt32:
 		return cWasmI32
-	case elrondapimeta.EIFunctionValueInt64:
+	case executor.ImportFunctionValueInt64:
 		return cWasmI64
 	}
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
-func ConvertImports(eiFunctions *elrondapimeta.EIFunctions) *Imports {
+func ConvertImports(eiFunctions *executor.ImportFunctions) *Imports {
 	imports := NewImports()
 
 	for funcName, funcData := range eiFunctions.FunctionMap {

@@ -44,7 +44,7 @@ func GetExecutionInfo() (string, error) {
 	var errorMessage = make([]cChar, errorLength)
 	var errorMessagePointer = (*cChar)(unsafe.Pointer(&errorMessage[0]))
 
-	var errorResult = cWasmerExcutionInfoMessage(errorMessagePointer, errorLength)
+	var errorResult = cWasmerExcutionInfoFlush(errorMessagePointer, errorLength)
 
 	if errorResult == -1 {
 		return "", errors.New("cannot read execution info")

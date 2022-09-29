@@ -29,14 +29,15 @@ type cWasmerImportFuncT C.vm_exec_import_func_t
 type cWasmerImportT C.vm_exec_import_t
 
 // type cWasmerInstanceContextT C.vm_exec_instance_context_t
-// type cWasmerInstanceT C.vm_exec_instance_t
+type cWasmerInstanceT C.vm_exec_instance_t
+
 // type cWasmerMemoryT C.vm_exec_memory_t
 type cWasmerResultT C.vm_exec_result_t
 
 // type cWasmerValueT C.vm_exec_value_t
 type cWasmerValueTag C.vm_exec_value_tag
 
-// type cWasmerCompilationOptions C.vm_exec_compilation_options_t
+type cWasmerCompilationOptions C.vm_exec_compilation_options_t
 
 // const cWasmFunction = C.WASM_FUNCTION
 // const cWasmGlobal = C.WASM_GLOBAL
@@ -246,23 +247,29 @@ func cWasmerImportFuncNew(
 	))
 }
 
-// func cWasmerInstanceCall(
-// 	instance *cWasmerInstanceT,
-// 	name *cChar,
-// 	parameters *cWasmerValueT,
-// 	parametersLength cUint32T,
-// 	results *cWasmerValueT,
-// 	resultsLength cUint32T,
-// ) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_instance_call(
-// 		(*C.vm_exec_instance_t)(instance),
-// 		(*C.char)(name),
-// 		(*C.vm_exec_value_t)(parameters),
-// 		(C.uint32_t)(parametersLength),
-// 		(*C.vm_exec_value_t)(results),
-// 		(C.uint32_t)(resultsLength),
-// 	))
-// }
+func cWasmerInstanceCall(
+	instance *cWasmerInstanceT,
+	name *cChar,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_call(
+		(*C.vm_exec_instance_t)(instance),
+		(*C.char)(name),
+	))
+}
+
+func cWasmerInstanceExportedFunctionNamesLength(instance *cWasmerInstanceT) cInt {
+	return (cInt)(C.vm_exported_function_names_length(
+		(*C.vm_exec_instance_t)(instance),
+	))
+}
+
+func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cChar, length cInt) cInt {
+	return (cInt)(C.vm_exported_function_names(
+		(*C.vm_exec_instance_t)(instance),
+		(*C.char)(buffer),
+		(C.int)(length),
+	))
+}
 
 // func cWasmerInstanceContextGet(instance *cWasmerInstanceT) *cWasmerInstanceContextT {
 // 	return (*cWasmerInstanceContextT)(C.vm_exec_instance_context_get(
@@ -290,11 +297,11 @@ func cWasmerImportFuncNew(
 // 	))
 // }
 
-// func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
-// 	C.vm_exec_instance_destroy(
-// 		(*C.vm_exec_instance_t)(instance),
-// 	)
-// }
+func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
+	C.vm_exec_instance_destroy(
+		(*C.vm_exec_instance_t)(instance),
+	)
+}
 
 // func cWasmerInstanceExports(instance *cWasmerInstanceT, exports **cWasmerExportsT) {
 // 	C.vm_exec_instance_exports(
@@ -303,19 +310,19 @@ func cWasmerImportFuncNew(
 // 	)
 // }
 
-// func cWasmerInstantiateWithOptions(
-// 	instance **cWasmerInstanceT,
-// 	wasmBytes *cUchar,
-// 	wasmBytesLength cUint,
-// 	options *cWasmerCompilationOptions,
-// ) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_instantiate_with_options(
-// 		(**C.vm_exec_instance_t)(unsafe.Pointer(instance)),
-// 		(*C.uchar)(wasmBytes),
-// 		(C.uint)(wasmBytesLength),
-// 		(*C.vm_exec_compilation_options_t)(options),
-// 	))
-// }
+func cWasmerInstantiateWithOptions(
+	instance **cWasmerInstanceT,
+	wasmBytes *cUchar,
+	wasmBytesLength cUint,
+	options *cWasmerCompilationOptions,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_new_instance(
+		(**C.vm_exec_instance_t)(unsafe.Pointer(instance)),
+		(*C.uchar)(wasmBytes),
+		(C.uint)(wasmBytesLength),
+		(*C.vm_exec_compilation_options_t)(options),
+	))
+}
 
 func cWasmerLastErrorLength() cInt {
 	return (cInt)(C.vm_exec_last_error_length())
@@ -332,8 +339,8 @@ func cWasmerExcutionInfoLength() cInt {
 	return (cInt)(C.vm_exec_execution_info_length())
 }
 
-func cWasmerExcutionInfoMessage(buffer *cChar, length cInt) cInt {
-	return (cInt)(C.vm_exec_execution_info_message(
+func cWasmerExcutionInfoFlush(buffer *cChar, length cInt) cInt {
+	return (cInt)(C.vm_exec_execution_info_flush(
 		(*C.char)(buffer),
 		(C.int)(length),
 	))
