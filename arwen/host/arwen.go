@@ -411,7 +411,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				err = arwen.ErrExecutionPanicked
 			}
 
-			host.Runtime().CleanInstance()
+			//host.Runtime().CleanInstance()
 			close(done)
 		}()
 

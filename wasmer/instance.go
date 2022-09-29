@@ -378,8 +378,8 @@ func (instance *Instance) SetMemory(data []byte) bool {
 		return false
 	}
 
-	copy(instanceMemory, data)
-	// todo: refactor
+	//copy(instanceMemory, data)
+	// TODO: refactor
 	cWasmerInstantiateReset(instance.instance)
 	return true
 }

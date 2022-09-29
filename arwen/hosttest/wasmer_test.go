@@ -8,6 +8,7 @@ import (
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWASMGlobals_NoGlobals(t *testing.T) {
@@ -260,6 +261,32 @@ func TestWASMMemories_WithGrow(t *testing.T) {
 		verify.Ok().ReturnData(
 			big.NewInt(42).Bytes(),
 		)
+	}
+
+	testCase.AndAssertResultsWithoutReset(assertFunc)
+	testCase.AndAssertResultsWithoutReset(assertFunc)
+}
+
+func TestWASMMemories_ResetContent(t *testing.T) {
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-content", "mem-content", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("main").
+			Build())
+
+	keyword := "ok"
+	keywordOffset := 1024
+
+	assertFunc := func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.Ok().ReturnData([]byte(keyword))
+		instance := host.Runtime().GetInstance()
+		require.NotNil(verify.T, instance)
+		memory := instance.GetMemory().Data()
+		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
+		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
 
 	testCase.AndAssertResultsWithoutReset(assertFunc)

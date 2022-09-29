@@ -929,13 +929,6 @@ func (context *runtimeContext) CleanInstance() {
 
 // ShallowClean shallow cleans the current instance
 func (context *runtimeContext) ShallowClean() {
-	if check.IfNil(context.instance) {
-		return
-	}
-
-	context.instance.ShallowClean()
-	context.instance = nil
-	return
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
