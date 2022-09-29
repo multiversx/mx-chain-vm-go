@@ -234,6 +234,8 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance, const char 
  */
 void vm_exec_instance_destroy(vm_exec_instance_t *instance);
 
+int vm_exec_instance_has_function(vm_exec_instance_t *instance, const char *func_name_ptr);
+
 /**
  * Gets the length in bytes of the last error if any.
  *

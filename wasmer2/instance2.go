@@ -250,9 +250,15 @@ func (instance *Instance) CallFunction(functionName string) error {
 }
 
 func (instance *Instance) HasFunction(functionName string) bool {
-	// _, ok := instance.Exports[functionName]
-	// return ok
-	return true
+	var wasmFunctionName = cCString(functionName)
+	defer cFree(unsafe.Pointer(wasmFunctionName))
+
+	result := cWasmerInstanceHasFunction(
+		instance.instance,
+		wasmFunctionName,
+	)
+
+	return result == 1
 }
 
 // GetLastError returns the last error message if any, otherwise returns an error.
