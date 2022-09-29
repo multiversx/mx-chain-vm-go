@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -111,7 +110,6 @@ func TestWasmMemories_DeployWithoutMemory(t *testing.T) {
 }
 
 func TestWASMMemories_NoPages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -126,7 +124,6 @@ func TestWASMMemories_NoPages(t *testing.T) {
 }
 
 func TestWASMMemories_NoMaxPages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -141,7 +138,6 @@ func TestWASMMemories_NoMaxPages(t *testing.T) {
 }
 
 func TestWASMMemories_SinglePage(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -156,7 +152,6 @@ func TestWASMMemories_SinglePage(t *testing.T) {
 }
 
 func TestWASMMemories_MultiplePages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -171,7 +166,6 @@ func TestWASMMemories_MultiplePages(t *testing.T) {
 }
 
 func TestWASMMemories_MultipleMaxPages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -186,7 +180,6 @@ func TestWASMMemories_MultipleMaxPages(t *testing.T) {
 }
 
 func TestWASMMemories_ExceededPages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -201,7 +194,6 @@ func TestWASMMemories_ExceededPages(t *testing.T) {
 }
 
 func TestWASMMemories_ExceededMaxPages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -216,7 +208,6 @@ func TestWASMMemories_ExceededMaxPages(t *testing.T) {
 }
 
 func TestWASMMemories_MinPagesGreaterThanMaxPages(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -231,7 +222,6 @@ func TestWASMMemories_MinPagesGreaterThanMaxPages(t *testing.T) {
 }
 
 func TestWASMMemories_MultipleMemories(t *testing.T) {
-	arwen.SetLoggingForTests()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -243,28 +233,6 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
-}
-
-func TestWASMMemories_WithGrow(t *testing.T) {
-	arwen.SetLoggingForTests()
-	wasmer.SetInstanceResetOptions(true, true)
-	testCase := test.BuildInstanceCallTest(t).
-		WithContracts(
-			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-grow", "mem-grow", "../../"))).
-		WithInput(test.CreateTestContractCallInputBuilder().
-			WithGasProvided(100000).
-			WithFunction("main").
-			Build())
-
-	assertFunc := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-		verify.Ok().ReturnData(
-			big.NewInt(42).Bytes(),
-		)
-	}
-
-	testCase.AndAssertResultsWithoutReset(assertFunc)
-	testCase.AndAssertResultsWithoutReset(assertFunc)
 }
 
 func TestWASMMemories_ResetContent(t *testing.T) {
@@ -317,4 +285,25 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 
 	testCase.AndAssertResultsWithoutReset(assertFunc)
 	testCase.AndAssertResultsWithoutReset(assertFunc)
+}
+
+func TestWASMMemories_WithGrow(t *testing.T) {
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/mem-grow", "mem-grow", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("main").
+			Build())
+
+	assertFunc := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		verify.Ok().ReturnData(
+			big.NewInt(6).Bytes(),
+		)
+	}
+
+	for i := 0; i < 250_000; i++ {
+		testCase.AndAssertResultsWithoutReset(assertFunc)
+	}
 }

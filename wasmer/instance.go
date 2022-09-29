@@ -5,8 +5,6 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
-
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const OPCODE_COUNT = 448
@@ -368,15 +366,16 @@ func (instance *Instance) GetMemory() MemoryHandler {
 
 // SetMemory sets the memory for the instance returns true if success
 func (instance *Instance) SetMemory(data []byte) bool {
-	if check.IfNil(instance.GetMemory()) {
-		return false
-	}
+	// if check.IfNil(instance.GetMemory()) {
+	// 	return false
+	// }
 
-	instanceMemory := instance.GetMemory().Data()
-	if len(instanceMemory) != len(data) {
-		// TODO shrink the instance memory instead and return true
-		return false
-	}
+	// instanceMemory := instance.GetMemory().Data()
+	// if len(instanceMemory) != len(data) {
+	// 	fmt.Println("SetMemory: memory size mismatch")
+	// 	// TODO shrink the instance memory instead and return true
+	// 	return false
+	// }
 
 	//copy(instanceMemory, data)
 	// TODO: refactor
