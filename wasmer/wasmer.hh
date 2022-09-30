@@ -891,7 +891,8 @@ uint64_t wasmer_instance_get_runtime_breakpoint_value(wasmer_instance_t *instanc
 /// Verifies whether the specified function name is imported by the given instance.
 bool wasmer_instance_is_function_imported(wasmer_instance_t *instance, const char *name);
 
-void wasmer_instance_reset_options(bool reset_memories, bool reset_globals);
+/// Reset an WebAssembly instance, cleaning memories and globals
+wasmer_result_t wasmer_instance_reset(wasmer_instance_t *instance);
 
 void wasmer_instance_set_points_limit(wasmer_instance_t *instance, uint64_t limit);
 
@@ -946,9 +947,6 @@ wasmer_result_t wasmer_instantiate(wasmer_instance_t **instance,
                                    uint32_t wasm_bytes_len,
                                    wasmer_import_t *imports,
                                    int imports_len);
-
-/// Resets an WebAssembly instance, cleaning memory and globals
-wasmer_result_t wasmer_instantiate_reset(wasmer_instance_t *instance);
 
 wasmer_result_t wasmer_instantiate_with_options(wasmer_instance_t **instance,
                                                 uint8_t *wasm_bytes,

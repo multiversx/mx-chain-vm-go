@@ -5,11 +5,6 @@ import (
 	"unsafe"
 )
 
-// SetInstanceResetOptions configures Wasmer whether to reset the globals of an instance
-func SetInstanceResetOptions(reset_memories bool, reset_globals bool) {
-	cWasmerInstanceResetOptions(reset_memories, reset_globals)
-}
-
 func generateWasmerImports(imports *Imports) (*cWasmerImportT, int) {
 	var numberOfImports = imports.Count()
 	var wasmImports = make([]cWasmerImportT, numberOfImports)

@@ -286,8 +286,8 @@ func cWasmerInstanceContextMemory(instanceContext *cWasmerInstanceContextT) *cWa
 	))
 }
 
-func cWasmerInstantiateReset(instance *cWasmerInstanceT) cWasmerResultT {
-	return (cWasmerResultT)(C.wasmer_instantiate_reset(
+func cWasmerInstanceReset(instance *cWasmerInstanceT) cWasmerResultT {
+	return (cWasmerResultT)(C.wasmer_instance_reset(
 		(*C.wasmer_instance_t)(instance),
 	))
 }
@@ -353,11 +353,6 @@ func cWasmerMemoryDestroy(memory *cWasmerMemoryT) {
 	C.wasmer_memory_destroy(
 		(*C.wasmer_memory_t)(memory),
 	)
-}
-
-func cWasmerInstanceResetOptions(reset_memories bool, reset_globals bool) {
-	C.wasmer_instance_reset_options(
-		(C.bool)(reset_memories), (C.bool)(reset_globals))
 }
 
 func cCString(string string) *cChar {
