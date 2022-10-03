@@ -355,7 +355,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 			}
-			host.Runtime().CleanInstance()
+			//host.Runtime().CleanInstance()
 			close(done)
 		}()
 

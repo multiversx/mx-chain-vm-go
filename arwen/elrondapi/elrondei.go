@@ -688,7 +688,7 @@ func v1_4_signalError(context unsafe.Pointer, messageOffset int32, messageLength
 		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
-	fmt.Printf("message offset: %d\n", messageOffset)
+
 	message, err := runtime.MemLoad(messageOffset, messageLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return

@@ -19,6 +19,7 @@ import (
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +35,6 @@ func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-
 	runERC20Benchmark(t, 1000, 100, false)
 }
 

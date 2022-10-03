@@ -6,6 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/stretchr/testify/require"
 )
@@ -303,7 +304,40 @@ func TestWASMMemories_WithGrow(t *testing.T) {
 		)
 	}
 
-	for i := 0; i < 250_000; i++ {
+	for i := 0; i < 50_000; i++ {
 		testCase.AndAssertResultsWithoutReset(assertFunc)
 	}
+}
+
+func TestWASMCreateAndCall(t *testing.T) {
+	arwen.SetLoggingForTests()
+	deployInput := test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(100000).
+			WithContractCode(test.GetTestSCCode("counter", "../../")).
+			WithCallerAddr(test.UserAddress).
+			Build()
+
+	host, world := test.DefaultTestArwenWithWorldMock(t)
+	world.NewAddressMocks = append(world.NewAddressMocks, &worldmock.NewAddressMock{
+		CreatorAddress: test.UserAddress,
+		CreatorNonce: 0,
+		NewAddress: test.ParentAddress,
+	})
+	world.AcctMap.CreateAccount(test.UserAddress, world)
+	vmOutput, err := host.RunSmartContractCreate(deployInput)
+	verify := test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.ReturnMessage("")
+	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+
+
+	input := test.CreateTestContractCallInputBuilder().
+		WithGasProvided(100000).
+		WithFunction("increment").
+		WithCallerAddr(test.UserAddress).
+		WithRecipientAddr(test.ParentAddress).
+		Build()
+
+	vmOutput, err = host.RunSmartContractCall(input)
+	verify = test.NewVMOutputVerifier(t, vmOutput, err)
+	verify.ReturnMessage("")
 }
