@@ -90,6 +90,7 @@ func (memory *Memory) Grow(numberOfPages uint32) error {
 // Destroy destroys inner memory
 func (memory *Memory) Destroy() {
 	if memory.memory != nil {
+		fmt.Println("Destroying memory")
 		cWasmerMemoryDestroy(memory.memory)
 	}
 }
