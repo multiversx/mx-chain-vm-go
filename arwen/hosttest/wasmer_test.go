@@ -1,7 +1,6 @@
 package hosttest
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 
@@ -300,14 +299,13 @@ func TestWASMMemories_WithGrow(t *testing.T) {
 			Build())
 
 	assertFunc := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-		//verify.Ok().ReturnData(
-		//	big.NewInt(6).Bytes(),
-		//m)
+		verify.Ok().ReturnData(
+			big.NewInt(6).Bytes(),
+		)
 	}
 
 	for i := 0; i < 10; i++ {
 		testCase.AndAssertResultsWithoutReset(assertFunc)
-		fmt.Println()
 	}
 }
 
@@ -328,7 +326,7 @@ func TestWASMCreateAndCall(t *testing.T) {
 	world.AcctMap.CreateAccount(test.UserAddress, world)
 	vmOutput, err := host.RunSmartContractCreate(deployInput)
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
-	verify.ReturnMessage("")
+	verify.Ok()
 	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -341,6 +339,6 @@ func TestWASMCreateAndCall(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		vmOutput, err = host.RunSmartContractCall(input)
 		verify = test.NewVMOutputVerifier(t, vmOutput, err)
-		verify.ReturnMessage("")
+		verify.Ok()
 	}
 }
