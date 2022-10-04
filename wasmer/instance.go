@@ -264,56 +264,38 @@ func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
-		if instance.Memory != nil {
+		if check.IfNil(instance.Memory) {
 			instance.Memory.Destroy()
 		}
 	}
-
-	instance.Data = nil
-	instance.DataPointer = nil
-	instance.Exports = nil
-	instance.Signatures = nil
 }
 
-func (instance *Instance) PrintMemory() {
-	for addr, value := range instance.GetMemory().Data() {
-		if addr%32 == 0 {
-			fmt.Printf("\n%d: ", addr)
-		}
-		fmt.Printf("%d ", value)
-	}
-	fmt.Println()
-}
-
-// ShallowClean shallow cleans instance
-func (instance *Instance) ShallowClean() {
-}
-
-// ShallowCopy shallow copies instance
-func (instance *Instance) ShallowCopy() InstanceHandler {
-	return instance
-}
-
+// GetPointsUsed returns the internal instance gas counter
 func (instance *Instance) GetPointsUsed() uint64 {
 	return cWasmerInstanceGetPointsUsed(instance.instance)
 }
 
+// SetPointsUsed sets the internal instance gas counter
 func (instance *Instance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
+// SetGasLimit sets the gas limit for the instance
 func (instance *Instance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
 }
 
+// SetBreakpoints sets the breakpoint value for the instance
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
 
+// GetBreakpointValue returns the breakpoint value
 func (instance *Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
 }
 
+// Cache caches the instance
 func (instance *Instance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar
 	var cacheLen cUint32T
@@ -366,26 +348,28 @@ func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
 }
 
+// Reset resets the instance memories and globals
+func (instance *Instance) Reset() bool {
+	result := cWasmerInstanceReset(instance.instance)
+	return result == cWasmerOk
+}
+
 // SetMemory sets the memory for the instance returns true if success
 func (instance *Instance) SetMemory(data []byte) bool {
-	if check.IfNil(instance.GetMemory()) {
-		return false
-	}
-
-	// instanceMemory := instance.GetMemory().Data()
-	// if len(instanceMemory) != len(data) {
-	// 	fmt.Println("SetMemory: memory size mismatch")
-	// 	// TODO shrink the instance memory instead and return true
-	// 	return false
-	// }
-
 	if instance.instance == nil {
 		return false
 	}
 
-	//copy(instanceMemory, data)
-	// TODO: refactor
-	cWasmerInstanceReset(instance.instance)
+	if check.IfNil(instance.GetMemory()) {
+		return false
+	}
+
+	memory := instance.GetMemory().Data()
+	if len(memory) != len(data) {
+		return false
+	}
+
+	copy(memory, data)
 	return true
 }
 

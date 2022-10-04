@@ -104,6 +104,11 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
+// Reset mocked method
+func (instance *InstanceMock) Reset() bool {
+	return true
+}
+
 // GetExports mocked method
 func (instance *InstanceMock) GetExports() wasmer.ExportsMap {
 	return instance.Exports
@@ -148,15 +153,6 @@ func (instance *InstanceMock) IsFunctionImported(name string) bool {
 func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
-}
-
-// ShallowCopy mocked method
-func (instance *InstanceMock) ShallowCopy() wasmer.InstanceHandler {
-	return instance
-}
-
-// ShallowClean mocked method
-func (instance *InstanceMock) ShallowClean() {
 }
 
 // SetMemory mocked method

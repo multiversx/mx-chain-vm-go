@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "/home/camil.bancioiu/Work/Elrond/wasm-vm/test/contracts/bad-empty/bad-empty.c"
+        "bad-empty.c"
     ]
 }

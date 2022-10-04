@@ -50,11 +50,6 @@ type runtimeContext struct {
 	errors          arwen.WrappableError
 }
 
-type instanceAndMemory struct {
-	instance wasmer.InstanceHandler
-	memory   []byte
-}
-
 // NewRuntimeContext creates a new runtimeContext
 func NewRuntimeContext(
 	host arwen.VMHost,
@@ -85,12 +80,12 @@ func NewRuntimeContext(
 }
 
 func instanceEvicted(_ interface{}, value interface{}) {
-	localContract, ok := value.(instanceAndMemory)
+	instance, ok := value.(wasmer.InstanceHandler)
 	if !ok {
 		return
 	}
-	localContract.instance.Clean()
-	localContract.memory = nil
+
+	instance.Clean()
 }
 
 // InitState initializes all the contexts fields with default data.
@@ -245,20 +240,19 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	localContract, ok := cachedObject.(instanceAndMemory)
+	instance, ok := cachedObject.(wasmer.InstanceHandler)
 	if !ok {
 		return false
 	}
 
-	copyInstance := localContract.instance.ShallowCopy()
-	success := copyInstance.SetMemory(localContract.memory)
-	if !success {
+	ok = instance.Reset()
+	if !ok {
 		// we must remove instance, which cleans it to free the memory
 		context.warmInstanceCache.Remove(context.codeHash)
 		return false
 	}
 
-	context.instance = copyInstance
+	context.instance = instance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
@@ -305,20 +299,11 @@ func (context *runtimeContext) saveWarmInstance() {
 		return
 	}
 
-	if check.IfNil(context.instance.GetMemory()) {
-		return
-	}
-
-	instanceMemory := context.instance.GetMemory().Data()
-
-	localMemory := make([]byte, len(instanceMemory))
-	copy(localMemory, instanceMemory)
-
-	localContract := instanceAndMemory{
-		instance: context.instance.ShallowCopy(),
-		memory:   localMemory,
-	}
-	context.warmInstanceCache.Put(context.codeHash, localContract, 1)
+	context.warmInstanceCache.Put(
+		context.codeHash,
+		context.instance,
+		1,
+	)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -447,10 +432,8 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		if bytes.Compare(context.codeHash, lastCodeHash) == 0 {
+		if bytes.Equal(context.codeHash, lastCodeHash) {
 			context.instance.Clean()
-		} else {
-			context.instance.ShallowClean()
 		}
 	}
 
@@ -925,10 +908,6 @@ func (context *runtimeContext) CleanInstance() {
 
 	logRuntime.Trace("instance cleaned")
 	return
-}
-
-// ShallowClean shallow cleans the current instance
-func (context *runtimeContext) ShallowClean() {
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the

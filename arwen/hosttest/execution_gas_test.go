@@ -958,7 +958,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	t.Skip()
 
 	testConfig := &contracts.AsyncCallRecursiveTestConfig{
-		AsyncCallBaseTestConfig: *&asyncBaseTestConfig,
+		AsyncCallBaseTestConfig: asyncBaseTestConfig,
 		RecursiveChildCalls:     2,
 	}
 
@@ -1008,7 +1008,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 	t.Skip()
 
 	testConfig := &contracts.AsyncCallMultiChildTestConfig{
-		AsyncCallBaseTestConfig: *&asyncBaseTestConfig,
+		AsyncCallBaseTestConfig: asyncBaseTestConfig,
 		ChildCalls:              2,
 	}
 

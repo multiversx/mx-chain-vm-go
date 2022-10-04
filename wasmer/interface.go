@@ -11,8 +11,6 @@ type InstanceHandler interface {
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
 	Clean()
-	ShallowClean()
-	ShallowCopy() InstanceHandler
 	GetExports() ExportsMap
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
 	GetData() uintptr
@@ -21,6 +19,7 @@ type InstanceHandler interface {
 	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
+	Reset() bool
 }
 
 // MemoryHandler defines the functionality of the memory of a Wasmer instance

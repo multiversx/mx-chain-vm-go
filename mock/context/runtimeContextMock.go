@@ -351,10 +351,6 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
 
-// ShallowClean mocked method
-func (r *RuntimeContextMock) ShallowClean() {
-}
-
 // CleanInstance mocked method
 func (r *RuntimeContextMock) CleanInstance() {
 }

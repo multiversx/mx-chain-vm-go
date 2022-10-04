@@ -23,7 +23,6 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
 		}
-		host.runtimeContext.ShallowClean()
 	}()
 
 	_, blockchain, metering, output, runtime, storage := host.GetContexts()
@@ -106,7 +105,6 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
 		}
-		host.runtimeContext.ShallowClean()
 	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
@@ -153,7 +151,6 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		if errs != nil {
 			log.Trace(fmt.Sprintf("doRunSmartContractCall full error list for %s", input.Function), "error", errs)
 		}
-		host.runtimeContext.ShallowClean()
 	}()
 
 	_, _, metering, output, runtime, storage := host.GetContexts()
