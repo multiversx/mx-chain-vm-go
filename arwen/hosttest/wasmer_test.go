@@ -310,7 +310,6 @@ func TestWASMMemories_WithGrow(t *testing.T) {
 }
 
 func TestWASMCreateAndCall(t *testing.T) {
-	arwen.SetLoggingForTests()
 	deployInput := test.CreateTestContractCreateInputBuilder().
 		WithGasProvided(100000).
 		WithContractCode(test.GetTestSCCode("counter", "../../")).

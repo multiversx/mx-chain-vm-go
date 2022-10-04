@@ -264,7 +264,7 @@ func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
-		if check.IfNil(instance.Memory) {
+		if instance.Memory != nil {
 			instance.Memory.Destroy()
 		}
 	}
