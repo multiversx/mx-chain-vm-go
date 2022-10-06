@@ -5,10 +5,10 @@ import (
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
-// TODO: add to Makefile
+// TODO: add to Makefile and move Floating opcodes checks here
 func TestForbiddenOpCodes(t *testing.T) {
 	wasmModules := []string{"data-drop", "memory-init", "memory-fill", "memory-copy"}
 
