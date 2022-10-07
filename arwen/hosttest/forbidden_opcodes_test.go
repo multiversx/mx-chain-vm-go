@@ -10,7 +10,7 @@ import (
 
 // TODO: add to Makefile and move Floating opcodes checks here
 func TestForbiddenOpCodes(t *testing.T) {
-	wasmModules := []string{"data-drop", "memory-init", "memory-fill", "memory-copy"}
+	wasmModules := []string{"data-drop", "memory-init", "memory-fill", "memory-copy", "simd"}
 
 	for _, moduleName := range wasmModules {
 		testCase := testcommon.BuildInstanceCallTest(t).
