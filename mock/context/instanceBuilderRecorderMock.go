@@ -9,6 +9,11 @@ import (
 // create mocked Wasmer instances.
 type InstanceBuilderRecorderMock struct {
 	InstanceMap map[string][]executor.InstanceHandler
+	hostPointer uintptr
+}
+
+func (builder *InstanceBuilderRecorderMock) SetContextData(hostPointer uintptr) {
+	builder.hostPointer = hostPointer
 }
 
 // NewInstanceBuilderRecorderMock constructs a new InstanceBuilderRecorderMock
@@ -25,6 +30,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 ) (executor.InstanceHandler, error) {
 	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	if err == nil {
+		instance.SetContextData(builder.hostPointer)
 		builder.addContractInstanceToInstanceMap(contractCode, instance)
 	}
 	return instance, err
@@ -37,6 +43,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptio
 ) (executor.InstanceHandler, error) {
 	instance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {
+		instance.SetContextData(builder.hostPointer)
 		builder.addContractInstanceToInstanceMap(compiledCode, instance)
 	}
 	return instance, err

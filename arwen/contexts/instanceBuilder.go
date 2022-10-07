@@ -8,6 +8,11 @@ import (
 // WasmerInstanceBuilder is the default instance builder, which produces real
 // Wasmer instances from WASM bytecode
 type WasmerInstanceBuilder struct {
+	hostPointer uintptr
+}
+
+func (builder *WasmerInstanceBuilder) SetContextData(hostPointer uintptr) {
+	builder.hostPointer = hostPointer
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,
@@ -16,7 +21,12 @@ func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
-	return wasmer.NewInstanceWithOptions(contractCode, options)
+	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
+	if err != nil {
+		return nil, err
+	}
+	instance.SetContextData(builder.hostPointer)
+	return instance, nil
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -25,5 +35,10 @@ func (builder *WasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
-	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	instance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	if err != nil {
+		return nil, err
+	}
+	instance.SetContextData(builder.hostPointer)
+	return instance, nil
 }

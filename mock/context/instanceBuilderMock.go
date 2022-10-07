@@ -14,6 +14,7 @@ import (
 type InstanceBuilderMock struct {
 	InstanceMap map[string]InstanceMock
 	World       *worldmock.MockWorld
+	hostPointer uintptr
 }
 
 // NewInstanceBuilderMock constructs a new InstanceBuilderMock
@@ -22,6 +23,10 @@ func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 		InstanceMap: make(map[string]InstanceMock),
 		World:       world,
 	}
+}
+
+func (builder *InstanceBuilderMock) SetContextData(hostPointer uintptr) {
+	builder.hostPointer = hostPointer
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
@@ -69,7 +74,12 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 	if ok {
 		return instance, nil
 	}
-	return wasmer.NewInstanceWithOptions(contractCode, options)
+	newInstance, err := wasmer.NewInstanceWithOptions(contractCode, options)
+	if err != nil {
+		return nil, err
+	}
+	newInstance.SetContextData(builder.hostPointer)
+	return newInstance, nil
 }
 
 // NewInstanceFromCompiledCodeWithOptions attempts to load a prepared instance
@@ -83,5 +93,10 @@ func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
 	if ok {
 		return instance, nil
 	}
-	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	newInstance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	if err != nil {
+		return nil, err
+	}
+	newInstance.SetContextData(builder.hostPointer)
+	return newInstance, nil
 }

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -177,6 +178,7 @@ func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte,
 	host, _ := DefaultTestArwenForCall(tb, code, balance)
 
 	instanceBuilderRecorderMock := contextmock.NewInstanceBuilderRecorderMock()
+	instanceBuilderRecorderMock.SetContextData(uintptr(unsafe.Pointer(&host)))
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderRecorderMock)
 
 	return host, instanceBuilderRecorderMock
@@ -196,6 +198,7 @@ func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worl
 	host := DefaultTestArwen(tb, world)
 
 	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
+	instanceBuilderMock.SetContextData(uintptr(unsafe.Pointer(&host)))
 	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
 
 	return host, instanceBuilderMock

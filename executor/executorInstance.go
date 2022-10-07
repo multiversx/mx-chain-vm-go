@@ -3,7 +3,7 @@ package executor
 // InstanceHandler defines the functionality of a Wasmer instance
 type InstanceHandler interface {
 	HasMemory() bool
-	SetContextData(data uintptr)
+	// SetContextData(data uintptr)
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)

@@ -80,6 +80,10 @@ func NewRuntimeContext(
 	}
 
 	context.instanceBuilder = &WasmerInstanceBuilder{}
+
+	hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instanceBuilder.SetContextData(hostReference)
+
 	context.InitState()
 
 	return context, nil
@@ -169,9 +173,6 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	context.instance = newInstance
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
 	logRuntime.Trace("new instance created", "code", "cached compilation")
@@ -206,9 +207,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 			return err
 		}
 	}
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
 
 	if newCode {
 		err = context.VerifyContractCode()

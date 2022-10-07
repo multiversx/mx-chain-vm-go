@@ -13,6 +13,8 @@ type CompilationOptions struct {
 
 // InstanceBuilder defines the functionality needed to create any executor instance.
 type InstanceBuilder interface {
+	SetContextData(data uintptr)
+
 	NewInstanceWithOptions(
 		contractCode []byte,
 		options CompilationOptions) (InstanceHandler, error)

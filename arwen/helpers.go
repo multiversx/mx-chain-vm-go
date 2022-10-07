@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"unsafe"
 
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/pelletier/go-toml"
 )
 
@@ -227,7 +227,8 @@ func GetBlockchainContext(vmHostPtr unsafe.Pointer) BlockchainContext {
 
 // GetRuntimeContext returns the runtime context
 func GetRuntimeContext(vmHostPtr unsafe.Pointer) RuntimeContext {
-	return GetVMHost(vmHostPtr).Runtime()
+	host := GetVMHost(vmHostPtr)
+	return host.Runtime()
 }
 
 // GetCryptoContext returns the crypto context
