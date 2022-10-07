@@ -96,8 +96,8 @@ func extractEIFunctions(f *ast.File) ([]*EIFunction, error) {
 }
 
 func ReadAndParseEIMetadata(fset *token.FileSet, pathToSources string, eiMetadata *EIMetadata) error {
-	for fileName, fileMetadata := range eiMetadata.FileMap {
-		f, err := parser.ParseFile(fset, pathToSources+fileName, nil, parser.AllErrors)
+	for _, group := range eiMetadata.Groups {
+		f, err := parser.ParseFile(fset, pathToSources+group.SourcePath, nil, parser.AllErrors)
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,7 @@ func ReadAndParseEIMetadata(fset *token.FileSet, pathToSources string, eiMetadat
 		if err != nil {
 			return err
 		}
-		fileMetadata.Functions = fileFunctions
+		group.Functions = fileFunctions
 		eiMetadata.AllFunctions = append(eiMetadata.AllFunctions, fileFunctions...)
 	}
 	return nil

@@ -10,16 +10,17 @@ import (
 const pathToElrondApiPackage = "./"
 
 func initEIMetadata() *eapigen.EIMetadata {
-	m := make(map[string]*eapigen.EIFileMetadata)
-	m["bigFloatOps.go"] = &eapigen.EIFileMetadata{}
-	m["bigIntOps.go"] = &eapigen.EIFileMetadata{}
-	m["elrondei.go"] = &eapigen.EIFileMetadata{}
-	m["generateOps.go"] = &eapigen.EIFileMetadata{}
-	m["managedei.go"] = &eapigen.EIFileMetadata{}
-	m["manBufOps.go"] = &eapigen.EIFileMetadata{}
-	m["smallIntOps.go"] = &eapigen.EIFileMetadata{}
 	return &eapigen.EIMetadata{
-		FileMap:      m,
+		Groups: []*eapigen.EIGroup{
+			&eapigen.EIGroup{SourcePath: "bigFloatOps.go"},
+			&eapigen.EIGroup{SourcePath: "bigIntOps.go"},
+			&eapigen.EIGroup{SourcePath: "elrondei.go"},
+			&eapigen.EIGroup{SourcePath: "generateOps.go"},
+			&eapigen.EIGroup{SourcePath: "managedei.go"},
+			&eapigen.EIGroup{SourcePath: "manBufOps.go"},
+			&eapigen.EIGroup{SourcePath: "smallIntOps.go"},
+			&eapigen.EIGroup{SourcePath: "../cryptoapi/cryptoei.go"},
+		},
 		AllFunctions: nil,
 	}
 }

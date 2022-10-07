@@ -5,18 +5,6 @@ package elrondapi
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 type ImportsInterface interface {
-	SmallIntGetUnsignedArgument(id int32) int64
-	SmallIntGetSignedArgument(id int32) int64
-	SmallIntFinishUnsigned(value int64)
-	SmallIntFinishSigned(value int64)
-	SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32
-	SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32
-	SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64
-	SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64
-	Int64getArgument(id int32) int64
-	Int64finish(value int64)
-	Int64storageStore(keyOffset int32, keyLength int32, value int64) int32
-	Int64storageLoad(keyOffset int32, keyLength int32) int64
 	BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32
 	BigFloatNewFromFrac(numerator int64, denominator int64) int32
 	BigFloatNewFromSci(significand int64, exponent int64) int32
@@ -214,4 +202,54 @@ type ImportsInterface interface {
 	MBufferGetArgument(id int32, destinationHandle int32) int32
 	MBufferFinish(sourceHandle int32) int32
 	MBufferSetRandom(destinationHandle int32, length int32) int32
+	SmallIntGetUnsignedArgument(id int32) int64
+	SmallIntGetSignedArgument(id int32) int64
+	SmallIntFinishUnsigned(value int64)
+	SmallIntFinishSigned(value int64)
+	SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32
+	SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32
+	SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64
+	SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64
+	Int64getArgument(id int32) int64
+	Int64finish(value int64)
+	Int64storageStore(keyOffset int32, keyLength int32, value int64) int32
+	Int64storageLoad(keyOffset int32, keyLength int32) int64
+	Sha256(dataOffset int32, length int32, resultOffset int32) int32
+	ManagedSha256(inputHandle int32, outputHandle int32) int32
+	Keccak256(dataOffset int32, length int32, resultOffset int32) int32
+	ManagedKeccak256(inputHandle int32, outputHandle int32) int32
+	Ripemd160(dataOffset int32, length int32, resultOffset int32) int32
+	ManagedRipemd160(inputHandle int32, outputHandle int32) int32
+	VerifyBLS(keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32
+	ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) int32
+	VerifyEd25519(keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32
+	ManagedVerifyEd25519(keyHandle int32, messageHandle int32, sigHandle int32) int32
+	VerifyCustomSecp256k1(keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32, hashType int32) int32
+	ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32
+	VerifySecp256k1(keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32) int32
+	ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) int32
+	EncodeSecp256k1DerSignature(rOffset int32, rLength int32, sOffset int32, sLength int32, sigOffset int32) int32
+	ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) int32
+	AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32)
+	DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32)
+	IsOnCurveEC(ecHandle int32, pointXHandle int32, pointYHandle int32) int32
+	ScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32
+	ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
+	ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset int32, length int32) int32
+	ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32
+	MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32
+	ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32
+	MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32
+	ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32
+	UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32
+	ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
+	UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32
+	ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
+	GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) int32
+	ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32
+	CreateEC(dataOffset int32, dataLength int32) int32
+	ManagedCreateEC(dataHandle int32) int32
+	GetCurveLengthEC(ecHandle int32) int32
+	GetPrivKeyByteLengthEC(ecHandle int32) int32
+	EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32
 }

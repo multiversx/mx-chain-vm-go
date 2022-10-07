@@ -16,6 +16,7 @@ type EIFunctionResult struct {
 	Type string
 }
 
+// EIFunction holds data about one function in the VM EI.
 type EIFunction struct {
 	OriginalName string
 	PublicName   string
@@ -23,12 +24,16 @@ type EIFunction struct {
 	Result       *EIFunctionResult
 }
 
-type EIFileMetadata struct {
+// EIGroup groups EI functions into bundles.
+// They end up in separate interfaces.
+type EIGroup struct {
+	SourcePath string
 	// TODO: add a name and imports function name
 	Functions []*EIFunction
 }
 
+// EIMetadata holds all data about EI functions in the VM.
 type EIMetadata struct {
-	FileMap      map[string]*EIFileMetadata
+	Groups       []*EIGroup
 	AllFunctions []*EIFunction
 }
