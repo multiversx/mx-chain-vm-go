@@ -11,11 +11,12 @@ import (
 
 const eiFunctionPrefix = "v1_5_"
 
-func publicFuncName(originalFuncName string) string {
-	// trim prefix
-	trimmed := strings.TrimPrefix(originalFuncName, eiFunctionPrefix)
-	// capitalize
-	return strings.ToUpper(trimmed[0:1]) + trimmed[1:]
+func trimName(originalFuncName string) string {
+	return strings.TrimPrefix(originalFuncName, eiFunctionPrefix)
+}
+
+func capitalizeName(name string) string {
+	return strings.ToUpper(name[0:1]) + name[1:]
 }
 
 func extractEIFunctionArguments(decl *ast.FuncDecl) ([]*EIFunctionArg, error) {
@@ -70,10 +71,11 @@ func extractEIFunction(decl *ast.FuncDecl) (*EIFunction, error) {
 		return nil, err
 	}
 	eiFunction := &EIFunction{
-		OriginalName: originalFunctionName,
-		PublicName:   publicFuncName(originalFunctionName),
-		Arguments:    arguments,
-		Result:       result,
+		OriginalName:    originalFunctionName,
+		LowerCaseName:   trimName(originalFunctionName),
+		CapitalizedName: capitalizeName(trimName(originalFunctionName)),
+		Arguments:       arguments,
+		Result:          result,
 	}
 
 	return eiFunction, nil

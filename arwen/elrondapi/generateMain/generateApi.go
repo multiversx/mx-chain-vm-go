@@ -35,10 +35,17 @@ func main() {
 		panic(err)
 	}
 
-	out, err := os.Create(pathToElrondApiPackage + "../../executor/executorImportsInterface.go")
+	out1, err := os.Create(pathToElrondApiPackage + "../../executor/executorImportsInterface.go")
 	if err != nil {
 		panic(err)
 	}
-	eapigen.WriteEIInterface(eiMetadata, out)
-	out.Close()
+	defer out1.Close()
+	eapigen.WriteEIInterface(eiMetadata, out1)
+
+	out2, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out2.Close()
+	eapigen.WriteCAPIFunctions(eiMetadata, out2)
 }
