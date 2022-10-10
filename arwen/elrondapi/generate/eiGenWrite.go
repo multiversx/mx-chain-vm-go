@@ -53,8 +53,17 @@ func cgoFuncName(funcMetadata *EIFunction) string {
 	return fmt.Sprintf("wasmer1_%s", funcMetadata.LowerCaseName)
 }
 
+func cgoImportName(funcMetadata *EIFunction) string {
+	return fmt.Sprintf("C.%s", cgoFuncName(funcMetadata))
+}
+
 func WriteCAPIFunctions(eiMetadata *EIMetadata, out *os.File) {
-	out.WriteString("package wasmer \n\n")
+	writeHeader(out, eiMetadata)
+	writeImports(out, eiMetadata)
+}
+
+func writeHeader(out *os.File, eiMetadata *EIMetadata) {
+	out.WriteString("package wasmer\n\n")
 	out.WriteString("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 	out.WriteString("// !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!\n")
 	out.WriteString("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
@@ -79,9 +88,36 @@ func WriteCAPIFunctions(eiMetadata *EIMetadata, out *os.File) {
 
 	out.WriteString("import \"C\"\n\n")
 	out.WriteString("import (\n")
-	out.WriteString("\t\"unsafe\"\n")
-	out.WriteString(")\n")
+	out.WriteString("\t\"unsafe\"\n\n")
+	out.WriteString("\t\"github.com/ElrondNetwork/wasm-vm/executor\"\n")
+	out.WriteString(")\n\n")
+}
 
+func writeImports(out *os.File, eiMetadata *EIMetadata) {
+	writeImportsHeader(out, eiMetadata)
+	writeImportsBody(eiMetadata, out)
+}
+
+func writeImportsHeader(out *os.File, eiMetadata *EIMetadata) {
+	out.WriteString("// ElrondEIImports populates imports with the ElrondEI API methods\n")
+	out.WriteString("func ElrondEIImports(imports executor.ImportFunctionReceiver) error {\n")
+	out.WriteString("\timports.Namespace(\"env\")\n\n")
+	out.WriteString("\tvar err error\n")
+	for _, funcMetadata := range eiMetadata.AllFunctions {
+		out.WriteString(fmt.Sprintf("\terr = imports.Append(\"%s\", %s, %s)\n",
+			funcMetadata.LowerCaseName,
+			cgoFuncName(funcMetadata),
+			cgoImportName(funcMetadata),
+		))
+		out.WriteString("\tif err != nil {\n")
+		out.WriteString("\t\treturn err\n")
+		out.WriteString("\t}\n\n")
+	}
+	out.WriteString("\treturn nil\n")
+	out.WriteString("}\n")
+}
+
+func writeImportsBody(eiMetadata *EIMetadata, out *os.File) {
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("\n// export %s\n",
 			cgoFuncName(funcMetadata),
@@ -114,6 +150,5 @@ func WriteCAPIFunctions(eiMetadata *EIMetadata, out *os.File) {
 		out.WriteString(")\n")
 
 		out.WriteString("}\n")
-
 	}
 }
