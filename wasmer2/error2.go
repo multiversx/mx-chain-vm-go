@@ -35,22 +35,31 @@ func GetLastError() (string, error) {
 }
 
 func GetExecutionInfo() (string, error) {
-	var errorLength = cWasmerExcutionInfoLength()
+	var msgLength = cWasmerExcutionInfoLength()
 
-	if errorLength == 0 {
+	if msgLength == 0 {
 		return "", nil
 	}
 
-	var errorMessage = make([]cChar, errorLength)
-	var errorMessagePointer = (*cChar)(unsafe.Pointer(&errorMessage[0]))
+	var msgBuffer = make([]cChar, msgLength)
+	var msgPointer = (*cChar)(unsafe.Pointer(&msgBuffer[0]))
 
-	var errorResult = cWasmerExcutionInfoFlush(errorMessagePointer, errorLength)
+	var msgResult = cWasmerExcutionInfoFlush(msgPointer, msgLength)
 
-	if errorResult == -1 {
+	if msgResult == -1 {
 		return "", errors.New("cannot read execution info")
 	}
 
-	return cGoString(errorMessagePointer), nil
+	return cGoString(msgPointer), nil
+}
+
+func PrintExecutionInfo() {
+	msg, err := GetExecutionInfo()
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(msg)
+	}
 }
 
 func newWrappedError(target error) error {

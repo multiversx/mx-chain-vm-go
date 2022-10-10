@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // ImportedFunctionError represents any kind of errors related to a
@@ -90,50 +89,50 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType executor.ImportFunctionValue) cWasmerValueTag {
-	switch argType {
-	case executor.ImportFunctionValueInt32:
-		return cWasmI32
-	case executor.ImportFunctionValueInt64:
-		return cWasmI64
-	}
-	return cWasmI32 // unreachable, but might consider adding an error
-}
+// func convertArgType(argType executor.ImportFunctionValue) cWasmerValueTag {
+// 	switch argType {
+// 	case executor.ImportFunctionValueInt32:
+// 		return cWasmI32
+// 	case executor.ImportFunctionValueInt64:
+// 		return cWasmI64
+// 	}
+// 	return cWasmI32 // unreachable, but might consider adding an error
+// }
 
-func ConvertImports(eiFunctions *executor.ImportFunctions) *Imports {
-	imports := NewImports()
+// func ConvertImports(eiFunctions *executor.ImportFunctions) *Imports {
+// 	imports := NewImports()
 
-	for funcName, funcData := range eiFunctions.FunctionMap {
-		implementation := funcData.Implementation
-		cgoPointer := funcData.CgoPointer
-		var importedFunctionPointer *cWasmerImportFuncT
-		var namespace = funcData.Namespace
+// 	for funcName, funcData := range eiFunctions.FunctionMap {
+// 		implementation := funcData.Implementation
+// 		cgoPointer := funcData.CgoPointer
+// 		var importedFunctionPointer *cWasmerImportFuncT
+// 		var namespace = funcData.Namespace
 
-		var wasmInputs = make([]cWasmerValueTag, len(funcData.FunctionInputs))
-		for i, input := range funcData.FunctionInputs {
-			wasmInputs[i] = convertArgType(input)
-		}
-		var wasmOutputs = make([]cWasmerValueTag, len(funcData.FunctionOutputs))
-		for i, output := range funcData.FunctionOutputs {
-			wasmOutputs[i] = convertArgType(output)
-		}
+// 		var wasmInputs = make([]cWasmerValueTag, len(funcData.FunctionInputs))
+// 		for i, input := range funcData.FunctionInputs {
+// 			wasmInputs[i] = convertArgType(input)
+// 		}
+// 		var wasmOutputs = make([]cWasmerValueTag, len(funcData.FunctionOutputs))
+// 		for i, output := range funcData.FunctionOutputs {
+// 			wasmOutputs[i] = convertArgType(output)
+// 		}
 
-		if imports.imports[namespace] == nil {
-			imports.imports[namespace] = make(map[string]Import)
-		}
+// 		if imports.imports[namespace] == nil {
+// 			imports.imports[namespace] = make(map[string]Import)
+// 		}
 
-		imports.imports[namespace][funcName] = Import{
-			implementation,
-			cgoPointer,
-			importedFunctionPointer,
-			wasmInputs,
-			wasmOutputs,
-			namespace,
-		}
-	}
+// 		imports.imports[namespace][funcName] = Import{
+// 			implementation,
+// 			cgoPointer,
+// 			importedFunctionPointer,
+// 			wasmInputs,
+// 			wasmOutputs,
+// 			namespace,
+// 		}
+// 	}
 
-	return imports
-}
+// 	return imports
+// }
 
 // Close closes/frees all imported functions that have been registered by Wasmer.
 func (imports *Imports) Close() {

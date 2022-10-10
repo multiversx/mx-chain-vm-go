@@ -124,7 +124,7 @@ typedef struct {
   const vm_exec_import_func_t *import_func;
 } vm_exec_import_t;
 
-vm_exec_result_t vm_check_signatures(vm_exec_instance_t *instance);
+vm_exec_result_t vm_check_signatures(vm_exec_instance_t *_instance);
 
 int vm_exec_execution_info_flush(char *dest_buffer, int dest_buffer_len);
 
@@ -174,44 +174,20 @@ vm_exec_import_func_t *vm_exec_import_func_new(void (*func)(void *data),
  *   * `instance` is a null pointer,
  *   * `name` is a null pointer,
  *   * `params` is a null pointer.
- *
- * Example of calling an exported function that needs two parameters, and returns one value:
- *
- * ```c
- * // First argument.
- * wasmer_value_t argument_one = {
- *     .tag = WASM_I32,
- *     .value.I32 = 3,
- * };
- *
- * // Second argument.
- * wasmer_value_t argument_two = {
- *     .tag = WASM_I32,
- *     .value.I32 = 4,
- * };
- *
- * // First result.
- * wasmer_value_t result_one;
- *
- * // All arguments and results.
- * wasmer_value_t arguments[] = {argument_one, argument_two};
- * wasmer_value_t results[]   = {result_one};
- *
- * vm_exec_result_t call_result = wasmer_instance_call(
- *     instance,  // instance pointer
- *     "sum",     // the exported function name
- *     arguments, // the arguments
- *     2,         // the number of arguments
- *     results,   // the results
- *     1          // the number of results
- * );
- *
- * if (call_result == WASMER_OK) {
- *     printf("Result is: %d\n", results[0].value.I32);
- * }
- * ```
  */
 vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance, const char *func_name_ptr);
+
+/**
+ * Sets the data that can be hold by an instance context.
+ *
+ * An instance context (represented by the opaque
+ * `wasmer_instance_context_t` structure) can hold user-defined
+ * data. This function sets the data. This function is complementary
+ * of `wasmer_instance_context_data_get()`.
+ *
+ * This function does nothing if `instance` is a null pointer.
+ */
+void vm_exec_instance_context_data_set(vm_exec_instance_t *instance, void *data_ptr);
 
 /**
  * Frees memory for the given `vm_exec_instance_t`.

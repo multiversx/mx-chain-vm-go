@@ -38,6 +38,9 @@ type cWasmerResultT C.vm_exec_result_t
 type cWasmerValueTag C.vm_exec_value_tag
 
 type cWasmerCompilationOptions C.vm_exec_compilation_options_t
+type cWasmerVmHookPointers = C.vm_exec_vm_hook_pointers
+
+// type cFuncGetGasLeft = C.get_gas_left_func
 
 // const cWasmFunction = C.WASM_FUNCTION
 // const cWasmGlobal = C.WASM_GLOBAL
@@ -307,12 +310,12 @@ func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cC
 // 	))
 // }
 
-// func cWasmerInstanceContextDataSet(instance *cWasmerInstanceT, dataPointer unsafe.Pointer) {
-// 	C.vm_exec_instance_context_data_set(
-// 		(*C.vm_exec_instance_t)(instance),
-// 		dataPointer,
-// 	)
-// }
+func cWasmerInstanceContextDataSet(instance *cWasmerInstanceT, dataPointer unsafe.Pointer) {
+	C.vm_exec_instance_context_data_set(
+		(*C.vm_exec_instance_t)(instance),
+		dataPointer,
+	)
+}
 
 // func cWasmerInstanceContextMemory(instanceContext *cWasmerInstanceContextT) *cWasmerMemoryT {
 // 	return (*cWasmerMemoryT)(C.vm_exec_instance_context_memory(
