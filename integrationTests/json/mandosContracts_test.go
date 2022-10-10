@@ -10,6 +10,10 @@ func TestRustAdder(t *testing.T) {
 	runAllTestsInFolder(t, "adder/mandos")
 }
 
+func TestRustFactorial(t *testing.T) {
+	runAllTestsInFolder(t, "factorial/mandos")
+}
+
 func TestRustErc20(t *testing.T) {
 	runAllTestsInFolder(t, "erc20-rust/mandos")
 }
