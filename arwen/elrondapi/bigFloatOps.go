@@ -72,7 +72,7 @@ func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHan
 	dest.Set(result)
 }
 
-// formerly v1_5_bigFloatNewFromParts
+// BigFloatNewFromParts EIInterface implementation
 func (context *EICallbacks) BigFloatNewFromParts(integralPart, fractionalPart, exponent int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -117,7 +117,7 @@ func (context *EICallbacks) BigFloatNewFromParts(integralPart, fractionalPart, e
 	return handle
 }
 
-// formerly v1_5_bigFloatNewFromFrac
+// BigFloatNewFromFrac EIInterface implementation
 func (context *EICallbacks) BigFloatNewFromFrac(numerator, denominator int64) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -144,7 +144,7 @@ func (context *EICallbacks) BigFloatNewFromFrac(numerator, denominator int64) in
 	return handle
 }
 
-// formerly v1_5_bigFloatNewFromSci
+// BigFloatNewFromSci EIInterface implementation
 func (context *EICallbacks) BigFloatNewFromSci(significand, exponent int64) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -178,7 +178,7 @@ func (context *EICallbacks) BigFloatNewFromSci(significand, exponent int64) int3
 	return handle
 }
 
-// formerly v1_5_bigFloatAdd
+// BigFloatAdd EIInterface implementation
 func (context *EICallbacks) BigFloatAdd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -201,7 +201,7 @@ func (context *EICallbacks) BigFloatAdd(destinationHandle, op1Handle, op2Handle 
 	setResultIfNotInfinity(context.GetVMHost(), resultAdd, destinationHandle)
 }
 
-// formerly v1_5_bigFloatSub
+// BigFloatSub EIInterface implementation
 func (context *EICallbacks) BigFloatSub(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -223,7 +223,7 @@ func (context *EICallbacks) BigFloatSub(destinationHandle, op1Handle, op2Handle 
 	setResultIfNotInfinity(context.GetVMHost(), resultSub, destinationHandle)
 }
 
-// formerly v1_5_bigFloatMul
+// BigFloatMul EIInterface implementation
 func (context *EICallbacks) BigFloatMul(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -246,7 +246,7 @@ func (context *EICallbacks) BigFloatMul(destinationHandle, op1Handle, op2Handle 
 	setResultIfNotInfinity(context.GetVMHost(), resultMul, destinationHandle)
 }
 
-// formerly v1_5_bigFloatDiv
+// BigFloatDiv EIInterface implementation
 func (context *EICallbacks) BigFloatDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -273,7 +273,7 @@ func (context *EICallbacks) BigFloatDiv(destinationHandle, op1Handle, op2Handle 
 	setResultIfNotInfinity(context.GetVMHost(), resultDiv, destinationHandle)
 }
 
-// formerly v1_5_bigFloatNeg
+// BigFloatNeg EIInterface implementation
 func (context *EICallbacks) BigFloatNeg(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -295,7 +295,7 @@ func (context *EICallbacks) BigFloatNeg(destinationHandle, opHandle int32) {
 	dest.Neg(op)
 }
 
-// formerly v1_5_bigFloatClone
+// BigFloatClone EIInterface implementation
 func (context *EICallbacks) BigFloatClone(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -317,7 +317,7 @@ func (context *EICallbacks) BigFloatClone(destinationHandle, opHandle int32) {
 	dest.Copy(op)
 }
 
-// formerly v1_5_bigFloatCmp
+// BigFloatCmp EIInterface implementation
 func (context *EICallbacks) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -335,7 +335,7 @@ func (context *EICallbacks) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	return int32(op1.Cmp(op2))
 }
 
-// formerly v1_5_bigFloatAbs
+// BigFloatAbs EIInterface implementation
 func (context *EICallbacks) BigFloatAbs(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -357,7 +357,7 @@ func (context *EICallbacks) BigFloatAbs(destinationHandle, opHandle int32) {
 	dest.Abs(op)
 }
 
-// formerly v1_5_bigFloatSign
+// BigFloatSign EIInterface implementation
 func (context *EICallbacks) BigFloatSign(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -373,7 +373,7 @@ func (context *EICallbacks) BigFloatSign(opHandle int32) int32 {
 	return int32(op.Sign())
 }
 
-// formerly v1_5_bigFloatSqrt
+// BigFloatSqrt EIInterface implementation
 func (context *EICallbacks) BigFloatSqrt(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -403,7 +403,7 @@ func (context *EICallbacks) BigFloatSqrt(destinationHandle, opHandle int32) {
 	dest.Set(resultSqrt)
 }
 
-// formerly v1_5_bigFloatPow
+// BigFloatPow EIInterface implementation
 func (context *EICallbacks) BigFloatPow(destinationHandle, opHandle, exponent int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -455,7 +455,7 @@ func (context *EICallbacks) pow(base *big.Float, exp int32) (*big.Float, error) 
 	return result, nil
 }
 
-// formerly v1_5_bigFloatFloor
+// BigFloatFloor EIInterface implementation
 func (context *EICallbacks) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -481,7 +481,7 @@ func (context *EICallbacks) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	}
 }
 
-// formerly v1_5_bigFloatCeil
+// BigFloatCeil EIInterface implementation
 func (context *EICallbacks) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -507,7 +507,7 @@ func (context *EICallbacks) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	}
 }
 
-// formerly v1_5_bigFloatTruncate
+// BigFloatTruncate EIInterface implementation
 func (context *EICallbacks) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -527,7 +527,7 @@ func (context *EICallbacks) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 }
 
-// formerly v1_5_bigFloatSetInt64
+// BigFloatSetInt64 EIInterface implementation
 func (context *EICallbacks) BigFloatSetInt64(destinationHandle int32, value int64) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -543,7 +543,7 @@ func (context *EICallbacks) BigFloatSetInt64(destinationHandle int32, value int6
 	dest.SetInt64(value)
 }
 
-// formerly v1_5_bigFloatIsInt
+// BigFloatIsInt EIInterface implementation
 func (context *EICallbacks) BigFloatIsInt(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -562,7 +562,7 @@ func (context *EICallbacks) BigFloatIsInt(opHandle int32) int32 {
 	return 0
 }
 
-// formerly v1_5_bigFloatSetBigInt
+// BigFloatSetBigInt EIInterface implementation
 func (context *EICallbacks) BigFloatSetBigInt(destinationHandle, bigIntHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -581,7 +581,7 @@ func (context *EICallbacks) BigFloatSetBigInt(destinationHandle, bigIntHandle in
 	setResultIfNotInfinity(context.GetVMHost(), resultSetInt, destinationHandle)
 }
 
-// formerly v1_5_bigFloatGetConstPi
+// BigFloatGetConstPi EIInterface implementation
 func (context *EICallbacks) BigFloatGetConstPi(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -597,7 +597,7 @@ func (context *EICallbacks) BigFloatGetConstPi(destinationHandle int32) {
 	pi.SetFloat64(math.Pi)
 }
 
-// formerly v1_5_bigFloatGetConstE
+// BigFloatGetConstE EIInterface implementation
 func (context *EICallbacks) BigFloatGetConstE(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()

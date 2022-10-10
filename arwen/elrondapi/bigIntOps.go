@@ -61,7 +61,7 @@ func BigIntImports(imports executor.ImportFunctionReceiver) error {
 	return nil
 }
 
-// formerly v1_5_bigIntGetUnsignedArgument
+// BigIntGetUnsignedArgument EIInterface implementation
 func (context *EICallbacks) BigIntGetUnsignedArgument(id int32, destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -80,7 +80,7 @@ func (context *EICallbacks) BigIntGetUnsignedArgument(id int32, destinationHandl
 	value.SetBytes(args[id])
 }
 
-// formerly v1_5_bigIntGetSignedArgument
+// BigIntGetSignedArgument EIInterface implementation
 func (context *EICallbacks) BigIntGetSignedArgument(id int32, destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -99,7 +99,7 @@ func (context *EICallbacks) BigIntGetSignedArgument(id int32, destinationHandle 
 	twos.SetBytes(value, args[id])
 }
 
-// formerly v1_5_bigIntStorageStoreUnsigned
+// BigIntStorageStoreUnsigned EIInterface implementation
 func (context *EICallbacks) BigIntStorageStoreUnsigned(keyOffset int32, keyLength int32, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -125,7 +125,7 @@ func (context *EICallbacks) BigIntStorageStoreUnsigned(keyOffset int32, keyLengt
 	return int32(storageStatus)
 }
 
-// formerly v1_5_bigIntStorageLoadUnsigned
+// BigIntStorageLoadUnsigned EIInterface implementation
 func (context *EICallbacks) BigIntStorageLoadUnsigned(keyOffset int32, keyLength int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -146,7 +146,7 @@ func (context *EICallbacks) BigIntStorageLoadUnsigned(keyOffset int32, keyLength
 	return int32(len(bytes))
 }
 
-// formerly v1_5_bigIntGetCallValue
+// BigIntGetCallValue EIInterface implementation
 func (context *EICallbacks) BigIntGetCallValue(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -159,7 +159,7 @@ func (context *EICallbacks) BigIntGetCallValue(destinationHandle int32) {
 	value.Set(runtime.GetVMInput().CallValue)
 }
 
-// formerly v1_5_bigIntGetESDTCallValue
+// BigIntGetESDTCallValue EIInterface implementation
 func (context *EICallbacks) BigIntGetESDTCallValue(destination int32) {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
@@ -168,7 +168,7 @@ func (context *EICallbacks) BigIntGetESDTCallValue(destination int32) {
 	context.BigIntGetESDTCallValueByIndex(destination, 0)
 }
 
-// formerly v1_5_bigIntGetESDTCallValueByIndex
+// BigIntGetESDTCallValueByIndex EIInterface implementation
 func (context *EICallbacks) BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -185,7 +185,7 @@ func (context *EICallbacks) BigIntGetESDTCallValueByIndex(destinationHandle int3
 	}
 }
 
-// formerly v1_5_bigIntGetExternalBalance
+// BigIntGetExternalBalance EIInterface implementation
 func (context *EICallbacks) BigIntGetExternalBalance(addressOffset int32, result int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -206,7 +206,7 @@ func (context *EICallbacks) BigIntGetExternalBalance(addressOffset int32, result
 	value.SetBytes(balance)
 }
 
-// formerly v1_5_bigIntGetESDTExternalBalance
+// BigIntGetESDTExternalBalance EIInterface implementation
 func (context *EICallbacks) BigIntGetESDTExternalBalance(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -228,7 +228,7 @@ func (context *EICallbacks) BigIntGetESDTExternalBalance(addressOffset int32, to
 	value.Set(esdtData.Value)
 }
 
-// formerly v1_5_bigIntNew
+// BigIntNew EIInterface implementation
 func (context *EICallbacks) BigIntNew(smallValue int64) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -239,7 +239,7 @@ func (context *EICallbacks) BigIntNew(smallValue int64) int32 {
 	return managedType.NewBigIntFromInt64(smallValue)
 }
 
-// formerly v1_5_bigIntUnsignedByteLength
+// BigIntUnsignedByteLength EIInterface implementation
 func (context *EICallbacks) BigIntUnsignedByteLength(referenceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -257,7 +257,7 @@ func (context *EICallbacks) BigIntUnsignedByteLength(referenceHandle int32) int3
 	return int32(len(bytes))
 }
 
-// formerly v1_5_bigIntSignedByteLength
+// BigIntSignedByteLength EIInterface implementation
 func (context *EICallbacks) BigIntSignedByteLength(referenceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -275,7 +275,7 @@ func (context *EICallbacks) BigIntSignedByteLength(referenceHandle int32) int32 
 	return int32(len(bytes))
 }
 
-// formerly v1_5_bigIntGetUnsignedBytes
+// BigIntGetUnsignedBytes EIInterface implementation
 func (context *EICallbacks) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -302,7 +302,7 @@ func (context *EICallbacks) BigIntGetUnsignedBytes(referenceHandle int32, byteOf
 	return int32(len(bytes))
 }
 
-// formerly v1_5_bigIntGetSignedBytes
+// BigIntGetSignedBytes EIInterface implementation
 func (context *EICallbacks) BigIntGetSignedBytes(referenceHandle int32, byteOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -329,7 +329,7 @@ func (context *EICallbacks) BigIntGetSignedBytes(referenceHandle int32, byteOffs
 	return int32(len(bytes))
 }
 
-// formerly v1_5_bigIntSetUnsignedBytes
+// BigIntSetUnsignedBytes EIInterface implementation
 func (context *EICallbacks) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset int32, byteLength int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -350,7 +350,7 @@ func (context *EICallbacks) BigIntSetUnsignedBytes(destinationHandle int32, byte
 	value.SetBytes(bytes)
 }
 
-// formerly v1_5_bigIntSetSignedBytes
+// BigIntSetSignedBytes EIInterface implementation
 func (context *EICallbacks) BigIntSetSignedBytes(destinationHandle int32, byteOffset int32, byteLength int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -371,7 +371,7 @@ func (context *EICallbacks) BigIntSetSignedBytes(destinationHandle int32, byteOf
 	twos.SetBytes(value, bytes)
 }
 
-// formerly v1_5_bigIntIsInt64
+// BigIntIsInt64 EIInterface implementation
 func (context *EICallbacks) BigIntIsInt64(destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -390,7 +390,7 @@ func (context *EICallbacks) BigIntIsInt64(destinationHandle int32) int32 {
 	return 0
 }
 
-// formerly v1_5_bigIntGetInt64
+// BigIntGetInt64 EIInterface implementation
 func (context *EICallbacks) BigIntGetInt64(destinationHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -402,7 +402,7 @@ func (context *EICallbacks) BigIntGetInt64(destinationHandle int32) int64 {
 	return value.Int64()
 }
 
-// formerly v1_5_bigIntSetInt64
+// BigIntSetInt64 EIInterface implementation
 func (context *EICallbacks) BigIntSetInt64(destinationHandle int32, value int64) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -414,7 +414,7 @@ func (context *EICallbacks) BigIntSetInt64(destinationHandle int32, value int64)
 	dest.SetInt64(value)
 }
 
-// formerly v1_5_bigIntAdd
+// BigIntAdd EIInterface implementation
 func (context *EICallbacks) BigIntAdd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -433,7 +433,7 @@ func (context *EICallbacks) BigIntAdd(destinationHandle, op1Handle, op2Handle in
 	dest.Add(a, b)
 }
 
-// formerly v1_5_bigIntSub
+// BigIntSub EIInterface implementation
 func (context *EICallbacks) BigIntSub(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -452,7 +452,7 @@ func (context *EICallbacks) BigIntSub(destinationHandle, op1Handle, op2Handle in
 	dest.Sub(a, b)
 }
 
-// formerly v1_5_bigIntMul
+// BigIntMul EIInterface implementation
 func (context *EICallbacks) BigIntMul(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -472,7 +472,7 @@ func (context *EICallbacks) BigIntMul(destinationHandle, op1Handle, op2Handle in
 	dest.Mul(a, b)
 }
 
-// formerly v1_5_bigIntTDiv
+// BigIntTDiv EIInterface implementation
 func (context *EICallbacks) BigIntTDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -495,7 +495,7 @@ func (context *EICallbacks) BigIntTDiv(destinationHandle, op1Handle, op2Handle i
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
 }
 
-// formerly v1_5_bigIntTMod
+// BigIntTMod EIInterface implementation
 func (context *EICallbacks) BigIntTMod(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -518,7 +518,7 @@ func (context *EICallbacks) BigIntTMod(destinationHandle, op1Handle, op2Handle i
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
 }
 
-// formerly v1_5_bigIntEDiv
+// BigIntEDiv EIInterface implementation
 func (context *EICallbacks) BigIntEDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -541,7 +541,7 @@ func (context *EICallbacks) BigIntEDiv(destinationHandle, op1Handle, op2Handle i
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
 }
 
-// formerly v1_5_bigIntEMod
+// BigIntEMod EIInterface implementation
 func (context *EICallbacks) BigIntEMod(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -564,7 +564,7 @@ func (context *EICallbacks) BigIntEMod(destinationHandle, op1Handle, op2Handle i
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
 }
 
-// formerly v1_5_bigIntSqrt
+// BigIntSqrt EIInterface implementation
 func (context *EICallbacks) BigIntSqrt(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -587,7 +587,7 @@ func (context *EICallbacks) BigIntSqrt(destinationHandle, opHandle int32) {
 	dest.Sqrt(a)
 }
 
-// formerly v1_5_bigIntPow
+// BigIntPow EIInterface implementation
 func (context *EICallbacks) BigIntPow(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -617,7 +617,7 @@ func (context *EICallbacks) BigIntPow(destinationHandle, op1Handle, op2Handle in
 	dest.Exp(a, b, nil)
 }
 
-// formerly v1_5_bigIntLog2
+// BigIntLog2 EIInterface implementation
 func (context *EICallbacks) BigIntLog2(op1Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -640,7 +640,7 @@ func (context *EICallbacks) BigIntLog2(op1Handle int32) int32 {
 	return int32(a.BitLen() - 1)
 }
 
-// formerly v1_5_bigIntAbs
+// BigIntAbs EIInterface implementation
 func (context *EICallbacks) BigIntAbs(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -659,7 +659,7 @@ func (context *EICallbacks) BigIntAbs(destinationHandle, opHandle int32) {
 	dest.Abs(a)
 }
 
-// formerly v1_5_bigIntNeg
+// BigIntNeg EIInterface implementation
 func (context *EICallbacks) BigIntNeg(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -678,7 +678,7 @@ func (context *EICallbacks) BigIntNeg(destinationHandle, opHandle int32) {
 	dest.Neg(a)
 }
 
-// formerly v1_5_bigIntSign
+// BigIntSign EIInterface implementation
 func (context *EICallbacks) BigIntSign(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -696,7 +696,7 @@ func (context *EICallbacks) BigIntSign(opHandle int32) int32 {
 	return int32(a.Sign())
 }
 
-// formerly v1_5_bigIntCmp
+// BigIntCmp EIInterface implementation
 func (context *EICallbacks) BigIntCmp(op1Handle, op2Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -714,7 +714,7 @@ func (context *EICallbacks) BigIntCmp(op1Handle, op2Handle int32) int32 {
 	return int32(a.Cmp(b))
 }
 
-// formerly v1_5_bigIntNot
+// BigIntNot EIInterface implementation
 func (context *EICallbacks) BigIntNot(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -737,7 +737,7 @@ func (context *EICallbacks) BigIntNot(destinationHandle, opHandle int32) {
 	dest.Not(a)
 }
 
-// formerly v1_5_bigIntAnd
+// BigIntAnd EIInterface implementation
 func (context *EICallbacks) BigIntAnd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -760,7 +760,7 @@ func (context *EICallbacks) BigIntAnd(destinationHandle, op1Handle, op2Handle in
 	dest.And(a, b)
 }
 
-// formerly v1_5_bigIntOr
+// BigIntOr EIInterface implementation
 func (context *EICallbacks) BigIntOr(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -783,7 +783,7 @@ func (context *EICallbacks) BigIntOr(destinationHandle, op1Handle, op2Handle int
 	dest.Or(a, b)
 }
 
-// formerly v1_5_bigIntXor
+// BigIntXor EIInterface implementation
 func (context *EICallbacks) BigIntXor(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -806,7 +806,7 @@ func (context *EICallbacks) BigIntXor(destinationHandle, op1Handle, op2Handle in
 	dest.Xor(a, b)
 }
 
-// formerly v1_5_bigIntShr
+// BigIntShr EIInterface implementation
 func (context *EICallbacks) BigIntShr(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -830,7 +830,7 @@ func (context *EICallbacks) BigIntShr(destinationHandle, opHandle, bits int32) {
 	managedType.ConsumeGasForBigIntCopy(dest)
 }
 
-// formerly v1_5_bigIntShl
+// BigIntShl EIInterface implementation
 func (context *EICallbacks) BigIntShl(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -855,7 +855,7 @@ func (context *EICallbacks) BigIntShl(destinationHandle, opHandle, bits int32) {
 
 }
 
-// formerly v1_5_bigIntFinishUnsigned
+// BigIntFinishUnsigned EIInterface implementation
 func (context *EICallbacks) BigIntFinishUnsigned(referenceHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
@@ -877,7 +877,7 @@ func (context *EICallbacks) BigIntFinishUnsigned(referenceHandle int32) {
 	metering.UseAndTraceGas(gasToUse)
 }
 
-// formerly v1_5_bigIntFinishSigned
+// BigIntFinishSigned EIInterface implementation
 func (context *EICallbacks) BigIntFinishSigned(referenceHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
@@ -899,7 +899,7 @@ func (context *EICallbacks) BigIntFinishSigned(referenceHandle int32) {
 	metering.UseAndTraceGas(gasToUse)
 }
 
-// formerly v1_5_bigIntToString
+// BigIntToString EIInterface implementation
 func (context *EICallbacks) BigIntToString(bigIntHandle int32, destinationHandle int32) {
 	host := context.GetVMHost()
 	BigIntToStringWithHost(host, bigIntHandle, destinationHandle)

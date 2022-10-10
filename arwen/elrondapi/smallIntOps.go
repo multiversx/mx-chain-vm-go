@@ -30,7 +30,7 @@ func SmallIntImports(imports executor.ImportFunctionReceiver) error {
 	return nil
 }
 
-// formerly v1_5_smallIntGetUnsignedArgument
+// SmallIntGetUnsignedArgument EIInterface implementation
 func (context *EICallbacks) SmallIntGetUnsignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -53,7 +53,7 @@ func (context *EICallbacks) SmallIntGetUnsignedArgument(id int32) int64 {
 	return int64(argBigInt.Uint64())
 }
 
-// formerly v1_5_smallIntGetSignedArgument
+// SmallIntGetSignedArgument EIInterface implementation
 func (context *EICallbacks) SmallIntGetSignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -76,7 +76,7 @@ func (context *EICallbacks) SmallIntGetSignedArgument(id int32) int64 {
 	return argBigInt.Int64()
 }
 
-// formerly v1_5_smallIntFinishUnsigned
+// SmallIntFinishUnsigned EIInterface implementation
 func (context *EICallbacks) SmallIntFinishUnsigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -88,7 +88,7 @@ func (context *EICallbacks) SmallIntFinishUnsigned(value int64) {
 	output.Finish(valueBytes)
 }
 
-// formerly v1_5_smallIntFinishSigned
+// SmallIntFinishSigned EIInterface implementation
 func (context *EICallbacks) SmallIntFinishSigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -100,7 +100,7 @@ func (context *EICallbacks) SmallIntFinishSigned(value int64) {
 	output.Finish(valueBytes)
 }
 
-// formerly v1_5_smallIntStorageStoreUnsigned
+// SmallIntStorageStoreUnsigned EIInterface implementation
 func (context *EICallbacks) SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -123,7 +123,7 @@ func (context *EICallbacks) SmallIntStorageStoreUnsigned(keyOffset int32, keyLen
 	return int32(storageStatus)
 }
 
-// formerly v1_5_smallIntStorageStoreSigned
+// SmallIntStorageStoreSigned EIInterface implementation
 func (context *EICallbacks) SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -146,7 +146,7 @@ func (context *EICallbacks) SmallIntStorageStoreSigned(keyOffset int32, keyLengt
 	return int32(storageStatus)
 }
 
-// formerly v1_5_smallIntStorageLoadUnsigned
+// SmallIntStorageLoadUnsigned EIInterface implementation
 func (context *EICallbacks) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -169,7 +169,7 @@ func (context *EICallbacks) SmallIntStorageLoadUnsigned(keyOffset int32, keyLeng
 	return int64(valueBigInt.Uint64())
 }
 
-// formerly v1_5_smallIntStorageLoadSigned
+// SmallIntStorageLoadSigned EIInterface implementation
 func (context *EICallbacks) SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -192,25 +192,25 @@ func (context *EICallbacks) SmallIntStorageLoadSigned(keyOffset int32, keyLength
 	return valueBigInt.Int64()
 }
 
-// formerly v1_5_int64getArgument
+// Int64getArgument EIInterface implementation
 func (context *EICallbacks) Int64getArgument(id int32) int64 {
 	// backwards compatibility
 	return context.SmallIntGetSignedArgument(id)
 }
 
-// formerly v1_5_int64finish
+// Int64finish EIInterface implementation
 func (context *EICallbacks) Int64finish(value int64) {
 	// backwards compatibility
 	context.SmallIntFinishSigned(value)
 }
 
-// formerly v1_5_int64storageStore
+// Int64storageStore EIInterface implementation
 func (context *EICallbacks) Int64storageStore(keyOffset int32, keyLength int32, value int64) int32 {
 	// backwards compatibility
 	return context.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 }
 
-// formerly v1_5_int64storageLoad
+// Int64storageLoad EIInterface implementation
 func (context *EICallbacks) Int64storageLoad(keyOffset int32, keyLength int32) int64 {
 	// backwards compatibility
 	return context.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
