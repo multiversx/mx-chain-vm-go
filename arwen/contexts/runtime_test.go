@@ -11,7 +11,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
@@ -33,7 +32,7 @@ func MakeAPIImports() *wasmer.Imports {
 	_ = elrondapi.BigFloatImports(imports)
 	_ = elrondapi.ManagedBufferImports(imports)
 	_ = elrondapi.SmallIntImports(imports)
-	_ = cryptoapi.CryptoImports(imports)
+	_ = elrondapi.CryptoImports(imports)
 	return wasmer.ConvertImports(imports)
 }
 

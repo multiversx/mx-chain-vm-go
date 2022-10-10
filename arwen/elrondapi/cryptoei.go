@@ -1,4 +1,4 @@
-package cryptoapi
+package elrondapi
 
 import (
 	"crypto/elliptic"

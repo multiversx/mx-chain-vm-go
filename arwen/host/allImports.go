@@ -1,7 +1,6 @@
 package host
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
@@ -38,7 +37,7 @@ func PopulateAllImports(imports executor.ImportFunctionReceiver) error {
 		return err
 	}
 
-	err = cryptoapi.CryptoImports(imports)
+	err = elrondapi.CryptoImports(imports)
 	if err != nil {
 		return err
 	}
