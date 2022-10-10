@@ -49,7 +49,7 @@ func CryptoImports(imports executor.ImportFunctionReceiver) error {
 	return nil
 }
 
-//export v1_5_sha256
+// formerly v1_5_sha256
 func (context *EICallbacks) Sha256(dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -78,7 +78,7 @@ func (context *EICallbacks) Sha256(dataOffset int32, length int32, resultOffset 
 	return 0
 }
 
-//export v1_5_managedSha256
+// formerly v1_5_managedSha256
 func (context *EICallbacks) ManagedSha256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -104,7 +104,7 @@ func (context *EICallbacks) ManagedSha256(inputHandle, outputHandle int32) int32
 	return 0
 }
 
-//export v1_5_keccak256
+// formerly v1_5_keccak256
 func (context *EICallbacks) Keccak256(dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -133,7 +133,7 @@ func (context *EICallbacks) Keccak256(dataOffset int32, length int32, resultOffs
 	return 0
 }
 
-//export v1_5_managedKeccak256
+// formerly v1_5_managedKeccak256
 func (context *EICallbacks) ManagedKeccak256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -159,7 +159,7 @@ func (context *EICallbacks) ManagedKeccak256(inputHandle, outputHandle int32) in
 	return 0
 }
 
-//export v1_5_ripemd160
+// formerly v1_5_ripemd160
 func (context *EICallbacks) Ripemd160(dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -188,7 +188,7 @@ func (context *EICallbacks) Ripemd160(dataOffset int32, length int32, resultOffs
 	return 0
 }
 
-//export v1_5_managedRipemd160
+// formerly v1_5_managedRipemd160
 func (context *EICallbacks) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
@@ -219,7 +219,7 @@ func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle
 	return 0
 }
 
-//export v1_5_verifyBLS
+// formerly v1_5_verifyBLS
 func (context *EICallbacks) VerifyBLS(
 
 	keyOffset int32,
@@ -262,7 +262,7 @@ func (context *EICallbacks) VerifyBLS(
 	return 0
 }
 
-//export v1_5_managedVerifyBLS
+// formerly v1_5_managedVerifyBLS
 func (context *EICallbacks) ManagedVerifyBLS(
 
 	keyHandle int32,
@@ -315,7 +315,7 @@ func ManagedVerifyBLSWithHost(
 	return 0
 }
 
-//export v1_5_verifyEd25519
+// formerly v1_5_verifyEd25519
 func (context *EICallbacks) VerifyEd25519(
 
 	keyOffset int32,
@@ -358,7 +358,7 @@ func (context *EICallbacks) VerifyEd25519(
 	return 0
 }
 
-//export v1_5_managedVerifyEd25519
+// formerly v1_5_managedVerifyEd25519
 func (context *EICallbacks) ManagedVerifyEd25519(
 
 	keyHandle, messageHandle, sigHandle int32,
@@ -407,7 +407,7 @@ func ManagedVerifyEd25519WithHost(
 	return 0
 }
 
-//export v1_5_verifyCustomSecp256k1
+// formerly v1_5_verifyCustomSecp256k1
 func (context *EICallbacks) VerifyCustomSecp256k1(
 
 	keyOffset int32,
@@ -466,7 +466,7 @@ func (context *EICallbacks) VerifyCustomSecp256k1(
 	return 0
 }
 
-//export v1_5_managedVerifyCustomSecp256k1
+// formerly v1_5_managedVerifyCustomSecp256k1
 func (context *EICallbacks) ManagedVerifyCustomSecp256k1(
 
 	keyHandle, messageHandle, sigHandle int32,
@@ -522,7 +522,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	return 0
 }
 
-//export v1_5_verifySecp256k1
+// formerly v1_5_verifySecp256k1
 func (context *EICallbacks) VerifySecp256k1(
 
 	keyOffset int32,
@@ -531,8 +531,7 @@ func (context *EICallbacks) VerifySecp256k1(
 	messageLength int32,
 	sigOffset int32,
 ) int32 {
-	return v1_5_verifyCustomSecp256k1(
-		context,
+	return context.VerifyCustomSecp256k1(
 		keyOffset,
 		keyLength,
 		messageOffset,
@@ -542,7 +541,7 @@ func (context *EICallbacks) VerifySecp256k1(
 	)
 }
 
-//export v1_5_managedVerifySecp256k1
+// formerly v1_5_managedVerifySecp256k1
 func (context *EICallbacks) ManagedVerifySecp256k1(
 
 	keyHandle, messageHandle, sigHandle int32,
@@ -564,7 +563,7 @@ func ManagedVerifySecp256k1WithHost(
 	)
 }
 
-//export v1_5_encodeSecp256k1DerSignature
+// formerly v1_5_encodeSecp256k1DerSignature
 func (context *EICallbacks) EncodeSecp256k1DerSignature(
 
 	rOffset int32,
@@ -599,7 +598,7 @@ func (context *EICallbacks) EncodeSecp256k1DerSignature(
 	return 0
 }
 
-//export v1_5_managedEncodeSecp256k1DerSignature
+// formerly v1_5_managedEncodeSecp256k1DerSignature
 func (context *EICallbacks) ManagedEncodeSecp256k1DerSignature(
 
 	rHandle, sHandle, sigHandle int32,
@@ -636,7 +635,7 @@ func ManagedEncodeSecp256k1DerSignatureWithHost(
 	return 0
 }
 
-//export v1_5_addEC
+// formerly v1_5_addEC
 func (context *EICallbacks) AddEC(
 
 	xResultHandle int32,
@@ -692,7 +691,7 @@ func (context *EICallbacks) AddEC(
 	yResult.Set(yResultAdd)
 }
 
-//export v1_5_doubleEC
+// formerly v1_5_doubleEC
 func (context *EICallbacks) DoubleEC(
 
 	xResultHandle int32,
@@ -737,7 +736,7 @@ func (context *EICallbacks) DoubleEC(
 	yResult.Set(yResultDouble)
 }
 
-//export v1_5_isOnCurveEC
+// formerly v1_5_isOnCurveEC
 func (context *EICallbacks) IsOnCurveEC(
 
 	ecHandle int32,
@@ -776,7 +775,7 @@ func (context *EICallbacks) IsOnCurveEC(
 	return 0
 }
 
-//export v1_5_scalarBaseMultEC
+// formerly v1_5_scalarBaseMultEC
 func (context *EICallbacks) ScalarBaseMultEC(
 
 	xResultHandle int32,
@@ -813,7 +812,7 @@ func (context *EICallbacks) ScalarBaseMultEC(
 	return commonScalarBaseMultEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-//export v1_5_managedScalarBaseMultEC
+// formerly v1_5_managedScalarBaseMultEC
 func (context *EICallbacks) ManagedScalarBaseMultEC(
 
 	xResultHandle int32,
@@ -894,7 +893,7 @@ func commonScalarBaseMultEC(
 	return 0
 }
 
-//export v1_5_scalarMultEC
+// formerly v1_5_scalarMultEC
 func (context *EICallbacks) ScalarMultEC(
 
 	xResultHandle int32,
@@ -933,7 +932,7 @@ func (context *EICallbacks) ScalarMultEC(
 	return commonScalarMultEC(host, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
 }
 
-//export v1_5_managedScalarMultEC
+// formerly v1_5_managedScalarMultEC
 func (context *EICallbacks) ManagedScalarMultEC(
 
 	xResultHandle int32,
@@ -1029,7 +1028,7 @@ func commonScalarMultEC(
 	return 0
 }
 
-//export v1_5_marshalEC
+// formerly v1_5_marshalEC
 func (context *EICallbacks) MarshalEC(
 
 	xPairHandle int32,
@@ -1052,7 +1051,7 @@ func (context *EICallbacks) MarshalEC(
 	return int32(len(result))
 }
 
-//export v1_5_managedMarshalEC
+// formerly v1_5_managedMarshalEC
 func (context *EICallbacks) ManagedMarshalEC(
 
 	xPairHandle int32,
@@ -1127,7 +1126,7 @@ func commonMarshalEC(
 	return result, nil
 }
 
-//export v1_5_marshalCompressedEC
+// formerly v1_5_marshalCompressedEC
 func (context *EICallbacks) MarshalCompressedEC(
 
 	xPairHandle int32,
@@ -1150,7 +1149,7 @@ func (context *EICallbacks) MarshalCompressedEC(
 	return int32(len(result))
 }
 
-//export v1_5_managedMarshalCompressedEC
+// formerly v1_5_managedMarshalCompressedEC
 func (context *EICallbacks) ManagedMarshalCompressedEC(
 
 	xPairHandle int32,
@@ -1225,7 +1224,7 @@ func commonMarshalCompressedEC(host arwen.VMHost,
 	return result, nil
 }
 
-//export v1_5_unmarshalEC
+// formerly v1_5_unmarshalEC
 func (context *EICallbacks) UnmarshalEC(
 
 	xResultHandle int32,
@@ -1256,7 +1255,7 @@ func (context *EICallbacks) UnmarshalEC(
 	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-//export v1_5_managedUnmarshalEC
+// formerly v1_5_managedUnmarshalEC
 func (context *EICallbacks) ManagedUnmarshalEC(
 
 	xResultHandle int32,
@@ -1340,7 +1339,7 @@ func commonUnmarshalEC(
 	return 0
 }
 
-//export v1_5_unmarshalCompressedEC
+// formerly v1_5_unmarshalCompressedEC
 func (context *EICallbacks) UnmarshalCompressedEC(
 
 	xResultHandle int32,
@@ -1371,7 +1370,7 @@ func (context *EICallbacks) UnmarshalCompressedEC(
 	return commonUnmarshalCompressedEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-//export v1_5_managedUnmarshalCompressedEC
+// formerly v1_5_managedUnmarshalCompressedEC
 func (context *EICallbacks) ManagedUnmarshalCompressedEC(
 
 	xResultHandle int32,
@@ -1454,7 +1453,7 @@ func commonUnmarshalCompressedEC(
 	return 0
 }
 
-//export v1_5_generateKeyEC
+// formerly v1_5_generateKeyEC
 func (context *EICallbacks) GenerateKeyEC(
 
 	xPubKeyHandle int32,
@@ -1477,7 +1476,7 @@ func (context *EICallbacks) GenerateKeyEC(
 	return 0
 }
 
-//export v1_5_managedGenerateKeyEC
+// formerly v1_5_managedGenerateKeyEC
 func (context *EICallbacks) ManagedGenerateKeyEC(
 
 	xPubKeyHandle int32,
@@ -1556,7 +1555,7 @@ func commonGenerateEC(
 	return result, nil
 }
 
-//export v1_5_createEC
+// formerly v1_5_createEC
 func (context *EICallbacks) CreateEC(dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -1591,7 +1590,7 @@ func (context *EICallbacks) CreateEC(dataOffset int32, dataLength int32) int32 {
 	return -1
 }
 
-//export v1_5_managedCreateEC
+// formerly v1_5_managedCreateEC
 func (context *EICallbacks) ManagedCreateEC(dataHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedCreateECWithHost(host, dataHandle)
@@ -1629,7 +1628,7 @@ func ManagedCreateECWithHost(host arwen.VMHost, dataHandle int32) int32 {
 	return -1
 }
 
-//export v1_5_getCurveLengthEC
+// formerly v1_5_getCurveLengthEC
 func (context *EICallbacks) GetCurveLengthEC(ecHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -1646,7 +1645,7 @@ func (context *EICallbacks) GetCurveLengthEC(ecHandle int32) int32 {
 	return ecLength
 }
 
-//export v1_5_getPrivKeyByteLengthEC
+// formerly v1_5_getPrivKeyByteLengthEC
 func (context *EICallbacks) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -1663,7 +1662,7 @@ func (context *EICallbacks) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 	return byteLength
 }
 
-//export v1_5_ellipticCurveGetValues
+// formerly v1_5_ellipticCurveGetValues
 func (context *EICallbacks) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()

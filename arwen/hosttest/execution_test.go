@@ -3035,7 +3035,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
 
-						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+						elrondapi.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
@@ -3077,7 +3077,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
 
-						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+						elrondapi.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
