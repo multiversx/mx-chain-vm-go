@@ -260,7 +260,1252 @@ import "C"
 
 import (
 	"unsafe"
+
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
+
+// ElrondEIImports populates imports with the ElrondEI API methods
+func ElrondEIImports(imports executor.ImportFunctionReceiver) error {
+	imports.Namespace("env")
+
+	var err error
+	err = imports.Append("bigFloatNewFromParts", wasmer1_bigFloatNewFromParts, C.wasmer1_bigFloatNewFromParts)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatNewFromFrac", wasmer1_bigFloatNewFromFrac, C.wasmer1_bigFloatNewFromFrac)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatNewFromSci", wasmer1_bigFloatNewFromSci, C.wasmer1_bigFloatNewFromSci)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatAdd", wasmer1_bigFloatAdd, C.wasmer1_bigFloatAdd)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatSub", wasmer1_bigFloatSub, C.wasmer1_bigFloatSub)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatMul", wasmer1_bigFloatMul, C.wasmer1_bigFloatMul)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatDiv", wasmer1_bigFloatDiv, C.wasmer1_bigFloatDiv)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatNeg", wasmer1_bigFloatNeg, C.wasmer1_bigFloatNeg)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatClone", wasmer1_bigFloatClone, C.wasmer1_bigFloatClone)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatCmp", wasmer1_bigFloatCmp, C.wasmer1_bigFloatCmp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatAbs", wasmer1_bigFloatAbs, C.wasmer1_bigFloatAbs)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatSign", wasmer1_bigFloatSign, C.wasmer1_bigFloatSign)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatSqrt", wasmer1_bigFloatSqrt, C.wasmer1_bigFloatSqrt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatPow", wasmer1_bigFloatPow, C.wasmer1_bigFloatPow)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatFloor", wasmer1_bigFloatFloor, C.wasmer1_bigFloatFloor)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatCeil", wasmer1_bigFloatCeil, C.wasmer1_bigFloatCeil)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatTruncate", wasmer1_bigFloatTruncate, C.wasmer1_bigFloatTruncate)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatSetInt64", wasmer1_bigFloatSetInt64, C.wasmer1_bigFloatSetInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatIsInt", wasmer1_bigFloatIsInt, C.wasmer1_bigFloatIsInt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatSetBigInt", wasmer1_bigFloatSetBigInt, C.wasmer1_bigFloatSetBigInt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatGetConstPi", wasmer1_bigFloatGetConstPi, C.wasmer1_bigFloatGetConstPi)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigFloatGetConstE", wasmer1_bigFloatGetConstE, C.wasmer1_bigFloatGetConstE)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetUnsignedArgument", wasmer1_bigIntGetUnsignedArgument, C.wasmer1_bigIntGetUnsignedArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetSignedArgument", wasmer1_bigIntGetSignedArgument, C.wasmer1_bigIntGetSignedArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntStorageStoreUnsigned", wasmer1_bigIntStorageStoreUnsigned, C.wasmer1_bigIntStorageStoreUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntStorageLoadUnsigned", wasmer1_bigIntStorageLoadUnsigned, C.wasmer1_bigIntStorageLoadUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetCallValue", wasmer1_bigIntGetCallValue, C.wasmer1_bigIntGetCallValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetESDTCallValue", wasmer1_bigIntGetESDTCallValue, C.wasmer1_bigIntGetESDTCallValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetESDTCallValueByIndex", wasmer1_bigIntGetESDTCallValueByIndex, C.wasmer1_bigIntGetESDTCallValueByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetExternalBalance", wasmer1_bigIntGetExternalBalance, C.wasmer1_bigIntGetExternalBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetESDTExternalBalance", wasmer1_bigIntGetESDTExternalBalance, C.wasmer1_bigIntGetESDTExternalBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntNew", wasmer1_bigIntNew, C.wasmer1_bigIntNew)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntUnsignedByteLength", wasmer1_bigIntUnsignedByteLength, C.wasmer1_bigIntUnsignedByteLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSignedByteLength", wasmer1_bigIntSignedByteLength, C.wasmer1_bigIntSignedByteLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetUnsignedBytes", wasmer1_bigIntGetUnsignedBytes, C.wasmer1_bigIntGetUnsignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetSignedBytes", wasmer1_bigIntGetSignedBytes, C.wasmer1_bigIntGetSignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSetUnsignedBytes", wasmer1_bigIntSetUnsignedBytes, C.wasmer1_bigIntSetUnsignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSetSignedBytes", wasmer1_bigIntSetSignedBytes, C.wasmer1_bigIntSetSignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntIsInt64", wasmer1_bigIntIsInt64, C.wasmer1_bigIntIsInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntGetInt64", wasmer1_bigIntGetInt64, C.wasmer1_bigIntGetInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSetInt64", wasmer1_bigIntSetInt64, C.wasmer1_bigIntSetInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntAdd", wasmer1_bigIntAdd, C.wasmer1_bigIntAdd)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSub", wasmer1_bigIntSub, C.wasmer1_bigIntSub)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntMul", wasmer1_bigIntMul, C.wasmer1_bigIntMul)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntTDiv", wasmer1_bigIntTDiv, C.wasmer1_bigIntTDiv)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntTMod", wasmer1_bigIntTMod, C.wasmer1_bigIntTMod)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntEDiv", wasmer1_bigIntEDiv, C.wasmer1_bigIntEDiv)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntEMod", wasmer1_bigIntEMod, C.wasmer1_bigIntEMod)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSqrt", wasmer1_bigIntSqrt, C.wasmer1_bigIntSqrt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntPow", wasmer1_bigIntPow, C.wasmer1_bigIntPow)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntLog2", wasmer1_bigIntLog2, C.wasmer1_bigIntLog2)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntAbs", wasmer1_bigIntAbs, C.wasmer1_bigIntAbs)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntNeg", wasmer1_bigIntNeg, C.wasmer1_bigIntNeg)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntSign", wasmer1_bigIntSign, C.wasmer1_bigIntSign)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntCmp", wasmer1_bigIntCmp, C.wasmer1_bigIntCmp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntNot", wasmer1_bigIntNot, C.wasmer1_bigIntNot)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntAnd", wasmer1_bigIntAnd, C.wasmer1_bigIntAnd)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntOr", wasmer1_bigIntOr, C.wasmer1_bigIntOr)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntXor", wasmer1_bigIntXor, C.wasmer1_bigIntXor)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntShr", wasmer1_bigIntShr, C.wasmer1_bigIntShr)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntShl", wasmer1_bigIntShl, C.wasmer1_bigIntShl)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntFinishUnsigned", wasmer1_bigIntFinishUnsigned, C.wasmer1_bigIntFinishUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntFinishSigned", wasmer1_bigIntFinishSigned, C.wasmer1_bigIntFinishSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("bigIntToString", wasmer1_bigIntToString, C.wasmer1_bigIntToString)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getGasLeft", wasmer1_getGasLeft, C.wasmer1_getGasLeft)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getSCAddress", wasmer1_getSCAddress, C.wasmer1_getSCAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getOwnerAddress", wasmer1_getOwnerAddress, C.wasmer1_getOwnerAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getShardOfAddress", wasmer1_getShardOfAddress, C.wasmer1_getShardOfAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("isSmartContract", wasmer1_isSmartContract, C.wasmer1_isSmartContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("signalError", wasmer1_signalError, C.wasmer1_signalError)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getExternalBalance", wasmer1_getExternalBalance, C.wasmer1_getExternalBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("blockHash", wasmer1_blockHash, C.wasmer1_blockHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTBalance", wasmer1_getESDTBalance, C.wasmer1_getESDTBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTNFTNameLength", wasmer1_getESDTNFTNameLength, C.wasmer1_getESDTNFTNameLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTNFTAttributeLength", wasmer1_getESDTNFTAttributeLength, C.wasmer1_getESDTNFTAttributeLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTNFTURILength", wasmer1_getESDTNFTURILength, C.wasmer1_getESDTNFTURILength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenData", wasmer1_getESDTTokenData, C.wasmer1_getESDTTokenData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTLocalRoles", wasmer1_getESDTLocalRoles, C.wasmer1_getESDTLocalRoles)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("validateTokenIdentifier", wasmer1_validateTokenIdentifier, C.wasmer1_validateTokenIdentifier)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("transferValue", wasmer1_transferValue, C.wasmer1_transferValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("transferValueExecute", wasmer1_transferValueExecute, C.wasmer1_transferValueExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("transferESDTExecute", wasmer1_transferESDTExecute, C.wasmer1_transferESDTExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("transferESDTNFTExecute", wasmer1_transferESDTNFTExecute, C.wasmer1_transferESDTNFTExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("multiTransferESDTNFTExecute", wasmer1_multiTransferESDTNFTExecute, C.wasmer1_multiTransferESDTNFTExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("createAsyncCall", wasmer1_createAsyncCall, C.wasmer1_createAsyncCall)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("setAsyncContextCallback", wasmer1_setAsyncContextCallback, C.wasmer1_setAsyncContextCallback)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("upgradeContract", wasmer1_upgradeContract, C.wasmer1_upgradeContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("upgradeFromSourceContract", wasmer1_upgradeFromSourceContract, C.wasmer1_upgradeFromSourceContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("deleteContract", wasmer1_deleteContract, C.wasmer1_deleteContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("asyncCall", wasmer1_asyncCall, C.wasmer1_asyncCall)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getArgumentLength", wasmer1_getArgumentLength, C.wasmer1_getArgumentLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getArgument", wasmer1_getArgument, C.wasmer1_getArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getFunction", wasmer1_getFunction, C.wasmer1_getFunction)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getNumArguments", wasmer1_getNumArguments, C.wasmer1_getNumArguments)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("storageStore", wasmer1_storageStore, C.wasmer1_storageStore)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("storageLoadLength", wasmer1_storageLoadLength, C.wasmer1_storageLoadLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("storageLoadFromAddress", wasmer1_storageLoadFromAddress, C.wasmer1_storageLoadFromAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("storageLoad", wasmer1_storageLoad, C.wasmer1_storageLoad)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("setStorageLock", wasmer1_setStorageLock, C.wasmer1_setStorageLock)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getStorageLock", wasmer1_getStorageLock, C.wasmer1_getStorageLock)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("isStorageLocked", wasmer1_isStorageLocked, C.wasmer1_isStorageLocked)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("clearStorageLock", wasmer1_clearStorageLock, C.wasmer1_clearStorageLock)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getCaller", wasmer1_getCaller, C.wasmer1_getCaller)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("checkNoPayment", wasmer1_checkNoPayment, C.wasmer1_checkNoPayment)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("callValue", wasmer1_callValue, C.wasmer1_callValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTValue", wasmer1_getESDTValue, C.wasmer1_getESDTValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTValueByIndex", wasmer1_getESDTValueByIndex, C.wasmer1_getESDTValueByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenName", wasmer1_getESDTTokenName, C.wasmer1_getESDTTokenName)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenNameByIndex", wasmer1_getESDTTokenNameByIndex, C.wasmer1_getESDTTokenNameByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenNonce", wasmer1_getESDTTokenNonce, C.wasmer1_getESDTTokenNonce)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenNonceByIndex", wasmer1_getESDTTokenNonceByIndex, C.wasmer1_getESDTTokenNonceByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getCurrentESDTNFTNonce", wasmer1_getCurrentESDTNFTNonce, C.wasmer1_getCurrentESDTNFTNonce)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenType", wasmer1_getESDTTokenType, C.wasmer1_getESDTTokenType)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getESDTTokenTypeByIndex", wasmer1_getESDTTokenTypeByIndex, C.wasmer1_getESDTTokenTypeByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getNumESDTTransfers", wasmer1_getNumESDTTransfers, C.wasmer1_getNumESDTTransfers)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getCallValueTokenName", wasmer1_getCallValueTokenName, C.wasmer1_getCallValueTokenName)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getCallValueTokenNameByIndex", wasmer1_getCallValueTokenNameByIndex, C.wasmer1_getCallValueTokenNameByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("writeLog", wasmer1_writeLog, C.wasmer1_writeLog)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("writeEventLog", wasmer1_writeEventLog, C.wasmer1_writeEventLog)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getBlockTimestamp", wasmer1_getBlockTimestamp, C.wasmer1_getBlockTimestamp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getBlockNonce", wasmer1_getBlockNonce, C.wasmer1_getBlockNonce)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getBlockRound", wasmer1_getBlockRound, C.wasmer1_getBlockRound)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getBlockEpoch", wasmer1_getBlockEpoch, C.wasmer1_getBlockEpoch)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getBlockRandomSeed", wasmer1_getBlockRandomSeed, C.wasmer1_getBlockRandomSeed)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getStateRootHash", wasmer1_getStateRootHash, C.wasmer1_getStateRootHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrevBlockTimestamp", wasmer1_getPrevBlockTimestamp, C.wasmer1_getPrevBlockTimestamp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrevBlockNonce", wasmer1_getPrevBlockNonce, C.wasmer1_getPrevBlockNonce)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrevBlockRound", wasmer1_getPrevBlockRound, C.wasmer1_getPrevBlockRound)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrevBlockEpoch", wasmer1_getPrevBlockEpoch, C.wasmer1_getPrevBlockEpoch)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrevBlockRandomSeed", wasmer1_getPrevBlockRandomSeed, C.wasmer1_getPrevBlockRandomSeed)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("returnData", wasmer1_returnData, C.wasmer1_returnData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("executeOnSameContext", wasmer1_executeOnSameContext, C.wasmer1_executeOnSameContext)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("executeOnDestContext", wasmer1_executeOnDestContext, C.wasmer1_executeOnDestContext)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("executeReadOnly", wasmer1_executeReadOnly, C.wasmer1_executeReadOnly)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("createContract", wasmer1_createContract, C.wasmer1_createContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("deployFromSourceContract", wasmer1_deployFromSourceContract, C.wasmer1_deployFromSourceContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getNumReturnData", wasmer1_getNumReturnData, C.wasmer1_getNumReturnData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getReturnDataSize", wasmer1_getReturnDataSize, C.wasmer1_getReturnDataSize)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getReturnData", wasmer1_getReturnData, C.wasmer1_getReturnData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("cleanReturnData", wasmer1_cleanReturnData, C.wasmer1_cleanReturnData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("deleteFromReturnData", wasmer1_deleteFromReturnData, C.wasmer1_deleteFromReturnData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getOriginalTxHash", wasmer1_getOriginalTxHash, C.wasmer1_getOriginalTxHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getCurrentTxHash", wasmer1_getCurrentTxHash, C.wasmer1_getCurrentTxHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrevTxHash", wasmer1_getPrevTxHash, C.wasmer1_getPrevTxHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedSCAddress", wasmer1_managedSCAddress, C.wasmer1_managedSCAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedOwnerAddress", wasmer1_managedOwnerAddress, C.wasmer1_managedOwnerAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedCaller", wasmer1_managedCaller, C.wasmer1_managedCaller)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedSignalError", wasmer1_managedSignalError, C.wasmer1_managedSignalError)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedWriteLog", wasmer1_managedWriteLog, C.wasmer1_managedWriteLog)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetOriginalTxHash", wasmer1_managedGetOriginalTxHash, C.wasmer1_managedGetOriginalTxHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetStateRootHash", wasmer1_managedGetStateRootHash, C.wasmer1_managedGetStateRootHash)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetBlockRandomSeed", wasmer1_managedGetBlockRandomSeed, C.wasmer1_managedGetBlockRandomSeed)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetPrevBlockRandomSeed", wasmer1_managedGetPrevBlockRandomSeed, C.wasmer1_managedGetPrevBlockRandomSeed)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetReturnData", wasmer1_managedGetReturnData, C.wasmer1_managedGetReturnData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetMultiESDTCallValue", wasmer1_managedGetMultiESDTCallValue, C.wasmer1_managedGetMultiESDTCallValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetESDTBalance", wasmer1_managedGetESDTBalance, C.wasmer1_managedGetESDTBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetESDTTokenData", wasmer1_managedGetESDTTokenData, C.wasmer1_managedGetESDTTokenData)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedAsyncCall", wasmer1_managedAsyncCall, C.wasmer1_managedAsyncCall)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedCreateAsyncCall", wasmer1_managedCreateAsyncCall, C.wasmer1_managedCreateAsyncCall)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGetCallbackClosure", wasmer1_managedGetCallbackClosure, C.wasmer1_managedGetCallbackClosure)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedUpgradeFromSourceContract", wasmer1_managedUpgradeFromSourceContract, C.wasmer1_managedUpgradeFromSourceContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedUpgradeContract", wasmer1_managedUpgradeContract, C.wasmer1_managedUpgradeContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedDeleteContract", wasmer1_managedDeleteContract, C.wasmer1_managedDeleteContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedDeployFromSourceContract", wasmer1_managedDeployFromSourceContract, C.wasmer1_managedDeployFromSourceContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedCreateContract", wasmer1_managedCreateContract, C.wasmer1_managedCreateContract)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedExecuteReadOnly", wasmer1_managedExecuteReadOnly, C.wasmer1_managedExecuteReadOnly)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedExecuteOnSameContext", wasmer1_managedExecuteOnSameContext, C.wasmer1_managedExecuteOnSameContext)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedExecuteOnDestContext", wasmer1_managedExecuteOnDestContext, C.wasmer1_managedExecuteOnDestContext)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedMultiTransferESDTNFTExecute", wasmer1_managedMultiTransferESDTNFTExecute, C.wasmer1_managedMultiTransferESDTNFTExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedTransferValueExecute", wasmer1_managedTransferValueExecute, C.wasmer1_managedTransferValueExecute)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedIsESDTFrozen", wasmer1_managedIsESDTFrozen, C.wasmer1_managedIsESDTFrozen)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedIsESDTLimitedTransfer", wasmer1_managedIsESDTLimitedTransfer, C.wasmer1_managedIsESDTLimitedTransfer)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedIsESDTPaused", wasmer1_managedIsESDTPaused, C.wasmer1_managedIsESDTPaused)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedBufferToHex", wasmer1_managedBufferToHex, C.wasmer1_managedBufferToHex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferNew", wasmer1_mBufferNew, C.wasmer1_mBufferNew)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferNewFromBytes", wasmer1_mBufferNewFromBytes, C.wasmer1_mBufferNewFromBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferGetLength", wasmer1_mBufferGetLength, C.wasmer1_mBufferGetLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferGetBytes", wasmer1_mBufferGetBytes, C.wasmer1_mBufferGetBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferGetByteSlice", wasmer1_mBufferGetByteSlice, C.wasmer1_mBufferGetByteSlice)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferCopyByteSlice", wasmer1_mBufferCopyByteSlice, C.wasmer1_mBufferCopyByteSlice)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferEq", wasmer1_mBufferEq, C.wasmer1_mBufferEq)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferSetBytes", wasmer1_mBufferSetBytes, C.wasmer1_mBufferSetBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferSetByteSlice", wasmer1_mBufferSetByteSlice, C.wasmer1_mBufferSetByteSlice)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferAppend", wasmer1_mBufferAppend, C.wasmer1_mBufferAppend)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferAppendBytes", wasmer1_mBufferAppendBytes, C.wasmer1_mBufferAppendBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferToBigIntUnsigned", wasmer1_mBufferToBigIntUnsigned, C.wasmer1_mBufferToBigIntUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferToBigIntSigned", wasmer1_mBufferToBigIntSigned, C.wasmer1_mBufferToBigIntSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferFromBigIntUnsigned", wasmer1_mBufferFromBigIntUnsigned, C.wasmer1_mBufferFromBigIntUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferFromBigIntSigned", wasmer1_mBufferFromBigIntSigned, C.wasmer1_mBufferFromBigIntSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferToBigFloat", wasmer1_mBufferToBigFloat, C.wasmer1_mBufferToBigFloat)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferFromBigFloat", wasmer1_mBufferFromBigFloat, C.wasmer1_mBufferFromBigFloat)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferStorageStore", wasmer1_mBufferStorageStore, C.wasmer1_mBufferStorageStore)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferStorageLoad", wasmer1_mBufferStorageLoad, C.wasmer1_mBufferStorageLoad)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferStorageLoadFromAddress", wasmer1_mBufferStorageLoadFromAddress, C.wasmer1_mBufferStorageLoadFromAddress)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferGetArgument", wasmer1_mBufferGetArgument, C.wasmer1_mBufferGetArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferFinish", wasmer1_mBufferFinish, C.wasmer1_mBufferFinish)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("mBufferSetRandom", wasmer1_mBufferSetRandom, C.wasmer1_mBufferSetRandom)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntGetUnsignedArgument", wasmer1_smallIntGetUnsignedArgument, C.wasmer1_smallIntGetUnsignedArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntGetSignedArgument", wasmer1_smallIntGetSignedArgument, C.wasmer1_smallIntGetSignedArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntFinishUnsigned", wasmer1_smallIntFinishUnsigned, C.wasmer1_smallIntFinishUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntFinishSigned", wasmer1_smallIntFinishSigned, C.wasmer1_smallIntFinishSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntStorageStoreUnsigned", wasmer1_smallIntStorageStoreUnsigned, C.wasmer1_smallIntStorageStoreUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntStorageStoreSigned", wasmer1_smallIntStorageStoreSigned, C.wasmer1_smallIntStorageStoreSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntStorageLoadUnsigned", wasmer1_smallIntStorageLoadUnsigned, C.wasmer1_smallIntStorageLoadUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("smallIntStorageLoadSigned", wasmer1_smallIntStorageLoadSigned, C.wasmer1_smallIntStorageLoadSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("int64getArgument", wasmer1_int64getArgument, C.wasmer1_int64getArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("int64finish", wasmer1_int64finish, C.wasmer1_int64finish)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("int64storageStore", wasmer1_int64storageStore, C.wasmer1_int64storageStore)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("int64storageLoad", wasmer1_int64storageLoad, C.wasmer1_int64storageLoad)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("sha256", wasmer1_sha256, C.wasmer1_sha256)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedSha256", wasmer1_managedSha256, C.wasmer1_managedSha256)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("keccak256", wasmer1_keccak256, C.wasmer1_keccak256)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedKeccak256", wasmer1_managedKeccak256, C.wasmer1_managedKeccak256)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("ripemd160", wasmer1_ripemd160, C.wasmer1_ripemd160)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedRipemd160", wasmer1_managedRipemd160, C.wasmer1_managedRipemd160)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("verifyBLS", wasmer1_verifyBLS, C.wasmer1_verifyBLS)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedVerifyBLS", wasmer1_managedVerifyBLS, C.wasmer1_managedVerifyBLS)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("verifyEd25519", wasmer1_verifyEd25519, C.wasmer1_verifyEd25519)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedVerifyEd25519", wasmer1_managedVerifyEd25519, C.wasmer1_managedVerifyEd25519)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("verifyCustomSecp256k1", wasmer1_verifyCustomSecp256k1, C.wasmer1_verifyCustomSecp256k1)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedVerifyCustomSecp256k1", wasmer1_managedVerifyCustomSecp256k1, C.wasmer1_managedVerifyCustomSecp256k1)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("verifySecp256k1", wasmer1_verifySecp256k1, C.wasmer1_verifySecp256k1)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedVerifySecp256k1", wasmer1_managedVerifySecp256k1, C.wasmer1_managedVerifySecp256k1)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("encodeSecp256k1DerSignature", wasmer1_encodeSecp256k1DerSignature, C.wasmer1_encodeSecp256k1DerSignature)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedEncodeSecp256k1DerSignature", wasmer1_managedEncodeSecp256k1DerSignature, C.wasmer1_managedEncodeSecp256k1DerSignature)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("addEC", wasmer1_addEC, C.wasmer1_addEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("doubleEC", wasmer1_doubleEC, C.wasmer1_doubleEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("isOnCurveEC", wasmer1_isOnCurveEC, C.wasmer1_isOnCurveEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("scalarBaseMultEC", wasmer1_scalarBaseMultEC, C.wasmer1_scalarBaseMultEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedScalarBaseMultEC", wasmer1_managedScalarBaseMultEC, C.wasmer1_managedScalarBaseMultEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("scalarMultEC", wasmer1_scalarMultEC, C.wasmer1_scalarMultEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedScalarMultEC", wasmer1_managedScalarMultEC, C.wasmer1_managedScalarMultEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("marshalEC", wasmer1_marshalEC, C.wasmer1_marshalEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedMarshalEC", wasmer1_managedMarshalEC, C.wasmer1_managedMarshalEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("marshalCompressedEC", wasmer1_marshalCompressedEC, C.wasmer1_marshalCompressedEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedMarshalCompressedEC", wasmer1_managedMarshalCompressedEC, C.wasmer1_managedMarshalCompressedEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("unmarshalEC", wasmer1_unmarshalEC, C.wasmer1_unmarshalEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedUnmarshalEC", wasmer1_managedUnmarshalEC, C.wasmer1_managedUnmarshalEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("unmarshalCompressedEC", wasmer1_unmarshalCompressedEC, C.wasmer1_unmarshalCompressedEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedUnmarshalCompressedEC", wasmer1_managedUnmarshalCompressedEC, C.wasmer1_managedUnmarshalCompressedEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("generateKeyEC", wasmer1_generateKeyEC, C.wasmer1_generateKeyEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedGenerateKeyEC", wasmer1_managedGenerateKeyEC, C.wasmer1_managedGenerateKeyEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("createEC", wasmer1_createEC, C.wasmer1_createEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedCreateEC", wasmer1_managedCreateEC, C.wasmer1_managedCreateEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getCurveLengthEC", wasmer1_getCurveLengthEC, C.wasmer1_getCurveLengthEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("getPrivKeyByteLengthEC", wasmer1_getPrivKeyByteLengthEC, C.wasmer1_getPrivKeyByteLengthEC)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("ellipticCurveGetValues", wasmer1_ellipticCurveGetValues, C.wasmer1_ellipticCurveGetValues)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // export wasmer1_bigFloatNewFromParts
 func wasmer1_bigFloatNewFromParts(context unsafe.Pointer, integralPart int32, fractionalPart int32, exponent int32) int32 {
