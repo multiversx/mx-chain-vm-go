@@ -11,14 +11,14 @@ type CompilationOptions struct {
 	RuntimeBreakpoints bool
 }
 
-const OPCODE_COUNT = 448
+// OpcodeCount is the number of opcodes that we account for when setting gas costs.
+const OpcodeCount = 448
 
 // InstanceBuilder defines the functionality needed to create any executor instance.
 // TODO: rename to Executor or VMExecutor.
 type InstanceBuilder interface {
 	// SetOpcodeCosts sets gas costs globally inside an executor.
-	SetOpcodeCosts(opcodeCosts *[OPCODE_COUNT]uint32)
-
+	SetOpcodeCosts(opcodeCosts *[OpcodeCount]uint32)
 	// NewInstanceWithOptions creates a new executor instance.
 	NewInstanceWithOptions(
 		contractCode []byte,

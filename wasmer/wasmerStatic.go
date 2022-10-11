@@ -36,6 +36,6 @@ func SetImports(imports *Imports) error {
 }
 
 // SetOpcodeCosts sets gas costs globally for Wasmer.
-func SetOpcodeCosts(opcode_costs *[executor.OPCODE_COUNT]uint32) {
+func SetOpcodeCosts(opcode_costs *[executor.OpcodeCount]uint32) {
 	cWasmerSetOpcodeCosts(opcode_costs)
 }

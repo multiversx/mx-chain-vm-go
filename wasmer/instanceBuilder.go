@@ -16,7 +16,7 @@ func NewExecutor() *WasmerInstanceBuilder {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (builder *WasmerInstanceBuilder) SetOpcodeCosts(opcodeCosts *[executor.OPCODE_COUNT]uint32) {
+func (builder *WasmerInstanceBuilder) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 	SetOpcodeCosts(opcodeCosts)
 }
 

@@ -152,7 +152,7 @@ func cWasmerCacheImportObjectFromImports(
 	))
 }
 
-func cWasmerSetOpcodeCosts(opcodeCosts *[executor.OPCODE_COUNT]uint32) {
+func cWasmerSetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 	C.wasmer_set_opcode_costs(
 		(*C.uint32_t)(unsafe.Pointer(opcodeCosts)),
 	)

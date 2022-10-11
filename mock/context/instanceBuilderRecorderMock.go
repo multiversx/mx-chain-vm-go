@@ -18,7 +18,7 @@ func NewInstanceBuilderRecorderMock() *InstanceBuilderRecorderMock {
 	}
 }
 
-func (builder *InstanceBuilderRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.OPCODE_COUNT]uint32) {
+func (builder *InstanceBuilderRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 	wasmer.SetOpcodeCosts(opcodeCosts)
 }
 

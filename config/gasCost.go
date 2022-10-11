@@ -675,8 +675,8 @@ type WASMOpcodeCost struct {
 	MaxMemoryGrowDelta     uint32
 }
 
-func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [executor.OPCODE_COUNT]uint32 {
-	opcode_costs := [executor.OPCODE_COUNT]uint32{}
+func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [executor.OpcodeCount]uint32 {
+	opcode_costs := [executor.OpcodeCount]uint32{}
 
 	opcode_costs[wasmer.OpcodeUnreachable] = opcode_costs_struct.Unreachable
 	opcode_costs[wasmer.OpcodeNop] = opcode_costs_struct.Nop

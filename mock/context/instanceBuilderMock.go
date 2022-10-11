@@ -25,7 +25,7 @@ func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 }
 
 // SetOpcodeCosts should set gas costs, but it does nothing in the case of this mock.
-func (builder *InstanceBuilderMock) SetOpcodeCosts(opcodeCosts *[executor.OPCODE_COUNT]uint32) {
+func (builder *InstanceBuilderMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
