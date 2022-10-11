@@ -136,18 +136,6 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 		})
 }
 
-func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
-	test.BuildInstanceCreatorTest(t).
-		WithInput(test.CreateTestContractCreateInputBuilder().
-			WithGasProvided(1000).
-			WithContractCode(test.GetTestSCCode("memoryless", "../../")).
-			Build()).
-		WithAddress(newAddress).
-		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.ContractInvalid()
-		})
-}
-
 func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	test.BuildInstanceCreatorTest(t).
 		WithInput(test.CreateTestContractCreateInputBuilder().
@@ -315,7 +303,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	var host1InstancesData = make(map[interface{}]bool)
+	var host1InstancesData = make(map[uintptr]bool)
 	for _, instance := range instanceRecorder1.GetContractInstances(code) {
 		host1InstancesData[instance.GetData()] = true
 	}
@@ -326,9 +314,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	}()
 	_, _, _, _, runtimeContext2, _, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
-		return code, nil
-	}
 	host2.SetRuntimeContext(runtimeContextMock)
 
 	for i := 0; i < maxUint8AsInt+1; i++ {
@@ -3412,4 +3397,14 @@ func makeBytecodeWithLocals(numLocals uint64) []byte {
 	result[0x59] = byte(int(result[0x59]) + extraBytes)
 
 	return result
+}
+
+// modifyERC20BytecodeWithCustomTransferEvent rewrites the bytecode of the ERC20
+// contract to change the first bytes of its transferEvent bytes
+func modifyERC20BytecodeWithCustomTransferEvent(erc20Bytecode []byte, replaceBytes []byte) {
+	transferEventBytecodeOffset := 0x144B
+
+	for i, b := range replaceBytes {
+		erc20Bytecode[transferEventBytecodeOffset+i] = b
+	}
 }
