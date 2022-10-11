@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-vm-common"
 )
 

@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	mjparse "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 )
 
 // ParseMandosScenario reads and parses a Mandos scenario from a JSON file.

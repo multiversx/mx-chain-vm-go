@@ -3,9 +3,9 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 

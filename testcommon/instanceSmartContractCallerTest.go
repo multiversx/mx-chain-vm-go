@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 )
 
 // InstanceTestSmartContract represents the config data for the smart contract instance to be tested
@@ -98,22 +98,37 @@ func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGS
 // AndAssertResults starts the test and asserts the results
 func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
-	runTestWithInstances(callerTest)
+	runTestWithInstances(callerTest, true)
 }
 
-func runTestWithInstances(callerTest *InstancesTestTemplate) {
+// AndAssertResultsWithoutReset starts the test and asserts the results
+func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	callerTest.assertResults = assertResults
+	runTestWithInstances(callerTest, false)
+}
+
+func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
-		callerTest.host, callerTest.blockchainHookStub = defaultTestArwenForContracts(callerTest.tb, callerTest.contracts, callerTest.gasSchedule, callerTest.wasmerSIGSEGVPassthrough)
+		callerTest.host, callerTest.blockchainHookStub =
+			defaultTestArwenForContracts(
+				callerTest.tb,
+				callerTest.contracts,
+				callerTest.gasSchedule,
+				callerTest.wasmerSIGSEGVPassthrough)
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
+
 	defer func() {
-		callerTest.host.Reset()
+		if reset {
+			callerTest.host.Reset()
+		}
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)
 
-	allErrors := callerTest.host.Runtime().GetAllErrors()
-
-	verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
-	callerTest.assertResults(callerTest.host, callerTest.blockchainHookStub, verify)
+	if callerTest.assertResults != nil {
+		allErrors := callerTest.host.Runtime().GetAllErrors()
+		verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
+		callerTest.assertResults(callerTest.host, callerTest.blockchainHookStub, verify)
+	}
 }

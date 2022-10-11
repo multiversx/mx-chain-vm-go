@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenMock "github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	arwenMock "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 )
 
 var smallKey = []byte("testKey")

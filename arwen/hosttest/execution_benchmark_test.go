@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	gasSchedules "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos/gasSchedules"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
 

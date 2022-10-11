@@ -1,12 +1,14 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 )
 
 // ArwenVersion returns the current arwen version
 const ArwenVersion = "v1.4"
+
+const WASMPageSize = 65536
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64

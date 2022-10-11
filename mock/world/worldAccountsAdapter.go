@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 

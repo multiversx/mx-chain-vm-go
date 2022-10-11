@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test

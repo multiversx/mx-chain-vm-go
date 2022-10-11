@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
