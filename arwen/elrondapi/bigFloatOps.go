@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -33,13 +32,6 @@ const (
 	bigFloatGetConstPiName   = "bigFloatGetConstPi"
 	bigFloatGetConstEName    = "bigFloatGetConstE"
 )
-
-// BigFloatImports populates imports with the BigFloat API methods
-func BigFloatImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	return nil
-}
 
 func areAllZero(values ...*big.Float) bool {
 	for _, val := range values {

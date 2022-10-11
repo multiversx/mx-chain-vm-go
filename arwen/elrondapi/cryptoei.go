@@ -5,7 +5,6 @@ import (
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -42,12 +41,6 @@ const (
 	getPrivKeyByteLengthECName      = "getPrivKeyByteLengthEC"
 	ellipticCurveGetValuesName      = "ellipticCurveGetValues"
 )
-
-// CryptoImports adds some crypto imports to the Wasmer Imports map
-func CryptoImports(imports executor.ImportFunctionReceiver) error {
-
-	return nil
-}
 
 // Sha256 EIInterface implementation
 func (context *EICallbacks) Sha256(dataOffset int32, length int32, resultOffset int32) int32 {

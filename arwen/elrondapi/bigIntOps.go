@@ -5,7 +5,6 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -53,13 +52,6 @@ const (
 	bigIntGetExternalBalanceName      = "bigIntGetExternalBalance"
 	bigIntToStringName                = "bigIntToString"
 )
-
-// BigIntImports populates imports with the BigInt API methods.
-func BigIntImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	return nil
-}
 
 // BigIntGetUnsignedArgument EIInterface implementation
 func (context *EICallbacks) BigIntGetUnsignedArgument(id int32, destinationHandle int32) {

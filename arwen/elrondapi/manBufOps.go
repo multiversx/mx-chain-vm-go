@@ -6,7 +6,6 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -33,13 +32,6 @@ const (
 	mBufferToBigFloatName         = "mBufferToBigFloat"
 	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
-
-// ManagedBufferImports populates imports with the ManagedBuffer API methods
-func ManagedBufferImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	return nil
-}
 
 // MBufferNew EIInterface implementation
 func (context *EICallbacks) MBufferNew() int32 {

@@ -14,7 +14,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -119,13 +118,6 @@ func failIfMoreThanOneESDTTransfer(context *EICallbacks) bool {
 		return context.WithFault(arwen.ErrTooManyESDTTransfers, true)
 	}
 	return false
-}
-
-// ElrondEIImports populates imports with the ElrondEI API methods.
-func ElrondEIImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	return nil
 }
 
 // GetGasLeft EIInterface implementation

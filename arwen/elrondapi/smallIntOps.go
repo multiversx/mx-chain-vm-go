@@ -5,7 +5,6 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const (
@@ -22,13 +21,6 @@ const (
 	int64storageLoadName             = "int64storageLoad"
 	int64finishName                  = "int64finish"
 )
-
-// SmallIntImports populates imports with the small int (int64/uint64) API methods
-func SmallIntImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	return nil
-}
 
 // SmallIntGetUnsignedArgument EIInterface implementation
 func (context *EICallbacks) SmallIntGetUnsignedArgument(id int32) int64 {

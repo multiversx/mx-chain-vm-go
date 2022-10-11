@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -43,13 +42,6 @@ const (
 	managedIsESDTPausedName                 = "managedIsESDTPaused"
 	managedBufferToHexName                  = "managedBufferToHex"
 )
-
-// ManagedEIImports populates imports with variants of the API methods that use managed types only.
-func ManagedEIImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	return nil
-}
 
 // ManagedSCAddress EIInterface implementation
 func (context *EICallbacks) ManagedSCAddress(destinationHandle int32) {
