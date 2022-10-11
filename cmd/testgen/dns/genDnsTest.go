@@ -7,10 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	mc "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/controller"
+	mjparse "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 )
 
 func getTestRoot() string {

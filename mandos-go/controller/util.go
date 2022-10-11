@@ -1,7 +1,7 @@
 package mandoscontroller
 
 import (
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
+	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
 )
 
 // NewDefaultFileResolver yields a new DefaultFileResolver instance.

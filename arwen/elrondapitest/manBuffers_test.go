@@ -5,10 +5,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	arwenMath "github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 
 	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
 )

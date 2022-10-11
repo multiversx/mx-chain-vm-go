@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
 )
 
 // Import represents an WebAssembly instance imported function.

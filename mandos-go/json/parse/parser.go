@@ -1,8 +1,8 @@
 package mandosjsonparse
 
 import (
-	ei "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/interpreter"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
+	ei "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/interpreter"
+	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
 )
 
 // Parser performs parsing of both json tests (older) and scenarios (new).

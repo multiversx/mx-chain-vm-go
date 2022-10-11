@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	roulette "github.com/ElrondNetwork/wasm-vm/fuzz/weightedroulette"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	roulette "github.com/ElrondNetwork/wasm-vm-v1_4/fuzz/weightedroulette"
+	mc "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
 

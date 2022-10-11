@@ -1,4 +1,4 @@
-module github.com/ElrondNetwork/wasm-vm
+module github.com/ElrondNetwork/wasm-vm-v1_4
 
 go 1.13
 

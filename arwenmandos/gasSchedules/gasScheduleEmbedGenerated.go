@@ -5,7 +5,7 @@ package gasschedules
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // Please do not edit manually!
-// Call `go generate` in `arwen-wasm-vm/arwenmandos/gasSchedules` to update it.
+// Call `go generate` in `arwen-wasm-vm-v1_4/arwenmandos/gasSchedules` to update it.
 
 const (
 	gasScheduleV3 = `[BuiltInCost]
