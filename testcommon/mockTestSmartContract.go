@@ -156,7 +156,7 @@ func (mockSC *MockTestSmartContract) GetShardID() uint32 {
 func (mockSC MockTestSmartContract) Initialize(
 	t testing.TB,
 	host arwen.VMHost,
-	imb *mock.InstanceBuilderMock,
+	imb *mock.ExecutorMock,
 	createContractAccounts bool,
 ) {
 	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.codeHash, mockSC.codeMetadata, mockSC.ownerAddress, mockSC.shardID, mockSC.balance, createContractAccounts)

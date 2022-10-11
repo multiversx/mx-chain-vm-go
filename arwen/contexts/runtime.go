@@ -43,7 +43,7 @@ type runtimeContext struct {
 	instanceStack []executor.InstanceHandler
 
 	validator  *wasmValidator
-	vmExecutor executor.InstanceBuilder
+	vmExecutor executor.Executor
 	errors     arwen.WrappableError
 }
 
@@ -57,7 +57,7 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	vmExecutor executor.InstanceBuilder,
+	vmExecutor executor.Executor,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -117,13 +117,13 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 }
 
 // GetVMExecutor yields the configured contract executor.
-func (context *runtimeContext) GetVMExecutor() executor.InstanceBuilder {
+func (context *runtimeContext) GetVMExecutor() executor.Executor {
 	return context.vmExecutor
 }
 
 // ReplaceVMExecutor replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceVMExecutor(builder executor.InstanceBuilder) {
+func (context *runtimeContext) ReplaceVMExecutor(builder executor.Executor) {
 	context.vmExecutor = builder
 }
 

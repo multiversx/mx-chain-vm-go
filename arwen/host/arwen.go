@@ -61,7 +61,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	vmExecutor executor.InstanceBuilder,
+	vmExecutor executor.Executor,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 

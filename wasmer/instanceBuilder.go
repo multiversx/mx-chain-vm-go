@@ -4,25 +4,23 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-// WasmerInstanceBuilder is the default instance builder, which produces real
-// Wasmer instances from WASM bytecode.
-// TODO: rename to WasmerExecutor.
-type WasmerInstanceBuilder struct {
+// WasmerExecutor is the default instance builder, which produces real Wasmer instances from WASM bytecode.
+type WasmerExecutor struct {
 }
 
-// NewWasmerInstanceBuilder creates a new wasmer executor.
-func NewExecutor() *WasmerInstanceBuilder {
-	return &WasmerInstanceBuilder{}
+// NewExecutor creates a new wasmer executor.
+func NewExecutor() *WasmerExecutor {
+	return &WasmerExecutor{}
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (builder *WasmerInstanceBuilder) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func (builder *WasmerExecutor) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 	SetOpcodeCosts(opcodeCosts)
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,
 // respecting the provided options
-func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
+func (builder *WasmerExecutor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
@@ -31,7 +29,7 @@ func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
 // precompiled machine code, respecting the provided options
-func (builder *WasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
+func (builder *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {

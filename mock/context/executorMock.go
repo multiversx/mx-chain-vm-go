@@ -9,28 +9,28 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
-// InstanceBuilderMock can be passed to RuntimeContext as an InstanceBuilder to
+// ExecutorMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
-type InstanceBuilderMock struct {
+type ExecutorMock struct {
 	InstanceMap map[string]InstanceMock
 	World       *worldmock.MockWorld
 }
 
-// NewInstanceBuilderMock constructs a new InstanceBuilderMock
-func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
-	return &InstanceBuilderMock{
+// NewExecutorMock constructs a new InstanceBuilderMock
+func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
+	return &ExecutorMock{
 		InstanceMap: make(map[string]InstanceMock),
 		World:       world,
 	}
 }
 
 // SetOpcodeCosts should set gas costs, but it does nothing in the case of this mock.
-func (builder *InstanceBuilderMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func (builder *ExecutorMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
-func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
+func (builder *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
 	instance := NewInstanceMock(code)
 	instance.Address = code
 	instance.T = t
@@ -50,7 +50,7 @@ func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, hos
 
 // getNewCopyOfStoredInstance retrieves and initializes a stored Wasmer instance, or
 // nil if it doesn't exist
-func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (executor.InstanceHandler, bool) {
+func (builder *ExecutorMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (executor.InstanceHandler, bool) {
 	// this is a map to InstanceMock(s), and copies of these instances will be returned (as the method name indicates)
 	instance, ok := builder.InstanceMap[string(code)]
 	if ok {
@@ -64,7 +64,7 @@ func (builder *InstanceBuilderMock) getNewCopyOfStoredInstance(code []byte, gasL
 // NewInstanceWithOptions attempts to load a prepared instance using
 // GetStoredInstance; if it doesn't exist, it creates a true Wasmer
 // instance with the provided contract code.
-func (builder *InstanceBuilderMock) NewInstanceWithOptions(
+func (builder *ExecutorMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
@@ -79,7 +79,7 @@ func (builder *InstanceBuilderMock) NewInstanceWithOptions(
 // NewInstanceFromCompiledCodeWithOptions attempts to load a prepared instance
 // using GetStoredInstance; if it doesn't exist, it creates a true Wasmer
 // instance with the provided precompiled code.
-func (builder *InstanceBuilderMock) NewInstanceFromCompiledCodeWithOptions(
+func (builder *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {

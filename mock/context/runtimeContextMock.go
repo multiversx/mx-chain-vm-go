@@ -45,12 +45,12 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // GetVMExecutor mocked method
-func (context *RuntimeContextMock) GetVMExecutor() executor.InstanceBuilder {
+func (context *RuntimeContextMock) GetVMExecutor() executor.Executor {
 	return nil
 }
 
 // ReplaceVMExecutor mocked method
-func (r *RuntimeContextMock) ReplaceVMExecutor(_ executor.InstanceBuilder) {
+func (r *RuntimeContextMock) ReplaceVMExecutor(_ executor.Executor) {
 }
 
 // StartWasmerInstance mocked method

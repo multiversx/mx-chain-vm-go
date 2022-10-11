@@ -52,7 +52,7 @@ func TestFunctionsProtected(t *testing.T) {
 	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
 
 	world := worldmock.NewMockWorld()
-	imb := contextmock.NewInstanceBuilderMock(world)
+	imb := contextmock.NewExecutorMock(world)
 	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
 	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {

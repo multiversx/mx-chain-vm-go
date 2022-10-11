@@ -5,25 +5,25 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
-// InstanceBuilderRecorderMock can be passed to RuntimeContext as an InstanceBuilder to
+// ExecutorRecorderMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
-type InstanceBuilderRecorderMock struct {
+type ExecutorRecorderMock struct {
 	InstanceMap map[string][]executor.InstanceHandler
 }
 
-// NewInstanceBuilderRecorderMock constructs a new InstanceBuilderRecorderMock
-func NewInstanceBuilderRecorderMock() *InstanceBuilderRecorderMock {
-	return &InstanceBuilderRecorderMock{
+// NewExecutorRecorderMock constructs a new InstanceBuilderRecorderMock
+func NewExecutorRecorderMock() *ExecutorRecorderMock {
+	return &ExecutorRecorderMock{
 		InstanceMap: make(map[string][]executor.InstanceHandler),
 	}
 }
 
-func (builder *InstanceBuilderRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func (builder *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 	wasmer.SetOpcodeCosts(opcodeCosts)
 }
 
 // NewInstanceWithOptions - see InstanceBuilderMock.NewInstanceWithOptions()
-func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
+func (builder *ExecutorRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
@@ -35,7 +35,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 }
 
 // NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
-func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptions(
+func (builder *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
@@ -47,7 +47,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptio
 }
 
 // add contract instance to the instance map for the given code
-func (builder *InstanceBuilderRecorderMock) addContractInstanceToInstanceMap(code []byte, instance executor.InstanceHandler) {
+func (builder *ExecutorRecorderMock) addContractInstanceToInstanceMap(code []byte, instance executor.InstanceHandler) {
 	instances, ok := builder.InstanceMap[string(code)]
 	if ok {
 		instances = append(instances, instance)
@@ -58,6 +58,6 @@ func (builder *InstanceBuilderRecorderMock) addContractInstanceToInstanceMap(cod
 }
 
 // GetContractInstances gets contract instances for code
-func (builder *InstanceBuilderRecorderMock) GetContractInstances(code []byte) []executor.InstanceHandler {
+func (builder *ExecutorRecorderMock) GetContractInstances(code []byte) []executor.InstanceHandler {
 	return builder.InstanceMap[string(code)]
 }

@@ -106,8 +106,8 @@ type BlockchainContext interface {
 type RuntimeContext interface {
 	StateStack
 
-	GetVMExecutor() executor.InstanceBuilder
-	ReplaceVMExecutor(builder executor.InstanceBuilder)
+	GetVMExecutor() executor.Executor
+	ReplaceVMExecutor(builder executor.Executor)
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.ContractCallInput

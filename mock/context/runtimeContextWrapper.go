@@ -106,9 +106,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetVMExecutorFunc func() executor.InstanceBuilder
+	GetVMExecutorFunc func() executor.Executor
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ReplaceVMExecutorFunc func(builder executor.InstanceBuilder)
+	ReplaceVMExecutorFunc func(builder executor.Executor)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -298,7 +298,7 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 	}
-	runtimeWrapper.ReplaceVMExecutorFunc = func(builder executor.InstanceBuilder) {
+	runtimeWrapper.ReplaceVMExecutorFunc = func(builder executor.Executor) {
 		runtimeWrapper.runtimeContext.ReplaceVMExecutor(builder)
 	}
 
@@ -549,12 +549,12 @@ func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExec
 }
 
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.InstanceBuilder {
+func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()
 }
 
 // ReplaceVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(builder executor.InstanceBuilder) {
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(builder executor.Executor) {
 	contextWrapper.ReplaceVMExecutorFunc(builder)
 }
 
