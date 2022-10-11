@@ -13,7 +13,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_2/wasmer"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
@@ -83,7 +82,7 @@ func NewRuntimeContext(
 }
 
 func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(wasmer.InstanceHandler)
+	instance, ok := value.(executor.InstanceHandler)
 	if !ok {
 		return
 	}
@@ -239,7 +238,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	instance, ok := cachedObject.(wasmer.InstanceHandler)
+	instance, ok := cachedObject.(executor.InstanceHandler)
 	if !ok {
 		return false
 	}

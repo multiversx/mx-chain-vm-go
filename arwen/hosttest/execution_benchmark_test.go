@@ -123,9 +123,10 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 		elapsedTime := time.Since(start)
 		logBenchmark.Trace("Executing ERC20 transfers", "batch", r, "transfers", nTransfers, "time", elapsedTime.String())
 
-		if !failTransaction {
-			verifyTransfers(tb, mockWorld, totalTokenSupply, scAddress)
-		}
+	}
+
+	if !failTransaction {
+		verifyTransfers(tb, mockWorld, totalTokenSupply, scAddress)
 	}
 
 	defer func() {
