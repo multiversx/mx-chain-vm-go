@@ -14,23 +14,23 @@ func NewExecutor() *WasmerExecutor {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (builder *WasmerExecutor) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 	SetOpcodeCosts(opcodeCosts)
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.
-func (builder *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) {
+func (wasmerExecutor *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) {
 	SetRkyvSerializationEnabled(enabled)
 }
 
 // SetSIGSEGVPassthrough controls a Wasmer flag.
-func (builder *WasmerExecutor) SetSIGSEGVPassthrough() {
+func (wasmerExecutor *WasmerExecutor) SetSIGSEGVPassthrough() {
 	SetSIGSEGVPassthrough()
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,
 // respecting the provided options
-func (builder *WasmerExecutor) NewInstanceWithOptions(
+func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
@@ -39,7 +39,7 @@ func (builder *WasmerExecutor) NewInstanceWithOptions(
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
 // precompiled machine code, respecting the provided options
-func (builder *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
+func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
