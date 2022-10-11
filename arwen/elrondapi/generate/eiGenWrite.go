@@ -50,7 +50,7 @@ func cgoType(goType string) string {
 }
 
 func cgoFuncName(funcMetadata *EIFunction) string {
-	return fmt.Sprintf("wasmer1_%s", funcMetadata.LowerCaseName)
+	return fmt.Sprintf("v1_5_%s", funcMetadata.LowerCaseName)
 }
 
 func cgoImportName(funcMetadata *EIFunction) string {
@@ -119,7 +119,7 @@ func writeImportsHeader(out *os.File, eiMetadata *EIMetadata) {
 
 func writeImportsBody(eiMetadata *EIMetadata, out *os.File) {
 	for _, funcMetadata := range eiMetadata.AllFunctions {
-		out.WriteString(fmt.Sprintf("\n// export %s\n",
+		out.WriteString(fmt.Sprintf("\n//export %s\n",
 			cgoFuncName(funcMetadata),
 		))
 		out.WriteString(fmt.Sprintf("func %s(context unsafe.Pointer",
