@@ -22,7 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const WASMPageSize = 65536
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
@@ -528,7 +527,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	totalPages := 32
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {
