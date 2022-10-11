@@ -8,6 +8,9 @@ import (
 // ArwenVersion returns the current arwen version
 const ArwenVersion = "v1.4"
 
+// Size in bytes of a WASM Linear Memory Page 
+const WASMPageSize = 65536
+
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64
 

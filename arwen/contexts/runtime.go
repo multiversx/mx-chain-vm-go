@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_2/wasmer"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
@@ -45,11 +46,6 @@ type runtimeContext struct {
 	validator       *wasmValidator
 	instanceBuilder executor.InstanceBuilder
 	errors          arwen.WrappableError
-}
-
-type instanceAndMemory struct {
-	instance executor.InstanceHandler
-	memory   []byte
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -87,13 +83,12 @@ func NewRuntimeContext(
 }
 
 func instanceEvicted(_ interface{}, value interface{}) {
-	localContract, ok := value.(instanceAndMemory)
+	instance, ok := value.(wasmer.InstanceHandler)
 	if !ok {
 		return
 	}
 
-	localContract.instance.Clean()
-	localContract.memory = nil
+	instance.Clean()
 }
 
 // InitState initializes all the contexts fields with default data.
@@ -112,7 +107,6 @@ func (context *runtimeContext) InitState() {
 // ClearWarmInstanceCache clears all elements from warm instance cache
 func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.warmInstanceCache.Clear()
-	context.CleanInstance()
 	context.instance = nil
 }
 
@@ -133,6 +127,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	context.codeHash = codeHash
+
+	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
+	if warmInstanceUsed {
+		return nil
+	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
 		return nil
@@ -175,6 +174,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
+	context.saveWarmInstance()
 	logRuntime.Trace("new instance created", "code", "cached compilation")
 	return true
 }
@@ -226,9 +226,46 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	return nil
 }
 
+func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
+	if newCode || len(context.codeHash) == 0 {
+		return false
+	}
+
+	if context.isContractOrCodeHashOnTheStack() {
+		return false
+	}
+	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
+	if !ok {
+		return false
+	}
+
+	instance, ok := cachedObject.(wasmer.InstanceHandler)
+	if !ok {
+		return false
+	}
+
+	ok = instance.Reset()
+	if !ok {
+		// we must remove instance, which cleans it to free the memory
+		context.warmInstanceCache.Remove(context.codeHash)
+		return false
+	}
+
+	context.instance = instance
+	context.SetPointsUsed(0)
+	context.instance.SetGasLimit(gasLimit)
+	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+
+	hostReference := uintptr(unsafe.Pointer(&context.host))
+	context.instance.SetContextData(hostReference)
+	context.verifyCode = false
+	return true
+}
+
 // GetSCCode returns the SC code of the current SC.
 func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	blockchain := context.host.Blockchain()
+
 	code, err := blockchain.GetCode(context.codeAddress)
 	if err != nil {
 		return nil, err
@@ -252,6 +289,20 @@ func (context *runtimeContext) saveCompiledCode() {
 
 	blockchain := context.host.Blockchain()
 	blockchain.SaveCompiledCode(context.codeHash, compiledCode)
+
+	context.saveWarmInstance()
+}
+
+func (context *runtimeContext) saveWarmInstance() {
+	if context.isContractOrCodeHashOnTheStack() {
+		return
+	}
+
+	context.warmInstanceCache.Put(
+		context.codeHash,
+		context.instance,
+		1,
+	)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -354,7 +405,7 @@ func (context *runtimeContext) pushInstance() {
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) popInstance(_ []byte) {
+func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -374,8 +425,9 @@ func (context *runtimeContext) popInstance(_ []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		context.instance.Clean()
-		context.instance = nil
+		if bytes.Equal(context.codeHash, lastCodeHash) {
+			context.instance.Clean()
+		}
 	}
 
 	context.instance = prevInstance

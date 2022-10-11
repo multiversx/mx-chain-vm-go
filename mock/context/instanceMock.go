@@ -96,6 +96,11 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
+// Reset mocked method
+func (instance *InstanceMock) Reset() bool {
+	return true
+}
+
 // CallFunction mocked method
 func (instance *InstanceMock) CallFunction(functionName string) error {
 	if function, ok := instance.Exports[functionName]; ok {
@@ -158,7 +163,7 @@ func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true
 }
 
-// IsInterfaceNil -
+// IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
 }
