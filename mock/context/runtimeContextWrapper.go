@@ -108,7 +108,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetVMExecutorFunc func() executor.Executor
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ReplaceVMExecutorFunc func(builder executor.Executor)
+	ReplaceVMExecutorFunc func(vmExecutor executor.Executor)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -299,8 +299,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 	}
-	runtimeWrapper.ReplaceVMExecutorFunc = func(builder executor.Executor) {
-		runtimeWrapper.runtimeContext.ReplaceVMExecutor(builder)
+	runtimeWrapper.ReplaceVMExecutorFunc = func(vmExecutor executor.Executor) {
+		runtimeWrapper.runtimeContext.ReplaceVMExecutor(vmExecutor)
 	}
 
 	runtimeWrapper.AddErrorFunc = func(err error, otherInfo ...string) {
@@ -559,8 +559,8 @@ func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 }
 
 // ReplaceVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(builder executor.Executor) {
-	contextWrapper.ReplaceVMExecutorFunc(builder)
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(vmExecutor executor.Executor) {
+	contextWrapper.ReplaceVMExecutorFunc(vmExecutor)
 }
 
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

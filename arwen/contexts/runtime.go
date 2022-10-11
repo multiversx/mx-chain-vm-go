@@ -114,10 +114,10 @@ func (context *runtimeContext) GetVMExecutor() executor.Executor {
 	return context.vmExecutor
 }
 
-// ReplaceVMExecutor replaces the instance builder, allowing the creation
+// ReplaceVMExecutor replaces the executor, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceVMExecutor(builder executor.Executor) {
-	context.vmExecutor = builder
+func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
+	context.vmExecutor = vmExecutor
 }
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.

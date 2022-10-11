@@ -4,7 +4,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-// WasmerExecutor is the default instance builder, which produces real Wasmer instances from WASM bytecode.
+// WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
 }
 
