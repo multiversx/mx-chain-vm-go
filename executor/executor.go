@@ -19,6 +19,12 @@ type Executor interface {
 	// SetOpcodeCosts sets gas costs globally inside an executor.
 	SetOpcodeCosts(opcodeCosts *[OpcodeCount]uint32)
 
+	// SetRkyvSerializationEnabled controls a Wasmer flag.
+	SetRkyvSerializationEnabled(enabled bool)
+
+	// SetSIGSEGVPassthrough controls a Wasmer flag.
+	SetSIGSEGVPassthrough()
+
 	// NewInstanceWithOptions creates a new executor instance.
 	NewInstanceWithOptions(
 		contractCode []byte,

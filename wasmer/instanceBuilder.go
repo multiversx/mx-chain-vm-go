@@ -18,6 +18,16 @@ func (builder *WasmerExecutor) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount
 	SetOpcodeCosts(opcodeCosts)
 }
 
+// SetRkyvSerializationEnabled controls a Wasmer flag.
+func (builder *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) {
+	SetRkyvSerializationEnabled(enabled)
+}
+
+// SetSIGSEGVPassthrough controls a Wasmer flag.
+func (builder *WasmerExecutor) SetSIGSEGVPassthrough() {
+	SetSIGSEGVPassthrough()
+}
+
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,
 // respecting the provided options
 func (builder *WasmerExecutor) NewInstanceWithOptions(

@@ -28,6 +28,14 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 func (builder *ExecutorMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
 }
 
+// SetRkyvSerializationEnabled controls a Wasmer flag, but it does nothing in the case of this mock.
+func (builder *ExecutorMock) SetRkyvSerializationEnabled(enabled bool) {
+}
+
+// SetSIGSEGVPassthrough controls a Wasmer flag, but it does nothing in the case of this mock.
+func (builder *ExecutorMock) SetSIGSEGVPassthrough() {
+}
+
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
 func (builder *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {

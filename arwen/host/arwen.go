@@ -173,10 +173,10 @@ func NewArwenVM(
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	vmExecutor.SetOpcodeCosts(&opcodeCosts)
-	wasmer.SetRkyvSerializationEnabled(true)
+	vmExecutor.SetRkyvSerializationEnabled(true)
 
 	if hostParameters.WasmerSIGSEGVPassthrough {
-		wasmer.SetSIGSEGVPassthrough()
+		vmExecutor.SetSIGSEGVPassthrough()
 	}
 
 	host.initContexts()

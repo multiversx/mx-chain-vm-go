@@ -22,6 +22,16 @@ func (builder *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.Opcod
 	wasmer.SetOpcodeCosts(opcodeCosts)
 }
 
+// SetRkyvSerializationEnabled controls a Wasmer flag.
+func (builder *ExecutorRecorderMock) SetRkyvSerializationEnabled(enabled bool) {
+	wasmer.SetRkyvSerializationEnabled(enabled)
+}
+
+// SetSIGSEGVPassthrough controls a Wasmer flag.
+func (builder *ExecutorRecorderMock) SetSIGSEGVPassthrough() {
+	wasmer.SetSIGSEGVPassthrough()
+}
+
 // NewInstanceWithOptions - see InstanceBuilderMock.NewInstanceWithOptions()
 func (builder *ExecutorRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,
