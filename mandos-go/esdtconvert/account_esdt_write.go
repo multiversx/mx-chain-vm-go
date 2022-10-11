@@ -3,7 +3,7 @@ package esdtconvert
 import (
 	"math/big"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"

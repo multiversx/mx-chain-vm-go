@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
 )
 
 // ScenarioToJSONString converts a scenario object to its JSON representation.

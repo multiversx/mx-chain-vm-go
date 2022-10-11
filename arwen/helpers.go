@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 

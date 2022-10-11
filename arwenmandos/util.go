@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
+	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )

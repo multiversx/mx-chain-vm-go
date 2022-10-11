@@ -10,12 +10,12 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	arwen "github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
+	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/stretchr/testify/require"
 )
 

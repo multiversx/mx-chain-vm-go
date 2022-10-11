@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/stretchr/testify/require"
 )
 

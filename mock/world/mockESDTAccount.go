@@ -3,7 +3,7 @@ package worldmock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 )
 

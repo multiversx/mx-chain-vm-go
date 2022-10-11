@@ -3,9 +3,9 @@ package hosttest
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 )
 
 func TestBadContract_NoPanic_Memoryfault(t *testing.T) {

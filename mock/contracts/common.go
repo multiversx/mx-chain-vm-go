@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
