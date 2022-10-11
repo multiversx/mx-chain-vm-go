@@ -1,6 +1,9 @@
 package config
 
-import "github.com/ElrondNetwork/wasm-vm/wasmer"
+import (
+	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
+)
 
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
@@ -672,8 +675,8 @@ type WASMOpcodeCost struct {
 	MaxMemoryGrowDelta     uint32
 }
 
-func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_COUNT]uint32 {
-	opcode_costs := [wasmer.OPCODE_COUNT]uint32{}
+func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [executor.OpcodeCount]uint32 {
+	opcode_costs := [executor.OpcodeCount]uint32{}
 
 	opcode_costs[wasmer.OpcodeUnreachable] = opcode_costs_struct.Unreachable
 	opcode_costs[wasmer.OpcodeNop] = opcode_costs_struct.Nop

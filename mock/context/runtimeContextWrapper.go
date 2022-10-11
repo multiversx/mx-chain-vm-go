@@ -106,7 +106,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ReplaceInstanceBuilderFunc func(builder executor.InstanceBuilder)
+	GetVMExecutorFunc func() executor.Executor
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	ReplaceVMExecutorFunc func(vmExecutor executor.Executor)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -297,8 +299,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 	}
-	runtimeWrapper.ReplaceInstanceBuilderFunc = func(builder executor.InstanceBuilder) {
-		runtimeWrapper.runtimeContext.ReplaceInstanceBuilder(builder)
+	runtimeWrapper.ReplaceVMExecutorFunc = func(vmExecutor executor.Executor) {
+		runtimeWrapper.runtimeContext.ReplaceVMExecutor(vmExecutor)
 	}
 
 	runtimeWrapper.AddErrorFunc = func(err error, otherInfo ...string) {
@@ -551,9 +553,14 @@ func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExec
 	return contextWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
 }
 
-// ReplaceInstanceBuilder calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ReplaceInstanceBuilder(builder executor.InstanceBuilder) {
-	contextWrapper.ReplaceInstanceBuilderFunc(builder)
+// GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
+	return contextWrapper.GetVMExecutorFunc()
+}
+
+// ReplaceVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(vmExecutor executor.Executor) {
+	contextWrapper.ReplaceVMExecutorFunc(vmExecutor)
 }
 
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
