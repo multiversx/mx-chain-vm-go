@@ -16,7 +16,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -58,6 +57,7 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	vmExecutor executor.InstanceBuilder,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -80,7 +80,7 @@ func NewRuntimeContext(
 		return nil, err
 	}
 
-	context.instanceBuilder = wasmer.NewWasmerInstanceBuilder()
+	context.instanceBuilder = vmExecutor
 	context.InitState()
 
 	return context, nil

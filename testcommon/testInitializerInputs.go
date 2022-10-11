@@ -23,6 +23,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/config"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -323,30 +324,33 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
-		VMType:                   DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField:     true,
-			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
-			IsFixOOGReturnCodeFlagEnabledField:               true,
-			IsRemoveNonUpdatedStorageFlagEnabledField:        true,
-			IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
-			IsManagedCryptoAPIsFlagEnabledField:              true,
-			IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
-			IsESDTTransferRoleFlagEnabledField:               true,
-			IsSendAlwaysFlagEnabledField:                     true,
-			IsGlobalMintBurnFlagEnabledField:                 true,
-			IsCheckFunctionArgumentFlagEnabledField:          true,
-			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
-		},
-		WasmerSIGSEGVPassthrough: false,
-	})
+	host, err := arwenHost.NewArwenVM(
+		world,
+		wasmer.NewExecutor(),
+		&arwen.VMHostParameters{
+			VMType:                   DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              gasSchedule,
+			BuiltInFuncContainer:     world.BuiltinFuncs.Container,
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
+				IsStorageAPICostOptimizationFlagEnabledField:     true,
+				IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
+				IsFixOOGReturnCodeFlagEnabledField:               true,
+				IsRemoveNonUpdatedStorageFlagEnabledField:        true,
+				IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
+				IsManagedCryptoAPIsFlagEnabledField:              true,
+				IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
+				IsESDTTransferRoleFlagEnabledField:               true,
+				IsSendAlwaysFlagEnabledField:                     true,
+				IsGlobalMintBurnFlagEnabledField:                 true,
+				IsCheckFunctionArgumentFlagEnabledField:          true,
+				IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
+			},
+			WasmerSIGSEGVPassthrough: false,
+		})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 
@@ -371,33 +375,36 @@ func DefaultTestArwenWithGasSchedule(
 	}
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(blockchain, &arwen.VMHostParameters{
-		VMType:                   DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField:         true,
-			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
-			IsFixOOGReturnCodeFlagEnabledField:                   true,
-			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
-			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
-			IsManagedCryptoAPIsFlagEnabledField:                  true,
-			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
-			IsRefactorContextFlagEnabledField:                    true,
-			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-			IsDisableExecByCallerFlagEnabledField:                true,
-			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsSendAlwaysFlagEnabledField:                         true,
-			IsGlobalMintBurnFlagEnabledField:                     true,
-			IsCheckFunctionArgumentFlagEnabledField:              true,
-			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
-		},
-		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
-	})
+	host, err := arwenHost.NewArwenVM(
+		blockchain,
+		wasmer.NewExecutor(),
+		&arwen.VMHostParameters{
+			VMType:                   DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              gasSchedule,
+			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
+				IsStorageAPICostOptimizationFlagEnabledField:         true,
+				IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+				IsFixOOGReturnCodeFlagEnabledField:                   true,
+				IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+				IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+				IsManagedCryptoAPIsFlagEnabledField:                  true,
+				IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+				IsRefactorContextFlagEnabledField:                    true,
+				IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+				IsDisableExecByCallerFlagEnabledField:                true,
+				IsESDTTransferRoleFlagEnabledField:                   true,
+				IsSendAlwaysFlagEnabledField:                         true,
+				IsGlobalMintBurnFlagEnabledField:                     true,
+				IsCheckFunctionArgumentFlagEnabledField:              true,
+				IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+			},
+			WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
+		})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 

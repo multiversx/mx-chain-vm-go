@@ -73,6 +73,7 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		wasmer.NewExecutor(),
 	)
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext

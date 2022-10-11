@@ -5,12 +5,13 @@ import (
 )
 
 // WasmerInstanceBuilder is the default instance builder, which produces real
-// Wasmer instances from WASM bytecode
+// Wasmer instances from WASM bytecode.
+// TODO: rename to WasmerExecutor.
 type WasmerInstanceBuilder struct {
 }
 
 // NewWasmerInstanceBuilder creates a new wasmer executor.
-func NewWasmerInstanceBuilder() *WasmerInstanceBuilder {
+func NewExecutor() *WasmerInstanceBuilder {
 	return &WasmerInstanceBuilder{}
 }
 
