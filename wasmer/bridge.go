@@ -7,7 +7,11 @@ package wasmer
 // #include "./wasmer.h"
 //
 import "C"
-import "unsafe"
+import (
+	"unsafe"
+
+	"github.com/ElrondNetwork/wasm-vm/executor"
+)
 
 type cBool C.bool
 type cChar C.char
@@ -148,9 +152,9 @@ func cWasmerCacheImportObjectFromImports(
 	))
 }
 
-func cWasmerSetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
+func cWasmerSetOpcodeCosts(opcodeCosts *[executor.OPCODE_COUNT]uint32) {
 	C.wasmer_set_opcode_costs(
-		(*C.uint32_t)(unsafe.Pointer(opcode_costs)),
+		(*C.uint32_t)(unsafe.Pointer(opcodeCosts)),
 	)
 }
 

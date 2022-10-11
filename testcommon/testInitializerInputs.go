@@ -178,7 +178,7 @@ func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte,
 	host, _ := DefaultTestArwenForCall(tb, code, balance)
 
 	instanceBuilderRecorderMock := contextmock.NewInstanceBuilderRecorderMock()
-	host.Runtime().ReplaceInstanceBuilder(instanceBuilderRecorderMock)
+	host.Runtime().ReplaceVMExecutor(instanceBuilderRecorderMock)
 
 	return host, instanceBuilderRecorderMock
 }
@@ -197,7 +197,7 @@ func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worl
 	host := DefaultTestArwen(tb, world)
 
 	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
-	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
+	host.Runtime().ReplaceVMExecutor(instanceBuilderMock)
 
 	return host, instanceBuilderMock
 }

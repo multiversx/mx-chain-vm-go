@@ -18,6 +18,10 @@ func NewInstanceBuilderRecorderMock() *InstanceBuilderRecorderMock {
 	}
 }
 
+func (builder *InstanceBuilderRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.OPCODE_COUNT]uint32) {
+	wasmer.SetOpcodeCosts(opcodeCosts)
+}
+
 // NewInstanceWithOptions - see InstanceBuilderMock.NewInstanceWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,

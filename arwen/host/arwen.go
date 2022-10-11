@@ -172,7 +172,7 @@ func NewArwenVM(
 	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	vmExecutor.SetOpcodeCosts(&opcodeCosts)
 	wasmer.SetRkyvSerializationEnabled(true)
 
 	if hostParameters.WasmerSIGSEGVPassthrough {
@@ -339,7 +339,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	}
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 	host.runtimeContext.ClearWarmInstanceCache()

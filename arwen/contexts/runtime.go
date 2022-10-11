@@ -42,9 +42,9 @@ type runtimeContext struct {
 	stateStack    []*runtimeContext
 	instanceStack []executor.InstanceHandler
 
-	validator       *wasmValidator
-	instanceBuilder executor.InstanceBuilder
-	errors          arwen.WrappableError
+	validator  *wasmValidator
+	vmExecutor executor.InstanceBuilder
+	errors     arwen.WrappableError
 }
 
 type instanceAndMemory struct {
@@ -80,7 +80,7 @@ func NewRuntimeContext(
 		return nil, err
 	}
 
-	context.instanceBuilder = vmExecutor
+	context.vmExecutor = vmExecutor
 	context.InitState()
 
 	return context, nil
@@ -116,10 +116,15 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.instance = nil
 }
 
-// ReplaceInstanceBuilder replaces the instance builder, allowing the creation
+// GetVMExecutor yields the configured contract executor.
+func (context *runtimeContext) GetVMExecutor() executor.InstanceBuilder {
+	return context.vmExecutor
+}
+
+// ReplaceVMExecutor replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceInstanceBuilder(builder executor.InstanceBuilder) {
-	context.instanceBuilder = builder
+func (context *runtimeContext) ReplaceVMExecutor(builder executor.InstanceBuilder) {
+	context.vmExecutor = builder
 }
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
@@ -163,7 +168,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	newInstance, err := context.vmExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
 		logRuntime.Error("instance creation", "code", "cached compilation", "error", err)
 		return false
@@ -190,7 +195,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
+	newInstance, err := context.vmExecutor.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)

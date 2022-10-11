@@ -106,6 +106,8 @@ type BlockchainContext interface {
 type RuntimeContext interface {
 	StateStack
 
+	GetVMExecutor() executor.InstanceBuilder
+	ReplaceVMExecutor(builder executor.InstanceBuilder)
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.ContractCallInput
@@ -156,8 +158,6 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-
-	ReplaceInstanceBuilder(builder executor.InstanceBuilder)
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context

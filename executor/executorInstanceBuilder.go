@@ -11,13 +11,20 @@ type CompilationOptions struct {
 	RuntimeBreakpoints bool
 }
 
+const OPCODE_COUNT = 448
+
 // InstanceBuilder defines the functionality needed to create any executor instance.
 // TODO: rename to Executor or VMExecutor.
 type InstanceBuilder interface {
+	// SetOpcodeCosts sets gas costs globally inside an executor.
+	SetOpcodeCosts(opcodeCosts *[OPCODE_COUNT]uint32)
+
+	// NewInstanceWithOptions creates a new executor instance.
 	NewInstanceWithOptions(
 		contractCode []byte,
 		options CompilationOptions) (InstanceHandler, error)
 
+	// NewInstanceWithOptions is used to restore an executor instance from cache.
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (InstanceHandler, error)

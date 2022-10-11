@@ -9,8 +9,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-const OPCODE_COUNT = 448
-
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
 type InstanceError struct {
@@ -42,24 +40,6 @@ type ExportedFunctionError struct {
 type ExportedFunctionSignature struct {
 	InputArity  int
 	OutputArity int
-}
-
-// SetRkyvSerializationEnabled enables or disables RKYV serialization of
-// instances in Wasmer
-func SetRkyvSerializationEnabled(enabled bool) {
-	if enabled {
-		cWasmerInstanceEnableRkyv()
-	} else {
-		cWasmerInstanceDisableRkyv()
-	}
-}
-
-// SetSIGSEGVPassthrough instructs Wasmer to never register a handler for
-// SIGSEGV. Only has effect if called before creating the first Wasmer instance
-// since the process started. Calling this function after the first Wasmer
-// instance will not unregister the signal handler set by Wasmer.
-func SetSIGSEGVPassthrough() {
-	cWasmerSetSIGSEGVPassthrough()
 }
 
 // NewExportedFunctionError constructs a new `ExportedFunctionError`,
@@ -121,24 +101,6 @@ func newWrappedError(target error) error {
 	}
 
 	return fmt.Errorf("%w: %s", target, lastError)
-}
-
-func SetImports(imports *Imports) error {
-	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
-
-	var result = cWasmerCacheImportObjectFromImports(
-		wasmImportsCPointer,
-		cInt(numberOfImports),
-	)
-
-	if result != cWasmerOk {
-		return newWrappedError(ErrFailedCacheImports)
-	}
-	return nil
-}
-
-func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
-	cWasmerSetOpcodeCosts(opcode_costs)
 }
 
 func NewInstanceWithOptions(

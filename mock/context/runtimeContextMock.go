@@ -44,8 +44,13 @@ type RuntimeContextMock struct {
 func (r *RuntimeContextMock) InitState() {
 }
 
-// ReplaceInstanceBuilder mocked method()
-func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ executor.InstanceBuilder) {
+// GetVMExecutor mocked method
+func (context *RuntimeContextMock) GetVMExecutor() executor.InstanceBuilder {
+	return nil
+}
+
+// ReplaceVMExecutor mocked method
+func (r *RuntimeContextMock) ReplaceVMExecutor(_ executor.InstanceBuilder) {
 }
 
 // StartWasmerInstance mocked method
