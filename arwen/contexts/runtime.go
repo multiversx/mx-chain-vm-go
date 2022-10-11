@@ -257,9 +257,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.instance.SetCallbacks(elrondapi.NewEICallbacks(context.host))
 	context.verifyCode = false
 	return true
 }
