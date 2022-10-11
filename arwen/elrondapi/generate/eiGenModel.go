@@ -1,17 +1,12 @@
 package elrondapigenerate
 
-type EIFunctionValue int
-
-const (
-	EIFunctionValueInt32 EIFunctionValue = iota
-	EIFunctionValueInt64
-)
-
+// EIFunctionArg models an executor callback method arg.
 type EIFunctionArg struct {
 	Name string
 	Type string
 }
 
+// EIFunctionArg models the executor callback method result.
 type EIFunctionResult struct {
 	Type string
 }
@@ -26,11 +21,10 @@ type EIFunction struct {
 }
 
 // EIGroup groups EI functions into bundles.
-// They end up in separate interfaces.
+// They can end up in separate interfaces or files, if desired.
 type EIGroup struct {
 	SourcePath string
-	// TODO: add a name and imports function name
-	Functions []*EIFunction
+	Functions  []*EIFunction
 }
 
 // EIMetadata holds all data about EI functions in the VM.
