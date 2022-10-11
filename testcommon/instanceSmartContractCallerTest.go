@@ -31,8 +31,8 @@ func (mockSC *InstanceTestSmartContract) WithBalance(balance int64) *InstanceTes
 }
 
 // WithConfig provides the config object for the InstanceTestSmartContract
-func (mockSC *InstanceTestSmartContract) WithConfig(config interface{}) *InstanceTestSmartContract {
-	mockSC.config = config
+func (mockSC *InstanceTestSmartContract) WithConfig(testConfig *TestConfig) *InstanceTestSmartContract {
+	mockSC.config = testConfig
 	return mockSC
 }
 

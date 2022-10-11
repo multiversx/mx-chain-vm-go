@@ -6,34 +6,34 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t	v1_4_mBufferNew(void* context);
-// extern int32_t 	v1_4_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_5_mBufferNew(void* context);
+// extern int32_t 	v1_5_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
 //
-// extern int32_t 	v1_4_mBufferGetLength(void* context, int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
-// extern int32_t	v1_4_mBufferGetByteSlice(void* context, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t resultOffset);
-// extern int32_t	v1_4_mBufferCopyByteSlice(void* context, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t destinationHandle);
-// extern int32_t	v1_4_mBufferEq(void* context, int32_t mBufferHandle1, int32_t mBufferHandle2);
+// extern int32_t 	v1_5_mBufferGetLength(void* context, int32_t mBufferHandle);
+// extern int32_t	v1_5_mBufferGetBytes(void* context, int32_t mBufferHandle, int32_t resultOffset);
+// extern int32_t	v1_5_mBufferGetByteSlice(void* context, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t resultOffset);
+// extern int32_t	v1_5_mBufferCopyByteSlice(void* context, int32_t sourceHandle, int32_t startingPosition, int32_t sliceLength, int32_t destinationHandle);
+// extern int32_t	v1_5_mBufferEq(void* context, int32_t mBufferHandle1, int32_t mBufferHandle2);
 //
-// extern int32_t	v1_4_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
-// extern int32_t v1_4_mBufferSetByteSlice(void* context, int32_t mBufferHandle, int32_t startingPosition, int32_t dataLength, int32_t dataOffset);
-// extern int32_t	v1_4_mBufferAppend(void* context, int32_t accumulatorHandle, int32_t dataHandle);
-// extern int32_t	v1_4_mBufferAppendBytes(void* context, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t	v1_5_mBufferSetBytes(void* context, int32_t mBufferHandle, int32_t dataOffset, int32_t dataLength);
+// extern int32_t v1_5_mBufferSetByteSlice(void* context, int32_t mBufferHandle, int32_t startingPosition, int32_t dataLength, int32_t dataOffset);
+// extern int32_t	v1_5_mBufferAppend(void* context, int32_t accumulatorHandle, int32_t dataHandle);
+// extern int32_t	v1_5_mBufferAppendBytes(void* context, int32_t accumulatorHandle, int32_t dataOffset, int32_t dataLength);
 //
-// extern int32_t	v1_4_mBufferToBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern int32_t 	v1_4_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern int32_t	v1_4_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern int32_t	v1_4_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
-// extern int32_t	v1_4_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
-// extern int32_t	v1_4_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
+// extern int32_t	v1_5_mBufferToBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern int32_t 	v1_5_mBufferToBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern int32_t	v1_5_mBufferFromBigIntUnsigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern int32_t	v1_5_mBufferFromBigIntSigned(void* context, int32_t mBufferHandle, int32_t bigIntHandle);
+// extern int32_t	v1_5_mBufferToBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
+// extern int32_t	v1_5_mBufferFromBigFloat(void* context, int32_t mBufferHandle, int32_t bigFloatHandle);
 //
-// extern int32_t	v1_4_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
-// extern void  	v1_4_mBufferStorageLoadFromAddress(void* context, int32_t addressHandle, int32_t keyHandle, int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
-// extern int32_t	v1_4_mBufferFinish(void* context, int32_t mBufferHandle);
+// extern int32_t	v1_5_mBufferStorageStore(void* context, int32_t keyHandle ,int32_t mBufferHandle);
+// extern int32_t	v1_5_mBufferStorageLoad(void* context, int32_t keyHandle, int32_t mBufferHandle);
+// extern void  	v1_5_mBufferStorageLoadFromAddress(void* context, int32_t addressHandle, int32_t keyHandle, int32_t mBufferHandle);
+// extern int32_t	v1_5_mBufferGetArgument(void* context, int32_t id, int32_t mBufferHandle);
+// extern int32_t	v1_5_mBufferFinish(void* context, int32_t mBufferHandle);
 //
-// extern int32_t	v1_4_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
+// extern int32_t	v1_5_mBufferSetRandom(void* context, int32_t destinationHandle, int32_t length);
 import "C"
 import (
 	"bytes"
@@ -42,7 +42,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -70,121 +70,121 @@ const (
 	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
-// ManagedBufferImports creates a new wasmer.Imports populated with the ManagedBuffer API methods
-func ManagedBufferImports(imports elrondapimeta.EIFunctionReceiver) error {
+// ManagedBufferImports populates imports with the ManagedBuffer API methods
+func ManagedBufferImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
-	err := imports.Append("mBufferNew", v1_4_mBufferNew, C.v1_4_mBufferNew)
+	err := imports.Append("mBufferNew", v1_5_mBufferNew, C.v1_5_mBufferNew)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferNewFromBytes", v1_4_mBufferNewFromBytes, C.v1_4_mBufferNewFromBytes)
+	err = imports.Append("mBufferNewFromBytes", v1_5_mBufferNewFromBytes, C.v1_5_mBufferNewFromBytes)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferGetLength", v1_4_mBufferGetLength, C.v1_4_mBufferGetLength)
+	err = imports.Append("mBufferGetLength", v1_5_mBufferGetLength, C.v1_5_mBufferGetLength)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferSetBytes", v1_4_mBufferSetBytes, C.v1_4_mBufferSetBytes)
+	err = imports.Append("mBufferSetByteSlice", v1_5_mBufferSetByteSlice, C.v1_5_mBufferSetByteSlice)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferSetByteSlice", v1_4_mBufferSetByteSlice, C.v1_4_mBufferSetByteSlice)
+	err = imports.Append("mBufferGetBytes", v1_5_mBufferGetBytes, C.v1_5_mBufferGetBytes)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferGetBytes", v1_4_mBufferGetBytes, C.v1_4_mBufferGetBytes)
+	err = imports.Append("mBufferGetByteSlice", v1_5_mBufferGetByteSlice, C.v1_5_mBufferGetByteSlice)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferGetByteSlice", v1_4_mBufferGetByteSlice, C.v1_4_mBufferGetByteSlice)
+	err = imports.Append("mBufferCopyByteSlice", v1_5_mBufferCopyByteSlice, C.v1_5_mBufferCopyByteSlice)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferCopyByteSlice", v1_4_mBufferCopyByteSlice, C.v1_4_mBufferCopyByteSlice)
+	err = imports.Append("mBufferEq", v1_5_mBufferEq, C.v1_5_mBufferEq)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferEq", v1_4_mBufferEq, C.v1_4_mBufferEq)
+	err = imports.Append("mBufferSetBytes", v1_5_mBufferSetBytes, C.v1_5_mBufferSetBytes)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferAppend", v1_4_mBufferAppend, C.v1_4_mBufferAppend)
+	err = imports.Append("mBufferAppend", v1_5_mBufferAppend, C.v1_5_mBufferAppend)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferAppendBytes", v1_4_mBufferAppendBytes, C.v1_4_mBufferAppendBytes)
+	err = imports.Append("mBufferAppendBytes", v1_5_mBufferAppendBytes, C.v1_5_mBufferAppendBytes)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferToBigIntUnsigned", v1_4_mBufferToBigIntUnsigned, C.v1_4_mBufferToBigIntUnsigned)
+	err = imports.Append("mBufferToBigIntUnsigned", v1_5_mBufferToBigIntUnsigned, C.v1_5_mBufferToBigIntUnsigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferToBigIntSigned", v1_4_mBufferToBigIntSigned, C.v1_4_mBufferToBigIntSigned)
+	err = imports.Append("mBufferToBigIntSigned", v1_5_mBufferToBigIntSigned, C.v1_5_mBufferToBigIntSigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferFromBigIntUnsigned", v1_4_mBufferFromBigIntUnsigned, C.v1_4_mBufferFromBigIntUnsigned)
+	err = imports.Append("mBufferFromBigIntUnsigned", v1_5_mBufferFromBigIntUnsigned, C.v1_5_mBufferFromBigIntUnsigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferFromBigIntSigned", v1_4_mBufferFromBigIntSigned, C.v1_4_mBufferFromBigIntSigned)
+	err = imports.Append("mBufferFromBigIntSigned", v1_5_mBufferFromBigIntSigned, C.v1_5_mBufferFromBigIntSigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferToBigFloat", v1_4_mBufferToBigFloat, C.v1_4_mBufferToBigFloat)
+	err = imports.Append("mBufferToBigFloat", v1_5_mBufferToBigFloat, C.v1_5_mBufferToBigFloat)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferFromBigFloat", v1_4_mBufferFromBigFloat, C.v1_4_mBufferFromBigFloat)
+	err = imports.Append("mBufferFromBigFloat", v1_5_mBufferFromBigFloat, C.v1_5_mBufferFromBigFloat)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferStorageStore", v1_4_mBufferStorageStore, C.v1_4_mBufferStorageStore)
+	err = imports.Append("mBufferStorageStore", v1_5_mBufferStorageStore, C.v1_5_mBufferStorageStore)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferStorageLoad", v1_4_mBufferStorageLoad, C.v1_4_mBufferStorageLoad)
+	err = imports.Append("mBufferStorageLoad", v1_5_mBufferStorageLoad, C.v1_5_mBufferStorageLoad)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferStorageLoadFromAddress", v1_4_mBufferStorageLoadFromAddress, C.v1_4_mBufferStorageLoadFromAddress)
+	err = imports.Append("mBufferStorageLoadFromAddress", v1_5_mBufferStorageLoadFromAddress, C.v1_5_mBufferStorageLoadFromAddress)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferGetArgument", v1_4_mBufferGetArgument, C.v1_4_mBufferGetArgument)
+	err = imports.Append("mBufferGetArgument", v1_5_mBufferGetArgument, C.v1_5_mBufferGetArgument)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferFinish", v1_4_mBufferFinish, C.v1_4_mBufferFinish)
+	err = imports.Append("mBufferFinish", v1_5_mBufferFinish, C.v1_5_mBufferFinish)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("mBufferSetRandom", v1_4_mBufferSetRandom, C.v1_4_mBufferSetRandom)
+	err = imports.Append("mBufferSetRandom", v1_5_mBufferSetRandom, C.v1_5_mBufferSetRandom)
 	if err != nil {
 		return err
 	}
@@ -192,8 +192,8 @@ func ManagedBufferImports(imports elrondapimeta.EIFunctionReceiver) error {
 	return nil
 }
 
-//export v1_4_mBufferNew
-func v1_4_mBufferNew(context unsafe.Pointer) int32 {
+//export v1_5_mBufferNew
+func v1_5_mBufferNew(context unsafe.Pointer) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -203,8 +203,8 @@ func v1_4_mBufferNew(context unsafe.Pointer) int32 {
 	return managedType.NewManagedBuffer()
 }
 
-//export v1_4_mBufferNewFromBytes
-func v1_4_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
+//export v1_5_mBufferNewFromBytes
+func v1_5_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -220,8 +220,8 @@ func v1_4_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLeng
 	return managedType.NewManagedBufferFromBytes(data)
 }
 
-//export v1_4_mBufferGetLength
-func v1_4_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
+//export v1_5_mBufferGetLength
+func v1_5_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -238,8 +238,8 @@ func v1_4_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 	return length
 }
 
-//export v1_4_mBufferGetBytes
-func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOffset int32) int32 {
+//export v1_5_mBufferGetBytes
+func v1_5_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOffset int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -259,17 +259,11 @@ func v1_4_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOff
 		return 1
 	}
 
-	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFlagSet() {
-		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(mBufferBytes)))
-		metering.UseAndTraceGas(gasToUse)
-	}
-
 	return 0
 }
 
-//export v1_4_mBufferGetByteSlice
-func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
+//export v1_5_mBufferGetByteSlice
+func v1_5_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -295,17 +289,11 @@ func v1_4_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, starti
 		return 1
 	}
 
-	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFlagSet() {
-		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(sourceBytes)))
-		metering.UseAndTraceGas(gasToUse)
-	}
-
 	return 0
 }
 
-//export v1_4_mBufferCopyByteSlice
-func v1_4_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
+//export v1_5_mBufferCopyByteSlice
+func v1_5_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	host := arwen.GetVMHost(context)
 	return ManagedBufferCopyByteSliceWithHost(host, sourceHandle, startingPosition, sliceLength, destinationHandle)
 }
@@ -339,8 +327,8 @@ func ManagedBufferCopyByteSliceWithHost(host arwen.VMHost, sourceHandle int32, s
 	return 0
 }
 
-//export v1_4_mBufferEq
-func v1_4_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2 int32) int32 {
+//export v1_5_mBufferEq
+func v1_5_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2 int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -368,8 +356,8 @@ func v1_4_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2
 	return 0
 }
 
-//export v1_4_mBufferSetBytes
-func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
+//export v1_5_mBufferSetBytes
+func v1_5_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -385,17 +373,11 @@ func v1_4_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffse
 	managedType.ConsumeGasForBytes(data)
 	managedType.SetBytes(mBufferHandle, data)
 
-	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFlagSet() {
-		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(data)))
-		metering.UseAndTraceGas(gasToUse)
-	}
-
 	return 0
 }
 
-//export v1_4_mBufferSetByteSlice
-func v1_4_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
+//export v1_5_mBufferSetByteSlice
+func v1_5_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	host := arwen.GetVMHost(context)
 	return ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
 }
@@ -445,8 +427,8 @@ func ManagedBufferSetByteSliceWithTypedArgs(host arwen.VMHost, mBufferHandle int
 	return 0
 }
 
-//export v1_4_mBufferAppend
-func v1_4_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHandle int32) int32 {
+//export v1_5_mBufferAppend
+func v1_5_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -467,17 +449,11 @@ func v1_4_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHan
 		return 1
 	}
 
-	storage := arwen.GetStorageContext(context)
-	if !storage.IsUseDifferentGasCostFlagSet() {
-		gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(len(dataBufferBytes)))
-		metering.UseAndTraceGas(gasToUse)
-	}
-
 	return 0
 }
 
-//export v1_4_mBufferAppendBytes
-func v1_4_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
+//export v1_5_mBufferAppendBytes
+func v1_5_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -503,8 +479,8 @@ func v1_4_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, da
 	return 0
 }
 
-//export v1_4_mBufferToBigIntUnsigned
-func v1_4_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
+//export v1_5_mBufferToBigIntUnsigned
+func v1_5_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -523,8 +499,8 @@ func v1_4_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, b
 	return 0
 }
 
-//export v1_4_mBufferToBigIntSigned
-func v1_4_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
+//export v1_5_mBufferToBigIntSigned
+func v1_5_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -543,8 +519,8 @@ func v1_4_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, big
 	return 0
 }
 
-//export v1_4_mBufferFromBigIntUnsigned
-func v1_4_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
+//export v1_5_mBufferFromBigIntUnsigned
+func v1_5_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -562,8 +538,8 @@ func v1_4_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32,
 	return 0
 }
 
-//export v1_4_mBufferFromBigIntSigned
-func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
+//export v1_5_mBufferFromBigIntSigned
+func v1_5_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -580,8 +556,8 @@ func v1_4_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, b
 	return 0
 }
 
-//export v1_4_mBufferToBigFloat
-func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandle int32) int32 {
+//export v1_5_mBufferToBigFloat
+func v1_5_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -620,8 +596,8 @@ func v1_4_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandl
 	return 0
 }
 
-//export v1_4_mBufferFromBigFloat
-func v1_4_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandle int32) int32 {
+//export v1_5_mBufferFromBigFloat
+func v1_5_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -646,8 +622,8 @@ func v1_4_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle, bigFloatHan
 	return 0
 }
 
-//export v1_4_mBufferStorageStore
-func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHandle int32) int32 {
+//export v1_5_mBufferStorageStore
+func v1_5_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -674,8 +650,8 @@ func v1_4_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHan
 	return 0
 }
 
-//export v1_4_mBufferStorageLoad
-func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinationHandle int32) int32 {
+//export v1_5_mBufferStorageLoad
+func v1_5_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
@@ -694,8 +670,8 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	return 0
 }
 
-//export v1_4_mBufferStorageLoadFromAddress
-func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, keyHandle, destinationHandle int32) {
+//export v1_5_mBufferStorageLoadFromAddress
+func v1_5_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, keyHandle, destinationHandle int32) {
 	host := arwen.GetVMHost(context)
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -716,8 +692,8 @@ func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, k
 	managedType.SetBytes(destinationHandle, storageBytes)
 }
 
-//export v1_4_mBufferGetArgument
-func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle int32) int32 {
+//export v1_5_mBufferGetArgument
+func v1_5_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -727,15 +703,15 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		arwen.WithFaultAndHostIfFailAlwaysActive(arwen.ErrArgOutOfRange, arwen.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
+		arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])
 	return 0
 }
 
-//export v1_4_mBufferFinish
-func v1_4_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
+//export v1_5_mBufferFinish
+func v1_5_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -761,8 +737,8 @@ func v1_4_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
 	return 0
 }
 
-//export v1_4_mBufferSetRandom
-func v1_4_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
+//export v1_5_mBufferSetRandom
+func v1_5_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)

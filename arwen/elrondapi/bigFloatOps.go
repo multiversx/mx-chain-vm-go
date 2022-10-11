@@ -6,33 +6,33 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t	v1_4_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
-// extern int32_t	v1_4_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
-// extern int32_t	v1_4_bigFloatNewFromSci(void* context, long long significand, long long exponent);
+// extern int32_t	v1_5_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
+// extern int32_t	v1_5_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
+// extern int32_t	v1_5_bigFloatNewFromSci(void* context, long long significand, long long exponent);
 //
-// extern void		v1_4_bigFloatAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void		v1_4_bigFloatSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void		v1_4_bigFloatMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void		v1_4_bigFloatDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void		v1_5_bigFloatAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void		v1_5_bigFloatSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void		v1_5_bigFloatMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void		v1_5_bigFloatDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
 //
-// extern void		v1_4_bigFloatAbs(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void		v1_4_bigFloatNeg(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern int32_t	v1_4_bigFloatCmp(void* context, int32_t op1Handle, int32_t op2Handle);
-// extern int32_t	v1_4_bigFloatSign(void* context, int32_t opHandle);
-// extern void 		v1_4_bigFloatClone(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void		v1_4_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void		v1_4_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
+// extern void		v1_5_bigFloatAbs(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void		v1_5_bigFloatNeg(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern int32_t	v1_5_bigFloatCmp(void* context, int32_t op1Handle, int32_t op2Handle);
+// extern int32_t	v1_5_bigFloatSign(void* context, int32_t opHandle);
+// extern void 		v1_5_bigFloatClone(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void		v1_5_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void		v1_5_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
 //
-// extern void		v1_4_bigFloatFloor(void* context, int32_t destBigIntHandle, int32_t opHandle);
-// extern void		v1_4_bigFloatCeil(void* context, int32_t destBigIntHandle, int32_t opHandle);
-// extern void		v1_4_bigFloatTruncate(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void		v1_5_bigFloatFloor(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void		v1_5_bigFloatCeil(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void		v1_5_bigFloatTruncate(void* context, int32_t destBigIntHandle, int32_t opHandle);
 //
-// extern int32_t	v1_4_bigFloatIsInt(void* context, int32_t opHandle);
-// extern void		v1_4_bigFloatSetInt64(void* context, int32_t destinationHandle, long long value);
-// extern void		v1_4_bigFloatSetBigInt(void* context, int32_t destinationHandle, int32_t bigIntHandle);
+// extern int32_t	v1_5_bigFloatIsInt(void* context, int32_t opHandle);
+// extern void		v1_5_bigFloatSetInt64(void* context, int32_t destinationHandle, long long value);
+// extern void		v1_5_bigFloatSetBigInt(void* context, int32_t destinationHandle, int32_t bigIntHandle);
 //
-// extern void		v1_4_bigFloatGetConstPi(void* context, int32_t destinationHandle);
-// extern void		v1_4_bigFloatGetConstE(void* context, int32_t destinationHandle);
+// extern void		v1_5_bigFloatGetConstPi(void* context, int32_t destinationHandle);
+// extern void		v1_5_bigFloatGetConstE(void* context, int32_t destinationHandle);
 import "C"
 import (
 	"math"
@@ -40,7 +40,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -69,116 +69,116 @@ const (
 	bigFloatGetConstEName    = "bigFloatGetConstE"
 )
 
-// BigFloatImports creates a new wasmer.Imports populated with the BigFloat API methods
-func BigFloatImports(imports elrondapimeta.EIFunctionReceiver) error {
+// BigFloatImports populates imports with the BigFloat API methods
+func BigFloatImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
-	err := imports.Append("bigFloatNewFromParts", v1_4_bigFloatNewFromParts, C.v1_4_bigFloatNewFromParts)
+	err := imports.Append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatNewFromFrac", v1_4_bigFloatNewFromFrac, C.v1_4_bigFloatNewFromFrac)
+	err = imports.Append("bigFloatNewFromFrac", v1_5_bigFloatNewFromFrac, C.v1_5_bigFloatNewFromFrac)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatNewFromSci", v1_4_bigFloatNewFromSci, C.v1_4_bigFloatNewFromSci)
+	err = imports.Append("bigFloatNewFromSci", v1_5_bigFloatNewFromSci, C.v1_5_bigFloatNewFromSci)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatAdd", v1_4_bigFloatAdd, C.v1_4_bigFloatAdd)
+	err = imports.Append("bigFloatAdd", v1_5_bigFloatAdd, C.v1_5_bigFloatAdd)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatSub", v1_4_bigFloatSub, C.v1_4_bigFloatSub)
+	err = imports.Append("bigFloatSub", v1_5_bigFloatSub, C.v1_5_bigFloatSub)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatMul", v1_4_bigFloatMul, C.v1_4_bigFloatMul)
+	err = imports.Append("bigFloatMul", v1_5_bigFloatMul, C.v1_5_bigFloatMul)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatDiv", v1_4_bigFloatDiv, C.v1_4_bigFloatDiv)
+	err = imports.Append("bigFloatDiv", v1_5_bigFloatDiv, C.v1_5_bigFloatDiv)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatTruncate", v1_4_bigFloatTruncate, C.v1_4_bigFloatTruncate)
+	err = imports.Append("bigFloatTruncate", v1_5_bigFloatTruncate, C.v1_5_bigFloatTruncate)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatNeg", v1_4_bigFloatNeg, C.v1_4_bigFloatNeg)
+	err = imports.Append("bigFloatNeg", v1_5_bigFloatNeg, C.v1_5_bigFloatNeg)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatClone", v1_4_bigFloatClone, C.v1_4_bigFloatClone)
+	err = imports.Append("bigFloatClone", v1_5_bigFloatClone, C.v1_5_bigFloatClone)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatCmp", v1_4_bigFloatCmp, C.v1_4_bigFloatCmp)
+	err = imports.Append("bigFloatCmp", v1_5_bigFloatCmp, C.v1_5_bigFloatCmp)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatAbs", v1_4_bigFloatAbs, C.v1_4_bigFloatAbs)
+	err = imports.Append("bigFloatAbs", v1_5_bigFloatAbs, C.v1_5_bigFloatAbs)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatSign", v1_4_bigFloatSign, C.v1_4_bigFloatSign)
+	err = imports.Append("bigFloatSign", v1_5_bigFloatSign, C.v1_5_bigFloatSign)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatSqrt", v1_4_bigFloatSqrt, C.v1_4_bigFloatSqrt)
+	err = imports.Append("bigFloatSqrt", v1_5_bigFloatSqrt, C.v1_5_bigFloatSqrt)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatPow", v1_4_bigFloatPow, C.v1_4_bigFloatPow)
+	err = imports.Append("bigFloatPow", v1_5_bigFloatPow, C.v1_5_bigFloatPow)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatFloor", v1_4_bigFloatFloor, C.v1_4_bigFloatFloor)
+	err = imports.Append("bigFloatFloor", v1_5_bigFloatFloor, C.v1_5_bigFloatFloor)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatCeil", v1_4_bigFloatCeil, C.v1_4_bigFloatCeil)
+	err = imports.Append("bigFloatCeil", v1_5_bigFloatCeil, C.v1_5_bigFloatCeil)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatSetInt64", v1_4_bigFloatSetInt64, C.v1_4_bigFloatSetInt64)
+	err = imports.Append("bigFloatSetInt64", v1_5_bigFloatSetInt64, C.v1_5_bigFloatSetInt64)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatIsInt", v1_4_bigFloatIsInt, C.v1_4_bigFloatIsInt)
+	err = imports.Append("bigFloatIsInt", v1_5_bigFloatIsInt, C.v1_5_bigFloatIsInt)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatSetBigInt", v1_4_bigFloatSetBigInt, C.v1_4_bigFloatSetBigInt)
+	err = imports.Append("bigFloatSetBigInt", v1_5_bigFloatSetBigInt, C.v1_5_bigFloatSetBigInt)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatGetConstPi", v1_4_bigFloatGetConstPi, C.v1_4_bigFloatGetConstPi)
+	err = imports.Append("bigFloatGetConstPi", v1_5_bigFloatGetConstPi, C.v1_5_bigFloatGetConstPi)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("bigFloatGetConstE", v1_4_bigFloatGetConstE, C.v1_4_bigFloatGetConstE)
+	err = imports.Append("bigFloatGetConstE", v1_5_bigFloatGetConstE, C.v1_5_bigFloatGetConstE)
 	if err != nil {
 		return err
 	}
@@ -217,8 +217,8 @@ func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHan
 	dest.Set(result)
 }
 
-//export v1_4_bigFloatNewFromParts
-func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalPart, exponent int32) int32 {
+//export v1_5_bigFloatNewFromParts
+func v1_5_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalPart, exponent int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -262,8 +262,8 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 	return handle
 }
 
-//export v1_4_bigFloatNewFromFrac
-func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int64) int32 {
+//export v1_5_bigFloatNewFromFrac
+func v1_5_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int64) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -289,8 +289,8 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 	return handle
 }
 
-//export v1_4_bigFloatNewFromSci
-func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64) int32 {
+//export v1_5_bigFloatNewFromSci
+func v1_5_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -323,8 +323,8 @@ func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64
 	return handle
 }
 
-//export v1_4_bigFloatAdd
-func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_5_bigFloatAdd
+func v1_5_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext((context))
@@ -346,8 +346,8 @@ func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultAdd, destinationHandle)
 }
 
-//export v1_4_bigFloatSub
-func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_5_bigFloatSub
+func v1_5_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -368,8 +368,8 @@ func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultSub, destinationHandle)
 }
 
-//export v1_4_bigFloatMul
-func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_5_bigFloatMul
+func v1_5_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -391,8 +391,8 @@ func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultMul, destinationHandle)
 }
 
-//export v1_4_bigFloatDiv
-func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
+//export v1_5_bigFloatDiv
+func v1_5_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2Handle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -418,8 +418,8 @@ func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultDiv, destinationHandle)
 }
 
-//export v1_4_bigFloatNeg
-func v1_4_bigFloatNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_5_bigFloatNeg
+func v1_5_bigFloatNeg(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -440,8 +440,8 @@ func v1_4_bigFloatNeg(context unsafe.Pointer, destinationHandle, opHandle int32)
 	dest.Neg(op)
 }
 
-//export v1_4_bigFloatClone
-func v1_4_bigFloatClone(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_5_bigFloatClone
+func v1_5_bigFloatClone(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -462,8 +462,8 @@ func v1_4_bigFloatClone(context unsafe.Pointer, destinationHandle, opHandle int3
 	dest.Copy(op)
 }
 
-//export v1_4_bigFloatCmp
-func v1_4_bigFloatCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
+//export v1_5_bigFloatCmp
+func v1_5_bigFloatCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -480,8 +480,8 @@ func v1_4_bigFloatCmp(context unsafe.Pointer, op1Handle, op2Handle int32) int32 
 	return int32(op1.Cmp(op2))
 }
 
-//export v1_4_bigFloatAbs
-func v1_4_bigFloatAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_5_bigFloatAbs
+func v1_5_bigFloatAbs(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -502,8 +502,8 @@ func v1_4_bigFloatAbs(context unsafe.Pointer, destinationHandle, opHandle int32)
 	dest.Abs(op)
 }
 
-//export v1_4_bigFloatSign
-func v1_4_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
+//export v1_5_bigFloatSign
+func v1_5_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -518,8 +518,8 @@ func v1_4_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
 	return int32(op.Sign())
 }
 
-//export v1_4_bigFloatSqrt
-func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
+//export v1_5_bigFloatSqrt
+func v1_5_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -548,8 +548,8 @@ func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32
 	dest.Set(resultSqrt)
 }
 
-//export v1_4_bigFloatPow
-func v1_4_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, exponent int32) {
+//export v1_5_bigFloatPow
+func v1_5_bigFloatPow(context unsafe.Pointer, destinationHandle, opHandle, exponent int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -600,8 +600,8 @@ func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error)
 	return result, nil
 }
 
-//export v1_4_bigFloatFloor
-func v1_4_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
+//export v1_5_bigFloatFloor
+func v1_5_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -626,8 +626,8 @@ func v1_4_bigFloatFloor(context unsafe.Pointer, destBigIntHandle, opHandle int32
 	}
 }
 
-//export v1_4_bigFloatCeil
-func v1_4_bigFloatCeil(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
+//export v1_5_bigFloatCeil
+func v1_5_bigFloatCeil(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -652,8 +652,8 @@ func v1_4_bigFloatCeil(context unsafe.Pointer, destBigIntHandle, opHandle int32)
 	}
 }
 
-//export v1_4_bigFloatTruncate
-func v1_4_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
+//export v1_5_bigFloatTruncate
+func v1_5_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle, opHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -672,8 +672,8 @@ func v1_4_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle, opHandle in
 	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 }
 
-//export v1_4_bigFloatSetInt64
-func v1_4_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
+//export v1_5_bigFloatSetInt64
+func v1_5_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -688,8 +688,8 @@ func v1_4_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, valu
 	dest.SetInt64(value)
 }
 
-//export v1_4_bigFloatIsInt
-func v1_4_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
+//export v1_5_bigFloatIsInt
+func v1_5_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -707,8 +707,8 @@ func v1_4_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
 	return 0
 }
 
-//export v1_4_bigFloatSetBigInt
-func v1_4_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle, bigIntHandle int32) {
+//export v1_5_bigFloatSetBigInt
+func v1_5_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle, bigIntHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -726,8 +726,8 @@ func v1_4_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle, bigIntHan
 	setResultIfNotInfinity(arwen.GetVMHost(context), resultSetInt, destinationHandle)
 }
 
-//export v1_4_bigFloatGetConstPi
-func v1_4_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
+//export v1_5_bigFloatGetConstPi
+func v1_5_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -742,8 +742,8 @@ func v1_4_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
 	pi.SetFloat64(math.Pi)
 }
 
-//export v1_4_bigFloatGetConstE
-func v1_4_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
+//export v1_5_bigFloatGetConstE
+func v1_5_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)

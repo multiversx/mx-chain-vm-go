@@ -7,21 +7,24 @@ import (
 	"time"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
 var logGasTrace = logger.GetOrCreate("gasTrace")
 
-// MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
+// MaximumWasmerInstanceCount specifies the maximum number of allowed Wasmer
+// instances on the InstanceStack of the RuntimeContext
 var MaximumWasmerInstanceCount = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
@@ -40,6 +43,7 @@ type vmHost struct {
 
 	blockchainContext   arwen.BlockchainContext
 	runtimeContext      arwen.RuntimeContext
+	asyncContext        arwen.AsyncContext
 	outputContext       arwen.OutputContext
 	meteringContext     arwen.MeteringContext
 	storageContext      arwen.StorageContext
@@ -49,6 +53,7 @@ type vmHost struct {
 	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
+	callArgsParser       arwen.CallArgsParser
 	enableEpochsHandler  vmcommon.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 }
@@ -56,6 +61,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
+	vmExecutor executor.InstanceBuilder,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -83,6 +89,7 @@ func NewArwenVM(
 		cryptoHook:           cryptoHook,
 		meteringContext:      nil,
 		runtimeContext:       nil,
+		asyncContext:         nil,
 		blockchainContext:    nil,
 		storageContext:       nil,
 		managedTypesContext:  nil,
@@ -90,18 +97,16 @@ func NewArwenVM(
 		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
+		callArgsParser:       parsers.NewCallArgsParser(),
 		executionTimeout:     minExecutionTimeout,
 		enableEpochsHandler:  hostParameters.EnableEpochsHandler,
 	}
-
-	host.activationEpochMap = createActivationMap(hostParameters)
-
 	newExecutionTimeout := time.Duration(hostParameters.TimeOutForSCExecutionInMilliseconds) * time.Millisecond
 	if newExecutionTimeout > minExecutionTimeout {
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	imports := elrondapimeta.NewEIFunctions()
+	imports := executor.NewImportFunctions()
 	err := PopulateAllImports(imports)
 	if err != nil {
 		return nil, err
@@ -124,6 +129,7 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		vmExecutor,
 	)
 	if err != nil {
 		return nil, err
@@ -144,6 +150,11 @@ func NewArwenVM(
 		blockChainHook,
 		hostParameters.ElrondProtectedKeyPrefix,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	host.asyncContext, err = contexts.NewAsyncContext(host, host.callArgsParser, host.esdtTransferParser, &marshal.GogoProtoMarshalizer{})
 	if err != nil {
 		return nil, err
 	}
@@ -221,6 +232,11 @@ func (host *vmHost) Metering() arwen.MeteringContext {
 	return host.meteringContext
 }
 
+// Async returns the AsyncContext instance of the host
+func (host *vmHost) Async() arwen.AsyncContext {
+	return host.asyncContext
+}
+
 // Storage returns the StorageContext instance of the host
 func (host *vmHost) Storage() arwen.StorageContext {
 	return host.storageContext
@@ -243,6 +259,7 @@ func (host *vmHost) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
 	return host.managedTypesContext,
@@ -250,6 +267,7 @@ func (host *vmHost) GetContexts() (
 		host.meteringContext,
 		host.outputContext,
 		host.runtimeContext,
+		host.asyncContext,
 		host.storageContext
 }
 
@@ -286,7 +304,9 @@ func (host *vmHost) initContexts() {
 	host.outputContext.InitState()
 	host.meteringContext.InitState()
 	host.runtimeContext.InitState()
+	host.asyncContext.InitState()
 	host.storageContext.InitState()
+	host.blockchainContext.InitState()
 	host.ethInput = nil
 }
 
@@ -296,7 +316,9 @@ func (host *vmHost) ClearContextStateStack() {
 	host.outputContext.ClearStateStack()
 	host.meteringContext.ClearStateStack()
 	host.runtimeContext.ClearStateStack()
+	host.asyncContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
+	host.blockchainContext.ClearStateStack()
 }
 
 // GetAPIMethods returns the EEI as a set of imports for Wasmer
@@ -414,10 +436,12 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			close(done)
 		}()
 
-		isUpgrade := input.Function == arwen.UpgradeFunctionName
-		if isUpgrade {
+		switch input.Function {
+		case arwen.UpgradeFunctionName:
 			vmOutput = host.doRunSmartContractUpgrade(input)
-		} else {
+		case arwen.DeleteFunctionName:
+			vmOutput = host.doRunSmartContractDelete(input)
+		default:
 			vmOutput = host.doRunSmartContractCall(input)
 		}
 

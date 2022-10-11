@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 type worldDataModel struct {
@@ -38,6 +39,7 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 
 	vm, err := host.NewArwenVM(
 		blockchainHook,
+		wasmer.NewExecutor(),
 		getHostParameters(),
 	)
 	if err != nil {
@@ -61,7 +63,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
+		EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 		WasmerSIGSEGVPassthrough: false,
 	}
 }

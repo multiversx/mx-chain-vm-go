@@ -9,6 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
@@ -18,13 +22,12 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
-var baseTestConfig = contracts.DirectCallGasTestConfig{
+var baseTestConfig = &testcommon.TestConfig{
 	GasProvided:     1000,
 	GasUsedByParent: 400,
 	GasUsedByChild:  200,
@@ -1043,4 +1046,166 @@ func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.Cur
 	}
 
 	return true
+}
+
+func Test_ManagedDeleteContract(t *testing.T) {
+	testConfig := baseTestConfig
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
+				WithOwnerAddress(test.ParentAddress).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						managedTypes := host.ManagedTypes()
+
+						argumentsHandle := managedTypes.NewManagedBuffer()
+						managedTypes.WriteManagedVecOfManagedBuffers([][]byte{{1, 2}, {3, 4}}, argumentsHandle)
+
+						destHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
+
+						elrondapi.ManagedDeleteContractWithHost(
+							host,
+							destHandle,
+							100000,
+							argumentsHandle)
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				DeletedAccounts(test.ParentAddress)
+		})
+}
+
+func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractOnShard(test.ChildAddress, 1).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
+				WithOwnerAddress(test.ParentAddress).
+				WithMethods(contracts.WasteGasChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ParentAddress).
+			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction(arwen.DeleteFunctionName).
+			WithArguments(
+				[]byte{0}, // placeholder for data used by async framework
+				[]byte{0}, // placeholder for data used by async framework
+				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
+				[]byte(contracts.AsyncChildData),
+				[]byte{0}).
+			WithCallType(vm.AsynchronousCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
+			world.CurrentBlockInfo.BlockRound = 1
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				DeletedAccounts(test.ChildAddress)
+		})
+}
+
+func TestElrondEI_NFTNonceOverflow(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	MaxUint := ^uint64(0)
+	MaxInt := int64(MaxUint >> 1)
+
+	OverflowedMaxInt := uint64(MaxInt) + 1
+
+	tokenValue := int64(100)
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						managed := host.ManagedTypes()
+
+						addressHandle := managed.NewManagedBufferFromBytes(test.ParentAddress)
+						tokenIDHandle := managed.NewManagedBufferFromBytes(test.ESDTTestTokenName)
+
+						nonce := int64(OverflowedMaxInt)
+
+						valueHandle := managed.NewBigIntFromInt64(0)
+						propertiesHandle := managed.NewManagedBuffer()
+						hashHandle := managed.NewManagedBuffer()
+						nameHandle := managed.NewManagedBuffer()
+						attributesHandle := managed.NewManagedBuffer()
+						creatorHandle := managed.NewManagedBuffer()
+						royaltiesHandle := managed.NewManagedBuffer()
+						urisHandle := managed.NewManagedBuffer()
+
+						elrondapi.ManagedGetESDTTokenDataWithHost(host,
+							addressHandle,
+							tokenIDHandle,
+							nonce,
+							valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+						value, err := managed.GetBigInt(valueHandle)
+						if err != nil {
+							host.Runtime().SignalUserError(err.Error())
+							return parentInstance
+						}
+						host.Output().Finish(value.Bytes())
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			world.BuiltinFuncs.SetTokenData(
+				test.ParentAddress,
+				test.ESDTTestTokenName,
+				OverflowedMaxInt,
+				&esdt.ESDigitalToken{
+					Value:      big.NewInt(tokenValue),
+					Type:       uint32(core.Fungible),
+					Properties: esdtconvert.MakeESDTUserMetadataBytes(false),
+				})
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(big.NewInt(tokenValue).Bytes())
+		})
 }

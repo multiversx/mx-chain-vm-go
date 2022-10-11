@@ -3,39 +3,41 @@ package mock
 import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
-	Err                    error
-	VMInput                *vmcommon.ContractCallInput
-	SCAddress              []byte
-	SCCode                 []byte
-	SCCodeSize             uint64
-	CallFunction           string
-	VMType                 []byte
-	ReadOnlyFlag           bool
-	VerifyCode             bool
-	CurrentBreakpointValue arwen.BreakpointValue
-	PointsUsed             uint64
-	InstanceCtxID          int
-	MemLoadResult          []byte
-	MemLoadMultipleResult  [][]byte
-	FailCryptoAPI          bool
-	FailElrondAPI          bool
-	FailElrondSyncExecAPI  bool
-	FailBigIntAPI          bool
-	FailBigFloatAPI        bool
-	FailManagedBuffersAPI  bool
-	AsyncCallInfo          *arwen.AsyncCallInfo
-	RunningInstances       uint64
-	CurrentTxHash          []byte
-	OriginalTxHash         []byte
-	TraceGasEnabled        bool
-	GasTrace               map[string]map[string][]uint64
+	Err                      error
+	VMInput                  *vmcommon.ContractCallInput
+	SCAddress                []byte
+	SCCode                   []byte
+	SCCodeSize               uint64
+	CallFunction             string
+	VMType                   []byte
+	ReadOnlyFlag             bool
+	VerifyCode               bool
+	CurrentBreakpointValue   arwen.BreakpointValue
+	PointsUsed               uint64
+	InstanceCtxID            int
+	MemLoadResult            []byte
+	MemLoadMultipleResult    [][]byte
+	FailCryptoAPI            bool
+	FailElrondAPI            bool
+	FailElrondSyncExecAPI    bool
+	FailBigIntAPI            bool
+	FailBigFloatAPI          bool
+	FailManagedBuffersAPI    bool
+	AsyncCallInfo            *arwen.AsyncCallInfo
+	RunningInstances         uint64
+	CurrentTxHash            []byte
+	OriginalTxHash           []byte
+	TraceGasEnabled          bool
+	GasTrace                 map[string]map[string][]uint64
+	SameContractOnStackCount uint64
+	HasFunctionResult        bool
 }
 
 // InitState mocked method
@@ -43,7 +45,7 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // ReplaceInstanceBuilder mocked method()
-func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ arwen.InstanceBuilder) {
+func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ executor.InstanceBuilder) {
 }
 
 // StartWasmerInstance mocked method
@@ -127,7 +129,12 @@ func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 	r.VMInput = vmInput
 }
 
-// GetContextAddress mocked method
+// CountSameContractInstancesOnStack mocked method
+func (r *RuntimeContextMock) CountSameContractInstancesOnStack(address []byte) uint64 {
+	return r.SameContractOnStackCount
+}
+
+// GetSCAddress mocked method
 func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
@@ -148,7 +155,7 @@ func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
 }
 
 // Function mocked method
-func (r *RuntimeContextMock) Function() string {
+func (r *RuntimeContextMock) FunctionName() string {
 	return r.CallFunction
 }
 
@@ -194,8 +201,8 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
-// ExecuteAsyncCall mocked method
-func (r *RuntimeContextMock) ExecuteAsyncCall(_ []byte, _ []byte, _ []byte) error {
+// PrepareLegacyAsyncCall mocked method
+func (r *RuntimeContextMock) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
 	return r.Err
 }
 
@@ -225,12 +232,7 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance mocked method()
-func (r *RuntimeContextMock) GetInstance() wasmer.InstanceHandler {
-	return nil
-}
-
-// GetInstanceExports mocked method
-func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
+func (r *RuntimeContextMock) GetInstance() executor.InstanceHandler {
 	return nil
 }
 
@@ -238,17 +240,17 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
 
-// GetFunctionToCall mocked method
-func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+// FunctionNameChecked mocked method
+func (r *RuntimeContextMock) FunctionNameChecked() (string, error) {
 	if r.Err != nil {
-		return nil, r.Err
+		return "", r.Err
 	}
-	return nil, nil
+	return "", nil
 }
 
-// GetInitFunction mocked method
-func (r *RuntimeContextMock) GetInitFunction() wasmer.ExportedFunctionCallback {
-	return nil
+// CallSCFunction mocked method
+func (r *RuntimeContextMock) CallSCFunction(functionName string) error {
+	return r.Err
 }
 
 // MemLoad mocked method
@@ -308,29 +310,9 @@ func (r *RuntimeContextMock) ManagedBufferAPIErrorShouldFailExecution() bool {
 func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
-// GetAsyncCallInfo mocked method
-func (r *RuntimeContextMock) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return r.AsyncCallInfo
-}
-
-// SetAsyncCallInfo mocked method
-func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	r.AsyncCallInfo = asyncCallInfo
-}
-
 // AddAsyncContextCall mocked method
 func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
 	return r.Err
-}
-
-// GetAsyncContextInfo mocked method
-func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {
-	return nil
-}
-
-// GetAsyncContext mocked method
-func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, error) {
-	return nil, nil
 }
 
 // SetCustomCallFunction mocked method
@@ -348,6 +330,21 @@ func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
+	return nil
+}
+
+// ValidateCallbackName mocked method
+func (r *RuntimeContextMock) ValidateCallbackName(callbackName string) error {
+	return nil
+}
+
+// HasFunction mocked method
+func (r *RuntimeContextMock) HasFunction(functionName string) bool {
+	return r.HasFunctionResult
+}
+
+// GetPrevTxHash mocked method
+func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 

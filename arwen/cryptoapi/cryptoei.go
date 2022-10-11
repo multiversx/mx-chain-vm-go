@@ -6,44 +6,44 @@ package cryptoapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern int32_t v1_4_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t v1_4_managedSha256(void *context, int32_t inputHanle, int32_t outputHandle);
-// extern int32_t v1_4_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t v1_4_managedKeccak256(void *context, int32_t inputHanle, int32_t outputHandle);
-// extern int32_t v1_4_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
-// extern int32_t v1_4_managedRipemd160(void *context, int32_t dataHandle, int32_t resultHandle);
-// extern int32_t v1_4_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t v1_4_managedVerifyBLS(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern int32_t v1_4_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t v1_4_managedVerifyEd25519(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern int32_t v1_4_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
-// extern int32_t v1_4_managedVerifySecp256k1(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
-// extern int32_t v1_4_verifyCustomSecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t hashType);
-// extern int32_t v1_4_managedVerifyCustomSecp256k1(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle, int32_t hashType);
-// extern int32_t v1_4_encodeSecp256k1DerSignature(void *context, int32_t rOffset, int32_t rLength, int32_t sOffset, int32_t sLength, int32_t sigOffset);
-// extern int32_t v1_4_managedEncodeSecp256k1DerSignature(void *context, int32_t rHandle, int32_t sHandle, int32_t sigHandle);
-// extern void v1_4_addEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
-// extern void v1_4_doubleEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
-// extern int32_t v1_4_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
-// extern int32_t v1_4_scalarBaseMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
-// extern int32_t v1_4_managedScalarBaseMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
-// extern int32_t v1_4_scalarMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataOffset, int32_t length);
-// extern int32_t v1_4_managedScalarMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataHandle);
-// extern int32_t v1_4_marshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
-// extern int32_t v1_4_managedMarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultHandle);
-// extern int32_t v1_4_unmarshalEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
-// extern int32_t v1_4_managedUnmarshalEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
-// extern int32_t v1_4_marshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
-// extern int32_t v1_4_managedMarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t Handle);
-// extern int32_t v1_4_unmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
-// extern int32_t v1_4_managedUnmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
-// extern int32_t v1_4_generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
-// extern int32_t v1_4_managedGenerateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultHandle);
-// extern int32_t v1_4_createEC(void *context, int32_t dataOffset, int32_t dataLength);
-// extern int32_t v1_4_managedCreateEC(void *context, int32_t dataHandle);
-// extern int32_t v1_4_getCurveLengthEC(void *context, int32_t ecHandle);
-// extern int32_t v1_4_getPrivKeyByteLengthEC(void *context, int32_t ecHandle);
-// extern int32_t v1_4_ellipticCurveGetValues(void *context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
+// extern int32_t v1_5_sha256(void* context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_5_managedSha256(void *context, int32_t inputHanle, int32_t outputHandle);
+// extern int32_t v1_5_keccak256(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_5_managedKeccak256(void *context, int32_t inputHanle, int32_t outputHandle);
+// extern int32_t v1_5_ripemd160(void *context, int32_t dataOffset, int32_t length, int32_t resultOffset);
+// extern int32_t v1_5_managedRipemd160(void *context, int32_t dataHandle, int32_t resultHandle);
+// extern int32_t v1_5_verifyBLS(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_5_managedVerifyBLS(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t v1_5_verifyEd25519(void *context, int32_t keyOffset, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_5_managedVerifyEd25519(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t v1_5_verifySecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset);
+// extern int32_t v1_5_managedVerifySecp256k1(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle);
+// extern int32_t v1_5_verifyCustomSecp256k1(void *context, int32_t keyOffset, int32_t keyLength, int32_t messageOffset, int32_t messageLength, int32_t sigOffset, int32_t hashType);
+// extern int32_t v1_5_managedVerifyCustomSecp256k1(void *context, int32_t keyHandle, int32_t messageHandle, int32_t sigHandle, int32_t hashType);
+// extern int32_t v1_5_encodeSecp256k1DerSignature(void *context, int32_t rOffset, int32_t rLength, int32_t sOffset, int32_t sLength, int32_t sigOffset);
+// extern int32_t v1_5_managedEncodeSecp256k1DerSignature(void *context, int32_t rHandle, int32_t sHandle, int32_t sigHandle);
+// extern void v1_5_addEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t fstPointXHandle, int32_t fstPointYHandle, int32_t sndPointXHandle, int32_t sndPointYHandle);
+// extern void v1_5_doubleEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
+// extern int32_t v1_5_isOnCurveEC(void *context, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle);
+// extern int32_t v1_5_scalarBaseMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_5_managedScalarBaseMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
+// extern int32_t v1_5_scalarMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_5_managedScalarMultEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t pointXHandle, int32_t pointYHandle, int32_t dataHandle);
+// extern int32_t v1_5_marshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
+// extern int32_t v1_5_managedMarshalEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultHandle);
+// extern int32_t v1_5_unmarshalEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_5_managedUnmarshalEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
+// extern int32_t v1_5_marshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t resultOffset);
+// extern int32_t v1_5_managedMarshalCompressedEC(void *context, int32_t xPairHandle, int32_t yPairHandle, int32_t ecHandle, int32_t Handle);
+// extern int32_t v1_5_unmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataOffset, int32_t length);
+// extern int32_t v1_5_managedUnmarshalCompressedEC(void *context, int32_t xResultHandle, int32_t yResultHandle, int32_t ecHandle, int32_t dataHandle);
+// extern int32_t v1_5_generateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultOffset);
+// extern int32_t v1_5_managedGenerateKeyEC(void *context, int32_t xPubKeyHandle, int32_t yPubKeyHandle, int32_t ecHandle, int32_t resultHandle);
+// extern int32_t v1_5_createEC(void *context, int32_t dataOffset, int32_t dataLength);
+// extern int32_t v1_5_managedCreateEC(void *context, int32_t dataHandle);
+// extern int32_t v1_5_getCurveLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_5_getPrivKeyByteLengthEC(void *context, int32_t ecHandle);
+// extern int32_t v1_5_ellipticCurveGetValues(void *context, int32_t ecHandle, int32_t fieldOrderHandle, int32_t basePointOrderHandle, int32_t eqConstantHandle, int32_t xBasePointHandle, int32_t yBasePointHandle);
 import "C"
 
 import (
@@ -51,8 +51,8 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -91,194 +91,193 @@ const (
 )
 
 // CryptoImports adds some crypto imports to the Wasmer Imports map
-func CryptoImports(imports elrondapimeta.EIFunctionReceiver) error {
-	imports.Namespace("env")
-	err := imports.Append("sha256", v1_4_sha256, C.v1_4_sha256)
+func CryptoImports(imports executor.ImportFunctionReceiver) error {
+	err := imports.Append("sha256", v1_5_sha256, C.v1_5_sha256)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedSha256", v1_4_managedSha256, C.v1_4_managedSha256)
+	err = imports.Append("managedSha256", v1_5_managedSha256, C.v1_5_managedSha256)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("keccak256", v1_4_keccak256, C.v1_4_keccak256)
+	err = imports.Append("keccak256", v1_5_keccak256, C.v1_5_keccak256)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedKeccak256", v1_4_managedKeccak256, C.v1_4_managedKeccak256)
+	err = imports.Append("managedKeccak256", v1_5_managedKeccak256, C.v1_5_managedKeccak256)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("ripemd160", v1_4_ripemd160, C.v1_4_ripemd160)
+	err = imports.Append("ripemd160", v1_5_ripemd160, C.v1_5_ripemd160)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedRipemd160", v1_4_managedRipemd160, C.v1_4_managedRipemd160)
+	err = imports.Append("managedRipemd160", v1_5_managedRipemd160, C.v1_5_managedRipemd160)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("verifyBLS", v1_4_verifyBLS, C.v1_4_verifyBLS)
+	err = imports.Append("verifyBLS", v1_5_verifyBLS, C.v1_5_verifyBLS)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedVerifyBLS", v1_4_managedVerifyBLS, C.v1_4_managedVerifyBLS)
+	err = imports.Append("managedVerifyBLS", v1_5_managedVerifyBLS, C.v1_5_managedVerifyBLS)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("verifyEd25519", v1_4_verifyEd25519, C.v1_4_verifyEd25519)
+	err = imports.Append("verifyEd25519", v1_5_verifyEd25519, C.v1_5_verifyEd25519)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedVerifyEd25519", v1_4_managedVerifyEd25519, C.v1_4_managedVerifyEd25519)
+	err = imports.Append("managedVerifyEd25519", v1_5_managedVerifyEd25519, C.v1_5_managedVerifyEd25519)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("verifySecp256k1", v1_4_verifySecp256k1, C.v1_4_verifySecp256k1)
+	err = imports.Append("verifySecp256k1", v1_5_verifySecp256k1, C.v1_5_verifySecp256k1)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedVerifySecp256k1", v1_4_managedVerifySecp256k1, C.v1_4_managedVerifySecp256k1)
+	err = imports.Append("managedVerifySecp256k1", v1_5_managedVerifySecp256k1, C.v1_5_managedVerifySecp256k1)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("verifyCustomSecp256k1", v1_4_verifyCustomSecp256k1, C.v1_4_verifyCustomSecp256k1)
+	err = imports.Append("verifyCustomSecp256k1", v1_5_verifyCustomSecp256k1, C.v1_5_verifyCustomSecp256k1)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedVerifyCustomSecp256k1", v1_4_managedVerifyCustomSecp256k1, C.v1_4_managedVerifyCustomSecp256k1)
+	err = imports.Append("managedVerifyCustomSecp256k1", v1_5_managedVerifyCustomSecp256k1, C.v1_5_managedVerifyCustomSecp256k1)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("encodeSecp256k1DerSignature", v1_4_encodeSecp256k1DerSignature, C.v1_4_encodeSecp256k1DerSignature)
+	err = imports.Append("encodeSecp256k1DerSignature", v1_5_encodeSecp256k1DerSignature, C.v1_5_encodeSecp256k1DerSignature)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedEncodeSecp256k1DerSignature", v1_4_managedEncodeSecp256k1DerSignature, C.v1_4_managedEncodeSecp256k1DerSignature)
+	err = imports.Append("managedEncodeSecp256k1DerSignature", v1_5_managedEncodeSecp256k1DerSignature, C.v1_5_managedEncodeSecp256k1DerSignature)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("addEC", v1_4_addEC, C.v1_4_addEC)
+	err = imports.Append("addEC", v1_5_addEC, C.v1_5_addEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("doubleEC", v1_4_doubleEC, C.v1_4_doubleEC)
+	err = imports.Append("doubleEC", v1_5_doubleEC, C.v1_5_doubleEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("isOnCurveEC", v1_4_isOnCurveEC, C.v1_4_isOnCurveEC)
+	err = imports.Append("isOnCurveEC", v1_5_isOnCurveEC, C.v1_5_isOnCurveEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("scalarBaseMultEC", v1_4_scalarBaseMultEC, C.v1_4_scalarBaseMultEC)
+	err = imports.Append("scalarBaseMultEC", v1_5_scalarBaseMultEC, C.v1_5_scalarBaseMultEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedScalarBaseMultEC", v1_4_managedScalarBaseMultEC, C.v1_4_managedScalarBaseMultEC)
+	err = imports.Append("managedScalarBaseMultEC", v1_5_managedScalarBaseMultEC, C.v1_5_managedScalarBaseMultEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("scalarMultEC", v1_4_scalarMultEC, C.v1_4_scalarMultEC)
+	err = imports.Append("scalarMultEC", v1_5_scalarMultEC, C.v1_5_scalarMultEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedScalarMultEC", v1_4_managedScalarMultEC, C.v1_4_managedScalarMultEC)
+	err = imports.Append("managedScalarMultEC", v1_5_managedScalarMultEC, C.v1_5_managedScalarMultEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("marshalEC", v1_4_marshalEC, C.v1_4_marshalEC)
+	err = imports.Append("marshalEC", v1_5_marshalEC, C.v1_5_marshalEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedMarshalEC", v1_4_managedMarshalEC, C.v1_4_managedMarshalEC)
+	err = imports.Append("managedMarshalEC", v1_5_managedMarshalEC, C.v1_5_managedMarshalEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("unmarshalEC", v1_4_unmarshalEC, C.v1_4_unmarshalEC)
+	err = imports.Append("unmarshalEC", v1_5_unmarshalEC, C.v1_5_unmarshalEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedUnmarshalEC", v1_4_managedUnmarshalEC, C.v1_4_managedUnmarshalEC)
+	err = imports.Append("managedUnmarshalEC", v1_5_managedUnmarshalEC, C.v1_5_managedUnmarshalEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("marshalCompressedEC", v1_4_marshalCompressedEC, C.v1_4_marshalCompressedEC)
+	err = imports.Append("marshalCompressedEC", v1_5_marshalCompressedEC, C.v1_5_marshalCompressedEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedMarshalCompressedEC", v1_4_managedMarshalCompressedEC, C.v1_4_managedMarshalCompressedEC)
+	err = imports.Append("managedMarshalCompressedEC", v1_5_managedMarshalCompressedEC, C.v1_5_managedMarshalCompressedEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("unmarshalCompressedEC", v1_4_unmarshalCompressedEC, C.v1_4_unmarshalCompressedEC)
+	err = imports.Append("unmarshalCompressedEC", v1_5_unmarshalCompressedEC, C.v1_5_unmarshalCompressedEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedUnmarshalCompressedEC", v1_4_managedUnmarshalCompressedEC, C.v1_4_managedUnmarshalCompressedEC)
+	err = imports.Append("managedUnmarshalCompressedEC", v1_5_managedUnmarshalCompressedEC, C.v1_5_managedUnmarshalCompressedEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("generateKeyEC", v1_4_generateKeyEC, C.v1_4_generateKeyEC)
+	err = imports.Append("generateKeyEC", v1_5_generateKeyEC, C.v1_5_generateKeyEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGenerateKeyEC", v1_4_managedGenerateKeyEC, C.v1_4_managedGenerateKeyEC)
+	err = imports.Append("managedGenerateKeyEC", v1_5_managedGenerateKeyEC, C.v1_5_managedGenerateKeyEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("createEC", v1_4_createEC, C.v1_4_createEC)
+	err = imports.Append("createEC", v1_5_createEC, C.v1_5_createEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedCreateEC", v1_4_managedCreateEC, C.v1_4_managedCreateEC)
+	err = imports.Append("managedCreateEC", v1_5_managedCreateEC, C.v1_5_managedCreateEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("getCurveLengthEC", v1_4_getCurveLengthEC, C.v1_4_getCurveLengthEC)
+	err = imports.Append("getCurveLengthEC", v1_5_getCurveLengthEC, C.v1_5_getCurveLengthEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("getPrivKeyByteLengthEC", v1_4_getPrivKeyByteLengthEC, C.v1_4_getPrivKeyByteLengthEC)
+	err = imports.Append("getPrivKeyByteLengthEC", v1_5_getPrivKeyByteLengthEC, C.v1_5_getPrivKeyByteLengthEC)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("ellipticCurveGetValues", v1_4_ellipticCurveGetValues, C.v1_4_ellipticCurveGetValues)
+	err = imports.Append("ellipticCurveGetValues", v1_5_ellipticCurveGetValues, C.v1_5_ellipticCurveGetValues)
 	if err != nil {
 		return err
 	}
@@ -286,8 +285,8 @@ func CryptoImports(imports elrondapimeta.EIFunctionReceiver) error {
 	return nil
 }
 
-//export v1_4_sha256
-func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_5_sha256
+func v1_5_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -303,7 +302,7 @@ func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultO
 
 	result, err := crypto.Sha256(data)
 	if err != nil {
-		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -315,8 +314,8 @@ func v1_4_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultO
 	return 0
 }
 
-//export v1_4_managedSha256
-func v1_4_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32) int32 {
+//export v1_5_managedSha256
+func v1_5_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
@@ -332,7 +331,7 @@ func v1_4_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32)
 
 	resultBytes, err := crypto.Sha256(inputBytes)
 	if err != nil {
-		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -341,8 +340,8 @@ func v1_4_managedSha256(context unsafe.Pointer, inputHandle, outputHandle int32)
 	return 0
 }
 
-//export v1_4_keccak256
-func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_5_keccak256
+func v1_5_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -358,7 +357,7 @@ func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resu
 
 	result, err := crypto.Keccak256(data)
 	if err != nil {
-		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -370,8 +369,8 @@ func v1_4_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resu
 	return 0
 }
 
-//export v1_4_managedKeccak256
-func v1_4_managedKeccak256(context unsafe.Pointer, inputHandle, outputHandle int32) int32 {
+//export v1_5_managedKeccak256
+func v1_5_managedKeccak256(context unsafe.Pointer, inputHandle, outputHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
@@ -387,7 +386,7 @@ func v1_4_managedKeccak256(context unsafe.Pointer, inputHandle, outputHandle int
 
 	resultBytes, err := crypto.Keccak256(inputBytes)
 	if err != nil {
-		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -396,8 +395,8 @@ func v1_4_managedKeccak256(context unsafe.Pointer, inputHandle, outputHandle int
 	return 0
 }
 
-//export v1_4_ripemd160
-func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
+//export v1_5_ripemd160
+func v1_5_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	crypto := arwen.GetCryptoContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -413,7 +412,7 @@ func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resu
 
 	result, err := crypto.Ripemd160(data)
 	if err != nil {
-		arwen.WithFaultIfFailAlwaysActive(err, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(err, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -425,8 +424,8 @@ func v1_4_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resu
 	return 0
 }
 
-//export v1_4_managedRipemd160
-func v1_4_managedRipemd160(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
+//export v1_5_managedRipemd160
+func v1_5_managedRipemd160(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
 	host := arwen.GetVMHost(context)
 	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
 }
@@ -447,7 +446,7 @@ func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle
 
 	result, err := crypto.Ripemd160(inputBytes)
 	if err != nil {
-		arwen.WithFaultAndHostIfFailAlwaysActive(err, host, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHost(host, err, runtime.CryptoAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -456,8 +455,8 @@ func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle
 	return 0
 }
 
-//export v1_4_verifyBLS
-func v1_4_verifyBLS(
+//export v1_5_verifyBLS
+func v1_5_verifyBLS(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -492,15 +491,15 @@ func v1_4_verifyBLS(
 
 	invalidSigErr := crypto.VerifyBLS(key, message, sig)
 	if invalidSigErr != nil {
-		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	return 0
 }
 
-//export v1_4_managedVerifyBLS
-func v1_4_managedVerifyBLS(
+//export v1_5_managedVerifyBLS
+func v1_5_managedVerifyBLS(
 	context unsafe.Pointer,
 	keyHandle int32,
 	messageHandle int32,
@@ -545,15 +544,15 @@ func ManagedVerifyBLSWithHost(
 
 	invalidSigErr := crypto.VerifyBLS(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
-		arwen.WithFaultAndHostIfFailAlwaysActive(invalidSigErr, host, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	return 0
 }
 
-//export v1_4_verifyEd25519
-func v1_4_verifyEd25519(
+//export v1_5_verifyEd25519
+func v1_5_verifyEd25519(
 	context unsafe.Pointer,
 	keyOffset int32,
 	messageOffset int32,
@@ -588,15 +587,15 @@ func v1_4_verifyEd25519(
 
 	invalidSigErr := crypto.VerifyEd25519(key, message, sig)
 	if invalidSigErr != nil {
-		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	return 0
 }
 
-//export v1_4_managedVerifyEd25519
-func v1_4_managedVerifyEd25519(
+//export v1_5_managedVerifyEd25519
+func v1_5_managedVerifyEd25519(
 	context unsafe.Pointer,
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
@@ -637,15 +636,15 @@ func ManagedVerifyEd25519WithHost(
 
 	invalidSigErr := crypto.VerifyEd25519(keyBytes, msgBytes, sigBytes)
 	if invalidSigErr != nil {
-		arwen.WithFaultAndHostIfFailAlwaysActive(invalidSigErr, host, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	return 0
 }
 
-//export v1_4_verifyCustomSecp256k1
-func v1_4_verifyCustomSecp256k1(
+//export v1_5_verifyCustomSecp256k1
+func v1_5_verifyCustomSecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
@@ -696,15 +695,15 @@ func v1_4_verifyCustomSecp256k1(
 
 	invalidSigErr := crypto.VerifySecp256k1(key, message, sig, uint8(hashType))
 	if invalidSigErr != nil {
-		arwen.WithFaultIfFailAlwaysActive(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFault(invalidSigErr, context, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	return 0
 }
 
-//export v1_4_managedVerifyCustomSecp256k1
-func v1_4_managedVerifyCustomSecp256k1(
+//export v1_5_managedVerifyCustomSecp256k1
+func v1_5_managedVerifyCustomSecp256k1(
 	context unsafe.Pointer,
 	keyHandle, messageHandle, sigHandle int32,
 	hashType int32,
@@ -752,15 +751,15 @@ func ManagedVerifyCustomSecp256k1WithHost(
 
 	invalidSigErr := crypto.VerifySecp256k1(keyBytes, msgBytes, sigBytes, uint8(hashType))
 	if invalidSigErr != nil {
-		arwen.WithFaultAndHostIfFailAlwaysActive(invalidSigErr, host, runtime.CryptoAPIErrorShouldFailExecution())
+		arwen.WithFaultAndHost(host, invalidSigErr, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	return 0
 }
 
-//export v1_4_verifySecp256k1
-func v1_4_verifySecp256k1(
+//export v1_5_verifySecp256k1
+func v1_5_verifySecp256k1(
 	context unsafe.Pointer,
 	keyOffset int32,
 	keyLength int32,
@@ -768,7 +767,7 @@ func v1_4_verifySecp256k1(
 	messageLength int32,
 	sigOffset int32,
 ) int32 {
-	return v1_4_verifyCustomSecp256k1(
+	return v1_5_verifyCustomSecp256k1(
 		context,
 		keyOffset,
 		keyLength,
@@ -779,8 +778,8 @@ func v1_4_verifySecp256k1(
 	)
 }
 
-//export v1_4_managedVerifySecp256k1
-func v1_4_managedVerifySecp256k1(
+//export v1_5_managedVerifySecp256k1
+func v1_5_managedVerifySecp256k1(
 	context unsafe.Pointer,
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
@@ -801,8 +800,8 @@ func ManagedVerifySecp256k1WithHost(
 	)
 }
 
-//export v1_4_encodeSecp256k1DerSignature
-func v1_4_encodeSecp256k1DerSignature(
+//export v1_5_encodeSecp256k1DerSignature
+func v1_5_encodeSecp256k1DerSignature(
 	context unsafe.Pointer,
 	rOffset int32,
 	rLength int32,
@@ -836,8 +835,8 @@ func v1_4_encodeSecp256k1DerSignature(
 	return 0
 }
 
-//export v1_4_managedEncodeSecp256k1DerSignature
-func v1_4_managedEncodeSecp256k1DerSignature(
+//export v1_5_managedEncodeSecp256k1DerSignature
+func v1_5_managedEncodeSecp256k1DerSignature(
 	context unsafe.Pointer,
 	rHandle, sHandle, sigHandle int32,
 ) int32 {
@@ -873,8 +872,8 @@ func ManagedEncodeSecp256k1DerSignatureWithHost(
 	return 0
 }
 
-//export v1_4_addEC
-func v1_4_addEC(
+//export v1_5_addEC
+func v1_5_addEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -929,8 +928,8 @@ func v1_4_addEC(
 	yResult.Set(yResultAdd)
 }
 
-//export v1_4_doubleEC
-func v1_4_doubleEC(
+//export v1_5_doubleEC
+func v1_5_doubleEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -974,8 +973,8 @@ func v1_4_doubleEC(
 	yResult.Set(yResultDouble)
 }
 
-//export v1_4_isOnCurveEC
-func v1_4_isOnCurveEC(
+//export v1_5_isOnCurveEC
+func v1_5_isOnCurveEC(
 	context unsafe.Pointer,
 	ecHandle int32,
 	pointXHandle int32,
@@ -1013,8 +1012,8 @@ func v1_4_isOnCurveEC(
 	return 0
 }
 
-//export v1_4_scalarBaseMultEC
-func v1_4_scalarBaseMultEC(
+//export v1_5_scalarBaseMultEC
+func v1_5_scalarBaseMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1050,8 +1049,8 @@ func v1_4_scalarBaseMultEC(
 	return commonScalarBaseMultEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-//export v1_4_managedScalarBaseMultEC
-func v1_4_managedScalarBaseMultEC(
+//export v1_5_managedScalarBaseMultEC
+func v1_5_managedScalarBaseMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1131,8 +1130,8 @@ func commonScalarBaseMultEC(
 	return 0
 }
 
-//export v1_4_scalarMultEC
-func v1_4_scalarMultEC(
+//export v1_5_scalarMultEC
+func v1_5_scalarMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1170,8 +1169,8 @@ func v1_4_scalarMultEC(
 	return commonScalarMultEC(host, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
 }
 
-//export v1_4_managedScalarMultEC
-func v1_4_managedScalarMultEC(
+//export v1_5_managedScalarMultEC
+func v1_5_managedScalarMultEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1266,8 +1265,8 @@ func commonScalarMultEC(
 	return 0
 }
 
-//export v1_4_marshalEC
-func v1_4_marshalEC(
+//export v1_5_marshalEC
+func v1_5_marshalEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
@@ -1289,8 +1288,8 @@ func v1_4_marshalEC(
 	return int32(len(result))
 }
 
-//export v1_4_managedMarshalEC
-func v1_4_managedMarshalEC(
+//export v1_5_managedMarshalEC
+func v1_5_managedMarshalEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
@@ -1364,8 +1363,8 @@ func commonMarshalEC(
 	return result, nil
 }
 
-//export v1_4_marshalCompressedEC
-func v1_4_marshalCompressedEC(
+//export v1_5_marshalCompressedEC
+func v1_5_marshalCompressedEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
@@ -1387,8 +1386,8 @@ func v1_4_marshalCompressedEC(
 	return int32(len(result))
 }
 
-//export v1_4_managedMarshalCompressedEC
-func v1_4_managedMarshalCompressedEC(
+//export v1_5_managedMarshalCompressedEC
+func v1_5_managedMarshalCompressedEC(
 	context unsafe.Pointer,
 	xPairHandle int32,
 	yPairHandle int32,
@@ -1462,8 +1461,8 @@ func commonMarshalCompressedEC(host arwen.VMHost,
 	return result, nil
 }
 
-//export v1_4_unmarshalEC
-func v1_4_unmarshalEC(
+//export v1_5_unmarshalEC
+func v1_5_unmarshalEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1493,8 +1492,8 @@ func v1_4_unmarshalEC(
 	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-//export v1_4_managedUnmarshalEC
-func v1_4_managedUnmarshalEC(
+//export v1_5_managedUnmarshalEC
+func v1_5_managedUnmarshalEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1577,8 +1576,8 @@ func commonUnmarshalEC(
 	return 0
 }
 
-//export v1_4_unmarshalCompressedEC
-func v1_4_unmarshalCompressedEC(
+//export v1_5_unmarshalCompressedEC
+func v1_5_unmarshalCompressedEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1608,8 +1607,8 @@ func v1_4_unmarshalCompressedEC(
 	return commonUnmarshalCompressedEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-//export v1_4_managedUnmarshalCompressedEC
-func v1_4_managedUnmarshalCompressedEC(
+//export v1_5_managedUnmarshalCompressedEC
+func v1_5_managedUnmarshalCompressedEC(
 	context unsafe.Pointer,
 	xResultHandle int32,
 	yResultHandle int32,
@@ -1691,8 +1690,8 @@ func commonUnmarshalCompressedEC(
 	return 0
 }
 
-//export v1_4_generateKeyEC
-func v1_4_generateKeyEC(
+//export v1_5_generateKeyEC
+func v1_5_generateKeyEC(
 	context unsafe.Pointer,
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
@@ -1714,8 +1713,8 @@ func v1_4_generateKeyEC(
 	return 0
 }
 
-//export v1_4_managedGenerateKeyEC
-func v1_4_managedGenerateKeyEC(
+//export v1_5_managedGenerateKeyEC
+func v1_5_managedGenerateKeyEC(
 	context unsafe.Pointer,
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
@@ -1793,8 +1792,8 @@ func commonGenerateEC(
 	return result, nil
 }
 
-//export v1_4_createEC
-func v1_4_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
+//export v1_5_createEC
+func v1_5_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -1828,8 +1827,8 @@ func v1_4_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) i
 	return -1
 }
 
-//export v1_4_managedCreateEC
-func v1_4_managedCreateEC(context unsafe.Pointer, dataHandle int32) int32 {
+//export v1_5_managedCreateEC
+func v1_5_managedCreateEC(context unsafe.Pointer, dataHandle int32) int32 {
 	host := arwen.GetVMHost(context)
 	return ManagedCreateECWithHost(host, dataHandle)
 }
@@ -1866,8 +1865,8 @@ func ManagedCreateECWithHost(host arwen.VMHost, dataHandle int32) int32 {
 	return -1
 }
 
-//export v1_4_getCurveLengthEC
-func v1_4_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+//export v1_5_getCurveLengthEC
+func v1_5_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1883,8 +1882,8 @@ func v1_4_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	return ecLength
 }
 
-//export v1_4_getPrivKeyByteLengthEC
-func v1_4_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
+//export v1_5_getPrivKeyByteLengthEC
+func v1_5_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -1900,8 +1899,8 @@ func v1_4_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
 	return byteLength
 }
 
-//export v1_4_ellipticCurveGetValues
-func v1_4_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
+//export v1_5_ellipticCurveGetValues
+func v1_5_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	managedType := arwen.GetManagedTypesContext(context)
 	metering := arwen.GetMeteringContext(context)
 	runtime := arwen.GetRuntimeContext(context)

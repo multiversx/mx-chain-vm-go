@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -11,8 +12,8 @@ import (
 
 // ForwardAsyncCallRecursiveParentMock is an exposed mock contract method
 func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallRecursiveTestConfig)
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -21,7 +22,11 @@ func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config
 		function := string(arguments[1])
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		// only one child call by default
 		recursiveChildCalls := big.NewInt(1)
@@ -33,7 +38,8 @@ func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config
 		callData.Func(function)
 		callData.BigInt(recursiveChildCalls)
 
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+		async := host.Async()
+		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance
@@ -42,6 +48,6 @@ func ForwardAsyncCallRecursiveParentMock(instanceMock *mock.InstanceMock, config
 
 // CallBackRecursiveParentMock is an exposed mock contract method
 func CallBackRecursiveParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallRecursiveTestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

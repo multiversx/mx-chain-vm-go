@@ -2,14 +2,15 @@ package contexts
 
 import (
 	"fmt"
-	"unicode"
+	"strings"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const noArity = -1
+const allowedCharsInFunctionName = "abcdefghijklmnopqrstuvwxyz0123456789_"
 
 // wasmValidator is a validator for WASM SmartContracts
 type wasmValidator struct {
@@ -23,7 +24,7 @@ func newWASMValidator(scAPINames vmcommon.FunctionNames, builtInFuncContainer vm
 	}
 }
 
-func (validator *wasmValidator) verifyMemoryDeclaration(instance wasmer.InstanceHandler) error {
+func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.InstanceHandler) error {
 	if !instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
@@ -31,14 +32,14 @@ func (validator *wasmValidator) verifyMemoryDeclaration(instance wasmer.Instance
 	return nil
 }
 
-func (validator *wasmValidator) verifyFunctions(instance wasmer.InstanceHandler) error {
-	for functionName := range instance.GetExports() {
+func (validator *wasmValidator) verifyFunctions(instance executor.InstanceHandler) error {
+	for _, functionName := range instance.GetFunctionNames() {
 		err := validator.verifyValidFunctionName(functionName)
 		if err != nil {
 			return err
 		}
 
-		err = validator.verifyVoidFunction(instance, functionName)
+		err = instance.ValidateVoidFunction(functionName)
 		if err != nil {
 			return err
 		}
@@ -54,8 +55,8 @@ var protectedFunctions = map[string]bool{
 	"signalError":       true,
 	"completedTxEvent":  true}
 
-func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.InstanceHandler) error {
-	for functionName := range instance.GetExports() {
+func (validator *wasmValidator) verifyProtectedFunctions(instance executor.InstanceHandler) error {
+	for _, functionName := range instance.GetFunctionNames() {
 		_, found := protectedFunctions[functionName]
 		if found {
 			return arwen.ErrContractInvalid
@@ -64,40 +65,6 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance wasmer.Instanc
 	}
 
 	return nil
-}
-
-func (validator *wasmValidator) verifyVoidFunction(instance wasmer.InstanceHandler, functionName string) error {
-	inArity, err := validator.getInputArity(instance, functionName)
-	if err != nil {
-		return err
-	}
-
-	outArity, err := validator.getOutputArity(instance, functionName)
-	if err != nil {
-		return err
-	}
-
-	isVoid := inArity == 0 && outArity == 0
-	if !isVoid {
-		return fmt.Errorf("%w: %s", arwen.ErrFunctionNonvoidSignature, functionName)
-	}
-	return nil
-}
-
-func (validator *wasmValidator) getInputArity(instance wasmer.InstanceHandler, functionName string) (int, error) {
-	signature, ok := instance.GetSignature(functionName)
-	if !ok {
-		return noArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
-	}
-	return signature.InputArity, nil
-}
-
-func (validator *wasmValidator) getOutputArity(instance wasmer.InstanceHandler, functionName string) (int, error) {
-	signature, ok := instance.GetSignature(functionName)
-	if !ok {
-		return noArity, fmt.Errorf("%w: %s", arwen.ErrFuncNotFound, functionName)
-	}
-	return signature.OutputArity, nil
 }
 
 func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {
@@ -111,7 +78,10 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 	if len(functionName) >= maxLengthOfFunctionName {
 		return errInvalidName
 	}
-	if !isASCIIString(functionName) {
+	if isFirstCharacterNumeric(functionName) {
+		return errInvalidName
+	}
+	if !validCharactersOnly(functionName) {
 		return errInvalidName
 	}
 	if validator.reserved.IsReserved(functionName) {
@@ -121,13 +91,18 @@ func (validator *wasmValidator) verifyValidFunctionName(functionName string) err
 	return nil
 }
 
-// TODO: Add more constraints (too loose currently)
-func isASCIIString(input string) bool {
+func validCharactersOnly(input string) bool {
+	input = strings.ToLower(input)
 	for i := 0; i < len(input); i++ {
-		if input[i] > unicode.MaxASCII {
+		c := string(input[i])
+		if !strings.Contains(allowedCharsInFunctionName, c) {
 			return false
 		}
 	}
 
 	return true
+}
+
+func isFirstCharacterNumeric(name string) bool {
+	return name[0] >= '0' && name[0] <= '9'
 }

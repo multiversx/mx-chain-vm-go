@@ -12,7 +12,10 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var logMTypes = logger.GetOrCreate("arwen/mtypes")
 
 const bigFloatPrecision = 53
 const encodedBigFloatMaxByteLen = 18
@@ -63,6 +66,10 @@ type managedTypesState struct {
 
 // NewManagedTypesContext creates a new managedTypesContext
 func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	context := &managedTypesContext{
 		host: host,
 		managedTypesValues: managedTypesState{
@@ -237,6 +244,7 @@ func (context *managedTypesContext) GetBigIntOrCreate(handle int32) *big.Int {
 func (context *managedTypesContext) GetBigInt(handle int32) (*big.Int, error) {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
+		logMTypes.Trace("missing big int", "handle", handle)
 		return nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	return value, nil
@@ -247,10 +255,12 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	bigIntValues := context.managedTypesValues.bigIntValues
 	value1, ok := bigIntValues[handle1]
 	if !ok {
+		logMTypes.Trace("missing big int", "handle", handle1)
 		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	value2, ok := bigIntValues[handle2]
 	if !ok {
+		logMTypes.Trace("missing big int", "handle", handle2)
 		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
 	}
 	return value1, value2, nil

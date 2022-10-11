@@ -145,11 +145,6 @@ func (o *OutputContextMock) ClearReturnData() {
 func (o *OutputContextMock) RemoveReturnData(index uint32) {
 }
 
-// SelfDestruct mocked method
-func (o *OutputContextMock) SelfDestruct(_ []byte, _ []byte) {
-	panic("not implemented")
-}
-
 // Finish mocked method
 func (o *OutputContextMock) Finish(data []byte) {
 	o.ReturnDataMock = append(o.ReturnDataMock, data)
@@ -178,7 +173,7 @@ func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ 
 }
 
 // Transfer mocked method
-func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ vm.CallType) error {
+func (o *OutputContextMock) Transfer(_ []byte, _ []byte, _ uint64, _ uint64, _ *big.Int, _ []byte, _ []byte, _ vm.CallType) error {
 	return o.TransferResult
 }
 

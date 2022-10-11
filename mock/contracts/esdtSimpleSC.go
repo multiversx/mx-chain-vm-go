@@ -4,20 +4,26 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/executor"
+	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
 func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execESDTTransferAndCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -47,11 +53,15 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 
 // ExecESDTTransferWithAPICall is an exposed mock contract method
 func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(DirectCallGasTestConfig)
 	instanceMock.AddMockMethod("execESDTTransferWithAPICall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		arguments := host.Runtime().Arguments()
 		if len(arguments) != 3 {
@@ -93,22 +103,26 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 
 // ExecESDTTransferAndAsyncCallChild is an exposed mock contract method
 func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("execESDTTransferAndAsyncCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
-
-		arguments := host.Runtime().Arguments()
-		if len(arguments) != 3 {
-			host.Runtime().SignalUserError("need 3 arguments")
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 			return instance
 		}
 
-		functionToCallOnChild := arguments[2]
+		arguments := host.Runtime().Arguments()
+		if len(arguments) != 4 {
+			host.Runtime().SignalUserError("need 4 arguments")
+			return instance
+		}
 
 		receiver := arguments[0]
 		builtInFunction := arguments[1]
+		functionToCallOnChild := arguments[2]
+		asyncCallType := arguments[3]
 
 		callData := txDataBuilder.NewBuilder()
 		// function to be called on child
@@ -116,71 +130,31 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		callData.Bytes(test.ESDTTestTokenName)
 		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
 		callData.Bytes(functionToCallOnChild)
+		callData.Bytes(asyncCallType)
 
 		value := big.NewInt(0).Bytes()
 
-		err := host.Runtime().ExecuteAsyncCall(receiver, callData.ToBytes(), value)
+		if asyncCallType[0] == 0 {
+			err = host.Async().RegisterLegacyAsyncCall(receiver, callData.ToBytes(), value)
+		} else {
+			callbackName := "callBack"
+			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
+				callbackName = ""
+			}
+			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
+				Status:          arwen.AsyncCallPending,
+				Destination:     receiver,
+				Data:            callData.ToBytes(),
+				ValueBytes:      value,
+				SuccessCallback: callbackName,
+				ErrorCallback:   callbackName,
+				GasLimit:        testConfig.GasProvidedToChild,
+				GasLocked:       testConfig.GasToLock,
+			})
+		}
 
 		if err != nil {
 			host.Runtime().FailExecution(err)
-		}
-
-		return instance
-	})
-}
-
-// ExecESDTTransferInAsyncCall is an exposed mock contract method
-func ExecESDTTransferInAsyncCall(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncCallTestConfig)
-	instanceMock.AddMockMethod("esdtTransferInAsyncCall", func() *mock.InstanceMock {
-		host := instanceMock.Host
-		instance := mock.GetMockInstance(host)
-		host.Metering().UseGas(testConfig.GasUsedByParent)
-
-		arguments := host.Runtime().Arguments()
-		if len(arguments) != 1 {
-			host.Runtime().SignalUserError("need 1 arguments")
-			return instance
-		}
-
-		receiver := arguments[0]
-
-		callData := txDataBuilder.NewBuilder()
-		callData.Func(string("ESDTTransfer"))
-		callData.Bytes(test.ESDTTestTokenName)
-		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
-
-		value := big.NewInt(0).Bytes()
-
-		err := host.Runtime().ExecuteAsyncCall(receiver, callData.ToBytes(), value)
-
-		if err != nil {
-			host.Runtime().FailExecution(err)
-			return instance
-		}
-
-		return instance
-	})
-}
-
-// EvilCallback is an exposed mock contract method
-func EvilCallback(instanceMock *mock.InstanceMock, config interface{}) {
-	// testConfig := config.(*AsyncCallTestConfig)
-	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
-		host := instanceMock.Host
-		instance := mock.GetMockInstance(host)
-		retVal := elrondapi.ExecuteOnDestContextByCallerWithTypedArgs(
-			host,
-			int64(host.Metering().GasLeft()),
-			big.NewInt(0),
-			[]byte("wasteGas"),
-			test.ChildAddress, // owned by UserAddress2 (the CallserAddr of this callback)
-			[][]byte{},
-		)
-
-		if retVal != 0 {
-			host.Runtime().SignalUserError("execution by caller failed")
-			return instance
 		}
 
 		return instance

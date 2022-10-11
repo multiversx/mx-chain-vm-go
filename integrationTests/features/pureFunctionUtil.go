@@ -16,6 +16,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/config"
 	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,17 +46,20 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
-		VMType:                   testVMType,
-		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
-		WasmerSIGSEGVPassthrough: false,
-	})
+	vm, err := arwenHost.NewArwenVM(
+		world,
+		wasmer.NewExecutor(),
+		&arwen.VMHostParameters{
+			VMType:                   testVMType,
+			BlockGasLimit:            blockGasLimit,
+			GasSchedule:              gasSchedule,
+			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubNoFlags(),
+			WasmerSIGSEGVPassthrough: false,
+		})
 	if err != nil {
 		return nil, err
 	}

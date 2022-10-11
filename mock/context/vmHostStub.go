@@ -19,20 +19,24 @@ type VMHostStub struct {
 	ClearStateStackCalled func()
 	GetVersionCalled      func() string
 
-	CryptoCalled                func() crypto.VMCrypto
-	BlockchainCalled            func() arwen.BlockchainContext
-	RuntimeCalled               func() arwen.RuntimeContext
-	ManagedTypesCalled          func() arwen.ManagedTypesContext
-	OutputCalled                func() arwen.OutputContext
-	MeteringCalled              func() arwen.MeteringContext
-	StorageCalled               func() arwen.StorageContext
+	CryptoCalled       func() crypto.VMCrypto
+	BlockchainCalled   func() arwen.BlockchainContext
+	RuntimeCalled      func() arwen.RuntimeContext
+	OutputCalled       func() arwen.OutputContext
+	MeteringCalled     func() arwen.MeteringContext
+	AsyncCalled        func() arwen.AsyncContext
+	StorageCalled      func() arwen.StorageContext
 	EnableEpochsHandlerCalled   func() vmcommon.EnableEpochsHandler
+	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
+	ManagedTypesCalled func() arwen.ManagedTypesContext
+
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
-	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error)
-	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error)
+	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
+	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
 	GetAPIMethodsCalled         func() *wasmer.Imports
 	IsBuiltinFunctionNameCalled func(functionName string) bool
+	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
 
 	RunSmartContractCallCalled   func(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error)
@@ -42,9 +46,10 @@ type VMHostStub struct {
 	IsInterfaceNilCalled         func() bool
 
 	SetRuntimeContextCalled func(runtime arwen.RuntimeContext)
-	GetContextsCalled       func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.StorageContext)
 
 	SetBuiltInFunctionsContainerCalled func(builtInFuncs vmcommon.BuiltInFunctionContainer)
+
+	UpdateCurrentAsyncCallStatusCalled func(vmInput *vmcommon.VMInput, prevPrevTxHash []byte) (*arwen.AsyncCall, error)
 }
 
 // GetVersion mocked method
@@ -116,16 +121,6 @@ func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
 	return nil
 }
 
-// IsArwenV2Enabled mocked method
-func (vhs *VMHostStub) IsArwenV2Enabled() bool {
-	return true
-}
-
-// IsArwenV3Enabled mocked method
-func (vhs *VMHostStub) IsArwenV3Enabled() bool {
-	return true
-}
-
 // IsAheadOfTimeCompileEnabled mocked method
 func (vhs *VMHostStub) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -173,6 +168,14 @@ func (vhs *VMHostStub) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
 	return nil
 }
 
+// Async mocked method
+func (vhs *VMHostStub) Async() arwen.AsyncContext {
+	if vhs.AsyncCalled != nil {
+		return vhs.AsyncCalled()
+	}
+	return nil
+}
+
 // ExecuteESDTTransfer mocked method
 func (vhs *VMHostStub) ExecuteESDTTransfer(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error) {
 	if vhs.ExecuteESDTTransferCalled != nil {
@@ -190,19 +193,19 @@ func (vhs *VMHostStub) CreateNewContract(input *vmcommon.ContractCreateInput) ([
 }
 
 // ExecuteOnSameContext mocked method
-func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
+func (vhs *VMHostStub) ExecuteOnSameContext(input *vmcommon.ContractCallInput) error {
 	if vhs.ExecuteOnSameContextCalled != nil {
 		return vhs.ExecuteOnSameContextCalled(input)
 	}
-	return nil, nil
+	return nil
 }
 
 // ExecuteOnDestContext mocked method
-func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
+func (vhs *VMHostStub) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error) {
 	if vhs.ExecuteOnDestContextCalled != nil {
 		return vhs.ExecuteOnDestContextCalled(input)
 	}
-	return nil, nil, nil
+	return nil, true, nil
 }
 
 // AreInSameShard mocked method
@@ -225,6 +228,14 @@ func (vhs *VMHostStub) GetAPIMethods() *wasmer.Imports {
 func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	if vhs.IsBuiltinFunctionNameCalled != nil {
 		return vhs.IsBuiltinFunctionNameCalled(functionName)
+	}
+	return false
+}
+
+// IsBuiltinFunctionName mocked method
+func (vhs *VMHostStub) IsBuiltinFunctionCall(data []byte) bool {
+	if vhs.IsBuiltinFunctionCallCalled != nil {
+		return vhs.IsBuiltinFunctionCallCalled(data)
 	}
 	return false
 }
@@ -282,12 +293,13 @@ func (vhs *VMHostStub) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
 	if vhs.GetContextsCalled != nil {
 		return vhs.GetContextsCalled()
 	}
-	return nil, nil, nil, nil, nil, nil
+	return nil, nil, nil, nil, nil, nil, nil
 }
 
 // SetRuntimeContext mocked method
@@ -295,31 +307,6 @@ func (vhs *VMHostStub) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	if vhs.SetRuntimeContextCalled != nil {
 		vhs.SetRuntimeContextCalled(runtime)
 	}
-}
-
-// FixOOGReturnCodeEnabled mocked method
-func (vhs *VMHostStub) FixOOGReturnCodeEnabled() bool {
-	return true
-}
-
-// FixFailExecutionEnabled mocked method
-func (vhs *VMHostStub) FixFailExecutionEnabled() bool {
-	return true
-}
-
-// CreateNFTOnExecByCallerEnabled mocked method
-func (vhs *VMHostStub) CreateNFTOnExecByCallerEnabled() bool {
-	return true
-}
-
-// DisableExecByCaller mocked method
-func (vhs *VMHostStub) DisableExecByCaller() bool {
-	return true
-}
-
-// CheckExecuteReadOnly mocked method
-func (vhs *VMHostStub) CheckExecuteReadOnly() bool {
-	return true
 }
 
 // Close -

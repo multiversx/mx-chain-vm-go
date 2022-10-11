@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -17,7 +18,7 @@ type InstanceMock struct {
 	Data            uintptr
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          wasmer.MemoryHandler
+	Memory          executor.MemoryHandler
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -38,21 +39,12 @@ func NewInstanceMock(code []byte) *InstanceMock {
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
-	instance.AddMockMethodWithError(name, method, nil)
-}
-
-// AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
-func (instance *InstanceMock) AddMockMethodWithError(name string, method func() *InstanceMock, err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		instance := method()
-		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
-			var errMsg string
-			if arwen.BreakpointValue(instance.GetBreakpointValue()) == arwen.BreakpointAsyncCall {
-				errMsg = "breakpoint"
-			} else {
-				errMsg = instance.Host.Output().GetVMOutput().ReturnMessage
-			}
-			err = errors.New(errMsg)
+		breakpoint := arwen.BreakpointValue(instance.GetBreakpointValue())
+		var err error
+		if breakpoint != arwen.BreakpointNone {
+			err = errors.New(breakpoint.String())
 		}
 		return wasmer.Void(), err
 	}
@@ -109,23 +101,34 @@ func (instance *InstanceMock) Reset() bool {
 	return true
 }
 
-// GetExports mocked method
-func (instance *InstanceMock) GetExports() wasmer.ExportsMap {
-	return instance.Exports
-}
-
-// GetSignature mocked method
-func (instance *InstanceMock) GetSignature(functionName string) (*wasmer.ExportedFunctionSignature, bool) {
-	_, ok := instance.Exports[functionName]
-
-	if !ok {
-		return nil, false
+// CallFunction mocked method
+func (instance *InstanceMock) CallFunction(functionName string) error {
+	if function, ok := instance.Exports[functionName]; ok {
+		_, err := function()
+		return err
 	}
 
-	return &wasmer.ExportedFunctionSignature{
-		InputArity:  0,
-		OutputArity: 0,
-	}, true
+	return executor.ErrFuncNotFound
+}
+
+// HasFunction mocked method
+func (instance *InstanceMock) HasFunction(functionName string) bool {
+	_, ok := instance.Exports[functionName]
+	return ok
+}
+
+// GetFunctionNames mocked method
+func (instance *InstanceMock) GetFunctionNames() []string {
+	var functionNames []string
+	for functionName := range instance.Exports {
+		functionNames = append(functionNames, functionName)
+	}
+	return functionNames
+}
+
+// ValidateVoidFunction mocked method
+func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
+	return nil
 }
 
 // GetData mocked method
@@ -134,12 +137,12 @@ func (instance *InstanceMock) GetData() uintptr {
 }
 
 // GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() wasmer.MemoryHandler {
+func (instance *InstanceMock) GetInstanceCtxMemory() executor.MemoryHandler {
 	return instance.Memory
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() wasmer.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executor.MemoryHandler {
 	return instance.Memory
 }
 

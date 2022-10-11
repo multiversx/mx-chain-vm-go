@@ -65,6 +65,8 @@ const (
     GetExternalBalance = 7000
     GetBlockHash       = 10000
     GetOriginalTxHash  = 10000
+    GetPrevTxHash      = 10000
+    GetCurrentTxHash   = 10000
     TransferValue      = 150000
     GetArgument        = 100
     GetFunction        = 100
@@ -93,6 +95,11 @@ const (
     DelegateExecution    = 160000
     AsyncCallStep        = 200000
     AsyncCallbackGasLock = 2000000
+    CreateAsyncCall      = 200000
+    SetAsyncCallback     = 100000
+    SetAsyncGroupCallback   = 100000
+    SetAsyncContextCallback = 100000
+    GetCallbackClosure      = 100000
     ExecuteReadOnly      = 160000
     CreateContract       = 300000
     GetReturnData        = 100
@@ -753,6 +760,9 @@ const (
     GetShardOfAddress  = 5000
     GetExternalBalance = 7000
     GetBlockHash       = 10000
+    GetOriginalTxHash    = 10000
+    GetPrevTxHash      = 10000
+    GetCurrentTxHash   = 10000
     TransferValue      = 100000
     GetArgument        = 100
     GetFunction        = 100
@@ -781,6 +791,11 @@ const (
     DelegateExecution    = 100000
     AsyncCallStep        = 100000
     AsyncCallbackGasLock = 4000000
+    CreateAsyncCall      = 200000
+    SetAsyncCallback     = 100000
+    SetAsyncGroupCallback   = 100000
+    SetAsyncContextCallback = 100000
+    GetCallbackClosure      = 100000
     ExecuteReadOnly      = 160000
     CreateContract       = 300000
     GetReturnData        = 100
@@ -788,7 +803,6 @@ const (
     GetReturnDataSize    = 100
     CleanReturnData      = 100
     DeleteFromReturnData = 100
-    GetOriginalTxHash    = 10000
 
 [EthAPICost]
     UseGas              = 100

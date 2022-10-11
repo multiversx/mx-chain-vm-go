@@ -7,38 +7,40 @@ package elrondapi
 // typedef int int32_t;
 // typedef unsigned long long uint64_t;
 //
-// extern void	v1_4_managedSCAddress(void *context, int32_t addressHandle);
-// extern void	v1_4_managedOwnerAddress(void *context, int32_t addressHandle);
-// extern void	v1_4_managedCaller(void *context, int32_t addressHandle);
-// extern void	v1_4_managedSignalError(void* context, int32_t errHandle1);
-// extern void	v1_4_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
+// extern void	v1_5_managedSCAddress(void *context, int32_t addressHandle);
+// extern void	v1_5_managedOwnerAddress(void *context, int32_t addressHandle);
+// extern void	v1_5_managedCaller(void *context, int32_t addressHandle);
+// extern void	v1_5_managedSignalError(void* context, int32_t errHandle1);
+// extern void	v1_5_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
 //
-// extern int32_t	v1_4_managedMultiTransferESDTNFTExecute(void *context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t	v1_4_managedTransferValueExecute(void *context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t	v1_4_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteOnDestContextByCaller(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
-// extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t	v1_5_managedMultiTransferESDTNFTExecute(void *context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t	v1_5_managedTransferValueExecute(void *context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t	v1_5_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t	v1_5_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t	v1_5_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern int32_t	v1_5_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
+// extern int32_t	v1_5_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
+// extern void		v1_5_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern void		v1_5_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
+// extern void		v1_5_managedDeleteContract(void *context, int32_t dstHandle, long long gas, int32_t argsHandle);
+// extern void		v1_5_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
+// extern int32_t	v1_5_managedCreateAsyncCall(void *context, int32_t destHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t successCallback, int32_t successLength, int32_t errorCallback, int32_t errorLength, long long gas, long long extraGasForCallback, int32_t callbackClosureHandle);
+// extern void		v1_5_managedGetCallbackClosure(void *context, int32_t callbackClosureHandle);
 //
-// extern void		v1_4_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
-// extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
-// extern void		v1_4_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
+// extern void		v1_5_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
+// extern void		v1_5_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
+// extern void		v1_5_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
 //
-// extern void		v1_4_managedGetReturnData(void *context, int32_t resultID, int32_t resultHandle);
-// extern void		v1_4_managedGetPrevBlockRandomSeed(void *context, int32_t resultHandle);
-// extern void		v1_4_managedGetBlockRandomSeed(void *context, int32_t resultHandle);
-// extern void		v1_4_managedGetStateRootHash(void *context, int32_t resultHandle);
-// extern void		v1_4_managedGetOriginalTxHash(void *context, int32_t resultHandle);
+// extern void		v1_5_managedGetReturnData(void *context, int32_t resultID, int32_t resultHandle);
+// extern void		v1_5_managedGetPrevBlockRandomSeed(void *context, int32_t resultHandle);
+// extern void		v1_5_managedGetBlockRandomSeed(void *context, int32_t resultHandle);
+// extern void		v1_5_managedGetStateRootHash(void *context, int32_t resultHandle);
+// extern void		v1_5_managedGetOriginalTxHash(void *context, int32_t resultHandle);
 //
-// extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
-// extern int32_t   v1_4_managedIsESDTPaused(void *context, int32_t tokenIDHandle);
-// extern int32_t   v1_4_managedIsESDTLimitedTransfer(void *context, int32_t tokenIDHandle);
-// extern void      v1_4_managedBufferToHex(void *context, int32_t sourceHandle, int32_t destHandle);
+// extern int32_t   v1_5_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
+// extern int32_t   v1_5_managedIsESDTPaused(void *context, int32_t tokenIDHandle);
+// extern int32_t   v1_5_managedIsESDTLimitedTransfer(void *context, int32_t tokenIDHandle);
+// extern void      v1_5_managedBufferToHex(void *context, int32_t sourceHandle, int32_t destHandle);
 import "C"
 
 import (
@@ -49,7 +51,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -70,6 +72,8 @@ const (
 	managedUpgradeContractName              = "managedUpgradeContract"
 	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
 	managedAsyncCallName                    = "managedAsyncCall"
+	managedCreateAsyncCallName              = "managedCreateAsyncCall"
+	managedGetCallbackClosure               = "managedGetCallbackClosure"
 	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
 	managedGetESDTBalanceName               = "managedGetESDTBalance"
 	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
@@ -84,146 +88,156 @@ const (
 	managedBufferToHexName                  = "managedBufferToHex"
 )
 
-// ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
-func ManagedEIImports(imports elrondapimeta.EIFunctionReceiver) error {
+// ManagedEIImports populates imports with variants of the API methods that use managed types only.
+func ManagedEIImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
-	err := imports.Append("managedSCAddress", v1_4_managedSCAddress, C.v1_4_managedSCAddress)
+	err := imports.Append("managedSCAddress", v1_5_managedSCAddress, C.v1_5_managedSCAddress)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedOwnerAddress", v1_4_managedOwnerAddress, C.v1_4_managedOwnerAddress)
+	err = imports.Append("managedOwnerAddress", v1_5_managedOwnerAddress, C.v1_5_managedOwnerAddress)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedCaller", v1_4_managedCaller, C.v1_4_managedCaller)
+	err = imports.Append("managedCaller", v1_5_managedCaller, C.v1_5_managedCaller)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedSignalError", v1_4_managedSignalError, C.v1_4_managedSignalError)
+	err = imports.Append("managedSignalError", v1_5_managedSignalError, C.v1_5_managedSignalError)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedWriteLog", v1_4_managedWriteLog, C.v1_4_managedWriteLog)
+	err = imports.Append("managedWriteLog", v1_5_managedWriteLog, C.v1_5_managedWriteLog)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedMultiTransferESDTNFTExecute", v1_4_managedMultiTransferESDTNFTExecute, C.v1_4_managedMultiTransferESDTNFTExecute)
+	err = imports.Append("managedMultiTransferESDTNFTExecute", v1_5_managedMultiTransferESDTNFTExecute, C.v1_5_managedMultiTransferESDTNFTExecute)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedTransferValueExecute", v1_4_managedTransferValueExecute, C.v1_4_managedTransferValueExecute)
+	err = imports.Append("managedTransferValueExecute", v1_5_managedTransferValueExecute, C.v1_5_managedTransferValueExecute)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedExecuteOnDestContext", v1_4_managedExecuteOnDestContext, C.v1_4_managedExecuteOnDestContext)
+	err = imports.Append("managedExecuteOnDestContext", v1_5_managedExecuteOnDestContext, C.v1_5_managedExecuteOnDestContext)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedExecuteOnDestContextByCaller", v1_4_managedExecuteOnDestContextByCaller, C.v1_4_managedExecuteOnDestContextByCaller)
+	err = imports.Append("managedExecuteOnSameContext", v1_5_managedExecuteOnSameContext, C.v1_5_managedExecuteOnSameContext)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedExecuteOnSameContext", v1_4_managedExecuteOnSameContext, C.v1_4_managedExecuteOnSameContext)
+	err = imports.Append("managedExecuteReadOnly", v1_5_managedExecuteReadOnly, C.v1_5_managedExecuteReadOnly)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedExecuteReadOnly", v1_4_managedExecuteReadOnly, C.v1_4_managedExecuteReadOnly)
+	err = imports.Append("managedCreateContract", v1_5_managedCreateContract, C.v1_5_managedCreateContract)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedCreateContract", v1_4_managedCreateContract, C.v1_4_managedCreateContract)
+	err = imports.Append("managedDeployFromSourceContract", v1_5_managedDeployFromSourceContract, C.v1_5_managedDeployFromSourceContract)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedDeployFromSourceContract", v1_4_managedDeployFromSourceContract, C.v1_4_managedDeployFromSourceContract)
+	err = imports.Append("managedUpgradeContract", v1_5_managedUpgradeContract, C.v1_5_managedUpgradeContract)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedUpgradeContract", v1_4_managedUpgradeContract, C.v1_4_managedUpgradeContract)
+	err = imports.Append("managedUpgradeFromSourceContract", v1_5_managedUpgradeFromSourceContract, C.v1_5_managedUpgradeFromSourceContract)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedUpgradeFromSourceContract", v1_4_managedUpgradeFromSourceContract, C.v1_4_managedUpgradeFromSourceContract)
+	err = imports.Append("managedDeleteContract", v1_5_managedDeleteContract, C.v1_5_managedDeleteContract)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedAsyncCall", v1_4_managedAsyncCall, C.v1_4_managedAsyncCall)
+	err = imports.Append("managedAsyncCall", v1_5_managedAsyncCall, C.v1_5_managedAsyncCall)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetMultiESDTCallValue", v1_4_managedGetMultiESDTCallValue, C.v1_4_managedGetMultiESDTCallValue)
+	err = imports.Append("managedCreateAsyncCall", v1_5_managedCreateAsyncCall, C.v1_5_managedCreateAsyncCall)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetESDTBalance", v1_4_managedGetESDTBalance, C.v1_4_managedGetESDTBalance)
+	err = imports.Append("managedGetCallbackClosure", v1_5_managedGetCallbackClosure, C.v1_5_managedGetCallbackClosure)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetESDTTokenData", v1_4_managedGetESDTTokenData, C.v1_4_managedGetESDTTokenData)
+	err = imports.Append("managedGetMultiESDTCallValue", v1_5_managedGetMultiESDTCallValue, C.v1_5_managedGetMultiESDTCallValue)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetReturnData", v1_4_managedGetReturnData, C.v1_4_managedGetReturnData)
+	err = imports.Append("managedGetESDTBalance", v1_5_managedGetESDTBalance, C.v1_5_managedGetESDTBalance)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetPrevBlockRandomSeed", v1_4_managedGetPrevBlockRandomSeed, C.v1_4_managedGetPrevBlockRandomSeed)
+	err = imports.Append("managedGetESDTTokenData", v1_5_managedGetESDTTokenData, C.v1_5_managedGetESDTTokenData)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetBlockRandomSeed", v1_4_managedGetBlockRandomSeed, C.v1_4_managedGetBlockRandomSeed)
+	err = imports.Append("managedGetReturnData", v1_5_managedGetReturnData, C.v1_5_managedGetReturnData)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetStateRootHash", v1_4_managedGetStateRootHash, C.v1_4_managedGetStateRootHash)
+	err = imports.Append("managedGetPrevBlockRandomSeed", v1_5_managedGetPrevBlockRandomSeed, C.v1_5_managedGetPrevBlockRandomSeed)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedGetOriginalTxHash", v1_4_managedGetOriginalTxHash, C.v1_4_managedGetOriginalTxHash)
+	err = imports.Append("managedGetBlockRandomSeed", v1_5_managedGetBlockRandomSeed, C.v1_5_managedGetBlockRandomSeed)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedIsESDTFrozen", v1_4_managedIsESDTFrozen, C.v1_4_managedIsESDTFrozen)
+	err = imports.Append("managedGetStateRootHash", v1_5_managedGetStateRootHash, C.v1_5_managedGetStateRootHash)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedIsESDTPaused", v1_4_managedIsESDTPaused, C.v1_4_managedIsESDTPaused)
+	err = imports.Append("managedGetOriginalTxHash", v1_5_managedGetOriginalTxHash, C.v1_5_managedGetOriginalTxHash)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedIsESDTLimitedTransfer", v1_4_managedIsESDTLimitedTransfer, C.v1_4_managedIsESDTLimitedTransfer)
+	err = imports.Append("managedIsESDTFrozen", v1_5_managedIsESDTFrozen, C.v1_5_managedIsESDTFrozen)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("managedBufferToHex", v1_4_managedBufferToHex, C.v1_4_managedBufferToHex)
+	err = imports.Append("managedIsESDTPaused", v1_5_managedIsESDTPaused, C.v1_5_managedIsESDTPaused)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedIsESDTLimitedTransfer", v1_5_managedIsESDTLimitedTransfer, C.v1_5_managedIsESDTLimitedTransfer)
+	if err != nil {
+		return err
+	}
+
+	err = imports.Append("managedBufferToHex", v1_5_managedBufferToHex, C.v1_5_managedBufferToHex)
 	if err != nil {
 		return err
 	}
@@ -231,8 +245,8 @@ func ManagedEIImports(imports elrondapimeta.EIFunctionReceiver) error {
 	return nil
 }
 
-//export v1_4_managedSCAddress
-func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
+//export v1_5_managedSCAddress
+func v1_5_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -245,8 +259,8 @@ func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, scAddress)
 }
 
-//export v1_4_managedOwnerAddress
-func v1_4_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
+//export v1_5_managedOwnerAddress
+func v1_5_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
 	runtime := arwen.GetRuntimeContext(context)
@@ -263,8 +277,8 @@ func v1_4_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, owner)
 }
 
-//export v1_4_managedCaller
-func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
+//export v1_5_managedCaller
+func v1_5_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -276,8 +290,8 @@ func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, caller)
 }
 
-//export v1_4_managedSignalError
-func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
+//export v1_5_managedSignalError
+func v1_5_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	managedType := arwen.GetManagedTypesContext(context)
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -302,8 +316,8 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	runtime.SignalUserError(string(errBytes))
 }
 
-//export v1_4_managedWriteLog
-func v1_4_managedWriteLog(
+//export v1_5_managedWriteLog
+func v1_5_managedWriteLog(
 	context unsafe.Pointer,
 	topicsHandle int32,
 	dataHandle int32,
@@ -336,8 +350,8 @@ func v1_4_managedWriteLog(
 	output.WriteLog(runtime.GetContextAddress(), topics, dataBytes)
 }
 
-//export v1_4_managedGetOriginalTxHash
-func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
+//export v1_5_managedGetOriginalTxHash
+func v1_5_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
@@ -348,8 +362,8 @@ func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	managedType.SetBytes(resultHandle, runtime.GetOriginalTxHash())
 }
 
-//export v1_4_managedGetStateRootHash
-func v1_4_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
+//export v1_5_managedGetStateRootHash
+func v1_5_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
@@ -360,8 +374,8 @@ func v1_4_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	managedType.SetBytes(resultHandle, blockchain.GetStateRootHash())
 }
 
-//export v1_4_managedGetBlockRandomSeed
-func v1_4_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
+//export v1_5_managedGetBlockRandomSeed
+func v1_5_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
@@ -372,8 +386,8 @@ func v1_4_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) 
 	managedType.SetBytes(resultHandle, blockchain.CurrentRandomSeed())
 }
 
-//export v1_4_managedGetPrevBlockRandomSeed
-func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
+//export v1_5_managedGetPrevBlockRandomSeed
+func v1_5_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
 	blockchain := arwen.GetBlockchainContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
@@ -384,8 +398,8 @@ func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int
 	managedType.SetBytes(resultHandle, blockchain.LastRandomSeed())
 }
 
-//export v1_4_managedGetReturnData
-func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
+//export v1_5_managedGetReturnData
+func v1_5_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -403,8 +417,8 @@ func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 	managedType.SetBytes(resultHandle, returnData[resultID])
 }
 
-//export v1_4_managedGetMultiESDTCallValue
-func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
+//export v1_5_managedGetMultiESDTCallValue
+func v1_5_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	managedType := arwen.GetManagedTypesContext(context)
@@ -419,8 +433,8 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
 
-//export v1_4_managedGetESDTBalance
-func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
+//export v1_5_managedGetESDTBalance
+func v1_5_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	blockchain := arwen.GetBlockchainContext(context)
@@ -450,13 +464,33 @@ func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 	value.Set(esdtToken.Value)
 }
 
-//export v1_4_managedGetESDTTokenData
-func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64,
+//export v1_5_managedGetESDTTokenData
+func v1_5_managedGetESDTTokenData(
+	context unsafe.Pointer,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
 	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := arwen.GetVMHost(context)
+	ManagedGetESDTTokenDataWithHost(
+		host,
+		addressHandle,
+		tokenIDHandle,
+		nonce,
+		valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+}
+
+func ManagedGetESDTTokenDataWithHost(
+	host arwen.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedGetESDTTokenDataName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
@@ -464,18 +498,18 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -500,8 +534,8 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 }
 
-//export v1_4_managedAsyncCall
-func v1_4_managedAsyncCall(
+//export v1_5_managedAsyncCall
+func v1_5_managedAsyncCall(
 	context unsafe.Pointer,
 	destHandle int32,
 	valueHandle int32,
@@ -523,6 +557,7 @@ func ManagedAsyncCallWithHost(
 	functionHandle int32,
 	argumentsHandle int32) {
 	runtime := host.Runtime()
+	async := host.Async()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedAsyncCallName)
@@ -547,7 +582,7 @@ func ManagedAsyncCallWithHost(
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseAndTraceGas(gasToUse)
 
-	err = runtime.ExecuteAsyncCall(vmInput.destination, []byte(data), value.Bytes())
+	err = async.RegisterLegacyAsyncCall(vmInput.destination, []byte(data), value.Bytes())
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
@@ -557,8 +592,98 @@ func ManagedAsyncCallWithHost(
 	}
 }
 
-//export v1_4_managedUpgradeFromSourceContract
-func v1_4_managedUpgradeFromSourceContract(
+//export v1_5_managedCreateAsyncCall
+func v1_5_managedCreateAsyncCall(
+	context unsafe.Pointer,
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	successOffset int32,
+	successLength int32,
+	errorOffset int32,
+	errorLength int32,
+	gas int64,
+	extraGasForCallback int64,
+	callbackClosureHandle int32,
+) int32 {
+
+	host := arwen.GetVMHost(context)
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
+
+	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	data := makeCrossShardCallFromInput(vmInput.function, vmInput.arguments)
+
+	value, err := managedType.GetBigInt(valueHandle)
+	if err != nil {
+		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	successFunc, err := runtime.MemLoad(successOffset, successLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	errorFunc, err := runtime.MemLoad(errorOffset, errorLength)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	callbackClosure, err := managedType.GetBytes(callbackClosureHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return CreateAsyncCallWithTypedArgs(host,
+		vmInput.destination,
+		value.Bytes(),
+		[]byte(data),
+		successFunc,
+		errorFunc,
+		gas,
+		extraGasForCallback,
+		callbackClosure)
+}
+
+//export v1_5_managedGetCallbackClosure
+func v1_5_managedGetCallbackClosure(
+	context unsafe.Pointer,
+	callbackClosureHandle int32,
+) {
+	host := arwen.GetVMHost(context)
+	GetCallbackClosureWithHost(host, callbackClosureHandle)
+}
+
+func GetCallbackClosureWithHost(
+	host arwen.VMHost,
+	callbackClosureHandle int32,
+) {
+	runtime := host.Runtime()
+	async := host.Async()
+	metering := host.Metering()
+	managedTypes := host.ManagedTypes()
+
+	metering.StartGasTracing(managedGetCallbackClosure)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallbackClosure
+	metering.UseAndTraceGas(gasToUse)
+
+	callbackClosure, err := async.GetCallbackClosure()
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	managedTypes.SetBytes(callbackClosureHandle, callbackClosure)
+}
+
+//export v1_5_managedUpgradeFromSourceContract
+func v1_5_managedUpgradeFromSourceContract(
 	context unsafe.Pointer,
 	destHandle int32,
 	gas int64,
@@ -606,8 +731,8 @@ func v1_4_managedUpgradeFromSourceContract(
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
-//export v1_4_managedUpgradeContract
-func v1_4_managedUpgradeContract(
+//export v1_5_managedUpgradeContract
+func v1_5_managedUpgradeContract(
 	context unsafe.Pointer,
 	destHandle int32,
 	gas int64,
@@ -651,8 +776,56 @@ func v1_4_managedUpgradeContract(
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
-//export v1_4_managedDeployFromSourceContract
-func v1_4_managedDeployFromSourceContract(
+//export v1_5_managedDeleteContract
+func v1_5_managedDeleteContract(
+	context unsafe.Pointer,
+	destHandle int32,
+	gasLimit int64,
+	argumentsHandle int32,
+) {
+	host := arwen.GetVMHost(context)
+	ManagedDeleteContractWithHost(
+		host,
+		destHandle,
+		gasLimit,
+		argumentsHandle,
+	)
+}
+
+func ManagedDeleteContractWithHost(
+	host arwen.VMHost,
+	destHandle int32,
+	gasLimit int64,
+	argumentsHandle int32,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(deleteContractName)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseAndTraceGas(gasToUse)
+
+	calledSCAddress, err := managedType.GetBytes(destHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	data, _, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	deleteContract(
+		host,
+		calledSCAddress,
+		data,
+		gasLimit,
+	)
+}
+
+//export v1_5_managedDeployFromSourceContract
+func v1_5_managedDeployFromSourceContract(
 	context unsafe.Pointer,
 	gas int64,
 	valueHandle int32,
@@ -701,8 +874,8 @@ func v1_4_managedDeployFromSourceContract(
 	return 0
 }
 
-//export v1_4_managedCreateContract
-func v1_4_managedCreateContract(
+//export v1_5_managedCreateContract
+func v1_5_managedCreateContract(
 	context unsafe.Pointer,
 	gas int64,
 	valueHandle int32,
@@ -770,8 +943,8 @@ func setReturnDataIfExists(
 	}
 }
 
-//export v1_4_managedExecuteReadOnly
-func v1_4_managedExecuteReadOnly(
+//export v1_5_managedExecuteReadOnly
+func v1_5_managedExecuteReadOnly(
 	context unsafe.Pointer,
 	gas int64,
 	addressHandle int32,
@@ -800,8 +973,8 @@ func v1_4_managedExecuteReadOnly(
 	return returnVal
 }
 
-//export v1_4_managedExecuteOnSameContext
-func v1_4_managedExecuteOnSameContext(
+//export v1_5_managedExecuteOnSameContext
+func v1_5_managedExecuteOnSameContext(
 	context unsafe.Pointer,
 	gas int64,
 	addressHandle int32,
@@ -832,40 +1005,8 @@ func v1_4_managedExecuteOnSameContext(
 	return returnVal
 }
 
-//export v1_4_managedExecuteOnDestContextByCaller
-func v1_4_managedExecuteOnDestContextByCaller(
-	context unsafe.Pointer,
-	gas int64,
-	addressHandle int32,
-	valueHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-	resultHandle int32,
-) int32 {
-	host := arwen.GetVMHost(context)
-	metering := host.Metering()
-	metering.StartGasTracing(managedExecuteOnDestContextByCallerName)
-
-	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
-		host,
-		gas,
-		vmInput.value,
-		[]byte(vmInput.function),
-		vmInput.destination,
-		vmInput.arguments,
-	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
-	return returnVal
-}
-
-//export v1_4_managedExecuteOnDestContext
-func v1_4_managedExecuteOnDestContext(
+//export v1_5_managedExecuteOnDestContext
+func v1_5_managedExecuteOnDestContext(
 	context unsafe.Pointer,
 	gas int64,
 	addressHandle int32,
@@ -896,8 +1037,8 @@ func v1_4_managedExecuteOnDestContext(
 	return returnVal
 }
 
-//export v1_4_managedMultiTransferESDTNFTExecute
-func v1_4_managedMultiTransferESDTNFTExecute(
+//export v1_5_managedMultiTransferESDTNFTExecute
+func v1_5_managedMultiTransferESDTNFTExecute(
 	context unsafe.Pointer,
 	dstHandle int32,
 	tokenTransfersHandle int32,
@@ -931,8 +1072,8 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 	)
 }
 
-//export v1_4_managedTransferValueExecute
-func v1_4_managedTransferValueExecute(
+//export v1_5_managedTransferValueExecute
+func v1_5_managedTransferValueExecute(
 	context unsafe.Pointer,
 	dstHandle int32,
 	valueHandle int32,
@@ -959,8 +1100,8 @@ func v1_4_managedTransferValueExecute(
 	)
 }
 
-//export v1_4_managedIsESDTFrozen
-func v1_4_managedIsESDTFrozen(
+//export v1_5_managedIsESDTFrozen
+func v1_5_managedIsESDTFrozen(
 	context unsafe.Pointer,
 	addressHandle int32,
 	tokenIDHandle int32,
@@ -1006,8 +1147,8 @@ func ManagedIsESDTFrozenWithHost(
 	return 0
 }
 
-//export v1_4_managedIsESDTLimitedTransfer
-func v1_4_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
+//export v1_5_managedIsESDTLimitedTransfer
+func v1_5_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	host := arwen.GetVMHost(context)
 	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
 }
@@ -1034,8 +1175,8 @@ func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32
 	return 0
 }
 
-//export v1_4_managedIsESDTPaused
-func v1_4_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
+//export v1_5_managedIsESDTPaused
+func v1_5_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
 	host := arwen.GetVMHost(context)
 	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
 }
@@ -1062,8 +1203,8 @@ func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 	return 0
 }
 
-//export v1_4_managedBufferToHex
-func v1_4_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
+//export v1_5_managedBufferToHex
+func v1_5_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
 	host := arwen.GetVMHost(context)
 	ManagedBufferToHexWithHost(host, sourceHandle, destHandle)
 }

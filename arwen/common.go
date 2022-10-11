@@ -39,13 +39,51 @@ const (
 	BreakpointMemoryLimit
 )
 
+const (
+	// BreakpointNoneString is the human-readable name of BreakpointNone
+	BreakpointNoneString = "BreakpointNone"
+
+	// BreakpointExecutionFailedString is the human-readable name of BreakpointExecutionFailed
+	BreakpointExecutionFailedString = "BreakpointExecutionFailed"
+
+	// BreakpointAsyncCallString is the human-readable name of BreakpointAsyncCall
+	BreakpointAsyncCallString = "BreakpointAsyncCall"
+
+	// BreakpointSignalErrorString is the human-readable name of BreakpointSignalError
+	BreakpointSignalErrorString = "BreakpointSignalError"
+
+	// BreakpointOutOfGasString is the human-readable name of BreakpointOutOfGas
+	BreakpointOutOfGasString = "BreakpointOutOfGas"
+
+	// UnknownBreakpointString is the human-readable label for an unknown breakpoint value
+	UnknownBreakpointString = "unknown breakpoint"
+)
+
+// String returns the human-readable name of a BreakpointValue
+func (b BreakpointValue) String() string {
+	switch b {
+	case BreakpointNone:
+		return BreakpointNoneString
+	case BreakpointExecutionFailed:
+		return BreakpointExecutionFailedString
+	case BreakpointAsyncCall:
+		return BreakpointAsyncCallString
+	case BreakpointSignalError:
+		return BreakpointSignalErrorString
+	case BreakpointOutOfGas:
+		return BreakpointOutOfGasString
+	default:
+		return UnknownBreakpointString
+	}
+}
+
 // AsyncCallExecutionMode encodes the execution modes of an AsyncCall
 type AsyncCallExecutionMode uint
 
 const (
-	// SyncCall indicates that the async call can be executed synchronously,
+	// SyncExecution indicates that the async call can be executed synchronously,
 	// with its corresponding callback
-	SyncCall AsyncCallExecutionMode = iota
+	SyncExecution AsyncCallExecutionMode = iota
 
 	// AsyncBuiltinFuncIntraShard indicates that the async call is an intra-shard built in function call
 	AsyncBuiltinFuncIntraShard
@@ -66,19 +104,18 @@ const (
 // function of a smart contract
 const CallbackFunctionName = "callBack"
 
-// ProtectedStoragePrefix is the storage key prefix that will be protected by
-// Arwen explicitly, and implicitly by the Elrond node due to '@'; the
-// protection can be disabled temporarily by the StorageContext
-const ProtectedStoragePrefix = "ARWEN@"
-
 // TimeLockKeyPrefix is the storage key prefix used for timelock-related storage.
-const TimeLockKeyPrefix = ProtectedStoragePrefix + "TIMELOCK"
+const TimeLockKeyPrefix = "TIMELOCK"
 
 // AsyncDataPrefix is the storage key prefix used for AsyncContext-related storage.
-const AsyncDataPrefix = ProtectedStoragePrefix + "ASYNC"
+const AsyncDataPrefix = "ASYNC"
 
 // AsyncCallStatus represents the different status an async call can have
 type AsyncCallStatus uint8
+
+// LegacyAsyncCallGroupID is the AsyncCallGroup identifier reserved for the
+// implementation of the legacy asyncCall() EEI function
+const LegacyAsyncCallGroupID = "LegacyAsync"
 
 const (
 	// AsyncCallPending is the status of an async call that awaits complete execution
@@ -110,6 +147,9 @@ const (
 
 	// UpgradeFunctionName specifies if the call is an upgradeContract call
 	UpgradeFunctionName = "upgradeContract"
+
+	// DeleteFunctionName specifies if the call is an deleteContract call
+	DeleteFunctionName = "deleteContract"
 )
 
 // CodeDeployInput contains code deploy state, whether it comes from a ContractCreateInput or a ContractCallInput
@@ -180,19 +220,11 @@ type AsyncGeneratedCall struct {
 	ProvidedGas     uint64
 }
 
-// AsyncContext is a structure containing a group of async calls and a callback
+// OldAsyncContext is a structure containing a group of async calls and a callback
 //  that should be called when all these async calls are resolved
-type AsyncContext struct {
+type OldAsyncContext struct {
 	Callback   string
 	AsyncCalls []*AsyncGeneratedCall
-}
-
-// AsyncContextInfo is the structure resulting after a smart contract call that has initiated
-// one or more async calls. It will
-type AsyncContextInfo struct {
-	CallerAddr      []byte
-	ReturnData      []byte
-	AsyncContextMap map[string]*AsyncContext
 }
 
 // GetDestination returns the destination of an async call

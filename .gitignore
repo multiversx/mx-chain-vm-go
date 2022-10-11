@@ -37,3 +37,6 @@ test/contracts/**/wasm/target
 
 # Mac
 **/.DS_Store
+
+**/Cargo.lock
+arwen/**/__debug_bin

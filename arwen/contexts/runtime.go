@@ -14,8 +14,8 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -26,7 +26,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           wasmer.InstanceHandler
+	instance           executor.InstanceHandler
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
 	codeHash           []byte
@@ -40,13 +40,10 @@ type runtimeContext struct {
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
-	instanceStack []wasmer.InstanceHandler
-
-	asyncCallInfo    *arwen.AsyncCallInfo
-	asyncContextInfo *arwen.AsyncContextInfo
+	instanceStack []executor.InstanceHandler
 
 	validator       *wasmValidator
-	instanceBuilder arwen.InstanceBuilder
+	instanceBuilder executor.InstanceBuilder
 	errors          arwen.WrappableError
 }
 
@@ -55,14 +52,19 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	vmExecutor executor.InstanceBuilder,
 ) (*runtimeContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
 		host:          host,
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
+		instanceStack: make([]executor.InstanceHandler, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
 	}
@@ -73,14 +75,14 @@ func NewRuntimeContext(
 		return nil, err
 	}
 
-	context.instanceBuilder = &WasmerInstanceBuilder{}
+	context.instanceBuilder = vmExecutor
 	context.InitState()
 
 	return context, nil
 }
 
 func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(wasmer.InstanceHandler)
+	instance, ok := value.(executor.InstanceHandler)
 	if !ok {
 		return
 	}
@@ -96,10 +98,6 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
-	context.asyncCallInfo = nil
-	context.asyncContextInfo = &arwen.AsyncContextInfo{
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
-	}
 	context.errors = nil
 
 	logRuntime.Trace("init state")
@@ -113,7 +111,7 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {
+func (context *runtimeContext) ReplaceInstanceBuilder(builder executor.InstanceBuilder) {
 	context.instanceBuilder = builder
 }
 
@@ -154,7 +152,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -182,7 +180,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte, gasLimit uint64, newCode bool) error {
 	gasSchedule := context.host.Metering().GasSchedule()
-	options := wasmer.CompilationOptions{
+	options := executor.CompilationOptions{
 		GasLimit:           gasLimit,
 		UnmeteredLocals:    uint64(gasSchedule.WASMOpcodeCost.LocalsUnmetered),
 		MaxMemoryGrow:      uint64(gasSchedule.WASMOpcodeCost.MaxMemoryGrow),
@@ -240,7 +238,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	instance, ok := cachedObject.(wasmer.InstanceHandler)
+	instance, ok := cachedObject.(executor.InstanceHandler)
 	if !ok {
 		return false
 	}
@@ -276,7 +274,7 @@ func (context *runtimeContext) GetSCCode() ([]byte, error) {
 	return code, nil
 }
 
-// GetSCCodeSize returns the size of the current SC code.
+// GetSCCodeSize returns the cached size of the current SC code.
 func (context *runtimeContext) GetSCCodeSize() uint64 {
 	return context.codeSize
 }
@@ -311,30 +309,29 @@ func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
 }
 
-// SetMaxInstanceCount sets the maxWasmerInstances field to the given value
+// SetMaxInstanceCount sets the maximum number of allowed Wasmer instances on
+// the instance stack, for recursivity.
 func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
 	context.maxWasmerInstances = maxInstances
 }
 
-// InitStateFromContractCallInput initializes the runtime context state with the values from the given input
+// InitStateFromContractCallInput initializes the state of the runtime context
+// (and the async context) from the provided ContractCallInput.
 func (context *runtimeContext) InitStateFromContractCallInput(input *vmcommon.ContractCallInput) {
 	context.SetVMInput(input)
 	context.codeAddress = input.RecipientAddr
 	context.callFunction = input.Function
-	// Reset async map for initial state
-	context.asyncContextInfo = &arwen.AsyncContextInfo{
-		CallerAddr:      input.CallerAddr,
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
-	}
 
 	logRuntime.Trace("init state from call input",
 		"caller", input.CallerAddr,
 		"contract", input.RecipientAddr,
 		"func", input.Function,
-		"args", input.Arguments)
+		"args", input.Arguments,
+		"gas provided", input.GasProvided)
 }
 
-// SetCustomCallFunction sets the given string as the callFunction field.
+// SetCustomCallFunction sets a custom function to be called next, instead of
+// the one specified by the current ContractCallInput.
 func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 	context.callFunction = callFunction
 	logRuntime.Trace("set custom call function", "function", callFunction)
@@ -344,12 +341,10 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 // includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		codeAddress:      context.codeAddress,
-		codeHash:         context.codeHash,
-		callFunction:     context.callFunction,
-		readOnly:         context.readOnly,
-		asyncCallInfo:    context.asyncCallInfo,
-		asyncContextInfo: context.asyncContextInfo,
+		codeAddress:  context.codeAddress,
+		codeHash:     context.codeHash,
+		callFunction: context.callFunction,
+		readOnly:     context.readOnly,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -362,8 +357,7 @@ func (context *runtimeContext) PushState() {
 	context.pushInstance()
 }
 
-// PopSetActiveState removes the latest entry from the state stack and sets it as the current
-// runtime context state.
+// PopSetActiveState pops the state at the top of the state stack and sets it as the current state.
 func (context *runtimeContext) PopSetActiveState() {
 	stateStackLen := len(context.stateStack)
 	if stateStackLen == 0 {
@@ -381,8 +375,6 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
-	context.asyncCallInfo = prevState.asyncCallInfo
-	context.asyncContextInfo = prevState.asyncContextInfo
 	context.popInstance(lastCodeHash)
 }
 
@@ -400,12 +392,12 @@ func (context *runtimeContext) PopDiscard() {
 	context.popInstance(lastCodeHash)
 }
 
-// ClearStateStack reinitializes the state stack.
+// ClearStateStack discards the entire state state stack and initializes it anew.
 func (context *runtimeContext) ClearStateStack() {
 	context.stateStack = make([]*runtimeContext, 0)
 }
 
-// pushInstance appends the current wasmer instance to the instance stack.
+// pushInstance pushes the current Wasmer instance on the instance stack (separate from the state stack).
 func (context *runtimeContext) pushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
 }
@@ -440,7 +432,7 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	context.instance = prevInstance
 }
 
-// RunningInstancesCount returns the length of the instance stack.
+// RunningInstancesCount returns the number of the currently running Wasmer instances.
 func (context *runtimeContext) RunningInstancesCount() uint64 {
 	return uint64(len(context.instanceStack))
 }
@@ -514,6 +506,11 @@ func (context *runtimeContext) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 		copy(context.vmInput.CurrentTxHash, vmInput.CurrentTxHash)
 	}
 
+	if len(vmInput.PrevTxHash) > 0 {
+		context.vmInput.PrevTxHash = make([]byte, len(vmInput.PrevTxHash))
+		copy(context.vmInput.PrevTxHash, vmInput.PrevTxHash)
+	}
+
 	if len(vmInput.Arguments) > 0 {
 		context.vmInput.Arguments = make([][]byte, len(vmInput.Arguments))
 		for i, arg := range vmInput.Arguments {
@@ -533,27 +530,33 @@ func (context *runtimeContext) SetCodeAddress(scAddress []byte) {
 	context.codeAddress = scAddress
 }
 
-// GetCurrentTxHash returns the txHash from the vmInput of the current context.
+// GetCurrentTxHash returns the hash of the current transaction, as specified by the current VMInput.
 func (context *runtimeContext) GetCurrentTxHash() []byte {
 	return context.vmInput.CurrentTxHash
 }
 
-// GetOriginalTxHash returns the originalTxHash from the vmInput of the current context.
+// GetOriginalTxHash returns the hash of the original transaction, in the case of async calls, as specified by the current VMInput.
 func (context *runtimeContext) GetOriginalTxHash() []byte {
 	return context.vmInput.OriginalTxHash
 }
 
-// Function returns the callFunction for the current context.
-func (context *runtimeContext) Function() string {
+// GetPrevTxHash returns the hash of the previous transaction, in the case of async calls, as specified by the current VMInput.
+func (context *runtimeContext) GetPrevTxHash() []byte {
+	return context.vmInput.PrevTxHash
+}
+
+// Function returns the name of the contract function to be called next
+func (context *runtimeContext) FunctionName() string {
 	return context.callFunction
 }
 
-// Arguments returns the arguments from the vmInput of the current context.
+// Arguments returns the binary arguments that will be passed to the contract to be executed, as specified by the current VMInput.
 func (context *runtimeContext) Arguments() [][]byte {
 	return context.vmInput.Arguments
 }
 
-// ExtractCodeUpgradeFromArgs extracts the arguments needed for a code upgrade from the vmInput.
+// ExtractCodeUpgradeFromArgs extracts the code and code metadata from the
+// current VMInput.Arguments, assuming a contract code upgrade has been requested.
 func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, error) {
 	const numMinUpgradeArguments = 2
 
@@ -568,6 +571,8 @@ func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, err
 	return code, codeMetadata, nil
 }
 
+// FailExecution informs Wasmer to immediately stop the execution of the contract
+// with BreakpointExecutionFailed and sets the corresponding VMOutput fields accordingly
 // FailExecution sets the returnMessage, returnCode and runtimeBreakpoint according to the given error.
 func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
@@ -578,7 +583,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
-		if errors.Is(err, arwen.ErrNotEnoughGas) && context.host.FixOOGReturnCodeEnabled() {
+		if errors.Is(err, arwen.ErrNotEnoughGas) {
 			breakpoint = arwen.BreakpointOutOfGas
 		}
 	} else {
@@ -598,7 +603,8 @@ func (context *runtimeContext) FailExecution(err error) {
 	logRuntime.Trace("execution failed", "message", traceMessage)
 }
 
-// SignalUserError sets the returnMessage, returnCode and runtimeBreakpoint according an user error.
+// SignalUserError informs Wasmer to immediately stop the execution of the contract
+// with BreakpointSignalError and sets the corresponding VMOutput fields accordingly
 func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
@@ -607,18 +613,20 @@ func (context *runtimeContext) SignalUserError(message string) {
 	logRuntime.Trace("user error signalled", "message", message)
 }
 
-// SetRuntimeBreakpointValue sets the given value as a breakpoint value.
+// SetRuntimeBreakpointValue sets the specified runtime breakpoint in Wasmer,
+// immediately stopping the contract execution.
 func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
 	context.instance.SetBreakpointValue(uint64(value))
 	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
-// GetRuntimeBreakpointValue returns the breakpoint value for the current wasmer instance.
+// GetRuntimeBreakpointValue retrieves the value of the breakpoint that has
+// stopped the execution of the contract.
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
 }
 
-// VerifyContractCode checks the current wasmer instance for enough memory and for correct functions.
+// VerifyContractCode performs validation on the WASM bytecode (declaration of memory and legal functions).
 func (context *runtimeContext) VerifyContractCode() error {
 	if !context.verifyCode {
 		return nil
@@ -638,23 +646,13 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
+	err = context.validator.verifyProtectedFunctions(context.instance)
+	if err != nil {
+		logRuntime.Trace("verify contract code", "error", err)
+		return err
+	}
+
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if !enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
-		err = context.checkBackwardCompatibility()
-		if err != nil {
-			logRuntime.Trace("verify contract code", "error", err)
-			return err
-		}
-	}
-
-	if !enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
-		err = context.checkIfContainsNewManagedCryptoAPI()
-		if err != nil {
-			logRuntime.Trace("verify contract code", "error", err)
-			return err
-		}
-	}
-
 	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
 		err = context.validator.verifyProtectedFunctions(context.instance)
 		if err != nil {
@@ -668,180 +666,19 @@ func (context *runtimeContext) VerifyContractCode() error {
 	return nil
 }
 
-func (context *runtimeContext) checkBackwardCompatibility() error {
-	if context.instance.IsFunctionImported("mBufferSetByteSlice") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("getESDTLocalRoles") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("validateTokenIdentifier") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedSha256") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedKeccak256") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("mBufferStorageLoadFromAddress") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("cleanReturnData") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("deleteFromReturnData") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("completedTxEvent") {
-		return arwen.ErrContractInvalid
-	}
-
-	return nil
-}
-
-func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
-	if context.instance.IsFunctionImported("managedIsESDTFrozen") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedIsESDTPaused") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedIsESDTLimitedTransfer") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedBufferToHex") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigIntToString") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedRipemd160") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifyBLS") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifyEd25519") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifySecp256k1") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedVerifyCustomSecp256k1") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedEncodeSecp256k1DerSignature") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedScalarBaseMultEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedScalarMultEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedMarshalEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedUnmarshalEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedMarshalCompressedEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedUnmarshalCompressedEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedGenerateKeyEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("managedCreateEC") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("mBufferToBigFloat") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("mBufferFromBigFloat") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatNewFromParts") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatNewFromFrac") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatNewFromSci") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatAdd") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSub") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatMul") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatDiv") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatAbs") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatCmp") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSign") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatClone") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSqrt") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatPow") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatFloor") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatCeil") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatTruncate") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatIsInt") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSetInt64") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatSetBigInt") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatGetConstPi") {
-		return arwen.ErrContractInvalid
-	}
-	if context.instance.IsFunctionImported("bigFloatGetConstE") {
-		return arwen.ErrContractInvalid
-	}
-
-	return nil
-}
-
 // ElrondAPIErrorShouldFailExecution returns true
 func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
 	return true
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution returns true
+// ElrondSyncExecAPIErrorShouldFailExecution specifies whether an error in the
+// EEI functions for synchronous execution should abort contract execution.
 func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
 	return true
 }
 
-// BigIntAPIErrorShouldFailExecution returns true
+// BigIntAPIErrorShouldFailExecution specifies whether an error in the EEI
+// functions for BigInt operations should abort contract execution.
 func (context *runtimeContext) BigIntAPIErrorShouldFailExecution() bool {
 	return true
 }
@@ -851,7 +688,8 @@ func (context *runtimeContext) BigFloatAPIErrorShouldFailExecution() bool {
 	return true
 }
 
-// CryptoAPIErrorShouldFailExecution returns true
+// CryptoAPIErrorShouldFailExecution specifies whether an error in the EEI
+// functions for crypto operations should abort contract execution.
 func (context *runtimeContext) CryptoAPIErrorShouldFailExecution() bool {
 	return true
 }
@@ -861,7 +699,7 @@ func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
 	return true
 }
 
-// GetPointsUsed returns the gas points used by the current wasmer instance.
+// GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
 	if context.instance == nil {
 		return 0
@@ -869,7 +707,7 @@ func (context *runtimeContext) GetPointsUsed() uint64 {
 	return context.instance.GetPointsUsed()
 }
 
-// SetPointsUsed sets the given gas points as the gas points used by the current wasmer instance.
+// SetPointsUsed directly sets the gas amount already spent by the currently running Wasmer instance.
 func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
 	if gasPoints > builtinMath.MaxInt64 {
 		gasPoints = builtinMath.MaxInt64
@@ -877,24 +715,19 @@ func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
 	context.instance.SetPointsUsed(gasPoints)
 }
 
-// ReadOnly returns true if the current context is readOnly
+// ReadOnly verifies whether the read-only execution flag is set.
 func (context *runtimeContext) ReadOnly() bool {
 	return context.readOnly
 }
 
-// SetReadOnly sets the readOnly field of the context to the given value.
+// SetReadOnly sets the read-only execution flag.
 func (context *runtimeContext) SetReadOnly(readOnly bool) {
 	context.readOnly = readOnly
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
+func (context *runtimeContext) GetInstance() executor.InstanceHandler {
 	return context.instance
-}
-
-// GetInstanceExports returns the current wasmer instance exports.
-func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
-	return context.instance.GetExports()
 }
 
 // CleanInstance cleans the current instance
@@ -907,7 +740,6 @@ func (context *runtimeContext) CleanInstance() {
 	context.instance = nil
 
 	logRuntime.Trace("instance cleaned")
-	return
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
@@ -937,118 +769,40 @@ func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
 	return false
 }
 
-// GetFunctionToCall returns the function to call from the wasmer instance exports.
-func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
-	exports := context.instance.GetExports()
-	logRuntime.Trace("get function to call", "function", context.callFunction)
-	if function, ok := exports[context.callFunction]; ok {
-		return function, nil
+// CountSameContractInstancesOnStack returns the number of times the given contract
+// address appears in the state stack.
+func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte) uint64 {
+	count := uint64(0)
+	for _, state := range context.stateStack {
+		if bytes.Equal(address, state.vmInput.RecipientAddr) {
+			count += 1
+		}
 	}
 
+	return count
+}
+
+// FunctionNameChecked returns the function name, after checking that it exists in the contract.
+func (context *runtimeContext) FunctionNameChecked() (string, error) {
+	functionName := context.FunctionName()
+	if context.instance.HasFunction(functionName) {
+		return functionName, nil
+	}
+
+	// If the requested function is missing from the contract exports, but is
+	// named like arwen.CallbackFunctionName, then a different error is returned
+	// to indicate that, not just a missing function.
 	if context.callFunction == arwen.CallbackFunctionName {
-		// TODO rewrite this condition, until the AsyncContext is merged
-		logRuntime.Trace("get function to call", "error", arwen.ErrNilCallbackFunction)
-		return nil, arwen.ErrNilCallbackFunction
+		logRuntime.Trace("missing function " + arwen.CallbackFunctionName)
+		return "", arwen.ErrNilCallbackFunction
 	}
 
-	return nil, arwen.ErrFuncNotFound
+	return "", executor.ErrFuncNotFound
 }
 
-// GetInitFunction returns the init function from the current wasmer instance exports.
-func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
-	exports := context.instance.GetExports()
-	if init, ok := exports[arwen.InitFunctionName]; ok {
-		return init
-	}
-
-	return nil
-}
-
-// ExecuteAsyncCall locks the necessary gas and sets the async call info and a runtime breakpoint value.
-func (context *runtimeContext) ExecuteAsyncCall(address []byte, data []byte, value []byte) error {
-	if context.ReadOnly() && context.host.CheckExecuteReadOnly() {
-		return arwen.ErrInvalidCallOnReadOnlyMode
-	}
-	metering := context.host.Metering()
-	err := metering.UseGasForAsyncStep()
-	if err != nil {
-		return err
-	}
-
-	gasToLock := uint64(0)
-	if context.HasCallbackMethod() {
-		gasToLock = metering.ComputeGasLockedForAsync()
-		logRuntime.Trace("ExecuteAsyncCall", "gasToLock", gasToLock)
-
-		err = metering.UseGasBounded(gasToLock)
-		if err != nil {
-			logRuntime.Trace("ExecuteAsyncCall: cannot lock gas", "err", err)
-			return err
-		}
-	}
-
-	context.SetAsyncCallInfo(&arwen.AsyncCallInfo{
-		Destination: address,
-		Data:        data,
-		GasLimit:    metering.GasLeft(),
-		GasLocked:   gasToLock,
-		ValueBytes:  value,
-	})
-	context.SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
-
-	logRuntime.Trace("prepare async call",
-		"caller", context.GetContextAddress(),
-		"dest", address,
-		"value", big.NewInt(0).SetBytes(value),
-		"data", data)
-	return nil
-}
-
-// SetAsyncCallInfo sets the given data as the async call info for the current context.
-func (context *runtimeContext) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
-	context.asyncCallInfo = asyncCallInfo
-}
-
-// AddAsyncContextCall adds the given async call to the asyncContextMap at the given identifier.
-func (context *runtimeContext) AddAsyncContextCall(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error {
-	_, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
-	currentContextMap := context.asyncContextInfo.AsyncContextMap
-	if !ok {
-		currentContextMap[string(contextIdentifier)] = &arwen.AsyncContext{
-			AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
-		}
-	}
-
-	currentContextMap[string(contextIdentifier)].AsyncCalls =
-		append(currentContextMap[string(contextIdentifier)].AsyncCalls, asyncCall)
-
-	return nil
-}
-
-// GetAsyncContextInfo returns the async context info for the current context.
-func (context *runtimeContext) GetAsyncContextInfo() *arwen.AsyncContextInfo {
-	return context.asyncContextInfo
-}
-
-// GetAsyncContext returns the async context mapped to the given context identifier.
-func (context *runtimeContext) GetAsyncContext(contextIdentifier []byte) (*arwen.AsyncContext, error) {
-	asyncContext, ok := context.asyncContextInfo.AsyncContextMap[string(contextIdentifier)]
-	if !ok {
-		return nil, arwen.ErrAsyncContextDoesNotExist
-	}
-
-	return asyncContext, nil
-}
-
-// GetAsyncCallInfo returns the async call info for the current context.
-func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
-	return context.asyncCallInfo
-}
-
-// HasCallbackMethod returns true if the current wasmer instance exports has a callback method.
-func (context *runtimeContext) HasCallbackMethod() bool {
-	_, ok := context.instance.GetExports()[arwen.CallbackFunctionName]
-	return ok
+// CallSCFunction will execute the function with given name from the loaded contract.
+func (context *runtimeContext) CallSCFunction(functionName string) error {
+	return context.instance.CallFunction(functionName)
 }
 
 // IsFunctionImported returns true if the WASM module imports the specified function.
@@ -1162,6 +916,34 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 // GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
+}
+
+// ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
+func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
+	err := context.validator.verifyValidFunctionName(callbackName)
+	if err != nil {
+		return arwen.ErrInvalidFunctionName
+	}
+	if callbackName == arwen.InitFunctionName {
+		return arwen.ErrInvalidFunctionName
+	}
+	if context.host.IsBuiltinFunctionName(callbackName) {
+		return arwen.ErrCannotUseBuiltinAsCallback
+	}
+	if !context.HasFunction(callbackName) {
+		return executor.ErrFuncNotFound
+	}
+
+	return nil
+}
+
+// HasFunction checks if loaded contract has a function (endpoint) with given name.
+func (context *runtimeContext) HasFunction(functionName string) bool {
+	return context.instance.HasFunction(functionName)
+}
+
+// EpochConfirmed is called whenever a new epoch is confirmed
+func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

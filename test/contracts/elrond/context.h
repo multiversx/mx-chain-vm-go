@@ -53,6 +53,7 @@ int getCallValue(byte *result);
 long long getGasLeft();
 void writeLog(byte *pointer, int length, byte *topicPtr, int numTopics);
 void asyncCall(byte *destination, byte *value, byte *data, int length);
+int createAsyncCall(byte *destination, byte *value, byte *data, int length,  byte *successCallback, int successLength, byte *errorCallback, int errorLength, long long gas, long long extraGasForCallback);
 void signalError(byte *message, int length);
 
 int executeOnSameContext(

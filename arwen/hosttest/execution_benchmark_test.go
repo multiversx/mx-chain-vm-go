@@ -1,7 +1,6 @@
 package hosttest
 
 import (
-	"fmt"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -19,6 +18,7 @@ import (
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,6 +29,8 @@ var owner = Address("owner")
 var receiver = Address("receiver")
 var scAddress = Address("erc20")
 var gasProvided = uint64(5_000_000_000)
+
+var logBenchmark = logger.GetOrCreate("arwen/benchmark")
 
 func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
@@ -119,7 +121,8 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 			}
 		}
 		elapsedTime := time.Since(start)
-		fmt.Printf("Executing batch %d with %d ERC20 transfers: %s \n", r, nTransfers, elapsedTime.String())
+		logBenchmark.Trace("Executing ERC20 transfers", "batch", r, "transfers", nTransfers, "time", elapsedTime.String())
+
 	}
 
 	if !failTransaction {
@@ -228,17 +231,20 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
-		VMType:                   testcommon.DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasMap,
-		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
-		WasmerSIGSEGVPassthrough: false,
-	})
+	host, err := arwenHost.NewArwenVM(
+		mockWorld,
+		wasmer.NewExecutor(),
+		&arwen.VMHostParameters{
+			VMType:                   testcommon.DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              gasMap,
+			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
+			WasmerSIGSEGVPassthrough: false,
+		})
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err
 }

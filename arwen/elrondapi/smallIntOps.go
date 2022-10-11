@@ -6,21 +6,21 @@ package elrondapi
 // typedef unsigned char uint8_t;
 // typedef int int32_t;
 //
-// extern long long v1_4_smallIntGetUnsignedArgument(void *context, int32_t id);
-// extern long long v1_4_smallIntGetSignedArgument(void *context, int32_t id);
+// extern long long v1_5_smallIntGetUnsignedArgument(void *context, int32_t id);
+// extern long long v1_5_smallIntGetSignedArgument(void *context, int32_t id);
 //
-// extern void			v1_4_smallIntFinishUnsigned(void* context, long long value);
-// extern void			v1_4_smallIntFinishSigned(void* context, long long value);
+// extern void			v1_5_smallIntFinishUnsigned(void* context, long long value);
+// extern void			v1_5_smallIntFinishSigned(void* context, long long value);
 //
-// extern int32_t		v1_4_smallIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t keyLength, long long value);
-// extern int32_t		v1_4_smallIntStorageStoreSigned(void *context, int32_t keyOffset, int32_t keyLength, long long value);
-// extern long long v1_4_smallIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t keyLength);
-// extern long long v1_4_smallIntStorageLoadSigned(void *context, int32_t keyOffset, int32_t keyLength);
+// extern int32_t		v1_5_smallIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t keyLength, long long value);
+// extern int32_t		v1_5_smallIntStorageStoreSigned(void *context, int32_t keyOffset, int32_t keyLength, long long value);
+// extern long long v1_5_smallIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t keyLength);
+// extern long long v1_5_smallIntStorageLoadSigned(void *context, int32_t keyOffset, int32_t keyLength);
 //
-// extern long long v1_4_int64getArgument(void *context, int32_t id);
-// extern int32_t		v1_4_int64storageStore(void *context, int32_t keyOffset, int32_t keyLength , long long value);
-// extern long long v1_4_int64storageLoad(void *context, int32_t keyOffset, int32_t keyLength );
-// extern void			v1_4_int64finish(void* context, long long value);
+// extern long long v1_5_int64getArgument(void *context, int32_t id);
+// extern int32_t		v1_5_int64storageStore(void *context, int32_t keyOffset, int32_t keyLength , long long value);
+// extern long long v1_5_int64storageLoad(void *context, int32_t keyOffset, int32_t keyLength );
+// extern void			v1_5_int64finish(void* context, long long value);
 //
 import "C"
 
@@ -30,7 +30,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const (
@@ -48,68 +48,68 @@ const (
 	int64finishName                  = "int64finish"
 )
 
-// SmallIntImports creates a new wasmer.Imports populated with the small int (int64/uint64) API methods
-func SmallIntImports(imports elrondapimeta.EIFunctionReceiver) error {
+// SmallIntImports populates imports with the small int (int64/uint64) API methods
+func SmallIntImports(imports executor.ImportFunctionReceiver) error {
 	imports.Namespace("env")
 
-	err := imports.Append("smallIntGetUnsignedArgument", v1_4_smallIntGetUnsignedArgument, C.v1_4_smallIntGetUnsignedArgument)
+	err := imports.Append("smallIntGetUnsignedArgument", v1_5_smallIntGetUnsignedArgument, C.v1_5_smallIntGetUnsignedArgument)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntGetSignedArgument", v1_4_smallIntGetSignedArgument, C.v1_4_smallIntGetSignedArgument)
+	err = imports.Append("smallIntGetSignedArgument", v1_5_smallIntGetSignedArgument, C.v1_5_smallIntGetSignedArgument)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntFinishUnsigned", v1_4_smallIntFinishUnsigned, C.v1_4_smallIntFinishUnsigned)
+	err = imports.Append("smallIntFinishUnsigned", v1_5_smallIntFinishUnsigned, C.v1_5_smallIntFinishUnsigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntFinishSigned", v1_4_smallIntFinishSigned, C.v1_4_smallIntFinishSigned)
+	err = imports.Append("smallIntFinishSigned", v1_5_smallIntFinishSigned, C.v1_5_smallIntFinishSigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntStorageStoreUnsigned", v1_4_smallIntStorageStoreUnsigned, C.v1_4_smallIntStorageStoreUnsigned)
+	err = imports.Append("smallIntStorageStoreUnsigned", v1_5_smallIntStorageStoreUnsigned, C.v1_5_smallIntStorageStoreUnsigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntStorageStoreSigned", v1_4_smallIntStorageStoreSigned, C.v1_4_smallIntStorageStoreSigned)
+	err = imports.Append("smallIntStorageStoreSigned", v1_5_smallIntStorageStoreSigned, C.v1_5_smallIntStorageStoreSigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntStorageLoadUnsigned", v1_4_smallIntStorageLoadUnsigned, C.v1_4_smallIntStorageLoadUnsigned)
+	err = imports.Append("smallIntStorageLoadUnsigned", v1_5_smallIntStorageLoadUnsigned, C.v1_5_smallIntStorageLoadUnsigned)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("smallIntStorageLoadSigned", v1_4_smallIntStorageLoadSigned, C.v1_4_smallIntStorageLoadSigned)
+	err = imports.Append("smallIntStorageLoadSigned", v1_5_smallIntStorageLoadSigned, C.v1_5_smallIntStorageLoadSigned)
 	if err != nil {
 		return err
 	}
 
 	// the last are just for backwards compatibility:
 
-	err = imports.Append("int64getArgument", v1_4_int64getArgument, C.v1_4_int64getArgument)
+	err = imports.Append("int64getArgument", v1_5_int64getArgument, C.v1_5_int64getArgument)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("int64storageStore", v1_4_int64storageStore, C.v1_4_int64storageStore)
+	err = imports.Append("int64storageStore", v1_5_int64storageStore, C.v1_5_int64storageStore)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("int64storageLoad", v1_4_int64storageLoad, C.v1_4_int64storageLoad)
+	err = imports.Append("int64storageLoad", v1_5_int64storageLoad, C.v1_5_int64storageLoad)
 	if err != nil {
 		return err
 	}
 
-	err = imports.Append("int64finish", v1_4_int64finish, C.v1_4_int64finish)
+	err = imports.Append("int64finish", v1_5_int64finish, C.v1_5_int64finish)
 	if err != nil {
 		return err
 	}
@@ -117,8 +117,8 @@ func SmallIntImports(imports elrondapimeta.EIFunctionReceiver) error {
 	return nil
 }
 
-//export v1_4_smallIntGetUnsignedArgument
-func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
+//export v1_5_smallIntGetUnsignedArgument
+func v1_5_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -140,8 +140,8 @@ func v1_4_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
 	return int64(argBigInt.Uint64())
 }
 
-//export v1_4_smallIntGetSignedArgument
-func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
+//export v1_5_smallIntGetSignedArgument
+func v1_5_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -163,8 +163,8 @@ func v1_4_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
 	return argBigInt.Int64()
 }
 
-//export v1_4_smallIntFinishUnsigned
-func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
+//export v1_5_smallIntFinishUnsigned
+func v1_5_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -175,8 +175,8 @@ func v1_4_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	output.Finish(valueBytes)
 }
 
-//export v1_4_smallIntFinishSigned
-func v1_4_smallIntFinishSigned(context unsafe.Pointer, value int64) {
+//export v1_5_smallIntFinishSigned
+func v1_5_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	output := arwen.GetOutputContext(context)
 	metering := arwen.GetMeteringContext(context)
 
@@ -187,8 +187,8 @@ func v1_4_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	output.Finish(valueBytes)
 }
 
-//export v1_4_smallIntStorageStoreUnsigned
-func v1_4_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
+//export v1_5_smallIntStorageStoreUnsigned
+func v1_5_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -210,8 +210,8 @@ func v1_4_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, 
 	return int32(storageStatus)
 }
 
-//export v1_4_smallIntStorageStoreSigned
-func v1_4_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
+//export v1_5_smallIntStorageStoreSigned
+func v1_5_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -233,8 +233,8 @@ func v1_4_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, ke
 	return int32(storageStatus)
 }
 
-//export v1_4_smallIntStorageLoadUnsigned
-func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
+//export v1_5_smallIntStorageLoadUnsigned
+func v1_5_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -256,8 +256,8 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	return int64(valueBigInt.Uint64())
 }
 
-//export v1_4_smallIntStorageLoadSigned
-func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
+//export v1_5_smallIntStorageLoadSigned
+func v1_5_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
@@ -279,26 +279,26 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	return valueBigInt.Int64()
 }
 
-//export v1_4_int64getArgument
-func v1_4_int64getArgument(context unsafe.Pointer, id int32) int64 {
+//export v1_5_int64getArgument
+func v1_5_int64getArgument(context unsafe.Pointer, id int32) int64 {
 	// backwards compatibility
-	return v1_4_smallIntGetSignedArgument(context, id)
+	return v1_5_smallIntGetSignedArgument(context, id)
 }
 
-//export v1_4_int64finish
-func v1_4_int64finish(context unsafe.Pointer, value int64) {
+//export v1_5_int64finish
+func v1_5_int64finish(context unsafe.Pointer, value int64) {
 	// backwards compatibility
-	v1_4_smallIntFinishSigned(context, value)
+	v1_5_smallIntFinishSigned(context, value)
 }
 
-//export v1_4_int64storageStore
-func v1_4_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
+//export v1_5_int64storageStore
+func v1_5_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	// backwards compatibility
-	return v1_4_smallIntStorageStoreUnsigned(context, keyOffset, keyLength, value)
+	return v1_5_smallIntStorageStoreUnsigned(context, keyOffset, keyLength, value)
 }
 
-//export v1_4_int64storageLoad
-func v1_4_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
+//export v1_5_int64storageLoad
+func v1_5_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	// backwards compatibility
-	return v1_4_smallIntStorageLoadUnsigned(context, keyOffset, keyLength)
+	return v1_5_smallIntStorageLoadUnsigned(context, keyOffset, keyLength)
 }

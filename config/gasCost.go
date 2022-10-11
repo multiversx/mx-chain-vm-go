@@ -24,50 +24,58 @@ type BaseOperationCost struct {
 }
 
 type ElrondAPICost struct {
-	GetSCAddress         uint64
-	GetOwnerAddress      uint64
-	IsSmartContract      uint64
-	GetShardOfAddress    uint64
-	GetExternalBalance   uint64
-	GetBlockHash         uint64
-	GetOriginalTxHash    uint64
-	TransferValue        uint64
-	GetArgument          uint64
-	GetFunction          uint64
-	GetNumArguments      uint64
-	StorageStore         uint64
-	StorageLoad          uint64
-	CachedStorageLoad    uint64
-	GetCaller            uint64
-	GetCallValue         uint64
-	Log                  uint64
-	Finish               uint64
-	SignalError          uint64
-	GetBlockTimeStamp    uint64
-	GetGasLeft           uint64
-	Int64GetArgument     uint64
-	Int64StorageStore    uint64
-	Int64StorageLoad     uint64
-	Int64Finish          uint64
-	GetStateRootHash     uint64
-	GetBlockNonce        uint64
-	GetBlockEpoch        uint64
-	GetBlockRound        uint64
-	GetBlockRandomSeed   uint64
-	ExecuteOnSameContext uint64
-	ExecuteOnDestContext uint64
-	DelegateExecution    uint64
-	ExecuteReadOnly      uint64
-	AsyncCallStep        uint64
-	AsyncCallbackGasLock uint64
-	CreateContract       uint64
-	GetReturnData        uint64
-	GetNumReturnData     uint64
-	GetReturnDataSize    uint64
-	CleanReturnData      uint64
-	DeleteFromReturnData uint64
+	GetSCAddress            uint64
+	GetOwnerAddress         uint64
+	IsSmartContract         uint64
+	GetShardOfAddress       uint64
+	GetExternalBalance      uint64
+	GetBlockHash            uint64
+	GetOriginalTxHash       uint64
+	GetCurrentTxHash        uint64
+	GetPrevTxHash           uint64
+	TransferValue           uint64
+	GetArgument             uint64
+	GetFunction             uint64
+	GetNumArguments         uint64
+	StorageStore            uint64
+	StorageLoad             uint64
+	CachedStorageLoad       uint64
+	GetCaller               uint64
+	GetCallValue            uint64
+	Log                     uint64
+	Finish                  uint64
+	SignalError             uint64
+	GetBlockTimeStamp       uint64
+	GetGasLeft              uint64
+	Int64GetArgument        uint64
+	Int64StorageStore       uint64
+	Int64StorageLoad        uint64
+	Int64Finish             uint64
+	GetStateRootHash        uint64
+	GetBlockNonce           uint64
+	GetBlockEpoch           uint64
+	GetBlockRound           uint64
+	GetBlockRandomSeed      uint64
+	ExecuteOnSameContext    uint64
+	ExecuteOnDestContext    uint64
+	DelegateExecution       uint64
+	ExecuteReadOnly         uint64
+	AsyncCallStep           uint64
+	AsyncCallbackGasLock    uint64
+	CreateAsyncCall         uint64
+	SetAsyncCallback        uint64
+	SetAsyncGroupCallback   uint64
+	SetAsyncContextCallback uint64
+	GetCallbackClosure      uint64
+	CreateContract          uint64
+	GetReturnData           uint64
+	GetNumReturnData        uint64
+	GetReturnDataSize       uint64
+	CleanReturnData         uint64
+	DeleteFromReturnData    uint64
 }
 
+// TODO remove this struct
 type EthAPICost struct {
 	UseGas              uint64
 	GetAddress          uint64
