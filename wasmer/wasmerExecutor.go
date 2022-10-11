@@ -9,8 +9,8 @@ type WasmerExecutor struct {
 }
 
 // NewExecutor creates a new wasmer executor.
-func NewExecutor() *WasmerExecutor {
-	return &WasmerExecutor{}
+func NewExecutor() (*WasmerExecutor, error) {
+	return &WasmerExecutor{}, nil
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
