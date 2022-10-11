@@ -21,6 +21,7 @@ import (
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/stretchr/testify/require"
@@ -270,9 +271,11 @@ func defaultTestArwenForContracts(
 	codeMap := make(map[string]*[]byte)
 
 	for _, contract := range contracts {
+		codeHash, _ := hashing.NewHasher().Sha256(contract.code)
 		contractsMap[string(contract.address)] = &contextmock.StubAccount{
 			Address:      contract.address,
 			Balance:      big.NewInt(contract.balance),
+			CodeHash:     codeHash,
 			CodeMetadata: DefaultCodeMetadata,
 			OwnerAddress: ParentAddress,
 		}

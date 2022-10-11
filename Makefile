@@ -44,7 +44,28 @@ print-api-costs:
 	@grep "func v1_4\|GasSchedule" arwen/elrondapi/smallIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 
 
-build-test-contracts:
+build-test-contracts: build-test-contracts-erdpy build-test-contracts-wat
+
+build-test-contracts-wat:
+	cd test/contracts/init-simple-popcnt && wat2wasm *.wat
+	cd test/contracts/wasmbacking/imported-global/output && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-exceeded-max-pages/output && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-exceeded-pages/output && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-grow/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-min-pages-greater-than-max-pages/output && wat2wasm --no-check *.wat
+	cd test/contracts/wasmbacking/mem-multiple-max-pages/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-multiple-pages/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-no-max-pages/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-no-pages/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/mem-single-page/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/memoryless/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/multiple-memories/output/ && wat2wasm --no-check *.wat
+	cd test/contracts/wasmbacking/multiple-mutable/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/noglobals/output/ && wat2wasm *.wat
+	cd test/contracts/wasmbacking/single-immutable/output/ && wat2wasm --no-check *.wat
+	cd test/contracts/wasmbacking/single-mutable/output/ && wat2wasm *.wat
+
+build-test-contracts-erdpy:
 	erdpy contract build --no-optimization ./test/contracts/answer
 	erdpy contract build ./test/contracts/async-call-builtin
 	erdpy contract build ./test/contracts/async-call-child
@@ -59,7 +80,7 @@ build-test-contracts:
 	erdpy contract build ./test/contracts/elrondei
 	erdpy contract build ./test/contracts/erc20
 	erdpy contract build ./test/contracts/exchange
-
+	
 	erdpy contract build ./test/contracts/exec-dest-ctx-builtin
 	erdpy contract build ./test/contracts/exec-dest-ctx-by-caller/child
 	erdpy contract build ./test/contracts/exec-dest-ctx-by-caller/parent
@@ -69,7 +90,7 @@ build-test-contracts:
 	erdpy contract build ./test/contracts/exec-dest-ctx-recursive
 	erdpy contract build ./test/contracts/exec-dest-ctx-recursive-child
 	erdpy contract build ./test/contracts/exec-dest-ctx-recursive-parent
-
+	
 	erdpy contract build ./test/contracts/exec-same-ctx-child
 	erdpy contract build ./test/contracts/exec-same-ctx-parent
 	erdpy contract build ./test/contracts/exec-same-ctx-recursive
@@ -77,12 +98,12 @@ build-test-contracts:
 	erdpy contract build ./test/contracts/exec-same-ctx-recursive-parent
 	erdpy contract build ./test/contracts/exec-same-ctx-simple-child
 	erdpy contract build ./test/contracts/exec-same-ctx-simple-parent
-
+	
 	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/alpha
 	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/beta
 	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/delta
 	erdpy contract build ./test/contracts/exec-sync-ctx-multiple/gamma
-
+	
 	erdpy contract build ./test/contracts/init-correct
 	erdpy contract build ./test/contracts/init-simple
 	erdpy contract build ./test/contracts/init-wrong
@@ -95,9 +116,6 @@ build-test-contracts:
 	erdpy contract build ./test/contracts/signatures
 	erdpy contract build ./test/contracts/timelocks
 	erdpy contract build ./test/contracts/upgrader-fromanother-contract
-
-	wat2wasm -o ./test/contracts/init-simple-popcnt/init-simple-popcnt.wasm ./test/contracts/init-simple-popcnt/init-simple-popcnt.wat
-	wat2wasm -o ./test/contracts/memoryless/output/memoryless.wasm ./test/contracts/memoryless/output/memoryless.wat
 
 build-delegation:
 ifndef SANDBOX

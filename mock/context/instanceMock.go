@@ -104,6 +104,11 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
+// Reset mocked method
+func (instance *InstanceMock) Reset() bool {
+	return true
+}
+
 // GetExports mocked method
 func (instance *InstanceMock) GetExports() wasmer.ExportsMap {
 	return instance.Exports
@@ -150,12 +155,12 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
-// SetMemory -
+// SetMemory mocked method
 func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true
 }
 
-// IsInterfaceNil -
+// IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
 }

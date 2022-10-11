@@ -5,6 +5,8 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const OPCODE_COUNT = 448
@@ -257,6 +259,7 @@ func (instance *Instance) SetContextData(data uintptr) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
+// Clean cleans instance
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
@@ -267,26 +270,32 @@ func (instance *Instance) Clean() {
 	}
 }
 
+// GetPointsUsed returns the internal instance gas counter
 func (instance *Instance) GetPointsUsed() uint64 {
 	return cWasmerInstanceGetPointsUsed(instance.instance)
 }
 
+// SetPointsUsed sets the internal instance gas counter
 func (instance *Instance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
+// SetGasLimit sets the gas limit for the instance
 func (instance *Instance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
 }
 
+// SetBreakpoints sets the breakpoint value for the instance
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
 
+// GetBreakpointValue returns the breakpoint value
 func (instance *Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
 }
 
+// Cache caches the instance
 func (instance *Instance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar
 	var cacheLen cUint32T
@@ -339,15 +348,28 @@ func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
 }
 
+// Reset resets the instance memories and globals
+func (instance *Instance) Reset() bool {
+	result := cWasmerInstanceReset(instance.instance)
+	return result == cWasmerOk
+}
+
 // SetMemory sets the memory for the instance returns true if success
-func (instance *Instance) SetMemory(cleanMemory []byte) bool {
-	instanceMemory := instance.GetMemory().Data()
-	if len(instanceMemory) != len(cleanMemory) {
-		// TODO shrink the instance memory instead and return true
+func (instance *Instance) SetMemory(data []byte) bool {
+	if instance.instance == nil {
 		return false
 	}
 
-	copy(instanceMemory, cleanMemory)
+	if check.IfNil(instance.GetMemory()) {
+		return false
+	}
+
+	memory := instance.GetMemory().Data()
+	if len(memory) != len(data) {
+		return false
+	}
+
+	copy(memory, data)
 	return true
 }
 

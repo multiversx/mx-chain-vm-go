@@ -1,9 +1,9 @@
 package mock
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // making sure we implement all functions of RuntimeContext
@@ -115,7 +115,6 @@ type RuntimeContextWrapper struct {
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetAllErrorsFunc func() error
-
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	InitStateFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -126,6 +125,8 @@ type RuntimeContextWrapper struct {
 	PopDiscardFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ClearStateStackFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	CleanInstanceFunc func()
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
@@ -359,6 +360,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.ClearStateStackFunc = func() {
 		runtimeWrapper.runtimeContext.ClearStateStack()
+	}
+
+	runtimeWrapper.CleanInstanceFunc = func() {
+		runtimeWrapper.runtimeContext.CleanInstance()
 	}
 
 	return runtimeWrapper
@@ -646,10 +651,10 @@ func (contextWrapper *RuntimeContextWrapper) PopDiscard() {
 
 // ClearStateStack calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ClearStateStack() {
-	contextWrapper.runtimeContext.ClearStateStack()
+	contextWrapper.ClearStateStackFunc()
 }
 
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
-	contextWrapper.runtimeContext.CleanInstance()
+	contextWrapper.CleanInstanceFunc()
 }

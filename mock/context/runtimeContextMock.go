@@ -1,9 +1,9 @@
 package mock
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)

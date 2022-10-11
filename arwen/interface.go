@@ -5,12 +5,12 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // StateStack defines the functionality for working with a state stack
@@ -159,7 +159,6 @@ type RuntimeContext interface {
 	CleanInstance()
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
-
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 
