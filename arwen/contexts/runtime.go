@@ -16,6 +16,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -79,7 +80,7 @@ func NewRuntimeContext(
 		return nil, err
 	}
 
-	context.instanceBuilder = &WasmerInstanceBuilder{}
+	context.instanceBuilder = wasmer.NewWasmerInstanceBuilder()
 	context.InitState()
 
 	return context, nil
