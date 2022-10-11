@@ -80,7 +80,8 @@
                                 },
                                 {
                                     "nonce": "2",
-                                    "balance": "5"
+                                    "balance": "5",
+                                    "attributes": "str:MyCustomAttributes"
                                 }
                             ]
                         },
@@ -93,7 +94,8 @@
                                     "nonce": "2",
                                     "balance": "100",
                                     "creator": "address:creator_address",
-                                    "hash": "keccak256:str:nft_hash"
+                                    "hash": "keccak256:str:nft_hash",
+                                    "attributes": "str:attributes"
                                 }
                             ]
                         },
@@ -111,7 +113,8 @@
                                     "hash": "keccak256:str:other_nft_hash",
                                     "uri": [
                                         "str:www.something.com/funny.jpeg"
-                                    ]
+                                    ],
+                                    "attributes": "str:other_attributes"
                                 }
                             ]
                         }
