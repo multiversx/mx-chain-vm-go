@@ -59,11 +59,13 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 }
 
 func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
+	executor, err := wasmer.NewExecutor()
+	require.Nil(t, err)
 	runtimeContext, err := NewRuntimeContext(
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		wasmer.NewExecutor(),
+		executor,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -307,11 +309,12 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
+	executor, _ := wasmer.NewExecutor()
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		wasmer.NewExecutor(),
+		executor,
 	)
 
 	vmInput := vmcommon.VMInput{
