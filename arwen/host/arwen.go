@@ -61,6 +61,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
+	vmExecutor executor.InstanceBuilder,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -128,7 +129,11 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		vmExecutor,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {

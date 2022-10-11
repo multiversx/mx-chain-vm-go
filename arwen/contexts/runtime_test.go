@@ -64,6 +64,7 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		wasmer.NewExecutor(),
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -310,7 +311,9 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,
-		builtInFunctions.NewBuiltInFunctionContainer())
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		wasmer.NewExecutor(),
+	)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),

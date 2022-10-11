@@ -16,6 +16,7 @@ import (
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -98,17 +99,20 @@ func deploy(tb testing.TB, totalTokenSupply *big.Int) (arwen.VMHost, *worldmock.
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(mockWorld, &arwen.VMHostParameters{
-		VMType:                   testcommon.DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasMap,
-		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
-		WasmerSIGSEGVPassthrough: false,
-	})
+	host, err := arwenHost.NewArwenVM(
+		mockWorld,
+		wasmer.NewExecutor(),
+		&arwen.VMHostParameters{
+			VMType:                   testcommon.DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              gasMap,
+			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
+			WasmerSIGSEGVPassthrough: false,
+		})
 	require.Nil(tb, err)
 
 	// Deploy ERC20

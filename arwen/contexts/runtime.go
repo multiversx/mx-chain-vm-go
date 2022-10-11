@@ -57,6 +57,7 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	vmExecutor executor.InstanceBuilder,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -79,7 +80,7 @@ func NewRuntimeContext(
 		return nil, err
 	}
 
-	context.instanceBuilder = &WasmerInstanceBuilder{}
+	context.instanceBuilder = vmExecutor
 	context.InitState()
 
 	return context, nil
