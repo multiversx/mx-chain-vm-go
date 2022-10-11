@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go/token"
 	"os"
 
@@ -48,4 +49,6 @@ func main() {
 	}
 	defer out2.Close()
 	eapigen.WriteCAPIFunctions(eiMetadata, out2)
+
+	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 }
