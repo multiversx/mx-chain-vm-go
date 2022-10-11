@@ -87,8 +87,8 @@ type Instance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory executor.MemoryHandler
 
-	Data        *uintptr
-	DataPointer unsafe.Pointer
+	Callbacks    executor.ImportsInterface
+	CallbacksPtr unsafe.Pointer
 
 	InstanceCtx InstanceContext
 }
@@ -201,16 +201,21 @@ func NewInstanceFromCompiledCodeWithOptions(
 	return instance, err
 }
 
-// SetContextData assigns a data that can be used by all imported
+// SetCallbacks assigns a data that can be used by all imported
 // functions. Indeed, each imported function receives as its first
 // argument an instance context (see `InstanceContext`). An instance
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetContextData(data uintptr) {
-	instance.Data = &data
-	instance.DataPointer = unsafe.Pointer(instance.Data)
-	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
+func (instance *Instance) SetCallbacks(callbacks executor.ImportsInterface) {
+	instance.Callbacks = callbacks
+	instance.CallbacksPtr = unsafe.Pointer(&instance.Callbacks)
+	cWasmerInstanceContextDataSet(instance.instance, instance.CallbacksPtr)
+}
+
+// GetCallbacks returns a pointer for the current instance's data
+func (instance *Instance) GetCallbacks() executor.ImportsInterface {
+	return instance.Callbacks
 }
 
 // Clean cleans instance
@@ -305,11 +310,6 @@ func (instance *Instance) GetFunctionNames() []string {
 // All arguments and results should be transferred via the import functions.
 func (instance *Instance) ValidateVoidFunction(functionName string) error {
 	return instance.verifyVoidFunction(functionName)
-}
-
-// GetData returns a pointer for the current instance's data
-func (instance *Instance) GetData() uintptr {
-	return *instance.Data
 }
 
 // GetInstanceCtxMemory returns the memory for the instance context
