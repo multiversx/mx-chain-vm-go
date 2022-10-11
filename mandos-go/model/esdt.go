@@ -15,7 +15,7 @@ type ESDTInstance struct {
 	Royalties  JSONUint64
 	Hash       JSONBytesFromString
 	Uris       JSONValueList
-	Attributes JSONBytesFromString
+	Attributes JSONBytesFromTree
 }
 
 // ESDTData models an account holding an ESDT token

@@ -12,6 +12,7 @@ type CompilationOptions struct {
 }
 
 // InstanceBuilder defines the functionality needed to create any executor instance.
+// TODO: rename to Executor or VMExecutor.
 type InstanceBuilder interface {
 	NewInstanceWithOptions(
 		contractCode []byte,

@@ -1,13 +1,18 @@
-package contexts
+package wasmer
 
 import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // WasmerInstanceBuilder is the default instance builder, which produces real
-// Wasmer instances from WASM bytecode
+// Wasmer instances from WASM bytecode.
+// TODO: rename to WasmerExecutor.
 type WasmerInstanceBuilder struct {
+}
+
+// NewWasmerInstanceBuilder creates a new wasmer executor.
+func NewExecutor() *WasmerInstanceBuilder {
+	return &WasmerInstanceBuilder{}
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,
@@ -16,7 +21,7 @@ func (builder *WasmerInstanceBuilder) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
-	return wasmer.NewInstanceWithOptions(contractCode, options)
+	return NewInstanceWithOptions(contractCode, options)
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -25,5 +30,5 @@ func (builder *WasmerInstanceBuilder) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.InstanceHandler, error) {
-	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }

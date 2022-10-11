@@ -61,6 +61,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
+	vmExecutor executor.InstanceBuilder,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -128,7 +129,11 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		vmExecutor,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
@@ -372,7 +377,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 			}
-			host.Runtime().CleanInstance()
+
 			close(done)
 		}()
 
@@ -428,7 +433,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				err = arwen.ErrExecutionPanicked
 			}
 
-			host.Runtime().CleanInstance()
 			close(done)
 		}()
 

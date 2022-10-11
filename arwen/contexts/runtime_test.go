@@ -22,7 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const WASMPageSize = 65536
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
@@ -64,6 +63,7 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		wasmer.NewExecutor(),
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -310,7 +310,9 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,
-		builtInFunctions.NewBuiltInFunctionContainer())
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		wasmer.NewExecutor(),
+	)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
@@ -525,7 +527,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	totalPages := 32
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {

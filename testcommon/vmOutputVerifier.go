@@ -121,6 +121,7 @@ func (v *VMOutputVerifier) HasRuntimeErrorAndInfo(message string, otherInfo stri
 	for index, err := range errors {
 		if strings.HasPrefix(err.Error(), message) && strings.HasPrefix(otherInfos[index], otherInfo) {
 			errorFound = true
+			break
 		}
 	}
 	require.True(v.T, errorFound, fmt.Sprintf("No error with message '%s' found", message))
