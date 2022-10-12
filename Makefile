@@ -48,6 +48,11 @@ build-test-contracts: build-test-contracts-erdpy build-test-contracts-wat
 
 build-test-contracts-wat:
 	cd test/contracts/init-simple-popcnt && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/data-drop/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/memory-copy/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/memory-fill/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/memory-init/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/simd/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/imported-global/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-exceeded-max-pages/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-exceeded-pages/output && wat2wasm *.wat

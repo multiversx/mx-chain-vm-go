@@ -8,8 +8,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
-// TODO: add to Makefile and move Floating opcodes checks here
-func TestForbiddenOpCodes(t *testing.T) {
+func TestForbiddenOps_BulkAndSIMD(t *testing.T) {
 	wasmModules := []string{"data-drop", "memory-init", "memory-fill", "memory-copy", "simd"}
 
 	for _, moduleName := range wasmModules {
@@ -28,4 +27,18 @@ func TestForbiddenOpCodes(t *testing.T) {
 
 		testCase.AndAssertResults(assertResults)
 	}
+}
+
+func TestForbiddenOps_FloatingPoints(t *testing.T) {
+	testcommon.BuildInstanceCreatorTest(t).
+		WithInput(testcommon.CreateTestContractCreateInputBuilder().
+			WithGasProvided(1000).
+			WithCallValue(88).
+			WithArguments([]byte{2}).
+			WithContractCode(testcommon.GetTestSCCode("num-with-fp", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
 }
