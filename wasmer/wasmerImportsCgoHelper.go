@@ -7,9 +7,9 @@ import (
 )
 
 func importsInterfaceFromRaw(contextPtr unsafe.Pointer) executor.ImportsInterface {
-	// instCtx := wasmer.IntoInstanceContext(vmHostPtr)
-	// var ptr = *(*uintptr)(context)
-	return *(*executor.ImportsInterface)(contextPtr)
+	instCtx := IntoInstanceContext(contextPtr)
+	var ptr = *(*uintptr)(instCtx.Data())
+	return *(*executor.ImportsInterface)(unsafe.Pointer(ptr))
 }
 
 func generateWasmerImports(imports *Imports) (*cWasmerImportT, int) {
