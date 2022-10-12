@@ -17,7 +17,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -50,7 +49,6 @@ type vmHost struct {
 	managedTypesContext arwen.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
-	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       arwen.CallArgsParser
@@ -94,7 +92,6 @@ func NewArwenVM(
 		storageContext:       nil,
 		managedTypesContext:  nil,
 		gasSchedule:          hostParameters.GasSchedule,
-		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		callArgsParser:       parsers.NewCallArgsParser(),
