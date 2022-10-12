@@ -1,6 +1,7 @@
 package mock
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
@@ -30,6 +31,10 @@ func (executorMock *ExecutorRecorderMock) SetRkyvSerializationEnabled(enabled bo
 // SetSIGSEGVPassthrough controls a Wasmer flag.
 func (executorMock *ExecutorRecorderMock) SetSIGSEGVPassthrough() {
 	wasmer.SetSIGSEGVPassthrough()
+}
+
+func (executorMock *ExecutorRecorderMock) FunctionNames() vmcommon.FunctionNames {
+	return nil
 }
 
 // NewInstanceWithOptions - see InstanceBuilderMock.NewInstanceWithOptions()

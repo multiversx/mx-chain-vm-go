@@ -41,14 +41,14 @@ func main() {
 		panic(err)
 	}
 	defer out1.Close()
-	eapigen.WriteEIInterface(eiMetadata, out1)
+	eapigen.WriteEIInterface(out1, eiMetadata)
 
 	out2, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
 	if err != nil {
 		panic(err)
 	}
 	defer out2.Close()
-	eapigen.WriteCAPIFunctions(eiMetadata, out2)
+	eapigen.WriteCAPIFunctions(out2, eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 }

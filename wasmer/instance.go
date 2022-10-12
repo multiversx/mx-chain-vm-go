@@ -87,10 +87,15 @@ type Instance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory executor.MemoryHandler
 
-	Callbacks    executor.ImportsInterface
-	CallbacksPtr unsafe.Pointer
+	wrappedCallbacks callbacksWrapper
+	callbacksPtr     uintptr
+	callbacksPtrPtr  unsafe.Pointer
 
 	InstanceCtx InstanceContext
+}
+
+type callbacksWrapper struct {
+	callbacks executor.ImportsInterface
 }
 
 func newWrappedError(target error) error {
@@ -208,14 +213,24 @@ func NewInstanceFromCompiledCodeWithOptions(
 // understand that this data is shared by all imported function, it's
 // global to the instance.
 func (instance *Instance) SetCallbacks(callbacks executor.ImportsInterface) {
-	instance.Callbacks = callbacks
-	instance.CallbacksPtr = unsafe.Pointer(&instance.Callbacks)
-	cWasmerInstanceContextDataSet(instance.instance, instance.CallbacksPtr)
+	instance.wrappedCallbacks = callbacksWrapper{callbacks: callbacks}
+	// instance.CallbacksPtr = uintptr(unsafe.Pointer(instance.Callbacks))
+	instance.callbacksPtr = uintptr(unsafe.Pointer(&instance.wrappedCallbacks))
+	instance.callbacksPtrPtr = unsafe.Pointer(instance.callbacksPtr)
+	cWasmerInstanceContextDataSet(instance.instance, instance.callbacksPtrPtr)
 }
+
+// hostReference := uintptr(unsafe.Pointer(&context.host))
+// 	context.instance.SetContextData(hostReference)
+
+// func (instance *Instance) SetContextData(data uintptr) {
+// 	instance.Data = &data
+// 	instance.DataPointer = unsafe.Pointer(instance.Data)
+// 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 
 // GetCallbacks returns a pointer for the current instance's data
 func (instance *Instance) GetCallbacks() executor.ImportsInterface {
-	return instance.Callbacks
+	return instance.wrappedCallbacks.callbacks
 }
 
 // Clean cleans instance

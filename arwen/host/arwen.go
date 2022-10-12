@@ -106,20 +106,7 @@ func NewArwenVM(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	imports := executor.NewImportFunctions()
-	err := PopulateAllImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	wasmerImports := wasmer.ConvertImports(imports)
-	err = wasmer.SetImports(wasmerImports)
-	if err != nil {
-		return nil, err
-	}
-
-	host.scAPIMethods = wasmerImports
-
+	var err error
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
@@ -319,11 +306,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.asyncContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
 	host.blockchainContext.ClearStateStack()
-}
-
-// GetAPIMethods returns the EEI as a set of imports for Wasmer
-func (host *vmHost) GetAPIMethods() *wasmer.Imports {
-	return host.scAPIMethods
 }
 
 // GasScheduleChange applies a new gas schedule to the host

@@ -1,14 +1,37 @@
 package wasmer
 
 import (
+	"fmt"
+	"reflect"
 	"unsafe"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-// Import represents an WebAssembly instance imported function.
-type Import struct {
+// ImportedFunctionError represents any kind of errors related to a
+// WebAssembly imported function. It is returned by `Import` or `Imports`
+// functions only.
+type ImportedFunctionError struct {
+	functionName string
+	message      string
+}
+
+// NewImportedFunctionError constructs a new `ImportedFunctionError`,
+// where `functionName` is the name of the imported function, and
+// `message` is the error message. If the error message contains `%s`,
+// then this parameter will be replaced by `functionName`.
+func NewImportedFunctionError(functionName string, message string) *ImportedFunctionError {
+	return &ImportedFunctionError{functionName, message}
+}
+
+// ImportedFunctionError is an actual error. The `Error` function
+// returns the error message.
+func (error *ImportedFunctionError) Error() string {
+	return fmt.Sprintf(error.message, error.functionName)
+}
+
+// wasmerImport represents an WebAssembly instance imported function.
+type wasmerImport struct {
 	// An implementation must be of type:
 	// `func(context unsafe.Pointer, arguments ...interface{}) interface{}`.
 	// It represents the real function implementation written in Go.
@@ -34,7 +57,7 @@ type Import struct {
 // Imports represents a set of imported functions for a WebAssembly instance.
 type Imports struct {
 	// All imports.
-	imports map[string]map[string]Import
+	imports map[string]map[string]wasmerImport
 
 	// Current namespace where to register the import.
 	currentNamespace string
@@ -42,17 +65,10 @@ type Imports struct {
 
 // NewImports constructs a new empty `Imports`.
 func NewImports() *Imports {
-	var imports = make(map[string]map[string]Import)
+	var imports = make(map[string]map[string]wasmerImport)
 	var currentNamespace = "env"
 
 	return &Imports{imports, currentNamespace}
-}
-
-// Namespace changes the current namespace of the next imported functions.
-func (imports *Imports) Namespace(namespace string) *Imports {
-	imports.currentNamespace = namespace
-
-	return imports
 }
 
 func (imports *Imports) Count() int {
@@ -63,60 +79,72 @@ func (imports *Imports) Count() int {
 	return count
 }
 
-func (imports *Imports) Names() vmcommon.FunctionNames {
-	names := make(vmcommon.FunctionNames)
-	var empty struct{}
-	for _, env := range imports.imports {
-		for name := range env {
-			names[name] = empty
-		}
+// Append adds a new imported function to the current set.
+func (imports *Imports) append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error {
+	var importType = reflect.TypeOf(implementation)
+
+	if importType.Kind() != reflect.Func {
+		return NewImportedFunctionError(importName, fmt.Sprintf("Imported function `%%s` must be a function; given `%s`.", importType.Kind()))
 	}
-	return names
-}
 
-func convertArgType(argType executor.ImportFunctionValue) cWasmerValueTag {
-	switch argType {
-	case executor.ImportFunctionValueInt32:
-		return cWasmI32
-	case executor.ImportFunctionValueInt64:
-		return cWasmI64
+	var importInputsArity = importType.NumIn()
+
+	if importInputsArity < 1 {
+		return NewImportedFunctionError(importName, "Imported function `%s` must at least have one argument for the instance context.")
 	}
-	return cWasmI32 // unreachable, but might consider adding an error
-}
 
-func ConvertImports(eiFunctions *executor.ImportFunctions) *Imports {
-	imports := NewImports()
+	if importType.In(0).Kind() != reflect.UnsafePointer {
+		return NewImportedFunctionError(importName, fmt.Sprintf("The instance context of the `%%s` imported function must be of kind `unsafe.Pointer`; given `%s`; is it missing?", importType.In(0).Kind()))
+	}
 
-	for funcName, funcData := range eiFunctions.FunctionMap {
-		implementation := funcData.Implementation
-		cgoPointer := funcData.CgoPointer
-		var importedFunctionPointer *cWasmerImportFuncT
-		var namespace = funcData.Namespace
+	importInputsArity--
+	var importOutputsArity = importType.NumOut()
+	var wasmInputs = make([]cWasmerValueTag, importInputsArity)
+	var wasmOutputs = make([]cWasmerValueTag, importOutputsArity)
 
-		var wasmInputs = make([]cWasmerValueTag, len(funcData.FunctionInputs))
-		for i, input := range funcData.FunctionInputs {
-			wasmInputs[i] = convertArgType(input)
-		}
-		var wasmOutputs = make([]cWasmerValueTag, len(funcData.FunctionOutputs))
-		for i, output := range funcData.FunctionOutputs {
-			wasmOutputs[i] = convertArgType(output)
-		}
+	for nth := 0; nth < importInputsArity; nth++ {
+		var importInput = importType.In(nth + 1)
 
-		if imports.imports[namespace] == nil {
-			imports.imports[namespace] = make(map[string]Import)
-		}
-
-		imports.imports[namespace][funcName] = Import{
-			implementation,
-			cgoPointer,
-			importedFunctionPointer,
-			wasmInputs,
-			wasmOutputs,
-			namespace,
+		switch importInput.Kind() {
+		case reflect.Int32:
+			wasmInputs[nth] = cWasmI32
+		case reflect.Int64:
+			wasmInputs[nth] = cWasmI64
+		default:
+			return NewImportedFunctionError(importName, fmt.Sprintf("Invalid input type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importInput.Kind()))
 		}
 	}
 
-	return imports
+	if importOutputsArity > 1 {
+		return NewImportedFunctionError(importName, "The `%s` imported function must have at most one output value.")
+	} else if importOutputsArity == 1 {
+		switch importType.Out(0).Kind() {
+		case reflect.Int32:
+			wasmOutputs[0] = cWasmI32
+		case reflect.Int64:
+			wasmOutputs[0] = cWasmI64
+		default:
+			return NewImportedFunctionError(importName, fmt.Sprintf("Invalid output type for the `%%s` imported function; given `%s`; only accept `int32`, `int64`, `float32`, and `float64`.", importType.Out(0).Kind()))
+		}
+	}
+
+	var importedFunctionPointer *cWasmerImportFuncT
+	var namespace = imports.currentNamespace
+
+	if imports.imports[namespace] == nil {
+		imports.imports[namespace] = make(map[string]wasmerImport)
+	}
+
+	imports.imports[namespace][importName] = wasmerImport{
+		implementation,
+		cgoPointer,
+		importedFunctionPointer,
+		wasmInputs,
+		wasmOutputs,
+		namespace,
+	}
+
+	return nil
 }
 
 // Close closes/frees all imported functions that have been registered by Wasmer.

@@ -1,6 +1,9 @@
 package wasmer
 
-import "github.com/ElrondNetwork/wasm-vm/executor"
+import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/executor"
+)
 
 // SetRkyvSerializationEnabled enables or disables RKYV serialization of
 // instances in Wasmer
@@ -35,7 +38,35 @@ func SetImports(imports *Imports) error {
 	return nil
 }
 
+func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {
+	imports := NewImports()
+	populateWasmerImports(imports)
+	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
+
+	var result = cWasmerCacheImportObjectFromImports(
+		wasmImportsCPointer,
+		cInt(numberOfImports),
+	)
+
+	if result != cWasmerOk {
+		return nil, newWrappedError(ErrFailedCacheImports)
+	}
+
+	return extractImportNames(imports), nil
+}
+
+func extractImportNames(imports *Imports) vmcommon.FunctionNames {
+	names := make(vmcommon.FunctionNames)
+	var empty struct{}
+	for _, env := range imports.imports {
+		for name := range env {
+			names[name] = empty
+		}
+	}
+	return names
+}
+
 // SetOpcodeCosts sets gas costs globally for Wasmer.
-func SetOpcodeCosts(opcode_costs *[executor.OpcodeCount]uint32) {
-	cWasmerSetOpcodeCosts(opcode_costs)
+func SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+	cWasmerSetOpcodeCosts(opcodeCosts)
 }

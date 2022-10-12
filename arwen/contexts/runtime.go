@@ -58,7 +58,7 @@ func NewRuntimeContext(
 		return nil, arwen.ErrNilVMHost
 	}
 
-	scAPINames := host.GetAPIMethods().Names()
+	scAPINames := vmExecutor.FunctionNames()
 
 	context := &runtimeContext{
 		host:          host,
