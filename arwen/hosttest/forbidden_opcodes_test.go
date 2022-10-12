@@ -38,7 +38,7 @@ func TestForbiddenOps_FloatingPoints(t *testing.T) {
 			WithContractCode(testcommon.GetTestSCCode("num-with-fp", "../../")).
 			Build()).
 		WithAddress(newAddress).
-		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
+		AndAssertResults(func(_ *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
