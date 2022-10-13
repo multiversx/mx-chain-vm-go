@@ -12,14 +12,14 @@ const pathToElrondApiPackage = "./"
 func initEIMetadata() *eapigen.EIMetadata {
 	return &eapigen.EIMetadata{
 		Groups: []*eapigen.EIGroup{
-			&eapigen.EIGroup{SourcePath: "bigFloatOps.go"},
-			&eapigen.EIGroup{SourcePath: "bigIntOps.go"},
-			&eapigen.EIGroup{SourcePath: "elrondei.go"},
-			&eapigen.EIGroup{SourcePath: "generateOps.go"},
-			&eapigen.EIGroup{SourcePath: "managedei.go"},
-			&eapigen.EIGroup{SourcePath: "manBufOps.go"},
-			&eapigen.EIGroup{SourcePath: "smallIntOps.go"},
-			&eapigen.EIGroup{SourcePath: "../cryptoapi/cryptoei.go"},
+			{SourcePath: "bigFloatOps.go"},
+			{SourcePath: "bigIntOps.go"},
+			{SourcePath: "elrondei.go"},
+			{SourcePath: "generateOps.go"},
+			{SourcePath: "managedei.go"},
+			{SourcePath: "manBufOps.go"},
+			{SourcePath: "smallIntOps.go"},
+			{SourcePath: "../cryptoapi/cryptoei.go"},
 		},
 		AllFunctions: nil,
 	}
