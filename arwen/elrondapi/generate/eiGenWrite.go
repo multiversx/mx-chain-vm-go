@@ -100,7 +100,7 @@ func writePopulateImports(out *os.File, eiMetadata *EIMetadata) {
 	out.WriteString("\t\"unsafe\"\n")
 	out.WriteString(")\n\n")
 	out.WriteString("// populateWasmerImports populates imports with the ElrondEI API methods\n")
-	out.WriteString("func populateWasmerImports(imports *Imports) error {\n")
+	out.WriteString("func populateWasmerImports(imports *wasmerImports) error {\n")
 	out.WriteString("\tvar err error\n")
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("\terr = imports.append(\"%s\", %s, %s)\n",

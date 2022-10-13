@@ -265,7 +265,7 @@ import (
 )
 
 // populateWasmerImports populates imports with the ElrondEI API methods
-func populateWasmerImports(imports *Imports) error {
+func populateWasmerImports(imports *wasmerImports) error {
 	var err error
 	err = imports.append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)
 	if err != nil {

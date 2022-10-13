@@ -3,6 +3,7 @@ package wasmer
 import (
 	"unsafe"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
@@ -12,7 +13,35 @@ func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	return *(*executor.VMHooks)(unsafe.Pointer(ptr))
 }
 
-func generateWasmerImports(imports *Imports) (*cWasmerImportT, int) {
+func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {
+	imports := newWasmerImports()
+	populateWasmerImports(imports)
+	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
+
+	var result = cWasmerCacheImportObjectFromImports(
+		wasmImportsCPointer,
+		cInt(numberOfImports),
+	)
+
+	if result != cWasmerOk {
+		return nil, newWrappedError(ErrFailedCacheImports)
+	}
+
+	return extractImportNames(imports), nil
+}
+
+func extractImportNames(imports *wasmerImports) vmcommon.FunctionNames {
+	names := make(vmcommon.FunctionNames)
+	var empty struct{}
+	for _, env := range imports.imports {
+		for name := range env {
+			names[name] = empty
+		}
+	}
+	return names
+}
+
+func generateWasmerImports(imports *wasmerImports) (*cWasmerImportT, int) {
 	var numberOfImports = imports.Count()
 	var wasmImports = make([]cWasmerImportT, numberOfImports)
 	var importFunctionNth = 0

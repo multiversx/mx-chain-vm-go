@@ -54,8 +54,8 @@ type wasmerImport struct {
 	namespace string
 }
 
-// Imports represents a set of imported functions for a WebAssembly instance.
-type Imports struct {
+// wasmerImports represents a set of imported functions for a WebAssembly instance.
+type wasmerImports struct {
 	// All imports.
 	imports map[string]map[string]wasmerImport
 
@@ -63,15 +63,15 @@ type Imports struct {
 	currentNamespace string
 }
 
-// NewImports constructs a new empty `Imports`.
-func NewImports() *Imports {
+// newWasmerImports constructs a new empty `wasmerImports`.
+func newWasmerImports() *wasmerImports {
 	var imports = make(map[string]map[string]wasmerImport)
 	var currentNamespace = "env"
 
-	return &Imports{imports, currentNamespace}
+	return &wasmerImports{imports, currentNamespace}
 }
 
-func (imports *Imports) Count() int {
+func (imports *wasmerImports) Count() int {
 	count := 0
 	for _, namespacedImports := range imports.imports {
 		count += len(namespacedImports)
@@ -80,7 +80,7 @@ func (imports *Imports) Count() int {
 }
 
 // Append adds a new imported function to the current set.
-func (imports *Imports) append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error {
+func (imports *wasmerImports) append(importName string, implementation interface{}, cgoPointer unsafe.Pointer) error {
 	var importType = reflect.TypeOf(implementation)
 
 	if importType.Kind() != reflect.Func {
@@ -148,7 +148,7 @@ func (imports *Imports) append(importName string, implementation interface{}, cg
 }
 
 // Close closes/frees all imported functions that have been registered by Wasmer.
-func (imports *Imports) Close() {
+func (imports *wasmerImports) Close() {
 	for _, namespacedImports := range imports.imports {
 		for _, importFunction := range namespacedImports {
 			if nil != importFunction.importedFunctionPointer {
