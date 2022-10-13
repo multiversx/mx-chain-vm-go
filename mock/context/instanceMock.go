@@ -57,13 +57,13 @@ func (instance *InstanceMock) HasMemory() bool {
 	return true
 }
 
-// SetCallbacks mocked method
-func (instance *InstanceMock) SetCallbacks(callbacks executor.VMHooks) {
+// SetVMHooks mocked method
+func (instance *InstanceMock) SetVMHooks(callbacks executor.VMHooks) {
 	instance.Data = callbacks
 }
 
-// GetCallbacks mocked method
-func (instance *InstanceMock) GetCallbacks() executor.VMHooks {
+// GetVMHooks mocked method
+func (instance *InstanceMock) GetVMHooks() executor.VMHooks {
 	return instance.Data
 }
 

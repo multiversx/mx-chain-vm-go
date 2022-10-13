@@ -202,13 +202,13 @@ func NewInstanceFromCompiledCodeWithOptions(
 	return instance, err
 }
 
-// SetCallbacks assigns a data that can be used by all imported
+// SetVMHooks assigns a data that can be used by all imported
 // functions. Indeed, each imported function receives as its first
 // argument an instance context (see `InstanceContext`). An instance
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetCallbacks(callbacks executor.VMHooks) {
+func (instance *Instance) SetVMHooks(callbacks executor.VMHooks) {
 	instance.callbacks = callbacks
 	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
 	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
@@ -217,8 +217,8 @@ func (instance *Instance) SetCallbacks(callbacks executor.VMHooks) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.callbacksPtrPtr)
 }
 
-// GetCallbacks returns a pointer for the current instance's data
-func (instance *Instance) GetCallbacks() executor.VMHooks {
+// GetVMHooks returns a pointer for the current instance's data
+func (instance *Instance) GetVMHooks() executor.VMHooks {
 	return instance.callbacks
 }
 
