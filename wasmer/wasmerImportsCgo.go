@@ -81,7 +81,7 @@ package wasmer
 // extern int32_t   v1_5_isSmartContract(void* context, int32_t addressOffset);
 // extern void      v1_5_signalError(void* context, int32_t messageOffset, int32_t messageLength);
 // extern void      v1_5_getExternalBalance(void* context, int32_t addressOffset, int32_t resultOffset);
-// extern int32_t   v1_5_blockHash(void* context, long long nonce, int32_t resultOffset);
+// extern int32_t   v1_5_getBlockHash(void* context, long long nonce, int32_t resultOffset);
 // extern int32_t   v1_5_getESDTBalance(void* context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultOffset);
 // extern int32_t   v1_5_getESDTNFTNameLength(void* context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
 // extern int32_t   v1_5_getESDTNFTAttributeLength(void* context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce);
@@ -114,7 +114,7 @@ package wasmer
 // extern int32_t   v1_5_clearStorageLock(void* context, int32_t keyOffset, int32_t keyLength);
 // extern void      v1_5_getCaller(void* context, int32_t resultOffset);
 // extern void      v1_5_checkNoPayment(void* context);
-// extern int32_t   v1_5_callValue(void* context, int32_t resultOffset);
+// extern int32_t   v1_5_getCallValue(void* context, int32_t resultOffset);
 // extern int32_t   v1_5_getESDTValue(void* context, int32_t resultOffset);
 // extern int32_t   v1_5_getESDTValueByIndex(void* context, int32_t resultOffset, int32_t index);
 // extern int32_t   v1_5_getESDTTokenName(void* context, int32_t resultOffset);
@@ -140,7 +140,7 @@ package wasmer
 // extern long long v1_5_getPrevBlockRound(void* context);
 // extern long long v1_5_getPrevBlockEpoch(void* context);
 // extern void      v1_5_getPrevBlockRandomSeed(void* context, int32_t pointer);
-// extern void      v1_5_returnData(void* context, int32_t pointer, int32_t length);
+// extern void      v1_5_finish(void* context, int32_t pointer, int32_t length);
 // extern int32_t   v1_5_executeOnSameContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   v1_5_executeOnDestContext(void* context, long long gasLimit, int32_t addressOffset, int32_t valueOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
 // extern int32_t   v1_5_executeReadOnly(void* context, long long gasLimit, int32_t addressOffset, int32_t functionOffset, int32_t functionLength, int32_t numArguments, int32_t argumentsLengthOffset, int32_t dataOffset);
@@ -621,7 +621,7 @@ func populateWasmerImports(imports *Imports) error {
 		return err
 	}
 
-	err = imports.append("blockHash", v1_5_blockHash, C.v1_5_blockHash)
+	err = imports.append("getBlockHash", v1_5_getBlockHash, C.v1_5_getBlockHash)
 	if err != nil {
 		return err
 	}
@@ -786,7 +786,7 @@ func populateWasmerImports(imports *Imports) error {
 		return err
 	}
 
-	err = imports.append("callValue", v1_5_callValue, C.v1_5_callValue)
+	err = imports.append("getCallValue", v1_5_getCallValue, C.v1_5_getCallValue)
 	if err != nil {
 		return err
 	}
@@ -916,7 +916,7 @@ func populateWasmerImports(imports *Imports) error {
 		return err
 	}
 
-	err = imports.append("returnData", v1_5_returnData, C.v1_5_returnData)
+	err = imports.append("finish", v1_5_finish, C.v1_5_finish)
 	if err != nil {
 		return err
 	}
@@ -1930,10 +1930,10 @@ func v1_5_getExternalBalance(context unsafe.Pointer, addressOffset int32, result
 	vmHooks.GetExternalBalance(addressOffset, resultOffset)
 }
 
-//export v1_5_blockHash
-func v1_5_blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
+//export v1_5_getBlockHash
+func v1_5_getBlockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BlockHash(nonce, resultOffset)
+	return vmHooks.GetBlockHash(nonce, resultOffset)
 }
 
 //export v1_5_getESDTBalance
@@ -2128,10 +2128,10 @@ func v1_5_checkNoPayment(context unsafe.Pointer) {
 	vmHooks.CheckNoPayment()
 }
 
-//export v1_5_callValue
-func v1_5_callValue(context unsafe.Pointer, resultOffset int32) int32 {
+//export v1_5_getCallValue
+func v1_5_getCallValue(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.CallValue(resultOffset)
+	return vmHooks.GetCallValue(resultOffset)
 }
 
 //export v1_5_getESDTValue
@@ -2284,10 +2284,10 @@ func v1_5_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks.GetPrevBlockRandomSeed(pointer)
 }
 
-//export v1_5_returnData
-func v1_5_returnData(context unsafe.Pointer, pointer int32, length int32) {
+//export v1_5_finish
+func v1_5_finish(context unsafe.Pointer, pointer int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.ReturnData(pointer, length)
+	vmHooks.Finish(pointer, length)
 }
 
 //export v1_5_executeOnSameContext

@@ -78,7 +78,7 @@ type VMHooks interface {
 	IsSmartContract(addressOffset int32) int32
 	SignalError(messageOffset int32, messageLength int32)
 	GetExternalBalance(addressOffset int32, resultOffset int32)
-	BlockHash(nonce int64, resultOffset int32) int32
+	GetBlockHash(nonce int64, resultOffset int32) int32
 	GetESDTBalance(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultOffset int32) int32
 	GetESDTNFTNameLength(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32
 	GetESDTNFTAttributeLength(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32
@@ -111,7 +111,7 @@ type VMHooks interface {
 	ClearStorageLock(keyOffset int32, keyLength int32) int32
 	GetCaller(resultOffset int32)
 	CheckNoPayment()
-	CallValue(resultOffset int32) int32
+	GetCallValue(resultOffset int32) int32
 	GetESDTValue(resultOffset int32) int32
 	GetESDTValueByIndex(resultOffset int32, index int32) int32
 	GetESDTTokenName(resultOffset int32) int32
@@ -137,7 +137,7 @@ type VMHooks interface {
 	GetPrevBlockRound() int64
 	GetPrevBlockEpoch() int64
 	GetPrevBlockRandomSeed(pointer int32)
-	ReturnData(pointer int32, length int32)
+	Finish(pointer int32, length int32)
 	ExecuteOnSameContext(gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32
 	ExecuteOnDestContext(gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32
 	ExecuteReadOnly(gasLimit int64, addressOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32

@@ -245,8 +245,8 @@ func (context *EICallbacks) GetExternalBalance(addressOffset int32, resultOffset
 	}
 }
 
-// BlockHash EIInterface implementation
-func (context *EICallbacks) BlockHash(nonce int64, resultOffset int32) int32 {
+// GetBlockHash EIInterface implementation
+func (context *EICallbacks) GetBlockHash(nonce int64, resultOffset int32) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1859,8 +1859,8 @@ func (context *EICallbacks) CheckNoPayment() {
 	}
 }
 
-// CallValue EIInterface implementation
-func (context *EICallbacks) CallValue(resultOffset int32) int32 {
+// GetCallValue EIInterface implementation
+func (context *EICallbacks) GetCallValue(resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -2271,8 +2271,8 @@ func (context *EICallbacks) GetPrevBlockRandomSeed(pointer int32) {
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-// ReturnData EIInterface implementation
-func (context *EICallbacks) ReturnData(pointer int32, length int32) {
+// Finish EIInterface implementation
+func (context *EICallbacks) Finish(pointer int32, length int32) {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
