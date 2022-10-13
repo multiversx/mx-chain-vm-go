@@ -173,34 +173,34 @@ func DefaultTestArwenForCallSigSegv(tb testing.TB, code []byte, balance *big.Int
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwenForCallWithInstanceRecorderMock creates an InstanceBuilderRecorderMock
-func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.InstanceBuilderRecorderMock) {
+// DefaultTestArwenForCallWithInstanceRecorderMock creates an ExecutorRecorderMock
+func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.ExecutorRecorderMock) {
 	// this uses a Blockchain Hook Stub that does not cache the compiled code
 	host, _ := DefaultTestArwenForCall(tb, code, balance)
 
-	instanceBuilderRecorderMock := contextmock.NewInstanceBuilderRecorderMock()
-	host.Runtime().ReplaceInstanceBuilder(instanceBuilderRecorderMock)
+	executorRecorderMock := contextmock.NewExecutorRecorderMock()
+	host.Runtime().ReplaceVMExecutor(executorRecorderMock)
 
-	return host, instanceBuilderRecorderMock
+	return host, executorRecorderMock
 }
 
-// DefaultTestArwenForCallWithInstanceMocks creates an InstanceBuilderMock
-func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
+// DefaultTestArwenForCallWithInstanceMocks creates an ExecutorMock
+func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.ExecutorMock) {
 	world := worldmock.NewMockWorld()
 	return DefaultTestArwenForCallWithInstanceMocksAndWorld(tb, world)
 }
 
-// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an InstanceBuilderMock
-func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
+// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an ExecutorMock
+func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.ExecutorMock) {
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}
 	host := DefaultTestArwen(tb, world)
 
-	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
-	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
+	executorMock := contextmock.NewExecutorMock(world)
+	host.Runtime().ReplaceVMExecutor(executorMock)
 
-	return host, instanceBuilderMock
+	return host, executorMock
 }
 
 // DefaultTestArwenForCallWithWorldMock creates a MockWorld
@@ -327,9 +327,11 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	executor, err := wasmer.NewExecutor()
+	require.Nil(tb, err)
 	host, err := arwenHost.NewArwenVM(
 		world,
-		wasmer.NewExecutor(),
+		executor,
 		&arwen.VMHostParameters{
 			VMType:                   DefaultVMType,
 			BlockGasLimit:            uint64(1000),
@@ -378,9 +380,11 @@ func DefaultTestArwenWithGasSchedule(
 	}
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	executor, err := wasmer.NewExecutor()
+	require.Nil(tb, err)
 	host, err := arwenHost.NewArwenVM(
 		blockchain,
-		wasmer.NewExecutor(),
+		executor,
 		&arwen.VMHostParameters{
 			VMType:                   DefaultVMType,
 			BlockGasLimit:            uint64(1000),

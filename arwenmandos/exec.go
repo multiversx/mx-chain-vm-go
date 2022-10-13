@@ -71,9 +71,15 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	blockGasLimit := uint64(10000000)
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
+
+	executor, err := wasmer.NewExecutor()
+	if err != nil {
+		return err
+	}
+
 	vm, err := arwenHost.NewArwenVM(
 		ae.World,
-		wasmer.NewExecutor(),
+		executor,
 		&arwen.VMHostParameters{
 			VMType:                   TestVMType,
 			BlockGasLimit:            blockGasLimit,

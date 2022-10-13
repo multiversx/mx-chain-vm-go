@@ -61,7 +61,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	vmExecutor executor.InstanceBuilder,
+	vmExecutor executor.Executor,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -172,11 +172,11 @@ func NewArwenVM(
 	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
-	wasmer.SetRkyvSerializationEnabled(true)
+	vmExecutor.SetOpcodeCosts(&opcodeCosts)
+	vmExecutor.SetRkyvSerializationEnabled(true)
 
 	if hostParameters.WasmerSIGSEGVPassthrough {
-		wasmer.SetSIGSEGVPassthrough()
+		vmExecutor.SetSIGSEGVPassthrough()
 	}
 
 	host.initContexts()
@@ -339,7 +339,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	}
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 	host.runtimeContext.ClearWarmInstanceCache()

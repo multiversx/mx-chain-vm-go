@@ -231,9 +231,11 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	executor, err := wasmer.NewExecutor()
+	require.Nil(tb, err)
 	host, err := arwenHost.NewArwenVM(
 		mockWorld,
-		wasmer.NewExecutor(),
+		executor,
 		&arwen.VMHostParameters{
 			VMType:                   testcommon.DefaultVMType,
 			BlockGasLimit:            uint64(1000),
