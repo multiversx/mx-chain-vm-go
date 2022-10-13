@@ -174,7 +174,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 	context.instance = newInstance
 
-	context.instance.SetCallbacks(elrondapi.NewEICallbacks(context.host))
+	context.instance.SetCallbacks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -211,7 +211,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	context.instance.SetCallbacks(elrondapi.NewEICallbacks(context.host))
+	context.instance.SetCallbacks(elrondapi.NewElrondApi(context.host))
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -257,7 +257,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	context.instance.SetCallbacks(elrondapi.NewEICallbacks(context.host))
+	context.instance.SetCallbacks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 	return true
 }

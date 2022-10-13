@@ -23,7 +23,7 @@ const (
 )
 
 // SmallIntGetUnsignedArgument VMHooks implementation
-func (context *EICallbacks) SmallIntGetUnsignedArgument(id int32) int64 {
+func (context *ElrondApi) SmallIntGetUnsignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -46,7 +46,7 @@ func (context *EICallbacks) SmallIntGetUnsignedArgument(id int32) int64 {
 }
 
 // SmallIntGetSignedArgument VMHooks implementation
-func (context *EICallbacks) SmallIntGetSignedArgument(id int32) int64 {
+func (context *ElrondApi) SmallIntGetSignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -69,7 +69,7 @@ func (context *EICallbacks) SmallIntGetSignedArgument(id int32) int64 {
 }
 
 // SmallIntFinishUnsigned VMHooks implementation
-func (context *EICallbacks) SmallIntFinishUnsigned(value int64) {
+func (context *ElrondApi) SmallIntFinishUnsigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
@@ -81,7 +81,7 @@ func (context *EICallbacks) SmallIntFinishUnsigned(value int64) {
 }
 
 // SmallIntFinishSigned VMHooks implementation
-func (context *EICallbacks) SmallIntFinishSigned(value int64) {
+func (context *ElrondApi) SmallIntFinishSigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
@@ -93,7 +93,7 @@ func (context *EICallbacks) SmallIntFinishSigned(value int64) {
 }
 
 // SmallIntStorageStoreUnsigned VMHooks implementation
-func (context *EICallbacks) SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32 {
+func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -116,7 +116,7 @@ func (context *EICallbacks) SmallIntStorageStoreUnsigned(keyOffset int32, keyLen
 }
 
 // SmallIntStorageStoreSigned VMHooks implementation
-func (context *EICallbacks) SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32 {
+func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -139,7 +139,7 @@ func (context *EICallbacks) SmallIntStorageStoreSigned(keyOffset int32, keyLengt
 }
 
 // SmallIntStorageLoadUnsigned VMHooks implementation
-func (context *EICallbacks) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64 {
+func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -162,7 +162,7 @@ func (context *EICallbacks) SmallIntStorageLoadUnsigned(keyOffset int32, keyLeng
 }
 
 // SmallIntStorageLoadSigned VMHooks implementation
-func (context *EICallbacks) SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64 {
+func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -185,25 +185,25 @@ func (context *EICallbacks) SmallIntStorageLoadSigned(keyOffset int32, keyLength
 }
 
 // Int64getArgument VMHooks implementation
-func (context *EICallbacks) Int64getArgument(id int32) int64 {
+func (context *ElrondApi) Int64getArgument(id int32) int64 {
 	// backwards compatibility
 	return context.SmallIntGetSignedArgument(id)
 }
 
 // Int64finish VMHooks implementation
-func (context *EICallbacks) Int64finish(value int64) {
+func (context *ElrondApi) Int64finish(value int64) {
 	// backwards compatibility
 	context.SmallIntFinishSigned(value)
 }
 
 // Int64storageStore VMHooks implementation
-func (context *EICallbacks) Int64storageStore(keyOffset int32, keyLength int32, value int64) int32 {
+func (context *ElrondApi) Int64storageStore(keyOffset int32, keyLength int32, value int64) int32 {
 	// backwards compatibility
 	return context.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 }
 
 // Int64storageLoad VMHooks implementation
-func (context *EICallbacks) Int64storageLoad(keyOffset int32, keyLength int32) int64 {
+func (context *ElrondApi) Int64storageLoad(keyOffset int32, keyLength int32) int64 {
 	// backwards compatibility
 	return context.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
 }

@@ -5,62 +5,64 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 )
 
-// EICallbacks is the VM structure that implements VMHooks,
+//go:generate go run generate/cmd/eiGenMain.go
+
+// ElrondApi is the VM structure that implements VMHooks,
 // with all the hooks (callbacks) from the executor.
-type EICallbacks struct {
+type ElrondApi struct {
 	host arwen.VMHost
 }
 
-// NewEICallbacks creates a new EICallbacks instance.
-func NewEICallbacks(host arwen.VMHost) *EICallbacks {
-	return &EICallbacks{
+// NewElrondApi creates a new ElrondApi instance.
+func NewElrondApi(host arwen.VMHost) *ElrondApi {
+	return &ElrondApi{
 		host: host,
 	}
 }
 
 // GetVMHost returns the vm Context from the vm context map
-func (context *EICallbacks) GetVMHost() arwen.VMHost {
+func (context *ElrondApi) GetVMHost() arwen.VMHost {
 	return context.host
 }
 
 // GetBlockchainContext returns the blockchain context
-func (context *EICallbacks) GetBlockchainContext() arwen.BlockchainContext {
+func (context *ElrondApi) GetBlockchainContext() arwen.BlockchainContext {
 	return context.host.Blockchain()
 }
 
 // GetRuntimeContext returns the runtime context
-func (context *EICallbacks) GetRuntimeContext() arwen.RuntimeContext {
+func (context *ElrondApi) GetRuntimeContext() arwen.RuntimeContext {
 	return context.host.Runtime()
 }
 
 // GetCryptoContext returns the crypto context
-func (context *EICallbacks) GetCryptoContext() crypto.VMCrypto {
+func (context *ElrondApi) GetCryptoContext() crypto.VMCrypto {
 	return context.host.Crypto()
 }
 
 // GetManagedTypesContext returns the big int context
-func (context *EICallbacks) GetManagedTypesContext() arwen.ManagedTypesContext {
+func (context *ElrondApi) GetManagedTypesContext() arwen.ManagedTypesContext {
 	return context.host.ManagedTypes()
 }
 
 // GetOutputContext returns the output context
-func (context *EICallbacks) GetOutputContext() arwen.OutputContext {
+func (context *ElrondApi) GetOutputContext() arwen.OutputContext {
 	return context.host.Output()
 }
 
 // GetMeteringContext returns the metering context
-func (context *EICallbacks) GetMeteringContext() arwen.MeteringContext {
+func (context *ElrondApi) GetMeteringContext() arwen.MeteringContext {
 	return context.host.Metering()
 }
 
 // GetStorageContext returns the storage context
-func (context *EICallbacks) GetStorageContext() arwen.StorageContext {
+func (context *ElrondApi) GetStorageContext() arwen.StorageContext {
 	return context.host.Storage()
 }
 
 // WithFault handles an error, taking into account whether it should completely
 // fail the execution of a contract or not.
-func (context *EICallbacks) WithFault(err error, failExecution bool) bool {
+func (context *ElrondApi) WithFault(err error, failExecution bool) bool {
 	return WithFaultAndHost(context.host, err, failExecution)
 }
 

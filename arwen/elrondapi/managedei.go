@@ -44,7 +44,7 @@ const (
 )
 
 // ManagedSCAddress VMHooks implementation
-func (context *EICallbacks) ManagedSCAddress(destinationHandle int32) {
+func (context *ElrondApi) ManagedSCAddress(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -58,7 +58,7 @@ func (context *EICallbacks) ManagedSCAddress(destinationHandle int32) {
 }
 
 // ManagedOwnerAddress VMHooks implementation
-func (context *EICallbacks) ManagedOwnerAddress(destinationHandle int32) {
+func (context *ElrondApi) ManagedOwnerAddress(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
@@ -76,7 +76,7 @@ func (context *EICallbacks) ManagedOwnerAddress(destinationHandle int32) {
 }
 
 // ManagedCaller VMHooks implementation
-func (context *EICallbacks) ManagedCaller(destinationHandle int32) {
+func (context *ElrondApi) ManagedCaller(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -89,7 +89,7 @@ func (context *EICallbacks) ManagedCaller(destinationHandle int32) {
 }
 
 // ManagedSignalError VMHooks implementation
-func (context *EICallbacks) ManagedSignalError(errHandle int32) {
+func (context *ElrondApi) ManagedSignalError(errHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -115,7 +115,7 @@ func (context *EICallbacks) ManagedSignalError(errHandle int32) {
 }
 
 // ManagedWriteLog VMHooks implementation
-func (context *EICallbacks) ManagedWriteLog(
+func (context *ElrondApi) ManagedWriteLog(
 
 	topicsHandle int32,
 	dataHandle int32,
@@ -149,7 +149,7 @@ func (context *EICallbacks) ManagedWriteLog(
 }
 
 // ManagedGetOriginalTxHash VMHooks implementation
-func (context *EICallbacks) ManagedGetOriginalTxHash(resultHandle int32) {
+func (context *ElrondApi) ManagedGetOriginalTxHash(resultHandle int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	managedType := context.GetManagedTypesContext()
@@ -161,7 +161,7 @@ func (context *EICallbacks) ManagedGetOriginalTxHash(resultHandle int32) {
 }
 
 // ManagedGetStateRootHash VMHooks implementation
-func (context *EICallbacks) ManagedGetStateRootHash(resultHandle int32) {
+func (context *ElrondApi) ManagedGetStateRootHash(resultHandle int32) {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 	managedType := context.GetManagedTypesContext()
@@ -173,7 +173,7 @@ func (context *EICallbacks) ManagedGetStateRootHash(resultHandle int32) {
 }
 
 // ManagedGetBlockRandomSeed VMHooks implementation
-func (context *EICallbacks) ManagedGetBlockRandomSeed(resultHandle int32) {
+func (context *ElrondApi) ManagedGetBlockRandomSeed(resultHandle int32) {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 	managedType := context.GetManagedTypesContext()
@@ -185,7 +185,7 @@ func (context *EICallbacks) ManagedGetBlockRandomSeed(resultHandle int32) {
 }
 
 // ManagedGetPrevBlockRandomSeed VMHooks implementation
-func (context *EICallbacks) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
+func (context *ElrondApi) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 	managedType := context.GetManagedTypesContext()
@@ -197,7 +197,7 @@ func (context *EICallbacks) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
 }
 
 // ManagedGetReturnData VMHooks implementation
-func (context *EICallbacks) ManagedGetReturnData(resultID int32, resultHandle int32) {
+func (context *ElrondApi) ManagedGetReturnData(resultID int32, resultHandle int32) {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -216,7 +216,7 @@ func (context *EICallbacks) ManagedGetReturnData(resultID int32, resultHandle in
 }
 
 // ManagedGetMultiESDTCallValue VMHooks implementation
-func (context *EICallbacks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) {
+func (context *ElrondApi) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	managedType := context.GetManagedTypesContext()
@@ -232,7 +232,7 @@ func (context *EICallbacks) ManagedGetMultiESDTCallValue(multiCallValueHandle in
 }
 
 // ManagedGetESDTBalance VMHooks implementation
-func (context *EICallbacks) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
+func (context *ElrondApi) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	blockchain := context.GetBlockchainContext()
@@ -263,7 +263,7 @@ func (context *EICallbacks) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 }
 
 // ManagedGetESDTTokenData VMHooks implementation
-func (context *EICallbacks) ManagedGetESDTTokenData(
+func (context *ElrondApi) ManagedGetESDTTokenData(
 
 	addressHandle int32,
 	tokenIDHandle int32,
@@ -333,7 +333,7 @@ func ManagedGetESDTTokenDataWithHost(
 }
 
 // ManagedAsyncCall VMHooks implementation
-func (context *EICallbacks) ManagedAsyncCall(
+func (context *ElrondApi) ManagedAsyncCall(
 
 	destHandle int32,
 	valueHandle int32,
@@ -391,7 +391,7 @@ func ManagedAsyncCallWithHost(
 }
 
 // ManagedCreateAsyncCall VMHooks implementation
-func (context *EICallbacks) ManagedCreateAsyncCall(
+func (context *ElrondApi) ManagedCreateAsyncCall(
 
 	destHandle int32,
 	valueHandle int32,
@@ -450,7 +450,7 @@ func (context *EICallbacks) ManagedCreateAsyncCall(
 }
 
 // ManagedGetCallbackClosure VMHooks implementation
-func (context *EICallbacks) ManagedGetCallbackClosure(
+func (context *ElrondApi) ManagedGetCallbackClosure(
 
 	callbackClosureHandle int32,
 ) {
@@ -481,7 +481,7 @@ func GetCallbackClosureWithHost(
 }
 
 // ManagedUpgradeFromSourceContract VMHooks implementation
-func (context *EICallbacks) ManagedUpgradeFromSourceContract(
+func (context *ElrondApi) ManagedUpgradeFromSourceContract(
 
 	destHandle int32,
 	gas int64,
@@ -530,7 +530,7 @@ func (context *EICallbacks) ManagedUpgradeFromSourceContract(
 }
 
 // ManagedUpgradeContract VMHooks implementation
-func (context *EICallbacks) ManagedUpgradeContract(
+func (context *ElrondApi) ManagedUpgradeContract(
 
 	destHandle int32,
 	gas int64,
@@ -575,7 +575,7 @@ func (context *EICallbacks) ManagedUpgradeContract(
 }
 
 // ManagedDeleteContract VMHooks implementation
-func (context *EICallbacks) ManagedDeleteContract(
+func (context *ElrondApi) ManagedDeleteContract(
 
 	destHandle int32,
 	gasLimit int64,
@@ -623,7 +623,7 @@ func ManagedDeleteContractWithHost(
 }
 
 // ManagedDeployFromSourceContract VMHooks implementation
-func (context *EICallbacks) ManagedDeployFromSourceContract(
+func (context *ElrondApi) ManagedDeployFromSourceContract(
 
 	gas int64,
 	valueHandle int32,
@@ -673,7 +673,7 @@ func (context *EICallbacks) ManagedDeployFromSourceContract(
 }
 
 // ManagedCreateContract VMHooks implementation
-func (context *EICallbacks) ManagedCreateContract(
+func (context *ElrondApi) ManagedCreateContract(
 
 	gas int64,
 	valueHandle int32,
@@ -742,7 +742,7 @@ func setReturnDataIfExists(
 }
 
 // ManagedExecuteReadOnly VMHooks implementation
-func (context *EICallbacks) ManagedExecuteReadOnly(
+func (context *ElrondApi) ManagedExecuteReadOnly(
 
 	gas int64,
 	addressHandle int32,
@@ -772,7 +772,7 @@ func (context *EICallbacks) ManagedExecuteReadOnly(
 }
 
 // ManagedExecuteOnSameContext VMHooks implementation
-func (context *EICallbacks) ManagedExecuteOnSameContext(
+func (context *ElrondApi) ManagedExecuteOnSameContext(
 
 	gas int64,
 	addressHandle int32,
@@ -804,7 +804,7 @@ func (context *EICallbacks) ManagedExecuteOnSameContext(
 }
 
 // ManagedExecuteOnDestContext VMHooks implementation
-func (context *EICallbacks) ManagedExecuteOnDestContext(
+func (context *ElrondApi) ManagedExecuteOnDestContext(
 
 	gas int64,
 	addressHandle int32,
@@ -836,7 +836,7 @@ func (context *EICallbacks) ManagedExecuteOnDestContext(
 }
 
 // ManagedMultiTransferESDTNFTExecute VMHooks implementation
-func (context *EICallbacks) ManagedMultiTransferESDTNFTExecute(
+func (context *ElrondApi) ManagedMultiTransferESDTNFTExecute(
 
 	dstHandle int32,
 	tokenTransfersHandle int32,
@@ -871,7 +871,7 @@ func (context *EICallbacks) ManagedMultiTransferESDTNFTExecute(
 }
 
 // ManagedTransferValueExecute VMHooks implementation
-func (context *EICallbacks) ManagedTransferValueExecute(
+func (context *ElrondApi) ManagedTransferValueExecute(
 
 	dstHandle int32,
 	valueHandle int32,
@@ -899,7 +899,7 @@ func (context *EICallbacks) ManagedTransferValueExecute(
 }
 
 // ManagedIsESDTFrozen VMHooks implementation
-func (context *EICallbacks) ManagedIsESDTFrozen(
+func (context *ElrondApi) ManagedIsESDTFrozen(
 
 	addressHandle int32,
 	tokenIDHandle int32,
@@ -946,7 +946,7 @@ func ManagedIsESDTFrozenWithHost(
 }
 
 // ManagedIsESDTLimitedTransfer VMHooks implementation
-func (context *EICallbacks) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32 {
+func (context *ElrondApi) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
 }
@@ -974,7 +974,7 @@ func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32
 }
 
 // ManagedIsESDTPaused VMHooks implementation
-func (context *EICallbacks) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
+func (context *ElrondApi) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
 }
@@ -1002,7 +1002,7 @@ func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 }
 
 // ManagedBufferToHex VMHooks implementation
-func (context *EICallbacks) ManagedBufferToHex(sourceHandle int32, destHandle int32) {
+func (context *ElrondApi) ManagedBufferToHex(sourceHandle int32, destHandle int32) {
 	host := context.GetVMHost()
 	ManagedBufferToHexWithHost(host, sourceHandle, destHandle)
 }

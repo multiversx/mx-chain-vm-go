@@ -34,7 +34,7 @@ const (
 )
 
 // MBufferNew VMHooks implementation
-func (context *EICallbacks) MBufferNew() int32 {
+func (context *ElrondApi) MBufferNew() int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
@@ -45,7 +45,7 @@ func (context *EICallbacks) MBufferNew() int32 {
 }
 
 // MBufferNewFromBytes VMHooks implementation
-func (context *EICallbacks) MBufferNewFromBytes(dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) MBufferNewFromBytes(dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -62,7 +62,7 @@ func (context *EICallbacks) MBufferNewFromBytes(dataOffset int32, dataLength int
 }
 
 // MBufferGetLength VMHooks implementation
-func (context *EICallbacks) MBufferGetLength(mBufferHandle int32) int32 {
+func (context *ElrondApi) MBufferGetLength(mBufferHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -80,7 +80,7 @@ func (context *EICallbacks) MBufferGetLength(mBufferHandle int32) int32 {
 }
 
 // MBufferGetBytes VMHooks implementation
-func (context *EICallbacks) MBufferGetBytes(mBufferHandle int32, resultOffset int32) int32 {
+func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -104,7 +104,7 @@ func (context *EICallbacks) MBufferGetBytes(mBufferHandle int32, resultOffset in
 }
 
 // MBufferGetByteSlice VMHooks implementation
-func (context *EICallbacks) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
+func (context *ElrondApi) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -134,7 +134,7 @@ func (context *EICallbacks) MBufferGetByteSlice(sourceHandle int32, startingPosi
 }
 
 // MBufferCopyByteSlice VMHooks implementation
-func (context *EICallbacks) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
+func (context *ElrondApi) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedBufferCopyByteSliceWithHost(host, sourceHandle, startingPosition, sliceLength, destinationHandle)
 }
@@ -169,7 +169,7 @@ func ManagedBufferCopyByteSliceWithHost(host arwen.VMHost, sourceHandle int32, s
 }
 
 // MBufferEq VMHooks implementation
-func (context *EICallbacks) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32 {
+func (context *ElrondApi) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -198,7 +198,7 @@ func (context *EICallbacks) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 }
 
 // MBufferSetBytes VMHooks implementation
-func (context *EICallbacks) MBufferSetBytes(mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -218,7 +218,7 @@ func (context *EICallbacks) MBufferSetBytes(mBufferHandle int32, dataOffset int3
 }
 
 // MBufferSetByteSlice VMHooks implementation
-func (context *EICallbacks) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
+func (context *ElrondApi) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	host := context.GetVMHost()
 	return ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
 }
@@ -269,7 +269,7 @@ func ManagedBufferSetByteSliceWithTypedArgs(host arwen.VMHost, mBufferHandle int
 }
 
 // MBufferAppend VMHooks implementation
-func (context *EICallbacks) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
+func (context *ElrondApi) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -294,7 +294,7 @@ func (context *EICallbacks) MBufferAppend(accumulatorHandle int32, dataHandle in
 }
 
 // MBufferAppendBytes VMHooks implementation
-func (context *EICallbacks) MBufferAppendBytes(accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -321,7 +321,7 @@ func (context *EICallbacks) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 }
 
 // MBufferToBigIntUnsigned VMHooks implementation
-func (context *EICallbacks) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (context *ElrondApi) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -341,7 +341,7 @@ func (context *EICallbacks) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 }
 
 // MBufferToBigIntSigned VMHooks implementation
-func (context *EICallbacks) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (context *ElrondApi) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -361,7 +361,7 @@ func (context *EICallbacks) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 }
 
 // MBufferFromBigIntUnsigned VMHooks implementation
-func (context *EICallbacks) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (context *ElrondApi) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -380,7 +380,7 @@ func (context *EICallbacks) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIn
 }
 
 // MBufferFromBigIntSigned VMHooks implementation
-func (context *EICallbacks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
+func (context *ElrondApi) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -398,7 +398,7 @@ func (context *EICallbacks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntH
 }
 
 // MBufferToBigFloat VMHooks implementation
-func (context *EICallbacks) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
+func (context *ElrondApi) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -438,7 +438,7 @@ func (context *EICallbacks) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 }
 
 // MBufferFromBigFloat VMHooks implementation
-func (context *EICallbacks) MBufferFromBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
+func (context *ElrondApi) MBufferFromBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -464,7 +464,7 @@ func (context *EICallbacks) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 }
 
 // MBufferStorageStore VMHooks implementation
-func (context *EICallbacks) MBufferStorageStore(keyHandle int32, sourceHandle int32) int32 {
+func (context *ElrondApi) MBufferStorageStore(keyHandle int32, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -492,7 +492,7 @@ func (context *EICallbacks) MBufferStorageStore(keyHandle int32, sourceHandle in
 }
 
 // MBufferStorageLoad VMHooks implementation
-func (context *EICallbacks) MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32 {
+func (context *ElrondApi) MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -512,7 +512,7 @@ func (context *EICallbacks) MBufferStorageLoad(keyHandle int32, destinationHandl
 }
 
 // MBufferStorageLoadFromAddress VMHooks implementation
-func (context *EICallbacks) MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle int32) {
+func (context *ElrondApi) MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle int32) {
 	host := context.GetVMHost()
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -534,7 +534,7 @@ func (context *EICallbacks) MBufferStorageLoadFromAddress(addressHandle, keyHand
 }
 
 // MBufferGetArgument VMHooks implementation
-func (context *EICallbacks) MBufferGetArgument(id int32, destinationHandle int32) int32 {
+func (context *ElrondApi) MBufferGetArgument(id int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -552,7 +552,7 @@ func (context *EICallbacks) MBufferGetArgument(id int32, destinationHandle int32
 }
 
 // MBufferFinish VMHooks implementation
-func (context *EICallbacks) MBufferFinish(sourceHandle int32) int32 {
+func (context *ElrondApi) MBufferFinish(sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -579,7 +579,7 @@ func (context *EICallbacks) MBufferFinish(sourceHandle int32) int32 {
 }
 
 // MBufferSetRandom VMHooks implementation
-func (context *EICallbacks) MBufferSetRandom(destinationHandle int32, length int32) int32 {
+func (context *ElrondApi) MBufferSetRandom(destinationHandle int32, length int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
