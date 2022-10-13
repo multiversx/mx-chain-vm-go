@@ -6,7 +6,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -27,7 +26,6 @@ type VMHostMock struct {
 	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
 	ManagedTypesContext      arwen.ManagedTypesContext
 
-	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
 
 	StoredInputs []*vmcommon.ContractCallInput

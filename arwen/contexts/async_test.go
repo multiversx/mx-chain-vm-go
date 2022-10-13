@@ -46,9 +46,6 @@ func makeAsyncContext(t testing.TB, host arwen.VMHost, address []byte) *asyncCon
 }
 
 func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmock.MockWorld) {
-	imports := MakeAPIImports()
-	_ = wasmer.SetImports(imports)
-
 	vmType := []byte("type")
 
 	gasSchedule := config.MakeGasMapForTests()
@@ -57,7 +54,6 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	mockMetering := &contextmock.MeteringContextMock{GasLeftMock: 10000}
 	mockMetering.SetGasSchedule(gasSchedule)
