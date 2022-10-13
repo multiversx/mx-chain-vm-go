@@ -54,7 +54,7 @@ func isEIInterfaceMethod(decl *ast.FuncDecl) bool {
 	}
 
 	text := decl.Doc.Text()
-	expectedPrefix := fmt.Sprintf("%s EIInterface implementation", decl.Name.Name)
+	expectedPrefix := fmt.Sprintf("%s VMHooks implementation", decl.Name.Name)
 	// TODO: maybe also validate that doc is well-formed
 	return strings.HasPrefix(text, expectedPrefix)
 }

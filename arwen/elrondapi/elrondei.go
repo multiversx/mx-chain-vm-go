@@ -120,7 +120,7 @@ func failIfMoreThanOneESDTTransfer(context *EICallbacks) bool {
 	return false
 }
 
-// GetGasLeft EIInterface implementation
+// GetGasLeft VMHooks implementation
 func (context *EICallbacks) GetGasLeft() int64 {
 	metering := context.GetMeteringContext()
 
@@ -130,7 +130,7 @@ func (context *EICallbacks) GetGasLeft() int64 {
 	return int64(metering.GasLeft())
 }
 
-// GetSCAddress EIInterface implementation
+// GetSCAddress VMHooks implementation
 func (context *EICallbacks) GetSCAddress(resultOffset int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -145,7 +145,7 @@ func (context *EICallbacks) GetSCAddress(resultOffset int32) {
 	}
 }
 
-// GetOwnerAddress EIInterface implementation
+// GetOwnerAddress VMHooks implementation
 func (context *EICallbacks) GetOwnerAddress(resultOffset int32) {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
@@ -165,7 +165,7 @@ func (context *EICallbacks) GetOwnerAddress(resultOffset int32) {
 	}
 }
 
-// GetShardOfAddress EIInterface implementation
+// GetShardOfAddress VMHooks implementation
 func (context *EICallbacks) GetShardOfAddress(addressOffset int32) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
@@ -182,7 +182,7 @@ func (context *EICallbacks) GetShardOfAddress(addressOffset int32) int32 {
 	return int32(blockchain.GetShardOfAddress(address))
 }
 
-// IsSmartContract EIInterface implementation
+// IsSmartContract VMHooks implementation
 func (context *EICallbacks) IsSmartContract(addressOffset int32) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
@@ -201,7 +201,7 @@ func (context *EICallbacks) IsSmartContract(addressOffset int32) int32 {
 	return int32(arwen.BooleanToInt(isSmartContract))
 }
 
-// SignalError EIInterface implementation
+// SignalError VMHooks implementation
 func (context *EICallbacks) SignalError(messageOffset int32, messageLength int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -223,7 +223,7 @@ func (context *EICallbacks) SignalError(messageOffset int32, messageLength int32
 	runtime.SignalUserError(string(message))
 }
 
-// GetExternalBalance EIInterface implementation
+// GetExternalBalance VMHooks implementation
 func (context *EICallbacks) GetExternalBalance(addressOffset int32, resultOffset int32) {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
@@ -245,7 +245,7 @@ func (context *EICallbacks) GetExternalBalance(addressOffset int32, resultOffset
 	}
 }
 
-// GetBlockHash EIInterface implementation
+// GetBlockHash VMHooks implementation
 func (context *EICallbacks) GetBlockHash(nonce int64, resultOffset int32) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
@@ -295,7 +295,7 @@ func getESDTDataFromBlockchainHook(
 	return esdtToken, nil
 }
 
-// GetESDTBalance EIInterface implementation
+// GetESDTBalance VMHooks implementation
 func (context *EICallbacks) GetESDTBalance(
 
 	addressOffset int32,
@@ -321,7 +321,7 @@ func (context *EICallbacks) GetESDTBalance(
 	return int32(len(esdtData.Value.Bytes()))
 }
 
-// GetESDTNFTNameLength EIInterface implementation
+// GetESDTNFTNameLength VMHooks implementation
 func (context *EICallbacks) GetESDTNFTNameLength(
 
 	addressOffset int32,
@@ -346,7 +346,7 @@ func (context *EICallbacks) GetESDTNFTNameLength(
 	return int32(len(esdtData.TokenMetaData.Name))
 }
 
-// GetESDTNFTAttributeLength EIInterface implementation
+// GetESDTNFTAttributeLength VMHooks implementation
 func (context *EICallbacks) GetESDTNFTAttributeLength(
 
 	addressOffset int32,
@@ -371,7 +371,7 @@ func (context *EICallbacks) GetESDTNFTAttributeLength(
 	return int32(len(esdtData.TokenMetaData.Attributes))
 }
 
-// GetESDTNFTURILength EIInterface implementation
+// GetESDTNFTURILength VMHooks implementation
 func (context *EICallbacks) GetESDTNFTURILength(
 
 	addressOffset int32,
@@ -399,7 +399,7 @@ func (context *EICallbacks) GetESDTNFTURILength(
 	return int32(len(esdtData.TokenMetaData.URIs[0]))
 }
 
-// GetESDTTokenData EIInterface implementation
+// GetESDTTokenData VMHooks implementation
 func (context *EICallbacks) GetESDTTokenData(
 
 	addressOffset int32,
@@ -465,7 +465,7 @@ func (context *EICallbacks) GetESDTTokenData(
 	return int32(len(esdtData.Value.Bytes()))
 }
 
-// GetESDTLocalRoles EIInterface implementation
+// GetESDTLocalRoles VMHooks implementation
 func (context *EICallbacks) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -486,7 +486,7 @@ func (context *EICallbacks) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	return getESDTRoles(data)
 }
 
-// ValidateTokenIdentifier EIInterface implementation
+// ValidateTokenIdentifier VMHooks implementation
 func (context *EICallbacks) ValidateTokenIdentifier(
 
 	tokenIdHandle int32,
@@ -511,7 +511,7 @@ func (context *EICallbacks) ValidateTokenIdentifier(
 
 }
 
-// TransferValue EIInterface implementation
+// TransferValue VMHooks implementation
 func (context *EICallbacks) TransferValue(destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	host := context.GetVMHost()
 	runtime := host.Runtime()
@@ -663,7 +663,7 @@ func extractIndirectContractCallArguments(
 	}, nil
 }
 
-// TransferValueExecute EIInterface implementation
+// TransferValueExecute VMHooks implementation
 func (context *EICallbacks) TransferValueExecute(
 
 	destOffset int32,
@@ -804,7 +804,7 @@ func makeCrossShardCallFromInput(function string, arguments [][]byte) string {
 	return txData
 }
 
-// TransferESDTExecute EIInterface implementation
+// TransferESDTExecute VMHooks implementation
 func (context *EICallbacks) TransferESDTExecute(
 
 	destOffset int32,
@@ -823,7 +823,7 @@ func (context *EICallbacks) TransferESDTExecute(
 		gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
-// TransferESDTNFTExecute EIInterface implementation
+// TransferESDTNFTExecute VMHooks implementation
 func (context *EICallbacks) TransferESDTNFTExecute(
 
 	destOffset int32,
@@ -856,7 +856,7 @@ func (context *EICallbacks) TransferESDTNFTExecute(
 		dataOffset)
 }
 
-// MultiTransferESDTNFTExecute EIInterface implementation
+// MultiTransferESDTNFTExecute VMHooks implementation
 func (context *EICallbacks) MultiTransferESDTNFTExecute(
 
 	destOffset int32,
@@ -1044,7 +1044,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 	return 0
 }
 
-// CreateAsyncCall EIInterface implementation
+// CreateAsyncCall VMHooks implementation
 func (context *EICallbacks) CreateAsyncCall(
 	destOffset int32,
 	valueOffset int32,
@@ -1168,7 +1168,7 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 	return 0
 }
 
-// SetAsyncContextCallback EIInterface implementation
+// SetAsyncContextCallback VMHooks implementation
 func (context *EICallbacks) SetAsyncContextCallback(
 	callback int32,
 	callbackLength int32,
@@ -1206,7 +1206,7 @@ func (context *EICallbacks) SetAsyncContextCallback(
 	return 0
 }
 
-// UpgradeContract EIInterface implementation
+// UpgradeContract VMHooks implementation
 func (context *EICallbacks) UpgradeContract(
 
 	destOffset int32,
@@ -1268,7 +1268,7 @@ func (context *EICallbacks) UpgradeContract(
 	upgradeContract(host, calledSCAddress, code, codeMetadata, value, data, gasLimit)
 }
 
-// UpgradeFromSourceContract EIInterface implementation
+// UpgradeFromSourceContract VMHooks implementation
 func (context *EICallbacks) UpgradeFromSourceContract(
 
 	destOffset int32,
@@ -1399,7 +1399,7 @@ func upgradeContract(
 	}
 }
 
-// DeleteContract EIInterface implementation
+// DeleteContract VMHooks implementation
 func (context *EICallbacks) DeleteContract(
 
 	destOffset int32,
@@ -1482,7 +1482,7 @@ func deleteContract(
 	}
 }
 
-// AsyncCall EIInterface implementation
+// AsyncCall VMHooks implementation
 func (context *EICallbacks) AsyncCall(destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	host := context.GetVMHost()
 	runtime := host.Runtime()
@@ -1522,7 +1522,7 @@ func (context *EICallbacks) AsyncCall(destOffset int32, valueOffset int32, dataO
 	}
 }
 
-// GetArgumentLength EIInterface implementation
+// GetArgumentLength VMHooks implementation
 func (context *EICallbacks) GetArgumentLength(id int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1539,7 +1539,7 @@ func (context *EICallbacks) GetArgumentLength(id int32) int32 {
 	return int32(len(args[id]))
 }
 
-// GetArgument EIInterface implementation
+// GetArgument VMHooks implementation
 func (context *EICallbacks) GetArgument(id int32, argOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1561,7 +1561,7 @@ func (context *EICallbacks) GetArgument(id int32, argOffset int32) int32 {
 	return int32(len(args[id]))
 }
 
-// GetFunction EIInterface implementation
+// GetFunction VMHooks implementation
 func (context *EICallbacks) GetFunction(functionOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1578,7 +1578,7 @@ func (context *EICallbacks) GetFunction(functionOffset int32) int32 {
 	return int32(len(function))
 }
 
-// GetNumArguments EIInterface implementation
+// GetNumArguments VMHooks implementation
 func (context *EICallbacks) GetNumArguments() int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1590,7 +1590,7 @@ func (context *EICallbacks) GetNumArguments() int32 {
 	return int32(len(args))
 }
 
-// StorageStore EIInterface implementation
+// StorageStore VMHooks implementation
 func (context *EICallbacks) StorageStore(keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	host := context.GetVMHost()
 	return StorageStoreWithHost(
@@ -1636,7 +1636,7 @@ func StorageStoreWithTypedArgs(host arwen.VMHost, key []byte, data []byte) int32
 	return int32(storageStatus)
 }
 
-// StorageLoadLength EIInterface implementation
+// StorageLoadLength VMHooks implementation
 func (context *EICallbacks) StorageLoadLength(keyOffset int32, keyLength int32) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -1653,7 +1653,7 @@ func (context *EICallbacks) StorageLoadLength(keyOffset int32, keyLength int32) 
 	return int32(len(data))
 }
 
-// StorageLoadFromAddress EIInterface implementation
+// StorageLoadFromAddress VMHooks implementation
 func (context *EICallbacks) StorageLoadFromAddress(addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	host := context.GetVMHost()
 	return StorageLoadFromAddressWithHost(
@@ -1698,7 +1698,7 @@ func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key 
 	return data
 }
 
-// StorageLoad EIInterface implementation
+// StorageLoad VMHooks implementation
 func (context *EICallbacks) StorageLoad(keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	host := context.GetVMHost()
 	return StorageLoadWithHost(
@@ -1737,7 +1737,7 @@ func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) []byte {
 	return data
 }
 
-// SetStorageLock EIInterface implementation
+// SetStorageLock VMHooks implementation
 func (context *EICallbacks) SetStorageLock(keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
 	host := context.GetVMHost()
 	return SetStorageLockWithHost(
@@ -1778,7 +1778,7 @@ func SetStorageLockWithTypedArgs(host arwen.VMHost, key []byte, lockTimestamp in
 	return int32(storageStatus)
 }
 
-// GetStorageLock EIInterface implementation
+// GetStorageLock VMHooks implementation
 func (context *EICallbacks) GetStorageLock(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1804,7 +1804,7 @@ func (context *EICallbacks) GetStorageLock(keyOffset int32, keyLength int32) int
 	return timeLock
 }
 
-// IsStorageLocked EIInterface implementation
+// IsStorageLocked VMHooks implementation
 func (context *EICallbacks) IsStorageLocked(keyOffset int32, keyLength int32) int32 {
 	timeLock := context.GetStorageLock(keyOffset, keyLength)
 	if timeLock < 0 {
@@ -1819,12 +1819,12 @@ func (context *EICallbacks) IsStorageLocked(keyOffset int32, keyLength int32) in
 	return 1
 }
 
-// ClearStorageLock EIInterface implementation
+// ClearStorageLock VMHooks implementation
 func (context *EICallbacks) ClearStorageLock(keyOffset int32, keyLength int32) int32 {
 	return context.SetStorageLock(keyOffset, keyLength, 0)
 }
 
-// GetCaller EIInterface implementation
+// GetCaller VMHooks implementation
 func (context *EICallbacks) GetCaller(resultOffset int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1840,7 +1840,7 @@ func (context *EICallbacks) GetCaller(resultOffset int32) {
 	}
 }
 
-// CheckNoPayment EIInterface implementation
+// CheckNoPayment VMHooks implementation
 func (context *EICallbacks) CheckNoPayment() {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1859,7 +1859,7 @@ func (context *EICallbacks) CheckNoPayment() {
 	}
 }
 
-// GetCallValue EIInterface implementation
+// GetCallValue VMHooks implementation
 func (context *EICallbacks) GetCallValue(resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1878,7 +1878,7 @@ func (context *EICallbacks) GetCallValue(resultOffset int32) int32 {
 	return int32(len(value))
 }
 
-// GetESDTValue EIInterface implementation
+// GetESDTValue VMHooks implementation
 func (context *EICallbacks) GetESDTValue(resultOffset int32) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
@@ -1887,7 +1887,7 @@ func (context *EICallbacks) GetESDTValue(resultOffset int32) int32 {
 	return context.GetESDTValueByIndex(resultOffset, 0)
 }
 
-// GetESDTValueByIndex EIInterface implementation
+// GetESDTValueByIndex VMHooks implementation
 func (context *EICallbacks) GetESDTValueByIndex(resultOffset int32, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1911,7 +1911,7 @@ func (context *EICallbacks) GetESDTValueByIndex(resultOffset int32, index int32)
 	return int32(len(value))
 }
 
-// GetESDTTokenName EIInterface implementation
+// GetESDTTokenName VMHooks implementation
 func (context *EICallbacks) GetESDTTokenName(resultOffset int32) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
@@ -1920,7 +1920,7 @@ func (context *EICallbacks) GetESDTTokenName(resultOffset int32) int32 {
 	return context.GetESDTTokenNameByIndex(resultOffset, 0)
 }
 
-// GetESDTTokenNameByIndex EIInterface implementation
+// GetESDTTokenNameByIndex VMHooks implementation
 func (context *EICallbacks) GetESDTTokenNameByIndex(resultOffset int32, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1942,7 +1942,7 @@ func (context *EICallbacks) GetESDTTokenNameByIndex(resultOffset int32, index in
 	return int32(len(tokenName))
 }
 
-// GetESDTTokenNonce EIInterface implementation
+// GetESDTTokenNonce VMHooks implementation
 func (context *EICallbacks) GetESDTTokenNonce() int64 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
@@ -1951,7 +1951,7 @@ func (context *EICallbacks) GetESDTTokenNonce() int64 {
 	return context.GetESDTTokenNonceByIndex(0)
 }
 
-// GetESDTTokenNonceByIndex EIInterface implementation
+// GetESDTTokenNonceByIndex VMHooks implementation
 func (context *EICallbacks) GetESDTTokenNonceByIndex(index int32) int64 {
 	metering := context.GetMeteringContext()
 
@@ -1966,7 +1966,7 @@ func (context *EICallbacks) GetESDTTokenNonceByIndex(index int32) int64 {
 	return int64(nonce)
 }
 
-// GetCurrentESDTNFTNonce EIInterface implementation
+// GetCurrentESDTNFTNonce VMHooks implementation
 func (context *EICallbacks) GetCurrentESDTNFTNonce(addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1992,7 +1992,7 @@ func (context *EICallbacks) GetCurrentESDTNFTNonce(addressOffset int32, tokenIDO
 	return int64(nonce)
 }
 
-// GetESDTTokenType EIInterface implementation
+// GetESDTTokenType VMHooks implementation
 func (context *EICallbacks) GetESDTTokenType() int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
@@ -2001,7 +2001,7 @@ func (context *EICallbacks) GetESDTTokenType() int32 {
 	return context.GetESDTTokenTypeByIndex(0)
 }
 
-// GetESDTTokenTypeByIndex EIInterface implementation
+// GetESDTTokenTypeByIndex VMHooks implementation
 func (context *EICallbacks) GetESDTTokenTypeByIndex(index int32) int32 {
 	metering := context.GetMeteringContext()
 
@@ -2015,7 +2015,7 @@ func (context *EICallbacks) GetESDTTokenTypeByIndex(index int32) int32 {
 	return 0
 }
 
-// GetNumESDTTransfers EIInterface implementation
+// GetNumESDTTransfers VMHooks implementation
 func (context *EICallbacks) GetNumESDTTransfers() int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -2026,7 +2026,7 @@ func (context *EICallbacks) GetNumESDTTransfers() int32 {
 	return int32(len(runtime.GetVMInput().ESDTTransfers))
 }
 
-// GetCallValueTokenName EIInterface implementation
+// GetCallValueTokenName VMHooks implementation
 func (context *EICallbacks) GetCallValueTokenName(callValueOffset int32, tokenNameOffset int32) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
@@ -2035,7 +2035,7 @@ func (context *EICallbacks) GetCallValueTokenName(callValueOffset int32, tokenNa
 	return context.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, 0)
 }
 
-// GetCallValueTokenNameByIndex EIInterface implementation
+// GetCallValueTokenNameByIndex VMHooks implementation
 func (context *EICallbacks) GetCallValueTokenNameByIndex(callValueOffset int32, tokenNameOffset int32, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -2067,7 +2067,7 @@ func (context *EICallbacks) GetCallValueTokenNameByIndex(callValueOffset int32, 
 	return int32(len(tokenName))
 }
 
-// WriteLog EIInterface implementation
+// WriteLog VMHooks implementation
 func (context *EICallbacks) WriteLog(dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
 	// note: deprecated
 	runtime := context.GetRuntimeContext()
@@ -2101,7 +2101,7 @@ func (context *EICallbacks) WriteLog(dataPointer int32, dataLength int32, topicP
 	output.WriteLog(runtime.GetContextAddress(), topics, log)
 }
 
-// WriteEventLog EIInterface implementation
+// WriteEventLog VMHooks implementation
 func (context *EICallbacks) WriteEventLog(
 
 	numTopics int32,
@@ -2141,7 +2141,7 @@ func (context *EICallbacks) WriteEventLog(
 	output.WriteLog(runtime.GetContextAddress(), topics, data)
 }
 
-// GetBlockTimestamp EIInterface implementation
+// GetBlockTimestamp VMHooks implementation
 func (context *EICallbacks) GetBlockTimestamp() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2152,7 +2152,7 @@ func (context *EICallbacks) GetBlockTimestamp() int64 {
 	return int64(blockchain.CurrentTimeStamp())
 }
 
-// GetBlockNonce EIInterface implementation
+// GetBlockNonce VMHooks implementation
 func (context *EICallbacks) GetBlockNonce() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2163,7 +2163,7 @@ func (context *EICallbacks) GetBlockNonce() int64 {
 	return int64(blockchain.CurrentNonce())
 }
 
-// GetBlockRound EIInterface implementation
+// GetBlockRound VMHooks implementation
 func (context *EICallbacks) GetBlockRound() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2174,7 +2174,7 @@ func (context *EICallbacks) GetBlockRound() int64 {
 	return int64(blockchain.CurrentRound())
 }
 
-// GetBlockEpoch EIInterface implementation
+// GetBlockEpoch VMHooks implementation
 func (context *EICallbacks) GetBlockEpoch() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2185,7 +2185,7 @@ func (context *EICallbacks) GetBlockEpoch() int64 {
 	return int64(blockchain.CurrentEpoch())
 }
 
-// GetBlockRandomSeed EIInterface implementation
+// GetBlockRandomSeed VMHooks implementation
 func (context *EICallbacks) GetBlockRandomSeed(pointer int32) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
@@ -2199,7 +2199,7 @@ func (context *EICallbacks) GetBlockRandomSeed(pointer int32) {
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-// GetStateRootHash EIInterface implementation
+// GetStateRootHash VMHooks implementation
 func (context *EICallbacks) GetStateRootHash(pointer int32) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
@@ -2213,7 +2213,7 @@ func (context *EICallbacks) GetStateRootHash(pointer int32) {
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-// GetPrevBlockTimestamp EIInterface implementation
+// GetPrevBlockTimestamp VMHooks implementation
 func (context *EICallbacks) GetPrevBlockTimestamp() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2224,7 +2224,7 @@ func (context *EICallbacks) GetPrevBlockTimestamp() int64 {
 	return int64(blockchain.LastTimeStamp())
 }
 
-// GetPrevBlockNonce EIInterface implementation
+// GetPrevBlockNonce VMHooks implementation
 func (context *EICallbacks) GetPrevBlockNonce() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2235,7 +2235,7 @@ func (context *EICallbacks) GetPrevBlockNonce() int64 {
 	return int64(blockchain.LastNonce())
 }
 
-// GetPrevBlockRound EIInterface implementation
+// GetPrevBlockRound VMHooks implementation
 func (context *EICallbacks) GetPrevBlockRound() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2246,7 +2246,7 @@ func (context *EICallbacks) GetPrevBlockRound() int64 {
 	return int64(blockchain.LastRound())
 }
 
-// GetPrevBlockEpoch EIInterface implementation
+// GetPrevBlockEpoch VMHooks implementation
 func (context *EICallbacks) GetPrevBlockEpoch() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2257,7 +2257,7 @@ func (context *EICallbacks) GetPrevBlockEpoch() int64 {
 	return int64(blockchain.LastEpoch())
 }
 
-// GetPrevBlockRandomSeed EIInterface implementation
+// GetPrevBlockRandomSeed VMHooks implementation
 func (context *EICallbacks) GetPrevBlockRandomSeed(pointer int32) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
@@ -2271,7 +2271,7 @@ func (context *EICallbacks) GetPrevBlockRandomSeed(pointer int32) {
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-// Finish EIInterface implementation
+// Finish VMHooks implementation
 func (context *EICallbacks) Finish(pointer int32, length int32) {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
@@ -2296,7 +2296,7 @@ func (context *EICallbacks) Finish(pointer int32, length int32) {
 	output.Finish(data)
 }
 
-// ExecuteOnSameContext EIInterface implementation
+// ExecuteOnSameContext VMHooks implementation
 func (context *EICallbacks) ExecuteOnSameContext(
 
 	gasLimit int64,
@@ -2399,7 +2399,7 @@ func ExecuteOnSameContextWithTypedArgs(
 	return 0
 }
 
-// ExecuteOnDestContext EIInterface implementation
+// ExecuteOnDestContext VMHooks implementation
 func (context *EICallbacks) ExecuteOnDestContext(
 
 	gasLimit int64,
@@ -2497,7 +2497,7 @@ func ExecuteOnDestContextWithTypedArgs(
 	return 0
 }
 
-// ExecuteReadOnly EIInterface implementation
+// ExecuteReadOnly VMHooks implementation
 func (context *EICallbacks) ExecuteReadOnly(
 
 	gasLimit int64,
@@ -2599,7 +2599,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	return 0
 }
 
-// CreateContract EIInterface implementation
+// CreateContract VMHooks implementation
 func (context *EICallbacks) CreateContract(
 
 	gasLimit int64,
@@ -2692,7 +2692,7 @@ func createContractWithHost(
 	return 0
 }
 
-// DeployFromSourceContract EIInterface implementation
+// DeployFromSourceContract VMHooks implementation
 func (context *EICallbacks) DeployFromSourceContract(
 
 	gasLimit int64,
@@ -2810,7 +2810,7 @@ func createContract(
 	return host.CreateNewContract(contractCreate)
 }
 
-// GetNumReturnData EIInterface implementation
+// GetNumReturnData VMHooks implementation
 func (context *EICallbacks) GetNumReturnData() int32 {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -2822,7 +2822,7 @@ func (context *EICallbacks) GetNumReturnData() int32 {
 	return int32(len(returnData))
 }
 
-// GetReturnDataSize EIInterface implementation
+// GetReturnDataSize VMHooks implementation
 func (context *EICallbacks) GetReturnDataSize(resultID int32) int32 {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
@@ -2840,7 +2840,7 @@ func (context *EICallbacks) GetReturnDataSize(resultID int32) int32 {
 	return int32(len(returnData[resultID]))
 }
 
-// GetReturnData EIInterface implementation
+// GetReturnData VMHooks implementation
 func (context *EICallbacks) GetReturnData(resultID int32, dataOffset int32) int32 {
 	host := context.GetVMHost()
 
@@ -2874,7 +2874,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 	return returnData[resultID]
 }
 
-// CleanReturnData EIInterface implementation
+// CleanReturnData VMHooks implementation
 func (context *EICallbacks) CleanReturnData() {
 	host := context.GetVMHost()
 	CleanReturnDataWithHost(host)
@@ -2891,7 +2891,7 @@ func CleanReturnDataWithHost(host arwen.VMHost) {
 	output.ClearReturnData()
 }
 
-// DeleteFromReturnData EIInterface implementation
+// DeleteFromReturnData VMHooks implementation
 func (context *EICallbacks) DeleteFromReturnData(resultID int32) {
 	host := context.GetVMHost()
 	DeleteFromReturnDataWithHost(host, resultID)
@@ -2911,7 +2911,7 @@ func DeleteFromReturnDataWithHost(host arwen.VMHost, resultID int32) {
 	}
 }
 
-// GetOriginalTxHash EIInterface implementation
+// GetOriginalTxHash VMHooks implementation
 func (context *EICallbacks) GetOriginalTxHash(dataOffset int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -2923,7 +2923,7 @@ func (context *EICallbacks) GetOriginalTxHash(dataOffset int32) {
 	_ = context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-// GetCurrentTxHash EIInterface implementation
+// GetCurrentTxHash VMHooks implementation
 func (context *EICallbacks) GetCurrentTxHash(dataOffset int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -2935,7 +2935,7 @@ func (context *EICallbacks) GetCurrentTxHash(dataOffset int32) {
 	_ = context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
-// GetPrevTxHash EIInterface implementation
+// GetPrevTxHash VMHooks implementation
 func (context *EICallbacks) GetPrevTxHash(dataOffset int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()

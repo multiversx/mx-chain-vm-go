@@ -42,7 +42,7 @@ const (
 	ellipticCurveGetValuesName      = "ellipticCurveGetValues"
 )
 
-// Sha256 EIInterface implementation
+// Sha256 VMHooks implementation
 func (context *EICallbacks) Sha256(dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -71,7 +71,7 @@ func (context *EICallbacks) Sha256(dataOffset int32, length int32, resultOffset 
 	return 0
 }
 
-// ManagedSha256 EIInterface implementation
+// ManagedSha256 VMHooks implementation
 func (context *EICallbacks) ManagedSha256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -97,7 +97,7 @@ func (context *EICallbacks) ManagedSha256(inputHandle, outputHandle int32) int32
 	return 0
 }
 
-// Keccak256 EIInterface implementation
+// Keccak256 VMHooks implementation
 func (context *EICallbacks) Keccak256(dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -126,7 +126,7 @@ func (context *EICallbacks) Keccak256(dataOffset int32, length int32, resultOffs
 	return 0
 }
 
-// ManagedKeccak256 EIInterface implementation
+// ManagedKeccak256 VMHooks implementation
 func (context *EICallbacks) ManagedKeccak256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -152,7 +152,7 @@ func (context *EICallbacks) ManagedKeccak256(inputHandle, outputHandle int32) in
 	return 0
 }
 
-// Ripemd160 EIInterface implementation
+// Ripemd160 VMHooks implementation
 func (context *EICallbacks) Ripemd160(dataOffset int32, length int32, resultOffset int32) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -181,7 +181,7 @@ func (context *EICallbacks) Ripemd160(dataOffset int32, length int32, resultOffs
 	return 0
 }
 
-// ManagedRipemd160 EIInterface implementation
+// ManagedRipemd160 VMHooks implementation
 func (context *EICallbacks) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
@@ -212,7 +212,7 @@ func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle
 	return 0
 }
 
-// VerifyBLS EIInterface implementation
+// VerifyBLS VMHooks implementation
 func (context *EICallbacks) VerifyBLS(
 
 	keyOffset int32,
@@ -255,7 +255,7 @@ func (context *EICallbacks) VerifyBLS(
 	return 0
 }
 
-// ManagedVerifyBLS EIInterface implementation
+// ManagedVerifyBLS VMHooks implementation
 func (context *EICallbacks) ManagedVerifyBLS(
 
 	keyHandle int32,
@@ -308,7 +308,7 @@ func ManagedVerifyBLSWithHost(
 	return 0
 }
 
-// VerifyEd25519 EIInterface implementation
+// VerifyEd25519 VMHooks implementation
 func (context *EICallbacks) VerifyEd25519(
 
 	keyOffset int32,
@@ -351,7 +351,7 @@ func (context *EICallbacks) VerifyEd25519(
 	return 0
 }
 
-// ManagedVerifyEd25519 EIInterface implementation
+// ManagedVerifyEd25519 VMHooks implementation
 func (context *EICallbacks) ManagedVerifyEd25519(
 
 	keyHandle, messageHandle, sigHandle int32,
@@ -400,7 +400,7 @@ func ManagedVerifyEd25519WithHost(
 	return 0
 }
 
-// VerifyCustomSecp256k1 EIInterface implementation
+// VerifyCustomSecp256k1 VMHooks implementation
 func (context *EICallbacks) VerifyCustomSecp256k1(
 
 	keyOffset int32,
@@ -459,7 +459,7 @@ func (context *EICallbacks) VerifyCustomSecp256k1(
 	return 0
 }
 
-// ManagedVerifyCustomSecp256k1 EIInterface implementation
+// ManagedVerifyCustomSecp256k1 VMHooks implementation
 func (context *EICallbacks) ManagedVerifyCustomSecp256k1(
 
 	keyHandle, messageHandle, sigHandle int32,
@@ -515,7 +515,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 	return 0
 }
 
-// VerifySecp256k1 EIInterface implementation
+// VerifySecp256k1 VMHooks implementation
 func (context *EICallbacks) VerifySecp256k1(
 
 	keyOffset int32,
@@ -534,7 +534,7 @@ func (context *EICallbacks) VerifySecp256k1(
 	)
 }
 
-// ManagedVerifySecp256k1 EIInterface implementation
+// ManagedVerifySecp256k1 VMHooks implementation
 func (context *EICallbacks) ManagedVerifySecp256k1(
 
 	keyHandle, messageHandle, sigHandle int32,
@@ -556,7 +556,7 @@ func ManagedVerifySecp256k1WithHost(
 	)
 }
 
-// EncodeSecp256k1DerSignature EIInterface implementation
+// EncodeSecp256k1DerSignature VMHooks implementation
 func (context *EICallbacks) EncodeSecp256k1DerSignature(
 
 	rOffset int32,
@@ -591,7 +591,7 @@ func (context *EICallbacks) EncodeSecp256k1DerSignature(
 	return 0
 }
 
-// ManagedEncodeSecp256k1DerSignature EIInterface implementation
+// ManagedEncodeSecp256k1DerSignature VMHooks implementation
 func (context *EICallbacks) ManagedEncodeSecp256k1DerSignature(
 
 	rHandle, sHandle, sigHandle int32,
@@ -628,7 +628,7 @@ func ManagedEncodeSecp256k1DerSignatureWithHost(
 	return 0
 }
 
-// AddEC EIInterface implementation
+// AddEC VMHooks implementation
 func (context *EICallbacks) AddEC(
 
 	xResultHandle int32,
@@ -684,7 +684,7 @@ func (context *EICallbacks) AddEC(
 	yResult.Set(yResultAdd)
 }
 
-// DoubleEC EIInterface implementation
+// DoubleEC VMHooks implementation
 func (context *EICallbacks) DoubleEC(
 
 	xResultHandle int32,
@@ -729,7 +729,7 @@ func (context *EICallbacks) DoubleEC(
 	yResult.Set(yResultDouble)
 }
 
-// IsOnCurveEC EIInterface implementation
+// IsOnCurveEC VMHooks implementation
 func (context *EICallbacks) IsOnCurveEC(
 
 	ecHandle int32,
@@ -768,7 +768,7 @@ func (context *EICallbacks) IsOnCurveEC(
 	return 0
 }
 
-// ScalarBaseMultEC EIInterface implementation
+// ScalarBaseMultEC VMHooks implementation
 func (context *EICallbacks) ScalarBaseMultEC(
 
 	xResultHandle int32,
@@ -805,7 +805,7 @@ func (context *EICallbacks) ScalarBaseMultEC(
 	return commonScalarBaseMultEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-// ManagedScalarBaseMultEC EIInterface implementation
+// ManagedScalarBaseMultEC VMHooks implementation
 func (context *EICallbacks) ManagedScalarBaseMultEC(
 
 	xResultHandle int32,
@@ -886,7 +886,7 @@ func commonScalarBaseMultEC(
 	return 0
 }
 
-// ScalarMultEC EIInterface implementation
+// ScalarMultEC VMHooks implementation
 func (context *EICallbacks) ScalarMultEC(
 
 	xResultHandle int32,
@@ -925,7 +925,7 @@ func (context *EICallbacks) ScalarMultEC(
 	return commonScalarMultEC(host, xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, data)
 }
 
-// ManagedScalarMultEC EIInterface implementation
+// ManagedScalarMultEC VMHooks implementation
 func (context *EICallbacks) ManagedScalarMultEC(
 
 	xResultHandle int32,
@@ -1021,7 +1021,7 @@ func commonScalarMultEC(
 	return 0
 }
 
-// MarshalEC EIInterface implementation
+// MarshalEC VMHooks implementation
 func (context *EICallbacks) MarshalEC(
 
 	xPairHandle int32,
@@ -1044,7 +1044,7 @@ func (context *EICallbacks) MarshalEC(
 	return int32(len(result))
 }
 
-// ManagedMarshalEC EIInterface implementation
+// ManagedMarshalEC VMHooks implementation
 func (context *EICallbacks) ManagedMarshalEC(
 
 	xPairHandle int32,
@@ -1119,7 +1119,7 @@ func commonMarshalEC(
 	return result, nil
 }
 
-// MarshalCompressedEC EIInterface implementation
+// MarshalCompressedEC VMHooks implementation
 func (context *EICallbacks) MarshalCompressedEC(
 
 	xPairHandle int32,
@@ -1142,7 +1142,7 @@ func (context *EICallbacks) MarshalCompressedEC(
 	return int32(len(result))
 }
 
-// ManagedMarshalCompressedEC EIInterface implementation
+// ManagedMarshalCompressedEC VMHooks implementation
 func (context *EICallbacks) ManagedMarshalCompressedEC(
 
 	xPairHandle int32,
@@ -1217,7 +1217,7 @@ func commonMarshalCompressedEC(host arwen.VMHost,
 	return result, nil
 }
 
-// UnmarshalEC EIInterface implementation
+// UnmarshalEC VMHooks implementation
 func (context *EICallbacks) UnmarshalEC(
 
 	xResultHandle int32,
@@ -1248,7 +1248,7 @@ func (context *EICallbacks) UnmarshalEC(
 	return commonUnmarshalEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-// ManagedUnmarshalEC EIInterface implementation
+// ManagedUnmarshalEC VMHooks implementation
 func (context *EICallbacks) ManagedUnmarshalEC(
 
 	xResultHandle int32,
@@ -1332,7 +1332,7 @@ func commonUnmarshalEC(
 	return 0
 }
 
-// UnmarshalCompressedEC EIInterface implementation
+// UnmarshalCompressedEC VMHooks implementation
 func (context *EICallbacks) UnmarshalCompressedEC(
 
 	xResultHandle int32,
@@ -1363,7 +1363,7 @@ func (context *EICallbacks) UnmarshalCompressedEC(
 	return commonUnmarshalCompressedEC(host, xResultHandle, yResultHandle, ecHandle, data)
 }
 
-// ManagedUnmarshalCompressedEC EIInterface implementation
+// ManagedUnmarshalCompressedEC VMHooks implementation
 func (context *EICallbacks) ManagedUnmarshalCompressedEC(
 
 	xResultHandle int32,
@@ -1446,7 +1446,7 @@ func commonUnmarshalCompressedEC(
 	return 0
 }
 
-// GenerateKeyEC EIInterface implementation
+// GenerateKeyEC VMHooks implementation
 func (context *EICallbacks) GenerateKeyEC(
 
 	xPubKeyHandle int32,
@@ -1469,7 +1469,7 @@ func (context *EICallbacks) GenerateKeyEC(
 	return 0
 }
 
-// ManagedGenerateKeyEC EIInterface implementation
+// ManagedGenerateKeyEC VMHooks implementation
 func (context *EICallbacks) ManagedGenerateKeyEC(
 
 	xPubKeyHandle int32,
@@ -1548,7 +1548,7 @@ func commonGenerateEC(
 	return result, nil
 }
 
-// CreateEC EIInterface implementation
+// CreateEC VMHooks implementation
 func (context *EICallbacks) CreateEC(dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -1583,7 +1583,7 @@ func (context *EICallbacks) CreateEC(dataOffset int32, dataLength int32) int32 {
 	return -1
 }
 
-// ManagedCreateEC EIInterface implementation
+// ManagedCreateEC VMHooks implementation
 func (context *EICallbacks) ManagedCreateEC(dataHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedCreateECWithHost(host, dataHandle)
@@ -1621,7 +1621,7 @@ func ManagedCreateECWithHost(host arwen.VMHost, dataHandle int32) int32 {
 	return -1
 }
 
-// GetCurveLengthEC EIInterface implementation
+// GetCurveLengthEC VMHooks implementation
 func (context *EICallbacks) GetCurveLengthEC(ecHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -1638,7 +1638,7 @@ func (context *EICallbacks) GetCurveLengthEC(ecHandle int32) int32 {
 	return ecLength
 }
 
-// GetPrivKeyByteLengthEC EIInterface implementation
+// GetPrivKeyByteLengthEC VMHooks implementation
 func (context *EICallbacks) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -1655,7 +1655,7 @@ func (context *EICallbacks) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 	return byteLength
 }
 
-// EllipticCurveGetValues EIInterface implementation
+// EllipticCurveGetValues VMHooks implementation
 func (context *EICallbacks) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()

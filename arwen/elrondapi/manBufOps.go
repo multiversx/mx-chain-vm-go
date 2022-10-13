@@ -33,7 +33,7 @@ const (
 	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
-// MBufferNew EIInterface implementation
+// MBufferNew VMHooks implementation
 func (context *EICallbacks) MBufferNew() int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -44,7 +44,7 @@ func (context *EICallbacks) MBufferNew() int32 {
 	return managedType.NewManagedBuffer()
 }
 
-// MBufferNewFromBytes EIInterface implementation
+// MBufferNewFromBytes VMHooks implementation
 func (context *EICallbacks) MBufferNewFromBytes(dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -61,7 +61,7 @@ func (context *EICallbacks) MBufferNewFromBytes(dataOffset int32, dataLength int
 	return managedType.NewManagedBufferFromBytes(data)
 }
 
-// MBufferGetLength EIInterface implementation
+// MBufferGetLength VMHooks implementation
 func (context *EICallbacks) MBufferGetLength(mBufferHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -79,7 +79,7 @@ func (context *EICallbacks) MBufferGetLength(mBufferHandle int32) int32 {
 	return length
 }
 
-// MBufferGetBytes EIInterface implementation
+// MBufferGetBytes VMHooks implementation
 func (context *EICallbacks) MBufferGetBytes(mBufferHandle int32, resultOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -103,7 +103,7 @@ func (context *EICallbacks) MBufferGetBytes(mBufferHandle int32, resultOffset in
 	return 0
 }
 
-// MBufferGetByteSlice EIInterface implementation
+// MBufferGetByteSlice VMHooks implementation
 func (context *EICallbacks) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -133,7 +133,7 @@ func (context *EICallbacks) MBufferGetByteSlice(sourceHandle int32, startingPosi
 	return 0
 }
 
-// MBufferCopyByteSlice EIInterface implementation
+// MBufferCopyByteSlice VMHooks implementation
 func (context *EICallbacks) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedBufferCopyByteSliceWithHost(host, sourceHandle, startingPosition, sliceLength, destinationHandle)
@@ -168,7 +168,7 @@ func ManagedBufferCopyByteSliceWithHost(host arwen.VMHost, sourceHandle int32, s
 	return 0
 }
 
-// MBufferEq EIInterface implementation
+// MBufferEq VMHooks implementation
 func (context *EICallbacks) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -197,7 +197,7 @@ func (context *EICallbacks) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32
 	return 0
 }
 
-// MBufferSetBytes EIInterface implementation
+// MBufferSetBytes VMHooks implementation
 func (context *EICallbacks) MBufferSetBytes(mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -217,7 +217,7 @@ func (context *EICallbacks) MBufferSetBytes(mBufferHandle int32, dataOffset int3
 	return 0
 }
 
-// MBufferSetByteSlice EIInterface implementation
+// MBufferSetByteSlice VMHooks implementation
 func (context *EICallbacks) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	host := context.GetVMHost()
 	return ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
@@ -268,7 +268,7 @@ func ManagedBufferSetByteSliceWithTypedArgs(host arwen.VMHost, mBufferHandle int
 	return 0
 }
 
-// MBufferAppend EIInterface implementation
+// MBufferAppend VMHooks implementation
 func (context *EICallbacks) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -293,7 +293,7 @@ func (context *EICallbacks) MBufferAppend(accumulatorHandle int32, dataHandle in
 	return 0
 }
 
-// MBufferAppendBytes EIInterface implementation
+// MBufferAppendBytes VMHooks implementation
 func (context *EICallbacks) MBufferAppendBytes(accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -320,7 +320,7 @@ func (context *EICallbacks) MBufferAppendBytes(accumulatorHandle int32, dataOffs
 	return 0
 }
 
-// MBufferToBigIntUnsigned EIInterface implementation
+// MBufferToBigIntUnsigned VMHooks implementation
 func (context *EICallbacks) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -340,7 +340,7 @@ func (context *EICallbacks) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntH
 	return 0
 }
 
-// MBufferToBigIntSigned EIInterface implementation
+// MBufferToBigIntSigned VMHooks implementation
 func (context *EICallbacks) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -360,7 +360,7 @@ func (context *EICallbacks) MBufferToBigIntSigned(mBufferHandle int32, bigIntHan
 	return 0
 }
 
-// MBufferFromBigIntUnsigned EIInterface implementation
+// MBufferFromBigIntUnsigned VMHooks implementation
 func (context *EICallbacks) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -379,7 +379,7 @@ func (context *EICallbacks) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIn
 	return 0
 }
 
-// MBufferFromBigIntSigned EIInterface implementation
+// MBufferFromBigIntSigned VMHooks implementation
 func (context *EICallbacks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -397,7 +397,7 @@ func (context *EICallbacks) MBufferFromBigIntSigned(mBufferHandle int32, bigIntH
 	return 0
 }
 
-// MBufferToBigFloat EIInterface implementation
+// MBufferToBigFloat VMHooks implementation
 func (context *EICallbacks) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -437,7 +437,7 @@ func (context *EICallbacks) MBufferToBigFloat(mBufferHandle, bigFloatHandle int3
 	return 0
 }
 
-// MBufferFromBigFloat EIInterface implementation
+// MBufferFromBigFloat VMHooks implementation
 func (context *EICallbacks) MBufferFromBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -463,7 +463,7 @@ func (context *EICallbacks) MBufferFromBigFloat(mBufferHandle, bigFloatHandle in
 	return 0
 }
 
-// MBufferStorageStore EIInterface implementation
+// MBufferStorageStore VMHooks implementation
 func (context *EICallbacks) MBufferStorageStore(keyHandle int32, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -491,7 +491,7 @@ func (context *EICallbacks) MBufferStorageStore(keyHandle int32, sourceHandle in
 	return 0
 }
 
-// MBufferStorageLoad EIInterface implementation
+// MBufferStorageLoad VMHooks implementation
 func (context *EICallbacks) MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -511,7 +511,7 @@ func (context *EICallbacks) MBufferStorageLoad(keyHandle int32, destinationHandl
 	return 0
 }
 
-// MBufferStorageLoadFromAddress EIInterface implementation
+// MBufferStorageLoadFromAddress VMHooks implementation
 func (context *EICallbacks) MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle int32) {
 	host := context.GetVMHost()
 	managedType := context.GetManagedTypesContext()
@@ -533,7 +533,7 @@ func (context *EICallbacks) MBufferStorageLoadFromAddress(addressHandle, keyHand
 	managedType.SetBytes(destinationHandle, storageBytes)
 }
 
-// MBufferGetArgument EIInterface implementation
+// MBufferGetArgument VMHooks implementation
 func (context *EICallbacks) MBufferGetArgument(id int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -551,7 +551,7 @@ func (context *EICallbacks) MBufferGetArgument(id int32, destinationHandle int32
 	return 0
 }
 
-// MBufferFinish EIInterface implementation
+// MBufferFinish VMHooks implementation
 func (context *EICallbacks) MBufferFinish(sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
@@ -578,7 +578,7 @@ func (context *EICallbacks) MBufferFinish(sourceHandle int32) int32 {
 	return 0
 }
 
-// MBufferSetRandom EIInterface implementation
+// MBufferSetRandom VMHooks implementation
 func (context *EICallbacks) MBufferSetRandom(destinationHandle int32, length int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()

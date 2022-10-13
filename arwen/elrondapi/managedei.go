@@ -43,7 +43,7 @@ const (
 	managedBufferToHexName                  = "managedBufferToHex"
 )
 
-// ManagedSCAddress EIInterface implementation
+// ManagedSCAddress VMHooks implementation
 func (context *EICallbacks) ManagedSCAddress(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -57,7 +57,7 @@ func (context *EICallbacks) ManagedSCAddress(destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, scAddress)
 }
 
-// ManagedOwnerAddress EIInterface implementation
+// ManagedOwnerAddress VMHooks implementation
 func (context *EICallbacks) ManagedOwnerAddress(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	blockchain := context.GetBlockchainContext()
@@ -75,7 +75,7 @@ func (context *EICallbacks) ManagedOwnerAddress(destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, owner)
 }
 
-// ManagedCaller EIInterface implementation
+// ManagedCaller VMHooks implementation
 func (context *EICallbacks) ManagedCaller(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -88,7 +88,7 @@ func (context *EICallbacks) ManagedCaller(destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, caller)
 }
 
-// ManagedSignalError EIInterface implementation
+// ManagedSignalError VMHooks implementation
 func (context *EICallbacks) ManagedSignalError(errHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -114,7 +114,7 @@ func (context *EICallbacks) ManagedSignalError(errHandle int32) {
 	runtime.SignalUserError(string(errBytes))
 }
 
-// ManagedWriteLog EIInterface implementation
+// ManagedWriteLog VMHooks implementation
 func (context *EICallbacks) ManagedWriteLog(
 
 	topicsHandle int32,
@@ -148,7 +148,7 @@ func (context *EICallbacks) ManagedWriteLog(
 	output.WriteLog(runtime.GetContextAddress(), topics, dataBytes)
 }
 
-// ManagedGetOriginalTxHash EIInterface implementation
+// ManagedGetOriginalTxHash VMHooks implementation
 func (context *EICallbacks) ManagedGetOriginalTxHash(resultHandle int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -160,7 +160,7 @@ func (context *EICallbacks) ManagedGetOriginalTxHash(resultHandle int32) {
 	managedType.SetBytes(resultHandle, runtime.GetOriginalTxHash())
 }
 
-// ManagedGetStateRootHash EIInterface implementation
+// ManagedGetStateRootHash VMHooks implementation
 func (context *EICallbacks) ManagedGetStateRootHash(resultHandle int32) {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -172,7 +172,7 @@ func (context *EICallbacks) ManagedGetStateRootHash(resultHandle int32) {
 	managedType.SetBytes(resultHandle, blockchain.GetStateRootHash())
 }
 
-// ManagedGetBlockRandomSeed EIInterface implementation
+// ManagedGetBlockRandomSeed VMHooks implementation
 func (context *EICallbacks) ManagedGetBlockRandomSeed(resultHandle int32) {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -184,7 +184,7 @@ func (context *EICallbacks) ManagedGetBlockRandomSeed(resultHandle int32) {
 	managedType.SetBytes(resultHandle, blockchain.CurrentRandomSeed())
 }
 
-// ManagedGetPrevBlockRandomSeed EIInterface implementation
+// ManagedGetPrevBlockRandomSeed VMHooks implementation
 func (context *EICallbacks) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -196,7 +196,7 @@ func (context *EICallbacks) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
 	managedType.SetBytes(resultHandle, blockchain.LastRandomSeed())
 }
 
-// ManagedGetReturnData EIInterface implementation
+// ManagedGetReturnData VMHooks implementation
 func (context *EICallbacks) ManagedGetReturnData(resultID int32, resultHandle int32) {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
@@ -215,7 +215,7 @@ func (context *EICallbacks) ManagedGetReturnData(resultID int32, resultHandle in
 	managedType.SetBytes(resultHandle, returnData[resultID])
 }
 
-// ManagedGetMultiESDTCallValue EIInterface implementation
+// ManagedGetMultiESDTCallValue VMHooks implementation
 func (context *EICallbacks) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -231,7 +231,7 @@ func (context *EICallbacks) ManagedGetMultiESDTCallValue(multiCallValueHandle in
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
 
-// ManagedGetESDTBalance EIInterface implementation
+// ManagedGetESDTBalance VMHooks implementation
 func (context *EICallbacks) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -262,7 +262,7 @@ func (context *EICallbacks) ManagedGetESDTBalance(addressHandle int32, tokenIDHa
 	value.Set(esdtToken.Value)
 }
 
-// ManagedGetESDTTokenData EIInterface implementation
+// ManagedGetESDTTokenData VMHooks implementation
 func (context *EICallbacks) ManagedGetESDTTokenData(
 
 	addressHandle int32,
@@ -332,7 +332,7 @@ func ManagedGetESDTTokenDataWithHost(
 
 }
 
-// ManagedAsyncCall EIInterface implementation
+// ManagedAsyncCall VMHooks implementation
 func (context *EICallbacks) ManagedAsyncCall(
 
 	destHandle int32,
@@ -390,7 +390,7 @@ func ManagedAsyncCallWithHost(
 	}
 }
 
-// ManagedCreateAsyncCall EIInterface implementation
+// ManagedCreateAsyncCall VMHooks implementation
 func (context *EICallbacks) ManagedCreateAsyncCall(
 
 	destHandle int32,
@@ -449,7 +449,7 @@ func (context *EICallbacks) ManagedCreateAsyncCall(
 		callbackClosure)
 }
 
-// ManagedGetCallbackClosure EIInterface implementation
+// ManagedGetCallbackClosure VMHooks implementation
 func (context *EICallbacks) ManagedGetCallbackClosure(
 
 	callbackClosureHandle int32,
@@ -480,7 +480,7 @@ func GetCallbackClosureWithHost(
 	managedTypes.SetBytes(callbackClosureHandle, callbackClosure)
 }
 
-// ManagedUpgradeFromSourceContract EIInterface implementation
+// ManagedUpgradeFromSourceContract VMHooks implementation
 func (context *EICallbacks) ManagedUpgradeFromSourceContract(
 
 	destHandle int32,
@@ -529,7 +529,7 @@ func (context *EICallbacks) ManagedUpgradeFromSourceContract(
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
-// ManagedUpgradeContract EIInterface implementation
+// ManagedUpgradeContract VMHooks implementation
 func (context *EICallbacks) ManagedUpgradeContract(
 
 	destHandle int32,
@@ -574,7 +574,7 @@ func (context *EICallbacks) ManagedUpgradeContract(
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
-// ManagedDeleteContract EIInterface implementation
+// ManagedDeleteContract VMHooks implementation
 func (context *EICallbacks) ManagedDeleteContract(
 
 	destHandle int32,
@@ -622,7 +622,7 @@ func ManagedDeleteContractWithHost(
 	)
 }
 
-// ManagedDeployFromSourceContract EIInterface implementation
+// ManagedDeployFromSourceContract VMHooks implementation
 func (context *EICallbacks) ManagedDeployFromSourceContract(
 
 	gas int64,
@@ -672,7 +672,7 @@ func (context *EICallbacks) ManagedDeployFromSourceContract(
 	return 0
 }
 
-// ManagedCreateContract EIInterface implementation
+// ManagedCreateContract VMHooks implementation
 func (context *EICallbacks) ManagedCreateContract(
 
 	gas int64,
@@ -741,7 +741,7 @@ func setReturnDataIfExists(
 	}
 }
 
-// ManagedExecuteReadOnly EIInterface implementation
+// ManagedExecuteReadOnly VMHooks implementation
 func (context *EICallbacks) ManagedExecuteReadOnly(
 
 	gas int64,
@@ -771,7 +771,7 @@ func (context *EICallbacks) ManagedExecuteReadOnly(
 	return returnVal
 }
 
-// ManagedExecuteOnSameContext EIInterface implementation
+// ManagedExecuteOnSameContext VMHooks implementation
 func (context *EICallbacks) ManagedExecuteOnSameContext(
 
 	gas int64,
@@ -803,7 +803,7 @@ func (context *EICallbacks) ManagedExecuteOnSameContext(
 	return returnVal
 }
 
-// ManagedExecuteOnDestContext EIInterface implementation
+// ManagedExecuteOnDestContext VMHooks implementation
 func (context *EICallbacks) ManagedExecuteOnDestContext(
 
 	gas int64,
@@ -835,7 +835,7 @@ func (context *EICallbacks) ManagedExecuteOnDestContext(
 	return returnVal
 }
 
-// ManagedMultiTransferESDTNFTExecute EIInterface implementation
+// ManagedMultiTransferESDTNFTExecute VMHooks implementation
 func (context *EICallbacks) ManagedMultiTransferESDTNFTExecute(
 
 	dstHandle int32,
@@ -870,7 +870,7 @@ func (context *EICallbacks) ManagedMultiTransferESDTNFTExecute(
 	)
 }
 
-// ManagedTransferValueExecute EIInterface implementation
+// ManagedTransferValueExecute VMHooks implementation
 func (context *EICallbacks) ManagedTransferValueExecute(
 
 	dstHandle int32,
@@ -898,7 +898,7 @@ func (context *EICallbacks) ManagedTransferValueExecute(
 	)
 }
 
-// ManagedIsESDTFrozen EIInterface implementation
+// ManagedIsESDTFrozen VMHooks implementation
 func (context *EICallbacks) ManagedIsESDTFrozen(
 
 	addressHandle int32,
@@ -945,7 +945,7 @@ func ManagedIsESDTFrozenWithHost(
 	return 0
 }
 
-// ManagedIsESDTLimitedTransfer EIInterface implementation
+// ManagedIsESDTLimitedTransfer VMHooks implementation
 func (context *EICallbacks) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
@@ -973,7 +973,7 @@ func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32
 	return 0
 }
 
-// ManagedIsESDTPaused EIInterface implementation
+// ManagedIsESDTPaused VMHooks implementation
 func (context *EICallbacks) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
@@ -1001,7 +1001,7 @@ func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 	return 0
 }
 
-// ManagedBufferToHex EIInterface implementation
+// ManagedBufferToHex VMHooks implementation
 func (context *EICallbacks) ManagedBufferToHex(sourceHandle int32, destHandle int32) {
 	host := context.GetVMHost()
 	ManagedBufferToHexWithHost(host, sourceHandle, destHandle)
