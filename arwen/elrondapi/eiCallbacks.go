@@ -5,7 +5,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 )
 
-// EICallbacks is the VM structure that implements ImportsInterface,
+// EICallbacks is the VM structure that implements VMHooks,
 // with all the hooks (callbacks) from the executor.
 type EICallbacks struct {
 	host arwen.VMHost

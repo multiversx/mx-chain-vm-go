@@ -87,7 +87,7 @@ type Instance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory executor.MemoryHandler
 
-	callbacks       executor.ImportsInterface
+	callbacks       executor.VMHooks
 	callbacksPtr    uintptr
 	callbacksPtrPtr unsafe.Pointer
 
@@ -208,7 +208,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetCallbacks(callbacks executor.ImportsInterface) {
+func (instance *Instance) SetCallbacks(callbacks executor.VMHooks) {
 	instance.callbacks = callbacks
 	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
 	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
@@ -218,7 +218,7 @@ func (instance *Instance) SetCallbacks(callbacks executor.ImportsInterface) {
 }
 
 // GetCallbacks returns a pointer for the current instance's data
-func (instance *Instance) GetCallbacks() executor.ImportsInterface {
+func (instance *Instance) GetCallbacks() executor.VMHooks {
 	return instance.callbacks
 }
 

@@ -1506,1482 +1506,1482 @@ func populateWasmerImports(imports *Imports) error {
 
 //export v1_5_bigFloatNewFromParts
 func v1_5_bigFloatNewFromParts(context unsafe.Pointer, integralPart int32, fractionalPart int32, exponent int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
 }
 
 //export v1_5_bigFloatNewFromFrac
 func v1_5_bigFloatNewFromFrac(context unsafe.Pointer, numerator int64, denominator int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigFloatNewFromFrac(numerator, denominator)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatNewFromFrac(numerator, denominator)
 }
 
 //export v1_5_bigFloatNewFromSci
 func v1_5_bigFloatNewFromSci(context unsafe.Pointer, significand int64, exponent int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigFloatNewFromSci(significand, exponent)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatNewFromSci(significand, exponent)
 }
 
 //export v1_5_bigFloatAdd
 func v1_5_bigFloatAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigFloatSub
 func v1_5_bigFloatSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigFloatMul
 func v1_5_bigFloatMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigFloatDiv
 func v1_5_bigFloatDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigFloatNeg
 func v1_5_bigFloatNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatNeg(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatNeg(destinationHandle, opHandle)
 }
 
 //export v1_5_bigFloatClone
 func v1_5_bigFloatClone(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatClone(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatClone(destinationHandle, opHandle)
 }
 
 //export v1_5_bigFloatCmp
 func v1_5_bigFloatCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigFloatCmp(op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatCmp(op1Handle, op2Handle)
 }
 
 //export v1_5_bigFloatAbs
 func v1_5_bigFloatAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatAbs(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatAbs(destinationHandle, opHandle)
 }
 
 //export v1_5_bigFloatSign
 func v1_5_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigFloatSign(opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatSign(opHandle)
 }
 
 //export v1_5_bigFloatSqrt
 func v1_5_bigFloatSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatSqrt(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSqrt(destinationHandle, opHandle)
 }
 
 //export v1_5_bigFloatPow
 func v1_5_bigFloatPow(context unsafe.Pointer, destinationHandle int32, opHandle int32, exponent int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatPow(destinationHandle, opHandle, exponent)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
 }
 
 //export v1_5_bigFloatFloor
 func v1_5_bigFloatFloor(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatFloor(destBigIntHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
 }
 
 //export v1_5_bigFloatCeil
 func v1_5_bigFloatCeil(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatCeil(destBigIntHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
 }
 
 //export v1_5_bigFloatTruncate
 func v1_5_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatTruncate(destBigIntHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
 }
 
 //export v1_5_bigFloatSetInt64
 func v1_5_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatSetInt64(destinationHandle, value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSetInt64(destinationHandle, value)
 }
 
 //export v1_5_bigFloatIsInt
 func v1_5_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigFloatIsInt(opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatIsInt(opHandle)
 }
 
 //export v1_5_bigFloatSetBigInt
 func v1_5_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle int32, bigIntHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
 }
 
 //export v1_5_bigFloatGetConstPi
 func v1_5_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatGetConstPi(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatGetConstPi(destinationHandle)
 }
 
 //export v1_5_bigFloatGetConstE
 func v1_5_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigFloatGetConstE(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatGetConstE(destinationHandle)
 }
 
 //export v1_5_bigIntGetUnsignedArgument
 func v1_5_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetUnsignedArgument(id, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
 }
 
 //export v1_5_bigIntGetSignedArgument
 func v1_5_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetSignedArgument(id, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetSignedArgument(id, destinationHandle)
 }
 
 //export v1_5_bigIntStorageStoreUnsigned
 func v1_5_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
 }
 
 //export v1_5_bigIntStorageLoadUnsigned
 func v1_5_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
 }
 
 //export v1_5_bigIntGetCallValue
 func v1_5_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetCallValue(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetCallValue(destinationHandle)
 }
 
 //export v1_5_bigIntGetESDTCallValue
 func v1_5_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetESDTCallValue(destination)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetESDTCallValue(destination)
 }
 
 //export v1_5_bigIntGetESDTCallValueByIndex
 func v1_5_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandle int32, index int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
 }
 
 //export v1_5_bigIntGetExternalBalance
 func v1_5_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetExternalBalance(addressOffset, result)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetExternalBalance(addressOffset, result)
 }
 
 //export v1_5_bigIntGetESDTExternalBalance
 func v1_5_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
 }
 
 //export v1_5_bigIntNew
 func v1_5_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntNew(smallValue)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntNew(smallValue)
 }
 
 //export v1_5_bigIntUnsignedByteLength
 func v1_5_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntUnsignedByteLength(referenceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntUnsignedByteLength(referenceHandle)
 }
 
 //export v1_5_bigIntSignedByteLength
 func v1_5_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntSignedByteLength(referenceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntSignedByteLength(referenceHandle)
 }
 
 //export v1_5_bigIntGetUnsignedBytes
 func v1_5_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
 }
 
 //export v1_5_bigIntGetSignedBytes
 func v1_5_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntGetSignedBytes(referenceHandle, byteOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
 }
 
 //export v1_5_bigIntSetUnsignedBytes
 func v1_5_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
 }
 
 //export v1_5_bigIntSetSignedBytes
 func v1_5_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
 }
 
 //export v1_5_bigIntIsInt64
 func v1_5_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntIsInt64(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntIsInt64(destinationHandle)
 }
 
 //export v1_5_bigIntGetInt64
 func v1_5_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntGetInt64(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntGetInt64(destinationHandle)
 }
 
 //export v1_5_bigIntSetInt64
 func v1_5_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntSetInt64(destinationHandle, value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSetInt64(destinationHandle, value)
 }
 
 //export v1_5_bigIntAdd
 func v1_5_bigIntAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntSub
 func v1_5_bigIntSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntSub(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntMul
 func v1_5_bigIntMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntMul(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntTDiv
 func v1_5_bigIntTDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntTMod
 func v1_5_bigIntTMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntEDiv
 func v1_5_bigIntEDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntEMod
 func v1_5_bigIntEMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntSqrt
 func v1_5_bigIntSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntSqrt(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSqrt(destinationHandle, opHandle)
 }
 
 //export v1_5_bigIntPow
 func v1_5_bigIntPow(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntPow(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntLog2
 func v1_5_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntLog2(op1Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntLog2(op1Handle)
 }
 
 //export v1_5_bigIntAbs
 func v1_5_bigIntAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntAbs(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntAbs(destinationHandle, opHandle)
 }
 
 //export v1_5_bigIntNeg
 func v1_5_bigIntNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntNeg(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntNeg(destinationHandle, opHandle)
 }
 
 //export v1_5_bigIntSign
 func v1_5_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntSign(opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntSign(opHandle)
 }
 
 //export v1_5_bigIntCmp
 func v1_5_bigIntCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BigIntCmp(op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntCmp(op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntNot
 func v1_5_bigIntNot(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntNot(destinationHandle, opHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntNot(destinationHandle, opHandle)
 }
 
 //export v1_5_bigIntAnd
 func v1_5_bigIntAnd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntOr
 func v1_5_bigIntOr(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntOr(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntXor
 func v1_5_bigIntXor(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntXor(destinationHandle, op1Handle, op2Handle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
 }
 
 //export v1_5_bigIntShr
 func v1_5_bigIntShr(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntShr(destinationHandle, opHandle, bits)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntShr(destinationHandle, opHandle, bits)
 }
 
 //export v1_5_bigIntShl
 func v1_5_bigIntShl(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntShl(destinationHandle, opHandle, bits)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntShl(destinationHandle, opHandle, bits)
 }
 
 //export v1_5_bigIntFinishUnsigned
 func v1_5_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntFinishUnsigned(referenceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntFinishUnsigned(referenceHandle)
 }
 
 //export v1_5_bigIntFinishSigned
 func v1_5_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntFinishSigned(referenceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntFinishSigned(referenceHandle)
 }
 
 //export v1_5_bigIntToString
 func v1_5_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.BigIntToString(bigIntHandle, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntToString(bigIntHandle, destinationHandle)
 }
 
 //export v1_5_getGasLeft
 func v1_5_getGasLeft(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetGasLeft()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetGasLeft()
 }
 
 //export v1_5_getSCAddress
 func v1_5_getSCAddress(context unsafe.Pointer, resultOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetSCAddress(resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetSCAddress(resultOffset)
 }
 
 //export v1_5_getOwnerAddress
 func v1_5_getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetOwnerAddress(resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetOwnerAddress(resultOffset)
 }
 
 //export v1_5_getShardOfAddress
 func v1_5_getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetShardOfAddress(addressOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetShardOfAddress(addressOffset)
 }
 
 //export v1_5_isSmartContract
 func v1_5_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.IsSmartContract(addressOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.IsSmartContract(addressOffset)
 }
 
 //export v1_5_signalError
 func v1_5_signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.SignalError(messageOffset, messageLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.SignalError(messageOffset, messageLength)
 }
 
 //export v1_5_getExternalBalance
 func v1_5_getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetExternalBalance(addressOffset, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetExternalBalance(addressOffset, resultOffset)
 }
 
 //export v1_5_blockHash
 func v1_5_blockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.BlockHash(nonce, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BlockHash(nonce, resultOffset)
 }
 
 //export v1_5_getESDTBalance
 func v1_5_getESDTBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
 }
 
 //export v1_5_getESDTNFTNameLength
 func v1_5_getESDTNFTNameLength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 }
 
 //export v1_5_getESDTNFTAttributeLength
 func v1_5_getESDTNFTAttributeLength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 }
 
 //export v1_5_getESDTNFTURILength
 func v1_5_getESDTNFTURILength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
 }
 
 //export v1_5_getESDTTokenData
 func v1_5_getESDTTokenData(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, valueHandle int32, propertiesOffset int32, hashOffset int32, nameOffset int32, attributesOffset int32, creatorOffset int32, royaltiesHandle int32, urisOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
 }
 
 //export v1_5_getESDTLocalRoles
 func v1_5_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTLocalRoles(tokenIdHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTLocalRoles(tokenIdHandle)
 }
 
 //export v1_5_validateTokenIdentifier
 func v1_5_validateTokenIdentifier(context unsafe.Pointer, tokenIdHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ValidateTokenIdentifier(tokenIdHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ValidateTokenIdentifier(tokenIdHandle)
 }
 
 //export v1_5_transferValue
 func v1_5_transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.TransferValue(destOffset, valueOffset, dataOffset, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.TransferValue(destOffset, valueOffset, dataOffset, length)
 }
 
 //export v1_5_transferValueExecute
 func v1_5_transferValueExecute(context unsafe.Pointer, destOffset int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_transferESDTExecute
 func v1_5_transferESDTExecute(context unsafe.Pointer, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_transferESDTNFTExecute
 func v1_5_transferESDTNFTExecute(context unsafe.Pointer, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, nonce int64, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_multiTransferESDTNFTExecute
 func v1_5_multiTransferESDTNFTExecute(context unsafe.Pointer, destOffset int32, numTokenTransfers int32, tokenTransfersArgsLengthOffset int32, tokenTransferDataOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_createAsyncCall
 func v1_5_createAsyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, dataLength int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
 }
 
 //export v1_5_setAsyncContextCallback
 func v1_5_setAsyncContextCallback(context unsafe.Pointer, callback int32, callbackLength int32, data int32, dataLength int32, gas int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
 }
 
 //export v1_5_upgradeContract
 func v1_5_upgradeContract(context unsafe.Pointer, destOffset int32, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_upgradeFromSourceContract
 func v1_5_upgradeFromSourceContract(context unsafe.Pointer, destOffset int32, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_deleteContract
 func v1_5_deleteContract(context unsafe.Pointer, destOffset int32, gasLimit int64, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_asyncCall
 func v1_5_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.AsyncCall(destOffset, valueOffset, dataOffset, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.AsyncCall(destOffset, valueOffset, dataOffset, length)
 }
 
 //export v1_5_getArgumentLength
 func v1_5_getArgumentLength(context unsafe.Pointer, id int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetArgumentLength(id)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetArgumentLength(id)
 }
 
 //export v1_5_getArgument
 func v1_5_getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetArgument(id, argOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetArgument(id, argOffset)
 }
 
 //export v1_5_getFunction
 func v1_5_getFunction(context unsafe.Pointer, functionOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetFunction(functionOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetFunction(functionOffset)
 }
 
 //export v1_5_getNumArguments
 func v1_5_getNumArguments(context unsafe.Pointer) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetNumArguments()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetNumArguments()
 }
 
 //export v1_5_storageStore
 func v1_5_storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
 }
 
 //export v1_5_storageLoadLength
 func v1_5_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.StorageLoadLength(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.StorageLoadLength(keyOffset, keyLength)
 }
 
 //export v1_5_storageLoadFromAddress
 func v1_5_storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
 }
 
 //export v1_5_storageLoad
 func v1_5_storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.StorageLoad(keyOffset, keyLength, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.StorageLoad(keyOffset, keyLength, dataOffset)
 }
 
 //export v1_5_setStorageLock
 func v1_5_setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
 }
 
 //export v1_5_getStorageLock
 func v1_5_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetStorageLock(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetStorageLock(keyOffset, keyLength)
 }
 
 //export v1_5_isStorageLocked
 func v1_5_isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.IsStorageLocked(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.IsStorageLocked(keyOffset, keyLength)
 }
 
 //export v1_5_clearStorageLock
 func v1_5_clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ClearStorageLock(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ClearStorageLock(keyOffset, keyLength)
 }
 
 //export v1_5_getCaller
 func v1_5_getCaller(context unsafe.Pointer, resultOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetCaller(resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetCaller(resultOffset)
 }
 
 //export v1_5_checkNoPayment
 func v1_5_checkNoPayment(context unsafe.Pointer) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.CheckNoPayment()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.CheckNoPayment()
 }
 
 //export v1_5_callValue
 func v1_5_callValue(context unsafe.Pointer, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.CallValue(resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.CallValue(resultOffset)
 }
 
 //export v1_5_getESDTValue
 func v1_5_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTValue(resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTValue(resultOffset)
 }
 
 //export v1_5_getESDTValueByIndex
 func v1_5_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTValueByIndex(resultOffset, index)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTValueByIndex(resultOffset, index)
 }
 
 //export v1_5_getESDTTokenName
 func v1_5_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenName(resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenName(resultOffset)
 }
 
 //export v1_5_getESDTTokenNameByIndex
 func v1_5_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenNameByIndex(resultOffset, index)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenNameByIndex(resultOffset, index)
 }
 
 //export v1_5_getESDTTokenNonce
 func v1_5_getESDTTokenNonce(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenNonce()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenNonce()
 }
 
 //export v1_5_getESDTTokenNonceByIndex
 func v1_5_getESDTTokenNonceByIndex(context unsafe.Pointer, index int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenNonceByIndex(index)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenNonceByIndex(index)
 }
 
 //export v1_5_getCurrentESDTNFTNonce
 func v1_5_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
 }
 
 //export v1_5_getESDTTokenType
 func v1_5_getESDTTokenType(context unsafe.Pointer) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenType()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenType()
 }
 
 //export v1_5_getESDTTokenTypeByIndex
 func v1_5_getESDTTokenTypeByIndex(context unsafe.Pointer, index int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetESDTTokenTypeByIndex(index)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetESDTTokenTypeByIndex(index)
 }
 
 //export v1_5_getNumESDTTransfers
 func v1_5_getNumESDTTransfers(context unsafe.Pointer) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetNumESDTTransfers()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetNumESDTTransfers()
 }
 
 //export v1_5_getCallValueTokenName
 func v1_5_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
 }
 
 //export v1_5_getCallValueTokenNameByIndex
 func v1_5_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32, index int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
 }
 
 //export v1_5_writeLog
 func v1_5_writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
 }
 
 //export v1_5_writeEventLog
 func v1_5_writeEventLog(context unsafe.Pointer, numTopics int32, topicLengthsOffset int32, topicOffset int32, dataOffset int32, dataLength int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
 }
 
 //export v1_5_getBlockTimestamp
 func v1_5_getBlockTimestamp(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetBlockTimestamp()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetBlockTimestamp()
 }
 
 //export v1_5_getBlockNonce
 func v1_5_getBlockNonce(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetBlockNonce()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetBlockNonce()
 }
 
 //export v1_5_getBlockRound
 func v1_5_getBlockRound(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetBlockRound()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetBlockRound()
 }
 
 //export v1_5_getBlockEpoch
 func v1_5_getBlockEpoch(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetBlockEpoch()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetBlockEpoch()
 }
 
 //export v1_5_getBlockRandomSeed
 func v1_5_getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetBlockRandomSeed(pointer)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetBlockRandomSeed(pointer)
 }
 
 //export v1_5_getStateRootHash
 func v1_5_getStateRootHash(context unsafe.Pointer, pointer int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetStateRootHash(pointer)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetStateRootHash(pointer)
 }
 
 //export v1_5_getPrevBlockTimestamp
 func v1_5_getPrevBlockTimestamp(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetPrevBlockTimestamp()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetPrevBlockTimestamp()
 }
 
 //export v1_5_getPrevBlockNonce
 func v1_5_getPrevBlockNonce(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetPrevBlockNonce()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetPrevBlockNonce()
 }
 
 //export v1_5_getPrevBlockRound
 func v1_5_getPrevBlockRound(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetPrevBlockRound()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetPrevBlockRound()
 }
 
 //export v1_5_getPrevBlockEpoch
 func v1_5_getPrevBlockEpoch(context unsafe.Pointer) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetPrevBlockEpoch()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetPrevBlockEpoch()
 }
 
 //export v1_5_getPrevBlockRandomSeed
 func v1_5_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetPrevBlockRandomSeed(pointer)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetPrevBlockRandomSeed(pointer)
 }
 
 //export v1_5_returnData
 func v1_5_returnData(context unsafe.Pointer, pointer int32, length int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ReturnData(pointer, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ReturnData(pointer, length)
 }
 
 //export v1_5_executeOnSameContext
 func v1_5_executeOnSameContext(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_executeOnDestContext
 func v1_5_executeOnDestContext(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_executeReadOnly
 func v1_5_executeReadOnly(context unsafe.Pointer, gasLimit int64, addressOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_createContract
 func v1_5_createContract(context unsafe.Pointer, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, resultOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_deployFromSourceContract
 func v1_5_deployFromSourceContract(context unsafe.Pointer, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, resultAddressOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
 }
 
 //export v1_5_getNumReturnData
 func v1_5_getNumReturnData(context unsafe.Pointer) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetNumReturnData()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetNumReturnData()
 }
 
 //export v1_5_getReturnDataSize
 func v1_5_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetReturnDataSize(resultID)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetReturnDataSize(resultID)
 }
 
 //export v1_5_getReturnData
 func v1_5_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetReturnData(resultID, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetReturnData(resultID, dataOffset)
 }
 
 //export v1_5_cleanReturnData
 func v1_5_cleanReturnData(context unsafe.Pointer) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.CleanReturnData()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.CleanReturnData()
 }
 
 //export v1_5_deleteFromReturnData
 func v1_5_deleteFromReturnData(context unsafe.Pointer, resultID int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.DeleteFromReturnData(resultID)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.DeleteFromReturnData(resultID)
 }
 
 //export v1_5_getOriginalTxHash
 func v1_5_getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetOriginalTxHash(dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetOriginalTxHash(dataOffset)
 }
 
 //export v1_5_getCurrentTxHash
 func v1_5_getCurrentTxHash(context unsafe.Pointer, dataOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetCurrentTxHash(dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetCurrentTxHash(dataOffset)
 }
 
 //export v1_5_getPrevTxHash
 func v1_5_getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.GetPrevTxHash(dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.GetPrevTxHash(dataOffset)
 }
 
 //export v1_5_managedSCAddress
 func v1_5_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedSCAddress(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedSCAddress(destinationHandle)
 }
 
 //export v1_5_managedOwnerAddress
 func v1_5_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedOwnerAddress(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedOwnerAddress(destinationHandle)
 }
 
 //export v1_5_managedCaller
 func v1_5_managedCaller(context unsafe.Pointer, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedCaller(destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedCaller(destinationHandle)
 }
 
 //export v1_5_managedSignalError
 func v1_5_managedSignalError(context unsafe.Pointer, errHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedSignalError(errHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedSignalError(errHandle)
 }
 
 //export v1_5_managedWriteLog
 func v1_5_managedWriteLog(context unsafe.Pointer, topicsHandle int32, dataHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedWriteLog(topicsHandle, dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedWriteLog(topicsHandle, dataHandle)
 }
 
 //export v1_5_managedGetOriginalTxHash
 func v1_5_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetOriginalTxHash(resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetOriginalTxHash(resultHandle)
 }
 
 //export v1_5_managedGetStateRootHash
 func v1_5_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetStateRootHash(resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetStateRootHash(resultHandle)
 }
 
 //export v1_5_managedGetBlockRandomSeed
 func v1_5_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetBlockRandomSeed(resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetBlockRandomSeed(resultHandle)
 }
 
 //export v1_5_managedGetPrevBlockRandomSeed
 func v1_5_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetPrevBlockRandomSeed(resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetPrevBlockRandomSeed(resultHandle)
 }
 
 //export v1_5_managedGetReturnData
 func v1_5_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetReturnData(resultID, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetReturnData(resultID, resultHandle)
 }
 
 //export v1_5_managedGetMultiESDTCallValue
 func v1_5_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetMultiESDTCallValue(multiCallValueHandle)
 }
 
 //export v1_5_managedGetESDTBalance
 func v1_5_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetESDTBalance(addressHandle, tokenIDHandle, nonce, valueHandle)
 }
 
 //export v1_5_managedGetESDTTokenData
 func v1_5_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32, propertiesHandle int32, hashHandle int32, nameHandle int32, attributesHandle int32, creatorHandle int32, royaltiesHandle int32, urisHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetESDTTokenData(addressHandle, tokenIDHandle, nonce, valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
 }
 
 //export v1_5_managedAsyncCall
 func v1_5_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle)
 }
 
 //export v1_5_managedCreateAsyncCall
 func v1_5_managedCreateAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
 }
 
 //export v1_5_managedGetCallbackClosure
 func v1_5_managedGetCallbackClosure(context unsafe.Pointer, callbackClosureHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedGetCallbackClosure(callbackClosureHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedGetCallbackClosure(callbackClosureHandle)
 }
 
 //export v1_5_managedUpgradeFromSourceContract
 func v1_5_managedUpgradeFromSourceContract(context unsafe.Pointer, destHandle int32, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedUpgradeFromSourceContract(destHandle, gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 }
 
 //export v1_5_managedUpgradeContract
 func v1_5_managedUpgradeContract(context unsafe.Pointer, destHandle int32, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedUpgradeContract(destHandle, gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultHandle)
 }
 
 //export v1_5_managedDeleteContract
 func v1_5_managedDeleteContract(context unsafe.Pointer, destHandle int32, gasLimit int64, argumentsHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedDeleteContract(destHandle, gasLimit, argumentsHandle)
 }
 
 //export v1_5_managedDeployFromSourceContract
 func v1_5_managedDeployFromSourceContract(context unsafe.Pointer, gas int64, valueHandle int32, addressHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedDeployFromSourceContract(gas, valueHandle, addressHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 }
 
 //export v1_5_managedCreateContract
 func v1_5_managedCreateContract(context unsafe.Pointer, gas int64, valueHandle int32, codeHandle int32, codeMetadataHandle int32, argumentsHandle int32, resultAddressHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedCreateContract(gas, valueHandle, codeHandle, codeMetadataHandle, argumentsHandle, resultAddressHandle, resultHandle)
 }
 
 //export v1_5_managedExecuteReadOnly
 func v1_5_managedExecuteReadOnly(context unsafe.Pointer, gas int64, addressHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedExecuteReadOnly(gas, addressHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export v1_5_managedExecuteOnSameContext
 func v1_5_managedExecuteOnSameContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedExecuteOnSameContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export v1_5_managedExecuteOnDestContext
 func v1_5_managedExecuteOnDestContext(context unsafe.Pointer, gas int64, addressHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedExecuteOnDestContext(gas, addressHandle, valueHandle, functionHandle, argumentsHandle, resultHandle)
 }
 
 //export v1_5_managedMultiTransferESDTNFTExecute
 func v1_5_managedMultiTransferESDTNFTExecute(context unsafe.Pointer, dstHandle int32, tokenTransfersHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMultiTransferESDTNFTExecute(dstHandle, tokenTransfersHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export v1_5_managedTransferValueExecute
 func v1_5_managedTransferValueExecute(context unsafe.Pointer, dstHandle int32, valueHandle int32, gasLimit int64, functionHandle int32, argumentsHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedTransferValueExecute(dstHandle, valueHandle, gasLimit, functionHandle, argumentsHandle)
 }
 
 //export v1_5_managedIsESDTFrozen
 func v1_5_managedIsESDTFrozen(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedIsESDTFrozen(addressHandle, tokenIDHandle, nonce)
 }
 
 //export v1_5_managedIsESDTLimitedTransfer
 func v1_5_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedIsESDTLimitedTransfer(tokenIDHandle)
 }
 
 //export v1_5_managedIsESDTPaused
 func v1_5_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedIsESDTPaused(tokenIDHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedIsESDTPaused(tokenIDHandle)
 }
 
 //export v1_5_managedBufferToHex
 func v1_5_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.ManagedBufferToHex(sourceHandle, destHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
 }
 
 //export v1_5_mBufferNew
 func v1_5_mBufferNew(context unsafe.Pointer) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferNew()
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferNew()
 }
 
 //export v1_5_mBufferNewFromBytes
 func v1_5_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferNewFromBytes(dataOffset, dataLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferNewFromBytes(dataOffset, dataLength)
 }
 
 //export v1_5_mBufferGetLength
 func v1_5_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferGetLength(mBufferHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferGetLength(mBufferHandle)
 }
 
 //export v1_5_mBufferGetBytes
 func v1_5_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferGetBytes(mBufferHandle, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferGetBytes(mBufferHandle, resultOffset)
 }
 
 //export v1_5_mBufferGetByteSlice
 func v1_5_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
 }
 
 //export v1_5_mBufferCopyByteSlice
 func v1_5_mBufferCopyByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferCopyByteSlice(sourceHandle, startingPosition, sliceLength, destinationHandle)
 }
 
 //export v1_5_mBufferEq
 func v1_5_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2 int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferEq(mBufferHandle1, mBufferHandle2)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferEq(mBufferHandle1, mBufferHandle2)
 }
 
 //export v1_5_mBufferSetBytes
 func v1_5_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
 }
 
 //export v1_5_mBufferSetByteSlice
 func v1_5_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
 }
 
 //export v1_5_mBufferAppend
 func v1_5_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferAppend(accumulatorHandle, dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferAppend(accumulatorHandle, dataHandle)
 }
 
 //export v1_5_mBufferAppendBytes
 func v1_5_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
 }
 
 //export v1_5_mBufferToBigIntUnsigned
 func v1_5_mBufferToBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToBigIntUnsigned(mBufferHandle, bigIntHandle)
 }
 
 //export v1_5_mBufferToBigIntSigned
 func v1_5_mBufferToBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToBigIntSigned(mBufferHandle, bigIntHandle)
 }
 
 //export v1_5_mBufferFromBigIntUnsigned
 func v1_5_mBufferFromBigIntUnsigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferFromBigIntUnsigned(mBufferHandle, bigIntHandle)
 }
 
 //export v1_5_mBufferFromBigIntSigned
 func v1_5_mBufferFromBigIntSigned(context unsafe.Pointer, mBufferHandle int32, bigIntHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferFromBigIntSigned(mBufferHandle, bigIntHandle)
 }
 
 //export v1_5_mBufferToBigFloat
 func v1_5_mBufferToBigFloat(context unsafe.Pointer, mBufferHandle int32, bigFloatHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferToBigFloat(mBufferHandle, bigFloatHandle)
 }
 
 //export v1_5_mBufferFromBigFloat
 func v1_5_mBufferFromBigFloat(context unsafe.Pointer, mBufferHandle int32, bigFloatHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferFromBigFloat(mBufferHandle, bigFloatHandle)
 }
 
 //export v1_5_mBufferStorageStore
 func v1_5_mBufferStorageStore(context unsafe.Pointer, keyHandle int32, sourceHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferStorageStore(keyHandle, sourceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferStorageStore(keyHandle, sourceHandle)
 }
 
 //export v1_5_mBufferStorageLoad
 func v1_5_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinationHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferStorageLoad(keyHandle, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferStorageLoad(keyHandle, destinationHandle)
 }
 
 //export v1_5_mBufferStorageLoadFromAddress
 func v1_5_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle int32, keyHandle int32, destinationHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle)
 }
 
 //export v1_5_mBufferGetArgument
 func v1_5_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferGetArgument(id, destinationHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferGetArgument(id, destinationHandle)
 }
 
 //export v1_5_mBufferFinish
 func v1_5_mBufferFinish(context unsafe.Pointer, sourceHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferFinish(sourceHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferFinish(sourceHandle)
 }
 
 //export v1_5_mBufferSetRandom
 func v1_5_mBufferSetRandom(context unsafe.Pointer, destinationHandle int32, length int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MBufferSetRandom(destinationHandle, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MBufferSetRandom(destinationHandle, length)
 }
 
 //export v1_5_smallIntGetUnsignedArgument
 func v1_5_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SmallIntGetUnsignedArgument(id)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SmallIntGetUnsignedArgument(id)
 }
 
 //export v1_5_smallIntGetSignedArgument
 func v1_5_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SmallIntGetSignedArgument(id)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SmallIntGetSignedArgument(id)
 }
 
 //export v1_5_smallIntFinishUnsigned
 func v1_5_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.SmallIntFinishUnsigned(value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.SmallIntFinishUnsigned(value)
 }
 
 //export v1_5_smallIntFinishSigned
 func v1_5_smallIntFinishSigned(context unsafe.Pointer, value int64) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.SmallIntFinishSigned(value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.SmallIntFinishSigned(value)
 }
 
 //export v1_5_smallIntStorageStoreUnsigned
 func v1_5_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 }
 
 //export v1_5_smallIntStorageStoreSigned
 func v1_5_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
 }
 
 //export v1_5_smallIntStorageLoadUnsigned
 func v1_5_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
 }
 
 //export v1_5_smallIntStorageLoadSigned
 func v1_5_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.SmallIntStorageLoadSigned(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.SmallIntStorageLoadSigned(keyOffset, keyLength)
 }
 
 //export v1_5_int64getArgument
 func v1_5_int64getArgument(context unsafe.Pointer, id int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.Int64getArgument(id)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.Int64getArgument(id)
 }
 
 //export v1_5_int64finish
 func v1_5_int64finish(context unsafe.Pointer, value int64) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.Int64finish(value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.Int64finish(value)
 }
 
 //export v1_5_int64storageStore
 func v1_5_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.Int64storageStore(keyOffset, keyLength, value)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.Int64storageStore(keyOffset, keyLength, value)
 }
 
 //export v1_5_int64storageLoad
 func v1_5_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.Int64storageLoad(keyOffset, keyLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.Int64storageLoad(keyOffset, keyLength)
 }
 
 //export v1_5_sha256
 func v1_5_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.Sha256(dataOffset, length, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.Sha256(dataOffset, length, resultOffset)
 }
 
 //export v1_5_managedSha256
 func v1_5_managedSha256(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedSha256(inputHandle, outputHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedSha256(inputHandle, outputHandle)
 }
 
 //export v1_5_keccak256
 func v1_5_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.Keccak256(dataOffset, length, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.Keccak256(dataOffset, length, resultOffset)
 }
 
 //export v1_5_managedKeccak256
 func v1_5_managedKeccak256(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedKeccak256(inputHandle, outputHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedKeccak256(inputHandle, outputHandle)
 }
 
 //export v1_5_ripemd160
 func v1_5_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.Ripemd160(dataOffset, length, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.Ripemd160(dataOffset, length, resultOffset)
 }
 
 //export v1_5_managedRipemd160
 func v1_5_managedRipemd160(context unsafe.Pointer, inputHandle int32, outputHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedRipemd160(inputHandle, outputHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedRipemd160(inputHandle, outputHandle)
 }
 
 //export v1_5_verifyBLS
 func v1_5_verifyBLS(context unsafe.Pointer, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
 }
 
 //export v1_5_managedVerifyBLS
 func v1_5_managedVerifyBLS(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyBLS(keyHandle, messageHandle, sigHandle)
 }
 
 //export v1_5_verifyEd25519
 func v1_5_verifyEd25519(context unsafe.Pointer, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
 }
 
 //export v1_5_managedVerifyEd25519
 func v1_5_managedVerifyEd25519(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyEd25519(keyHandle, messageHandle, sigHandle)
 }
 
 //export v1_5_verifyCustomSecp256k1
 func v1_5_verifyCustomSecp256k1(context unsafe.Pointer, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32, hashType int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
 }
 
 //export v1_5_managedVerifyCustomSecp256k1
 func v1_5_managedVerifyCustomSecp256k1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifyCustomSecp256k1(keyHandle, messageHandle, sigHandle, hashType)
 }
 
 //export v1_5_verifySecp256k1
 func v1_5_verifySecp256k1(context unsafe.Pointer, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
 }
 
 //export v1_5_managedVerifySecp256k1
 func v1_5_managedVerifySecp256k1(context unsafe.Pointer, keyHandle int32, messageHandle int32, sigHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedVerifySecp256k1(keyHandle, messageHandle, sigHandle)
 }
 
 //export v1_5_encodeSecp256k1DerSignature
 func v1_5_encodeSecp256k1DerSignature(context unsafe.Pointer, rOffset int32, rLength int32, sOffset int32, sLength int32, sigOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
 }
 
 //export v1_5_managedEncodeSecp256k1DerSignature
 func v1_5_managedEncodeSecp256k1DerSignature(context unsafe.Pointer, rHandle int32, sHandle int32, sigHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedEncodeSecp256k1DerSignature(rHandle, sHandle, sigHandle)
 }
 
 //export v1_5_addEC
 func v1_5_addEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.AddEC(xResultHandle, yResultHandle, ecHandle, fstPointXHandle, fstPointYHandle, sndPointXHandle, sndPointYHandle)
 }
 
 //export v1_5_doubleEC
 func v1_5_doubleEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32) {
-	callbacks := importsInterfaceFromRaw(context)
-	callbacks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.DoubleEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle)
 }
 
 //export v1_5_isOnCurveEC
 func v1_5_isOnCurveEC(context unsafe.Pointer, ecHandle int32, pointXHandle int32, pointYHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.IsOnCurveEC(ecHandle, pointXHandle, pointYHandle)
 }
 
 //export v1_5_scalarBaseMultEC
 func v1_5_scalarBaseMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 }
 
 //export v1_5_managedScalarBaseMultEC
 func v1_5_managedScalarBaseMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 }
 
 //export v1_5_scalarMultEC
 func v1_5_scalarMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset int32, length int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
 }
 
 //export v1_5_managedScalarMultEC
 func v1_5_managedScalarMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataHandle)
 }
 
 //export v1_5_marshalEC
 func v1_5_marshalEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
 }
 
 //export v1_5_managedMarshalEC
 func v1_5_managedMarshalEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMarshalEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 }
 
 //export v1_5_marshalCompressedEC
 func v1_5_marshalCompressedEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
 }
 
 //export v1_5_managedMarshalCompressedEC
 func v1_5_managedMarshalCompressedEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedMarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultHandle)
 }
 
 //export v1_5_unmarshalEC
 func v1_5_unmarshalEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 }
 
 //export v1_5_managedUnmarshalEC
 func v1_5_managedUnmarshalEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedUnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 }
 
 //export v1_5_unmarshalCompressedEC
 func v1_5_unmarshalCompressedEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
 }
 
 //export v1_5_managedUnmarshalCompressedEC
 func v1_5_managedUnmarshalCompressedEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedUnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataHandle)
 }
 
 //export v1_5_generateKeyEC
 func v1_5_generateKeyEC(context unsafe.Pointer, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
 }
 
 //export v1_5_managedGenerateKeyEC
 func v1_5_managedGenerateKeyEC(context unsafe.Pointer, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedGenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultHandle)
 }
 
 //export v1_5_createEC
 func v1_5_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.CreateEC(dataOffset, dataLength)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.CreateEC(dataOffset, dataLength)
 }
 
 //export v1_5_managedCreateEC
 func v1_5_managedCreateEC(context unsafe.Pointer, dataHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.ManagedCreateEC(dataHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.ManagedCreateEC(dataHandle)
 }
 
 //export v1_5_getCurveLengthEC
 func v1_5_getCurveLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetCurveLengthEC(ecHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetCurveLengthEC(ecHandle)
 }
 
 //export v1_5_getPrivKeyByteLengthEC
 func v1_5_getPrivKeyByteLengthEC(context unsafe.Pointer, ecHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.GetPrivKeyByteLengthEC(ecHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.GetPrivKeyByteLengthEC(ecHandle)
 }
 
 //export v1_5_ellipticCurveGetValues
 func v1_5_ellipticCurveGetValues(context unsafe.Pointer, ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
-	callbacks := importsInterfaceFromRaw(context)
-	return callbacks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.EllipticCurveGetValues(ecHandle, fieldOrderHandle, basePointOrderHandle, eqConstantHandle, xBasePointHandle, yBasePointHandle)
 }

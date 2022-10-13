@@ -15,7 +15,7 @@ type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
 	Points          uint64
-	Data            executor.ImportsInterface
+	Data            executor.VMHooks
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
 	Memory          executor.MemoryHandler
@@ -58,12 +58,12 @@ func (instance *InstanceMock) HasMemory() bool {
 }
 
 // SetCallbacks mocked method
-func (instance *InstanceMock) SetCallbacks(callbacks executor.ImportsInterface) {
+func (instance *InstanceMock) SetCallbacks(callbacks executor.VMHooks) {
 	instance.Data = callbacks
 }
 
 // GetCallbacks mocked method
-func (instance *InstanceMock) GetCallbacks() executor.ImportsInterface {
+func (instance *InstanceMock) GetCallbacks() executor.VMHooks {
 	return instance.Data
 }
 

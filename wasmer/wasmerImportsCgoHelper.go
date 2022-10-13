@@ -6,10 +6,10 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-func importsInterfaceFromRaw(contextPtr unsafe.Pointer) executor.ImportsInterface {
+func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
 	var ptr = *(*uintptr)(instCtx.Data())
-	return *(*executor.ImportsInterface)(unsafe.Pointer(ptr))
+	return *(*executor.VMHooks)(unsafe.Pointer(ptr))
 }
 
 func generateWasmerImports(imports *Imports) (*cWasmerImportT, int) {
