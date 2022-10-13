@@ -1,3 +1,3 @@
 package elrondapi
 
-//go:generate go run generateMain/generateApi.go
+//go:generate go run generate/cmd/eiGenMain.go

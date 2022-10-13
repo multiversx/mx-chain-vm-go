@@ -1,42 +1,47 @@
 package worldmock
 
+import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+
+var _ vmcommon.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
+
 // EnableEpochsHandlerStub -
 type EnableEpochsHandlerStub struct {
-	IsGlobalMintBurnFlagEnabledField                     bool
-	IsESDTTransferRoleFlagEnabledField                   bool
+	CheckExecuteReadOnlyEnableEpochField                 uint32
+	CreateNFTThroughExecByCallerEnableEpochField         uint32
+	DisableExecByCallerEnableEpochField                  uint32
+	FixFailExecutionOnErrorEnableEpochField              uint32
+	FixOOGReturnCodeEnableEpochField                     uint32
+	IsAheadOfTimeGasUsageFlagEnabledField                bool
 	IsBuiltInFunctionsFlagEnabledField                   bool
 	IsCheckCorrectTokenIDForTransferRoleFlagEnabledField bool
-	IsMultiESDTTransferFixOnCallBackFlagEnabledField     bool
-	IsFixOOGReturnCodeFlagEnabledField                   bool
-	IsRemoveNonUpdatedStorageFlagEnabledField            bool
-	IsCreateNFTThroughExecByCallerFlagEnabledField       bool
-	IsStorageAPICostOptimizationFlagEnabledField         bool
-	IsFailExecutionOnEveryAPIErrorFlagEnabledField       bool
-	IsManagedCryptoAPIsFlagEnabledField                  bool
-	IsSCDeployFlagEnabledField                           bool
-	IsAheadOfTimeGasUsageFlagEnabledField                bool
-	IsRepairCallbackFlagEnabledField                     bool
-	IsDisableExecByCallerFlagEnabledField                bool
-	IsRefactorContextFlagEnabledField                    bool
-	IsCheckFunctionArgumentFlagEnabledField              bool
 	IsCheckExecuteOnReadOnlyFlagEnabledField             bool
-	IsFixAsyncCallbackCheckFlagEnabledField              bool
-	IsSaveToSystemAccountFlagEnabledField                bool
 	IsCheckFrozenCollectionFlagEnabledField              bool
-	IsSendAlwaysFlagEnabledField                         bool
-	IsValueLengthCheckFlagEnabledField                   bool
+	IsCheckFunctionArgumentFlagEnabledField              bool
 	IsCheckTransferFlagEnabledField                      bool
-	IsTransferToMetaFlagEnabledField                     bool
+	IsCreateNFTThroughExecByCallerFlagEnabledField       bool
+	IsDisableExecByCallerFlagEnabledField                bool
 	IsESDTNFTImprovementV1FlagEnabledField               bool
-	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
-	FixOOGReturnCodeEnableEpochField                     uint32
-	RemoveNonUpdatedStorageEnableEpochField              uint32
-	CreateNFTThroughExecByCallerEnableEpochField         uint32
-	FixFailExecutionOnErrorEnableEpochField              uint32
+	IsESDTTransferRoleFlagEnabledField                   bool
+	IsFailExecutionOnEveryAPIErrorFlagEnabledField       bool
+	IsFixAsyncCallbackCheckFlagEnabledField              bool
+	IsFixOOGReturnCodeFlagEnabledField                   bool
+	IsFixOldTokenLiquidityEnabledField                   bool
+	IsGlobalMintBurnFlagEnabledField                     bool
+	IsManagedCryptoAPIsFlagEnabledField                  bool
+	IsMultiESDTTransferFixOnCallBackFlagEnabledField     bool
+	IsRefactorContextFlagEnabledField                    bool
+	IsRemoveNonUpdatedStorageFlagEnabledField            bool
+	IsRepairCallbackFlagEnabledField                     bool
+	IsSCDeployFlagEnabledField                           bool
+	IsSaveToSystemAccountFlagEnabledField                bool
+	IsSendAlwaysFlagEnabledField                         bool
+	IsStorageAPICostOptimizationFlagEnabledField         bool
+	IsTransferToMetaFlagEnabledField                     bool
+	IsValueLengthCheckFlagEnabledField                   bool
 	ManagedCryptoAPIEnableEpochField                     uint32
-	DisableExecByCallerEnableEpochField                  uint32
+	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
 	RefactorContextEnableEpochField                      uint32
-	CheckExecuteReadOnlyEnableEpochField                 uint32
+	RemoveNonUpdatedStorageEnableEpochField              uint32
 	StorageAPICostOptimizationEnableEpochField           uint32
 }
 
@@ -170,6 +175,10 @@ func (stub *EnableEpochsHandlerStub) IsESDTNFTImprovementV1FlagEnabled() bool {
 	return stub.IsESDTNFTImprovementV1FlagEnabledField
 }
 
+func (stub *EnableEpochsHandlerStub) IsFixOldTokenLiquidityEnabled() bool {
+	return stub.IsFixOldTokenLiquidityEnabledField
+}
+
 // MultiESDTTransferAsyncCallBackEnableEpoch -
 func (stub *EnableEpochsHandlerStub) MultiESDTTransferAsyncCallBackEnableEpoch() uint32 {
 	return stub.MultiESDTTransferAsyncCallBackEnableEpochField
@@ -225,6 +234,7 @@ func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
 }
 
+// EnableEpochsHandlerStubAllFlags creates a new EnableEpochsHandlerStub with all flags enabled
 func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 	return &EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField:         true,
@@ -250,9 +260,11 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsAheadOfTimeGasUsageFlagEnabledField:                true,
 		IsCheckFunctionArgumentFlagEnabledField:              true,
 		IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+		IsFixOldTokenLiquidityEnabledField:                   true,
 	}
 }
 
+// EnableEpochsHandlerStubNoFlags creates a new EnableEpochsHandlerStub with all flags disabled
 func EnableEpochsHandlerStubNoFlags() *EnableEpochsHandlerStub {
 	return &EnableEpochsHandlerStub{}
 }
