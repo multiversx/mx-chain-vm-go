@@ -9,8 +9,10 @@ import (
 
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
-	eiFunctionNames vmcommon.FunctionNames
-	vmHooks         executor.VMHooks
+	eiFunctionNames    vmcommon.FunctionNames
+	vmHooks            executor.VMHooks
+	vmHooksData        uintptr
+	vmHooksDataPointer unsafe.Pointer
 }
 
 // NewExecutor creates a new wasmer executor.
@@ -64,7 +66,8 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 func (wasmerExecutor *WasmerExecutor) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = hooks
 	data := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
-	//fmt.Printf("data going: %x\n", data)
+	wasmerExecutor.vmHooksData = data
+	wasmerExecutor.vmHooksDataPointer = unsafe.Pointer(&data)
 	instance.SetContextData(unsafe.Pointer(&data))
 }
 
