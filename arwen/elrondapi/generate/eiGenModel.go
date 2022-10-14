@@ -13,11 +13,9 @@ type EIFunctionResult struct {
 
 // EIFunction holds data about one function in the VM EI.
 type EIFunction struct {
-	OriginalName    string
-	LowerCaseName   string
-	CapitalizedName string
-	Arguments       []*EIFunctionArg
-	Result          *EIFunctionResult
+	Name      string
+	Arguments []*EIFunctionArg
+	Result    *EIFunctionResult
 }
 
 // EIGroup groups EI functions into bundles.

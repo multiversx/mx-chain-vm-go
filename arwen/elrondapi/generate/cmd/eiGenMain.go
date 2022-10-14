@@ -35,19 +35,36 @@ func main() {
 		panic(err)
 	}
 
-	out1, err := os.Create(pathToElrondApiPackage + "../../executor/vmHooks.go")
-	if err != nil {
-		panic(err)
-	}
-	defer out1.Close()
-	eapigen.WriteEIInterface(out1, eiMetadata)
-
-	out2, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
-	if err != nil {
-		panic(err)
-	}
-	defer out2.Close()
-	eapigen.WriteCAPIFunctions(out2, eiMetadata)
+	writeVMHooks(eiMetadata)
+	writeWasmerImportsCgo(eiMetadata)
+	writeVMHooksRustTrait(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
+}
+
+func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "../../executor/vmHooks.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteEIInterface(out, eiMetadata)
+}
+
+func writeWasmerImportsCgo(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteCAPIFunctions(out, eiMetadata)
+}
+
+func writeVMHooksRustTrait(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hooks.rs")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteVMHooksRustTrait(out, eiMetadata)
 }

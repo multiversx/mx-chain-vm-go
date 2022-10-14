@@ -9,14 +9,6 @@ import (
 	"strings"
 )
 
-func lowerInitial(name string) string {
-	return strings.ToLower(name[0:1]) + name[1:]
-}
-
-func upperInitial(name string) string {
-	return strings.ToUpper(name[0:1]) + name[1:]
-}
-
 func extractEIFunctionArguments(decl *ast.FuncDecl) ([]*EIFunctionArg, error) {
 	var arguments []*EIFunctionArg
 	for _, param := range decl.Type.Params.List {
@@ -81,10 +73,9 @@ func extractEIFunction(decl *ast.FuncDecl) (*EIFunction, error) {
 	if !interfaceFunction {
 		return nil, nil
 	}
-	originalFunctionName := decl.Name.Name
 	err := validateReceiver(decl)
 	if err != nil {
-		return nil, fmt.Errorf("invalid method %s, %w", originalFunctionName, err)
+		return nil, fmt.Errorf("invalid method %s, %w", decl.Name.Name, err)
 	}
 	arguments, err := extractEIFunctionArguments(decl)
 	if err != nil {
@@ -95,11 +86,9 @@ func extractEIFunction(decl *ast.FuncDecl) (*EIFunction, error) {
 		return nil, err
 	}
 	eiFunction := &EIFunction{
-		OriginalName:    originalFunctionName,
-		LowerCaseName:   lowerInitial(originalFunctionName),
-		CapitalizedName: upperInitial(originalFunctionName),
-		Arguments:       arguments,
-		Result:          result,
+		Name:      decl.Name.Name,
+		Arguments: arguments,
+		Result:    result,
 	}
 
 	return eiFunction, nil

@@ -29,7 +29,7 @@ func WriteEIInterface(out *os.File, eiMetadata *EIMetadata) {
 		out.WriteString(fmt.Sprintf("\ntype %s interface {\n", eiGroupInterfaceName(group)))
 
 		for _, funcMetadata := range group.Functions {
-			out.WriteString(fmt.Sprintf("\t%s(", funcMetadata.CapitalizedName))
+			out.WriteString(fmt.Sprintf("\t%s(", upperInitial(funcMetadata.Name)))
 			for argIndex, arg := range funcMetadata.Arguments {
 				if argIndex > 0 {
 					out.WriteString(", ")

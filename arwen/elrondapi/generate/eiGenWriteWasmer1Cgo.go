@@ -16,7 +16,7 @@ func cgoType(goType string) string {
 }
 
 func cgoFuncName(funcMetadata *EIFunction) string {
-	return fmt.Sprintf("v1_5_%s", funcMetadata.LowerCaseName)
+	return fmt.Sprintf("v1_5_%s", lowerInitial(funcMetadata.Name))
 }
 
 func cgoImportName(funcMetadata *EIFunction) string {
@@ -69,7 +69,7 @@ func writePopulateImports(out *os.File, eiMetadata *EIMetadata) {
 	out.WriteString("\tvar err error\n")
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("\terr = imports.append(\"%s\", %s, %s)\n",
-			funcMetadata.LowerCaseName,
+			lowerInitial(funcMetadata.Name),
 			cgoFuncName(funcMetadata),
 			cgoImportName(funcMetadata),
 		))
@@ -103,7 +103,7 @@ func writeGoExports(out *os.File, eiMetadata *EIMetadata) {
 			out.WriteString("return ")
 		}
 		out.WriteString(fmt.Sprintf("vmHooks.%s(",
-			funcMetadata.CapitalizedName,
+			upperInitial(funcMetadata.Name),
 		))
 		for argIndex, arg := range funcMetadata.Arguments {
 			if argIndex > 0 {
