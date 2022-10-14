@@ -283,8 +283,8 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	}
 }
 
+// TODO: test needs to be reworked, logic changed a lot, skipping for the moment
 func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) {
-	// TODO: remove skip when the issue is fixed
 	t.Skip()
 	code := test.GetTestSCCode("counter", "../../")
 
@@ -306,9 +306,8 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	// FIXME
 	var host1InstancesData = make(map[executor.VMHooks]bool)
-	for _, _ = range instanceRecorder1.GetContractInstances(code) {
+	for range instanceRecorder1.GetContractInstances(code) {
 		host1InstancesData[runtimeContext1.GetVMExecutor().GetVMHooks()] = true
 	}
 
@@ -326,8 +325,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	// FIXME
-	for _, _ = range instanceRecorder2.GetContractInstances(code) {
+	for range instanceRecorder2.GetContractInstances(code) {
 		_, found := host1InstancesData[runtimeContext2.GetVMExecutor().GetVMHooks()]
 		require.False(t, found)
 	}

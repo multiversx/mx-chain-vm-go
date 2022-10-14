@@ -10,7 +10,6 @@ import (
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
 	data := *(*uintptr)(instCtx.Data())
-	//fmt.Printf("data back: %x\n", unsafe.Pointer(data))
 	return *(*executor.VMHooks)(unsafe.Pointer(data))
 }
 

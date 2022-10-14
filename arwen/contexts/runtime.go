@@ -173,8 +173,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	context.instance = newInstance
-	context.vmExecutor.SetVMHooks(context.instance, elrondapi.NewElrondApi(context.host))
-	//context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
+	context.vmExecutor.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -211,8 +210,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	context.vmExecutor.SetVMHooks(context.instance, elrondapi.NewElrondApi(context.host))
-	//context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
+	context.vmExecutor.SetVMHooks(elrondapi.NewElrondApi(context.host))
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -258,8 +256,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	context.vmExecutor.SetVMHooks(context.instance, elrondapi.NewElrondApi(context.host))
-	//context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
+	context.vmExecutor.SetVMHooksForInstance(context.instance, context.vmExecutor.GetVMHooks())
 	context.verifyCode = false
 	return true
 }
@@ -433,6 +430,7 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	}
 
 	context.instance = prevInstance
+	context.vmExecutor.SetVMHooksForInstance(context.instance, context.vmExecutor.GetVMHooks())
 }
 
 // RunningInstancesCount returns the number of the currently running Wasmer instances.

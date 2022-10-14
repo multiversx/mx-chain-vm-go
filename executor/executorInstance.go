@@ -6,8 +6,6 @@ import "unsafe"
 type Instance interface {
 	HasMemory() bool
 	SetContextData(dataPointer unsafe.Pointer)
-	//SetVMHooks(hooks VMHooks)
-	//GetVMHooks() VMHooks
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)

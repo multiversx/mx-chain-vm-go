@@ -51,7 +51,12 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	return NewInstanceWithOptions(contractCode, options)
+	instance, err := NewInstanceWithOptions(contractCode, options)
+	if err == nil {
+		wasmerExecutor.setVMHooksPtrs(instance)
+	}
+
+	return instance, err
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -60,17 +65,32 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	instance, err := NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	if err == nil {
+		wasmerExecutor.setVMHooksPtrs(instance)
+	}
+	return instance, err
 }
 
-func (wasmerExecutor *WasmerExecutor) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
-	wasmerExecutor.vmHooks = hooks
+// SetVMHooks sets the VM hooks that will be used by the executor for current instance.
+func (wasmerExecutor *WasmerExecutor) SetVMHooks(vmHooks executor.VMHooks) {
+	wasmerExecutor.vmHooks = vmHooks
+}
+
+// SetVMHooksForInstance replaces the VM hooks for chosen instance with new ones.
+func (wasmerExecutor *WasmerExecutor) SetVMHooksForInstance(instance executor.Instance, vmHooks executor.VMHooks) {
+	wasmerExecutor.SetVMHooks(vmHooks)
+	wasmerExecutor.setVMHooksPtrs(instance)
+}
+
+// GetVMHooks returns the VM hooks.
+func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
+	return wasmerExecutor.vmHooks
+}
+
+func (wasmerExecutor *WasmerExecutor) setVMHooksPtrs(instance executor.Instance) {
 	data := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 	wasmerExecutor.vmHooksData = data
 	wasmerExecutor.vmHooksDataPointer = unsafe.Pointer(&data)
 	instance.SetContextData(unsafe.Pointer(&data))
-}
-
-func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
-	return wasmerExecutor.vmHooks
 }

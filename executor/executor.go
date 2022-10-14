@@ -40,9 +40,12 @@ type Executor interface {
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
 
-	// TODO: add comment
-	SetVMHooks(instance Instance, hooks VMHooks)
+	// SetVMHooks sets the VM hooks that will be used by the executor for current instance.
+	SetVMHooks(vmHooks VMHooks)
 
-	// TODO: add comment
+	// SetVMHooksForInstance replaces the VM hooks for chosen instance with new ones.
+	SetVMHooksForInstance(instance Instance, vmHooks VMHooks)
+
+	// GetVMHooks returns the VM hooks.
 	GetVMHooks() VMHooks
 }

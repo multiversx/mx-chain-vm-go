@@ -37,6 +37,7 @@ func (executorMock *ExecutorMock) SetRkyvSerializationEnabled(enabled bool) {
 func (executorMock *ExecutorMock) SetSIGSEGVPassthrough() {
 }
 
+// FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
 	return nil
 }
@@ -89,16 +90,6 @@ func (executorMock *ExecutorMock) NewInstanceWithOptions(
 	return wasmer.NewInstanceWithOptions(contractCode, options)
 }
 
-// FIXME
-func (executorMock *ExecutorMock) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
-
-}
-
-// FIXME
-func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
-	return nil
-}
-
 // NewInstanceFromCompiledCodeWithOptions attempts to load a prepared instance
 // using GetStoredInstance; if it doesn't exist, it creates a true Wasmer
 // instance with the provided precompiled code.
@@ -111,4 +102,17 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 		return instance, nil
 	}
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+}
+
+// SetVMHooks mocked method
+func (executorMock *ExecutorMock) SetVMHooks(vmHooks executor.VMHooks) {
+}
+
+// SetVMHooksForInstance mocked method
+func (executorMock *ExecutorMock) SetVMHooksForInstance(instance executor.Instance, vmHooks executor.VMHooks) {
+}
+
+// GetVMHooks mocked method
+func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
+	return nil
 }
