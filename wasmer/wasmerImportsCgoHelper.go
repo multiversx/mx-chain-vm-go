@@ -9,13 +9,10 @@ import (
 )
 
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
-	//instCtx := IntoInstanceContext(contextPtr)
-	// Ovidiu - same as setVMHooks
-	//var ptr = *(*uintptr)(instCtx.Data())
-	dataPointer := cWasmerInstanceContextDataGet((*cWasmerInstanceContextT)(contextPtr))
-	fmt.Printf("dataPointer: %x\n", dataPointer)
-	return *(*executor.VMHooks)(dataPointer)
-	//return *(*executor.VMHooks)(unsafe.Pointer(ptr))
+	instCtx := IntoInstanceContext(contextPtr)
+	data := *(*uintptr)(instCtx.Data())
+	fmt.Printf("data back: %x\n", unsafe.Pointer(data))
+	return *(*executor.VMHooks)(unsafe.Pointer(data))
 }
 
 func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {

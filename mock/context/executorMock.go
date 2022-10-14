@@ -89,7 +89,15 @@ func (executorMock *ExecutorMock) NewInstanceWithOptions(
 	return wasmer.NewInstanceWithOptions(contractCode, options)
 }
 
-func (executorMock *ExecutorMock) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {}
+// FIXME
+func (executorMock *ExecutorMock) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
+
+}
+
+// FIXME
+func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
+	return nil
+}
 
 // NewInstanceFromCompiledCodeWithOptions attempts to load a prepared instance
 // using GetStoredInstance; if it doesn't exist, it creates a true Wasmer

@@ -304,9 +304,10 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
+	// FIXME
 	var host1InstancesData = make(map[executor.VMHooks]bool)
-	for _, instance := range instanceRecorder1.GetContractInstances(code) {
-		host1InstancesData[instance.GetVMHooks()] = true
+	for _, _ = range instanceRecorder1.GetContractInstances(code) {
+		host1InstancesData[runtimeContext1.GetVMExecutor().GetVMHooks()] = true
 	}
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
@@ -323,8 +324,9 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	for _, instance := range instanceRecorder2.GetContractInstances(code) {
-		_, found := host1InstancesData[instance.GetVMHooks()]
+	// FIXME
+	for _, _ = range instanceRecorder2.GetContractInstances(code) {
+		_, found := host1InstancesData[runtimeContext2.GetVMExecutor().GetVMHooks()]
 		require.False(t, found)
 	}
 }

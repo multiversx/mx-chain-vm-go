@@ -40,6 +40,9 @@ type Executor interface {
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
 
-	// Ovidiu
+	// TODO: add comment
 	SetVMHooks(instance Instance, hooks VMHooks)
+
+	// TODO: add comment
+	GetVMHooks() VMHooks
 }

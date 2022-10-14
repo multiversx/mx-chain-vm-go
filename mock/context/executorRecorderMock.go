@@ -49,8 +49,6 @@ func (executorMock *ExecutorRecorderMock) NewInstanceWithOptions(
 	return instance, err
 }
 
-func (executorMock *ExecutorRecorderMock) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {}
-
 // NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
 func (executorMock *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
@@ -77,4 +75,14 @@ func (executorMock *ExecutorRecorderMock) addContractInstanceToInstanceMap(code 
 // GetContractInstances gets contract instances for code
 func (executorMock *ExecutorRecorderMock) GetContractInstances(code []byte) []executor.Instance {
 	return executorMock.InstanceMap[string(code)]
+}
+
+// FIXME
+func (executorMock *ExecutorRecorderMock) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
+
+}
+
+// FIXME
+func (executorMock *ExecutorRecorderMock) GetVMHooks() executor.VMHooks {
+	return nil
 }

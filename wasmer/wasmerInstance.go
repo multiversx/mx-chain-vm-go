@@ -202,31 +202,30 @@ func NewInstanceFromCompiledCodeWithOptions(
 	return instance, err
 }
 
-// SetVMHooks assigns a data that can be used by all imported
-// functions. Indeed, each imported function receives as its first
-// argument an instance context (see `InstanceContext`). An instance
-// context can hold a pointer to any kind of data. It is important to
-// understand that this data is shared by all imported function, it's
-// global to the instance.
-func (instance *WasmerInstance) SetVMHooks(callbacks executor.VMHooks) {
-	instance.callbacks = callbacks
-	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
-	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
-	// Ovidiu - this is same from getVMHooks
-	instance.callbacksPtr = localPtr
-	instance.callbacksPtrPtr = unsafe.Pointer(&localPtr)
-	cWasmerInstanceContextDataSet(instance.instance, instance.callbacksPtrPtr)
-}
+// // SetVMHooks assigns a data that can be used by all imported
+// // functions. Indeed, each imported function receives as its first
+// // argument an instance context (see `InstanceContext`). An instance
+// // context can hold a pointer to any kind of data. It is important to
+// // understand that this data is shared by all imported function, it's
+// // global to the instance.
+// func (instance *WasmerInstance) SetVMHooks(callbacks executor.VMHooks) {
+// 	instance.callbacks = callbacks
+// 	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
+// 	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
+// 	// Ovidiu - this is same from getVMHooks
+// 	instance.callbacksPtr = localPtr
+// 	instance.callbacksPtrPtr = unsafe.Pointer(&localPtr)
+// 	cWasmerInstanceContextDataSet(instance.instance, instance.callbacksPtrPtr)
+// }
 
 func (instance *WasmerInstance) SetContextData(dataPointer unsafe.Pointer) {
-	fmt.Printf("dataPointer: %x\n", dataPointer)
 	cWasmerInstanceContextDataSet(instance.instance, dataPointer)
 }
 
-// GetVMHooks returns a pointer for the current instance's data
-func (instance *WasmerInstance) GetVMHooks() executor.VMHooks {
-	return instance.callbacks
-}
+// // GetVMHooks returns a pointer for the current instance's data
+// func (instance *WasmerInstance) GetVMHooks() executor.VMHooks {
+// 	return instance.callbacks
+// }
 
 // Clean cleans instance
 func (instance *WasmerInstance) Clean() {

@@ -173,8 +173,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	context.instance = newInstance
-
-	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
+	context.vmExecutor.SetVMHooks(context.instance, elrondapi.NewElrondApi(context.host))
+	//context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -258,7 +258,8 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
+	context.vmExecutor.SetVMHooks(context.instance, elrondapi.NewElrondApi(context.host))
+	//context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 	return true
 }

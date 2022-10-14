@@ -1,6 +1,7 @@
 package wasmer
 
 import (
+	"fmt"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -10,6 +11,7 @@ import (
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
 	eiFunctionNames vmcommon.FunctionNames
+	vmHooks         executor.VMHooks
 }
 
 // NewExecutor creates a new wasmer executor.
@@ -61,7 +63,12 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 }
 
 func (wasmerExecutor *WasmerExecutor) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
-	data := uintptr(unsafe.Pointer(&hooks))
-	dataPointer := unsafe.Pointer(&data)
-	instance.SetContextData(dataPointer)
+	wasmerExecutor.vmHooks = hooks
+	data := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
+	fmt.Printf("data going: %x\n", data)
+	instance.SetContextData(unsafe.Pointer(&data))
+}
+
+func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
+	return wasmerExecutor.vmHooks
 }
