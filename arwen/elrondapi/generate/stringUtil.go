@@ -13,11 +13,11 @@ func upperInitial(name string) string {
 	return strings.ToUpper(name[0:1]) + name[1:]
 }
 
-var knownAcronyms = []string{"esdt", "nft", "id", "uri"}
+var knownAcronyms = []string{"esdt", "nft", "id", "uri", "sc"}
 
 func snakeCase(camelCase string) string {
 	// replace known acronyms
-	// e.g. "ESDT" becomes "Esdt" in this step, so that the underscore are inserted properly
+	// e.g. "ESDT" becomes "Esdt" in this step, so that the underscores are inserted properly
 	for _, knownAcronym := range knownAcronyms {
 		camelCase = strings.Replace(camelCase, strings.ToUpper(knownAcronym), upperInitial(knownAcronym), -1)
 	}
