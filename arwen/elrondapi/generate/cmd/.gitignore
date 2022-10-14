@@ -1,2 +1,4 @@
-# generated files that belong to other repos
-vm_hooks.rs
+# generated files that belong to other repos:
+# (TODO: uncomment after PR is finished)
+# vm_hooks.rs 
+# wasmer_imports.rs
