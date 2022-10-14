@@ -1,6 +1,7 @@
 package wasmer
 
 import (
+	"fmt"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -8,9 +9,13 @@ import (
 )
 
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
-	instCtx := IntoInstanceContext(contextPtr)
-	var ptr = *(*uintptr)(instCtx.Data())
-	return *(*executor.VMHooks)(unsafe.Pointer(ptr))
+	//instCtx := IntoInstanceContext(contextPtr)
+	// Ovidiu - same as setVMHooks
+	//var ptr = *(*uintptr)(instCtx.Data())
+	dataPointer := cWasmerInstanceContextDataGet((*cWasmerInstanceContextT)(contextPtr))
+	fmt.Printf("dataPointer: %x\n", dataPointer)
+	return *(*executor.VMHooks)(dataPointer)
+	//return *(*executor.VMHooks)(unsafe.Pointer(ptr))
 }
 
 func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {

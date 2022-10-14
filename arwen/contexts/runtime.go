@@ -211,7 +211,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
+	context.vmExecutor.SetVMHooks(context.instance, elrondapi.NewElrondApi(context.host))
+	//context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 
 	if newCode {
 		err = context.VerifyContractCode()

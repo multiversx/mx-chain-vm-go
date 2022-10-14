@@ -1,6 +1,8 @@
 package wasmer
 
 import (
+	"unsafe"
+
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
@@ -56,4 +58,10 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
 	return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+}
+
+func (wasmerExecutor *WasmerExecutor) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {
+	data := uintptr(unsafe.Pointer(&hooks))
+	dataPointer := unsafe.Pointer(&data)
+	instance.SetContextData(dataPointer)
 }

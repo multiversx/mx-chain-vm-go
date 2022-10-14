@@ -49,6 +49,8 @@ func (executorMock *ExecutorRecorderMock) NewInstanceWithOptions(
 	return instance, err
 }
 
+func (executorMock *ExecutorRecorderMock) SetVMHooks(instance executor.Instance, hooks executor.VMHooks) {}
+
 // NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
 func (executorMock *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,

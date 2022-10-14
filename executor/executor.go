@@ -39,4 +39,7 @@ type Executor interface {
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
+
+	// Ovidiu
+	SetVMHooks(instance Instance, hooks VMHooks)
 }

@@ -1,9 +1,12 @@
 package executor
 
+import "unsafe"
+
 // Instance defines the functionality of a Wasmer instance
 type Instance interface {
 	HasMemory() bool
-	SetVMHooks(callbacks VMHooks)
+	SetContextData(dataPointer unsafe.Pointer)
+	SetVMHooks(hooks VMHooks)
 	GetVMHooks() VMHooks
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)

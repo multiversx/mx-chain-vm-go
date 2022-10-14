@@ -3,6 +3,7 @@ package mock
 import (
 	"errors"
 	"testing"
+	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
@@ -65,6 +66,10 @@ func (instance *InstanceMock) SetVMHooks(callbacks executor.VMHooks) {
 // GetVMHooks mocked method
 func (instance *InstanceMock) GetVMHooks() executor.VMHooks {
 	return instance.Data
+}
+
+// GetVMHooks mocked method
+func (instance *InstanceMock) SetContextData(dataPointer unsafe.Pointer) {
 }
 
 // GetPointsUsed mocked method
