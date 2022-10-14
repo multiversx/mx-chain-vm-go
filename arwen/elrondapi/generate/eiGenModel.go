@@ -24,6 +24,7 @@ type EIFunction struct {
 // They can end up in separate interfaces or files, if desired.
 type EIGroup struct {
 	SourcePath string
+	Name       string
 	Functions  []*EIFunction
 }
 

@@ -11,70 +11,6 @@ package wasmer
 // #include <stdlib.h>
 // typedef int int32_t;
 //
-// extern int32_t   v1_5_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
-// extern int32_t   v1_5_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
-// extern int32_t   v1_5_bigFloatNewFromSci(void* context, long long significand, long long exponent);
-// extern void      v1_5_bigFloatAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigFloatSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigFloatMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigFloatDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigFloatNeg(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void      v1_5_bigFloatClone(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern int32_t   v1_5_bigFloatCmp(void* context, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigFloatAbs(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern int32_t   v1_5_bigFloatSign(void* context, int32_t opHandle);
-// extern void      v1_5_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void      v1_5_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
-// extern void      v1_5_bigFloatFloor(void* context, int32_t destBigIntHandle, int32_t opHandle);
-// extern void      v1_5_bigFloatCeil(void* context, int32_t destBigIntHandle, int32_t opHandle);
-// extern void      v1_5_bigFloatTruncate(void* context, int32_t destBigIntHandle, int32_t opHandle);
-// extern void      v1_5_bigFloatSetInt64(void* context, int32_t destinationHandle, long long value);
-// extern int32_t   v1_5_bigFloatIsInt(void* context, int32_t opHandle);
-// extern void      v1_5_bigFloatSetBigInt(void* context, int32_t destinationHandle, int32_t bigIntHandle);
-// extern void      v1_5_bigFloatGetConstPi(void* context, int32_t destinationHandle);
-// extern void      v1_5_bigFloatGetConstE(void* context, int32_t destinationHandle);
-// extern void      v1_5_bigIntGetUnsignedArgument(void* context, int32_t id, int32_t destinationHandle);
-// extern void      v1_5_bigIntGetSignedArgument(void* context, int32_t id, int32_t destinationHandle);
-// extern int32_t   v1_5_bigIntStorageStoreUnsigned(void* context, int32_t keyOffset, int32_t keyLength, int32_t sourceHandle);
-// extern int32_t   v1_5_bigIntStorageLoadUnsigned(void* context, int32_t keyOffset, int32_t keyLength, int32_t destinationHandle);
-// extern void      v1_5_bigIntGetCallValue(void* context, int32_t destinationHandle);
-// extern void      v1_5_bigIntGetESDTCallValue(void* context, int32_t destination);
-// extern void      v1_5_bigIntGetESDTCallValueByIndex(void* context, int32_t destinationHandle, int32_t index);
-// extern void      v1_5_bigIntGetExternalBalance(void* context, int32_t addressOffset, int32_t result);
-// extern void      v1_5_bigIntGetESDTExternalBalance(void* context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultHandle);
-// extern int32_t   v1_5_bigIntNew(void* context, long long smallValue);
-// extern int32_t   v1_5_bigIntUnsignedByteLength(void* context, int32_t referenceHandle);
-// extern int32_t   v1_5_bigIntSignedByteLength(void* context, int32_t referenceHandle);
-// extern int32_t   v1_5_bigIntGetUnsignedBytes(void* context, int32_t referenceHandle, int32_t byteOffset);
-// extern int32_t   v1_5_bigIntGetSignedBytes(void* context, int32_t referenceHandle, int32_t byteOffset);
-// extern void      v1_5_bigIntSetUnsignedBytes(void* context, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
-// extern void      v1_5_bigIntSetSignedBytes(void* context, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
-// extern int32_t   v1_5_bigIntIsInt64(void* context, int32_t destinationHandle);
-// extern long long v1_5_bigIntGetInt64(void* context, int32_t destinationHandle);
-// extern void      v1_5_bigIntSetInt64(void* context, int32_t destinationHandle, long long value);
-// extern void      v1_5_bigIntAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntTDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntTMod(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntEDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntEMod(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void      v1_5_bigIntPow(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern int32_t   v1_5_bigIntLog2(void* context, int32_t op1Handle);
-// extern void      v1_5_bigIntAbs(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void      v1_5_bigIntNeg(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern int32_t   v1_5_bigIntSign(void* context, int32_t opHandle);
-// extern int32_t   v1_5_bigIntCmp(void* context, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntNot(void* context, int32_t destinationHandle, int32_t opHandle);
-// extern void      v1_5_bigIntAnd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntOr(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntXor(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
-// extern void      v1_5_bigIntShr(void* context, int32_t destinationHandle, int32_t opHandle, int32_t bits);
-// extern void      v1_5_bigIntShl(void* context, int32_t destinationHandle, int32_t opHandle, int32_t bits);
-// extern void      v1_5_bigIntFinishUnsigned(void* context, int32_t referenceHandle);
-// extern void      v1_5_bigIntFinishSigned(void* context, int32_t referenceHandle);
-// extern void      v1_5_bigIntToString(void* context, int32_t bigIntHandle, int32_t destinationHandle);
 // extern long long v1_5_getGasLeft(void* context);
 // extern void      v1_5_getSCAddress(void* context, int32_t resultOffset);
 // extern void      v1_5_getOwnerAddress(void* context, int32_t resultOffset);
@@ -185,6 +121,70 @@ package wasmer
 // extern int32_t   v1_5_managedIsESDTLimitedTransfer(void* context, int32_t tokenIDHandle);
 // extern int32_t   v1_5_managedIsESDTPaused(void* context, int32_t tokenIDHandle);
 // extern void      v1_5_managedBufferToHex(void* context, int32_t sourceHandle, int32_t destHandle);
+// extern int32_t   v1_5_bigFloatNewFromParts(void* context, int32_t integralPart, int32_t fractionalPart, int32_t exponent);
+// extern int32_t   v1_5_bigFloatNewFromFrac(void* context, long long numerator, long long denominator);
+// extern int32_t   v1_5_bigFloatNewFromSci(void* context, long long significand, long long exponent);
+// extern void      v1_5_bigFloatAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigFloatSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigFloatMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigFloatDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigFloatNeg(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void      v1_5_bigFloatClone(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern int32_t   v1_5_bigFloatCmp(void* context, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigFloatAbs(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern int32_t   v1_5_bigFloatSign(void* context, int32_t opHandle);
+// extern void      v1_5_bigFloatSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void      v1_5_bigFloatPow(void* context, int32_t destinationHandle, int32_t opHandle, int32_t exponent);
+// extern void      v1_5_bigFloatFloor(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void      v1_5_bigFloatCeil(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void      v1_5_bigFloatTruncate(void* context, int32_t destBigIntHandle, int32_t opHandle);
+// extern void      v1_5_bigFloatSetInt64(void* context, int32_t destinationHandle, long long value);
+// extern int32_t   v1_5_bigFloatIsInt(void* context, int32_t opHandle);
+// extern void      v1_5_bigFloatSetBigInt(void* context, int32_t destinationHandle, int32_t bigIntHandle);
+// extern void      v1_5_bigFloatGetConstPi(void* context, int32_t destinationHandle);
+// extern void      v1_5_bigFloatGetConstE(void* context, int32_t destinationHandle);
+// extern void      v1_5_bigIntGetUnsignedArgument(void* context, int32_t id, int32_t destinationHandle);
+// extern void      v1_5_bigIntGetSignedArgument(void* context, int32_t id, int32_t destinationHandle);
+// extern int32_t   v1_5_bigIntStorageStoreUnsigned(void* context, int32_t keyOffset, int32_t keyLength, int32_t sourceHandle);
+// extern int32_t   v1_5_bigIntStorageLoadUnsigned(void* context, int32_t keyOffset, int32_t keyLength, int32_t destinationHandle);
+// extern void      v1_5_bigIntGetCallValue(void* context, int32_t destinationHandle);
+// extern void      v1_5_bigIntGetESDTCallValue(void* context, int32_t destination);
+// extern void      v1_5_bigIntGetESDTCallValueByIndex(void* context, int32_t destinationHandle, int32_t index);
+// extern void      v1_5_bigIntGetExternalBalance(void* context, int32_t addressOffset, int32_t result);
+// extern void      v1_5_bigIntGetESDTExternalBalance(void* context, int32_t addressOffset, int32_t tokenIDOffset, int32_t tokenIDLen, long long nonce, int32_t resultHandle);
+// extern int32_t   v1_5_bigIntNew(void* context, long long smallValue);
+// extern int32_t   v1_5_bigIntUnsignedByteLength(void* context, int32_t referenceHandle);
+// extern int32_t   v1_5_bigIntSignedByteLength(void* context, int32_t referenceHandle);
+// extern int32_t   v1_5_bigIntGetUnsignedBytes(void* context, int32_t referenceHandle, int32_t byteOffset);
+// extern int32_t   v1_5_bigIntGetSignedBytes(void* context, int32_t referenceHandle, int32_t byteOffset);
+// extern void      v1_5_bigIntSetUnsignedBytes(void* context, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
+// extern void      v1_5_bigIntSetSignedBytes(void* context, int32_t destinationHandle, int32_t byteOffset, int32_t byteLength);
+// extern int32_t   v1_5_bigIntIsInt64(void* context, int32_t destinationHandle);
+// extern long long v1_5_bigIntGetInt64(void* context, int32_t destinationHandle);
+// extern void      v1_5_bigIntSetInt64(void* context, int32_t destinationHandle, long long value);
+// extern void      v1_5_bigIntAdd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntSub(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntMul(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntTDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntTMod(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntEDiv(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntEMod(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntSqrt(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void      v1_5_bigIntPow(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern int32_t   v1_5_bigIntLog2(void* context, int32_t op1Handle);
+// extern void      v1_5_bigIntAbs(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void      v1_5_bigIntNeg(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern int32_t   v1_5_bigIntSign(void* context, int32_t opHandle);
+// extern int32_t   v1_5_bigIntCmp(void* context, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntNot(void* context, int32_t destinationHandle, int32_t opHandle);
+// extern void      v1_5_bigIntAnd(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntOr(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntXor(void* context, int32_t destinationHandle, int32_t op1Handle, int32_t op2Handle);
+// extern void      v1_5_bigIntShr(void* context, int32_t destinationHandle, int32_t opHandle, int32_t bits);
+// extern void      v1_5_bigIntShl(void* context, int32_t destinationHandle, int32_t opHandle, int32_t bits);
+// extern void      v1_5_bigIntFinishUnsigned(void* context, int32_t referenceHandle);
+// extern void      v1_5_bigIntFinishSigned(void* context, int32_t referenceHandle);
+// extern void      v1_5_bigIntToString(void* context, int32_t bigIntHandle, int32_t destinationHandle);
 // extern int32_t   v1_5_mBufferNew(void* context);
 // extern int32_t   v1_5_mBufferNewFromBytes(void* context, int32_t dataOffset, int32_t dataLength);
 // extern int32_t   v1_5_mBufferGetLength(void* context, int32_t mBufferHandle);
@@ -267,326 +267,6 @@ import (
 // populateWasmerImports populates imports with the ElrondEI API methods
 func populateWasmerImports(imports *wasmerImports) error {
 	var err error
-	err = imports.append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatNewFromFrac", v1_5_bigFloatNewFromFrac, C.v1_5_bigFloatNewFromFrac)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatNewFromSci", v1_5_bigFloatNewFromSci, C.v1_5_bigFloatNewFromSci)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatAdd", v1_5_bigFloatAdd, C.v1_5_bigFloatAdd)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatSub", v1_5_bigFloatSub, C.v1_5_bigFloatSub)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatMul", v1_5_bigFloatMul, C.v1_5_bigFloatMul)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatDiv", v1_5_bigFloatDiv, C.v1_5_bigFloatDiv)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatNeg", v1_5_bigFloatNeg, C.v1_5_bigFloatNeg)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatClone", v1_5_bigFloatClone, C.v1_5_bigFloatClone)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatCmp", v1_5_bigFloatCmp, C.v1_5_bigFloatCmp)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatAbs", v1_5_bigFloatAbs, C.v1_5_bigFloatAbs)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatSign", v1_5_bigFloatSign, C.v1_5_bigFloatSign)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatSqrt", v1_5_bigFloatSqrt, C.v1_5_bigFloatSqrt)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatPow", v1_5_bigFloatPow, C.v1_5_bigFloatPow)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatFloor", v1_5_bigFloatFloor, C.v1_5_bigFloatFloor)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatCeil", v1_5_bigFloatCeil, C.v1_5_bigFloatCeil)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatTruncate", v1_5_bigFloatTruncate, C.v1_5_bigFloatTruncate)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatSetInt64", v1_5_bigFloatSetInt64, C.v1_5_bigFloatSetInt64)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatIsInt", v1_5_bigFloatIsInt, C.v1_5_bigFloatIsInt)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatSetBigInt", v1_5_bigFloatSetBigInt, C.v1_5_bigFloatSetBigInt)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatGetConstPi", v1_5_bigFloatGetConstPi, C.v1_5_bigFloatGetConstPi)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigFloatGetConstE", v1_5_bigFloatGetConstE, C.v1_5_bigFloatGetConstE)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetUnsignedArgument", v1_5_bigIntGetUnsignedArgument, C.v1_5_bigIntGetUnsignedArgument)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetSignedArgument", v1_5_bigIntGetSignedArgument, C.v1_5_bigIntGetSignedArgument)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntStorageStoreUnsigned", v1_5_bigIntStorageStoreUnsigned, C.v1_5_bigIntStorageStoreUnsigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntStorageLoadUnsigned", v1_5_bigIntStorageLoadUnsigned, C.v1_5_bigIntStorageLoadUnsigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetCallValue", v1_5_bigIntGetCallValue, C.v1_5_bigIntGetCallValue)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetESDTCallValue", v1_5_bigIntGetESDTCallValue, C.v1_5_bigIntGetESDTCallValue)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetESDTCallValueByIndex", v1_5_bigIntGetESDTCallValueByIndex, C.v1_5_bigIntGetESDTCallValueByIndex)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetExternalBalance", v1_5_bigIntGetExternalBalance, C.v1_5_bigIntGetExternalBalance)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetESDTExternalBalance", v1_5_bigIntGetESDTExternalBalance, C.v1_5_bigIntGetESDTExternalBalance)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntNew", v1_5_bigIntNew, C.v1_5_bigIntNew)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntUnsignedByteLength", v1_5_bigIntUnsignedByteLength, C.v1_5_bigIntUnsignedByteLength)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSignedByteLength", v1_5_bigIntSignedByteLength, C.v1_5_bigIntSignedByteLength)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetUnsignedBytes", v1_5_bigIntGetUnsignedBytes, C.v1_5_bigIntGetUnsignedBytes)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetSignedBytes", v1_5_bigIntGetSignedBytes, C.v1_5_bigIntGetSignedBytes)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSetUnsignedBytes", v1_5_bigIntSetUnsignedBytes, C.v1_5_bigIntSetUnsignedBytes)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSetSignedBytes", v1_5_bigIntSetSignedBytes, C.v1_5_bigIntSetSignedBytes)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntIsInt64", v1_5_bigIntIsInt64, C.v1_5_bigIntIsInt64)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntGetInt64", v1_5_bigIntGetInt64, C.v1_5_bigIntGetInt64)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSetInt64", v1_5_bigIntSetInt64, C.v1_5_bigIntSetInt64)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntAdd", v1_5_bigIntAdd, C.v1_5_bigIntAdd)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSub", v1_5_bigIntSub, C.v1_5_bigIntSub)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntMul", v1_5_bigIntMul, C.v1_5_bigIntMul)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntTDiv", v1_5_bigIntTDiv, C.v1_5_bigIntTDiv)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntTMod", v1_5_bigIntTMod, C.v1_5_bigIntTMod)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntEDiv", v1_5_bigIntEDiv, C.v1_5_bigIntEDiv)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntEMod", v1_5_bigIntEMod, C.v1_5_bigIntEMod)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSqrt", v1_5_bigIntSqrt, C.v1_5_bigIntSqrt)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntPow", v1_5_bigIntPow, C.v1_5_bigIntPow)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntLog2", v1_5_bigIntLog2, C.v1_5_bigIntLog2)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntAbs", v1_5_bigIntAbs, C.v1_5_bigIntAbs)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntNeg", v1_5_bigIntNeg, C.v1_5_bigIntNeg)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntSign", v1_5_bigIntSign, C.v1_5_bigIntSign)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntCmp", v1_5_bigIntCmp, C.v1_5_bigIntCmp)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntNot", v1_5_bigIntNot, C.v1_5_bigIntNot)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntAnd", v1_5_bigIntAnd, C.v1_5_bigIntAnd)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntOr", v1_5_bigIntOr, C.v1_5_bigIntOr)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntXor", v1_5_bigIntXor, C.v1_5_bigIntXor)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntShr", v1_5_bigIntShr, C.v1_5_bigIntShr)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntShl", v1_5_bigIntShl, C.v1_5_bigIntShl)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntFinishUnsigned", v1_5_bigIntFinishUnsigned, C.v1_5_bigIntFinishUnsigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntFinishSigned", v1_5_bigIntFinishSigned, C.v1_5_bigIntFinishSigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.append("bigIntToString", v1_5_bigIntToString, C.v1_5_bigIntToString)
-	if err != nil {
-		return err
-	}
-
 	err = imports.append("getGasLeft", v1_5_getGasLeft, C.v1_5_getGasLeft)
 	if err != nil {
 		return err
@@ -1137,6 +817,326 @@ func populateWasmerImports(imports *wasmerImports) error {
 		return err
 	}
 
+	err = imports.append("bigFloatNewFromParts", v1_5_bigFloatNewFromParts, C.v1_5_bigFloatNewFromParts)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatNewFromFrac", v1_5_bigFloatNewFromFrac, C.v1_5_bigFloatNewFromFrac)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatNewFromSci", v1_5_bigFloatNewFromSci, C.v1_5_bigFloatNewFromSci)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatAdd", v1_5_bigFloatAdd, C.v1_5_bigFloatAdd)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatSub", v1_5_bigFloatSub, C.v1_5_bigFloatSub)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatMul", v1_5_bigFloatMul, C.v1_5_bigFloatMul)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatDiv", v1_5_bigFloatDiv, C.v1_5_bigFloatDiv)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatNeg", v1_5_bigFloatNeg, C.v1_5_bigFloatNeg)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatClone", v1_5_bigFloatClone, C.v1_5_bigFloatClone)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatCmp", v1_5_bigFloatCmp, C.v1_5_bigFloatCmp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatAbs", v1_5_bigFloatAbs, C.v1_5_bigFloatAbs)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatSign", v1_5_bigFloatSign, C.v1_5_bigFloatSign)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatSqrt", v1_5_bigFloatSqrt, C.v1_5_bigFloatSqrt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatPow", v1_5_bigFloatPow, C.v1_5_bigFloatPow)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatFloor", v1_5_bigFloatFloor, C.v1_5_bigFloatFloor)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatCeil", v1_5_bigFloatCeil, C.v1_5_bigFloatCeil)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatTruncate", v1_5_bigFloatTruncate, C.v1_5_bigFloatTruncate)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatSetInt64", v1_5_bigFloatSetInt64, C.v1_5_bigFloatSetInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatIsInt", v1_5_bigFloatIsInt, C.v1_5_bigFloatIsInt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatSetBigInt", v1_5_bigFloatSetBigInt, C.v1_5_bigFloatSetBigInt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatGetConstPi", v1_5_bigFloatGetConstPi, C.v1_5_bigFloatGetConstPi)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigFloatGetConstE", v1_5_bigFloatGetConstE, C.v1_5_bigFloatGetConstE)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetUnsignedArgument", v1_5_bigIntGetUnsignedArgument, C.v1_5_bigIntGetUnsignedArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetSignedArgument", v1_5_bigIntGetSignedArgument, C.v1_5_bigIntGetSignedArgument)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntStorageStoreUnsigned", v1_5_bigIntStorageStoreUnsigned, C.v1_5_bigIntStorageStoreUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntStorageLoadUnsigned", v1_5_bigIntStorageLoadUnsigned, C.v1_5_bigIntStorageLoadUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetCallValue", v1_5_bigIntGetCallValue, C.v1_5_bigIntGetCallValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetESDTCallValue", v1_5_bigIntGetESDTCallValue, C.v1_5_bigIntGetESDTCallValue)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetESDTCallValueByIndex", v1_5_bigIntGetESDTCallValueByIndex, C.v1_5_bigIntGetESDTCallValueByIndex)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetExternalBalance", v1_5_bigIntGetExternalBalance, C.v1_5_bigIntGetExternalBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetESDTExternalBalance", v1_5_bigIntGetESDTExternalBalance, C.v1_5_bigIntGetESDTExternalBalance)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntNew", v1_5_bigIntNew, C.v1_5_bigIntNew)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntUnsignedByteLength", v1_5_bigIntUnsignedByteLength, C.v1_5_bigIntUnsignedByteLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSignedByteLength", v1_5_bigIntSignedByteLength, C.v1_5_bigIntSignedByteLength)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetUnsignedBytes", v1_5_bigIntGetUnsignedBytes, C.v1_5_bigIntGetUnsignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetSignedBytes", v1_5_bigIntGetSignedBytes, C.v1_5_bigIntGetSignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSetUnsignedBytes", v1_5_bigIntSetUnsignedBytes, C.v1_5_bigIntSetUnsignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSetSignedBytes", v1_5_bigIntSetSignedBytes, C.v1_5_bigIntSetSignedBytes)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntIsInt64", v1_5_bigIntIsInt64, C.v1_5_bigIntIsInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntGetInt64", v1_5_bigIntGetInt64, C.v1_5_bigIntGetInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSetInt64", v1_5_bigIntSetInt64, C.v1_5_bigIntSetInt64)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntAdd", v1_5_bigIntAdd, C.v1_5_bigIntAdd)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSub", v1_5_bigIntSub, C.v1_5_bigIntSub)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntMul", v1_5_bigIntMul, C.v1_5_bigIntMul)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntTDiv", v1_5_bigIntTDiv, C.v1_5_bigIntTDiv)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntTMod", v1_5_bigIntTMod, C.v1_5_bigIntTMod)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntEDiv", v1_5_bigIntEDiv, C.v1_5_bigIntEDiv)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntEMod", v1_5_bigIntEMod, C.v1_5_bigIntEMod)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSqrt", v1_5_bigIntSqrt, C.v1_5_bigIntSqrt)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntPow", v1_5_bigIntPow, C.v1_5_bigIntPow)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntLog2", v1_5_bigIntLog2, C.v1_5_bigIntLog2)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntAbs", v1_5_bigIntAbs, C.v1_5_bigIntAbs)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntNeg", v1_5_bigIntNeg, C.v1_5_bigIntNeg)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntSign", v1_5_bigIntSign, C.v1_5_bigIntSign)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntCmp", v1_5_bigIntCmp, C.v1_5_bigIntCmp)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntNot", v1_5_bigIntNot, C.v1_5_bigIntNot)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntAnd", v1_5_bigIntAnd, C.v1_5_bigIntAnd)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntOr", v1_5_bigIntOr, C.v1_5_bigIntOr)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntXor", v1_5_bigIntXor, C.v1_5_bigIntXor)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntShr", v1_5_bigIntShr, C.v1_5_bigIntShr)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntShl", v1_5_bigIntShl, C.v1_5_bigIntShl)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntFinishUnsigned", v1_5_bigIntFinishUnsigned, C.v1_5_bigIntFinishUnsigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntFinishSigned", v1_5_bigIntFinishSigned, C.v1_5_bigIntFinishSigned)
+	if err != nil {
+		return err
+	}
+
+	err = imports.append("bigIntToString", v1_5_bigIntToString, C.v1_5_bigIntToString)
+	if err != nil {
+		return err
+	}
+
 	err = imports.append("mBufferNew", v1_5_mBufferNew, C.v1_5_mBufferNew)
 	if err != nil {
 		return err
@@ -1503,390 +1503,6 @@ func populateWasmerImports(imports *wasmerImports) error {
 	}
 
 	return nil
-}
-
-//export v1_5_bigFloatNewFromParts
-func v1_5_bigFloatNewFromParts(context unsafe.Pointer, integralPart int32, fractionalPart int32, exponent int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
-}
-
-//export v1_5_bigFloatNewFromFrac
-func v1_5_bigFloatNewFromFrac(context unsafe.Pointer, numerator int64, denominator int64) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatNewFromFrac(numerator, denominator)
-}
-
-//export v1_5_bigFloatNewFromSci
-func v1_5_bigFloatNewFromSci(context unsafe.Pointer, significand int64, exponent int64) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatNewFromSci(significand, exponent)
-}
-
-//export v1_5_bigFloatAdd
-func v1_5_bigFloatAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigFloatSub
-func v1_5_bigFloatSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigFloatMul
-func v1_5_bigFloatMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigFloatDiv
-func v1_5_bigFloatDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigFloatNeg
-func v1_5_bigFloatNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatNeg(destinationHandle, opHandle)
-}
-
-//export v1_5_bigFloatClone
-func v1_5_bigFloatClone(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatClone(destinationHandle, opHandle)
-}
-
-//export v1_5_bigFloatCmp
-func v1_5_bigFloatCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatCmp(op1Handle, op2Handle)
-}
-
-//export v1_5_bigFloatAbs
-func v1_5_bigFloatAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatAbs(destinationHandle, opHandle)
-}
-
-//export v1_5_bigFloatSign
-func v1_5_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatSign(opHandle)
-}
-
-//export v1_5_bigFloatSqrt
-func v1_5_bigFloatSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSqrt(destinationHandle, opHandle)
-}
-
-//export v1_5_bigFloatPow
-func v1_5_bigFloatPow(context unsafe.Pointer, destinationHandle int32, opHandle int32, exponent int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
-}
-
-//export v1_5_bigFloatFloor
-func v1_5_bigFloatFloor(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
-}
-
-//export v1_5_bigFloatCeil
-func v1_5_bigFloatCeil(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
-}
-
-//export v1_5_bigFloatTruncate
-func v1_5_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
-}
-
-//export v1_5_bigFloatSetInt64
-func v1_5_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSetInt64(destinationHandle, value)
-}
-
-//export v1_5_bigFloatIsInt
-func v1_5_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigFloatIsInt(opHandle)
-}
-
-//export v1_5_bigFloatSetBigInt
-func v1_5_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle int32, bigIntHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
-}
-
-//export v1_5_bigFloatGetConstPi
-func v1_5_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatGetConstPi(destinationHandle)
-}
-
-//export v1_5_bigFloatGetConstE
-func v1_5_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigFloatGetConstE(destinationHandle)
-}
-
-//export v1_5_bigIntGetUnsignedArgument
-func v1_5_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
-}
-
-//export v1_5_bigIntGetSignedArgument
-func v1_5_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetSignedArgument(id, destinationHandle)
-}
-
-//export v1_5_bigIntStorageStoreUnsigned
-func v1_5_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
-}
-
-//export v1_5_bigIntStorageLoadUnsigned
-func v1_5_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
-}
-
-//export v1_5_bigIntGetCallValue
-func v1_5_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetCallValue(destinationHandle)
-}
-
-//export v1_5_bigIntGetESDTCallValue
-func v1_5_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetESDTCallValue(destination)
-}
-
-//export v1_5_bigIntGetESDTCallValueByIndex
-func v1_5_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandle int32, index int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
-}
-
-//export v1_5_bigIntGetExternalBalance
-func v1_5_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetExternalBalance(addressOffset, result)
-}
-
-//export v1_5_bigIntGetESDTExternalBalance
-func v1_5_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
-}
-
-//export v1_5_bigIntNew
-func v1_5_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntNew(smallValue)
-}
-
-//export v1_5_bigIntUnsignedByteLength
-func v1_5_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntUnsignedByteLength(referenceHandle)
-}
-
-//export v1_5_bigIntSignedByteLength
-func v1_5_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntSignedByteLength(referenceHandle)
-}
-
-//export v1_5_bigIntGetUnsignedBytes
-func v1_5_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
-}
-
-//export v1_5_bigIntGetSignedBytes
-func v1_5_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
-}
-
-//export v1_5_bigIntSetUnsignedBytes
-func v1_5_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
-}
-
-//export v1_5_bigIntSetSignedBytes
-func v1_5_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
-}
-
-//export v1_5_bigIntIsInt64
-func v1_5_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntIsInt64(destinationHandle)
-}
-
-//export v1_5_bigIntGetInt64
-func v1_5_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntGetInt64(destinationHandle)
-}
-
-//export v1_5_bigIntSetInt64
-func v1_5_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetInt64(destinationHandle, value)
-}
-
-//export v1_5_bigIntAdd
-func v1_5_bigIntAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntSub
-func v1_5_bigIntSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntMul
-func v1_5_bigIntMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntTDiv
-func v1_5_bigIntTDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntTMod
-func v1_5_bigIntTMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntEDiv
-func v1_5_bigIntEDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntEMod
-func v1_5_bigIntEMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntSqrt
-func v1_5_bigIntSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSqrt(destinationHandle, opHandle)
-}
-
-//export v1_5_bigIntPow
-func v1_5_bigIntPow(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntLog2
-func v1_5_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntLog2(op1Handle)
-}
-
-//export v1_5_bigIntAbs
-func v1_5_bigIntAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntAbs(destinationHandle, opHandle)
-}
-
-//export v1_5_bigIntNeg
-func v1_5_bigIntNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntNeg(destinationHandle, opHandle)
-}
-
-//export v1_5_bigIntSign
-func v1_5_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntSign(opHandle)
-}
-
-//export v1_5_bigIntCmp
-func v1_5_bigIntCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntCmp(op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntNot
-func v1_5_bigIntNot(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntNot(destinationHandle, opHandle)
-}
-
-//export v1_5_bigIntAnd
-func v1_5_bigIntAnd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntOr
-func v1_5_bigIntOr(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntXor
-func v1_5_bigIntXor(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
-}
-
-//export v1_5_bigIntShr
-func v1_5_bigIntShr(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntShr(destinationHandle, opHandle, bits)
-}
-
-//export v1_5_bigIntShl
-func v1_5_bigIntShl(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntShl(destinationHandle, opHandle, bits)
-}
-
-//export v1_5_bigIntFinishUnsigned
-func v1_5_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntFinishUnsigned(referenceHandle)
-}
-
-//export v1_5_bigIntFinishSigned
-func v1_5_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntFinishSigned(referenceHandle)
-}
-
-//export v1_5_bigIntToString
-func v1_5_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
-	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntToString(bigIntHandle, destinationHandle)
 }
 
 //export v1_5_getGasLeft
@@ -2547,6 +2163,390 @@ func v1_5_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32
 func v1_5_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
 	vmHooks.ManagedBufferToHex(sourceHandle, destHandle)
+}
+
+//export v1_5_bigFloatNewFromParts
+func v1_5_bigFloatNewFromParts(context unsafe.Pointer, integralPart int32, fractionalPart int32, exponent int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatNewFromParts(integralPart, fractionalPart, exponent)
+}
+
+//export v1_5_bigFloatNewFromFrac
+func v1_5_bigFloatNewFromFrac(context unsafe.Pointer, numerator int64, denominator int64) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatNewFromFrac(numerator, denominator)
+}
+
+//export v1_5_bigFloatNewFromSci
+func v1_5_bigFloatNewFromSci(context unsafe.Pointer, significand int64, exponent int64) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatNewFromSci(significand, exponent)
+}
+
+//export v1_5_bigFloatAdd
+func v1_5_bigFloatAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatAdd(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigFloatSub
+func v1_5_bigFloatSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSub(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigFloatMul
+func v1_5_bigFloatMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatMul(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigFloatDiv
+func v1_5_bigFloatDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatDiv(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigFloatNeg
+func v1_5_bigFloatNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatNeg(destinationHandle, opHandle)
+}
+
+//export v1_5_bigFloatClone
+func v1_5_bigFloatClone(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatClone(destinationHandle, opHandle)
+}
+
+//export v1_5_bigFloatCmp
+func v1_5_bigFloatCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatCmp(op1Handle, op2Handle)
+}
+
+//export v1_5_bigFloatAbs
+func v1_5_bigFloatAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatAbs(destinationHandle, opHandle)
+}
+
+//export v1_5_bigFloatSign
+func v1_5_bigFloatSign(context unsafe.Pointer, opHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatSign(opHandle)
+}
+
+//export v1_5_bigFloatSqrt
+func v1_5_bigFloatSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSqrt(destinationHandle, opHandle)
+}
+
+//export v1_5_bigFloatPow
+func v1_5_bigFloatPow(context unsafe.Pointer, destinationHandle int32, opHandle int32, exponent int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatPow(destinationHandle, opHandle, exponent)
+}
+
+//export v1_5_bigFloatFloor
+func v1_5_bigFloatFloor(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatFloor(destBigIntHandle, opHandle)
+}
+
+//export v1_5_bigFloatCeil
+func v1_5_bigFloatCeil(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatCeil(destBigIntHandle, opHandle)
+}
+
+//export v1_5_bigFloatTruncate
+func v1_5_bigFloatTruncate(context unsafe.Pointer, destBigIntHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatTruncate(destBigIntHandle, opHandle)
+}
+
+//export v1_5_bigFloatSetInt64
+func v1_5_bigFloatSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSetInt64(destinationHandle, value)
+}
+
+//export v1_5_bigFloatIsInt
+func v1_5_bigFloatIsInt(context unsafe.Pointer, opHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigFloatIsInt(opHandle)
+}
+
+//export v1_5_bigFloatSetBigInt
+func v1_5_bigFloatSetBigInt(context unsafe.Pointer, destinationHandle int32, bigIntHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatSetBigInt(destinationHandle, bigIntHandle)
+}
+
+//export v1_5_bigFloatGetConstPi
+func v1_5_bigFloatGetConstPi(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatGetConstPi(destinationHandle)
+}
+
+//export v1_5_bigFloatGetConstE
+func v1_5_bigFloatGetConstE(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigFloatGetConstE(destinationHandle)
+}
+
+//export v1_5_bigIntGetUnsignedArgument
+func v1_5_bigIntGetUnsignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetUnsignedArgument(id, destinationHandle)
+}
+
+//export v1_5_bigIntGetSignedArgument
+func v1_5_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetSignedArgument(id, destinationHandle)
+}
+
+//export v1_5_bigIntStorageStoreUnsigned
+func v1_5_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
+}
+
+//export v1_5_bigIntStorageLoadUnsigned
+func v1_5_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
+}
+
+//export v1_5_bigIntGetCallValue
+func v1_5_bigIntGetCallValue(context unsafe.Pointer, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetCallValue(destinationHandle)
+}
+
+//export v1_5_bigIntGetESDTCallValue
+func v1_5_bigIntGetESDTCallValue(context unsafe.Pointer, destination int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetESDTCallValue(destination)
+}
+
+//export v1_5_bigIntGetESDTCallValueByIndex
+func v1_5_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandle int32, index int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetESDTCallValueByIndex(destinationHandle, index)
+}
+
+//export v1_5_bigIntGetExternalBalance
+func v1_5_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetExternalBalance(addressOffset, result)
+}
+
+//export v1_5_bigIntGetESDTExternalBalance
+func v1_5_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
+}
+
+//export v1_5_bigIntNew
+func v1_5_bigIntNew(context unsafe.Pointer, smallValue int64) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntNew(smallValue)
+}
+
+//export v1_5_bigIntUnsignedByteLength
+func v1_5_bigIntUnsignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntUnsignedByteLength(referenceHandle)
+}
+
+//export v1_5_bigIntSignedByteLength
+func v1_5_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntSignedByteLength(referenceHandle)
+}
+
+//export v1_5_bigIntGetUnsignedBytes
+func v1_5_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
+}
+
+//export v1_5_bigIntGetSignedBytes
+func v1_5_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
+}
+
+//export v1_5_bigIntSetUnsignedBytes
+func v1_5_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
+}
+
+//export v1_5_bigIntSetSignedBytes
+func v1_5_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
+}
+
+//export v1_5_bigIntIsInt64
+func v1_5_bigIntIsInt64(context unsafe.Pointer, destinationHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntIsInt64(destinationHandle)
+}
+
+//export v1_5_bigIntGetInt64
+func v1_5_bigIntGetInt64(context unsafe.Pointer, destinationHandle int32) int64 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntGetInt64(destinationHandle)
+}
+
+//export v1_5_bigIntSetInt64
+func v1_5_bigIntSetInt64(context unsafe.Pointer, destinationHandle int32, value int64) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSetInt64(destinationHandle, value)
+}
+
+//export v1_5_bigIntAdd
+func v1_5_bigIntAdd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntAdd(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntSub
+func v1_5_bigIntSub(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSub(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntMul
+func v1_5_bigIntMul(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntMul(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntTDiv
+func v1_5_bigIntTDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntTDiv(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntTMod
+func v1_5_bigIntTMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntTMod(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntEDiv
+func v1_5_bigIntEDiv(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntEDiv(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntEMod
+func v1_5_bigIntEMod(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntEMod(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntSqrt
+func v1_5_bigIntSqrt(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntSqrt(destinationHandle, opHandle)
+}
+
+//export v1_5_bigIntPow
+func v1_5_bigIntPow(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntPow(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntLog2
+func v1_5_bigIntLog2(context unsafe.Pointer, op1Handle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntLog2(op1Handle)
+}
+
+//export v1_5_bigIntAbs
+func v1_5_bigIntAbs(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntAbs(destinationHandle, opHandle)
+}
+
+//export v1_5_bigIntNeg
+func v1_5_bigIntNeg(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntNeg(destinationHandle, opHandle)
+}
+
+//export v1_5_bigIntSign
+func v1_5_bigIntSign(context unsafe.Pointer, opHandle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntSign(opHandle)
+}
+
+//export v1_5_bigIntCmp
+func v1_5_bigIntCmp(context unsafe.Pointer, op1Handle int32, op2Handle int32) int32 {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	return vmHooks.BigIntCmp(op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntNot
+func v1_5_bigIntNot(context unsafe.Pointer, destinationHandle int32, opHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntNot(destinationHandle, opHandle)
+}
+
+//export v1_5_bigIntAnd
+func v1_5_bigIntAnd(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntAnd(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntOr
+func v1_5_bigIntOr(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntOr(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntXor
+func v1_5_bigIntXor(context unsafe.Pointer, destinationHandle int32, op1Handle int32, op2Handle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntXor(destinationHandle, op1Handle, op2Handle)
+}
+
+//export v1_5_bigIntShr
+func v1_5_bigIntShr(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntShr(destinationHandle, opHandle, bits)
+}
+
+//export v1_5_bigIntShl
+func v1_5_bigIntShl(context unsafe.Pointer, destinationHandle int32, opHandle int32, bits int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntShl(destinationHandle, opHandle, bits)
+}
+
+//export v1_5_bigIntFinishUnsigned
+func v1_5_bigIntFinishUnsigned(context unsafe.Pointer, referenceHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntFinishUnsigned(referenceHandle)
+}
+
+//export v1_5_bigIntFinishSigned
+func v1_5_bigIntFinishSigned(context unsafe.Pointer, referenceHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntFinishSigned(referenceHandle)
+}
+
+//export v1_5_bigIntToString
+func v1_5_bigIntToString(context unsafe.Pointer, bigIntHandle int32, destinationHandle int32) {
+	vmHooks := getVMHooksFromContextRawPtr(context)
+	vmHooks.BigIntToString(bigIntHandle, destinationHandle)
 }
 
 //export v1_5_mBufferNew
