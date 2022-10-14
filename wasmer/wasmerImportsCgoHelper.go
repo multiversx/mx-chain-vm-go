@@ -1,7 +1,6 @@
 package wasmer
 
 import (
-	"fmt"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -11,7 +10,7 @@ import (
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
 	data := *(*uintptr)(instCtx.Data())
-	fmt.Printf("data back: %x\n", unsafe.Pointer(data))
+	//fmt.Printf("data back: %x\n", unsafe.Pointer(data))
 	return *(*executor.VMHooks)(unsafe.Pointer(data))
 }
 

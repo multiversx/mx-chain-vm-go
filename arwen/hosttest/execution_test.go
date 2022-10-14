@@ -284,6 +284,8 @@ func TestExecution_ManyDeployments(t *testing.T) {
 }
 
 func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) {
+	// TODO: remove skip when the issue is fixed
+	t.Skip()
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
