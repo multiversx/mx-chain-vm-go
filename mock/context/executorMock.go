@@ -63,7 +63,7 @@ func (executorMock *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host 
 
 // getNewCopyOfStoredInstance retrieves and initializes a stored Wasmer instance, or
 // nil if it doesn't exist
-func (executorMock *ExecutorMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (executor.InstanceHandler, bool) {
+func (executorMock *ExecutorMock) getNewCopyOfStoredInstance(code []byte, gasLimit uint64) (executor.Instance, bool) {
 	// this is a map to InstanceMock(s), and copies of these instances will be returned (as the method name indicates)
 	instance, ok := executorMock.InstanceMap[string(code)]
 	if ok {
@@ -80,7 +80,7 @@ func (executorMock *ExecutorMock) getNewCopyOfStoredInstance(code []byte, gasLim
 func (executorMock *ExecutorMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
-) (executor.InstanceHandler, error) {
+) (executor.Instance, error) {
 
 	instance, ok := executorMock.getNewCopyOfStoredInstance(contractCode, options.GasLimit)
 	if ok {
@@ -95,7 +95,7 @@ func (executorMock *ExecutorMock) NewInstanceWithOptions(
 func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
-) (executor.InstanceHandler, error) {
+) (executor.Instance, error) {
 	instance, ok := executorMock.getNewCopyOfStoredInstance(compiledCode, options.GasLimit)
 	if ok {
 		return instance, nil

@@ -9,12 +9,12 @@ import (
 const noArity = -1
 
 // getSignature returns the signature for the given functionName
-func (instance *Instance) getSignature(functionName string) (*ExportedFunctionSignature, bool) {
+func (instance *WasmerInstance) getSignature(functionName string) (*ExportedFunctionSignature, bool) {
 	signature, ok := instance.Signatures[functionName]
 	return signature, ok
 }
 
-func (instance *Instance) verifyVoidFunction(functionName string) error {
+func (instance *WasmerInstance) verifyVoidFunction(functionName string) error {
 	inArity, err := instance.getInputArity(functionName)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func (instance *Instance) verifyVoidFunction(functionName string) error {
 	return nil
 }
 
-func (instance *Instance) getInputArity(functionName string) (int, error) {
+func (instance *WasmerInstance) getInputArity(functionName string) (int, error) {
 	signature, ok := instance.getSignature(functionName)
 	if !ok {
 		return noArity, fmt.Errorf("%w: %s", executor.ErrFuncNotFound, functionName)
@@ -40,7 +40,7 @@ func (instance *Instance) getInputArity(functionName string) (int, error) {
 	return signature.InputArity, nil
 }
 
-func (instance *Instance) getOutputArity(functionName string) (int, error) {
+func (instance *WasmerInstance) getOutputArity(functionName string) (int, error) {
 	signature, ok := instance.getSignature(functionName)
 	if !ok {
 		return noArity, fmt.Errorf("%w: %s", executor.ErrFuncNotFound, functionName)

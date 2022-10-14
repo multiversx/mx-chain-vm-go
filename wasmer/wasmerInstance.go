@@ -63,7 +63,7 @@ type ExportsMap map[string]ExportedFunctionCallback
 type ExportSignaturesMap map[string]*ExportedFunctionSignature
 
 // Instance represents a WebAssembly instance.
-type Instance struct {
+type WasmerInstance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
 
@@ -85,7 +85,7 @@ type Instance struct {
 	Signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
-	Memory executor.MemoryHandler
+	Memory executor.Memory
 
 	callbacks       executor.VMHooks
 	callbacksPtr    uintptr
@@ -109,11 +109,11 @@ func newWrappedError(target error) error {
 func NewInstanceWithOptions(
 	bytes []byte,
 	options executor.CompilationOptions,
-) (*Instance, error) {
+) (*WasmerInstance, error) {
 	var c_instance *cWasmerInstanceT
 
 	if len(bytes) == 0 {
-		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
@@ -126,7 +126,7 @@ func NewInstanceWithOptions(
 	)
 
 	if compileResult != cWasmerOk {
-		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
@@ -138,8 +138,8 @@ func NewInstanceWithOptions(
 	return instance, err
 }
 
-func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
-	var emptyInstance = &Instance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
+func newInstance(c_instance *cWasmerInstanceT) (*WasmerInstance, error) {
+	var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory bool
@@ -158,25 +158,25 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 	}
 
 	if !hasMemory {
-		return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: nil}, nil
+		return &WasmerInstance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: nil}, nil
 	}
 
-	return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
+	return &WasmerInstance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.
-func (instance *Instance) HasMemory() bool {
+func (instance *WasmerInstance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
-) (*Instance, error) {
+) (*WasmerInstance, error) {
 	var c_instance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {
-		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
@@ -189,7 +189,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 	)
 
 	if instantiateResult != cWasmerOk {
-		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
@@ -208,7 +208,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 // context can hold a pointer to any kind of data. It is important to
 // understand that this data is shared by all imported function, it's
 // global to the instance.
-func (instance *Instance) SetVMHooks(callbacks executor.VMHooks) {
+func (instance *WasmerInstance) SetVMHooks(callbacks executor.VMHooks) {
 	instance.callbacks = callbacks
 	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
 	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
@@ -218,12 +218,12 @@ func (instance *Instance) SetVMHooks(callbacks executor.VMHooks) {
 }
 
 // GetVMHooks returns a pointer for the current instance's data
-func (instance *Instance) GetVMHooks() executor.VMHooks {
+func (instance *WasmerInstance) GetVMHooks() executor.VMHooks {
 	return instance.callbacks
 }
 
 // Clean cleans instance
-func (instance *Instance) Clean() {
+func (instance *WasmerInstance) Clean() {
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
@@ -234,32 +234,32 @@ func (instance *Instance) Clean() {
 }
 
 // GetPointsUsed returns the internal instance gas counter
-func (instance *Instance) GetPointsUsed() uint64 {
+func (instance *WasmerInstance) GetPointsUsed() uint64 {
 	return cWasmerInstanceGetPointsUsed(instance.instance)
 }
 
 // SetPointsUsed sets the internal instance gas counter
-func (instance *Instance) SetPointsUsed(points uint64) {
+func (instance *WasmerInstance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
 // SetGasLimit sets the gas limit for the instance
-func (instance *Instance) SetGasLimit(gasLimit uint64) {
+func (instance *WasmerInstance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
 }
 
 // SetBreakpoints sets the breakpoint value for the instance
-func (instance *Instance) SetBreakpointValue(value uint64) {
+func (instance *WasmerInstance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
 
 // GetBreakpointValue returns the breakpoint value
-func (instance *Instance) GetBreakpointValue() uint64 {
+func (instance *WasmerInstance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
 }
 
 // Cache caches the instance
-func (instance *Instance) Cache() ([]byte, error) {
+func (instance *WasmerInstance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar
 	var cacheLen cUint32T
 
@@ -281,12 +281,12 @@ func (instance *Instance) Cache() ([]byte, error) {
 }
 
 // IsFunctionImported returns true if the instance imports the specified function
-func (instance *Instance) IsFunctionImported(name string) bool {
+func (instance *WasmerInstance) IsFunctionImported(name string) bool {
 	return cWasmerInstanceIsFunctionImported(instance.instance, name)
 }
 
 // CallFunction executes given function from loaded contract.
-func (instance *Instance) CallFunction(functionName string) error {
+func (instance *WasmerInstance) CallFunction(functionName string) error {
 	if function, ok := instance.Exports[functionName]; ok {
 		_, err := function()
 		return err
@@ -296,13 +296,13 @@ func (instance *Instance) CallFunction(functionName string) error {
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
-func (instance *Instance) HasFunction(functionName string) bool {
+func (instance *WasmerInstance) HasFunction(functionName string) bool {
 	_, ok := instance.Exports[functionName]
 	return ok
 }
 
 // GetFunctionNames loads a list of contract function (endpoint) names. Required for validating reserved names.
-func (instance *Instance) GetFunctionNames() []string {
+func (instance *WasmerInstance) GetFunctionNames() []string {
 	var functionNames []string
 	for functionName := range instance.Exports {
 		functionNames = append(functionNames, functionName)
@@ -312,28 +312,28 @@ func (instance *Instance) GetFunctionNames() []string {
 
 // ValidateVoidFunction checks that no function (endpoint) of the given contract has any parameters or returns any result.
 // All arguments and results should be transferred via the import functions.
-func (instance *Instance) ValidateVoidFunction(functionName string) error {
+func (instance *WasmerInstance) ValidateVoidFunction(functionName string) error {
 	return instance.verifyVoidFunction(functionName)
 }
 
 // GetInstanceCtxMemory returns the memory for the instance context
-func (instance *Instance) GetInstanceCtxMemory() executor.MemoryHandler {
+func (instance *WasmerInstance) GetInstanceCtxMemory() executor.Memory {
 	return instance.InstanceCtx.Memory()
 }
 
 // GetMemory returns the memory for the instance
-func (instance *Instance) GetMemory() executor.MemoryHandler {
+func (instance *WasmerInstance) GetMemory() executor.Memory {
 	return instance.Memory
 }
 
 // Reset resets the instance memories and globals
-func (instance *Instance) Reset() bool {
+func (instance *WasmerInstance) Reset() bool {
 	result := cWasmerInstanceReset(instance.instance)
 	return result == cWasmerOk
 }
 
 // SetMemory sets the memory for the instance returns true if success
-func (instance *Instance) SetMemory(data []byte) bool {
+func (instance *WasmerInstance) SetMemory(data []byte) bool {
 	if instance.instance == nil {
 		return false
 	}
@@ -352,6 +352,6 @@ func (instance *Instance) SetMemory(data []byte) bool {
 }
 
 // IsInterfaceNil returns true if underlying object is nil
-func (instance *Instance) IsInterfaceNil() bool {
+func (instance *WasmerInstance) IsInterfaceNil() bool {
 	return instance == nil
 }
