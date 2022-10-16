@@ -37,7 +37,8 @@ func main() {
 
 	writeVMHooks(eiMetadata)
 	writeWasmerImportsCgo(eiMetadata)
-	writeVMHooksRustTrait(eiMetadata)
+	writeRustVMHooksTrait(eiMetadata)
+	writeRustVMHooksPointers(eiMetadata)
 	writeRustWasmerImports(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
@@ -61,13 +62,22 @@ func writeWasmerImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteCAPIFunctions(out, eiMetadata)
 }
 
-func writeVMHooksRustTrait(eiMetadata *eapigen.EIMetadata) {
+func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
 	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hooks.rs")
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
-	eapigen.WriteVMHooksRustTrait(out, eiMetadata)
+	eapigen.WriteRustVMHooksTrait(out, eiMetadata)
+}
+
+func writeRustVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hook_pointers.rs")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteRustVMHooksPointers(out, eiMetadata)
 }
 
 func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {

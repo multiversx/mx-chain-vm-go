@@ -1,6 +1,9 @@
 package elrondapigenerate
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func rustType(goType string) string {
 	if goType == "int32" {
@@ -12,6 +15,19 @@ func rustType(goType string) string {
 	return goType
 }
 
-func adapter_function_name(name string) string {
+func wasmerImportAdapterFunctionName(name string) string {
 	return fmt.Sprintf("wasmer_import_%s", snakeCase(name))
+}
+
+func writeRustFnArguments(firstArgs string, funcMetadata *EIFunction) string {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("(%s", firstArgs))
+	for _, arg := range funcMetadata.Arguments {
+		sb.WriteString(fmt.Sprintf(", %s: %s", snakeCase(arg.Name), rustType(arg.Type)))
+	}
+	sb.WriteString(")")
+	if funcMetadata.Result != nil {
+		sb.WriteString(fmt.Sprintf(" -> %s", rustType(funcMetadata.Result.Type)))
+	}
+	return sb.String()
 }
