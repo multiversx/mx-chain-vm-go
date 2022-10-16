@@ -17,7 +17,29 @@ pub trait VMHooks: 'static {
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf(
-			"    fn %s%s",
+			"    fn %s%s;\n",
+			snakeCase(funcMetadata.Name),
+			writeRustFnArguments(
+				"&self",
+				funcMetadata,
+			),
+		))
+	}
+
+	out.WriteString(`}
+
+pub struct VMHooksDefault;
+
+impl VMHooks for VMHooksDefault {
+`)
+
+	for i, funcMetadata := range eiMetadata.AllFunctions {
+		if i > 0 {
+			out.WriteString("\n")
+		}
+
+		out.WriteString(fmt.Sprintf(
+			"    fn %s%s {\n",
 			snakeCase(funcMetadata.Name),
 			writeRustFnArguments(
 				"&self",
@@ -25,8 +47,18 @@ pub trait VMHooks: 'static {
 			),
 		))
 
-		out.WriteString(";\n")
+		out.WriteString(fmt.Sprintf(
+			"        println!(\"Called: %s\");\n",
+			snakeCase(funcMetadata.Name),
+		))
+
+		if funcMetadata.Result != nil {
+			out.WriteString("        0\n")
+		}
+
+		out.WriteString("    }\n")
 	}
 
 	out.WriteString("}\n")
+
 }
