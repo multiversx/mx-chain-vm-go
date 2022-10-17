@@ -306,7 +306,6 @@ func getESDTDataFromBlockchainHook(
 // GetESDTBalance VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) GetESDTBalance(
-
 	addressOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -333,7 +332,6 @@ func (context *ElrondApi) GetESDTBalance(
 // GetESDTNFTNameLength VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) GetESDTNFTNameLength(
-
 	addressOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -359,7 +357,6 @@ func (context *ElrondApi) GetESDTNFTNameLength(
 // GetESDTNFTAttributeLength VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) GetESDTNFTAttributeLength(
-
 	addressOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -385,7 +382,6 @@ func (context *ElrondApi) GetESDTNFTAttributeLength(
 // GetESDTNFTURILength VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) GetESDTNFTURILength(
-
 	addressOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -414,7 +410,6 @@ func (context *ElrondApi) GetESDTNFTURILength(
 // GetESDTTokenData VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) GetESDTTokenData(
-
 	addressOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -503,7 +498,6 @@ func (context *ElrondApi) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 // ValidateTokenIdentifier VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ValidateTokenIdentifier(
-
 	tokenIdHandle int32,
 ) int32 {
 	managedType := context.GetManagedTypesContext()
@@ -682,7 +676,6 @@ func extractIndirectContractCallArguments(
 // TransferValueExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) TransferValueExecute(
-
 	destOffset int32,
 	valueOffset int32,
 	gasLimit int64,
@@ -824,7 +817,6 @@ func makeCrossShardCallFromInput(function string, arguments [][]byte) string {
 // TransferESDTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) TransferESDTExecute(
-
 	destOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -844,7 +836,6 @@ func (context *ElrondApi) TransferESDTExecute(
 // TransferESDTNFTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) TransferESDTNFTExecute(
-
 	destOffset int32,
 	tokenIDOffset int32,
 	tokenIDLen int32,
@@ -878,7 +869,6 @@ func (context *ElrondApi) TransferESDTNFTExecute(
 // MultiTransferESDTNFTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) MultiTransferESDTNFTExecute(
-
 	destOffset int32,
 	numTokenTransfers int32,
 	tokenTransfersArgsLengthOffset int32,
@@ -1232,7 +1222,6 @@ func (context *ElrondApi) SetAsyncContextCallback(
 // @autogenerate(VMHooks)
 // @autogenerate(VMHooks)
 func (context *ElrondApi) UpgradeContract(
-
 	destOffset int32,
 	gasLimit int64,
 	valueOffset int32,
@@ -1295,7 +1284,6 @@ func (context *ElrondApi) UpgradeContract(
 // UpgradeFromSourceContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) UpgradeFromSourceContract(
-
 	destOffset int32,
 	gasLimit int64,
 	valueOffset int32,
@@ -1427,7 +1415,6 @@ func upgradeContract(
 // DeleteContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) DeleteContract(
-
 	destOffset int32,
 	gasLimit int64,
 	numArguments int32,
@@ -2159,7 +2146,6 @@ func (context *ElrondApi) WriteLog(dataPointer int32, dataLength int32, topicPtr
 // WriteEventLog VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) WriteEventLog(
-
 	numTopics int32,
 	topicLengthsOffset int32,
 	topicOffset int32,
@@ -2367,7 +2353,6 @@ func (context *ElrondApi) Finish(pointer int32, length int32) {
 // ExecuteOnSameContext VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ExecuteOnSameContext(
-
 	gasLimit int64,
 	addressOffset int32,
 	valueOffset int32,
@@ -2471,7 +2456,6 @@ func ExecuteOnSameContextWithTypedArgs(
 // ExecuteOnDestContext VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ExecuteOnDestContext(
-
 	gasLimit int64,
 	addressOffset int32,
 	valueOffset int32,
@@ -2570,7 +2554,6 @@ func ExecuteOnDestContextWithTypedArgs(
 // ExecuteReadOnly VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ExecuteReadOnly(
-
 	gasLimit int64,
 	addressOffset int32,
 	functionOffset int32,
@@ -2673,7 +2656,6 @@ func ExecuteReadOnlyWithTypedArguments(
 // CreateContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) CreateContract(
-
 	gasLimit int64,
 	valueOffset int32,
 	codeOffset int32,
@@ -2767,7 +2749,6 @@ func createContractWithHost(
 // DeployFromSourceContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) DeployFromSourceContract(
-
 	gasLimit int64,
 	valueOffset int32,
 	sourceContractAddressOffset int32,

@@ -221,7 +221,6 @@ func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle
 // VerifyBLS VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifyBLS(
-
 	keyOffset int32,
 	messageOffset int32,
 	messageLength int32,
@@ -265,7 +264,6 @@ func (context *ElrondApi) VerifyBLS(
 // ManagedVerifyBLS VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedVerifyBLS(
-
 	keyHandle int32,
 	messageHandle int32,
 	sigHandle int32,
@@ -319,7 +317,6 @@ func ManagedVerifyBLSWithHost(
 // VerifyEd25519 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifyEd25519(
-
 	keyOffset int32,
 	messageOffset int32,
 	messageLength int32,
@@ -363,7 +360,6 @@ func (context *ElrondApi) VerifyEd25519(
 // ManagedVerifyEd25519 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedVerifyEd25519(
-
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -413,7 +409,6 @@ func ManagedVerifyEd25519WithHost(
 // VerifyCustomSecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifyCustomSecp256k1(
-
 	keyOffset int32,
 	keyLength int32,
 	messageOffset int32,
@@ -473,7 +468,6 @@ func (context *ElrondApi) VerifyCustomSecp256k1(
 // ManagedVerifyCustomSecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedVerifyCustomSecp256k1(
-
 	keyHandle, messageHandle, sigHandle int32,
 	hashType int32,
 ) int32 {
@@ -530,7 +524,6 @@ func ManagedVerifyCustomSecp256k1WithHost(
 // VerifySecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifySecp256k1(
-
 	keyOffset int32,
 	keyLength int32,
 	messageOffset int32,
@@ -550,7 +543,6 @@ func (context *ElrondApi) VerifySecp256k1(
 // ManagedVerifySecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedVerifySecp256k1(
-
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -573,7 +565,6 @@ func ManagedVerifySecp256k1WithHost(
 // EncodeSecp256k1DerSignature VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) EncodeSecp256k1DerSignature(
-
 	rOffset int32,
 	rLength int32,
 	sOffset int32,
@@ -609,7 +600,6 @@ func (context *ElrondApi) EncodeSecp256k1DerSignature(
 // ManagedEncodeSecp256k1DerSignature VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedEncodeSecp256k1DerSignature(
-
 	rHandle, sHandle, sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -647,7 +637,6 @@ func ManagedEncodeSecp256k1DerSignatureWithHost(
 // AddEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) AddEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -704,7 +693,6 @@ func (context *ElrondApi) AddEC(
 // DoubleEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) DoubleEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -750,7 +738,6 @@ func (context *ElrondApi) DoubleEC(
 // IsOnCurveEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) IsOnCurveEC(
-
 	ecHandle int32,
 	pointXHandle int32,
 	pointYHandle int32,
@@ -790,7 +777,6 @@ func (context *ElrondApi) IsOnCurveEC(
 // ScalarBaseMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ScalarBaseMultEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -828,7 +814,6 @@ func (context *ElrondApi) ScalarBaseMultEC(
 // ManagedScalarBaseMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedScalarBaseMultEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -910,7 +895,6 @@ func commonScalarBaseMultEC(
 // ScalarMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ScalarMultEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -950,7 +934,6 @@ func (context *ElrondApi) ScalarMultEC(
 // ManagedScalarMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedScalarMultEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1047,7 +1030,6 @@ func commonScalarMultEC(
 // MarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) MarshalEC(
-
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1071,7 +1053,6 @@ func (context *ElrondApi) MarshalEC(
 // ManagedMarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedMarshalEC(
-
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1147,7 +1128,6 @@ func commonMarshalEC(
 // MarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) MarshalCompressedEC(
-
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1171,7 +1151,6 @@ func (context *ElrondApi) MarshalCompressedEC(
 // ManagedMarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedMarshalCompressedEC(
-
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1247,7 +1226,6 @@ func commonMarshalCompressedEC(host arwen.VMHost,
 // UnmarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) UnmarshalEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1279,7 +1257,6 @@ func (context *ElrondApi) UnmarshalEC(
 // ManagedUnmarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedUnmarshalEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1364,7 +1341,6 @@ func commonUnmarshalEC(
 // UnmarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) UnmarshalCompressedEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1396,7 +1372,6 @@ func (context *ElrondApi) UnmarshalCompressedEC(
 // ManagedUnmarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedUnmarshalCompressedEC(
-
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1480,7 +1455,6 @@ func commonUnmarshalCompressedEC(
 // GenerateKeyEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) GenerateKeyEC(
-
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,
@@ -1504,7 +1478,6 @@ func (context *ElrondApi) GenerateKeyEC(
 // ManagedGenerateKeyEC VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedGenerateKeyEC(
-
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,

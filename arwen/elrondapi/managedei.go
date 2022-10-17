@@ -121,7 +121,6 @@ func (context *ElrondApi) ManagedSignalError(errHandle int32) {
 // ManagedWriteLog VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedWriteLog(
-
 	topicsHandle int32,
 	dataHandle int32,
 ) {
@@ -277,7 +276,6 @@ func (context *ElrondApi) ManagedGetESDTBalance(addressHandle int32, tokenIDHand
 // ManagedGetESDTTokenData VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedGetESDTTokenData(
-
 	addressHandle int32,
 	tokenIDHandle int32,
 	nonce int64,
@@ -348,7 +346,6 @@ func ManagedGetESDTTokenDataWithHost(
 // ManagedAsyncCall VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedAsyncCall(
-
 	destHandle int32,
 	valueHandle int32,
 	functionHandle int32,
@@ -407,7 +404,6 @@ func ManagedAsyncCallWithHost(
 // ManagedCreateAsyncCall VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedCreateAsyncCall(
-
 	destHandle int32,
 	valueHandle int32,
 	functionHandle int32,
@@ -467,7 +463,6 @@ func (context *ElrondApi) ManagedCreateAsyncCall(
 // ManagedGetCallbackClosure VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedGetCallbackClosure(
-
 	callbackClosureHandle int32,
 ) {
 	host := context.GetVMHost()
@@ -499,7 +494,6 @@ func GetCallbackClosureWithHost(
 // ManagedUpgradeFromSourceContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedUpgradeFromSourceContract(
-
 	destHandle int32,
 	gas int64,
 	valueHandle int32,
@@ -549,7 +543,6 @@ func (context *ElrondApi) ManagedUpgradeFromSourceContract(
 // ManagedUpgradeContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedUpgradeContract(
-
 	destHandle int32,
 	gas int64,
 	valueHandle int32,
@@ -595,7 +588,6 @@ func (context *ElrondApi) ManagedUpgradeContract(
 // ManagedDeleteContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedDeleteContract(
-
 	destHandle int32,
 	gasLimit int64,
 	argumentsHandle int32,
@@ -644,7 +636,6 @@ func ManagedDeleteContractWithHost(
 // ManagedDeployFromSourceContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedDeployFromSourceContract(
-
 	gas int64,
 	valueHandle int32,
 	addressHandle int32,
@@ -695,7 +686,6 @@ func (context *ElrondApi) ManagedDeployFromSourceContract(
 // ManagedCreateContract VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedCreateContract(
-
 	gas int64,
 	valueHandle int32,
 	codeHandle int32,
@@ -765,7 +755,6 @@ func setReturnDataIfExists(
 // ManagedExecuteReadOnly VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedExecuteReadOnly(
-
 	gas int64,
 	addressHandle int32,
 	functionHandle int32,
@@ -796,7 +785,6 @@ func (context *ElrondApi) ManagedExecuteReadOnly(
 // ManagedExecuteOnSameContext VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedExecuteOnSameContext(
-
 	gas int64,
 	addressHandle int32,
 	valueHandle int32,
@@ -829,7 +817,6 @@ func (context *ElrondApi) ManagedExecuteOnSameContext(
 // ManagedExecuteOnDestContext VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedExecuteOnDestContext(
-
 	gas int64,
 	addressHandle int32,
 	valueHandle int32,
@@ -862,7 +849,6 @@ func (context *ElrondApi) ManagedExecuteOnDestContext(
 // ManagedMultiTransferESDTNFTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedMultiTransferESDTNFTExecute(
-
 	dstHandle int32,
 	tokenTransfersHandle int32,
 	gasLimit int64,
@@ -898,7 +884,6 @@ func (context *ElrondApi) ManagedMultiTransferESDTNFTExecute(
 // ManagedTransferValueExecute VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedTransferValueExecute(
-
 	dstHandle int32,
 	valueHandle int32,
 	gasLimit int64,
@@ -927,7 +912,6 @@ func (context *ElrondApi) ManagedTransferValueExecute(
 // ManagedIsESDTFrozen VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) ManagedIsESDTFrozen(
-
 	addressHandle int32,
 	tokenIDHandle int32,
 	nonce int64) int32 {
