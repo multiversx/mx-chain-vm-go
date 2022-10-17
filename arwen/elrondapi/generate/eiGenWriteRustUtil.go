@@ -19,7 +19,11 @@ func wasmerImportAdapterFunctionName(name string) string {
 	return fmt.Sprintf("wasmer_import_%s", snakeCase(name))
 }
 
-func writeRustFnArguments(firstArgs string, funcMetadata *EIFunction) string {
+func cgoFuncPointerFieldName(funcMetadata *EIFunction) string {
+	return snakeCase(funcMetadata.Name) + "_func_ptr"
+}
+
+func writeRustFnDeclarationArguments(firstArgs string, funcMetadata *EIFunction) string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("(%s", firstArgs))
 	for _, arg := range funcMetadata.Arguments {
@@ -29,5 +33,15 @@ func writeRustFnArguments(firstArgs string, funcMetadata *EIFunction) string {
 	if funcMetadata.Result != nil {
 		sb.WriteString(fmt.Sprintf(" -> %s", rustType(funcMetadata.Result.Type)))
 	}
+	return sb.String()
+}
+
+func writeRustFnCallArguments(firstArgs string, funcMetadata *EIFunction) string {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("(%s", firstArgs))
+	for _, arg := range funcMetadata.Arguments {
+		sb.WriteString(fmt.Sprintf(", %s", snakeCase(arg.Name)))
+	}
+	sb.WriteString(")")
 	return sb.String()
 }

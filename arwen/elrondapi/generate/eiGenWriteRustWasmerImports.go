@@ -22,7 +22,7 @@ use crate::wasmer_env_2::VMHooksWrapper;
 		out.WriteString(fmt.Sprintf(
 			"fn %s%s",
 			wasmerImportAdapterFunctionName(funcMetadata.Name),
-			writeRustFnArguments(
+			writeRustFnDeclarationArguments(
 				"env: &VMHooksWrapper",
 				funcMetadata,
 			),

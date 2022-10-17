@@ -256,6 +256,8 @@ pub trait VMHooks: 'static {
 
 pub struct VMHooksDefault;
 
+#[allow(unused)]
+#[rustfmt::skip]
 impl VMHooks for VMHooksDefault {
     fn get_gas_left(&self) -> i64 {
         println!("Called: get_gas_left");

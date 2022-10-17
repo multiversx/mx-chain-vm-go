@@ -19,7 +19,7 @@ pub trait VMHooks: 'static {
 		out.WriteString(fmt.Sprintf(
 			"    fn %s%s;\n",
 			snakeCase(funcMetadata.Name),
-			writeRustFnArguments(
+			writeRustFnDeclarationArguments(
 				"&self",
 				funcMetadata,
 			),
@@ -30,6 +30,8 @@ pub trait VMHooks: 'static {
 
 pub struct VMHooksDefault;
 
+#[allow(unused)]
+#[rustfmt::skip]
 impl VMHooks for VMHooksDefault {
 `)
 
@@ -41,7 +43,7 @@ impl VMHooks for VMHooksDefault {
 		out.WriteString(fmt.Sprintf(
 			"    fn %s%s {\n",
 			snakeCase(funcMetadata.Name),
-			writeRustFnArguments(
+			writeRustFnDeclarationArguments(
 				"&self",
 				funcMetadata,
 			),

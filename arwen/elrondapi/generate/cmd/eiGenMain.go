@@ -36,7 +36,8 @@ func main() {
 	}
 
 	writeVMHooks(eiMetadata)
-	writeWasmerImportsCgo(eiMetadata)
+	writeWasmer1ImportsCgo(eiMetadata)
+	writeWasmer2ImportsCgo(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
 	writeRustVMHooksPointers(eiMetadata)
 	writeRustWasmerImports(eiMetadata)
@@ -53,13 +54,22 @@ func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteEIInterface(out, eiMetadata)
 }
 
-func writeWasmerImportsCgo(eiMetadata *eapigen.EIMetadata) {
+func writeWasmer1ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	out, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
-	eapigen.WriteCAPIFunctions(out, eiMetadata)
+	eapigen.WriteWasmer1Cgo(out, eiMetadata)
+}
+
+func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "../../wasmer2/wasmer2ImportsCgo.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
