@@ -64,7 +64,8 @@ func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHan
 	dest.Set(result)
 }
 
-// BigFloatNewFromParts VMHooks implementation
+// BigFloatNewFromParts VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatNewFromParts(integralPart, fractionalPart, exponent int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -109,7 +110,8 @@ func (context *ElrondApi) BigFloatNewFromParts(integralPart, fractionalPart, exp
 	return handle
 }
 
-// BigFloatNewFromFrac VMHooks implementation
+// BigFloatNewFromFrac VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatNewFromFrac(numerator, denominator int64) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -136,7 +138,8 @@ func (context *ElrondApi) BigFloatNewFromFrac(numerator, denominator int64) int3
 	return handle
 }
 
-// BigFloatNewFromSci VMHooks implementation
+// BigFloatNewFromSci VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatNewFromSci(significand, exponent int64) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -170,7 +173,8 @@ func (context *ElrondApi) BigFloatNewFromSci(significand, exponent int64) int32 
 	return handle
 }
 
-// BigFloatAdd VMHooks implementation
+// BigFloatAdd VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatAdd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -193,7 +197,8 @@ func (context *ElrondApi) BigFloatAdd(destinationHandle, op1Handle, op2Handle in
 	setResultIfNotInfinity(context.GetVMHost(), resultAdd, destinationHandle)
 }
 
-// BigFloatSub VMHooks implementation
+// BigFloatSub VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatSub(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -215,7 +220,8 @@ func (context *ElrondApi) BigFloatSub(destinationHandle, op1Handle, op2Handle in
 	setResultIfNotInfinity(context.GetVMHost(), resultSub, destinationHandle)
 }
 
-// BigFloatMul VMHooks implementation
+// BigFloatMul VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatMul(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -238,7 +244,8 @@ func (context *ElrondApi) BigFloatMul(destinationHandle, op1Handle, op2Handle in
 	setResultIfNotInfinity(context.GetVMHost(), resultMul, destinationHandle)
 }
 
-// BigFloatDiv VMHooks implementation
+// BigFloatDiv VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -265,7 +272,8 @@ func (context *ElrondApi) BigFloatDiv(destinationHandle, op1Handle, op2Handle in
 	setResultIfNotInfinity(context.GetVMHost(), resultDiv, destinationHandle)
 }
 
-// BigFloatNeg VMHooks implementation
+// BigFloatNeg VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatNeg(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -287,7 +295,8 @@ func (context *ElrondApi) BigFloatNeg(destinationHandle, opHandle int32) {
 	dest.Neg(op)
 }
 
-// BigFloatClone VMHooks implementation
+// BigFloatClone VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatClone(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -309,7 +318,8 @@ func (context *ElrondApi) BigFloatClone(destinationHandle, opHandle int32) {
 	dest.Copy(op)
 }
 
-// BigFloatCmp VMHooks implementation
+// BigFloatCmp VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -327,7 +337,8 @@ func (context *ElrondApi) BigFloatCmp(op1Handle, op2Handle int32) int32 {
 	return int32(op1.Cmp(op2))
 }
 
-// BigFloatAbs VMHooks implementation
+// BigFloatAbs VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatAbs(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -349,7 +360,8 @@ func (context *ElrondApi) BigFloatAbs(destinationHandle, opHandle int32) {
 	dest.Abs(op)
 }
 
-// BigFloatSign VMHooks implementation
+// BigFloatSign VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatSign(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -365,7 +377,8 @@ func (context *ElrondApi) BigFloatSign(opHandle int32) int32 {
 	return int32(op.Sign())
 }
 
-// BigFloatSqrt VMHooks implementation
+// BigFloatSqrt VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatSqrt(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -395,7 +408,8 @@ func (context *ElrondApi) BigFloatSqrt(destinationHandle, opHandle int32) {
 	dest.Set(resultSqrt)
 }
 
-// BigFloatPow VMHooks implementation
+// BigFloatPow VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatPow(destinationHandle, opHandle, exponent int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -447,7 +461,8 @@ func (context *ElrondApi) pow(base *big.Float, exp int32) (*big.Float, error) {
 	return result, nil
 }
 
-// BigFloatFloor VMHooks implementation
+// BigFloatFloor VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -473,7 +488,8 @@ func (context *ElrondApi) BigFloatFloor(destBigIntHandle, opHandle int32) {
 	}
 }
 
-// BigFloatCeil VMHooks implementation
+// BigFloatCeil VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -499,7 +515,8 @@ func (context *ElrondApi) BigFloatCeil(destBigIntHandle, opHandle int32) {
 	}
 }
 
-// BigFloatTruncate VMHooks implementation
+// BigFloatTruncate VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -519,7 +536,8 @@ func (context *ElrondApi) BigFloatTruncate(destBigIntHandle, opHandle int32) {
 	managedType.ConsumeGasForBigIntCopy(bigIntValue)
 }
 
-// BigFloatSetInt64 VMHooks implementation
+// BigFloatSetInt64 VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatSetInt64(destinationHandle int32, value int64) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -535,7 +553,8 @@ func (context *ElrondApi) BigFloatSetInt64(destinationHandle int32, value int64)
 	dest.SetInt64(value)
 }
 
-// BigFloatIsInt VMHooks implementation
+// BigFloatIsInt VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatIsInt(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -554,7 +573,8 @@ func (context *ElrondApi) BigFloatIsInt(opHandle int32) int32 {
 	return 0
 }
 
-// BigFloatSetBigInt VMHooks implementation
+// BigFloatSetBigInt VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatSetBigInt(destinationHandle, bigIntHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -573,7 +593,8 @@ func (context *ElrondApi) BigFloatSetBigInt(destinationHandle, bigIntHandle int3
 	setResultIfNotInfinity(context.GetVMHost(), resultSetInt, destinationHandle)
 }
 
-// BigFloatGetConstPi VMHooks implementation
+// BigFloatGetConstPi VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatGetConstPi(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -589,7 +610,8 @@ func (context *ElrondApi) BigFloatGetConstPi(destinationHandle int32) {
 	pi.SetFloat64(math.Pi)
 }
 
-// BigFloatGetConstE VMHooks implementation
+// BigFloatGetConstE VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) BigFloatGetConstE(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
