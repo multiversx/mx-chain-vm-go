@@ -1,16 +1,24 @@
 package wasmer
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
+	eiFunctionNames vmcommon.FunctionNames
 }
 
 // NewExecutor creates a new wasmer executor.
 func NewExecutor() (*WasmerExecutor, error) {
-	return &WasmerExecutor{}, nil
+	functionNames, err := injectCgoFunctionPointers()
+	if err != nil {
+		return nil, err
+	}
+	return &WasmerExecutor{
+		eiFunctionNames: functionNames,
+	}, nil
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
@@ -26,6 +34,10 @@ func (wasmerExecutor *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) 
 // SetSIGSEGVPassthrough controls a Wasmer flag.
 func (wasmerExecutor *WasmerExecutor) SetSIGSEGVPassthrough() {
 	SetSIGSEGVPassthrough()
+}
+
+func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
+	return wasmerExecutor.eiFunctionNames
 }
 
 // NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode,

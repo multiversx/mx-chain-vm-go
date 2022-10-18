@@ -3,7 +3,8 @@ package executor
 // InstanceHandler defines the functionality of a Wasmer instance
 type InstanceHandler interface {
 	HasMemory() bool
-	SetContextData(data uintptr)
+	SetVMHooks(callbacks VMHooks)
+	GetVMHooks() VMHooks
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)
@@ -15,7 +16,6 @@ type InstanceHandler interface {
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
 	ValidateVoidFunction(functionName string) error
-	GetData() uintptr
 	GetInstanceCtxMemory() MemoryHandler
 	GetMemory() MemoryHandler
 	SetMemory(data []byte) bool

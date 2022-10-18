@@ -15,6 +15,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -303,9 +304,9 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	var host1InstancesData = make(map[uintptr]bool)
+	var host1InstancesData = make(map[executor.VMHooks]bool)
 	for _, instance := range instanceRecorder1.GetContractInstances(code) {
-		host1InstancesData[instance.GetData()] = true
+		host1InstancesData[instance.GetVMHooks()] = true
 	}
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
@@ -323,7 +324,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	}
 
 	for _, instance := range instanceRecorder2.GetContractInstances(code) {
-		_, found := host1InstancesData[instance.GetData()]
+		_, found := host1InstancesData[instance.GetVMHooks()]
 		require.False(t, found)
 	}
 }
@@ -3035,7 +3036,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
 
-						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+						elrondapi.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
@@ -3077,7 +3078,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 						host := parentInstance.Host
 						instance := mock.GetMockInstance(host)
 
-						arwen.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
+						elrondapi.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
 
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress

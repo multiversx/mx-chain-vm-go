@@ -6,7 +6,6 @@ import (
 	"fmt"
 	builtinMath "math"
 	"math/big"
-	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/storage"
@@ -14,6 +13,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
@@ -58,7 +58,7 @@ func NewRuntimeContext(
 		return nil, arwen.ErrNilVMHost
 	}
 
-	scAPINames := host.GetAPIMethods().Names()
+	scAPINames := vmExecutor.FunctionNames()
 
 	context := &runtimeContext{
 		host:          host,
@@ -174,8 +174,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 	context.instance = newInstance
 
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -212,8 +211,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -259,9 +257,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 	return true
 }

@@ -6,12 +6,9 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
-	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/pelletier/go-toml"
 )
 
@@ -211,69 +208,4 @@ func IfNil(checker nilInterfaceChecker) bool {
 
 type nilInterfaceChecker interface {
 	IsInterfaceNil() bool
-}
-
-// GetVMHost returns the vm Context from the vm context map
-func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
-	instCtx := wasmer.IntoInstanceContext(vmHostPtr)
-	var ptr = *(*uintptr)(instCtx.Data())
-	return *(*VMHost)(unsafe.Pointer(ptr))
-}
-
-// GetBlockchainContext returns the blockchain context
-func GetBlockchainContext(vmHostPtr unsafe.Pointer) BlockchainContext {
-	return GetVMHost(vmHostPtr).Blockchain()
-}
-
-// GetRuntimeContext returns the runtime context
-func GetRuntimeContext(vmHostPtr unsafe.Pointer) RuntimeContext {
-	return GetVMHost(vmHostPtr).Runtime()
-}
-
-// GetCryptoContext returns the crypto context
-func GetCryptoContext(vmHostPtr unsafe.Pointer) crypto.VMCrypto {
-	return GetVMHost(vmHostPtr).Crypto()
-}
-
-// GetManagedTypesContext returns the big int context
-func GetManagedTypesContext(vmHostPtr unsafe.Pointer) ManagedTypesContext {
-	return GetVMHost(vmHostPtr).ManagedTypes()
-}
-
-// GetOutputContext returns the output context
-func GetOutputContext(vmHostPtr unsafe.Pointer) OutputContext {
-	return GetVMHost(vmHostPtr).Output()
-}
-
-// GetMeteringContext returns the metering context
-func GetMeteringContext(vmHostPtr unsafe.Pointer) MeteringContext {
-	return GetVMHost(vmHostPtr).Metering()
-}
-
-// GetStorageContext returns the storage context
-func GetStorageContext(vmHostPtr unsafe.Pointer) StorageContext {
-	return GetVMHost(vmHostPtr).Storage()
-}
-
-// WithFault handles an error, taking into account whether it should completely
-// fail the execution of a contract or not.
-func WithFault(err error, vmHostPtr unsafe.Pointer, failExecution bool) bool {
-	runtime := GetVMHost(vmHostPtr)
-	return WithFaultAndHost(runtime, err, failExecution)
-}
-
-// WithFaultAndHost fails the execution with the provided error
-func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
-	if err == nil {
-		return false
-	}
-
-	if failExecution {
-		runtime := host.Runtime()
-		metering := host.Metering()
-		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
-	}
-
-	return true
 }

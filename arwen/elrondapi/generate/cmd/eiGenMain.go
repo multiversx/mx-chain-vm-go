@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go/token"
 	"os"
 
@@ -15,11 +16,10 @@ func initEIMetadata() *eapigen.EIMetadata {
 			{SourcePath: "bigFloatOps.go"},
 			{SourcePath: "bigIntOps.go"},
 			{SourcePath: "elrondei.go"},
-			{SourcePath: "generateOps.go"},
 			{SourcePath: "managedei.go"},
 			{SourcePath: "manBufOps.go"},
 			{SourcePath: "smallIntOps.go"},
-			{SourcePath: "../cryptoapi/cryptoei.go"},
+			{SourcePath: "cryptoei.go"},
 		},
 		AllFunctions: nil,
 	}
@@ -35,17 +35,19 @@ func main() {
 		panic(err)
 	}
 
-	out1, err := os.Create(pathToElrondApiPackage + "../../executor/executorImportsInterface.go")
+	out1, err := os.Create(pathToElrondApiPackage + "../../executor/vmHooks.go")
 	if err != nil {
 		panic(err)
 	}
 	defer out1.Close()
-	eapigen.WriteEIInterface(eiMetadata, out1)
+	eapigen.WriteEIInterface(out1, eiMetadata)
 
 	out2, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
 	if err != nil {
 		panic(err)
 	}
 	defer out2.Close()
-	eapigen.WriteCAPIFunctions(eiMetadata, out2)
+	eapigen.WriteCAPIFunctions(out2, eiMetadata)
+
+	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 }

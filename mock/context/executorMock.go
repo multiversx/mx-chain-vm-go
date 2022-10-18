@@ -3,6 +3,7 @@ package mock
 import (
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
@@ -34,6 +35,10 @@ func (executorMock *ExecutorMock) SetRkyvSerializationEnabled(enabled bool) {
 
 // SetSIGSEGVPassthrough controls a Wasmer flag, but it does nothing in the case of this mock.
 func (executorMock *ExecutorMock) SetSIGSEGVPassthrough() {
+}
+
+func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
+	return nil
 }
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a

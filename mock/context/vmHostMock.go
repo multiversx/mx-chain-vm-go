@@ -1,12 +1,11 @@
 package mock
 
 import (
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -18,16 +17,15 @@ type VMHostMock struct {
 
 	EthInput []byte
 
-	BlockchainContext   arwen.BlockchainContext
-	RuntimeContext      arwen.RuntimeContext
-	AsyncContext        arwen.AsyncContext
-	OutputContext       arwen.OutputContext
-	MeteringContext     arwen.MeteringContext
-	StorageContext      arwen.StorageContext
+	BlockchainContext        arwen.BlockchainContext
+	RuntimeContext           arwen.RuntimeContext
+	AsyncContext             arwen.AsyncContext
+	OutputContext            arwen.OutputContext
+	MeteringContext          arwen.MeteringContext
+	StorageContext           arwen.StorageContext
 	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
-	ManagedTypesContext arwen.ManagedTypesContext
+	ManagedTypesContext      arwen.ManagedTypesContext
 
-	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
 
 	StoredInputs []*vmcommon.ContractCallInput
@@ -142,11 +140,6 @@ func (host *VMHostMock) PopState() {
 
 // ClearStateStack mocked method
 func (host *VMHostMock) ClearStateStack() {
-}
-
-// GetAPIMethods mocked method
-func (host *VMHostMock) GetAPIMethods() *wasmer.Imports {
-	return host.SCAPIMethods
 }
 
 // IsBuiltinFunctionName mocked method

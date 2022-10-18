@@ -1,36 +1,10 @@
 package elrondapi
 
-// // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
-//
-// #include <stdlib.h>
-// typedef unsigned char uint8_t;
-// typedef int int32_t;
-//
-// extern long long v1_5_smallIntGetUnsignedArgument(void *context, int32_t id);
-// extern long long v1_5_smallIntGetSignedArgument(void *context, int32_t id);
-//
-// extern void			v1_5_smallIntFinishUnsigned(void* context, long long value);
-// extern void			v1_5_smallIntFinishSigned(void* context, long long value);
-//
-// extern int32_t		v1_5_smallIntStorageStoreUnsigned(void *context, int32_t keyOffset, int32_t keyLength, long long value);
-// extern int32_t		v1_5_smallIntStorageStoreSigned(void *context, int32_t keyOffset, int32_t keyLength, long long value);
-// extern long long v1_5_smallIntStorageLoadUnsigned(void *context, int32_t keyOffset, int32_t keyLength);
-// extern long long v1_5_smallIntStorageLoadSigned(void *context, int32_t keyOffset, int32_t keyLength);
-//
-// extern long long v1_5_int64getArgument(void *context, int32_t id);
-// extern int32_t		v1_5_int64storageStore(void *context, int32_t keyOffset, int32_t keyLength , long long value);
-// extern long long v1_5_int64storageLoad(void *context, int32_t keyOffset, int32_t keyLength );
-// extern void			v1_5_int64finish(void* context, long long value);
-//
-import "C"
-
 import (
 	"math/big"
-	"unsafe"
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const (
@@ -48,125 +22,59 @@ const (
 	int64finishName                  = "int64finish"
 )
 
-// SmallIntImports populates imports with the small int (int64/uint64) API methods
-func SmallIntImports(imports executor.ImportFunctionReceiver) error {
-	imports.Namespace("env")
-
-	err := imports.Append("smallIntGetUnsignedArgument", v1_5_smallIntGetUnsignedArgument, C.v1_5_smallIntGetUnsignedArgument)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntGetSignedArgument", v1_5_smallIntGetSignedArgument, C.v1_5_smallIntGetSignedArgument)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntFinishUnsigned", v1_5_smallIntFinishUnsigned, C.v1_5_smallIntFinishUnsigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntFinishSigned", v1_5_smallIntFinishSigned, C.v1_5_smallIntFinishSigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntStorageStoreUnsigned", v1_5_smallIntStorageStoreUnsigned, C.v1_5_smallIntStorageStoreUnsigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntStorageStoreSigned", v1_5_smallIntStorageStoreSigned, C.v1_5_smallIntStorageStoreSigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntStorageLoadUnsigned", v1_5_smallIntStorageLoadUnsigned, C.v1_5_smallIntStorageLoadUnsigned)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("smallIntStorageLoadSigned", v1_5_smallIntStorageLoadSigned, C.v1_5_smallIntStorageLoadSigned)
-	if err != nil {
-		return err
-	}
-
-	// the last are just for backwards compatibility:
-
-	err = imports.Append("int64getArgument", v1_5_int64getArgument, C.v1_5_int64getArgument)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("int64storageStore", v1_5_int64storageStore, C.v1_5_int64storageStore)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("int64storageLoad", v1_5_int64storageLoad, C.v1_5_int64storageLoad)
-	if err != nil {
-		return err
-	}
-
-	err = imports.Append("int64finish", v1_5_int64finish, C.v1_5_int64finish)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//export v1_5_smallIntGetUnsignedArgument
-func v1_5_smallIntGetUnsignedArgument(context unsafe.Pointer, id int32) int64 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntGetUnsignedArgument VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntGetUnsignedArgument(id int32) int64 {
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
 	metering.UseGasAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	return int64(argBigInt.Uint64())
 }
 
-//export v1_5_smallIntGetSignedArgument
-func v1_5_smallIntGetSignedArgument(context unsafe.Pointer, id int32) int64 {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntGetSignedArgument VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntGetSignedArgument(id int32) int64 {
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
 	metering.UseGasAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = arwen.WithFault(arwen.ErrArgIndexOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	return argBigInt.Int64()
 }
 
-//export v1_5_smallIntFinishUnsigned
-func v1_5_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntFinishUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntFinishUnsigned(value int64) {
+	output := context.GetOutputContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
 	metering.UseGasAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
@@ -175,10 +83,11 @@ func v1_5_smallIntFinishUnsigned(context unsafe.Pointer, value int64) {
 	output.Finish(valueBytes)
 }
 
-//export v1_5_smallIntFinishSigned
-func v1_5_smallIntFinishSigned(context unsafe.Pointer, value int64) {
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntFinishSigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntFinishSigned(value int64) {
+	output := context.GetOutputContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
 	metering.UseGasAndAddTracedGas(smallIntFinishSignedName, gasToUse)
@@ -187,60 +96,63 @@ func v1_5_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 	output.Finish(valueBytes)
 }
 
-//export v1_5_smallIntStorageStoreUnsigned
-func v1_5_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	storage := arwen.GetStorageContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntStorageStoreUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32 {
+	runtime := context.GetRuntimeContext()
+	storage := context.GetStorageContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
 	storageStatus, err := storage.SetStorage(key, valueBytes)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	return int32(storageStatus)
 }
 
-//export v1_5_smallIntStorageStoreSigned
-func v1_5_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
-	runtime := arwen.GetRuntimeContext(context)
-	storage := arwen.GetStorageContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntStorageStoreSigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32 {
+	runtime := context.GetRuntimeContext()
+	storage := context.GetStorageContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
 	storageStatus, err := storage.SetStorage(key, valueBytes)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	return int32(storageStatus)
 }
 
-//export v1_5_smallIntStorageLoadUnsigned
-func v1_5_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
-	runtime := arwen.GetRuntimeContext(context)
-	storage := arwen.GetStorageContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntStorageLoadUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64 {
+	runtime := context.GetRuntimeContext()
+	storage := context.GetStorageContext()
+	metering := context.GetMeteringContext()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
@@ -249,21 +161,22 @@ func v1_5_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
-		_ = arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	return int64(valueBigInt.Uint64())
 }
 
-//export v1_5_smallIntStorageLoadSigned
-func v1_5_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
-	runtime := arwen.GetRuntimeContext(context)
-	storage := arwen.GetStorageContext(context)
-	metering := arwen.GetMeteringContext(context)
+// SmallIntStorageLoadSigned VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64 {
+	runtime := context.GetRuntimeContext()
+	storage := context.GetStorageContext()
+	metering := context.GetMeteringContext()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
@@ -272,33 +185,37 @@ func v1_5_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
-		_ = arwen.WithFault(arwen.ErrStorageValueOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	return valueBigInt.Int64()
 }
 
-//export v1_5_int64getArgument
-func v1_5_int64getArgument(context unsafe.Pointer, id int32) int64 {
+// Int64getArgument VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) Int64getArgument(id int32) int64 {
 	// backwards compatibility
-	return v1_5_smallIntGetSignedArgument(context, id)
+	return context.SmallIntGetSignedArgument(id)
 }
 
-//export v1_5_int64finish
-func v1_5_int64finish(context unsafe.Pointer, value int64) {
+// Int64finish VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) Int64finish(value int64) {
 	// backwards compatibility
-	v1_5_smallIntFinishSigned(context, value)
+	context.SmallIntFinishSigned(value)
 }
 
-//export v1_5_int64storageStore
-func v1_5_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
+// Int64storageStore VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) Int64storageStore(keyOffset int32, keyLength int32, value int64) int32 {
 	// backwards compatibility
-	return v1_5_smallIntStorageStoreUnsigned(context, keyOffset, keyLength, value)
+	return context.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 }
 
-//export v1_5_int64storageLoad
-func v1_5_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
+// Int64storageLoad VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) Int64storageLoad(keyOffset int32, keyLength int32) int64 {
 	// backwards compatibility
-	return v1_5_smallIntStorageLoadUnsigned(context, keyOffset, keyLength)
+	return context.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
 }

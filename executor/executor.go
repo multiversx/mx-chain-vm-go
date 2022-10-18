@@ -1,5 +1,7 @@
 package executor
 
+import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+
 // CompilationOptions contains configurations for instantiating an executor instance.
 type CompilationOptions struct {
 	GasLimit           uint64
@@ -24,6 +26,9 @@ type Executor interface {
 
 	// SetSIGSEGVPassthrough controls a Wasmer flag.
 	SetSIGSEGVPassthrough()
+
+	// FunctionNames return the low-level function names provided to contracts.
+	FunctionNames() vmcommon.FunctionNames
 
 	// NewInstanceWithOptions creates a new executor instance.
 	NewInstanceWithOptions(

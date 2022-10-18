@@ -17,7 +17,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -50,7 +49,6 @@ type vmHost struct {
 	managedTypesContext arwen.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
-	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       arwen.CallArgsParser
@@ -94,7 +92,6 @@ func NewArwenVM(
 		storageContext:       nil,
 		managedTypesContext:  nil,
 		gasSchedule:          hostParameters.GasSchedule,
-		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		callArgsParser:       parsers.NewCallArgsParser(),
@@ -106,20 +103,7 @@ func NewArwenVM(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	imports := executor.NewImportFunctions()
-	err := PopulateAllImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	wasmerImports := wasmer.ConvertImports(imports)
-	err = wasmer.SetImports(wasmerImports)
-	if err != nil {
-		return nil, err
-	}
-
-	host.scAPIMethods = wasmerImports
-
+	var err error
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
@@ -319,11 +303,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.asyncContext.ClearStateStack()
 	host.storageContext.ClearStateStack()
 	host.blockchainContext.ClearStateStack()
-}
-
-// GetAPIMethods returns the EEI as a set of imports for Wasmer
-func (host *vmHost) GetAPIMethods() *wasmer.Imports {
-	return host.scAPIMethods
 }
 
 // GasScheduleChange applies a new gas schedule to the host

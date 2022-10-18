@@ -14,7 +14,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
@@ -321,7 +320,7 @@ func Test_ManagedRipemd160(t *testing.T) {
 						sourceHandle := managedTypes.NewManagedBufferFromBytes(asBytes)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						cryptoapi.ManagedRipemd160WithHost(
+						elrondapi.ManagedRipemd160WithHost(
 							host,
 							sourceHandle,
 							destHandle)
@@ -381,7 +380,7 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifyBLSWithHost(
+						result := elrondapi.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -430,7 +429,7 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifyEd25519WithHost(
+						result := elrondapi.ManagedVerifyEd25519WithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -481,7 +480,7 @@ func Test_VerifySecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifySecp256k1WithHost(
+						result := elrondapi.ManagedVerifySecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -532,7 +531,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifyCustomSecp256k1WithHost(
+						result := elrondapi.ManagedVerifyCustomSecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -582,7 +581,7 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 						sHandle := managedTypes.NewManagedBufferFromBytes(s)
 						sigHandle := managedTypes.NewManagedBuffer()
 
-						retResult := cryptoapi.ManagedEncodeSecp256k1DerSignatureWithHost(
+						retResult := elrondapi.ManagedEncodeSecp256k1DerSignatureWithHost(
 							host,
 							rHandle,
 							sHandle,
@@ -631,7 +630,7 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 						ecHandle := managedTypes.PutEllipticCurve(p521ec)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedScalarBaseMultECWithHost(
+						retResult := elrondapi.ManagedScalarBaseMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -684,7 +683,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 						pointYHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedScalarMultECWithHost(
+						retResult := elrondapi.ManagedScalarMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -737,7 +736,7 @@ func Test_ManagedMarshalEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := cryptoapi.ManagedMarshalECWithHost(
+						retResult := elrondapi.ManagedMarshalECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
@@ -790,7 +789,7 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedUnmarshalECWithHost(
+						retResult := elrondapi.ManagedUnmarshalECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -846,7 +845,7 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := cryptoapi.ManagedMarshalCompressedECWithHost(
+						retResult := elrondapi.ManagedMarshalCompressedECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
@@ -899,7 +898,7 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedUnmarshalCompressedECWithHost(
+						retResult := elrondapi.ManagedUnmarshalCompressedECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -955,7 +954,7 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						resultHandle := managedTypes.NewManagedBuffer()
 
-						retResult := cryptoapi.ManagedGenerateKeyECWithHost(
+						retResult := elrondapi.ManagedGenerateKeyECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -1035,7 +1034,7 @@ func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.Cur
 	managedTypes := host.ManagedTypes()
 	dataHandle := managedTypes.NewManagedBufferFromBytes([]byte(name))
 
-	retResult := cryptoapi.ManagedCreateECWithHost(
+	retResult := elrondapi.ManagedCreateECWithHost(
 		host,
 		dataHandle)
 

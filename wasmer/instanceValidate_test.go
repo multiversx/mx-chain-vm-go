@@ -23,8 +23,8 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 	// Empty imports on purpose.
 	// We have currently no access to the elrondapi package here, due to cyclic imports.
 	// Fortunately, imports are not necessary for this test.
-	imports := executor.NewImportFunctions()
-	SetImports(ConvertImports(imports))
+	_, err := injectCgoFunctionPointers()
+	require.Nil(t, err)
 
 	gasLimit := uint64(100000000)
 	path := "./../test/contracts/signatures/output/signatures.wasm"
