@@ -62,7 +62,7 @@ type ExportedFunctionCallback func(...interface{}) (Value, error)
 type ExportsMap map[string]ExportedFunctionCallback
 type ExportSignaturesMap map[string]*ExportedFunctionSignature
 
-// Instance represents a WebAssembly instance.
+// WasmerInstance represents a WebAssembly instance.
 type WasmerInstance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
