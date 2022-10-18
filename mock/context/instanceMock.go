@@ -72,6 +72,11 @@ func (instance *InstanceMock) HasMemory() bool {
 func (instance *InstanceMock) SetContextData(dataPointer unsafe.Pointer) {
 }
 
+// GetContextData mocked method
+func (instance *InstanceMock) GetContextData() unsafe.Pointer {
+	return nil
+}
+
 // GetPointsUsed mocked method
 func (instance *InstanceMock) GetPointsUsed() uint64 {
 	return instance.Points

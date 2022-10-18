@@ -18,6 +18,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
@@ -356,6 +357,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 			},
 			WasmerSIGSEGVPassthrough: false,
 		})
+	executor.SetVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 
@@ -412,6 +414,7 @@ func DefaultTestArwenWithGasSchedule(
 			},
 			WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 		})
+	executor.SetVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 

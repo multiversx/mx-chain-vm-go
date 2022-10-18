@@ -1,6 +1,7 @@
 package hosttest
 
 import (
+	"fmt"
 	"math/big"
 	"math/rand"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
@@ -36,7 +38,7 @@ func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-	runERC20Benchmark(t, 1000, 100, false)
+	runERC20Benchmark(t, 400, 10, false)
 }
 
 func Test_RunERC20BenchmarkFail(t *testing.T) {
@@ -93,6 +95,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 
 	// Perform ERC20 transfers
 	for r := 0; r < nRuns; r++ {
+		fmt.Println("run ", r)
 		start := time.Now()
 		if failTransaction {
 			if r%2 == 0 {
@@ -247,6 +250,7 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 			WasmerSIGSEGVPassthrough: false,
 		})
+	executor.SetVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
@@ -47,6 +48,7 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 		executor,
 		getHostParameters(),
 	)
+	executor.SetVMHooks(elrondapi.NewElrondApi(vm))
 	if err != nil {
 		return nil, err
 	}

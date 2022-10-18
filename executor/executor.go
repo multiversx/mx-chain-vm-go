@@ -1,6 +1,8 @@
 package executor
 
-import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
 
 // CompilationOptions contains configurations for instantiating an executor instance.
 type CompilationOptions struct {
@@ -40,12 +42,9 @@ type Executor interface {
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
 
-	// SetVMHooks sets the VM hooks that will be used by the executor for current instance.
-	SetVMHooks(vmHooks VMHooks)
-
-	// SetVMHooksForInstance replaces the VM hooks for chosen instance with new ones.
-	SetVMHooksForInstance(instance Instance, vmHooks VMHooks)
-
 	// GetVMHooks returns the VM hooks.
 	GetVMHooks() VMHooks
+
+	// SetVMHooks sets the VM hooks.
+	SetVMHooks(vmHooks VMHooks)
 }

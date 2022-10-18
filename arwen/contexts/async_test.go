@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -66,6 +67,7 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 		Exports: make(wasmer.ExportsMap),
 	}
 	executor, _ := wasmer.NewExecutor()
+	executor.SetVMHooks(elrondapi.NewElrondApi(host))
 	runtimeContext, _ := NewRuntimeContext(
 		host,
 		vmType,

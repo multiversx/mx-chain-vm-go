@@ -134,6 +134,7 @@ func NewInstanceWithOptions(
 	if instance != nil && instance.Memory != nil {
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+		//fmt.Printf("===== creation ===== instance context data : %x\n", instance.InstanceCtx.Data())
 	}
 	return instance, err
 }
@@ -204,7 +205,11 @@ func NewInstanceFromCompiledCodeWithOptions(
 
 // SetContext sets the context data of the instance (VMHooks).
 func (instance *WasmerInstance) SetContextData(dataPointer unsafe.Pointer) {
+	// this needs to be cached to work
+	instance.callbacksPtrPtr = dataPointer
+	//fmt.Printf("instance context data: %x\n", instance.InstanceCtx.Data())
 	cWasmerInstanceContextDataSet(instance.instance, dataPointer)
+	//fmt.Printf("instance context data: %x\n", instance.InstanceCtx.Data())
 }
 
 // Clean cleans instance
@@ -313,6 +318,8 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 
 // Reset resets the instance memories and globals
 func (instance *WasmerInstance) Reset() bool {
+	//fmt.Println("Resetting instance")
+
 	result := cWasmerInstanceReset(instance.instance)
 	return result == cWasmerOk
 }
@@ -339,4 +346,8 @@ func (instance *WasmerInstance) SetMemory(data []byte) bool {
 // IsInterfaceNil returns true if underlying object is nil
 func (instance *WasmerInstance) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+func (instance *WasmerInstance) GetContextData() unsafe.Pointer {
+	return instance.InstanceCtx.Data()
 }

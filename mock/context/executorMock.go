@@ -108,10 +108,6 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 func (executorMock *ExecutorMock) SetVMHooks(vmHooks executor.VMHooks) {
 }
 
-// SetVMHooksForInstance mocked method
-func (executorMock *ExecutorMock) SetVMHooksForInstance(instance executor.Instance, vmHooks executor.VMHooks) {
-}
-
 // GetVMHooks mocked method
 func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
 	return nil

@@ -11,6 +11,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
@@ -43,6 +44,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 
 func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
 	executor, err := wasmer.NewExecutor()
+	executor.SetVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(t, err)
 	runtimeContext, err := NewRuntimeContext(
 		host,
@@ -288,6 +290,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	vmType := []byte("type")
 	executor, _ := wasmer.NewExecutor()
+	executor.SetVMHooks(elrondapi.NewElrondApi(host))
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,

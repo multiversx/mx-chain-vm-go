@@ -9,10 +9,9 @@ import (
 
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
-	eiFunctionNames    vmcommon.FunctionNames
-	vmHooks            executor.VMHooks
-	vmHooksData        uintptr
-	vmHooksDataPointer unsafe.Pointer
+	eiFunctionNames vmcommon.FunctionNames
+	vmHooks         executor.VMHooks
+	vmHooksPtr      uintptr
 }
 
 // NewExecutor creates a new wasmer executor.
@@ -53,7 +52,7 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 ) (executor.Instance, error) {
 	instance, err := NewInstanceWithOptions(contractCode, options)
 	if err == nil {
-		wasmerExecutor.setVMHooksPtrs(instance)
+		wasmerExecutor.setVMHooksPtr(instance)
 	}
 
 	return instance, err
@@ -67,30 +66,28 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 ) (executor.Instance, error) {
 	instance, err := NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {
-		wasmerExecutor.setVMHooksPtrs(instance)
+		wasmerExecutor.setVMHooksPtr(instance)
 	}
 	return instance, err
 }
 
-// SetVMHooks sets the VM hooks that will be used by the executor for current instance.
+// SetVMHooks sets the VM hooks
 func (wasmerExecutor *WasmerExecutor) SetVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
+	wasmerExecutor.vmHooksPtr = uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 }
 
-// SetVMHooksForInstance replaces the VM hooks for chosen instance with new ones.
-func (wasmerExecutor *WasmerExecutor) SetVMHooksForInstance(instance executor.Instance, vmHooks executor.VMHooks) {
-	wasmerExecutor.SetVMHooks(vmHooks)
-	wasmerExecutor.setVMHooksPtrs(instance)
-}
-
-// GetVMHooks returns the VM hooks.
+// GetVMHooks returns the VM hooks
 func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
 	return wasmerExecutor.vmHooks
 }
 
-func (wasmerExecutor *WasmerExecutor) setVMHooksPtrs(instance executor.Instance) {
-	data := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
-	wasmerExecutor.vmHooksData = data
-	wasmerExecutor.vmHooksDataPointer = unsafe.Pointer(&data)
-	instance.SetContextData(unsafe.Pointer(&data))
+func (wasmerExecutor *WasmerExecutor) GetVMHooksPtr() uintptr {
+	return wasmerExecutor.vmHooksPtr
+}
+
+func (wasmerExecutor *WasmerExecutor) setVMHooksPtr(instance executor.Instance) {
+	ptr := wasmerExecutor.vmHooksPtr
+	//fmt.Printf("----------> ptr: %x\n ----------> &ptr: %x\n", unsafe.Pointer(ptr), unsafe.Pointer(&ptr))
+	instance.SetContextData(unsafe.Pointer(&ptr))
 }
