@@ -87,11 +87,10 @@ type WasmerInstance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory executor.Memory
 
-	callbacks       executor.VMHooks
-	callbacksPtr    uintptr
-	callbacksPtrPtr unsafe.Pointer
-
+	// The instance context.
 	InstanceCtx InstanceContext
+
+	vmHooksPtr unsafe.Pointer
 }
 
 func newWrappedError(target error) error {
@@ -134,7 +133,6 @@ func NewInstanceWithOptions(
 	if instance != nil && instance.Memory != nil {
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
-		//fmt.Printf("===== creation ===== instance context data : %x\n", instance.InstanceCtx.Data())
 	}
 	return instance, err
 }
@@ -201,15 +199,6 @@ func NewInstanceFromCompiledCodeWithOptions(
 	}
 
 	return instance, err
-}
-
-// SetContext sets the context data of the instance (VMHooks).
-func (instance *WasmerInstance) SetContextData(dataPointer unsafe.Pointer) {
-	// this needs to be cached to work
-	instance.callbacksPtrPtr = dataPointer
-	//fmt.Printf("instance context data: %x\n", instance.InstanceCtx.Data())
-	cWasmerInstanceContextDataSet(instance.instance, dataPointer)
-	//fmt.Printf("instance context data: %x\n", instance.InstanceCtx.Data())
 }
 
 // Clean cleans instance
@@ -318,8 +307,6 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 
 // Reset resets the instance memories and globals
 func (instance *WasmerInstance) Reset() bool {
-	//fmt.Println("Resetting instance")
-
 	result := cWasmerInstanceReset(instance.instance)
 	return result == cWasmerOk
 }
@@ -348,6 +335,8 @@ func (instance *WasmerInstance) IsInterfaceNil() bool {
 	return instance == nil
 }
 
-func (instance *WasmerInstance) GetContextData() unsafe.Pointer {
-	return instance.InstanceCtx.Data()
+func (instance *WasmerInstance) setVMHooksPtr(vmHooksPtr uintptr) {
+	dataPointer := unsafe.Pointer(&vmHooksPtr)
+	instance.vmHooksPtr = dataPointer
+	cWasmerInstanceContextDataSet(instance.instance, dataPointer)
 }

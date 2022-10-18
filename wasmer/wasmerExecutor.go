@@ -52,7 +52,7 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 ) (executor.Instance, error) {
 	instance, err := NewInstanceWithOptions(contractCode, options)
 	if err == nil {
-		wasmerExecutor.setVMHooksPtr(instance)
+		instance.setVMHooksPtr(wasmerExecutor.vmHooksPtr)
 	}
 
 	return instance, err
@@ -66,7 +66,7 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 ) (executor.Instance, error) {
 	instance, err := NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {
-		wasmerExecutor.setVMHooksPtr(instance)
+		instance.setVMHooksPtr(wasmerExecutor.vmHooksPtr)
 	}
 	return instance, err
 }
@@ -80,14 +80,4 @@ func (wasmerExecutor *WasmerExecutor) SetVMHooks(vmHooks executor.VMHooks) {
 // GetVMHooks returns the VM hooks
 func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
 	return wasmerExecutor.vmHooks
-}
-
-func (wasmerExecutor *WasmerExecutor) GetVMHooksPtr() uintptr {
-	return wasmerExecutor.vmHooksPtr
-}
-
-func (wasmerExecutor *WasmerExecutor) setVMHooksPtr(instance executor.Instance) {
-	ptr := wasmerExecutor.vmHooksPtr
-	//fmt.Printf("----------> ptr: %x\n ----------> &ptr: %x\n", unsafe.Pointer(ptr), unsafe.Pointer(&ptr))
-	instance.SetContextData(unsafe.Pointer(&ptr))
 }

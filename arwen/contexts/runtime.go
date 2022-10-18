@@ -248,8 +248,6 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	//fmt.Printf("%x =======reset========", context.instance.GetContextData())
-	//fmt.Printf("%x\n", instance.GetContextData())
 	context.instance = instance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)

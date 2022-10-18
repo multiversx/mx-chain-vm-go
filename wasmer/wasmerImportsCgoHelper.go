@@ -9,11 +9,7 @@ import (
 
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
-	//ctx := (*cWasmerInstanceContextT)(contextPtr)
-	//data := cWasmerInstanceContextDataGet(ctx)
 	data := *(*uintptr)(instCtx.Data())
-	//fmt.Printf("instance context data <------- %x\n", instCtx.Data())
-	//fmt.Printf("resolved <-------- %x\n", unsafe.Pointer(data))
 	return *(*executor.VMHooks)(unsafe.Pointer(data))
 }
 
