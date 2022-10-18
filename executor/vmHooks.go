@@ -6,71 +6,18 @@ package executor
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+// VMHooks contains all VM functions that can be called by the executor during SC execution.
 type VMHooks interface {
-	BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32
-	BigFloatNewFromFrac(numerator int64, denominator int64) int32
-	BigFloatNewFromSci(significand int64, exponent int64) int32
-	BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigFloatNeg(destinationHandle int32, opHandle int32)
-	BigFloatClone(destinationHandle int32, opHandle int32)
-	BigFloatCmp(op1Handle int32, op2Handle int32) int32
-	BigFloatAbs(destinationHandle int32, opHandle int32)
-	BigFloatSign(opHandle int32) int32
-	BigFloatSqrt(destinationHandle int32, opHandle int32)
-	BigFloatPow(destinationHandle int32, opHandle int32, exponent int32)
-	BigFloatFloor(destBigIntHandle int32, opHandle int32)
-	BigFloatCeil(destBigIntHandle int32, opHandle int32)
-	BigFloatTruncate(destBigIntHandle int32, opHandle int32)
-	BigFloatSetInt64(destinationHandle int32, value int64)
-	BigFloatIsInt(opHandle int32) int32
-	BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32)
-	BigFloatGetConstPi(destinationHandle int32)
-	BigFloatGetConstE(destinationHandle int32)
-	BigIntGetUnsignedArgument(id int32, destinationHandle int32)
-	BigIntGetSignedArgument(id int32, destinationHandle int32)
-	BigIntStorageStoreUnsigned(keyOffset int32, keyLength int32, sourceHandle int32) int32
-	BigIntStorageLoadUnsigned(keyOffset int32, keyLength int32, destinationHandle int32) int32
-	BigIntGetCallValue(destinationHandle int32)
-	BigIntGetESDTCallValue(destination int32)
-	BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32)
-	BigIntGetExternalBalance(addressOffset int32, result int32)
-	BigIntGetESDTExternalBalance(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32)
-	BigIntNew(smallValue int64) int32
-	BigIntUnsignedByteLength(referenceHandle int32) int32
-	BigIntSignedByteLength(referenceHandle int32) int32
-	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset int32) int32
-	BigIntGetSignedBytes(referenceHandle int32, byteOffset int32) int32
-	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset int32, byteLength int32)
-	BigIntSetSignedBytes(destinationHandle int32, byteOffset int32, byteLength int32)
-	BigIntIsInt64(destinationHandle int32) int32
-	BigIntGetInt64(destinationHandle int32) int64
-	BigIntSetInt64(destinationHandle int32, value int64)
-	BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntSqrt(destinationHandle int32, opHandle int32)
-	BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntLog2(op1Handle int32) int32
-	BigIntAbs(destinationHandle int32, opHandle int32)
-	BigIntNeg(destinationHandle int32, opHandle int32)
-	BigIntSign(opHandle int32) int32
-	BigIntCmp(op1Handle int32, op2Handle int32) int32
-	BigIntNot(destinationHandle int32, opHandle int32)
-	BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32)
-	BigIntShr(destinationHandle int32, opHandle int32, bits int32)
-	BigIntShl(destinationHandle int32, opHandle int32, bits int32)
-	BigIntFinishUnsigned(referenceHandle int32)
-	BigIntFinishSigned(referenceHandle int32)
-	BigIntToString(bigIntHandle int32, destinationHandle int32)
+	MainVMHooks
+	ManagedVMHooks
+	BigFloatVMHooks
+	BigIntVMHooks
+	ManagedBufferVMHooks
+	SmallIntVMHooks
+	CryptoVMHooks
+}
+
+type MainVMHooks interface {
 	GetGasLeft() int64
 	GetSCAddress(resultOffset int32)
 	GetOwnerAddress(resultOffset int32)
@@ -151,6 +98,9 @@ type VMHooks interface {
 	GetOriginalTxHash(dataOffset int32)
 	GetCurrentTxHash(dataOffset int32)
 	GetPrevTxHash(dataOffset int32)
+}
+
+type ManagedVMHooks interface {
 	ManagedSCAddress(destinationHandle int32)
 	ManagedOwnerAddress(destinationHandle int32)
 	ManagedCaller(destinationHandle int32)
@@ -181,6 +131,79 @@ type VMHooks interface {
 	ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32
 	ManagedIsESDTPaused(tokenIDHandle int32) int32
 	ManagedBufferToHex(sourceHandle int32, destHandle int32)
+}
+
+type BigFloatVMHooks interface {
+	BigFloatNewFromParts(integralPart int32, fractionalPart int32, exponent int32) int32
+	BigFloatNewFromFrac(numerator int64, denominator int64) int32
+	BigFloatNewFromSci(significand int64, exponent int64) int32
+	BigFloatAdd(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigFloatSub(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigFloatMul(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigFloatDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigFloatNeg(destinationHandle int32, opHandle int32)
+	BigFloatClone(destinationHandle int32, opHandle int32)
+	BigFloatCmp(op1Handle int32, op2Handle int32) int32
+	BigFloatAbs(destinationHandle int32, opHandle int32)
+	BigFloatSign(opHandle int32) int32
+	BigFloatSqrt(destinationHandle int32, opHandle int32)
+	BigFloatPow(destinationHandle int32, opHandle int32, exponent int32)
+	BigFloatFloor(destBigIntHandle int32, opHandle int32)
+	BigFloatCeil(destBigIntHandle int32, opHandle int32)
+	BigFloatTruncate(destBigIntHandle int32, opHandle int32)
+	BigFloatSetInt64(destinationHandle int32, value int64)
+	BigFloatIsInt(opHandle int32) int32
+	BigFloatSetBigInt(destinationHandle int32, bigIntHandle int32)
+	BigFloatGetConstPi(destinationHandle int32)
+	BigFloatGetConstE(destinationHandle int32)
+}
+
+type BigIntVMHooks interface {
+	BigIntGetUnsignedArgument(id int32, destinationHandle int32)
+	BigIntGetSignedArgument(id int32, destinationHandle int32)
+	BigIntStorageStoreUnsigned(keyOffset int32, keyLength int32, sourceHandle int32) int32
+	BigIntStorageLoadUnsigned(keyOffset int32, keyLength int32, destinationHandle int32) int32
+	BigIntGetCallValue(destinationHandle int32)
+	BigIntGetESDTCallValue(destination int32)
+	BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32)
+	BigIntGetExternalBalance(addressOffset int32, result int32)
+	BigIntGetESDTExternalBalance(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32)
+	BigIntNew(smallValue int64) int32
+	BigIntUnsignedByteLength(referenceHandle int32) int32
+	BigIntSignedByteLength(referenceHandle int32) int32
+	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset int32) int32
+	BigIntGetSignedBytes(referenceHandle int32, byteOffset int32) int32
+	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset int32, byteLength int32)
+	BigIntSetSignedBytes(destinationHandle int32, byteOffset int32, byteLength int32)
+	BigIntIsInt64(destinationHandle int32) int32
+	BigIntGetInt64(destinationHandle int32) int64
+	BigIntSetInt64(destinationHandle int32, value int64)
+	BigIntAdd(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntSub(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntMul(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntTDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntTMod(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntEDiv(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntEMod(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntSqrt(destinationHandle int32, opHandle int32)
+	BigIntPow(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntLog2(op1Handle int32) int32
+	BigIntAbs(destinationHandle int32, opHandle int32)
+	BigIntNeg(destinationHandle int32, opHandle int32)
+	BigIntSign(opHandle int32) int32
+	BigIntCmp(op1Handle int32, op2Handle int32) int32
+	BigIntNot(destinationHandle int32, opHandle int32)
+	BigIntAnd(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntOr(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntXor(destinationHandle int32, op1Handle int32, op2Handle int32)
+	BigIntShr(destinationHandle int32, opHandle int32, bits int32)
+	BigIntShl(destinationHandle int32, opHandle int32, bits int32)
+	BigIntFinishUnsigned(referenceHandle int32)
+	BigIntFinishSigned(referenceHandle int32)
+	BigIntToString(bigIntHandle int32, destinationHandle int32)
+}
+
+type ManagedBufferVMHooks interface {
 	MBufferNew() int32
 	MBufferNewFromBytes(dataOffset int32, dataLength int32) int32
 	MBufferGetLength(mBufferHandle int32) int32
@@ -204,6 +227,9 @@ type VMHooks interface {
 	MBufferGetArgument(id int32, destinationHandle int32) int32
 	MBufferFinish(sourceHandle int32) int32
 	MBufferSetRandom(destinationHandle int32, length int32) int32
+}
+
+type SmallIntVMHooks interface {
 	SmallIntGetUnsignedArgument(id int32) int64
 	SmallIntGetSignedArgument(id int32) int64
 	SmallIntFinishUnsigned(value int64)
@@ -216,6 +242,9 @@ type VMHooks interface {
 	Int64finish(value int64)
 	Int64storageStore(keyOffset int32, keyLength int32, value int64) int32
 	Int64storageLoad(keyOffset int32, keyLength int32) int64
+}
+
+type CryptoVMHooks interface {
 	Sha256(dataOffset int32, length int32, resultOffset int32) int32
 	ManagedSha256(inputHandle int32, outputHandle int32) int32
 	Keccak256(dataOffset int32, length int32, resultOffset int32) int32
