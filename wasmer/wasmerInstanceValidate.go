@@ -10,7 +10,7 @@ const noArity = -1
 
 // getSignature returns the signature for the given functionName
 func (instance *WasmerInstance) getSignature(functionName string) (*ExportedFunctionSignature, bool) {
-	signature, ok := instance.Signatures[functionName]
+	signature, ok := instance.signatures[functionName]
 	return signature, ok
 }
 
