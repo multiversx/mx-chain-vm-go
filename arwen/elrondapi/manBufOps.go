@@ -33,7 +33,8 @@ const (
 	mBufferFromBigFloatName       = "mBufferFromBigFloat"
 )
 
-// MBufferNew VMHooks implementation
+// MBufferNew VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferNew() int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
@@ -44,7 +45,8 @@ func (context *ElrondApi) MBufferNew() int32 {
 	return managedType.NewManagedBuffer()
 }
 
-// MBufferNewFromBytes VMHooks implementation
+// MBufferNewFromBytes VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferNewFromBytes(dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -61,7 +63,8 @@ func (context *ElrondApi) MBufferNewFromBytes(dataOffset int32, dataLength int32
 	return managedType.NewManagedBufferFromBytes(data)
 }
 
-// MBufferGetLength VMHooks implementation
+// MBufferGetLength VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferGetLength(mBufferHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -79,7 +82,8 @@ func (context *ElrondApi) MBufferGetLength(mBufferHandle int32) int32 {
 	return length
 }
 
-// MBufferGetBytes VMHooks implementation
+// MBufferGetBytes VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -103,7 +107,8 @@ func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset int3
 	return 0
 }
 
-// MBufferGetByteSlice VMHooks implementation
+// MBufferGetByteSlice VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -133,7 +138,8 @@ func (context *ElrondApi) MBufferGetByteSlice(sourceHandle int32, startingPositi
 	return 0
 }
 
-// MBufferCopyByteSlice VMHooks implementation
+// MBufferCopyByteSlice VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedBufferCopyByteSliceWithHost(host, sourceHandle, startingPosition, sliceLength, destinationHandle)
@@ -168,7 +174,8 @@ func ManagedBufferCopyByteSliceWithHost(host arwen.VMHost, sourceHandle int32, s
 	return 0
 }
 
-// MBufferEq VMHooks implementation
+// MBufferEq VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -197,7 +204,8 @@ func (context *ElrondApi) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) 
 	return 0
 }
 
-// MBufferSetBytes VMHooks implementation
+// MBufferSetBytes VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -217,7 +225,8 @@ func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset int32,
 	return 0
 }
 
-// MBufferSetByteSlice VMHooks implementation
+// MBufferSetByteSlice VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	host := context.GetVMHost()
 	return ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
@@ -268,7 +277,8 @@ func ManagedBufferSetByteSliceWithTypedArgs(host arwen.VMHost, mBufferHandle int
 	return 0
 }
 
-// MBufferAppend VMHooks implementation
+// MBufferAppend VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferAppend(accumulatorHandle int32, dataHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -293,7 +303,8 @@ func (context *ElrondApi) MBufferAppend(accumulatorHandle int32, dataHandle int3
 	return 0
 }
 
-// MBufferAppendBytes VMHooks implementation
+// MBufferAppendBytes VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -320,7 +331,8 @@ func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset
 	return 0
 }
 
-// MBufferToBigIntUnsigned VMHooks implementation
+// MBufferToBigIntUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -340,7 +352,8 @@ func (context *ElrondApi) MBufferToBigIntUnsigned(mBufferHandle int32, bigIntHan
 	return 0
 }
 
-// MBufferToBigIntSigned VMHooks implementation
+// MBufferToBigIntSigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -360,7 +373,8 @@ func (context *ElrondApi) MBufferToBigIntSigned(mBufferHandle int32, bigIntHandl
 	return 0
 }
 
-// MBufferFromBigIntUnsigned VMHooks implementation
+// MBufferFromBigIntUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -379,7 +393,8 @@ func (context *ElrondApi) MBufferFromBigIntUnsigned(mBufferHandle int32, bigIntH
 	return 0
 }
 
-// MBufferFromBigIntSigned VMHooks implementation
+// MBufferFromBigIntSigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -397,7 +412,8 @@ func (context *ElrondApi) MBufferFromBigIntSigned(mBufferHandle int32, bigIntHan
 	return 0
 }
 
-// MBufferToBigFloat VMHooks implementation
+// MBufferToBigFloat VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -437,7 +453,8 @@ func (context *ElrondApi) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32)
 	return 0
 }
 
-// MBufferFromBigFloat VMHooks implementation
+// MBufferFromBigFloat VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferFromBigFloat(mBufferHandle, bigFloatHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -463,7 +480,8 @@ func (context *ElrondApi) MBufferFromBigFloat(mBufferHandle, bigFloatHandle int3
 	return 0
 }
 
-// MBufferStorageStore VMHooks implementation
+// MBufferStorageStore VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferStorageStore(keyHandle int32, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -491,7 +509,8 @@ func (context *ElrondApi) MBufferStorageStore(keyHandle int32, sourceHandle int3
 	return 0
 }
 
-// MBufferStorageLoad VMHooks implementation
+// MBufferStorageLoad VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferStorageLoad(keyHandle int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -511,7 +530,8 @@ func (context *ElrondApi) MBufferStorageLoad(keyHandle int32, destinationHandle 
 	return 0
 }
 
-// MBufferStorageLoadFromAddress VMHooks implementation
+// MBufferStorageLoadFromAddress VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferStorageLoadFromAddress(addressHandle, keyHandle, destinationHandle int32) {
 	host := context.GetVMHost()
 	managedType := context.GetManagedTypesContext()
@@ -533,7 +553,8 @@ func (context *ElrondApi) MBufferStorageLoadFromAddress(addressHandle, keyHandle
 	managedType.SetBytes(destinationHandle, storageBytes)
 }
 
-// MBufferGetArgument VMHooks implementation
+// MBufferGetArgument VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferGetArgument(id int32, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -551,7 +572,8 @@ func (context *ElrondApi) MBufferGetArgument(id int32, destinationHandle int32) 
 	return 0
 }
 
-// MBufferFinish VMHooks implementation
+// MBufferFinish VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferFinish(sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
@@ -578,7 +600,8 @@ func (context *ElrondApi) MBufferFinish(sourceHandle int32) int32 {
 	return 0
 }
 
-// MBufferSetRandom VMHooks implementation
+// MBufferSetRandom VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) MBufferSetRandom(destinationHandle int32, length int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
