@@ -62,7 +62,7 @@ type ExportedFunctionCallback func(...interface{}) (Value, error)
 type ExportsMap map[string]ExportedFunctionCallback
 type ExportSignaturesMap map[string]*ExportedFunctionSignature
 
-// Instance represents a WebAssembly instance.
+// WasmerInstance represents a WebAssembly instance.
 type WasmerInstance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
@@ -80,9 +80,9 @@ type WasmerInstance struct {
 	// here). The WebAssembly type is automatically inferred. Note
 	// that the returned value is of kind `Value`, and not a
 	// standard Go type.
-	Exports ExportsMap
+	exports ExportsMap
 
-	Signatures ExportSignaturesMap
+	signatures ExportSignaturesMap
 
 	// The exported memory of a WebAssembly instance.
 	Memory executor.Memory
@@ -113,7 +113,7 @@ func NewInstanceWithOptions(
 	var c_instance *cWasmerInstanceT
 
 	if len(bytes) == 0 {
-		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
@@ -126,7 +126,7 @@ func NewInstanceWithOptions(
 	)
 
 	if compileResult != cWasmerOk {
-		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
@@ -139,7 +139,7 @@ func NewInstanceWithOptions(
 }
 
 func newInstance(c_instance *cWasmerInstanceT) (*WasmerInstance, error) {
-	var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
+	var emptyInstance = &WasmerInstance{instance: nil, exports: nil, signatures: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory bool
@@ -158,10 +158,10 @@ func newInstance(c_instance *cWasmerInstanceT) (*WasmerInstance, error) {
 	}
 
 	if !hasMemory {
-		return &WasmerInstance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: nil}, nil
+		return &WasmerInstance{instance: c_instance, exports: exports, signatures: signatures, Memory: nil}, nil
 	}
 
-	return &WasmerInstance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
+	return &WasmerInstance{instance: c_instance, exports: exports, signatures: signatures, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.
@@ -176,7 +176,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 	var c_instance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {
-		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrInvalidBytecode)
 	}
 
@@ -189,7 +189,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 	)
 
 	if instantiateResult != cWasmerOk {
-		var emptyInstance = &WasmerInstance{instance: nil, Exports: nil, Memory: nil}
+		var emptyInstance = &WasmerInstance{instance: nil, exports: nil, Memory: nil}
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
@@ -287,7 +287,7 @@ func (instance *WasmerInstance) IsFunctionImported(name string) bool {
 
 // CallFunction executes given function from loaded contract.
 func (instance *WasmerInstance) CallFunction(functionName string) error {
-	if function, ok := instance.Exports[functionName]; ok {
+	if function, ok := instance.exports[functionName]; ok {
 		_, err := function()
 		return err
 	}
@@ -297,14 +297,14 @@ func (instance *WasmerInstance) CallFunction(functionName string) error {
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (instance *WasmerInstance) HasFunction(functionName string) bool {
-	_, ok := instance.Exports[functionName]
+	_, ok := instance.exports[functionName]
 	return ok
 }
 
 // GetFunctionNames loads a list of contract function (endpoint) names. Required for validating reserved names.
 func (instance *WasmerInstance) GetFunctionNames() []string {
 	var functionNames []string
-	for functionName := range instance.Exports {
+	for functionName := range instance.exports {
 		functionNames = append(functionNames, functionName)
 	}
 	return functionNames

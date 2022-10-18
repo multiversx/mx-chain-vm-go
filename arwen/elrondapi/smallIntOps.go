@@ -22,7 +22,8 @@ const (
 	int64finishName                  = "int64finish"
 )
 
-// SmallIntGetUnsignedArgument VMHooks implementation
+// SmallIntGetUnsignedArgument VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntGetUnsignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -45,7 +46,8 @@ func (context *ElrondApi) SmallIntGetUnsignedArgument(id int32) int64 {
 	return int64(argBigInt.Uint64())
 }
 
-// SmallIntGetSignedArgument VMHooks implementation
+// SmallIntGetSignedArgument VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntGetSignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -68,7 +70,8 @@ func (context *ElrondApi) SmallIntGetSignedArgument(id int32) int64 {
 	return argBigInt.Int64()
 }
 
-// SmallIntFinishUnsigned VMHooks implementation
+// SmallIntFinishUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntFinishUnsigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -80,7 +83,8 @@ func (context *ElrondApi) SmallIntFinishUnsigned(value int64) {
 	output.Finish(valueBytes)
 }
 
-// SmallIntFinishSigned VMHooks implementation
+// SmallIntFinishSigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntFinishSigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -92,7 +96,8 @@ func (context *ElrondApi) SmallIntFinishSigned(value int64) {
 	output.Finish(valueBytes)
 }
 
-// SmallIntStorageStoreUnsigned VMHooks implementation
+// SmallIntStorageStoreUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -115,7 +120,8 @@ func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLengt
 	return int32(storageStatus)
 }
 
-// SmallIntStorageStoreSigned VMHooks implementation
+// SmallIntStorageStoreSigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -138,7 +144,8 @@ func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength 
 	return int32(storageStatus)
 }
 
-// SmallIntStorageLoadUnsigned VMHooks implementation
+// SmallIntStorageLoadUnsigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -161,7 +168,8 @@ func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength
 	return int64(valueBigInt.Uint64())
 }
 
-// SmallIntStorageLoadSigned VMHooks implementation
+// SmallIntStorageLoadSigned VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -184,25 +192,29 @@ func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset int32, keyLength i
 	return valueBigInt.Int64()
 }
 
-// Int64getArgument VMHooks implementation
+// Int64getArgument VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) Int64getArgument(id int32) int64 {
 	// backwards compatibility
 	return context.SmallIntGetSignedArgument(id)
 }
 
-// Int64finish VMHooks implementation
+// Int64finish VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) Int64finish(value int64) {
 	// backwards compatibility
 	context.SmallIntFinishSigned(value)
 }
 
-// Int64storageStore VMHooks implementation
+// Int64storageStore VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) Int64storageStore(keyOffset int32, keyLength int32, value int64) int32 {
 	// backwards compatibility
 	return context.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 }
 
-// Int64storageLoad VMHooks implementation
+// Int64storageLoad VMHooks implementation.
+// @autogenerate(VMHooks)
 func (context *ElrondApi) Int64storageLoad(keyOffset int32, keyLength int32) int64 {
 	// backwards compatibility
 	return context.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
