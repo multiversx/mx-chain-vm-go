@@ -24,7 +24,7 @@ func newWASMValidator(scAPINames vmcommon.FunctionNames, builtInFuncContainer vm
 	}
 }
 
-func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.InstanceHandler) error {
+func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instance) error {
 	if !instance.HasMemory() {
 		return arwen.ErrMemoryDeclarationMissing
 	}
@@ -32,7 +32,7 @@ func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instan
 	return nil
 }
 
-func (validator *wasmValidator) verifyFunctions(instance executor.InstanceHandler) error {
+func (validator *wasmValidator) verifyFunctions(instance executor.Instance) error {
 	for _, functionName := range instance.GetFunctionNames() {
 		err := validator.verifyValidFunctionName(functionName)
 		if err != nil {
@@ -55,7 +55,7 @@ var protectedFunctions = map[string]bool{
 	"signalError":       true,
 	"completedTxEvent":  true}
 
-func (validator *wasmValidator) verifyProtectedFunctions(instance executor.InstanceHandler) error {
+func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Instance) error {
 	for _, functionName := range instance.GetFunctionNames() {
 		_, found := protectedFunctions[functionName]
 		if found {

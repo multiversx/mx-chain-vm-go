@@ -237,7 +237,7 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance mocked method()
-func (r *RuntimeContextMock) GetInstance() executor.InstanceHandler {
+func (r *RuntimeContextMock) GetInstance() executor.Instance {
 	return nil
 }
 

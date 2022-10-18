@@ -134,7 +134,7 @@ type RuntimeContext interface {
 	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
-	GetInstance() executor.InstanceHandler
+	GetInstance() executor.Instance
 	FunctionNameChecked() (string, error)
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64

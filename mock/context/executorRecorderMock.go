@@ -9,13 +9,13 @@ import (
 // ExecutorRecorderMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type ExecutorRecorderMock struct {
-	InstanceMap map[string][]executor.InstanceHandler
+	InstanceMap map[string][]executor.Instance
 }
 
 // NewExecutorRecorderMock constructs a new InstanceBuilderRecorderMock
 func NewExecutorRecorderMock() *ExecutorRecorderMock {
 	return &ExecutorRecorderMock{
-		InstanceMap: make(map[string][]executor.InstanceHandler),
+		InstanceMap: make(map[string][]executor.Instance),
 	}
 }
 
@@ -41,7 +41,7 @@ func (executorMock *ExecutorRecorderMock) FunctionNames() vmcommon.FunctionNames
 func (executorMock *ExecutorRecorderMock) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
-) (executor.InstanceHandler, error) {
+) (executor.Instance, error) {
 	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	if err == nil {
 		executorMock.addContractInstanceToInstanceMap(contractCode, instance)
@@ -53,7 +53,7 @@ func (executorMock *ExecutorRecorderMock) NewInstanceWithOptions(
 func (executorMock *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
-) (executor.InstanceHandler, error) {
+) (executor.Instance, error) {
 	instance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {
 		executorMock.addContractInstanceToInstanceMap(compiledCode, instance)
@@ -62,17 +62,17 @@ func (executorMock *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions
 }
 
 // add contract instance to the instance map for the given code
-func (executorMock *ExecutorRecorderMock) addContractInstanceToInstanceMap(code []byte, instance executor.InstanceHandler) {
+func (executorMock *ExecutorRecorderMock) addContractInstanceToInstanceMap(code []byte, instance executor.Instance) {
 	instances, ok := executorMock.InstanceMap[string(code)]
 	if ok {
 		instances = append(instances, instance)
 	} else {
-		instances = []executor.InstanceHandler{instance}
+		instances = []executor.Instance{instance}
 	}
 	executorMock.InstanceMap[string(code)] = instances
 }
 
 // GetContractInstances gets contract instances for code
-func (executorMock *ExecutorRecorderMock) GetContractInstances(code []byte) []executor.InstanceHandler {
+func (executorMock *ExecutorRecorderMock) GetContractInstances(code []byte) []executor.Instance {
 	return executorMock.InstanceMap[string(code)]
 }

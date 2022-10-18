@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var mockWasmerInstance *wasmer.Instance
+var mockWasmerInstance *wasmer.WasmerInstance
 var OriginalCaller = []byte("address_original_caller")
 var Alice = []byte("address_alice")
 var Bob = []byte("address_bob")
@@ -62,7 +62,7 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	world := worldmock.NewMockWorld()
 	host.BlockchainContext, _ = NewBlockchainContext(host, world)
 
-	mockWasmerInstance = &wasmer.Instance{
+	mockWasmerInstance = &wasmer.WasmerInstance{
 		Exports: make(wasmer.ExportsMap),
 	}
 	executor, _ := wasmer.NewExecutor()

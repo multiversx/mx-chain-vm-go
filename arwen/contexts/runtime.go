@@ -26,7 +26,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           executor.InstanceHandler
+	instance           executor.Instance
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
 	codeHash           []byte
@@ -40,7 +40,7 @@ type runtimeContext struct {
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
-	instanceStack []executor.InstanceHandler
+	instanceStack []executor.Instance
 
 	validator  *wasmValidator
 	vmExecutor executor.Executor
@@ -64,7 +64,7 @@ func NewRuntimeContext(
 		host:          host,
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]executor.InstanceHandler, 0),
+		instanceStack: make([]executor.Instance, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
 	}
@@ -82,7 +82,7 @@ func NewRuntimeContext(
 }
 
 func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(executor.InstanceHandler)
+	instance, ok := value.(executor.Instance)
 	if !ok {
 		return
 	}
@@ -241,7 +241,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	instance, ok := cachedObject.(executor.InstanceHandler)
+	instance, ok := cachedObject.(executor.Instance)
 	if !ok {
 		return false
 	}
@@ -727,7 +727,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() executor.InstanceHandler {
+func (context *runtimeContext) GetInstance() executor.Instance {
 	return context.instance
 }
 

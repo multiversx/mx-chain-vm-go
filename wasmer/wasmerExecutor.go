@@ -45,7 +45,7 @@ func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
 func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
-) (executor.InstanceHandler, error) {
+) (executor.Instance, error) {
 	return NewInstanceWithOptions(contractCode, options)
 }
 
@@ -54,6 +54,6 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
-) (executor.InstanceHandler, error) {
+) (executor.Instance, error) {
 	return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }

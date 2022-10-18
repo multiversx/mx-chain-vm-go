@@ -18,7 +18,7 @@ type InstanceMock struct {
 	Data            executor.VMHooks
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          executor.MemoryHandler
+	Memory          executor.Memory
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -137,12 +137,12 @@ func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 }
 
 // GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executor.MemoryHandler {
+func (instance *InstanceMock) GetInstanceCtxMemory() executor.Memory {
 	return instance.Memory
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() executor.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executor.Memory {
 	return instance.Memory
 }
 
