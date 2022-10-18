@@ -9,8 +9,8 @@ import (
 
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
-	data := *(*uintptr)(instCtx.Data())
-	return *(*executor.VMHooks)(unsafe.Pointer(data))
+	vmHooksPtr := *(*uintptr)(instCtx.Data())
+	return *(*executor.VMHooks)(unsafe.Pointer(vmHooksPtr))
 }
 
 func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {

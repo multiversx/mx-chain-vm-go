@@ -52,16 +52,6 @@ func (instance *InstanceMock) AddMockMethod(name string, method func() *Instance
 	instance.Exports[name] = wrappedMethod
 }
 
-// SetVMHooks mocked method
-func (instance *InstanceMock) SetVMHooks(callbacks executor.VMHooks) {
-	instance.Data = callbacks
-}
-
-// GetVMHooks mocked method
-func (instance *InstanceMock) GetVMHooks() executor.VMHooks {
-	return instance.Data
-}
-
 // HasMemory mocked method
 func (instance *InstanceMock) HasMemory() bool {
 	return true
