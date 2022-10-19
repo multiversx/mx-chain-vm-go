@@ -350,7 +350,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		CallType:      callType,
 		SenderAddress: sender,
 	}
-	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	logOutput.Trace("transfer value added")
 	return nil
@@ -425,10 +425,17 @@ func (context *outputContext) TransferESDT(
 		outputTransfer.Data = append(outputTransfer.Data, []byte(scCallData)...)
 	}
 
-	destAcc.OutputTransfers = append(destAcc.OutputTransfers, outputTransfer)
+	AppendOutputTransfers(destAcc, destAcc.OutputTransfers, outputTransfer)
 
 	context.outputState.Logs = append(context.outputState.Logs, vmOutput.Logs...)
 	return gasRemaining, nil
+}
+
+func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []vmcommon.OutputTransfer, transfers ...vmcommon.OutputTransfer) {
+	account.OutputTransfers = append(existingTransfers, transfers...)
+	for _, transfer := range transfers {
+		account.BytesConsumedByTxAsNetworking += uint64(len(transfer.Data))
+	}
 }
 
 func (context *outputContext) getOutputTransferDataFromESDTTransfer(
@@ -708,7 +715,8 @@ func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.
 		leftOtherTransfers = append(leftOtherTransfers, rightOtherTransfers[lenLeftOtherTransfers:]...)
 	}
 
-	leftAccount.OutputTransfers = append(leftAsyncCallTransfers, leftOtherTransfers...)
+	leftAccount.BytesConsumedByTxAsNetworking = 0
+	AppendOutputTransfers(leftAccount, leftAsyncCallTransfers, leftOtherTransfers...)
 }
 
 func splitTransfers(account *vmcommon.OutputAccount) ([]vmcommon.OutputTransfer, []vmcommon.OutputTransfer) {

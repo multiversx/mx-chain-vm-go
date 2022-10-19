@@ -910,6 +910,7 @@ func addOutputTransferToVMOutput(
 		}
 	}
 	outAcc.OutputTransfers = append(outAcc.OutputTransfers, outTransfer)
+	contexts.AppendOutputTransfers(outAcc, outAcc.OutputTransfers, outTransfer)
 	vmOutput.OutputAccounts[string(recipient)] = outAcc
 }
 
