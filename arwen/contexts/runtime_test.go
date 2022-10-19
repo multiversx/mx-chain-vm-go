@@ -44,7 +44,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 
 func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
 	executor, err := wasmer.NewExecutor()
-	executor.SetVMHooks(elrondapi.NewElrondApi(host))
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(t, err)
 	runtimeContext, err := NewRuntimeContext(
 		host,
@@ -290,7 +290,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	vmType := []byte("type")
 	executor, _ := wasmer.NewExecutor()
-	executor.SetVMHooks(elrondapi.NewElrondApi(host))
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,

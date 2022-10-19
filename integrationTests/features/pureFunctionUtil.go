@@ -68,7 +68,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	if err != nil {
 		return nil, err
 	}
-	executor.SetVMHooks(elrondapi.NewElrondApi(vm))
+	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	return &pureFunctionExecutor{
 		world: world,
 		vm:    vm,

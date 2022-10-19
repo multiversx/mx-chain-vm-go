@@ -45,6 +45,6 @@ type Executor interface {
 	// GetVMHooks returns the VM hooks.
 	GetVMHooks() VMHooks
 
-	// SetVMHooks sets the VM hooks.
-	SetVMHooks(vmHooks VMHooks)
+	// InitVMHooks inits the VM hooks.
+	InitVMHooks(vmHooks VMHooks)
 }

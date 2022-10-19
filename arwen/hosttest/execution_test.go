@@ -15,7 +15,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -283,9 +282,7 @@ func TestExecution_ManyDeployments(t *testing.T) {
 	}
 }
 
-// TODO: test needs to be reworked, logic changed a lot, skipping for the moment
-func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) {
-	t.Skip()
+func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -306,9 +303,37 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	var host1InstancesData = make(map[executor.VMHooks]bool)
-	for range instanceRecorder1.GetContractInstances(code) {
-		host1InstancesData[runtimeContext1.GetVMExecutor().GetVMHooks()] = true
+	var vmHooksPtr = make(map[uintptr]bool)
+	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+		vmHooksPtr[instance.GetVMHooksPtr()] = true
+	}
+	require.False(t, len(vmHooksPtr) > 1)
+}
+
+func TestExecution_MultipleArwens_DifferentVMHooks(t *testing.T) {
+	code := test.GetTestSCCode("counter", "../../")
+
+	input := test.DefaultTestContractCallInput()
+	input.GasProvided = 1000000
+	input.Function = get
+
+	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	defer func() {
+		host1.Reset()
+	}()
+	_, _, _, _, runtimeContext1, _, _ := host1.GetContexts()
+	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
+	host1.SetRuntimeContext(runtimeContextMock)
+
+	for i := 0; i < 5; i++ {
+		vmOutput, err := host1.RunSmartContractCall(input)
+		verify := test.NewVMOutputVerifier(t, vmOutput, err)
+		verify.Ok()
+	}
+
+	var host1VMHooksPtr = make(map[uintptr]bool)
+	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
 	}
 
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
@@ -325,8 +350,8 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	for range instanceRecorder2.GetContractInstances(code) {
-		_, found := host1InstancesData[runtimeContext2.GetVMExecutor().GetVMHooks()]
+	for _, instance := range instanceRecorder2.GetContractInstances(code) {
+		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
 		require.False(t, found)
 	}
 }

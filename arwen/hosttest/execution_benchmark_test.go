@@ -248,7 +248,7 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 			WasmerSIGSEGVPassthrough: false,
 		})
-	executor.SetVMHooks(elrondapi.NewElrondApi(host))
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err
 }

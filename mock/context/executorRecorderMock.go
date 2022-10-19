@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"unsafe"
+
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
@@ -10,6 +12,8 @@ import (
 // create mocked Wasmer instances.
 type ExecutorRecorderMock struct {
 	InstanceMap map[string][]executor.Instance
+	vmHooks     executor.VMHooks
+	vmHooksPtr  uintptr
 }
 
 // NewExecutorRecorderMock constructs a new InstanceBuilderRecorderMock
@@ -44,6 +48,7 @@ func (executorMock *ExecutorRecorderMock) NewInstanceWithOptions(
 ) (executor.Instance, error) {
 	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
 	if err == nil {
+		instance.SetVMHooksPtr(executorMock.vmHooksPtr)
 		executorMock.addContractInstanceToInstanceMap(contractCode, instance)
 	}
 	return instance, err
@@ -56,13 +61,16 @@ func (executorMock *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions
 ) (executor.Instance, error) {
 	instance, err := wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err == nil {
+		instance.SetVMHooksPtr(executorMock.vmHooksPtr)
 		executorMock.addContractInstanceToInstanceMap(compiledCode, instance)
 	}
 	return instance, err
 }
 
-// SetVMHooks mocked method
-func (executorMock *ExecutorRecorderMock) SetVMHooks(vmHooks executor.VMHooks) {
+// InitVMHooks mocked method
+func (executorMock *ExecutorRecorderMock) InitVMHooks(vmHooks executor.VMHooks) {
+	executorMock.vmHooks = vmHooks
+	executorMock.vmHooksPtr = uintptr(unsafe.Pointer(&executorMock.vmHooks))
 }
 
 // GetVMHooks mocked method

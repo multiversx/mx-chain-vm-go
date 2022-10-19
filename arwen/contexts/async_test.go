@@ -67,7 +67,7 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 		Exports: make(wasmer.ExportsMap),
 	}
 	executor, _ := wasmer.NewExecutor()
-	executor.SetVMHooks(elrondapi.NewElrondApi(host))
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	runtimeContext, _ := NewRuntimeContext(
 		host,
 		vmType,

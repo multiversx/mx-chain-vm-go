@@ -20,6 +20,8 @@ type Instance interface {
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 	Reset() bool
+	SetVMHooksPtr(vmHooksPtr uintptr)
+	GetVMHooksPtr() uintptr
 }
 
 // Memory defines the functionality of the memory of a Wasmer instance

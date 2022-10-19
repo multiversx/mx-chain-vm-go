@@ -48,7 +48,7 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 		executor,
 		getHostParameters(),
 	)
-	executor.SetVMHooks(elrondapi.NewElrondApi(vm))
+	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	if err != nil {
 		return nil, err
 	}

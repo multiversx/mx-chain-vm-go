@@ -180,6 +180,7 @@ func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte,
 	host, _ := DefaultTestArwenForCall(tb, code, balance)
 
 	executorRecorderMock := contextmock.NewExecutorRecorderMock()
+	executorRecorderMock.InitVMHooks(elrondapi.NewElrondApi(host))
 	host.Runtime().ReplaceVMExecutor(executorRecorderMock)
 
 	return host, executorRecorderMock
@@ -357,7 +358,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 			},
 			WasmerSIGSEGVPassthrough: false,
 		})
-	executor.SetVMHooks(elrondapi.NewElrondApi(host))
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 
@@ -414,7 +415,7 @@ func DefaultTestArwenWithGasSchedule(
 			},
 			WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 		})
-	executor.SetVMHooks(elrondapi.NewElrondApi(host))
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 

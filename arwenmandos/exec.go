@@ -98,7 +98,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	ae.vm = vm
 	ae.vmHost = vm
-	executor.SetVMHooks(elrondapi.NewElrondApi(vm))
+	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	return nil
 }
 

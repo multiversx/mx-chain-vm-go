@@ -157,3 +157,12 @@ func (instance *InstanceMock) SetMemory(_ []byte) bool {
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
 }
+
+// SetVMHooksPtr mocked method
+func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+}
+
+// GetVMHooksPtr mocked method
+func (instance *InstanceMock) GetVMHooksPtr() uintptr {
+	return 0
+}
