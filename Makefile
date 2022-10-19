@@ -15,7 +15,6 @@ endif
 	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
 	cp ./cmd/arwendebug/arwendebug ${ARWENDEBUG_PATH}
 
-
 test: clean
 	go test ./...
 
