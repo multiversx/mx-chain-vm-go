@@ -11,8 +11,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
@@ -22,33 +20,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const WASMPageSize = 65536
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
 
-func MakeAPIImports() *wasmer.Imports {
-	imports := executor.NewImportFunctions()
-	_ = elrondapi.ElrondEIImports(imports)
-	_ = elrondapi.BigIntImports(imports)
-	_ = elrondapi.BigFloatImports(imports)
-	_ = elrondapi.ManagedBufferImports(imports)
-	_ = elrondapi.SmallIntImports(imports)
-	_ = cryptoapi.CryptoImports(imports)
-	return wasmer.ConvertImports(imports)
-}
-
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {
-	imports := MakeAPIImports()
-	_ = wasmer.SetImports(imports)
-
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
@@ -60,10 +42,13 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 }
 
 func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
+	executor, err := wasmer.NewExecutor()
+	require.Nil(t, err)
 	runtimeContext, err := NewRuntimeContext(
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		executor,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -157,9 +142,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 }
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
-	imports := MakeAPIImports()
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
@@ -241,7 +224,6 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = MakeAPIImports()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -302,15 +284,16 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	beta := []byte("beta")
 	gamma := []byte("gamma")
 
-	imports := MakeAPIImports()
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	vmType := []byte("type")
+	executor, _ := wasmer.NewExecutor()
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,
-		builtInFunctions.NewBuiltInFunctionContainer())
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		executor,
+	)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:  []byte("caller"),
@@ -525,7 +508,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	totalPages := 32
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {

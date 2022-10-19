@@ -1,0 +1,45 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.64.0-nightly",
+            "commitHash": "f8588549c3c3d45c32b404210cada01e2a45def3",
+            "commitDate": "2022-07-18",
+            "channel": "Nightly",
+            "short": "rustc 1.64.0-nightly (f8588549c 2022-07-18)"
+        },
+        "contractCrate": {
+            "name": "factorial",
+            "version": "0.0.0",
+            "git_version": "v0.35.0"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.35.0"
+        }
+    },
+    "name": "Factorial",
+    "constructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "factorial",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "value",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        }
+    ],
+    "events": [],
+    "hasCallback": false,
+    "types": {}
+}

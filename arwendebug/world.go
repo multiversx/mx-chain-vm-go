@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 type worldDataModel struct {
@@ -36,8 +37,14 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := worldmock.NewMockWorld()
 	blockchainHook.AcctMap = dataModel.Accounts
 
+	executor, err := wasmer.NewExecutor()
+	if err != nil {
+		return nil, err
+	}
+
 	vm, err := host.NewArwenVM(
 		blockchainHook,
+		executor,
 		getHostParameters(),
 	)
 	if err != nil {

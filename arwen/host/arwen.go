@@ -17,7 +17,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -50,7 +49,6 @@ type vmHost struct {
 	managedTypesContext arwen.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
-	scAPIMethods         *wasmer.Imports
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
 	callArgsParser       arwen.CallArgsParser
@@ -61,6 +59,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
+	vmExecutor executor.Executor,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -93,7 +92,6 @@ func NewArwenVM(
 		storageContext:       nil,
 		managedTypesContext:  nil,
 		gasSchedule:          hostParameters.GasSchedule,
-		scAPIMethods:         nil,
 		builtInFuncContainer: hostParameters.BuiltInFuncContainer,
 		esdtTransferParser:   hostParameters.ESDTTransferParser,
 		callArgsParser:       parsers.NewCallArgsParser(),
@@ -105,20 +103,7 @@ func NewArwenVM(
 		host.executionTimeout = newExecutionTimeout
 	}
 
-	imports := executor.NewImportFunctions()
-	err := PopulateAllImports(imports)
-	if err != nil {
-		return nil, err
-	}
-
-	wasmerImports := wasmer.ConvertImports(imports)
-	err = wasmer.SetImports(wasmerImports)
-	if err != nil {
-		return nil, err
-	}
-
-	host.scAPIMethods = wasmerImports
-
+	var err error
 	host.blockchainContext, err = contexts.NewBlockchainContext(host, blockChainHook)
 	if err != nil {
 		return nil, err
@@ -128,7 +113,11 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		vmExecutor,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	host.meteringContext, err = contexts.NewMeteringContext(host, hostParameters.GasSchedule, hostParameters.BlockGasLimit)
 	if err != nil {
@@ -167,11 +156,11 @@ func NewArwenVM(
 	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
-	wasmer.SetRkyvSerializationEnabled(true)
+	vmExecutor.SetOpcodeCosts(&opcodeCosts)
+	vmExecutor.SetRkyvSerializationEnabled(true)
 
 	if hostParameters.WasmerSIGSEGVPassthrough {
-		wasmer.SetSIGSEGVPassthrough()
+		vmExecutor.SetSIGSEGVPassthrough()
 	}
 
 	host.initContexts()
@@ -316,11 +305,6 @@ func (host *vmHost) ClearContextStateStack() {
 	host.blockchainContext.ClearStateStack()
 }
 
-// GetAPIMethods returns the EEI as a set of imports for Wasmer
-func (host *vmHost) GetAPIMethods() *wasmer.Imports {
-	return host.scAPIMethods
-}
-
 // GasScheduleChange applies a new gas schedule to the host
 func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	host.mutExecution.Lock()
@@ -334,7 +318,7 @@ func (host *vmHost) GasScheduleChange(newGasSchedule config.GasScheduleMap) {
 	}
 
 	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	host.runtimeContext.GetVMExecutor().SetOpcodeCosts(&opcodeCosts)
 
 	host.meteringContext.SetGasSchedule(newGasSchedule)
 	host.runtimeContext.ClearWarmInstanceCache()
@@ -372,7 +356,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 			}
-			host.Runtime().CleanInstance()
+
 			close(done)
 		}()
 
@@ -428,7 +412,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				err = arwen.ErrExecutionPanicked
 			}
 
-			host.Runtime().CleanInstance()
 			close(done)
 		}()
 

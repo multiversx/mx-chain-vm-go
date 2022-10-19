@@ -15,10 +15,10 @@ type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
 	Points          uint64
-	Data            uintptr
+	Data            executor.VMHooks
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          executor.MemoryHandler
+	Memory          executor.Memory
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -30,7 +30,7 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		Code:            code,
 		Exports:         make(wasmer.ExportsMap),
 		Points:          0,
-		Data:            0,
+		Data:            nil,
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
@@ -57,9 +57,14 @@ func (instance *InstanceMock) HasMemory() bool {
 	return true
 }
 
-// SetContextData mocked method
-func (instance *InstanceMock) SetContextData(data uintptr) {
-	instance.Data = data
+// SetVMHooks mocked method
+func (instance *InstanceMock) SetVMHooks(callbacks executor.VMHooks) {
+	instance.Data = callbacks
+}
+
+// GetVMHooks mocked method
+func (instance *InstanceMock) GetVMHooks() executor.VMHooks {
+	return instance.Data
 }
 
 // GetPointsUsed mocked method
@@ -96,6 +101,11 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
+// Reset mocked method
+func (instance *InstanceMock) Reset() bool {
+	return true
+}
+
 // CallFunction mocked method
 func (instance *InstanceMock) CallFunction(functionName string) error {
 	if function, ok := instance.Exports[functionName]; ok {
@@ -126,18 +136,13 @@ func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
 
-// GetData mocked method
-func (instance *InstanceMock) GetData() uintptr {
-	return instance.Data
-}
-
 // GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executor.MemoryHandler {
+func (instance *InstanceMock) GetInstanceCtxMemory() executor.Memory {
 	return instance.Memory
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() executor.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executor.Memory {
 	return instance.Memory
 }
 
@@ -158,7 +163,7 @@ func (instance *InstanceMock) SetMemory(_ []byte) bool {
 	return true
 }
 
-// IsInterfaceNil -
+// IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
 }

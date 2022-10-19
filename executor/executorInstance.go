@@ -1,9 +1,10 @@
 package executor
 
-// InstanceHandler defines the functionality of a Wasmer instance
-type InstanceHandler interface {
+// Instance defines the functionality of a Wasmer instance
+type Instance interface {
 	HasMemory() bool
-	SetContextData(data uintptr)
+	SetVMHooks(callbacks VMHooks)
+	GetVMHooks() VMHooks
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)
@@ -15,16 +16,16 @@ type InstanceHandler interface {
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
 	ValidateVoidFunction(functionName string) error
-	GetData() uintptr
-	GetInstanceCtxMemory() MemoryHandler
-	GetMemory() MemoryHandler
+	GetInstanceCtxMemory() Memory
+	GetMemory() Memory
 	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
+	Reset() bool
 }
 
-// MemoryHandler defines the functionality of the memory of a Wasmer instance
-type MemoryHandler interface {
+// Memory defines the functionality of the memory of a Wasmer instance
+type Memory interface {
 	Length() uint32
 	Data() []byte
 	Grow(pages uint32) error

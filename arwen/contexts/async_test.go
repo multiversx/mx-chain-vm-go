@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var mockWasmerInstance *wasmer.Instance
+var mockWasmerInstance *contextmock.InstanceMock
 var OriginalCaller = []byte("address_original_caller")
 var Alice = []byte("address_alice")
 var Bob = []byte("address_bob")
@@ -46,9 +46,6 @@ func makeAsyncContext(t testing.TB, host arwen.VMHost, address []byte) *asyncCon
 }
 
 func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmock.MockWorld) {
-	imports := MakeAPIImports()
-	_ = wasmer.SetImports(imports)
-
 	vmType := []byte("type")
 
 	gasSchedule := config.MakeGasMapForTests()
@@ -57,7 +54,6 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	wasmer.SetOpcodeCosts(&opcodeCosts)
 
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	mockMetering := &contextmock.MeteringContextMock{GasLeftMock: 10000}
 	mockMetering.SetGasSchedule(gasSchedule)
@@ -66,13 +62,15 @@ func initializeArwenAndWasmer_AsyncContext() (*contextmock.VMHostMock, *worldmoc
 	world := worldmock.NewMockWorld()
 	host.BlockchainContext, _ = NewBlockchainContext(host, world)
 
-	mockWasmerInstance = &wasmer.Instance{
+	mockWasmerInstance = &contextmock.InstanceMock{
 		Exports: make(wasmer.ExportsMap),
 	}
+	executor, _ := wasmer.NewExecutor()
 	runtimeContext, _ := NewRuntimeContext(
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		executor,
 	)
 	runtimeContext.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeContext

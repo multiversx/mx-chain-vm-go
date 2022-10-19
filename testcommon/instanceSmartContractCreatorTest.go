@@ -48,16 +48,24 @@ func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(arwen.VMHost, *
 // AndAssertResults provides the function that will aserts the results
 func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
-	callerTest.runTest()
+	callerTest.runTest(true)
 }
 
-func (callerTest *TestCreateTemplateConfig) runTest() {
+// AndAssertResults provides the function that will aserts the results
+func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	callerTest.assertResults = assertResults
+	callerTest.runTest(false)
+}
+
+func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 	if callerTest.host == nil {
 		callerTest.host, callerTest.blockchainHookStub = DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 	defer func() {
-		callerTest.host.Reset()
+		if reset {
+			callerTest.host.Reset()
+		}
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)

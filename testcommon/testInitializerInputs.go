@@ -21,8 +21,10 @@ import (
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -171,34 +173,34 @@ func DefaultTestArwenForCallSigSegv(tb testing.TB, code []byte, balance *big.Int
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwenForCallWithInstanceRecorderMock creates an InstanceBuilderRecorderMock
-func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.InstanceBuilderRecorderMock) {
+// DefaultTestArwenForCallWithInstanceRecorderMock creates an ExecutorRecorderMock
+func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.ExecutorRecorderMock) {
 	// this uses a Blockchain Hook Stub that does not cache the compiled code
 	host, _ := DefaultTestArwenForCall(tb, code, balance)
 
-	instanceBuilderRecorderMock := contextmock.NewInstanceBuilderRecorderMock()
-	host.Runtime().ReplaceInstanceBuilder(instanceBuilderRecorderMock)
+	executorRecorderMock := contextmock.NewExecutorRecorderMock()
+	host.Runtime().ReplaceVMExecutor(executorRecorderMock)
 
-	return host, instanceBuilderRecorderMock
+	return host, executorRecorderMock
 }
 
-// DefaultTestArwenForCallWithInstanceMocks creates an InstanceBuilderMock
-func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
+// DefaultTestArwenForCallWithInstanceMocks creates an ExecutorMock
+func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.ExecutorMock) {
 	world := worldmock.NewMockWorld()
 	return DefaultTestArwenForCallWithInstanceMocksAndWorld(tb, world)
 }
 
-// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an InstanceBuilderMock
-func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.InstanceBuilderMock) {
+// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an ExecutorMock
+func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.ExecutorMock) {
 	if world == nil {
 		world = worldmock.NewMockWorld()
 	}
 	host := DefaultTestArwen(tb, world)
 
-	instanceBuilderMock := contextmock.NewInstanceBuilderMock(world)
-	host.Runtime().ReplaceInstanceBuilder(instanceBuilderMock)
+	executorMock := contextmock.NewExecutorMock(world)
+	host.Runtime().ReplaceVMExecutor(executorMock)
 
-	return host, instanceBuilderMock
+	return host, executorMock
 }
 
 // DefaultTestArwenForCallWithWorldMock creates a MockWorld
@@ -278,9 +280,11 @@ func defaultTestArwenForContracts(
 	codeMap := make(map[string]*[]byte)
 
 	for _, contract := range contracts {
+		codeHash, _ := hashing.NewHasher().Sha256(contract.code)
 		contractsMap[string(contract.address)] = &contextmock.StubAccount{
 			Address:      contract.address,
 			Balance:      big.NewInt(contract.balance),
+			CodeHash:     codeHash,
 			CodeMetadata: DefaultCodeMetadata,
 			OwnerAddress: ParentAddress,
 		}
@@ -323,30 +327,35 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
-		VMType:                   DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField:     true,
-			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
-			IsFixOOGReturnCodeFlagEnabledField:               true,
-			IsRemoveNonUpdatedStorageFlagEnabledField:        true,
-			IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
-			IsManagedCryptoAPIsFlagEnabledField:              true,
-			IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
-			IsESDTTransferRoleFlagEnabledField:               true,
-			IsSendAlwaysFlagEnabledField:                     true,
-			IsGlobalMintBurnFlagEnabledField:                 true,
-			IsCheckFunctionArgumentFlagEnabledField:          true,
-			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
-		},
-		WasmerSIGSEGVPassthrough: false,
-	})
+	executor, err := wasmer.NewExecutor()
+	require.Nil(tb, err)
+	host, err := arwenHost.NewArwenVM(
+		world,
+		executor,
+		&arwen.VMHostParameters{
+			VMType:                   DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              gasSchedule,
+			BuiltInFuncContainer:     world.BuiltinFuncs.Container,
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
+				IsStorageAPICostOptimizationFlagEnabledField:     true,
+				IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
+				IsFixOOGReturnCodeFlagEnabledField:               true,
+				IsRemoveNonUpdatedStorageFlagEnabledField:        true,
+				IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
+				IsManagedCryptoAPIsFlagEnabledField:              true,
+				IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
+				IsESDTTransferRoleFlagEnabledField:               true,
+				IsSendAlwaysFlagEnabledField:                     true,
+				IsGlobalMintBurnFlagEnabledField:                 true,
+				IsCheckFunctionArgumentFlagEnabledField:          true,
+				IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
+			},
+			WasmerSIGSEGVPassthrough: false,
+		})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 
@@ -371,33 +380,38 @@ func DefaultTestArwenWithGasSchedule(
 	}
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(blockchain, &arwen.VMHostParameters{
-		VMType:                   DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField:         true,
-			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
-			IsFixOOGReturnCodeFlagEnabledField:                   true,
-			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
-			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
-			IsManagedCryptoAPIsFlagEnabledField:                  true,
-			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
-			IsRefactorContextFlagEnabledField:                    true,
-			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-			IsDisableExecByCallerFlagEnabledField:                true,
-			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsSendAlwaysFlagEnabledField:                         true,
-			IsGlobalMintBurnFlagEnabledField:                     true,
-			IsCheckFunctionArgumentFlagEnabledField:              true,
-			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
-		},
-		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
-	})
+	executor, err := wasmer.NewExecutor()
+	require.Nil(tb, err)
+	host, err := arwenHost.NewArwenVM(
+		blockchain,
+		executor,
+		&arwen.VMHostParameters{
+			VMType:                   DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              gasSchedule,
+			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
+				IsStorageAPICostOptimizationFlagEnabledField:         true,
+				IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+				IsFixOOGReturnCodeFlagEnabledField:                   true,
+				IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+				IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+				IsManagedCryptoAPIsFlagEnabledField:                  true,
+				IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+				IsRefactorContextFlagEnabledField:                    true,
+				IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+				IsDisableExecByCallerFlagEnabledField:                true,
+				IsESDTTransferRoleFlagEnabledField:                   true,
+				IsSendAlwaysFlagEnabledField:                         true,
+				IsGlobalMintBurnFlagEnabledField:                     true,
+				IsCheckFunctionArgumentFlagEnabledField:              true,
+				IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+			},
+			WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
+		})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 
