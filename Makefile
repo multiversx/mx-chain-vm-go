@@ -15,17 +15,24 @@ endif
 	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
 	cp ./cmd/arwendebug/arwendebug ${ARWENDEBUG_PATH}
 
-test: clean
-	go test ./... -failfast -p 1
 
-test-short:
-	go test ./... -short -failfast -p 1
+test: clean
+	go test ./...
 
 test-v: clean
-	go test ./... -failfast -v -p 1
+	go test ./... -v
 
-test-short-v:
-	go test ./... -short -failfast -v -p 1
+test-serial: clean
+	go test ./... -failfast -p 1
+
+test-short: clean
+	go test ./... -short
+
+test-short-v: clean
+	go test ./... -short -v
+
+test-short-serial:
+	go test ./... -short -failfast -p 1
 
 print-api-costs:
 	@echo "bigIntOps.go:"
