@@ -336,9 +336,9 @@ func (instance *WasmerInstance) IsInterfaceNil() bool {
 }
 
 func (instance *WasmerInstance) SetVMHooksPtr(vmHooksPtr uintptr) {
-	dataPointer := unsafe.Pointer(&vmHooksPtr)
-	instance.vmHooksPtr = dataPointer
-	cWasmerInstanceContextDataSet(instance.instance, dataPointer)
+	localVMHooksPointer := unsafe.Pointer(&vmHooksPtr)
+	instance.vmHooksPtr = localVMHooksPointer
+	cWasmerInstanceContextDataSet(instance.instance, localVMHooksPointer)
 }
 
 func (instance *WasmerInstance) GetVMHooksPtr() uintptr {

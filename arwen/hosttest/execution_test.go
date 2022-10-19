@@ -310,7 +310,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	require.False(t, len(vmHooksPtr) > 1)
 }
 
-func TestExecution_MultipleArwens_DifferentVMHooks(t *testing.T) {
+func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -325,17 +325,6 @@ func TestExecution_MultipleArwens_DifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	for i := 0; i < 5; i++ {
-		vmOutput, err := host1.RunSmartContractCall(input)
-		verify := test.NewVMOutputVerifier(t, vmOutput, err)
-		verify.Ok()
-	}
-
-	var host1VMHooksPtr = make(map[uintptr]bool)
-	for _, instance := range instanceRecorder1.GetContractInstances(code) {
-		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
-	}
-
 	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
 	defer func() {
 		host2.Reset()
@@ -344,12 +333,14 @@ func TestExecution_MultipleArwens_DifferentVMHooks(t *testing.T) {
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
 	host2.SetRuntimeContext(runtimeContextMock)
 
-	for i := 0; i < maxUint8AsInt+1; i++ {
-		vmOutput, err := host2.RunSmartContractCall(input)
-		verify := test.NewVMOutputVerifier(t, vmOutput, err)
-		verify.Ok()
-	}
+	runNContractsForHostAndVerify(t, host2, input, 5)
+	runNContractsForHostAndVerify(t, host1, input, 5)
+	runNContractsForHostAndVerify(t, host2, input, maxUint8AsInt+1)
 
+	var host1VMHooksPtr = make(map[uintptr]bool)
+	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
+	}
 	for _, instance := range instanceRecorder2.GetContractInstances(code) {
 		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
 		require.False(t, found)
@@ -3434,5 +3425,13 @@ func modifyERC20BytecodeWithCustomTransferEvent(erc20Bytecode []byte, replaceByt
 
 	for i, b := range replaceBytes {
 		erc20Bytecode[transferEventBytecodeOffset+i] = b
+	}
+}
+
+func runNContractsForHostAndVerify(tb testing.TB, host arwen.VMHost, input *vmcommon.ContractCallInput, n int) {
+	for i := 0; i < n; i++ {
+		vmOutput, err := host.RunSmartContractCall(input)
+		verify := test.NewVMOutputVerifier(tb, vmOutput, err)
+		verify.Ok()
 	}
 }
