@@ -12,6 +12,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -434,7 +435,8 @@ func (context *outputContext) TransferESDT(
 func AppendOutputTransfers(account *vmcommon.OutputAccount, existingTransfers []vmcommon.OutputTransfer, transfers ...vmcommon.OutputTransfer) {
 	account.OutputTransfers = append(existingTransfers, transfers...)
 	for _, transfer := range transfers {
-		account.BytesConsumedByTxAsNetworking += uint64(len(transfer.Data))
+		account.BytesConsumedByTxAsNetworking =
+			math.AddUint64(account.BytesConsumedByTxAsNetworking, uint64(len(transfer.Data)))
 	}
 }
 
