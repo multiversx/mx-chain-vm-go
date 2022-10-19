@@ -80,18 +80,21 @@ func (writer *cgoWriter) writeCgoFunctions(out *os.File, eiMetadata *EIMetadata)
 		out.WriteString(");\n")
 	}
 
-	out.WriteString("import \"C\"\n\n")
-}
+	out.WriteString(`import "C"
 
-func (writer *cgoWriter) writePopulateImports(out *os.File, eiMetadata *EIMetadata) {
-	out.WriteString(`import (
+import (
 	"unsafe"
 )
 
-// populateWasmerImports populates imports with the ElrondEI API methods
+`)
+}
+
+func (writer *cgoWriter) writePopulateImports(out *os.File, eiMetadata *EIMetadata) {
+	out.WriteString(`// populateWasmerImports populates imports with the ElrondEI API methods
 func populateWasmerImports(imports *wasmerImports) error {
 	var err error
 `)
+
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf("\terr = imports.append(\"%s\", %s, %s)\n",
 			lowerInitial(funcMetadata.Name),
@@ -112,7 +115,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 	return &cWasmerVmHookPointers{`)
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
-		out.WriteString(fmt.Sprintf("\n\t\t%s: funcPointer(%s)",
+		out.WriteString(fmt.Sprintf("\n\t\t%s: funcPointer(%s),",
 			cgoFuncPointerFieldName(funcMetadata),
 			writer.cgoFuncName(funcMetadata),
 		))
