@@ -37,7 +37,7 @@ type Executor interface {
 		contractCode []byte,
 		options CompilationOptions) (Instance, error)
 
-	// NewInstanceWithOptions is used to restore an executor instance from cache.
+	// NewInstanceFromCompiledCodeWithOptions is used to restore an executor instance from cache.
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
