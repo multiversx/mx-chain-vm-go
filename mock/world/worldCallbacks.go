@@ -45,17 +45,27 @@ func (b *MockWorld) NewAddress(creatorAddress []byte, creatorNonce uint64, _ []b
 
 // GetStorageData yields the storage value for a certain account and storage key.
 // Should return an empty byte array if the key is missing from the account storage
-func (b *MockWorld) GetStorageData(accountAddress []byte, key []byte) ([]byte, error) {
+func (b *MockWorld) GetStorageData(accountAddress []byte, key []byte) ([]byte, uint32, error) {
 	// custom error
 	if b.Err != nil {
-		return nil, b.Err
+		return nil, 0, b.Err
 	}
 
 	acct := b.AcctMap.GetAccount(accountAddress)
 	if acct == nil {
-		return []byte{}, nil
+		return []byte{}, 0, nil
 	}
-	return acct.StorageValue(string(key)), nil
+
+	foundValue := acct.StorageValue(string(key))
+	if len(foundValue) == 0 &&
+		b.ProvidedBlockchainHook != nil {
+		bhStoredValue, _, err := b.ProvidedBlockchainHook.GetStorageData(accountAddress, key)
+		if err == nil {
+			foundValue = bhStoredValue
+		}
+	}
+
+	return foundValue, 0, nil
 }
 
 // GetBlockhash should return the hash of the nth previous blockchain.

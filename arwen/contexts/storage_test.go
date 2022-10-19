@@ -436,8 +436,8 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 			}
 			return nil, nil
 		},
-		GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, error) {
-			return internalData, nil
+		GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
+			return internalData, 0, nil
 		},
 	}
 

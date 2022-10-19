@@ -28,6 +28,7 @@ type EnableEpochsHandlerStub struct {
 	IsCheckTransferFlagEnabledField                      bool
 	IsTransferToMetaFlagEnabledField                     bool
 	IsESDTNFTImprovementV1FlagEnabledField               bool
+	IsFixOldTokenLiquidityEnabledField                   bool
 	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
 	FixOOGReturnCodeEnableEpochField                     uint32
 	RemoveNonUpdatedStorageEnableEpochField              uint32
@@ -38,6 +39,10 @@ type EnableEpochsHandlerStub struct {
 	RefactorContextEnableEpochField                      uint32
 	CheckExecuteReadOnlyEnableEpochField                 uint32
 	StorageAPICostOptimizationEnableEpochField           uint32
+}
+
+func (stub *EnableEpochsHandlerStub) IsFixOldTokenLiquidityEnabled() bool {
+	return stub.IsFixOldTokenLiquidityEnabledField
 }
 
 // IsGlobalMintBurnFlagEnabled -
