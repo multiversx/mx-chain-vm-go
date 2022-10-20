@@ -351,14 +351,6 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	var vmOutput1 *vmcommon.VMOutput
-	var err1 error
-	go func() {
-		vmOutput1, err1 = host1.RunSmartContractCall(input)
-		interHostsChan <- "finish"
-		host1Chan <- "finish"
-	}()
-
 	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
 	defer func() {
 		host2.Reset()
@@ -373,6 +365,14 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 		return runtimeContextMock.GetWrappedRuntimeContext().FunctionNameChecked()
 	}
 	host2.SetRuntimeContext(runtimeContextMock)
+
+	var vmOutput1 *vmcommon.VMOutput
+	var err1 error
+	go func() {
+		vmOutput1, err1 = host1.RunSmartContractCall(input)
+		interHostsChan <- "finish"
+		host1Chan <- "finish"
+	}()
 
 	vmOutput2, err2 := host2.RunSmartContractCall(input)
 
