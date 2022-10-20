@@ -12,7 +12,12 @@ func WriteRustVMHooksTrait(out *os.File, eiMetadata *EIMetadata) {
 // !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-pub trait VMHooks: 'static {
+use std::ffi::c_void;
+
+#[rustfmt::skip]
+pub trait VMHooks: core::fmt::Debug + 'static {
+    fn set_context_ptr(&mut self, context_ptr: *mut c_void);
+
 `)
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
@@ -28,11 +33,16 @@ pub trait VMHooks: 'static {
 
 	out.WriteString(`}
 
+/// Dummy implementation for VMHooks. Can be used as placeholder, or in tests.
+#[derive(Debug)]
 pub struct VMHooksDefault;
 
 #[allow(unused)]
 #[rustfmt::skip]
 impl VMHooks for VMHooksDefault {
+    fn set_context_ptr(&mut self, _context_ptr: *mut c_void) {
+    }
+
 `)
 
 	for i, funcMetadata := range eiMetadata.AllFunctions {
