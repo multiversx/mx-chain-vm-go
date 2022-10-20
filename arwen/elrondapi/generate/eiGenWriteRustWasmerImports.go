@@ -14,11 +14,12 @@ func WriteRustWasmerImports(out *os.File, eiMetadata *EIMetadata) {
 
 use wasmer::{imports, Function, ImportObject, Store};
 
-use crate::wasmer_env_2::VMHooksWrapper;
+use crate::wasmer_vm_hooks::VMHooksWrapper;
 
 `)
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
+		out.WriteString("#[rustfmt::skip]\n")
 		out.WriteString(fmt.Sprintf(
 			"fn %s%s",
 			wasmerImportAdapterFunctionName(funcMetadata.Name),
@@ -41,7 +42,7 @@ use crate::wasmer_env_2::VMHooksWrapper;
 		out.WriteString(")\n}\n\n")
 	}
 
-	out.WriteString(`pub fn convert_imports_2(store: &Store, env: VMHooksWrapper) -> ImportObject {
+	out.WriteString(`pub fn generate_import_object(store: &Store, env: &VMHooksWrapper) -> ImportObject {
     imports! {
         "env" => {
 `)

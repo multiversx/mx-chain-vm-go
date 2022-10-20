@@ -52,7 +52,7 @@ var _ = (executor.Instance)((*Wasmer2Instance)(nil))
 // Wasmer2Instance represents a WebAssembly instance.
 type Wasmer2Instance struct {
 	// The underlying WebAssembly instance.
-	instance *cWasmerInstanceT
+	cgoInstance *cWasmerInstanceT
 
 	// // The exported memory of a WebAssembly instance.
 	// Memory MemoryHandler
@@ -66,43 +66,7 @@ type Wasmer2Instance struct {
 
 func emptyInstance() *Wasmer2Instance {
 	// return &Wasmer2Instance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
-	return &Wasmer2Instance{instance: nil}
-}
-
-func NewInstanceWithOptions(
-	bytes []byte,
-	options executor.CompilationOptions,
-) (*Wasmer2Instance, error) {
-	var c_instance *cWasmerInstanceT
-
-	if len(bytes) == 0 {
-		var emptyInstance = &Wasmer2Instance{instance: nil}
-		return emptyInstance, newWrappedError(ErrInvalidBytecode)
-	}
-
-	cOptions := unsafe.Pointer(&options)
-	var compileResult = cWasmerInstantiateWithOptions(
-		&c_instance,
-		(*cUchar)(unsafe.Pointer(&bytes[0])),
-		cUint(len(bytes)),
-		(*cWasmerCompilationOptions)(cOptions),
-	)
-
-	if compileResult != cWasmerOk {
-		var emptyInstance = &Wasmer2Instance{instance: nil}
-		return emptyInstance, newWrappedError(ErrFailedInstantiation)
-	}
-
-	instance, err := newInstance(c_instance)
-	// if instance != nil && instance.Memory != nil {
-	// 	c_instance_context := cWasmerInstanceContextGet(c_instance)
-	// 	instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
-	// }
-
-	executionInfo, _ := GetExecutionInfo()
-	fmt.Println(executionInfo)
-
-	return instance, err
+	return &Wasmer2Instance{cgoInstance: nil}
 }
 
 func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
@@ -117,7 +81,7 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 	// 	return emptyInstance(), nil
 	// }
 
-	return &Wasmer2Instance{instance: c_instance}, nil
+	return &Wasmer2Instance{cgoInstance: c_instance}, nil
 }
 
 // // HasMemory checks whether the instance has at least one exported memory.
@@ -159,20 +123,20 @@ func (instance *Wasmer2Instance) HasMemory() bool {
 // 	return instance, err
 // }
 
-// SetVMHooks assigns a data that can be used by all imported
-// functions. Indeed, each imported function receives as its first
-// argument an instance context (see `InstanceContext`). An instance
-// context can hold a pointer to any kind of data. It is important to
-// understand that this data is shared by all imported function, it's
-// global to the instance.
-func (instance *Wasmer2Instance) SetVMHooks(callbacks executor.VMHooks) {
-	instance.callbacks = callbacks
-	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
-	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
-	instance.callbacksPtr = localPtr
-	instance.callbacksPtrPtr = unsafe.Pointer(&localPtr)
-	cWasmerInstanceContextDataSet(instance.instance, instance.callbacksPtrPtr)
-}
+// // SetVMHooks assigns a data that can be used by all imported
+// // functions. Indeed, each imported function receives as its first
+// // argument an instance context (see `InstanceContext`). An instance
+// // context can hold a pointer to any kind of data. It is important to
+// // understand that this data is shared by all imported function, it's
+// // global to the instance.
+// func (instance *Wasmer2Instance) SetVMHooks(callbacks executor.VMHooks) {
+// 	instance.callbacks = callbacks
+// 	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
+// 	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
+// 	instance.callbacksPtr = localPtr
+// 	instance.callbacksPtrPtr = unsafe.Pointer(&localPtr)
+// 	cWasmerInstanceContextDataSet(instance.cgoInstance, instance.callbacksPtrPtr)
+// }
 
 // GetVMHooks returns a pointer for the current instance's data
 func (instance *Wasmer2Instance) GetVMHooks() executor.VMHooks {
@@ -180,8 +144,8 @@ func (instance *Wasmer2Instance) GetVMHooks() executor.VMHooks {
 }
 
 func (instance *Wasmer2Instance) Clean() {
-	if instance.instance != nil {
-		cWasmerInstanceDestroy(instance.instance)
+	if instance.cgoInstance != nil {
+		cWasmerInstanceDestroy(instance.cgoInstance)
 
 		// if instance.Memory != nil {
 		// 	instance.Memory.Destroy()
@@ -247,7 +211,7 @@ func (instance *Wasmer2Instance) CallFunction(functionName string) error {
 	defer cFree(unsafe.Pointer(wasmFunctionName))
 
 	var callResult = cWasmerInstanceCall(
-		instance.instance,
+		instance.cgoInstance,
 		wasmFunctionName,
 	)
 
@@ -264,7 +228,7 @@ func (instance *Wasmer2Instance) HasFunction(functionName string) bool {
 	defer cFree(unsafe.Pointer(wasmFunctionName))
 
 	result := cWasmerInstanceHasFunction(
-		instance.instance,
+		instance.cgoInstance,
 		wasmFunctionName,
 	)
 
@@ -273,7 +237,7 @@ func (instance *Wasmer2Instance) HasFunction(functionName string) bool {
 
 // GetLastError returns the last error message if any, otherwise returns an error.
 func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
-	var bufferLength = cWasmerInstanceExportedFunctionNamesLength(instance.instance)
+	var bufferLength = cWasmerInstanceExportedFunctionNamesLength(instance.cgoInstance)
 
 	if bufferLength == 0 {
 		return "", nil
@@ -282,7 +246,7 @@ func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
 	var buffer = make([]cChar, bufferLength)
 	var bufferPointer = (*cChar)(unsafe.Pointer(&buffer[0]))
 
-	var result = cWasmerInstanceExportedFunctionNames(instance.instance, bufferPointer, bufferLength)
+	var result = cWasmerInstanceExportedFunctionNames(instance.cgoInstance, bufferPointer, bufferLength)
 
 	if result == -1 {
 		return "", errors.New("cannot read function names")
@@ -344,4 +308,11 @@ func (instance *Wasmer2Instance) Reset() bool {
 // IsInterfaceNil returns true if underlying object is nil
 func (instance *Wasmer2Instance) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
+}
+
+func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
+	return uintptr(0)
 }

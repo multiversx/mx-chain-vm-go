@@ -115,7 +115,7 @@ func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 	return &cWasmerVmHookPointers{`)
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
-		out.WriteString(fmt.Sprintf("\n\t\t%s: funcPointer(%s),",
+		out.WriteString(fmt.Sprintf("\n\t\t%s: funcPointer(C.%s),",
 			cgoFuncPointerFieldName(funcMetadata),
 			writer.cgoFuncName(funcMetadata),
 		))

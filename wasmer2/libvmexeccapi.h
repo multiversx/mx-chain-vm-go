@@ -80,6 +80,10 @@ typedef struct {
 
 typedef struct {
 
+} vm_exec_executor_t;
+
+typedef struct {
+
 } vm_exec_import_func_t;
 
 /**
@@ -125,7 +129,6 @@ typedef struct {
 } vm_exec_import_t;
 
 typedef struct {
-  void *context_ptr;
   int64_t (*get_gas_left_func_ptr)(void *context);
   void (*get_sc_address_func_ptr)(void *context, int32_t result_offset);
   void (*get_owner_address_func_ptr)(void *context, int32_t result_offset);
@@ -381,6 +384,20 @@ int vm_exec_execution_info_flush(char *dest_buffer, int dest_buffer_len);
 
 int vm_exec_execution_info_length(void);
 
+void vm_exec_executor_destroy(vm_exec_executor_t *executor);
+
+/**
+ * Sets the data that can be hold by an instance context.
+ *
+ * An instance context (represented by the opaque
+ * `wasmer_instance_context_t` structure) can hold user-defined
+ * data. This function sets the data. This function is complementary
+ * of `wasmer_instance_context_data_get()`.
+ *
+ * This function does nothing if `instance` is a null pointer.
+ */
+vm_exec_result_t vm_exec_executor_set_context_ptr(vm_exec_executor_t *executor, void *context_ptr);
+
 /**
  * Frees memory for the given Func
  */
@@ -427,18 +444,6 @@ vm_exec_import_func_t *vm_exec_import_func_new(void (*func)(void *data),
  *   * `params` is a null pointer.
  */
 vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance, const char *func_name_ptr);
-
-/**
- * Sets the data that can be hold by an instance context.
- *
- * An instance context (represented by the opaque
- * `wasmer_instance_context_t` structure) can hold user-defined
- * data. This function sets the data. This function is complementary
- * of `wasmer_instance_context_data_get()`.
- *
- * This function does nothing if `instance` is a null pointer.
- */
-void vm_exec_instance_context_data_set(vm_exec_instance_t *instance, void *data_ptr);
 
 /**
  * Frees memory for the given `vm_exec_instance_t`.
@@ -490,7 +495,11 @@ int vm_exec_last_error_length(void);
  */
 int vm_exec_last_error_message(char *dest_buffer, int dest_buffer_len);
 
-vm_exec_result_t vm_exec_new_instance(vm_exec_instance_t **instance,
+vm_exec_result_t vm_exec_new_executor(vm_exec_executor_t **executor,
+                                      void *vm_hook_pointers_ptr_raw);
+
+vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor,
+                                      vm_exec_instance_t **instance,
                                       uint8_t *wasm_bytes_ptr,
                                       uint32_t wasm_bytes_len,
                                       const vm_exec_compilation_options_t *options_ptr);

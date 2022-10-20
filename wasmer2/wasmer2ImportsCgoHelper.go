@@ -6,13 +6,12 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
-	// instCtx := IntoInstanceContext(contextPtr)
-	// var ptr = *(*uintptr)(instCtx.Data())
-	// return *(*executor.VMHooks)(unsafe.Pointer(ptr))
-	panic("getVMHooksFromContextRawPtr not yet implemented")
+func getVMHooksFromContextRawPtr(contextRawPtr unsafe.Pointer) executor.VMHooks {
+	vmHooksPtrPtr := (*uintptr)(contextRawPtr)
+	vmHooksPtr := *vmHooksPtrPtr
+	return *(*executor.VMHooks)(unsafe.Pointer(vmHooksPtr))
 }
 
-func funcPointer(f interface{}) *[0]byte {
-	return (*[0]byte)(unsafe.Pointer(&f))
+func funcPointer(cFuncPtr unsafe.Pointer) *[0]byte {
+	return (*[0]byte)(cFuncPtr)
 }

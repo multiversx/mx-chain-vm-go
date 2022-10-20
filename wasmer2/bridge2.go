@@ -20,13 +20,10 @@ type cUint8T C.uint8_t
 
 type cWasmerByteArray C.vm_exec_byte_array
 
-// type cWasmerExportFuncT C.vm_exec_export_func_t
-// type cWasmerExportT C.vm_exec_export_t
-// type cWasmerExportsT C.vm_exec_exports_t
-// type cWasmerImportExportKind C.vm_exec_import_export_kind
-// type cWasmerImportExportValue C.vm_exec_import_export_value
 type cWasmerImportFuncT C.vm_exec_import_func_t
 type cWasmerImportT C.vm_exec_import_t
+
+type cWasmerExecutorT C.vm_exec_executor_t
 
 // type cWasmerInstanceContextT C.vm_exec_instance_context_t
 type cWasmerInstanceT C.vm_exec_instance_t
@@ -42,26 +39,7 @@ type cWasmerVmHookPointers = C.vm_exec_vm_hook_pointers
 
 // type cFuncGetGasLeft = C.get_gas_left_func
 
-// const cWasmFunction = C.WASM_FUNCTION
-// const cWasmGlobal = C.WASM_GLOBAL
-const cWasmI32 = C.VM_EXEC_VALUE_I32
-const cWasmI64 = C.VM_EXEC_VALUE_I64
-
-// const cWasmMemory = C.WASM_MEMORY
-// const cWasmTable = C.WASM_TABLE
 const cWasmerOk = C.VM_EXEC_OK
-
-func cNewWasmerImportT(moduleName string, importName string, function *cWasmerImportFuncT) cWasmerImportT {
-	var importedFunction C.vm_exec_import_t
-	importedFunction.module_name = (C.vm_exec_byte_array)(cGoStringToWasmerByteArray(moduleName))
-	importedFunction.import_name = (C.vm_exec_byte_array)(cGoStringToWasmerByteArray(importName))
-	// importedFunction.tag = cWasmFunction
-
-	var pointer = (**C.vm_exec_import_func_t)(unsafe.Pointer(&importedFunction.import_func))
-	*pointer = (*C.vm_exec_import_func_t)(function)
-
-	return (cWasmerImportT)(importedFunction)
-}
 
 // func cWasmerInstanceGetPointsUsed(instance *cWasmerInstanceT) uint64 {
 // 	return uint64(C.vm_exec_instance_get_points_used(
@@ -162,69 +140,10 @@ func cWasmerSetImports(
 // 	)
 // }
 
-// func cWasmerExportFuncParams(function *cWasmerExportFuncT, parameters *cWasmerValueTag, parametersLength cUint32T) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_export_func_params(
-// 		(*C.vm_exec_export_func_t)(function),
-// 		(*C.vm_exec_value_tag)(parameters),
-// 		(C.uint32_t)(parametersLength),
-// 	))
-// }
-
-// func cWasmerExportFuncParamsArity(function *cWasmerExportFuncT, result *cUint32T) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_export_func_params_arity(
-// 		(*C.vm_exec_export_func_t)(function),
-// 		(*C.uint32_t)(result),
-// 	))
-// }
-
-// func cWasmerExportFuncResultsArity(function *cWasmerExportFuncT, result *cUint32T) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_export_func_returns_arity(
-// 		(*C.vm_exec_export_func_t)(function),
-// 		(*C.uint32_t)(result),
-// 	))
-// }
-
-// func cWasmerExportKind(export *cWasmerExportT) cWasmerImportExportKind {
-// 	return (cWasmerImportExportKind)(C.vm_exec_export_kind(
-// 		(*C.vm_exec_export_t)(export),
-// 	))
-// }
-
-// func cWasmerExportName(export *cWasmerExportT) cWasmerByteArray {
-// 	return (cWasmerByteArray)(C.vm_exec_export_name(
-// 		(*C.vm_exec_export_t)(export),
-// 	))
-// }
-
-// func cWasmerExportToFunc(export *cWasmerExportT) *cWasmerExportFuncT {
-// 	return (*cWasmerExportFuncT)(C.vm_exec_export_to_func(
-// 		(*C.vm_exec_export_t)(export),
-// 	))
-// }
-
 // func cWasmerExportToMemory(export *cWasmerExportT, memory **cWasmerMemoryT) cWasmerResultT {
 // 	return (cWasmerResultT)(C.vm_exec_export_to_memory(
 // 		(*C.vm_exec_export_t)(export),
 // 		(**C.vm_exec_memory_t)(unsafe.Pointer(memory)),
-// 	))
-// }
-
-// func cWasmerExportsDestroy(exports *cWasmerExportsT) {
-// 	C.vm_exec_exports_destroy(
-// 		(*C.vm_exec_exports_t)(exports),
-// 	)
-// }
-
-// func cWasmerExportsGet(exports *cWasmerExportsT, index cInt) *cWasmerExportT {
-// 	return (*cWasmerExportT)(C.vm_exec_exports_get(
-// 		(*C.vm_exec_exports_t)(exports),
-// 		(C.int)(index),
-// 	))
-// }
-
-// func cWasmerExportsLen(exports *cWasmerExportsT) cInt {
-// 	return (cInt)(C.vm_exec_exports_len(
-// 		(*C.vm_exec_exports_t)(exports),
 // 	))
 // }
 
@@ -250,13 +169,25 @@ func cWasmerImportFuncNew(
 	))
 }
 
+func cWasmerNewExecutor(
+	executor **cWasmerExecutorT,
+	vmHookPointersPtrPtr unsafe.Pointer,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_new_executor(
+		(**C.vm_exec_executor_t)(unsafe.Pointer(executor)),
+		vmHookPointersPtrPtr,
+	))
+}
+
 func cWasmerInstantiateWithOptions(
+	executor *cWasmerExecutorT,
 	instance **cWasmerInstanceT,
 	wasmBytes *cUchar,
 	wasmBytesLength cUint,
 	options *cWasmerCompilationOptions,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_new_instance(
+		(*C.vm_exec_executor_t)(executor),
 		(**C.vm_exec_instance_t)(unsafe.Pointer(instance)),
 		(*C.uchar)(wasmBytes),
 		(C.uint)(wasmBytesLength),
@@ -310,9 +241,9 @@ func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cC
 // 	))
 // }
 
-func cWasmerInstanceContextDataSet(instance *cWasmerInstanceT, dataPointer unsafe.Pointer) {
-	C.vm_exec_instance_context_data_set(
-		(*C.vm_exec_instance_t)(instance),
+func cWasmerExecutorContextDataSet(executor *cWasmerExecutorT, dataPointer unsafe.Pointer) {
+	C.vm_exec_executor_set_context_ptr(
+		(*C.vm_exec_executor_t)(executor),
 		dataPointer,
 	)
 }

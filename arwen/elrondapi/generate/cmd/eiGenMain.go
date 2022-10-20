@@ -40,7 +40,8 @@ func main() {
 	writeWasmer2ImportsCgo(eiMetadata)
 	writeWasmer2Names(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
-	writeRustVMHooksPointers(eiMetadata)
+	writeRustCapiVMHooks(eiMetadata)
+	writeRustCapiVMHooksPointers(eiMetadata)
 	writeRustWasmerImports(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
@@ -83,7 +84,7 @@ func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hooks.rs")
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/vm_hooks.rs")
 	if err != nil {
 		panic(err)
 	}
@@ -91,17 +92,26 @@ func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustVMHooksTrait(out, eiMetadata)
 }
 
-func writeRustVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hook_pointers.rs")
+func writeRustCapiVMHooks(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/capi_vm_hook.rs")
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
-	eapigen.WriteRustVMHooksPointers(out, eiMetadata)
+	eapigen.WriteRustCapiVMHooks(out, eiMetadata)
+}
+
+func writeRustCapiVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/capi_vm_hook_pointers.rs")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteRustCapiVMHooksPointers(out, eiMetadata)
 }
 
 func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/wasmer_imports.rs")
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/wasmer_imports.rs")
 	if err != nil {
 		panic(err)
 	}
