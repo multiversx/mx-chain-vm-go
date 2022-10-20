@@ -21,10 +21,6 @@ type Wasmer2Instance struct {
 	// // The exported memory of a WebAssembly instance.
 	// Memory MemoryHandler
 
-	callbacks       executor.VMHooks
-	callbacksPtr    uintptr
-	callbacksPtrPtr unsafe.Pointer
-
 	// InstanceCtx InstanceContext
 }
 
@@ -101,11 +97,6 @@ func (instance *Wasmer2Instance) HasMemory() bool {
 // 	instance.callbacksPtrPtr = unsafe.Pointer(&localPtr)
 // 	cWasmerInstanceContextDataSet(instance.cgoInstance, instance.callbacksPtrPtr)
 // }
-
-// GetVMHooks returns a pointer for the current instance's data
-func (instance *Wasmer2Instance) GetVMHooks() executor.VMHooks {
-	return instance.callbacks
-}
 
 func (instance *Wasmer2Instance) Clean() {
 	if instance.cgoInstance != nil {
