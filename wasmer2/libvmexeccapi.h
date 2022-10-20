@@ -51,23 +51,6 @@ typedef enum {
 } vm_exec_result_t;
 
 /**
- * Represents all possibles WebAssembly value types.
- *
- * See `wasmer_value_t` to get a complete example.
- */
-enum vm_exec_value_tag {
-  /**
-   * Represents the `i32` WebAssembly type.
-   */
-  VM_EXEC_VALUE_I32,
-  /**
-   * Represents the `i64` WebAssembly type.
-   */
-  VM_EXEC_VALUE_I64,
-};
-typedef uint32_t vm_exec_value_tag;
-
-/**
  * Opaque pointer to a `wasmer_runtime::Instance` value in Rust.
  *
  * A `wasmer_runtime::Instance` represents a WebAssembly instance. It
@@ -81,52 +64,6 @@ typedef struct {
 typedef struct {
 
 } vm_exec_executor_t;
-
-typedef struct {
-
-} vm_exec_import_func_t;
-
-/**
- * Opaque pointer to a `wasmer_runtime::Ctx` value in Rust.
- *
- * An instance context is passed to any host function (aka imported
- * function) as the first argument. It is necessary to read the
- * instance data or the memory, respectively with the
- * `wasmer_instance_context_data_get()` function, and the
- * `wasmer_instance_context_memory()` function.
- *
- * It is also possible to get the instance context outside a host
- * function by using the `wasmer_instance_context_get()`
- * function. See also `wasmer_instance_context_data_set()` to set the
- * instance context data.
- *
- * Example:
- *
- * ```c
- * // A host function that prints data from the WebAssembly memory to
- * // the standard output.
- * void print(wasmer_instance_context_t *context, int32_t pointer, int32_t length) {
- *     // Use `wasmer_instance_context` to get back the first instance memory.
- *     const wasmer_memory_t *memory = wasmer_instance_context_memory(context, 0);
- *
- *     // Continue…
- * }
- * ```
- */
-typedef struct {
-
-} vm_exec_compilation_options_t;
-
-typedef struct {
-  const uint8_t *bytes;
-  uint32_t bytes_len;
-} vm_exec_byte_array;
-
-typedef struct {
-  vm_exec_byte_array module_name;
-  vm_exec_byte_array import_name;
-  const vm_exec_import_func_t *import_func;
-} vm_exec_import_t;
 
 typedef struct {
   int64_t (*get_gas_left_func_ptr)(void *context);
@@ -378,6 +315,37 @@ typedef struct {
   int32_t (*elliptic_curve_get_values_func_ptr)(void *context, int32_t ec_handle, int32_t field_order_handle, int32_t base_point_order_handle, int32_t eq_constant_handle, int32_t x_base_point_handle, int32_t y_base_point_handle);
 } vm_exec_vm_hook_pointers;
 
+/**
+ * Opaque pointer to a `wasmer_runtime::Ctx` value in Rust.
+ *
+ * An instance context is passed to any host function (aka imported
+ * function) as the first argument. It is necessary to read the
+ * instance data or the memory, respectively with the
+ * `wasmer_instance_context_data_get()` function, and the
+ * `wasmer_instance_context_memory()` function.
+ *
+ * It is also possible to get the instance context outside a host
+ * function by using the `wasmer_instance_context_get()`
+ * function. See also `wasmer_instance_context_data_set()` to set the
+ * instance context data.
+ *
+ * Example:
+ *
+ * ```c
+ * // A host function that prints data from the WebAssembly memory to
+ * // the standard output.
+ * void print(wasmer_instance_context_t *context, int32_t pointer, int32_t length) {
+ *     // Use `wasmer_instance_context` to get back the first instance memory.
+ *     const wasmer_memory_t *memory = wasmer_instance_context_memory(context, 0);
+ *
+ *     // Continue…
+ * }
+ * ```
+ */
+typedef struct {
+
+} vm_exec_compilation_options_t;
+
 vm_exec_result_t vm_check_signatures(vm_exec_instance_t *_instance);
 
 int vm_exec_execution_info_flush(char *dest_buffer, int dest_buffer_len);
@@ -397,36 +365,6 @@ void vm_exec_executor_destroy(vm_exec_executor_t *executor);
  * This function does nothing if `instance` is a null pointer.
  */
 vm_exec_result_t vm_exec_executor_set_context_ptr(vm_exec_executor_t *executor, void *context_ptr);
-
-/**
- * Frees memory for the given Func
- */
-void vm_exec_import_func_destroy(vm_exec_import_func_t *func);
-
-/**
- * Creates new host function, aka imported function. `func` is a
- * function pointer, where the first argument is the famous `vm::Ctx`
- * (in Rust), or `wasmer_instance_context_t` (in C). All arguments
- * must be typed with compatible WebAssembly native types:
- *
- * | WebAssembly type | C/C++ type |
- * | ---------------- | ---------- |
- * | `i32`            | `int32_t`  |
- * | `i64`            | `int64_t`  |
- * | `f32`            | `float`    |
- * | `f64`            | `double`   |
- *
- * The function pointer must have a lifetime greater than the
- * WebAssembly instance lifetime.
- *
- * The caller owns the object and should call
- * `wasmer_import_func_destroy` to free it.
- */
-vm_exec_import_func_t *vm_exec_import_func_new(void (*func)(void *data),
-                                               const vm_exec_value_tag *params,
-                                               unsigned int params_len,
-                                               const vm_exec_value_tag *returns,
-                                               unsigned int returns_len);
 
 /**
  * Calls an exported function of a WebAssembly instance by `name`
@@ -496,22 +434,13 @@ int vm_exec_last_error_length(void);
 int vm_exec_last_error_message(char *dest_buffer, int dest_buffer_len);
 
 vm_exec_result_t vm_exec_new_executor(vm_exec_executor_t **executor,
-                                      void *vm_hook_pointers_ptr_raw);
+                                      vm_exec_vm_hook_pointers **vm_hook_pointers_ptr_ptr);
 
 vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor,
                                       vm_exec_instance_t **instance,
                                       uint8_t *wasm_bytes_ptr,
                                       uint32_t wasm_bytes_len,
                                       const vm_exec_compilation_options_t *options_ptr);
-
-vm_exec_result_t vm_exec_set_imports(vm_exec_import_t *imports, unsigned int imports_len);
-
-void vm_exec_set_sigsegv_passthrough(void);
-
-/**
- * Frees memory for the given Func
- */
-void vm_exec_set_vm_hook_pointers(const vm_exec_vm_hook_pointers *_ptrs);
 
 int vm_exported_function_names(vm_exec_instance_t *instance,
                                char *dest_buffer,

@@ -6,7 +6,6 @@ package wasmer2
 //
 import "C"
 import (
-	"fmt"
 	"unsafe"
 )
 
@@ -18,10 +17,7 @@ type cUint C.uint
 type cUint32T C.uint32_t
 type cUint8T C.uint8_t
 
-type cWasmerByteArray C.vm_exec_byte_array
-
-type cWasmerImportFuncT C.vm_exec_import_func_t
-type cWasmerImportT C.vm_exec_import_t
+// type cWasmerByteArray C.vm_exec_byte_array
 
 type cWasmerExecutorT C.vm_exec_executor_t
 
@@ -30,9 +26,6 @@ type cWasmerInstanceT C.vm_exec_instance_t
 
 // type cWasmerMemoryT C.vm_exec_memory_t
 type cWasmerResultT C.vm_exec_result_t
-
-// type cWasmerValueT C.vm_exec_value_t
-type cWasmerValueTag C.vm_exec_value_tag
 
 type cWasmerCompilationOptions C.vm_exec_compilation_options_t
 type cWasmerVmHookPointers = C.vm_exec_vm_hook_pointers
@@ -90,14 +83,6 @@ const cWasmerOk = C.VM_EXEC_OK
 // 	C.vm_exec_instance_disable_rkyv()
 // }
 
-func cWasmerSetSIGSEGVPassthrough() {
-	fmt.Println("Go: calling wasmer_set_sigsegv_passthrough")
-	C.vm_exec_set_sigsegv_passthrough()
-
-	// _ = C.do_something((C.uint32_t)(5))
-	// fmt.Println(result)
-}
-
 // func cWasmerInstanceCache(
 // 	instance *cWasmerInstanceT,
 // 	cacheBytes **cUchar,
@@ -124,16 +109,6 @@ func cWasmerSetSIGSEGVPassthrough() {
 // 	))
 // }
 
-func cWasmerSetImports(
-	imports *cWasmerImportT,
-	importsLength cInt,
-) cWasmerResultT {
-	return (cWasmerResultT)(C.vm_exec_set_imports(
-		(*C.vm_exec_import_t)(imports),
-		(C.uint32_t)(importsLength),
-	))
-}
-
 // func cWasmerSetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
 // 	C.vm_exec_set_opcode_costs(
 // 		(*C.uint32_t)(unsafe.Pointer(opcode_costs)),
@@ -147,35 +122,13 @@ func cWasmerSetImports(
 // 	))
 // }
 
-func cWasmerImportFuncDestroy(function *cWasmerImportFuncT) {
-	C.vm_exec_import_func_destroy(
-		(*C.vm_exec_import_func_t)(function),
-	)
-}
-
-func cWasmerImportFuncNew(
-	function unsafe.Pointer,
-	parametersSignature *cWasmerValueTag,
-	parametersLength cUint,
-	resultsSignature *cWasmerValueTag,
-	resultsLength cUint,
-) *cWasmerImportFuncT {
-	return (*cWasmerImportFuncT)(C.vm_exec_import_func_new(
-		(*[0]byte)(function),
-		(*C.vm_exec_value_tag)(parametersSignature),
-		(C.uint)(parametersLength),
-		(*C.vm_exec_value_tag)(resultsSignature),
-		(C.uint)(resultsLength),
-	))
-}
-
 func cWasmerNewExecutor(
 	executor **cWasmerExecutorT,
 	vmHookPointersPtrPtr unsafe.Pointer,
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_new_executor(
 		(**C.vm_exec_executor_t)(unsafe.Pointer(executor)),
-		vmHookPointersPtrPtr,
+		(**C.vm_exec_vm_hook_pointers)(vmHookPointersPtrPtr),
 	))
 }
 
@@ -324,12 +277,12 @@ func cGoStringN(string *cChar, length cInt) string {
 	return C.GoStringN((*C.char)(string), (C.int)(length))
 }
 
-func cGoStringToWasmerByteArray(string string) cWasmerByteArray {
-	var cString = cCString(string)
+// func cGoStringToWasmerByteArray(string string) cWasmerByteArray {
+// 	var cString = cCString(string)
 
-	var byteArray cWasmerByteArray
-	byteArray.bytes = (*C.uchar)(unsafe.Pointer(cString))
-	byteArray.bytes_len = (C.uint)(len(string))
+// 	var byteArray cWasmerByteArray
+// 	byteArray.bytes = (*C.uchar)(unsafe.Pointer(cString))
+// 	byteArray.bytes_len = (C.uint)(len(string))
 
-	return byteArray
-}
+// 	return byteArray
+// }

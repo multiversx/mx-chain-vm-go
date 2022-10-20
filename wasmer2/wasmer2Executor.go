@@ -24,17 +24,8 @@ type Wasmer2Executor struct {
 // NewExecutor creates a new wasmer executor.
 func NewExecutor() (*Wasmer2Executor, error) {
 	vmHookPointers := populateCgoFunctionPointers()
-	fmt.Printf("\nget_gas_left_func_ptr %x\n", uintptr(unsafe.Pointer(vmHookPointers.get_gas_left_func_ptr)))
-	fmt.Printf("get_sc_address_func_ptr %x\n", uintptr(unsafe.Pointer(vmHookPointers.get_sc_address_func_ptr)))
-	fmt.Printf("check_no_payment_func_ptr %x\n", uintptr(unsafe.Pointer(vmHookPointers.check_no_payment_func_ptr)))
 	localPtr := uintptr(unsafe.Pointer(vmHookPointers))
-	fmt.Printf("localPtr %x\n", localPtr)
 	localPtrPtr := unsafe.Pointer(&localPtr)
-
-	// wasmerExecutor.vmHooks = vmHooks
-	// wasmerExecutor.vmHooksPtr = localPtr
-	// wasmerExecutor.vmHooksPtrPtr = unsafe.Pointer(&localPtr)
-	// cWasmerExecutorContextDataSet(wasmerExecutor.cgoExecutor, localPtrPtr)
 
 	var c_executor *cWasmerExecutorT
 
@@ -128,8 +119,6 @@ func (wasmerExecutor *Wasmer2Executor) InitVMHooks(vmHooks executor.VMHooks) {
 	localPtr := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 	wasmerExecutor.vmHooksPtr = localPtr
 	wasmerExecutor.vmHooksPtrPtr = unsafe.Pointer(&localPtr)
-	fmt.Printf("InitVMHooks vmHooksPtr %x\n", wasmerExecutor.vmHooksPtr)
-	fmt.Printf("InitVMHooks vmHooksPtrPtr %x\n", wasmerExecutor.vmHooksPtrPtr)
 	cWasmerExecutorContextDataSet(wasmerExecutor.cgoExecutor, wasmerExecutor.vmHooksPtrPtr)
 }
 

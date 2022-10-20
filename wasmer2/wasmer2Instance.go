@@ -13,42 +13,6 @@ import (
 
 var _ = (executor.Instance)((*Wasmer2Instance)(nil))
 
-// // InstanceError represents any kind of errors related to a WebAssembly instance. It
-// // is returned by `Wasmer2Instance` functions only.
-// type InstanceError struct {
-// 	// Error message.
-// 	message string
-// }
-
-// // NewInstanceError constructs a new `InstanceError`.
-// func NewInstanceError(message string) *InstanceError {
-// 	return &InstanceError{message}
-// }
-
-// // `InstanceError` is an actual error. The `Error` function returns
-// // the error message.
-// func (error *InstanceError) Error() string {
-// 	return error.message
-// }
-
-// // NewExportedFunctionError constructs a new `ExportedFunctionError`,
-// // where `functionName` is the name of the exported function, and
-// // `message` is the error message. If the error message contains `%s`,
-// // then this parameter will be replaced by `functionName`.
-// func NewExportedFunctionError(functionName string, message string) *ExportedFunctionError {
-// 	return &ExportedFunctionError{functionName, message}
-// }
-
-// // ExportedFunctionError is an actual error. The `Error` function
-// // returns the error message.
-// func (error *ExportedFunctionError) Error() string {
-// 	return error.message
-// }
-
-// type ExportedFunctionCallback func(...interface{}) (Value, error)
-// type ExportsMap map[string]ExportedFunctionCallback
-// type ExportSignaturesMap map[string]*ExportedFunctionSignature
-
 // Wasmer2Instance represents a WebAssembly instance.
 type Wasmer2Instance struct {
 	// The underlying WebAssembly instance.
