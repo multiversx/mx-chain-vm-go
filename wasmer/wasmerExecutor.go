@@ -1,6 +1,8 @@
 package wasmer
 
 import (
+	"unsafe"
+
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
@@ -8,6 +10,8 @@ import (
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
 	eiFunctionNames vmcommon.FunctionNames
+	vmHooks         executor.VMHooks
+	vmHooksPtr      uintptr
 }
 
 // NewExecutor creates a new wasmer executor.
@@ -46,7 +50,12 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceWithOptions(
 	contractCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	return NewInstanceWithOptions(contractCode, options)
+	instance, err := NewInstanceWithOptions(contractCode, options)
+	if err == nil {
+		instance.SetVMHooksPtr(wasmerExecutor.vmHooksPtr)
+	}
+
+	return instance, err
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -55,5 +64,20 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	instance, err := NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	if err == nil {
+		instance.SetVMHooksPtr(wasmerExecutor.vmHooksPtr)
+	}
+	return instance, err
+}
+
+// InitVMHooks inits the VM hooks
+func (wasmerExecutor *WasmerExecutor) InitVMHooks(vmHooks executor.VMHooks) {
+	wasmerExecutor.vmHooks = vmHooks
+	wasmerExecutor.vmHooksPtr = uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
+}
+
+// GetVMHooks returns the VM hooks
+func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
+	return wasmerExecutor.vmHooks
 }

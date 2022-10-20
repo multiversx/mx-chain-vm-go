@@ -37,6 +37,7 @@ func (executorMock *ExecutorMock) SetRkyvSerializationEnabled(enabled bool) {
 func (executorMock *ExecutorMock) SetSIGSEGVPassthrough() {
 }
 
+// FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
 	return nil
 }
@@ -101,4 +102,13 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 		return instance, nil
 	}
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+}
+
+// InitVMHooks mocked method
+func (executorMock *ExecutorMock) InitVMHooks(vmHooks executor.VMHooks) {
+}
+
+// GetVMHooks mocked method
+func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
+	return nil
 }

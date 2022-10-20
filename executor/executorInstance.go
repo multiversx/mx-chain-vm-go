@@ -3,8 +3,6 @@ package executor
 // Instance defines the functionality of a Wasmer instance
 type Instance interface {
 	HasMemory() bool
-	SetVMHooks(callbacks VMHooks)
-	GetVMHooks() VMHooks
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)
@@ -22,6 +20,8 @@ type Instance interface {
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 	Reset() bool
+	SetVMHooksPtr(vmHooksPtr uintptr)
+	GetVMHooksPtr() uintptr
 }
 
 // Memory defines the functionality of the memory of a Wasmer instance

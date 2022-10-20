@@ -9,14 +9,16 @@ import (
 
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
-	var ptr = *(*uintptr)(instCtx.Data())
-	return *(*executor.VMHooks)(unsafe.Pointer(ptr))
+	vmHooksPtr := *(*uintptr)(instCtx.Data())
+	return *(*executor.VMHooks)(unsafe.Pointer(vmHooksPtr))
 }
 
 func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {
-	imports := newWasmerImports()
-	populateWasmerImports(imports)
-	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
+	importsInfo := newWasmerImports()
+	defer importsInfo.Close()
+
+	populateWasmerImports(importsInfo)
+	wasmImportsCPointer, numberOfImports := generateWasmerImports(importsInfo)
 
 	var result = cWasmerCacheImportObjectFromImports(
 		wasmImportsCPointer,
@@ -27,7 +29,7 @@ func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {
 		return nil, newWrappedError(ErrFailedCacheImports)
 	}
 
-	return extractImportNames(imports), nil
+	return extractImportNames(importsInfo), nil
 }
 
 func extractImportNames(imports *wasmerImports) vmcommon.FunctionNames {

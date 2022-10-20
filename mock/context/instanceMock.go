@@ -57,16 +57,6 @@ func (instance *InstanceMock) HasMemory() bool {
 	return true
 }
 
-// SetVMHooks mocked method
-func (instance *InstanceMock) SetVMHooks(callbacks executor.VMHooks) {
-	instance.Data = callbacks
-}
-
-// GetVMHooks mocked method
-func (instance *InstanceMock) GetVMHooks() executor.VMHooks {
-	return instance.Data
-}
-
 // GetPointsUsed mocked method
 func (instance *InstanceMock) GetPointsUsed() uint64 {
 	return instance.Points
@@ -166,4 +156,13 @@ func (instance *InstanceMock) SetMemory(_ []byte) bool {
 // IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+// SetVMHooksPtr mocked method
+func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+}
+
+// GetVMHooksPtr mocked method
+func (instance *InstanceMock) GetVMHooksPtr() uintptr {
+	return 0
 }
