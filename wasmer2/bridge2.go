@@ -225,17 +225,6 @@ func cWasmerLastErrorMessage(buffer *cChar, length cInt) cInt {
 	))
 }
 
-func cWasmerExcutionInfoLength() cInt {
-	return (cInt)(C.vm_exec_execution_info_length())
-}
-
-func cWasmerExcutionInfoFlush(buffer *cChar, length cInt) cInt {
-	return (cInt)(C.vm_exec_execution_info_flush(
-		(*C.char)(buffer),
-		(C.int)(length),
-	))
-}
-
 // func cWasmerMemoryData(memory *cWasmerMemoryT) *cUint8T {
 // 	return (*cUint8T)(C.vm_exec_memory_data(
 // 		(*C.vm_exec_memory_t)(memory),

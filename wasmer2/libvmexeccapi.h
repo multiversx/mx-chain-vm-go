@@ -348,10 +348,6 @@ typedef struct {
 
 vm_exec_result_t vm_check_signatures(vm_exec_instance_t *_instance);
 
-int vm_exec_execution_info_flush(char *dest_buffer, int dest_buffer_len);
-
-int vm_exec_execution_info_length(void);
-
 void vm_exec_executor_destroy(vm_exec_executor_t *executor);
 
 /**

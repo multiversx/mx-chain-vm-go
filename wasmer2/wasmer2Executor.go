@@ -2,7 +2,6 @@ package wasmer2
 
 import (
 	"errors"
-	"fmt"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -96,9 +95,6 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	// 	c_instance_context := cWasmerInstanceContextGet(c_instance)
 	// 	instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	// }
-
-	executionInfo, _ := GetExecutionInfo()
-	fmt.Println(executionInfo)
 
 	return instance, err
 }
