@@ -41,6 +41,7 @@ type EnableEpochsHandlerStub struct {
 	StorageAPICostOptimizationEnableEpochField           uint32
 }
 
+// IsFixOldTokenLiquidityEnabled -
 func (stub *EnableEpochsHandlerStub) IsFixOldTokenLiquidityEnabled() bool {
 	return stub.IsFixOldTokenLiquidityEnabledField
 }
