@@ -12,7 +12,7 @@ use std::ffi::c_void;
 
 #[rustfmt::skip]
 pub trait VMHooks: core::fmt::Debug + 'static {
-    fn set_context_ptr(&mut self, context_ptr: *mut c_void);
+    fn set_vm_hooks_ptr(&mut self, vm_hooks_ptr: *mut c_void);
 
 `)
 
@@ -36,7 +36,7 @@ pub struct VMHooksDefault;
 #[allow(unused)]
 #[rustfmt::skip]
 impl VMHooks for VMHooksDefault {
-    fn set_context_ptr(&mut self, _context_ptr: *mut c_void) {
+    fn set_vm_hooks_ptr(&mut self, _vm_hooks_ptr: *mut c_void) {
     }
 
 `)

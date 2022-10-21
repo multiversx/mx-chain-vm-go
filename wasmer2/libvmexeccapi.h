@@ -313,7 +313,7 @@ typedef struct {
   int32_t (*get_curve_length_ec_func_ptr)(void *context, int32_t ec_handle);
   int32_t (*get_priv_key_byte_length_ec_func_ptr)(void *context, int32_t ec_handle);
   int32_t (*elliptic_curve_get_values_func_ptr)(void *context, int32_t ec_handle, int32_t field_order_handle, int32_t base_point_order_handle, int32_t eq_constant_handle, int32_t x_base_point_handle, int32_t y_base_point_handle);
-} vm_exec_vm_hook_pointers;
+} vm_exec_vm_hook_c_func_pointers;
 
 /**
  * Opaque pointer to a `wasmer_runtime::Ctx` value in Rust.
@@ -364,7 +364,8 @@ void vm_exec_executor_destroy(vm_exec_executor_t *executor);
  *
  * This function does nothing if `instance` is a null pointer.
  */
-vm_exec_result_t vm_exec_executor_set_context_ptr(vm_exec_executor_t *executor, void *context_ptr);
+vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor,
+                                                   void *vm_hooks_ptr);
 
 /**
  * Calls an exported function of a WebAssembly instance by `name`
@@ -434,7 +435,7 @@ int vm_exec_last_error_length(void);
 int vm_exec_last_error_message(char *dest_buffer, int dest_buffer_len);
 
 vm_exec_result_t vm_exec_new_executor(vm_exec_executor_t **executor,
-                                      vm_exec_vm_hook_pointers **vm_hook_pointers_ptr_ptr);
+                                      vm_exec_vm_hook_c_func_pointers **vm_hook_pointers_ptr_ptr);
 
 vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor,
                                       vm_exec_instance_t **instance,

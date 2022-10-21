@@ -28,7 +28,7 @@ type cWasmerInstanceT C.vm_exec_instance_t
 type cWasmerResultT C.vm_exec_result_t
 
 type cWasmerCompilationOptions C.vm_exec_compilation_options_t
-type cWasmerVmHookPointers = C.vm_exec_vm_hook_pointers
+type cWasmerVmHookPointers = C.vm_exec_vm_hook_c_func_pointers
 
 // type cFuncGetGasLeft = C.get_gas_left_func
 
@@ -128,7 +128,7 @@ func cWasmerNewExecutor(
 ) cWasmerResultT {
 	return (cWasmerResultT)(C.vm_exec_new_executor(
 		(**C.vm_exec_executor_t)(unsafe.Pointer(executor)),
-		(**C.vm_exec_vm_hook_pointers)(vmHookPointersPtrPtr),
+		(**C.vm_exec_vm_hook_c_func_pointers)(vmHookPointersPtrPtr),
 	))
 }
 
@@ -194,10 +194,10 @@ func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cC
 // 	))
 // }
 
-func cWasmerExecutorContextDataSet(executor *cWasmerExecutorT, dataPointer unsafe.Pointer) {
-	C.vm_exec_executor_set_context_ptr(
+func cWasmerExecutorContextDataSet(executor *cWasmerExecutorT, vmHooksPtr unsafe.Pointer) {
+	C.vm_exec_executor_set_vm_hooks_ptr(
 		(*C.vm_exec_executor_t)(executor),
-		dataPointer,
+		vmHooksPtr,
 	)
 }
 

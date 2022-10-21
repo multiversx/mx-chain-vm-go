@@ -10,27 +10,27 @@ func WriteRustCapiVMHooks(out *os.File, eiMetadata *EIMetadata) {
 	out.WriteString(`
 use std::ffi::c_void;
 
-use crate::capi_vm_hook_pointers::vm_exec_vm_hook_pointers;
+use crate::capi_vm_hook_pointers::vm_exec_vm_hook_c_func_pointers;
 
 #[derive(Debug)]
 pub struct CapiVMHooks {
-    pub context_ptr: *mut c_void,
-    pub pointers_ptr: vm_exec_vm_hook_pointers,
+    pub vm_hooks_ptr: *mut c_void,
+    pub c_func_pointers_ptr: vm_exec_vm_hook_c_func_pointers,
 }
 
 impl CapiVMHooks {
-    pub unsafe fn new(pointers_ptr: vm_exec_vm_hook_pointers) -> Self {
+    pub unsafe fn new(c_func_pointers_ptr: vm_exec_vm_hook_c_func_pointers) -> Self {
         Self {
-            context_ptr: std::ptr::null_mut(),
-            pointers_ptr,
+            vm_hooks_ptr: std::ptr::null_mut(),
+            c_func_pointers_ptr,
         }
     }
 }
 
 #[rustfmt::skip]
 impl elrond_exec_service::VMHooks for CapiVMHooks {
-    fn set_context_ptr(&mut self, context_ptr: *mut c_void) {
-        self.context_ptr = context_ptr;
+    fn set_vm_hooks_ptr(&mut self, vm_hooks_ptr: *mut c_void) {
+        self.vm_hooks_ptr = vm_hooks_ptr;
     }
 `)
 
@@ -45,9 +45,9 @@ impl elrond_exec_service::VMHooks for CapiVMHooks {
 		))
 
 		out.WriteString(fmt.Sprintf(
-			"        (self.pointers_ptr.%s)%s\n",
+			"        (self.c_func_pointers_ptr.%s)%s\n",
 			cgoFuncPointerFieldName(funcMetadata),
-			writeRustFnCallArguments("self.context_ptr", funcMetadata),
+			writeRustFnCallArguments("self.vm_hooks_ptr", funcMetadata),
 		))
 
 		out.WriteString("    }\n")

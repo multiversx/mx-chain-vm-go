@@ -13,7 +13,7 @@ use std::ffi::c_void;
 #[repr(C)]
 #[derive(Clone)]
 #[rustfmt::skip]
-pub struct vm_exec_vm_hook_pointers {`)
+pub struct vm_exec_vm_hook_c_func_pointers {`)
 
 	for _, funcMetadata := range eiMetadata.AllFunctions {
 		out.WriteString(fmt.Sprintf(
@@ -31,9 +31,9 @@ pub struct vm_exec_vm_hook_pointers {`)
 	out.WriteString(`
 }
 
-impl std::fmt::Debug for vm_exec_vm_hook_pointers {
+impl std::fmt::Debug for vm_exec_vm_hook_c_func_pointers {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "vm_exec_vm_hook_pointers")
+        write!(f, "vm_exec_vm_hook_c_func_pointers")
     }
 }
 `)
