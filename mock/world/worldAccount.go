@@ -5,9 +5,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
 )
 
 // ErrOperationNotPermitted indicates an operation rejected due to insufficient
@@ -120,7 +120,6 @@ func (a *Account) GetUserName() []byte {
 	return a.Username
 }
 
-
 // IsInterfaceNil -
 func (a *Account) IsInterfaceNil() bool {
 	return a == nil
@@ -224,8 +223,8 @@ func (a *Account) IncreaseNonce(nonce uint64) {
 }
 
 // RetrieveValue -
-func (a *Account) RetrieveValue(key []byte) ([]byte, error) {
-	return a.Storage[string(key)], nil
+func (a *Account) RetrieveValue(key []byte) ([]byte, uint32, error) {
+	return a.Storage[string(key)], 0, nil
 }
 
 // SaveKeyValue -

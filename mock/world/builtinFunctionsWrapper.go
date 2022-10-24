@@ -64,6 +64,7 @@ func NewBuiltinFunctionsWrapper(
 			IsAheadOfTimeGasUsageFlagEnabledField:                true,
 			IsCheckFunctionArgumentFlagEnabledField:              true,
 			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+			IsFixOldTokenLiquidityEnabledField:                   true,
 		},
 	}
 

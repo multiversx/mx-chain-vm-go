@@ -595,8 +595,8 @@ func TestExecution_Call_Successful(t *testing.T) {
 			WithFunction(increment).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, error) {
-				return big.NewInt(1001).Bytes(), nil
+			stubBlockchainHook.GetStorageDataCalled = func(scAddress []byte, key []byte) ([]byte, uint32, error) {
+				return big.NewInt(1001).Bytes(), 0, nil
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -2640,14 +2640,14 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
+			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, uint32, error) {
 				if bytes.Equal(address, test.ParentAddress) {
 					if bytes.Equal(key, []byte{'A'}) {
-						return childCode, nil
+						return childCode, 0, nil
 					}
-					return nil, nil
+					return nil, 0, nil
 				}
-				return nil, arwen.ErrInvalidAccount
+				return nil, 0, arwen.ErrInvalidAccount
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
@@ -2749,14 +2749,14 @@ func TestExecution_CreateNewContract_Fail(t *testing.T) {
 			WithArguments([]byte{'A'}, []byte{1}).
 			Build()).
 		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, error) {
+			stubBlockchainHook.GetStorageDataCalled = func(address []byte, key []byte) ([]byte, uint32, error) {
 				if bytes.Equal(address, test.ParentAddress) {
 					if bytes.Equal(key, []byte{'A'}) {
-						return childCode, nil
+						return childCode, 0, nil
 					}
-					return nil, nil
+					return nil, 0, nil
 				}
-				return nil, arwen.ErrInvalidAccount
+				return nil, 0, arwen.ErrInvalidAccount
 			}
 		}).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
