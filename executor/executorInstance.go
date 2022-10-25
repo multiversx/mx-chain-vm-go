@@ -16,7 +16,6 @@ type Instance interface {
 	ValidateVoidFunction(functionName string) error
 	GetInstanceCtxMemory() Memory
 	GetMemory() Memory
-	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 	Reset() bool

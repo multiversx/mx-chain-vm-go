@@ -7,8 +7,6 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/executor"
-
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
@@ -309,25 +307,6 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 func (instance *WasmerInstance) Reset() bool {
 	result := cWasmerInstanceReset(instance.instance)
 	return result == cWasmerOk
-}
-
-// SetMemory sets the memory for the instance returns true if success
-func (instance *WasmerInstance) SetMemory(data []byte) bool {
-	if instance.instance == nil {
-		return false
-	}
-
-	if check.IfNil(instance.GetMemory()) {
-		return false
-	}
-
-	memory := instance.GetMemory().Data()
-	if len(memory) != len(data) {
-		return false
-	}
-
-	copy(memory, data)
-	return true
 }
 
 // IsInterfaceNil returns true if underlying object is nil
