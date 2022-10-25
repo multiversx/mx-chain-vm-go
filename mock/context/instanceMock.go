@@ -126,11 +126,6 @@ func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
 
-// GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executor.Memory {
-	return instance.Memory
-}
-
 // GetMemory mocked method
 func (instance *InstanceMock) GetMemory() executor.Memory {
 	return instance.Memory

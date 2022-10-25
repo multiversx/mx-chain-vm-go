@@ -293,11 +293,6 @@ func (instance *WasmerInstance) ValidateVoidFunction(functionName string) error 
 	return instance.verifyVoidFunction(functionName)
 }
 
-// GetInstanceCtxMemory returns the memory for the instance context
-func (instance *WasmerInstance) GetInstanceCtxMemory() executor.Memory {
-	return instance.InstanceCtx.Memory()
-}
-
 // GetMemory returns the memory for the instance
 func (instance *WasmerInstance) GetMemory() executor.Memory {
 	return instance.Memory

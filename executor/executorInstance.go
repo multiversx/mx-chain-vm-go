@@ -14,7 +14,6 @@ type Instance interface {
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
 	ValidateVoidFunction(functionName string) error
-	GetInstanceCtxMemory() Memory
 	GetMemory() Memory
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
