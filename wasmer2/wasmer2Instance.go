@@ -210,6 +210,7 @@ func (instance *Wasmer2Instance) getFunctionNamesConcat() (string, error) {
 	return cGoString(bufferPointer), nil
 }
 
+// GetFunctionNames returns a list of the function names exported by the contract.
 func (instance *Wasmer2Instance) GetFunctionNames() []string {
 	buffer, err := instance.getFunctionNamesConcat()
 	if err != nil {
