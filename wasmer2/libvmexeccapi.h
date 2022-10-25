@@ -1,35 +1,3 @@
-
-#if !defined(WASMER_H_MACROS)
-
-#define WASMER_H_MACROS
-
-// Define the `ARCH_X86_X64` constant.
-#if defined(MSVC) && defined(_M_AMD64)
-#  define ARCH_X86_64
-#elif (defined(GCC) || defined(__GNUC__) || defined(__clang__)) && defined(__x86_64__)
-#  define ARCH_X86_64
-#endif
-
-// Compatibility with non-Clang compilers.
-#if !defined(__has_attribute)
-#  define __has_attribute(x) 0
-#endif
-
-// Compatibility with non-Clang compilers.
-#if !defined(__has_declspec_attribute)
-#  define __has_declspec_attribute(x) 0
-#endif
-
-// Define the `DEPRECATED` macro.
-#if defined(GCC) || defined(__GNUC__) || __has_attribute(deprecated)
-#  define DEPRECATED(message) __attribute__((deprecated(message)))
-#elif defined(MSVC) || __has_declspec_attribute(deprecated)
-#  define DEPRECATED(message) __declspec(deprecated(message))
-#endif
-
-#endif // WASMER_H_MACROS
-
-
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -360,7 +328,7 @@ void vm_exec_executor_destroy(vm_exec_executor_t *executor);
  *
  * This function does nothing if `instance` is a null pointer.
  */
-vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor,
+vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor_ptr,
                                                    void *vm_hooks_ptr);
 
 /**
@@ -378,7 +346,7 @@ vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor,
  *   * `name` is a null pointer,
  *   * `params` is a null pointer.
  */
-vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance, const char *func_name_ptr);
+vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
 
 /**
  * Frees memory for the given `vm_exec_instance_t`.
@@ -401,7 +369,7 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance, const char 
  */
 void vm_exec_instance_destroy(vm_exec_instance_t *instance);
 
-int vm_exec_instance_has_function(vm_exec_instance_t *instance, const char *func_name_ptr);
+int vm_exec_instance_has_function(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
 
 /**
  * Gets the length in bytes of the last error if any.
@@ -433,14 +401,14 @@ int vm_exec_last_error_message(char *dest_buffer, int dest_buffer_len);
 vm_exec_result_t vm_exec_new_executor(vm_exec_executor_t **executor,
                                       vm_exec_vm_hook_c_func_pointers **vm_hook_pointers_ptr_ptr);
 
-vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor,
-                                      vm_exec_instance_t **instance,
+vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor_ptr,
+                                      vm_exec_instance_t **instance_ptr_ptr,
                                       uint8_t *wasm_bytes_ptr,
                                       uint32_t wasm_bytes_len,
                                       const vm_exec_compilation_options_t *options_ptr);
 
-int vm_exported_function_names(vm_exec_instance_t *instance,
+int vm_exported_function_names(vm_exec_instance_t *instance_ptr,
                                char *dest_buffer,
                                int dest_buffer_len);
 
-int vm_exported_function_names_length(vm_exec_instance_t *instance);
+int vm_exported_function_names_length(vm_exec_instance_t *instance_ptr);
