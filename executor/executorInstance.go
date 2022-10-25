@@ -2,7 +2,6 @@ package executor
 
 // Instance defines the functionality of a Wasmer instance
 type Instance interface {
-	HasMemory() bool
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)
 	SetGasLimit(gasLimit uint64)
@@ -14,6 +13,7 @@ type Instance interface {
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
 	ValidateVoidFunction(functionName string) error
+	HasMemory() bool
 	GetMemory() Memory
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool

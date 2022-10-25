@@ -161,11 +161,6 @@ func newInstance(c_instance *cWasmerInstanceT) (*WasmerInstance, error) {
 	return &WasmerInstance{instance: c_instance, exports: exports, signatures: signatures, Memory: &memory}, nil
 }
 
-// HasMemory checks whether the instance has at least one exported memory.
-func (instance *WasmerInstance) HasMemory() bool {
-	return nil != instance.Memory
-}
-
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
@@ -291,6 +286,11 @@ func (instance *WasmerInstance) GetFunctionNames() []string {
 // All arguments and results should be transferred via the import functions.
 func (instance *WasmerInstance) ValidateVoidFunction(functionName string) error {
 	return instance.verifyVoidFunction(functionName)
+}
+
+// HasMemory checks whether the instance has at least one exported memory.
+func (instance *WasmerInstance) HasMemory() bool {
+	return nil != instance.Memory
 }
 
 // GetMemory returns the memory for the instance
