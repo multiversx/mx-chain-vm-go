@@ -28,8 +28,7 @@ var vmType = []byte("type")
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
-	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 
