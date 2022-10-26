@@ -105,7 +105,7 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeRustOpcodeCost() {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/opcodes_cost.rs")
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/opcode_cost.rs")
 	if err != nil {
 		panic(err)
 	}
