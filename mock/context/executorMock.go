@@ -26,7 +26,7 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 }
 
 // SetOpcodeCosts should set gas costs, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag, but it does nothing in the case of this mock.

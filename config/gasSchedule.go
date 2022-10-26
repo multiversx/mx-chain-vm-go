@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -92,7 +93,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	opcodeCosts := &WASMOpcodeCost{}
+	opcodeCosts := &executor.WASMOpcodeCost{}
 	err = mapstructure.Decode(gasMap["WASMOpcodeCost"], opcodeCosts)
 	if err != nil {
 		return nil, err
@@ -111,7 +112,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		ElrondAPICost:        *elrondOps,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
-		WASMOpcodeCost:       *opcodeCosts,
+		WASMOpcodeCost:       opcodeCosts,
 	}
 
 	return gasCost, nil

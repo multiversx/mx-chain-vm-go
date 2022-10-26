@@ -23,7 +23,7 @@ func NewExecutorRecorderMock() *ExecutorRecorderMock {
 	}
 }
 
-func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
 	wasmer.SetOpcodeCosts(opcodeCosts)
 }
 
