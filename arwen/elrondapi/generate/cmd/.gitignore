@@ -2,3 +2,5 @@
 vm_hooks.rs
 vm_hook_pointers.rs
 wasmer_imports.rs
+opcode_cost.rs
+wasmer_metering_helpers.rs

@@ -43,6 +43,11 @@ func main() {
 	writeRustWasmerImports(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
+
+	writeRustOpcodeCost()
+	writeRustWasmerMeteringHelpers()
+
+	fmt.Println("Generated code for opcodes and metering helpers")
 }
 
 func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
@@ -97,4 +102,22 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 	}
 	defer out.Close()
 	eapigen.WriteRustWasmerImports(out, eiMetadata)
+}
+
+func writeRustOpcodeCost() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/opcodes_cost.rs")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteRustOpcodeCost(out)
+}
+
+func writeRustWasmerMeteringHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/wasmer_metering_helpers.rs")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteRustWasmerMeteringHelpers(out)
 }
