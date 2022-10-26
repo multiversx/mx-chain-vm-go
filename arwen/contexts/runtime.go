@@ -811,7 +811,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.instance.GetMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, length)
@@ -866,7 +866,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.instance.GetMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, dataLength)

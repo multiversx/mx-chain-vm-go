@@ -7,8 +7,6 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/executor"
-
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
@@ -163,11 +161,6 @@ func newInstance(c_instance *cWasmerInstanceT) (*WasmerInstance, error) {
 	return &WasmerInstance{instance: c_instance, exports: exports, signatures: signatures, Memory: &memory}, nil
 }
 
-// HasMemory checks whether the instance has at least one exported memory.
-func (instance *WasmerInstance) HasMemory() bool {
-	return nil != instance.Memory
-}
-
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
@@ -295,9 +288,9 @@ func (instance *WasmerInstance) ValidateVoidFunction(functionName string) error 
 	return instance.verifyVoidFunction(functionName)
 }
 
-// GetInstanceCtxMemory returns the memory for the instance context
-func (instance *WasmerInstance) GetInstanceCtxMemory() executor.Memory {
-	return instance.InstanceCtx.Memory()
+// HasMemory checks whether the instance has at least one exported memory.
+func (instance *WasmerInstance) HasMemory() bool {
+	return nil != instance.Memory
 }
 
 // GetMemory returns the memory for the instance
@@ -309,25 +302,6 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 func (instance *WasmerInstance) Reset() bool {
 	result := cWasmerInstanceReset(instance.instance)
 	return result == cWasmerOk
-}
-
-// SetMemory sets the memory for the instance returns true if success
-func (instance *WasmerInstance) SetMemory(data []byte) bool {
-	if instance.instance == nil {
-		return false
-	}
-
-	if check.IfNil(instance.GetMemory()) {
-		return false
-	}
-
-	memory := instance.GetMemory().Data()
-	if len(memory) != len(data) {
-		return false
-	}
-
-	copy(memory, data)
-	return true
 }
 
 // IsInterfaceNil returns true if underlying object is nil
