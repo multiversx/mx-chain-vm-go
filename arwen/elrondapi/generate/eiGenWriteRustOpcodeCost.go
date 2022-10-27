@@ -16,7 +16,7 @@ func WriteRustOpcodeCost(out *os.File) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 `)
-	out.WriteString("#[derive(Clone, Debug, Default)]\n")
+	out.WriteString("#[derive(Copy, Clone, Debug, Default)]\n")
 	out.WriteString("pub struct OpcodeCost {\n")
 
 	readFile, err := os.Open("generate/opcodes.txt")
