@@ -52,11 +52,6 @@ func (instance *InstanceMock) AddMockMethod(name string, method func() *Instance
 	instance.Exports[name] = wrappedMethod
 }
 
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
-}
-
 // GetPointsUsed mocked method
 func (instance *InstanceMock) GetPointsUsed() uint64 {
 	return instance.Points
@@ -126,9 +121,9 @@ func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
 
-// GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executor.Memory {
-	return instance.Memory
+// HasMemory mocked method
+func (instance *InstanceMock) HasMemory() bool {
+	return true
 }
 
 // GetMemory mocked method
@@ -146,11 +141,6 @@ func (instance *InstanceMock) IsFunctionImported(name string) bool {
 func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
-}
-
-// SetMemory mocked method
-func (instance *InstanceMock) SetMemory(_ []byte) bool {
-	return true
 }
 
 // IsInterfaceNil mocked method

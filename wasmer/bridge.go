@@ -9,8 +9,6 @@ package wasmer
 import "C"
 import (
 	"unsafe"
-
-	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 type cBool C.bool
@@ -145,9 +143,9 @@ func cWasmerCacheImportObjectFromImports(
 	))
 }
 
-func cWasmerSetOpcodeCosts(opcodeCosts *[executor.OpcodeCount]uint32) {
+func cWasmerSetOpcodeCosts(opcodeCostArray *[opcodeCount]uint32) {
 	C.wasmer_set_opcode_costs(
-		(*C.uint32_t)(unsafe.Pointer(opcodeCosts)),
+		(*C.uint32_t)(unsafe.Pointer(opcodeCostArray)),
 	)
 }
 
