@@ -162,7 +162,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if context.isElrondReservedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
-		value, _ = context.blockChainHook.GetStorageData(address, key)
+		value, _, _ = context.blockChainHook.GetStorageData(address, key)
 		return value, false
 	}
 
@@ -171,7 +171,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		value = storageUpdate.Data
 	} else {
-		value, _ = context.blockChainHook.GetStorageData(address, key)
+		value, _, _ = context.blockChainHook.GetStorageData(address, key)
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   value,
