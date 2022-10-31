@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
@@ -16,31 +17,32 @@ func Test_RunDEXPairBenchmark(t *testing.T) {
 	owner := arwen.MakeTestWalletAddress("owner")
 	user := arwen.MakeTestWalletAddress("user")
 
-	_, host := setupMEXPair(t, owner, user)
+	_, host, mex := setupMEXPair(t, owner, user)
+
+	mex.AddLiquidity(user, 1_000_000, 1, 1_000_000, 1)
+
+	for i := 0; i < 10_000; i++ {
+		mex.Swap(mex.WEGLDToken, 100, mex.MEXToken, 1)
+		mex.Swap(mex.MEXToken, 100, mex.WEGLDToken, 1)
+	}
 
 	defer func() {
 		host.Reset()
 	}()
 }
 
-func setupMEXPair(t *testing.T, owner Address, user Address) (*worldmock.MockWorld, arwen.VMHost) {
+func setupMEXPair(t *testing.T, owner Address, user Address) (*worldmock.MockWorld, arwen.VMHost, *MEXSetup) {
 	world, ownerAccount, host, err := prepare(t, owner)
 	require.Nil(t, err)
 
 	userAccount := world.AcctMap.CreateAccount(user, world)
+	userAccount.Balance = big.NewInt(100)
 	mex := NewMEXSetup(t, host, world, ownerAccount, userAccount)
 	mex.Deploy()
 
 	mex.ApplyInitialSetup()
 
-	mex.AddLiquidity(
-		user,
-		mex.UserWEGLDBalance,
-		1,
-		mex.UserMEXBalance,
-		1)
-
-	return world, host
+	return world, host, mex
 }
 
 type MEXSetup struct {
@@ -240,7 +242,96 @@ func (mex *MEXSetup) AddLiquidity(
 
 	vmInput := vmInputBuiler.Build()
 
+	mex.performESDTTransfer(
+		vmInput.CallerAddr,
+		vmInput.RecipientAddr,
+		vmInput.ESDTTransfers,
+	)
+
 	vmOutput, err := host.RunSmartContractCall(vmInput)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+}
+
+func (mex *MEXSetup) Swap(
+	leftToken []byte,
+	leftAmount uint64,
+	rightToken []byte,
+	rightAmount uint64,
+) {
+	t := mex.T
+	host := mex.Host
+	world := mex.World
+
+	vmInputBuiler := test.CreateTestContractCallInputBuilder().
+		WithCallerAddr(mex.UserAccount.Address).
+		WithRecipientAddr(mex.PairAddress)
+
+	vmInputBuiler.
+		WithESDTTokenName(leftToken).
+		WithESDTValue(big.NewInt(int64(leftAmount))).
+		WithFunction("swapTokensFixedInput").
+		WithArguments(
+			rightToken,
+			big.NewInt(int64(rightAmount)).Bytes(),
+		).
+		WithGasProvided(0xFFFFFFFFFFF)
+
+	vmInput := vmInputBuiler.Build()
+
+	mex.performESDTTransfer(
+		vmInput.CallerAddr,
+		vmInput.RecipientAddr,
+		vmInput.ESDTTransfers,
+	)
+
+	vmOutput, err := host.RunSmartContractCall(vmInput)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+}
+
+func (mex *MEXSetup) performESDTTransfer(
+	sender Address,
+	receiver Address,
+	esdtTransfers []*vmcommon.ESDTTransfer,
+) {
+	t := mex.T
+	world := mex.World
+
+	nrTransfers := len(esdtTransfers)
+	nrTransfersAsBytes := big.NewInt(0).SetUint64(uint64(nrTransfers)).Bytes()
+
+	multiTransferInput := &vmcommon.ContractCallInput{
+		VMInput: vmcommon.VMInput{
+			CallerAddr:  sender,
+			Arguments:   make([][]byte, 0),
+			CallValue:   big.NewInt(0),
+			CallType:    vm.DirectCall,
+			GasPrice:    1,
+			GasProvided: 0xFFFFFFFF,
+			GasLocked:   0,
+		},
+		RecipientAddr:     sender,
+		Function:          core.BuiltInFunctionMultiESDTNFTTransfer,
+		AllowInitFunction: false,
+	}
+	multiTransferInput.Arguments = append(multiTransferInput.Arguments, receiver, nrTransfersAsBytes)
+
+	for i := 0; i < nrTransfers; i++ {
+		token := esdtTransfers[i].ESDTTokenName
+		nonceAsBytes := big.NewInt(0).SetUint64(esdtTransfers[i].ESDTTokenNonce).Bytes()
+		value := esdtTransfers[i].ESDTValue.Bytes()
+
+		multiTransferInput.Arguments = append(multiTransferInput.Arguments, token, nonceAsBytes, value)
+	}
+
+	vmOutput, err := world.BuiltinFuncs.ProcessBuiltInFunction(multiTransferInput)
 	require.Nil(t, err)
 	require.NotNil(t, vmOutput)
 	require.Equal(t, "", vmOutput.ReturnMessage)

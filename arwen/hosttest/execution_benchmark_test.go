@@ -10,7 +10,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
@@ -219,7 +218,10 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 }
 
 func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmock.Account, arwen.VMHost, error) {
+	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
+
 	mockWorld := worldmock.NewMockWorld()
+	mockWorld.InitBuiltinFunctions(gasMap)
 	ownerAccount := &worldmock.Account{
 		Address: ownerAddress,
 		Nonce:   1024,
@@ -227,7 +229,6 @@ func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmo
 	}
 	mockWorld.AcctMap.PutAccount(ownerAccount)
 
-	gasMap, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV3())
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
@@ -240,7 +241,7 @@ func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmo
 			VMType:                   testcommon.DefaultVMType,
 			BlockGasLimit:            uint64(1000),
 			GasSchedule:              gasMap,
-			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
+			BuiltInFuncContainer:     mockWorld.BuiltinFuncs.Container,
 			ElrondProtectedKeyPrefix: []byte("ELROND"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
