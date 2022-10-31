@@ -520,12 +520,14 @@ func DefaultTestContractCallInput() *vmcommon.ContractCallInput {
 // ContractCallInputBuilder extends a ContractCallInput for extra building functionality during testing
 type ContractCallInputBuilder struct {
 	vmcommon.ContractCallInput
+	CurrentESDTTransferIndex int
 }
 
 // CreateTestContractCallInputBuilder is a builder for ContractCallInputBuilder
 func CreateTestContractCallInputBuilder() *ContractCallInputBuilder {
 	return &ContractCallInputBuilder{
-		ContractCallInput: *DefaultTestContractCallInput(),
+		ContractCallInput:        *DefaultTestContractCallInput(),
+		CurrentESDTTransferIndex: 0,
 	}
 }
 
@@ -599,20 +601,30 @@ func (contractInput *ContractCallInputBuilder) initESDTTransferIfNeeded() {
 	if len(contractInput.ESDTTransfers) == 0 {
 		contractInput.ESDTTransfers = make([]*vmcommon.ESDTTransfer, 1)
 		contractInput.ESDTTransfers[0] = &vmcommon.ESDTTransfer{}
+		contractInput.CurrentESDTTransferIndex = 0
 	}
 }
 
 // WithESDTValue provides the ESDTValue for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTValue(esdtValue *big.Int) *ContractCallInputBuilder {
 	contractInput.initESDTTransferIfNeeded()
-	contractInput.ContractCallInput.ESDTTransfers[0].ESDTValue = esdtValue
+	i := contractInput.CurrentESDTTransferIndex
+	contractInput.ContractCallInput.ESDTTransfers[i].ESDTValue = esdtValue
 	return contractInput
 }
 
 // WithESDTTokenName provides the ESDTTokenName for ContractCallInputBuilder
 func (contractInput *ContractCallInputBuilder) WithESDTTokenName(esdtTokenName []byte) *ContractCallInputBuilder {
 	contractInput.initESDTTransferIfNeeded()
-	contractInput.ContractCallInput.ESDTTransfers[0].ESDTTokenName = esdtTokenName
+	i := contractInput.CurrentESDTTransferIndex
+	contractInput.ContractCallInput.ESDTTransfers[i].ESDTTokenName = esdtTokenName
+	return contractInput
+}
+
+func (contractInput *ContractCallInputBuilder) NextESDTTransfer() *ContractCallInputBuilder {
+	nextTransfer := &vmcommon.ESDTTransfer{}
+	contractInput.ESDTTransfers = append(contractInput.ESDTTransfers, nextTransfer)
+	contractInput.CurrentESDTTransferIndex++
 	return contractInput
 }
 

@@ -29,6 +29,12 @@ func setupMEXPair(t *testing.T) {
 
 	mex.ApplyInitialSetup()
 
+	mex.AddLiquidity(
+		userAddress,
+		mex.UserWEGLDBalance,
+		1,
+		mex.UserMEXBalance,
+		1)
 }
 
 type MEXSetup struct {
@@ -196,4 +202,42 @@ func (mex *MEXSetup) setRequiredTokenRoles() {
 func (mex *MEXSetup) setESDTBalances() {
 	mex.UserAccount.SetTokenBalanceUint64(mex.WEGLDToken, 0, mex.UserWEGLDBalance)
 	mex.UserAccount.SetTokenBalanceUint64(mex.MEXToken, 0, mex.UserMEXBalance)
+}
+
+func (mex *MEXSetup) AddLiquidity(
+	userAddress Address,
+	WEGLDAmount uint64,
+	minWEGLDAmount uint64,
+	MEXAmount uint64,
+	minMEXAmount uint64,
+) {
+	t := mex.T
+	host := mex.Host
+	world := mex.World
+
+	vmInputBuiler := test.CreateTestContractCallInputBuilder().
+		WithCallerAddr(mex.UserAccount.Address).
+		WithRecipientAddr(mex.PairAddress).
+		WithFunction("addLiquidity").
+		WithArguments(
+			big.NewInt(int64(minWEGLDAmount)).Bytes(),
+			big.NewInt(int64(minMEXAmount)).Bytes(),
+		).
+		WithGasProvided(0xFFFFFFFFFFFFFFFF)
+
+	vmInputBuiler.
+		WithESDTTokenName(mex.WEGLDToken).
+		WithESDTValue(big.NewInt(int64(WEGLDAmount))).
+		NextESDTTransfer().
+		WithESDTTokenName(mex.MEXToken).
+		WithESDTValue(big.NewInt(int64(MEXAmount)))
+
+	vmInput := vmInputBuiler.Build()
+
+	vmOutput, err := host.RunSmartContractCall(vmInput)
+	require.Nil(t, err)
+	require.NotNil(t, vmOutput)
+	require.Equal(t, "", vmOutput.ReturnMessage)
+	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
+	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
 }
