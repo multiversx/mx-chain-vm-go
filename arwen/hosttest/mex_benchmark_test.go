@@ -13,28 +13,34 @@ import (
 )
 
 func Test_RunDEXPairBenchmark(t *testing.T) {
-	setupMEXPair(t)
+	owner := arwen.MakeTestWalletAddress("owner")
+	user := arwen.MakeTestWalletAddress("user")
+
+	_, host := setupMEXPair(t, owner, user)
+
+	defer func() {
+		host.Reset()
+	}()
 }
 
-func setupMEXPair(t *testing.T) {
-	owner := arwen.MakeTestWalletAddress("owner")
+func setupMEXPair(t *testing.T, owner Address, user Address) (*worldmock.MockWorld, arwen.VMHost) {
 	world, ownerAccount, host, err := prepare(t, owner)
 	require.Nil(t, err)
 
-	userAddress := arwen.MakeTestWalletAddress("user")
-	userAccount := world.AcctMap.CreateAccount(userAddress, world)
-
+	userAccount := world.AcctMap.CreateAccount(user, world)
 	mex := NewMEXSetup(t, host, world, ownerAccount, userAccount)
 	mex.Deploy()
 
 	mex.ApplyInitialSetup()
 
 	mex.AddLiquidity(
-		userAddress,
+		user,
 		mex.UserWEGLDBalance,
 		1,
 		mex.UserMEXBalance,
 		1)
+
+	return world, host
 }
 
 type MEXSetup struct {
