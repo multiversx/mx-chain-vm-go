@@ -6,6 +6,7 @@ import (
 
 type RunScenarioOptions struct {
 	ForceTraceGas bool
+	UseWasmer2    bool
 }
 
 func applyScenarioOptions(scenario *mj.Scenario, options *RunScenarioOptions) {
