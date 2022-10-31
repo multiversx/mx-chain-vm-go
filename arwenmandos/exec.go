@@ -12,12 +12,14 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
 	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -30,6 +32,7 @@ type ArwenTestExecutor struct {
 	World             *worldhook.MockWorld
 	vm                vmi.VMExecutionHandler
 	vmHost            arwen.VMHost
+	UseWasmer2        bool
 	checkGas          bool
 	scenarioTraceGas  []bool
 	fileResolver      fr.FileResolver
@@ -46,6 +49,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 	return &ArwenTestExecutor{
 		World:             world,
 		vm:                nil,
+		UseWasmer2:        false,
 		checkGas:          true,
 		scenarioTraceGas:  make([]bool, 0),
 		fileResolver:      nil,
@@ -73,7 +77,12 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 	blockGasLimit := uint64(10000000)
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
 
-	executor, err := wasmer.NewExecutor()
+	var executor executor.Executor
+	if ae.UseWasmer2 {
+		executor, err = wasmer2.NewExecutor()
+	} else {
+		executor, err = wasmer.NewExecutor()
+	}
 	if err != nil {
 		return err
 	}
