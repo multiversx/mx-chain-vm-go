@@ -65,9 +65,8 @@ func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
-
 	totalTokenSupply := big.NewInt(int64(nTransfers * nRuns))
-	mockWorld, ownerAccount, host, err := prepare(tb)
+	mockWorld, ownerAccount, host, err := prepare(tb, owner)
 	require.Nil(tb, err)
 
 	code := testcommon.GetTestSCCode("erc20", "../../")
@@ -137,7 +136,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 
 func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	totalTokenSupply := big.NewInt(int64(nTransfers))
-	mockWorld, ownerAccount, host, err := prepare(tb)
+	mockWorld, ownerAccount, host, err := prepare(tb, owner)
 	require.Nil(tb, err)
 
 	defer func() {
@@ -193,7 +192,7 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 
 func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	totalTokenSupply := big.NewInt(int64(nTransfers))
-	mockWorld, ownerAccount, host, err := prepare(tb)
+	mockWorld, ownerAccount, host, err := prepare(tb, owner)
 	require.Nil(tb, err)
 
 	defer func() {
@@ -219,10 +218,10 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	}
 }
 
-func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMHost, error) {
+func prepare(tb testing.TB, ownerAddress []byte) (*worldmock.MockWorld, *worldmock.Account, arwen.VMHost, error) {
 	mockWorld := worldmock.NewMockWorld()
 	ownerAccount := &worldmock.Account{
-		Address: owner,
+		Address: ownerAddress,
 		Nonce:   1024,
 		Balance: big.NewInt(0),
 	}
