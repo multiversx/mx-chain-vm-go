@@ -3,9 +3,11 @@ package hosttest
 import (
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
@@ -14,6 +16,7 @@ import (
 )
 
 func Test_RunDEXPairBenchmark(t *testing.T) {
+	logger.SetLogLevel("arwen/benchmark:TRACE")
 	owner := arwen.MakeTestWalletAddress("owner")
 	user := arwen.MakeTestWalletAddress("user")
 
@@ -21,9 +24,23 @@ func Test_RunDEXPairBenchmark(t *testing.T) {
 
 	mex.AddLiquidity(user, 1_000_000, 1, 1_000_000, 1)
 
-	for i := 0; i < 10_000; i++ {
-		mex.Swap(mex.WEGLDToken, 100, mex.MEXToken, 1)
-		mex.Swap(mex.MEXToken, 100, mex.WEGLDToken, 1)
+	numBatches := 10
+	numRunsPerBatch := 1000
+
+	for batch := 0; batch < numBatches; batch++ {
+		start := time.Now()
+		for i := 0; i < numRunsPerBatch; i++ {
+			mex.Swap(mex.WEGLDToken, 100, mex.MEXToken, 1)
+			mex.Swap(mex.MEXToken, 100, mex.WEGLDToken, 1)
+		}
+		elapsedTime := time.Since(start)
+		logBenchmark.Trace(
+			"swap batch finished",
+			"numRunsPerBatch",
+			numRunsPerBatch,
+			"duration",
+			elapsedTime,
+		)
 	}
 
 	defer func() {
