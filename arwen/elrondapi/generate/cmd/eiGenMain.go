@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go/token"
 	"io"
@@ -45,6 +46,9 @@ func main() {
 	writeWasmer1ImportsCgo(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
 	writeWasmer2Names(eiMetadata)
+
+	tryCreateRustOutputDirectory()
+
 	writeRustVMHooksTrait(eiMetadata)
 	writeRustCapiVMHooks(eiMetadata)
 	writeRustCapiVMHooksPointers(eiMetadata)
@@ -56,7 +60,7 @@ func main() {
 	writeRustOpcodeCost()
 	writeRustWasmerMeteringHelpers()
 
-	fmt.Println("Generated code for opcodes and metering helpers")
+	fmt.Println("Generated code for opcodes and metering helpers.")
 
 	tryCopyFilesToRustExecutorRepo()
 }
@@ -95,6 +99,19 @@ func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
 	}
 	defer out.Close()
 	eapigen.WriteNames(out, eiMetadata)
+}
+
+func tryCreateRustOutputDirectory() {
+	outputDirPath := filepath.Join(pathToElrondApiPackage, "generate/cmd/output")
+	if _, err := os.Stat(outputDirPath); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(outputDirPath, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Created output directory.")
+		return
+	}
+	fmt.Println("Output directory already exists.")
 }
 
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
