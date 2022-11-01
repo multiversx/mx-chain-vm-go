@@ -1,6 +1,5 @@
 # generated files that belong to other repos:
-vm_hooks.rs
-vm_hook_pointers.rs
-wasmer_imports.rs
-opcode_cost.rs
-wasmer_metering_helpers.rs
+output
+
+# optional path where to copy rust files
+wasm-vm-executor-rs-path.txt

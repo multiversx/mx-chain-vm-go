@@ -26,10 +26,12 @@ func resolveArgument(exeDir string, arg string) (string, bool, error) {
 
 func parseOptionFlags() *mc.RunScenarioOptions {
 	forceTraceGas := flag.Bool("force-trace-gas", false, "overrides the traceGas option in the scenarios")
+	useWasmer2 := flag.Bool("wasmer2", false, "use the wasmer2 executor")
 	flag.Parse()
 
 	return &mc.RunScenarioOptions{
 		ForceTraceGas: *forceTraceGas,
+		UseWasmer2:    *useWasmer2,
 	}
 }
 
@@ -46,7 +48,7 @@ func MandosTestCLI() {
 
 	// argument
 	args := flag.Args()
-	if len(args) != 1 {
+	if len(args) < 1 {
 		panic("One argument expected - the path to the json test or directory.")
 	}
 	jsonFilePath, isDir, err := resolveArgument(exeDir, args[0])
@@ -60,6 +62,7 @@ func MandosTestCLI() {
 	if err != nil {
 		panic("Could not instantiate Arwen VM")
 	}
+	executor.UseWasmer2 = options.UseWasmer2
 
 	// execute
 	switch {

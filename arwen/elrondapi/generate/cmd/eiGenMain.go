@@ -3,12 +3,18 @@ package main
 import (
 	"fmt"
 	"go/token"
+	"io"
+	"io/ioutil"
+	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	eapigen "github.com/ElrondNetwork/wasm-vm/arwen/elrondapi/generate"
 )
 
 const pathToElrondApiPackage = "./"
+const pathToRustRepoConfigFile = "wasm-vm-executor-rs-path.txt"
 
 func initEIMetadata() *eapigen.EIMetadata {
 	return &eapigen.EIMetadata{
@@ -38,8 +44,10 @@ func main() {
 	writeVMHooks(eiMetadata)
 	writeWasmer1ImportsCgo(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
+	writeWasmer2Names(eiMetadata)
 	writeRustVMHooksTrait(eiMetadata)
-	writeRustVMHooksPointers(eiMetadata)
+	writeRustCapiVMHooks(eiMetadata)
+	writeRustCapiVMHooksPointers(eiMetadata)
 	writeRustWasmerImports(eiMetadata)
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
@@ -49,10 +57,12 @@ func main() {
 	writeRustWasmerMeteringHelpers()
 
 	fmt.Println("Generated code for opcodes and metering helpers")
+
+	tryCopyFilesToRustExecutorRepo()
 }
 
 func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "../../executor/vmHooks.go")
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "../../executor/vmHooks.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +71,7 @@ func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeWasmer1ImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "../../wasmer/wasmerImportsCgo.go")
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "../../wasmer/wasmerImportsCgo.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +80,7 @@ func writeWasmer1ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "../../wasmer2/wasmer2ImportsCgo.go")
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "../../wasmer2/wasmer2ImportsCgo.go"))
 	if err != nil {
 		panic(err)
 	}
@@ -78,8 +88,17 @@ func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
+func writeWasmer2Names(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "../../wasmer2/wasmer2Names.go"))
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteNames(out, eiMetadata)
+}
+
 func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hooks.rs")
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "generate/cmd/output/vm_hooks.rs"))
 	if err != nil {
 		panic(err)
 	}
@@ -87,17 +106,26 @@ func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustVMHooksTrait(out, eiMetadata)
 }
 
-func writeRustVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/vm_hook_pointers.rs")
+func writeRustCapiVMHooks(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "generate/cmd/output/capi_vm_hook.rs"))
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
-	eapigen.WriteRustVMHooksPointers(out, eiMetadata)
+	eapigen.WriteRustCapiVMHooks(out, eiMetadata)
+}
+
+func writeRustCapiVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "generate/cmd/output/capi_vm_hook_pointers.rs"))
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteRustCapiVMHooksPointers(out, eiMetadata)
 }
 
 func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/wasmer_imports.rs")
+	out, err := os.Create(filepath.Join(pathToElrondApiPackage, "generate/cmd/output/wasmer_imports.rs"))
 	if err != nil {
 		panic(err)
 	}
@@ -130,4 +158,57 @@ func writeRustWasmerMeteringHelpers() {
 	}
 	defer out.Close()
 	eapigen.WriteRustWasmerMeteringHelpers(out)
+}
+
+func tryCopyFilesToRustExecutorRepo() {
+	fullPathToRustRepoConfigFile := filepath.Join(pathToElrondApiPackage, "generate/cmd/", pathToRustRepoConfigFile)
+	contentBytes, err := ioutil.ReadFile(fullPathToRustRepoConfigFile)
+	if err != nil {
+		// this feature is optional
+		fmt.Println("Rust files not copied to wasm-vm-executor-rs. Add a wasm-vm-executor-rs-path.txt with the path to enable feature.")
+		return
+	}
+	rustExecutorPath := strings.Trim(string(contentBytes), " \n\t")
+
+	fmt.Printf("Copying generated Rust files to '%s':\n", rustExecutorPath)
+	copyFile(
+		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/vm_hooks.rs"),
+		filepath.Join(rustExecutorPath, "exec-service/src/vm_hooks.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/capi_vm_hook.rs"),
+		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hooks.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/capi_vm_hook_pointers.rs"),
+		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hook_pointers.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/wasmer_imports.rs"),
+		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_imports.rs"),
+	)
+}
+
+func copyFile(from, to string) {
+	fmt.Printf("    %s -> %s\n", from, to)
+
+	// Open original file
+	original, err := os.Open(from)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer original.Close()
+
+	// Create new file
+	new, err := os.Create(to)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer new.Close()
+
+	//This will copy
+	_, err = io.Copy(new, original)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

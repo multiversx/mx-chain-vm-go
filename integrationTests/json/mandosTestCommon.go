@@ -1,16 +1,19 @@
 package vmjsonintegrationtest
 
 import (
+	"flag"
 	"os"
 	"path"
 	"path/filepath"
 	"testing"
 
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
 	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/stretchr/testify/require"
 )
+
+var useWasmer2 = flag.Bool("wasmer2", false, "Test using Wasmer2")
 
 func init() {
 	_ = logger.SetLogLevel("*:NONE")
@@ -33,6 +36,7 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(t, err)
 	defer executor.Close()
+	executor.UseWasmer2 = *useWasmer2
 
 	runner := mc.NewScenarioRunner(
 		executor,
@@ -57,6 +61,7 @@ func runSingleTestReturnError(folder string, filename string) error {
 		return err
 	}
 	defer executor.Close()
+	executor.UseWasmer2 = *useWasmer2
 
 	runner := mc.NewScenarioRunner(
 		executor,
