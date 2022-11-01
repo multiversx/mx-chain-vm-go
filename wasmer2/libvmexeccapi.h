@@ -283,33 +283,6 @@ typedef struct {
   int32_t (*elliptic_curve_get_values_func_ptr)(void *context, int32_t ec_handle, int32_t field_order_handle, int32_t base_point_order_handle, int32_t eq_constant_handle, int32_t x_base_point_handle, int32_t y_base_point_handle);
 } vm_exec_vm_hook_c_func_pointers;
 
-/**
- * Opaque pointer to a `wasmer_runtime::Ctx` value in Rust.
- *
- * An instance context is passed to any host function (aka imported
- * function) as the first argument. It is necessary to read the
- * instance data or the memory, respectively with the
- * `wasmer_instance_context_data_get()` function, and the
- * `wasmer_instance_context_memory()` function.
- *
- * It is also possible to get the instance context outside a host
- * function by using the `wasmer_instance_context_get()`
- * function. See also `wasmer_instance_context_data_set()` to set the
- * instance context data.
- *
- * Example:
- *
- * ```c
- * // A host function that prints data from the WebAssembly memory to
- * // the standard output.
- * void print(wasmer_instance_context_t *context, int32_t pointer, int32_t length) {
- *     // Use `wasmer_instance_context` to get back the first instance memory.
- *     const wasmer_memory_t *memory = wasmer_instance_context_memory(context, 0);
- *
- *     // Continue…
- * }
- * ```
- */
 typedef struct {
 
 } vm_exec_compilation_options_t;
@@ -355,21 +328,39 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const c
  * example.
  *
  * If `instance` is a null pointer, this function does nothing.
- *
- * Example:
- *
- * ```c
- * // Get an instance.
- * vm_exec_instance_t *instance = NULL;
- * wasmer_instantiate(&instance, bytes, bytes_length, imports, 0);
- *
- * // Destroy the instance.
- * wasmer_instance_destroy(instance);
- * ```
  */
 void vm_exec_instance_destroy(vm_exec_instance_t *instance);
 
 int vm_exec_instance_has_function(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
+
+/**
+ * Gets a pointer to the beginning of the contiguous memory data
+ * bytes.
+ *
+ * The function returns `NULL` if `memory` is a null pointer.
+ *
+ * Note that when the memory grows, it can be reallocated, and thus
+ * the returned pointer can be invalidated.
+ */
+uint8_t *vm_exec_instance_memory_data(vm_exec_instance_t *instance_ptr);
+
+/**
+ * Gets the size in bytes of the memory data.
+ *
+ * This function returns 0 if `memory` is a null pointer.
+ */
+uint64_t vm_exec_instance_memory_data_length(vm_exec_instance_t *instance_ptr);
+
+/**
+ * Grows a memory by the given number of pages (of 65Kb each).
+ *
+ * The functions return `wasmer_result_t::WASMER_OK` upon success,
+ * `wasmer_result_t::WASMER_ERROR` otherwise. Use
+ * `wasmer_last_error_length()` with `wasmer_last_error_message()` to
+ * read the error message.
+ */
+vm_exec_result_t vm_exec_instance_memory_grow(vm_exec_instance_t *instance_ptr,
+                                              uint32_t by_num_pages);
 
 /**
  * Gets the length in bytes of the last error if any.
