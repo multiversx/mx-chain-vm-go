@@ -143,7 +143,7 @@ func writeOpcodeCost() {
 }
 
 func writeRustOpcodeCost() {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/opcode_cost.rs")
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/opcode_cost.rs")
 	if err != nil {
 		panic(err)
 	}
@@ -152,7 +152,7 @@ func writeRustOpcodeCost() {
 }
 
 func writeRustWasmerMeteringHelpers() {
-	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/wasmer_metering_helpers.rs")
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/wasmer_metering_helpers.rs")
 	if err != nil {
 		panic(err)
 	}
@@ -176,6 +176,10 @@ func tryCopyFilesToRustExecutorRepo() {
 		filepath.Join(rustExecutorPath, "exec-service/src/vm_hooks.rs"),
 	)
 	copyFile(
+		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/opcode_cost.rs"),
+		filepath.Join(rustExecutorPath, "exec-service/src/opcode_cost.rs"),
+	)
+	copyFile(
 		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/capi_vm_hook.rs"),
 		filepath.Join(rustExecutorPath, "exec-c-api/src/capi_vm_hooks.rs"),
 	)
@@ -186,6 +190,10 @@ func tryCopyFilesToRustExecutorRepo() {
 	copyFile(
 		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/wasmer_imports.rs"),
 		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_imports.rs"),
+	)
+	copyFile(
+		filepath.Join(pathToElrondApiPackage, "generate/cmd/output/wasmer_metering_helpers.rs"),
+		filepath.Join(rustExecutorPath, "exec-service-wasmer/src/wasmer_metering_helpers.rs"),
 	)
 }
 
