@@ -226,24 +226,24 @@ func cWasmerLastErrorMessage(buffer *cChar, length cInt) cInt {
 	))
 }
 
-// func cWasmerMemoryData(memory *cWasmerMemoryT) *cUint8T {
-// 	return (*cUint8T)(C.vm_exec_memory_data(
-// 		(*C.vm_exec_memory_t)(memory),
-// 	))
-// }
+func cWasmerMemoryDataLength(instance *cWasmerInstanceT) cUint32T {
+	return (cUint32T)(C.vm_exec_instance_memory_data_length(
+		(*C.vm_exec_instance_t)(instance),
+	))
+}
 
-// func cWasmerMemoryDataLength(memory *cWasmerMemoryT) cUint32T {
-// 	return (cUint32T)(C.vm_exec_memory_data_length(
-// 		(*C.vm_exec_memory_t)(memory),
-// 	))
-// }
+func cWasmerMemoryData(instance *cWasmerInstanceT) *cUint8T {
+	return (*cUint8T)(C.vm_exec_instance_memory_data(
+		(*C.vm_exec_instance_t)(instance),
+	))
+}
 
-// func cWasmerMemoryGrow(memory *cWasmerMemoryT, numberOfPages cUint32T) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_memory_grow(
-// 		(*C.vm_exec_memory_t)(memory),
-// 		(C.uint32_t)(numberOfPages),
-// 	))
-// }
+func cWasmerMemoryGrow(instance *cWasmerInstanceT, numberOfPages cUint32T) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_memory_grow(
+		(*C.vm_exec_instance_t)(instance),
+		(C.uint32_t)(numberOfPages),
+	))
+}
 
 // func cWasmerMemoryDestroy(memory *cWasmerMemoryT) {
 // 	C.vm_exec_memory_destroy(

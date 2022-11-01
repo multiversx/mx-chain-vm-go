@@ -22,7 +22,8 @@ type Instance interface {
 	GetVMHooksPtr() uintptr
 }
 
-// Memory defines the functionality of the memory of a Wasmer instance
+// Memory defines the functionality of the memory of a Wasmer instance.
+// Each instance has precisely 1 memory.
 type Memory interface {
 	Length() uint32
 	Data() []byte

@@ -18,8 +18,8 @@ type Wasmer2Instance struct {
 	// The underlying WebAssembly instance.
 	cgoInstance *cWasmerInstanceT
 
-	// // The exported memory of a WebAssembly instance.
-	// Memory MemoryHandler
+	// The exported memory of a WebAssembly instance.
+	memory Wasmer2Memory
 
 	// InstanceCtx InstanceContext
 }
@@ -41,13 +41,12 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 	// 	return emptyInstance(), nil
 	// }
 
-	return &Wasmer2Instance{cgoInstance: c_instance}, nil
-}
-
-// // HasMemory checks whether the instance has at least one exported memory.
-func (instance *Wasmer2Instance) HasMemory() bool {
-	// return nil != instance.Memory
-	return true
+	return &Wasmer2Instance{
+		cgoInstance: c_instance,
+		memory: Wasmer2Memory{
+			cgoInstance: c_instance,
+		},
+	}, nil
 }
 
 // func NewInstanceFromCompiledCodeWithOptions(
@@ -101,12 +100,7 @@ func (instance *Wasmer2Instance) HasMemory() bool {
 func (instance *Wasmer2Instance) Clean() {
 	if instance.cgoInstance != nil {
 		cWasmerInstanceDestroy(instance.cgoInstance)
-
-		// if instance.Memory != nil {
-		// 	instance.Memory.Destroy()
-		// }
 	}
-	// panic("Wasmer2Instance Clean")
 }
 
 func (instance *Wasmer2Instance) GetPointsUsed() uint64 {
@@ -224,34 +218,14 @@ func (instance *Wasmer2Instance) ValidateVoidFunction(functionName string) error
 	return nil
 }
 
-// GetData returns a pointer for the current instance's data
-func (instance *Wasmer2Instance) GetData() uintptr {
-	panic("instance GetData")
-}
-
-// GetInstanceCtxMemory returns the memory for the instance context
-func (instance *Wasmer2Instance) GetInstanceCtxMemory() executor.Memory {
-	// return instance.InstanceCtx.Memory()
-	panic("instance GetInstanceCtxMemory")
+// HasMemory checks whether the instance has at least one exported memory.
+func (instance *Wasmer2Instance) HasMemory() bool {
+	return true
 }
 
 // GetMemory returns the memory for the instance
 func (instance *Wasmer2Instance) GetMemory() executor.Memory {
-	// return instance.Memory
-	panic("instance GetMemory")
-}
-
-// SetMemory sets the memory for the instance returns true if success
-func (instance *Wasmer2Instance) SetMemory(cleanMemory []byte) bool {
-	// instanceMemory := instance.GetMemory().Data()
-	// if len(instanceMemory) != len(cleanMemory) {
-	// 	// TODO shrink the instance memory instead and return true
-	// 	return false
-	// }
-
-	// copy(instanceMemory, cleanMemory)
-	// return true
-	panic("instance SetMemory")
+	return &instance.memory
 }
 
 // Reset resets the instance memories and globals
