@@ -25,22 +25,22 @@ func Test_RunDEXPairBenchmark(t *testing.T) {
 	mex.AddLiquidity(user, 1_000_000, 1, 1_000_000, 1)
 
 	numBatches := 10
-	numRunsPerBatch := 1000
+	numSwapsPerBatch := 2000
 
 	wegldToMexESDT, wegldToMexESDTSwap := mex.CreateSwapVMInputs(mex.WEGLDToken, 100, mex.MEXToken, 1)
 	mexToWegldESDT, mexToWegldSwap := mex.CreateSwapVMInputs(mex.MEXToken, 100, mex.WEGLDToken, 1)
 
 	for batch := 0; batch < numBatches; batch++ {
 		start := time.Now()
-		for i := 0; i < numRunsPerBatch; i++ {
+		for i := 0; i < numSwapsPerBatch/2; i++ {
 			mex.ExecuteSwap(wegldToMexESDT, wegldToMexESDTSwap)
 			mex.ExecuteSwap(mexToWegldESDT, mexToWegldSwap)
 		}
 		elapsedTime := time.Since(start)
 		logBenchmark.Trace(
 			"swap batch finished",
-			"numRunsPerBatch",
-			numRunsPerBatch,
+			"numSwapsPerBatch",
+			numSwapsPerBatch,
 			"duration",
 			elapsedTime,
 		)
