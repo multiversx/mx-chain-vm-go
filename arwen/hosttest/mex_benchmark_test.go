@@ -27,11 +27,14 @@ func Test_RunDEXPairBenchmark(t *testing.T) {
 	numBatches := 10
 	numRunsPerBatch := 1000
 
+	wegldToMexESDT, wegldToMexESDTSwap := mex.CreateSwapVMInputs(mex.WEGLDToken, 100, mex.MEXToken, 1)
+	mexToWegldESDT, mexToWegldSwap := mex.CreateSwapVMInputs(mex.MEXToken, 100, mex.WEGLDToken, 1)
+
 	for batch := 0; batch < numBatches; batch++ {
 		start := time.Now()
 		for i := 0; i < numRunsPerBatch; i++ {
-			mex.Swap(mex.WEGLDToken, 100, mex.MEXToken, 1)
-			mex.Swap(mex.MEXToken, 100, mex.WEGLDToken, 1)
+			mex.ExecuteSwap(wegldToMexESDT, wegldToMexESDTSwap)
+			mex.ExecuteSwap(mexToWegldESDT, mexToWegldSwap)
 		}
 		elapsedTime := time.Since(start)
 		logBenchmark.Trace(
@@ -259,11 +262,13 @@ func (mex *MEXSetup) AddLiquidity(
 
 	vmInput := vmInputBuiler.Build()
 
-	mex.performESDTTransfer(
+	addLiquidityESDT := mex.createMultiESDTTransferVMInput(
 		vmInput.CallerAddr,
 		vmInput.RecipientAddr,
 		vmInput.ESDTTransfers,
 	)
+
+	mex.performMultiESDTTransfer(addLiquidityESDT)
 
 	vmOutput, err := host.RunSmartContractCall(vmInput)
 	require.Nil(t, err)
@@ -273,16 +278,12 @@ func (mex *MEXSetup) AddLiquidity(
 	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
 }
 
-func (mex *MEXSetup) Swap(
+func (mex *MEXSetup) CreateSwapVMInputs(
 	leftToken []byte,
 	leftAmount uint64,
 	rightToken []byte,
 	rightAmount uint64,
-) {
-	t := mex.T
-	host := mex.Host
-	world := mex.World
-
+) (*vmcommon.ContractCallInput, *vmcommon.ContractCallInput) {
 	vmInputBuiler := test.CreateTestContractCallInputBuilder().
 		WithCallerAddr(mex.UserAccount.Address).
 		WithRecipientAddr(mex.PairAddress)
@@ -299,11 +300,25 @@ func (mex *MEXSetup) Swap(
 
 	vmInput := vmInputBuiler.Build()
 
-	mex.performESDTTransfer(
+	multiTransferInput := mex.createMultiESDTTransferVMInput(
 		vmInput.CallerAddr,
 		vmInput.RecipientAddr,
 		vmInput.ESDTTransfers,
 	)
+
+	return multiTransferInput, vmInput
+
+}
+
+func (mex *MEXSetup) ExecuteSwap(
+	multiTransferInput *vmcommon.ContractCallInput,
+	vmInput *vmcommon.ContractCallInput,
+) {
+	t := mex.T
+	host := mex.Host
+	world := mex.World
+
+	mex.performMultiESDTTransfer(multiTransferInput)
 
 	vmOutput, err := host.RunSmartContractCall(vmInput)
 	require.Nil(t, err)
@@ -311,16 +326,16 @@ func (mex *MEXSetup) Swap(
 	require.Equal(t, "", vmOutput.ReturnMessage)
 	require.Equal(t, vmcommon.Ok, vmOutput.ReturnCode)
 	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+
+	err = world.CommitChanges()
+	require.Nil(t, err)
 }
 
-func (mex *MEXSetup) performESDTTransfer(
+func (mex *MEXSetup) createMultiESDTTransferVMInput(
 	sender Address,
 	receiver Address,
 	esdtTransfers []*vmcommon.ESDTTransfer,
-) {
-	t := mex.T
-	world := mex.World
-
+) *vmcommon.ContractCallInput {
 	nrTransfers := len(esdtTransfers)
 	nrTransfersAsBytes := big.NewInt(0).SetUint64(uint64(nrTransfers)).Bytes()
 
@@ -347,6 +362,15 @@ func (mex *MEXSetup) performESDTTransfer(
 
 		multiTransferInput.Arguments = append(multiTransferInput.Arguments, token, nonceAsBytes, value)
 	}
+
+	return multiTransferInput
+}
+
+func (mex *MEXSetup) performMultiESDTTransfer(
+	multiTransferInput *vmcommon.ContractCallInput,
+) {
+	t := mex.T
+	world := mex.World
 
 	vmOutput, err := world.BuiltinFuncs.ProcessBuiltInFunction(multiTransferInput)
 	require.Nil(t, err)
