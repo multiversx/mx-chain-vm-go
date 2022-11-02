@@ -56,16 +56,19 @@ func (b *MockWorld) GetStorageData(accountAddress []byte, key []byte) ([]byte, u
 		return []byte{}, 0, nil
 	}
 
+	var depth uint32
+	depth = 0
 	foundValue := acct.StorageValue(string(key))
 	if len(foundValue) == 0 &&
 		b.ProvidedBlockchainHook != nil {
-		bhStoredValue, err := b.ProvidedBlockchainHook.GetStorageData(accountAddress, key)
+		bhStoredValue, d, err := b.ProvidedBlockchainHook.GetStorageData(accountAddress, key)
 		if err == nil {
 			foundValue = bhStoredValue
 		}
+		depth = d
 	}
 
-	return foundValue, 0, nil
+	return foundValue, depth, nil
 }
 
 // GetBlockhash should return the hash of the nth previous blockchain.

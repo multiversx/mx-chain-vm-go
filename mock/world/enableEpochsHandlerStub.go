@@ -45,11 +45,6 @@ type EnableEpochsHandlerStub struct {
 	StorageAPICostOptimizationEnableEpochField           uint32
 }
 
-// IsFixOldTokenLiquidityEnabled -
-func (stub *EnableEpochsHandlerStub) IsFixOldTokenLiquidityEnabled() bool {
-	return stub.IsFixOldTokenLiquidityEnabledField
-}
-
 // IsGlobalMintBurnFlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsGlobalMintBurnFlagEnabled() bool {
 	return stub.IsGlobalMintBurnFlagEnabledField
