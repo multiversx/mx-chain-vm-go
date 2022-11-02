@@ -25,6 +25,8 @@ type cWasmerExecutorT C.vm_exec_executor_t
 // type cWasmerInstanceContextT C.vm_exec_instance_context_t
 type cWasmerInstanceT C.vm_exec_instance_t
 
+type cWasmerOpcodeCostT C.vm_exec_opcode_cost_t
+
 // type cWasmerMemoryT C.vm_exec_memory_t
 type cWasmerResultT C.vm_exec_result_t
 
@@ -35,25 +37,35 @@ type cWasmerVmHookPointers = C.vm_exec_vm_hook_c_func_pointers
 
 const cWasmerOk = C.VM_EXEC_OK
 
-// func cWasmerInstanceGetPointsUsed(instance *cWasmerInstanceT) uint64 {
-// 	return uint64(C.vm_exec_instance_get_points_used(
-// 		(*C.vm_exec_instance_t)(instance),
-// 	))
-// }
+func cWasmerExecutorSetOpcodeCost(
+	executor *cWasmerExecutorT,
+	opcodeCost *cWasmerOpcodeCostT,
+) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_set_opcode_costs(
+		(*C.vm_exec_executor_t)(executor),
+		(*C.vm_exec_opcode_cost_t)(opcodeCost),
+	))
+}
 
-// func cWasmerInstanceSetPointsUsed(instance *cWasmerInstanceT, points uint64) {
-// 	C.vm_exec_instance_set_points_used(
-// 		(*C.vm_exec_instance_t)(instance),
-// 		(C.uint64_t)(points),
-// 	)
-// }
+func cWasmerInstanceSetGasLimit(instance *cWasmerInstanceT, gasLimit uint64) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_set_points_limit(
+		(*C.vm_exec_instance_t)(instance),
+		(C.uint64_t)(gasLimit),
+	))
+}
 
-// func cWasmerInstanceSetGasLimit(instance *cWasmerInstanceT, gasLimit uint64) {
-// 	C.vm_exec_instance_set_points_limit(
-// 		(*C.vm_exec_instance_t)(instance),
-// 		(C.uint64_t)(gasLimit),
-// 	)
-// }
+func cWasmerInstanceSetPointsUsed(instance *cWasmerInstanceT, points uint64) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_set_points_used(
+		(*C.vm_exec_instance_t)(instance),
+		(C.uint64_t)(points),
+	))
+}
+
+func cWasmerInstanceGetPointsUsed(instance *cWasmerInstanceT) uint64 {
+	return uint64(C.vm_exec_instance_get_points_used(
+		(*C.vm_exec_instance_t)(instance),
+	))
+}
 
 // func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) {
 // 	C.vm_exec_instance_set_runtime_breakpoint_value(

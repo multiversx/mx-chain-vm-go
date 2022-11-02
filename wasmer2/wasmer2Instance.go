@@ -103,17 +103,16 @@ func (instance *Wasmer2Instance) Clean() {
 	}
 }
 
-func (instance *Wasmer2Instance) GetPointsUsed() uint64 {
-	// return cWasmerInstanceGetPointsUsed(instance.instance)
-	return 0
+func (instance *Wasmer2Instance) SetGasLimit(gasLimit uint64) {
+	cWasmerInstanceSetGasLimit(instance.cgoInstance, gasLimit)
 }
 
 func (instance *Wasmer2Instance) SetPointsUsed(points uint64) {
-	// cWasmerInstanceSetPointsUsed(instance.instance, points)
+	cWasmerInstanceSetPointsUsed(instance.cgoInstance, points)
 }
 
-func (instance *Wasmer2Instance) SetGasLimit(gasLimit uint64) {
-	// cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
+func (instance *Wasmer2Instance) GetPointsUsed() uint64 {
+	return cWasmerInstanceGetPointsUsed(instance.cgoInstance)
 }
 
 func (instance *Wasmer2Instance) SetBreakpointValue(value uint64) {

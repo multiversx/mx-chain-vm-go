@@ -156,6 +156,7 @@ func NewArwenVM(
 	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
 
 	vmExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
+	vmExecutor.SetOpcodeCostWasmer2(gasCostConfig.OpcodeCostWasmer2)
 	vmExecutor.SetRkyvSerializationEnabled(true)
 
 	if hostParameters.WasmerSIGSEGVPassthrough {

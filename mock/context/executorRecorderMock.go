@@ -27,6 +27,9 @@ func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *executor.W
 	wasmer.SetOpcodeCosts(opcodeCosts)
 }
 
+func (executorMock *ExecutorRecorderMock) SetOpcodeCostWasmer2(opcodeCosts *executor.OpcodeCostWasmer2) {
+}
+
 // SetRkyvSerializationEnabled controls a Wasmer flag.
 func (executorMock *ExecutorRecorderMock) SetRkyvSerializationEnabled(enabled bool) {
 	wasmer.SetRkyvSerializationEnabled(enabled)

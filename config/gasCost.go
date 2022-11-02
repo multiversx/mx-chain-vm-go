@@ -13,6 +13,7 @@ type GasCost struct {
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       *executor.WASMOpcodeCost
+	OpcodeCostWasmer2    *executor.OpcodeCostWasmer2
 }
 
 type BaseOperationCost struct {

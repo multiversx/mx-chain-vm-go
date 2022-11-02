@@ -7,6 +7,8 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
+var _ = (executor.Executor)((*WasmerExecutor)(nil))
+
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
 	eiFunctionNames vmcommon.FunctionNames
@@ -28,6 +30,11 @@ func NewExecutor() (*WasmerExecutor, error) {
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
 func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
 	SetOpcodeCosts(opcodeCosts)
+}
+
+// SetOpcodeCostWasmer2 sets gas costs globally inside the Wasmer2 executor.
+func (wasmerExecutor *WasmerExecutor) SetOpcodeCostWasmer2(opcodeCost *executor.OpcodeCostWasmer2) {
+	// panic("SetOpcodeCostWasmer2 not implemented for Wasmer1")
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.

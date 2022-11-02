@@ -20,6 +20,9 @@ type Executor interface {
 	// SetOpcodeCosts sets gas costs globally inside an executor.
 	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
 
+	// SetOpcodeCostWasmer2 sets gas costs globally inside the Wasmer2 executor.
+	SetOpcodeCostWasmer2(opcodeCost *OpcodeCostWasmer2)
+
 	// SetRkyvSerializationEnabled controls a Wasmer flag.
 	SetRkyvSerializationEnabled(enabled bool)
 
