@@ -107,7 +107,7 @@ func (a *Account) SetBalance(balance int64) {
 
 // GetDeveloperReward -
 func (a *Account) GetDeveloperReward() *big.Int {
-	return big.NewInt(0)
+	return a.DeveloperReward
 }
 
 // GetOwnerAddress -
@@ -119,6 +119,7 @@ func (a *Account) GetOwnerAddress() []byte {
 func (a *Account) GetUserName() []byte {
 	return a.Username
 }
+
 
 // IsInterfaceNil -
 func (a *Account) IsInterfaceNil() bool {

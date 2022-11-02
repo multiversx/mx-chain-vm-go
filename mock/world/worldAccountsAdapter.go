@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+// ErrInvalidAccount signals that a certain account does not exist
+var ErrInvalidAccount = errors.New("account does not exist")
 
 // ErrTrieHandlingNotImplemented indicates that no trie-related operations are
 // currently implemented.
@@ -33,7 +35,7 @@ func NewMockAccountsAdapter(world *MockWorld) *MockAccountsAdapter {
 func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (vmcommon.AccountHandler, error) {
 	account, exists := m.World.AcctMap[string(address)]
 	if !exists {
-		return nil, arwen.ErrInvalidAccount
+		return nil, ErrInvalidAccount
 	}
 
 	return account, nil
@@ -64,7 +66,7 @@ func (m *MockAccountsAdapter) SaveAccount(account vmcommon.AccountHandler) error
 func (m *MockAccountsAdapter) RemoveAccount(address []byte) error {
 	_, exists := m.World.AcctMap[string(address)]
 	if !exists {
-		return arwen.ErrInvalidAccount
+		return ErrInvalidAccount
 	}
 
 	m.World.AcctMap.DeleteAccount(address)

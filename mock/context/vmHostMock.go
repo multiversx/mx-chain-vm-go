@@ -1,12 +1,11 @@
 package mock
 
 import (
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostMock)(nil)
@@ -20,14 +19,20 @@ type VMHostMock struct {
 
 	BlockchainContext        arwen.BlockchainContext
 	RuntimeContext           arwen.RuntimeContext
+	AsyncContext             arwen.AsyncContext
 	OutputContext            arwen.OutputContext
 	MeteringContext          arwen.MeteringContext
 	StorageContext           arwen.StorageContext
 	EnableEpochsHandlerField vmcommon.EnableEpochsHandler
 	ManagedTypesContext      arwen.ManagedTypesContext
 
-	SCAPIMethods  *wasmer.Imports
 	IsBuiltinFunc bool
+
+	StoredInputs []*vmcommon.ContractCallInput
+
+	VMOutputQueue    []*vmcommon.VMOutput
+	VMOutputToReturn int
+	Err              error
 }
 
 // GetVersion mocked method
@@ -75,16 +80,6 @@ func (host *VMHostMock) ManagedTypes() arwen.ManagedTypesContext {
 	return host.ManagedTypesContext
 }
 
-// IsArwenV2Enabled mocked method
-func (host *VMHostMock) IsArwenV2Enabled() bool {
-	return true
-}
-
-// IsArwenV3Enabled mocked method
-func (host *VMHostMock) IsArwenV3Enabled() bool {
-	return true
-}
-
 // IsAheadOfTimeCompileEnabled mocked method
 func (host *VMHostMock) IsAheadOfTimeCompileEnabled() bool {
 	return true
@@ -101,8 +96,10 @@ func (host *VMHostMock) IsESDTFunctionsEnabled() bool {
 }
 
 // AreInSameShard mocked method
-func (host *VMHostMock) AreInSameShard(_ []byte, _ []byte) bool {
-	return true
+func (host *VMHostMock) AreInSameShard(left []byte, right []byte) bool {
+	leftShard := host.BlockchainContext.GetShardOfAddress(left)
+	rightShard := host.BlockchainContext.GetShardOfAddress(right)
+	return leftShard == rightShard
 }
 
 // ExecuteESDTTransfer mocked method
@@ -116,13 +113,17 @@ func (host *VMHostMock) CreateNewContract(_ *vmcommon.ContractCreateInput) ([]by
 }
 
 // ExecuteOnSameContext mocked method
-func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) (*arwen.AsyncContextInfo, error) {
-	return nil, nil
+func (host *VMHostMock) ExecuteOnSameContext(_ *vmcommon.ContractCallInput) error {
+	return nil
 }
 
 // ExecuteOnDestContext mocked method
-func (host *VMHostMock) ExecuteOnDestContext(_ *vmcommon.ContractCallInput) (*vmcommon.VMOutput, *arwen.AsyncContextInfo, error) {
-	return nil, nil, nil
+func (host *VMHostMock) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error) {
+	if host.Err != nil {
+		return nil, true, host.Err
+	}
+	host.StoreInput(input)
+	return host.GetNextVMOutput(), true, nil
 }
 
 // InitState mocked method
@@ -141,13 +142,13 @@ func (host *VMHostMock) PopState() {
 func (host *VMHostMock) ClearStateStack() {
 }
 
-// GetAPIMethods mocked method
-func (host *VMHostMock) GetAPIMethods() *wasmer.Imports {
-	return host.SCAPIMethods
+// IsBuiltinFunctionName mocked method
+func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
+	return host.IsBuiltinFunc
 }
 
 // IsBuiltinFunctionName mocked method
-func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
+func (host *VMHostMock) IsBuiltinFunctionCall(_ []byte) bool {
 	return host.IsBuiltinFunc
 }
 
@@ -186,9 +187,10 @@ func (host *VMHostMock) GetContexts() (
 	arwen.MeteringContext,
 	arwen.OutputContext,
 	arwen.RuntimeContext,
+	arwen.AsyncContext,
 	arwen.StorageContext,
 ) {
-	return host.ManagedTypesContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.StorageContext
+	return host.ManagedTypesContext, host.BlockchainContext, host.MeteringContext, host.OutputContext, host.RuntimeContext, host.AsyncContext, host.StorageContext
 }
 
 // SetRuntimeContext mocked method
@@ -196,29 +198,45 @@ func (host *VMHostMock) SetRuntimeContext(runtime arwen.RuntimeContext) {
 	host.RuntimeContext = runtime
 }
 
+// Async mocked method
+func (host *VMHostMock) Async() arwen.AsyncContext {
+	return host.AsyncContext
+}
+
 // FixOOGReturnCodeEnabled mocked method
 func (host *VMHostMock) FixOOGReturnCodeEnabled() bool {
 	return true
 }
 
-// FixFailExecutionEnabled mocked method
-func (host *VMHostMock) FixFailExecutionEnabled() bool {
-	return true
+// StoreInput enqueues the given ContractCallInput
+func (host *VMHostMock) StoreInput(input *vmcommon.ContractCallInput) {
+	if host.StoredInputs == nil {
+		host.StoredInputs = make([]*vmcommon.ContractCallInput, 0)
+	}
+	host.StoredInputs = append(host.StoredInputs, input)
 }
 
-// CreateNFTOnExecByCallerEnabled mocked method
-func (host *VMHostMock) CreateNFTOnExecByCallerEnabled() bool {
-	return true
+// EnqueueVMOutput enqueues the given VMOutput
+func (host *VMHostMock) EnqueueVMOutput(vmOutput *vmcommon.VMOutput) {
+	if host.VMOutputQueue == nil {
+		host.VMOutputQueue = make([]*vmcommon.VMOutput, 1)
+		host.VMOutputQueue[0] = vmOutput
+		host.VMOutputToReturn = 0
+		return
+	}
+
+	host.VMOutputQueue = append(host.VMOutputQueue, vmOutput)
 }
 
-// DisableExecByCaller mocked method
-func (host *VMHostMock) DisableExecByCaller() bool {
-	return true
-}
+// GetNextVMOutput returns the next VMOutput in the queue
+func (host *VMHostMock) GetNextVMOutput() *vmcommon.VMOutput {
+	if host.VMOutputToReturn >= len(host.VMOutputQueue) {
+		return nil
+	}
 
-// CheckExecuteReadOnly mocked method
-func (host *VMHostMock) CheckExecuteReadOnly() bool {
-	return true
+	vmOutput := host.VMOutputQueue[host.VMOutputToReturn]
+	host.VMOutputToReturn += 1
+	return vmOutput
 }
 
 // Close -

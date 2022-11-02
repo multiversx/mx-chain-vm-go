@@ -13,12 +13,15 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
+const VMStoragePrefix = "VM@"
+
 type storageContext struct {
 	host                          arwen.VMHost
 	blockChainHook                vmcommon.BlockchainHook
 	address                       []byte
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
+	vmProtectedKeyPrefix          []byte
 	arwenStorageProtectionEnabled bool
 }
 
@@ -32,11 +35,16 @@ func NewStorageContext(
 		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
 	}
 
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	context := &storageContext{
 		host:                          host,
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(VMStoragePrefix)...),
 		arwenStorageProtectionEnabled: true,
 	}
 
@@ -109,6 +117,7 @@ func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bo
 	if !usedCache || !gasFlagSet {
 		costPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 		gasToUse := math.MulUint64(costPerByte, uint64(len(value)))
+		// TODO replace UseGas with UseGasBounded
 		metering.UseGas(gasToUse)
 	}
 }
@@ -123,6 +132,7 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 	gasFlagSet := enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled()
 	if !gasFlagSet || !usedCache {
 		gasToUse := math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(extraBytes))
+		// TODO replace UseGas with UseGasBounded
 		metering.UseGas(gasToUse)
 	}
 }
@@ -143,6 +153,11 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 		}
 	}
 
+	return context.GetStorageFromAddressNoChecks(address, key)
+}
+
+// GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by arwen, so no permissions checks are necessary
+func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool) {
 	// If the requested key is protected by the Elrond node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
 	// contracts themselves cannot change protected values. Values stored under
@@ -198,7 +213,7 @@ func (context *storageContext) disableStorageProtection() {
 }
 
 func (context *storageContext) isArwenProtectedKey(key []byte) bool {
-	return bytes.HasPrefix(key, []byte(arwen.ProtectedStoragePrefix))
+	return bytes.HasPrefix(key, context.vmProtectedKeyPrefix)
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
@@ -209,38 +224,46 @@ func (context *storageContext) isElrondReservedKey(key []byte) bool {
 func (context *storageContext) SetProtectedStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
 	context.disableStorageProtection()
 	defer context.enableStorageProtection()
-
 	return context.SetStorage(key, value)
 }
 
 // SetStorage sets the given value at the given key.
 func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.StorageStatus, error) {
-	if context.host.Runtime().ReadOnly() {
-		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
-		if context.host.CheckExecuteReadOnly() {
-			return arwen.StorageUnchanged, arwen.ErrCannotWriteOnReadOnly
-		}
+	return context.setStorageToAddress(context.address, key, value)
+}
 
-		return arwen.StorageUnchanged, nil
-	}
-	if context.isElrondReservedKey(key) {
-		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
-		return arwen.StorageUnchanged, arwen.ErrStoreElrondReservedKey
-	}
-	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
-		logStorage.Trace("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
-		return arwen.StorageUnchanged, arwen.ErrCannotWriteProtectedKey
-	}
+// SetProtectedStorageToAddress sets the given value at the given key, for the specified address. This is only used internaly by arwen!
+func (context *storageContext) SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
+	context.disableStorageProtection()
+	defer context.enableStorageProtection()
+	return context.setStorageToAddress(address, key, value)
+}
 
+// SetProtectedStorageToAddressUnmetered sets the given value at the given key, for the specified address. This is only used internaly by arwen!
+// No gas cost involved, e.g. called by async.Save()
+func (context *storageContext) SetProtectedStorageToAddressUnmetered(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
+	context.disableStorageProtection()
+	defer context.enableStorageProtection()
+	return context.setStorageToAddressUnmetered(address, key, value)
+}
+
+func (context *storageContext) setStorageToAddress(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
+	err := context.checkReservedAndProtection(key)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
 	metering := context.host.Metering()
 
 	length := len(value)
 
-	storageUpdates := context.GetStorageUpdates(context.address)
+	storageUpdates := context.GetStorageUpdates(address)
 	oldValue, usedCache := context.getOldValue(storageUpdates, key)
 
 	gasForKey := context.computeGasForKey(key, usedCache)
-	metering.UseGas(gasForKey)
+	err = metering.UseGasBounded(gasForKey)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
 
 	if bytes.Equal(oldValue, value) {
 		return context.storageUnchanged(length, usedCache)
@@ -272,11 +295,44 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 		gasToUseForValue, gasToFreeForValue = 0, 0
 	}
 
-	metering.UseGas(gasToUseForValue)
+	err = metering.UseGasBounded(gasToUseForValue)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
 	metering.FreeGas(gasToFreeForValue)
 
 	logStorage.Trace("storage modified", "key", key, "value", value, "lengthDelta", newValueExtraLength)
 	return arwen.StorageModified, nil
+}
+
+func (context *storageContext) setStorageToAddressUnmetered(address []byte, key []byte, value []byte) (arwen.StorageStatus, error) {
+	err := context.checkReservedAndProtection(key)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
+	storageUpdates := context.GetStorageUpdates(address)
+	context.changeStorageUpdate(key, value, storageUpdates)
+
+	logStorage.Trace("storage modified (unmetered)", "key", key, "value", value)
+	return arwen.StorageModified, nil
+}
+
+func (context *storageContext) checkReservedAndProtection(key []byte) error {
+	if context.host.Runtime().ReadOnly() {
+		logStorage.Trace("storage set", "error", "cannot set storage in readonly mode")
+		return arwen.ErrCannotWriteOnReadOnly
+	}
+	if !context.isArwenProtectedKey(key) && context.isElrondReservedKey(key) {
+		logStorage.Trace("storage set", "error", arwen.ErrStoreElrondReservedKey, "key", key)
+		return arwen.ErrStoreElrondReservedKey
+	}
+	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
+		logStorage.Trace("storage set", "error", arwen.ErrCannotWriteProtectedKey, "key", key)
+		return arwen.ErrCannotWriteProtectedKey
+	}
+	return nil
 }
 
 func (context *storageContext) addDeltaBytes(deltaBytes int) {
@@ -318,7 +374,11 @@ func (context *storageContext) computeGasForBiggerValues(lengthOldValue int, new
 func (context *storageContext) storageAdded(length int, key []byte, value []byte) (arwen.StorageStatus, error) {
 	metering := context.host.Metering()
 	useGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.StorePerByte, uint64(length))
-	metering.UseGas(useGas)
+	err := metering.UseGasBounded(useGas)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
 	logStorage.Trace("storage added", "key", key, "value", value)
 	return arwen.StorageAdded, nil
 }
@@ -327,13 +387,18 @@ func (context *storageContext) storageDeleted(lengthOldValue int, key []byte) (a
 	metering := context.host.Metering()
 	freeGas := math.MulUint64(metering.GasSchedule().BaseOperationCost.ReleasePerByte, uint64(lengthOldValue))
 	metering.FreeGas(freeGas)
+
 	logStorage.Trace("storage deleted", "key", key)
 	return arwen.StorageDeleted, nil
 }
 
 func (context *storageContext) storageUnchanged(length int, usedCache bool) (arwen.StorageStatus, error) {
 	useGas := context.computeGasForUnchangedValue(length, usedCache)
-	context.host.Metering().UseGas(useGas)
+	err := context.host.Metering().UseGasBounded(useGas)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
+
 	logStorage.Trace("storage set to identical value")
 	return arwen.StorageUnchanged, nil
 }
@@ -398,4 +463,8 @@ func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
 // IsInterfaceNil returns true if there is no value under the interface
 func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
+}
+
+func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
+	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
 }

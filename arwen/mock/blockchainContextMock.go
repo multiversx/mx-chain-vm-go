@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"math/big"
 
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+var _ arwen.BlockchainContext = (*BlockchainContextMock)(nil)
 
 // BlockchainContextMock -
 type BlockchainContextMock struct {
@@ -132,7 +135,7 @@ func (b *BlockchainContextMock) GetCodeSize(_ []byte) (int32, error) {
 }
 
 // BlockHash -
-func (b *BlockchainContextMock) BlockHash(_ int64) []byte {
+func (b *BlockchainContextMock) BlockHash(_ uint64) []byte {
 	return bytes.Repeat([]byte{1}, 32)
 }
 

@@ -7,46 +7,30 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
+	"github.com/ElrondNetwork/wasm-vm/executor"
+	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
-const WASMPageSize = 65536
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
 
-func MakeAPIImports() *wasmer.Imports {
-	imports, _ := elrondapi.ElrondEIImports()
-	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = elrondapi.BigFloatImports(imports)
-	imports, _ = elrondapi.ManagedBufferImports(imports)
-	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = cryptoapi.CryptoImports(imports)
-	return imports
-}
-
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {
-	imports := MakeAPIImports()
-	_ = wasmer.SetImports(imports)
-
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
-	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	mockMetering := &contextmock.MeteringContextMock{}
 	mockMetering.SetGasSchedule(gasSchedule)
@@ -58,10 +42,14 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 }
 
 func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
+	executor, err := wasmer.NewExecutor()
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
+	require.Nil(t, err)
 	runtimeContext, err := NewRuntimeContext(
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		executor,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -78,7 +66,6 @@ func TestNewRuntimeContext(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
@@ -90,7 +77,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.codeAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
 
 	runtimeContext.InitState()
 
@@ -98,7 +84,6 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	require.Equal(t, []byte{}, runtimeContext.codeAddress)
 	require.Equal(t, "", runtimeContext.callFunction)
 	require.Equal(t, false, runtimeContext.readOnly)
-	require.Nil(t, runtimeContext.asyncCallInfo)
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
@@ -158,9 +143,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 }
 
 func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
-	imports := MakeAPIImports()
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = imports
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
@@ -188,7 +171,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 	runtimeContext.InitStateFromContractCallInput(callInput)
 	require.Equal(t, []byte("caller"), runtimeContext.GetVMInput().CallerAddr)
 	require.Equal(t, []byte("recipient"), runtimeContext.GetContextAddress())
-	require.Equal(t, "test function", runtimeContext.Function())
+	require.Equal(t, "test function", runtimeContext.FunctionName())
 	require.Equal(t, vmType, runtimeContext.GetVMType())
 	require.Equal(t, arguments, runtimeContext.Arguments())
 
@@ -242,7 +225,6 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
 	host := &contextmock.VMHostMock{}
-	host.SCAPIMethods = MakeAPIImports()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -280,7 +262,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	// check state was restored correctly
 	require.Equal(t, scAddress, runtimeContext.GetContextAddress())
-	require.Equal(t, funcName, runtimeContext.Function())
+	require.Equal(t, funcName, runtimeContext.FunctionName())
 	require.Equal(t, input, runtimeContext.GetVMInput())
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
@@ -296,6 +278,79 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 
 	runtimeContext.ClearStateStack()
 	require.Equal(t, 0, len(runtimeContext.stateStack))
+}
+
+func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
+	alpha := []byte("alpha")
+	beta := []byte("beta")
+	gamma := []byte("gamma")
+
+	host := &contextmock.VMHostMock{}
+
+	vmType := []byte("type")
+	executor, _ := wasmer.NewExecutor()
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
+	runtime, _ := NewRuntimeContext(
+		host,
+		vmType,
+		builtInFunctions.NewBuiltInFunctionContainer(),
+		executor,
+	)
+
+	vmInput := vmcommon.VMInput{
+		CallerAddr:  []byte("caller"),
+		GasProvided: 1000,
+		CallValue:   big.NewInt(0),
+	}
+	input := &vmcommon.ContractCallInput{
+		VMInput:  vmInput,
+		Function: "function",
+	}
+
+	input.RecipientAddr = alpha
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = beta
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = gamma
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = alpha
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PushState()
+	input.RecipientAddr = gamma
+	runtime.InitStateFromContractCallInput(input)
+	require.Equal(t, uint64(2), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PopSetActiveState()
+	runtime.PopSetActiveState()
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
+
+	runtime.PopDiscard()
+	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(alpha))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
+	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
@@ -325,18 +380,18 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	}
 	runtimeContext.InitStateFromContractCallInput(input)
 
-	f, err := runtimeContext.GetFunctionToCall()
+	functionName, err := runtimeContext.FunctionNameChecked()
 	require.Nil(t, err)
-	require.NotNil(t, f)
+	require.NotEmpty(t, functionName)
 
 	input.Function = "func"
 	runtimeContext.InitStateFromContractCallInput(input)
-	f, err = runtimeContext.GetFunctionToCall()
-	require.Equal(t, arwen.ErrFuncNotFound, err)
-	require.Nil(t, f)
+	functionName, err = runtimeContext.FunctionNameChecked()
+	require.Equal(t, executor.ErrFuncNotFound, err)
+	require.Empty(t, functionName)
 
-	initFunc := runtimeContext.GetInitFunction()
-	require.NotNil(t, initFunc)
+	hasInitFunction := runtimeContext.HasFunction(arwen.InitFunctionName)
+	require.True(t, hasInitFunction)
 
 	runtimeContext.ClearWarmInstanceCache()
 	require.Nil(t, runtimeContext.instance)
@@ -455,7 +510,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	totalPages := 32
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {

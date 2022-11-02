@@ -57,7 +57,23 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 }
 
 func TestRustComposability(t *testing.T) {
-	runAllTestsInFolder(t, "features/composability/mandos")
+	// TODO The two excluded tests perform async calls from within async calls,
+	// which are unsupported by the legacy async calls on which the forwarder is
+	// currently based. The new AsyncContext will block multi-level async calls
+	// anyway in its first release.
+	runTestsInFolder(t, "features/composability/mandos", []string{
+		"features/composability/mandos/forwarder_send_twice_egld.scen.json",
+		"features/composability/mandos/forwarder_send_twice_esdt.scen.json",
+	})
+}
+
+func TestRustPromisesFeatures(t *testing.T) {
+	runAllTestsInFolder(t, "features/composability/mandos-promises")
+}
+
+// TODO: debug, then delete
+func TestRustPromisesFeaturesDebug(t *testing.T) {
+	runAllTestsInFolder(t, "features/composability/mandos-promises/promises_call_async_retrieve_egld.scen.json")
 }
 
 func TestRustFormattedMessageFeatures(t *testing.T) {
@@ -87,29 +103,23 @@ func TestRustFormattedMessageFeatures(t *testing.T) {
 // }
 
 func TestRustLegacyComposability(t *testing.T) {
-	runAllTestsInFolder(t, "features/composability/mandos-legacy")
+	// TODO The two excluded tests perform async calls from within async calls,
+	// which are unsupported by the legacy async calls on which the forwarder is
+	// currently based. The new AsyncContext will block multi-level async calls
+	// anyway in its first release.
+	runTestsInFolder(t, "features/composability/mandos-legacy", []string{
+		"features/composability/mandos-legacy/l_forwarder_send_twice_egld.scen.json",
+		"features/composability/mandos-legacy/l_forwarder_send_twice_esdt.scen.json",
+	})
 }
 
 func TestTimelocks(t *testing.T) {
 	runAllTestsInFolder(t, "timelocks")
 }
 
-// func TestPromises(t *testing.T) {
-// 	executor, err := am.NewArwenTestExecutor()
+// func TestSingleJson(t *testing.T) {
+// 	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
 // 	require.Nil(t, err)
-// 	runner := mc.NewScenarioRunner(
-// 		executor,
-// 		mc.NewDefaultFileResolver(),
-// 	)
-// 	err = runner.RunAllJSONScenariosInDirectory(
-// 		getTestRoot(),
-// 		"promises",
-// 		".scen.json",
-// 		[]string{})
-
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
 // }
 
 func TestForwarderTransfExec(t *testing.T) {

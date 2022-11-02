@@ -5,11 +5,13 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 var _ arwen.OutputContext = (*outputContext)(nil)
@@ -25,6 +27,10 @@ type outputContext struct {
 
 // NewOutputContext creates a new outputContext
 func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+
 	context := &outputContext{
 		host:       host,
 		stateStack: make([]*vmcommon.VMOutput, 0),
@@ -134,6 +140,16 @@ func (context *outputContext) CensorVMOutput() {
 	context.outputState.GasRefund = big.NewInt(0)
 	context.outputState.Logs = make([]*vmcommon.LogEntry, 0)
 
+	for _, account := range context.outputState.OutputAccounts {
+		newTransfers := make([]vmcommon.OutputTransfer, 0)
+		for _, existingTransfer := range account.OutputTransfers {
+			if isNonAsyncCallTransfer(existingTransfer) {
+				newTransfers = append(newTransfers, existingTransfer)
+			}
+		}
+		account.OutputTransfers = newTransfers
+	}
+
 	logOutput.Trace("state content censored")
 }
 
@@ -212,14 +228,10 @@ func (context *outputContext) RemoveReturnData(index uint32) {
 	context.outputState.ReturnData = append(returnData[:index], returnData[index+1:]...)
 }
 
-// SelfDestruct does nothing
-// TODO change comment when the function is implemented
-func (context *outputContext) SelfDestruct(_ []byte, _ []byte) {
-}
-
 // Finish appends the given data to the return data of the current output state.
 func (context *outputContext) Finish(data []byte) {
 	context.outputState.ReturnData = append(context.outputState.ReturnData, data)
+	logOutput.Trace("finish", "data", data)
 }
 
 // PrependFinish appends the given data to the return data of the current output state.
@@ -261,7 +273,7 @@ func (context *outputContext) WriteLogWithIdentifier(address []byte, topics [][]
 
 // WriteLog creates a new LogEntry and appends it to the logs of the current output state.
 func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []byte) {
-	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().Function()))
+	context.WriteLogWithIdentifier(address, topics, data, []byte(context.host.Runtime().FunctionName()))
 }
 
 // TransferValueOnly will transfer the big.int value and checks if it is possible
@@ -298,7 +310,7 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 
 	if value.Cmp(arwen.Zero) > 0 {
-		if context.host.Runtime().ReadOnly() && context.host.CheckExecuteReadOnly() {
+		if context.host.Runtime().ReadOnly() {
 			return arwen.ErrInvalidCallOnReadOnlyMode
 		}
 
@@ -316,11 +328,16 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 // Transfer handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, input []byte, callType vm.CallType) error {
+func (context *outputContext) Transfer(destination []byte, sender []byte, gasLimit uint64, gasLocked uint64, value *big.Int, asyncData []byte, input []byte, callType vm.CallType) error {
 	checkPayableIfNotCallback := gasLimit > 0 && callType != vm.AsynchronousCallBack
 	err := context.TransferValueOnly(destination, sender, value, checkPayableIfNotCallback)
 	if err != nil {
 		return err
+	}
+
+	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) &&
+		(asyncData == nil || len(asyncData) == 0) {
+		return vmcommon.ErrAsyncParams
 	}
 
 	destAcc, _ := context.GetOutputAccount(destination)
@@ -328,6 +345,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		Value:         big.NewInt(0).Set(value),
 		GasLimit:      gasLimit,
 		GasLocked:     gasLocked,
+		AsyncData:     asyncData,
 		Data:          input,
 		CallType:      callType,
 		SenderAddress: sender,
@@ -499,7 +517,7 @@ func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
 // CreateVMOutputInCaseOfError creates a new vmOutput with the given error set as return message.
 func (context *outputContext) CreateVMOutputInCaseOfError(err error) *vmcommon.VMOutput {
 	runtime := context.host.Runtime()
-	runtime.AddError(err, runtime.Function())
+	runtime.AddError(err, runtime.FunctionName())
 
 	returnCode := context.resolveReturnCodeFromError(err)
 	returnMessage := context.resolveReturnMessageFromError(err)
@@ -551,13 +569,19 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 	if errors.Is(err, arwen.ErrSignalError) {
 		return vmcommon.UserError
 	}
-	if errors.Is(err, arwen.ErrFuncNotFound) {
+	if errors.Is(err, executor.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
-	if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
+	if errors.Is(err, executor.ErrFunctionNonvoidSignature) {
 		return vmcommon.FunctionWrongSignature
 	}
-	if errors.Is(err, arwen.ErrInvalidFunction) {
+	if errors.Is(err, executor.ErrInvalidFunction) {
+		return vmcommon.UserError
+	}
+	if errors.Is(err, arwen.ErrInitFuncCalledInRun) {
+		return vmcommon.UserError
+	}
+	if errors.Is(err, arwen.ErrCallBackFuncCalledInRun) {
 		return vmcommon.UserError
 	}
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
@@ -594,9 +618,6 @@ func (context *outputContext) AddToActiveState(rightOutput *vmcommon.VMOutput) {
 		if rightAccount.BalanceDelta != nil {
 			rightAccount.BalanceDelta.Add(rightAccount.BalanceDelta, leftAccount.BalanceDelta)
 		}
-		if len(rightAccount.OutputTransfers) > 0 {
-			leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers...)
-		}
 	}
 
 	mergeVMOutputs(context.outputState, rightOutput)
@@ -626,6 +647,8 @@ func mergeVMOutputs(leftOutput *vmcommon.VMOutput, rightOutput *vmcommon.VMOutpu
 
 	leftOutput.ReturnCode = rightOutput.ReturnCode
 	leftOutput.ReturnMessage = rightOutput.ReturnMessage
+
+	leftOutput.DeletedAccounts = append(leftOutput.DeletedAccounts, rightOutput.DeletedAccounts...)
 }
 
 func mergeOutputAccounts(
@@ -657,11 +680,7 @@ func mergeOutputAccounts(
 		leftAccount.Nonce = rightAccount.Nonce
 	}
 
-	lenLeftOutTransfers := len(leftAccount.OutputTransfers)
-	lenRightOutTransfers := len(rightAccount.OutputTransfers)
-	if lenRightOutTransfers > lenLeftOutTransfers {
-		leftAccount.OutputTransfers = append(leftAccount.OutputTransfers, rightAccount.OutputTransfers[lenLeftOutTransfers:]...)
-	}
+	mergeTransfers(leftAccount, rightAccount)
 
 	leftAccount.GasUsed = rightAccount.GasUsed
 
@@ -675,6 +694,41 @@ func mergeOutputAccounts(
 	if rightAccount.BytesDeletedFromStorage > leftAccount.BytesDeletedFromStorage {
 		leftAccount.BytesDeletedFromStorage = rightAccount.BytesDeletedFromStorage
 	}
+}
+
+func mergeTransfers(leftAccount *vmcommon.OutputAccount, rightAccount *vmcommon.OutputAccount) {
+	leftAsyncCallTransfers, leftOtherTransfers := splitTransfers(leftAccount)
+	rightAsyncCallTransfers, rightOtherTransfers := splitTransfers(rightAccount)
+
+	leftAsyncCallTransfers = append(leftAsyncCallTransfers, rightAsyncCallTransfers...)
+
+	lenLeftOtherTransfers := len(leftOtherTransfers)
+	lenRightOtherTransfers := len(rightOtherTransfers)
+	if lenRightOtherTransfers > lenLeftOtherTransfers {
+		leftOtherTransfers = append(leftOtherTransfers, rightOtherTransfers[lenLeftOtherTransfers:]...)
+	}
+
+	leftAccount.OutputTransfers = append(leftAsyncCallTransfers, leftOtherTransfers...)
+}
+
+func splitTransfers(account *vmcommon.OutputAccount) ([]vmcommon.OutputTransfer, []vmcommon.OutputTransfer) {
+	if account.OutputTransfers == nil {
+		return nil, nil
+	}
+	asyncCallTransfers := make([]vmcommon.OutputTransfer, 0)
+	otherTransfers := make([]vmcommon.OutputTransfer, 0)
+	for _, transfer := range account.OutputTransfers {
+		if isNonAsyncCallTransfer(transfer) {
+			otherTransfers = append(otherTransfers, transfer)
+		} else {
+			asyncCallTransfers = append(asyncCallTransfers, transfer)
+		}
+	}
+	return asyncCallTransfers, otherTransfers
+}
+
+func isNonAsyncCallTransfer(transfer vmcommon.OutputTransfer) bool {
+	return transfer.CallType != vm.AsynchronousCall && transfer.CallType != vm.AsynchronousCallBack
 }
 
 func mergeStorageUpdates(

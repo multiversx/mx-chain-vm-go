@@ -4,23 +4,28 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 
-func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
-	imports := MakeAPIImports()
+func testImportNames() vmcommon.FunctionNames {
+	importNames := make(vmcommon.FunctionNames)
+	var empty struct{}
+	importNames["getArgument"] = empty
+	importNames["asyncCall"] = empty
+	return importNames
+}
 
+func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	builtInFuncContainer := builtInFunctions.NewBuiltInFunctionContainer()
 	_ = builtInFuncContainer.Add("protocolFunctionFoo", &mock.BuiltInFunctionStub{})
 	_ = builtInFuncContainer.Add("protocolFunctionBar", &mock.BuiltInFunctionStub{})
 
-	validator := newWASMValidator(imports.Names(), builtInFuncContainer)
+	validator := newWASMValidator(testImportNames(), builtInFuncContainer)
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -28,6 +33,10 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	require.Nil(t, validator.verifyValidFunctionName("i"))
 
 	require.NotNil(t, validator.verifyValidFunctionName(""))
+	require.NotNil(t, validator.verifyValidFunctionName("3"))
+	require.NotNil(t, validator.verifyValidFunctionName("π"))
+	require.NotNil(t, validator.verifyValidFunctionName("2foo"))
+	require.NotNil(t, validator.verifyValidFunctionName("-"))
 	require.NotNil(t, validator.verifyValidFunctionName("â"))
 	require.NotNil(t, validator.verifyValidFunctionName("ș"))
 	require.NotNil(t, validator.verifyValidFunctionName("Ä"))
@@ -43,70 +52,14 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	require.Nil(t, validator.verifyValidFunctionName("getArgument55"))
 }
 
-func TestFunctionsGuard_Arity(t *testing.T) {
-	host := InitializeArwenAndWasmer()
-	imports := host.SCAPIMethods
-
-	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
-
-	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/signatures/output/signatures.wasm"
-	contractCode := arwen.GetSCCode(path)
-	options := wasmer.CompilationOptions{
-		GasLimit:           gasLimit,
-		OpcodeTrace:        false,
-		Metering:           true,
-		RuntimeBreakpoints: true,
-	}
-	instance, err := wasmer.NewInstanceWithOptions(contractCode, options)
-	require.Nil(t, err)
-
-	inArity, _ := validator.getInputArity(instance, "goodFunction")
-	require.Equal(t, 0, inArity)
-
-	outArity, _ := validator.getOutputArity(instance, "goodFunction")
-	require.Equal(t, 0, outArity)
-
-	inArity, _ = validator.getInputArity(instance, "wrongReturn")
-	require.Equal(t, 0, inArity)
-
-	outArity, _ = validator.getOutputArity(instance, "wrongReturn")
-	require.Equal(t, 1, outArity)
-
-	inArity, _ = validator.getInputArity(instance, "wrongParams")
-	require.Equal(t, 1, inArity)
-
-	outArity, _ = validator.getOutputArity(instance, "wrongParams")
-	require.Equal(t, 0, outArity)
-
-	inArity, _ = validator.getInputArity(instance, "wrongParamsAndReturn")
-	require.Equal(t, 2, inArity)
-
-	outArity, _ = validator.getOutputArity(instance, "wrongParamsAndReturn")
-	require.Equal(t, 1, outArity)
-
-	err = validator.verifyVoidFunction(instance, "goodFunction")
-	require.Nil(t, err)
-
-	err = validator.verifyVoidFunction(instance, "wrongReturn")
-	require.NotNil(t, err)
-
-	err = validator.verifyVoidFunction(instance, "wrongParams")
-	require.NotNil(t, err)
-
-	err = validator.verifyVoidFunction(instance, "wrongParamsAndReturn")
-	require.NotNil(t, err)
-}
-
 func TestFunctionsProtected(t *testing.T) {
 	host := InitializeArwenAndWasmer()
-	imports := host.SCAPIMethods
 
-	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
+	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer())
 
 	world := worldmock.NewMockWorld()
-	imb := contextmock.NewInstanceBuilderMock(world)
-	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0)
+	imb := contextmock.NewExecutorMock(world)
+	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
 	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {
 		host := instance.Host

@@ -9,8 +9,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
@@ -18,13 +21,12 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
-var baseTestConfig = contracts.DirectCallGasTestConfig{
+var baseTestConfig = &testcommon.TestConfig{
 	GasProvided:     1000,
 	GasUsedByParent: 400,
 	GasUsedByChild:  200,
@@ -318,7 +320,7 @@ func Test_ManagedRipemd160(t *testing.T) {
 						sourceHandle := managedTypes.NewManagedBufferFromBytes(asBytes)
 						destHandle := managedTypes.NewManagedBuffer()
 
-						cryptoapi.ManagedRipemd160WithHost(
+						elrondapi.ManagedRipemd160WithHost(
 							host,
 							sourceHandle,
 							destHandle)
@@ -378,7 +380,7 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifyBLSWithHost(
+						result := elrondapi.ManagedVerifyBLSWithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -427,7 +429,7 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(message)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifyEd25519WithHost(
+						result := elrondapi.ManagedVerifyEd25519WithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -478,7 +480,7 @@ func Test_VerifySecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifySecp256k1WithHost(
+						result := elrondapi.ManagedVerifySecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -529,7 +531,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 						messageHandle := managedTypes.NewManagedBufferFromBytes(msg)
 						sigHandle := managedTypes.NewManagedBufferFromBytes(sig)
 
-						result := cryptoapi.ManagedVerifyCustomSecp256k1WithHost(
+						result := elrondapi.ManagedVerifyCustomSecp256k1WithHost(
 							host,
 							keyHandle,
 							messageHandle,
@@ -579,7 +581,7 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 						sHandle := managedTypes.NewManagedBufferFromBytes(s)
 						sigHandle := managedTypes.NewManagedBuffer()
 
-						retResult := cryptoapi.ManagedEncodeSecp256k1DerSignatureWithHost(
+						retResult := elrondapi.ManagedEncodeSecp256k1DerSignatureWithHost(
 							host,
 							rHandle,
 							sHandle,
@@ -628,7 +630,7 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 						ecHandle := managedTypes.PutEllipticCurve(p521ec)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedScalarBaseMultECWithHost(
+						retResult := elrondapi.ManagedScalarBaseMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -681,7 +683,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 						pointYHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedScalarMultECWithHost(
+						retResult := elrondapi.ManagedScalarMultECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -734,7 +736,7 @@ func Test_ManagedMarshalEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := cryptoapi.ManagedMarshalECWithHost(
+						retResult := elrondapi.ManagedMarshalECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
@@ -787,7 +789,7 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedUnmarshalECWithHost(
+						retResult := elrondapi.ManagedUnmarshalECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -843,7 +845,7 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 						xPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointXBytes))
 						yPairHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 
-						retResult := cryptoapi.ManagedMarshalCompressedECWithHost(
+						retResult := elrondapi.ManagedMarshalCompressedECWithHost(
 							host,
 							xPairHandle,
 							yPairHandle,
@@ -896,7 +898,7 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigIntFromInt64(0)
 						dataHandle := managedTypes.NewManagedBufferFromBytes(dataBytes)
 
-						retResult := cryptoapi.ManagedUnmarshalCompressedECWithHost(
+						retResult := elrondapi.ManagedUnmarshalCompressedECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -952,7 +954,7 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 						yResultHandle := managedTypes.NewBigInt(big.NewInt(0).SetBytes(pointYBytes))
 						resultHandle := managedTypes.NewManagedBuffer()
 
-						retResult := cryptoapi.ManagedGenerateKeyECWithHost(
+						retResult := elrondapi.ManagedGenerateKeyECWithHost(
 							host,
 							xResultHandle,
 							yResultHandle,
@@ -1032,7 +1034,7 @@ func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.Cur
 	managedTypes := host.ManagedTypes()
 	dataHandle := managedTypes.NewManagedBufferFromBytes([]byte(name))
 
-	retResult := cryptoapi.ManagedCreateECWithHost(
+	retResult := elrondapi.ManagedCreateECWithHost(
 		host,
 		dataHandle)
 
@@ -1043,4 +1045,166 @@ func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.Cur
 	}
 
 	return true
+}
+
+func Test_ManagedDeleteContract(t *testing.T) {
+	testConfig := baseTestConfig
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
+				WithOwnerAddress(test.ParentAddress).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						managedTypes := host.ManagedTypes()
+
+						argumentsHandle := managedTypes.NewManagedBuffer()
+						managedTypes.WriteManagedVecOfManagedBuffers([][]byte{{1, 2}, {3, 4}}, argumentsHandle)
+
+						destHandle := managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
+
+						elrondapi.ManagedDeleteContractWithHost(
+							host,
+							destHandle,
+							100000,
+							argumentsHandle)
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				DeletedAccounts(test.ParentAddress)
+		})
+}
+
+func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContractOnShard(test.ChildAddress, 1).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithCodeMetadata([]byte{vmcommon.MetadataUpgradeable, 0}).
+				WithOwnerAddress(test.ParentAddress).
+				WithMethods(contracts.WasteGasChildMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithCallerAddr(test.ParentAddress).
+			WithRecipientAddr(test.ChildAddress).
+			WithCallValue(testConfig.TransferFromParentToChild).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction(arwen.DeleteFunctionName).
+			WithArguments(
+				[]byte{0}, // placeholder for data used by async framework
+				[]byte{0}, // placeholder for data used by async framework
+				big.NewInt(testConfig.TransferToThirdParty).Bytes(),
+				[]byte(contracts.AsyncChildData),
+				[]byte{0}).
+			WithCallType(vm.AsynchronousCall).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			world.SelfShardID = 1
+			if world.CurrentBlockInfo == nil {
+				world.CurrentBlockInfo = &worldmock.BlockInfo{}
+			}
+			world.CurrentBlockInfo.BlockRound = 1
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.Ok().
+				DeletedAccounts(test.ChildAddress)
+		})
+}
+
+func TestElrondEI_NFTNonceOverflow(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	MaxUint := ^uint64(0)
+	MaxInt := int64(MaxUint >> 1)
+
+	OverflowedMaxInt := uint64(MaxInt) + 1
+
+	tokenValue := int64(100)
+	test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("testFunction", func() *mock.InstanceMock {
+						host := parentInstance.Host
+						managed := host.ManagedTypes()
+
+						addressHandle := managed.NewManagedBufferFromBytes(test.ParentAddress)
+						tokenIDHandle := managed.NewManagedBufferFromBytes(test.ESDTTestTokenName)
+
+						nonce := int64(OverflowedMaxInt)
+
+						valueHandle := managed.NewBigIntFromInt64(0)
+						propertiesHandle := managed.NewManagedBuffer()
+						hashHandle := managed.NewManagedBuffer()
+						nameHandle := managed.NewManagedBuffer()
+						attributesHandle := managed.NewManagedBuffer()
+						creatorHandle := managed.NewManagedBuffer()
+						royaltiesHandle := managed.NewManagedBuffer()
+						urisHandle := managed.NewManagedBuffer()
+
+						elrondapi.ManagedGetESDTTokenDataWithHost(host,
+							addressHandle,
+							tokenIDHandle,
+							nonce,
+							valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+						value, err := managed.GetBigInt(valueHandle)
+						if err != nil {
+							host.Runtime().SignalUserError(err.Error())
+							return parentInstance
+						}
+						host.Output().Finish(value.Bytes())
+
+						return parentInstance
+					})
+				}),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("testFunction").
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			createMockBuiltinFunctions(t, host, world)
+			setZeroCodeCosts(host)
+			world.BuiltinFuncs.SetTokenData(
+				test.ParentAddress,
+				test.ESDTTestTokenName,
+				OverflowedMaxInt,
+				&esdt.ESDigitalToken{
+					Value:      big.NewInt(tokenValue),
+					Type:       uint32(core.Fungible),
+					Properties: esdtconvert.MakeESDTUserMetadataBytes(false),
+				})
+		}).
+		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+			verify.
+				Ok().
+				ReturnData(big.NewInt(tokenValue).Bytes())
+		})
 }

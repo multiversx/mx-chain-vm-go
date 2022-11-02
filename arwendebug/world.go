@@ -7,10 +7,12 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 type worldDataModel struct {
@@ -36,10 +38,17 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := worldmock.NewMockWorld()
 	blockchainHook.AcctMap = dataModel.Accounts
 
+	executor, err := wasmer.NewExecutor()
+	if err != nil {
+		return nil, err
+	}
+
 	vm, err := host.NewArwenVM(
 		blockchainHook,
+		executor,
 		getHostParameters(),
 	)
+	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +70,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
+		EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 		WasmerSIGSEGVPassthrough: false,
 	}
 }

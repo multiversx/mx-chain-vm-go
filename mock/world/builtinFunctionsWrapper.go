@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 )
 
@@ -39,32 +38,8 @@ func NewBuiltinFunctionsWrapper(
 		Marshalizer:                      WorldMarshalizer,
 		Accounts:                         world.AccountsAdapter,
 		ShardCoordinator:                 world,
+		EnableEpochsHandler:              EnableEpochsHandlerStubAllFlags(),
 		MaxNumOfAddressesForTransferRole: 100,
-		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField:         true,
-			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
-			IsFixOOGReturnCodeFlagEnabledField:                   true,
-			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
-			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
-			IsManagedCryptoAPIsFlagEnabledField:                  true,
-			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
-			IsRefactorContextFlagEnabledField:                    true,
-			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-			IsDisableExecByCallerFlagEnabledField:                true,
-			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsGlobalMintBurnFlagEnabledField:                     true,
-			IsTransferToMetaFlagEnabledField:                     true,
-			IsCheckFrozenCollectionFlagEnabledField:              true,
-			IsFixAsyncCallbackCheckFlagEnabledField:              true,
-			IsESDTNFTImprovementV1FlagEnabledField:               true,
-			IsSaveToSystemAccountFlagEnabledField:                true,
-			IsValueLengthCheckFlagEnabledField:                   true,
-			IsSCDeployFlagEnabledField:                           true,
-			IsRepairCallbackFlagEnabledField:                     true,
-			IsAheadOfTimeGasUsageFlagEnabledField:                true,
-			IsCheckFunctionArgumentFlagEnabledField:              true,
-			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
-		},
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)

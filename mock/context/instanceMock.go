@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
@@ -14,10 +15,10 @@ type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
 	Points          uint64
-	Data            uintptr
+	Data            executor.VMHooks
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          wasmer.MemoryHandler
+	Memory          executor.Memory
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -29,7 +30,7 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		Code:            code,
 		Exports:         make(wasmer.ExportsMap),
 		Points:          0,
-		Data:            0,
+		Data:            nil,
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
@@ -38,36 +39,17 @@ func NewInstanceMock(code []byte) *InstanceMock {
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
-	instance.AddMockMethodWithError(name, method, nil)
-}
-
-// AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
-func (instance *InstanceMock) AddMockMethodWithError(name string, method func() *InstanceMock, err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		instance := method()
-		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
-			var errMsg string
-			if arwen.BreakpointValue(instance.GetBreakpointValue()) == arwen.BreakpointAsyncCall {
-				errMsg = "breakpoint"
-			} else {
-				errMsg = instance.Host.Output().GetVMOutput().ReturnMessage
-			}
-			err = errors.New(errMsg)
+		breakpoint := arwen.BreakpointValue(instance.GetBreakpointValue())
+		var err error
+		if breakpoint != arwen.BreakpointNone {
+			err = errors.New(breakpoint.String())
 		}
 		return wasmer.Void(), err
 	}
 
 	instance.Exports[name] = wrappedMethod
-}
-
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
-}
-
-// SetContextData mocked method
-func (instance *InstanceMock) SetContextData(data uintptr) {
-	instance.Data = data
 }
 
 // GetPointsUsed mocked method
@@ -104,37 +86,48 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 func (instance *InstanceMock) Clean() {
 }
 
-// GetExports mocked method
-func (instance *InstanceMock) GetExports() wasmer.ExportsMap {
-	return instance.Exports
+// Reset mocked method
+func (instance *InstanceMock) Reset() bool {
+	return true
 }
 
-// GetSignature mocked method
-func (instance *InstanceMock) GetSignature(functionName string) (*wasmer.ExportedFunctionSignature, bool) {
-	_, ok := instance.Exports[functionName]
-
-	if !ok {
-		return nil, false
+// CallFunction mocked method
+func (instance *InstanceMock) CallFunction(functionName string) error {
+	if function, ok := instance.Exports[functionName]; ok {
+		_, err := function()
+		return err
 	}
 
-	return &wasmer.ExportedFunctionSignature{
-		InputArity:  0,
-		OutputArity: 0,
-	}, true
+	return executor.ErrFuncNotFound
 }
 
-// GetData mocked method
-func (instance *InstanceMock) GetData() uintptr {
-	return instance.Data
+// HasFunction mocked method
+func (instance *InstanceMock) HasFunction(functionName string) bool {
+	_, ok := instance.Exports[functionName]
+	return ok
 }
 
-// GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() wasmer.MemoryHandler {
-	return instance.Memory
+// GetFunctionNames mocked method
+func (instance *InstanceMock) GetFunctionNames() []string {
+	var functionNames []string
+	for functionName := range instance.Exports {
+		functionNames = append(functionNames, functionName)
+	}
+	return functionNames
+}
+
+// ValidateVoidFunction mocked method
+func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
+	return nil
+}
+
+// HasMemory mocked method
+func (instance *InstanceMock) HasMemory() bool {
+	return true
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() wasmer.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executor.Memory {
 	return instance.Memory
 }
 
@@ -150,12 +143,16 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
-// SetMemory -
-func (instance *InstanceMock) SetMemory(_ []byte) bool {
-	return true
-}
-
-// IsInterfaceNil -
+// IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+// SetVMHooksPtr mocked method
+func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+}
+
+// GetVMHooksPtr mocked method
+func (instance *InstanceMock) GetVMHooksPtr() uintptr {
+	return 0
 }

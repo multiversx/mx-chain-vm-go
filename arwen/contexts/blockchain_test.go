@@ -5,10 +5,11 @@ import (
 	"math/big"
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -203,6 +204,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
+	expectedCodeHash, _ := hashing.NewHasher().Sha256(expectedCode)
 
 	// GetCode: Test if error is propagated from blockchain hook
 	outputContext.OutputAccountIsNew = true
@@ -232,7 +234,8 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 	outputContext.OutputAccountIsNew = true
 	outputContext.OutputAccountMock = &vmcommon.OutputAccount{}
 	codeHash = blockchainContext.GetCodeHash(address)
-	require.Equal(t, 0, len(codeHash))
+
+	require.Equal(t, len(expectedCodeHash), len(codeHash))
 	require.Nil(t, err)
 
 	// GetCodeSize: Test if error is propagated from blockchain hook
@@ -356,6 +359,7 @@ func TestBlockchainContext_NewAddress(t *testing.T) {
 func TestBlockchainContext_BlockHash(t *testing.T) {
 	t.Parallel()
 
+	// TODO rewrite this test to use absolute block nonces
 	host := &contextmock.VMHostMock{}
 	mockWorld := worldmock.NewMockWorld()
 	blockchainContext, _ := NewBlockchainContext(host, mockWorld)
@@ -366,7 +370,7 @@ func TestBlockchainContext_BlockHash(t *testing.T) {
 	mockWorld.Err = nil
 
 	mockWorld.SetCurrentBlockHash([]byte("1234fa"))
-	hash = blockchainContext.BlockHash(-5)
+	hash = blockchainContext.BlockHash(3)
 	require.Nil(t, hash)
 
 	mockWorld.SetCurrentBlockHash([]byte("1234fb"))

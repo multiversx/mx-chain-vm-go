@@ -21,7 +21,7 @@ func NewDebugFacade() *DebugFacade {
 
 // DeploySmartContract deploys a smart contract
 func (f *DebugFacade) DeploySmartContract(request DeployRequest) (*DeployResponse, error) {
-	log.Debug("Debugf.DeploySmartContract()")
+	log.Debug("DeploySmartContract()")
 
 	err := request.digest()
 	if err != nil {
@@ -61,7 +61,7 @@ func (f *DebugFacade) loadDatabase(rootPath string) *database {
 
 // UpgradeSmartContract upgrades a smart contract
 func (f *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResponse, error) {
-	log.Debug("Debugf.UpgradeSmartContract()")
+	log.Debug("UpgradeSmartContract()")
 
 	err := request.digest()
 	if err != nil {
@@ -97,7 +97,7 @@ func (f *DebugFacade) UpgradeSmartContract(request UpgradeRequest) (*UpgradeResp
 
 // RunSmartContract executes a smart contract function
 func (f *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error) {
-	log.Debug("Debugf.RunSmartContract()")
+	log.Debug("RunSmartContract()")
 
 	err := request.digest()
 	if err != nil {
@@ -132,7 +132,7 @@ func (f *DebugFacade) RunSmartContract(request RunRequest) (*RunResponse, error)
 
 // QuerySmartContract queries a pure function of the smart contract
 func (f *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, error) {
-	log.Debug("Debugf.QuerySmartContracts()")
+	log.Debug("QuerySmartContracts()")
 
 	err := request.digest()
 	if err != nil {
@@ -162,7 +162,7 @@ func (f *DebugFacade) QuerySmartContract(request QueryRequest) (*QueryResponse, 
 
 // CreateAccount creates a test account
 func (f *DebugFacade) CreateAccount(request CreateAccountRequest) (*CreateAccountResponse, error) {
-	log.Debug("Debugf.CreateAccount()")
+	log.Debug("CreateAccount()")
 
 	err := request.digest()
 	if err != nil {

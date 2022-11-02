@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -92,7 +93,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	opcodeCosts := &WASMOpcodeCost{}
+	opcodeCosts := &executor.WASMOpcodeCost{}
 	err = mapstructure.Decode(gasMap["WASMOpcodeCost"], opcodeCosts)
 	if err != nil {
 		return nil, err
@@ -111,7 +112,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		ElrondAPICost:        *elrondOps,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
-		WASMOpcodeCost:       *opcodeCosts,
+		WASMOpcodeCost:       opcodeCosts,
 	}
 
 	return gasCost, nil
@@ -197,6 +198,8 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["GetExternalBalance"] = value
 	gasMap["GetBlockHash"] = value
 	gasMap["GetOriginalTxHash"] = value
+	gasMap["GetCurrentTxHash"] = value
+	gasMap["GetPrevTxHash"] = value
 	gasMap["TransferValue"] = value
 	gasMap["GetArgument"] = value
 	gasMap["GetFunction"] = value
@@ -226,6 +229,11 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	gasMap["ExecuteReadOnly"] = value
 	gasMap["AsyncCallStep"] = value
 	gasMap["AsyncCallbackGasLock"] = asyncCallbackGasLock
+	gasMap["CreateAsyncCall"] = value
+	gasMap["SetAsyncCallback"] = value
+	gasMap["SetAsyncGroupCallback"] = value
+	gasMap["SetAsyncContextCallback"] = value
+	gasMap["GetCallbackClosure"] = value
 	gasMap["CreateContract"] = value
 	gasMap["GetReturnData"] = value
 	gasMap["GetNumReturnData"] = value

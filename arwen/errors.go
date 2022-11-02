@@ -3,7 +3,12 @@ package arwen
 import (
 	"errors"
 	"fmt"
+
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
+
+// ErrNilVMHost signals that the provided VMHost is nil
+var ErrNilVMHost = errors.New("nil VMHost")
 
 // ErrReturnCodeNotOk signals that the returned code is different than vmcommon.Ok
 var ErrReturnCodeNotOk = errors.New("return code is not ok")
@@ -59,26 +64,17 @@ var ErrUpgradeFailed = errors.New("upgrade failed")
 // ErrInvalidUpgradeArguments signals that the upgrade process failed due to invalid arguments
 var ErrInvalidUpgradeArguments = fmt.Errorf("%w (invalid arguments)", ErrUpgradeFailed)
 
-// ErrInvalidFunction signals that the function is invalid
-var ErrInvalidFunction = errors.New("invalid function")
-
 // ErrInitFuncCalledInRun signals that the init func was called directly, which is forbidden
-var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", ErrInvalidFunction)
+var ErrInitFuncCalledInRun = fmt.Errorf("%w (calling init() directly is forbidden)", executor.ErrInvalidFunction)
 
 // ErrCallBackFuncCalledInRun signals that a callback func was called directly, which is forbidden
-var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", ErrInvalidFunction)
+var ErrCallBackFuncCalledInRun = fmt.Errorf("%w (calling callBack() directly is forbidden)", executor.ErrInvalidFunction)
 
 // ErrCallBackFuncNotExpected signals that an unexpected callback was received
-var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", ErrInvalidFunction)
-
-// ErrFuncNotFound signals that the the function does not exist
-var ErrFuncNotFound = fmt.Errorf("%w (not found)", ErrInvalidFunction)
+var ErrCallBackFuncNotExpected = fmt.Errorf("%w (unexpected callback was received)", executor.ErrInvalidFunction)
 
 // ErrInvalidFunctionName signals that the function name is invalid
-var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", ErrInvalidFunction)
-
-// ErrFunctionNonvoidSignature signals that the signature for the function is invalid
-var ErrFunctionNonvoidSignature = fmt.Errorf("%w (nonvoid signature)", ErrInvalidFunction)
+var ErrInvalidFunctionName = fmt.Errorf("%w (invalid name)", executor.ErrInvalidFunction)
 
 // ErrContractInvalid signals that the contract code is invalid
 var ErrContractInvalid = fmt.Errorf("invalid contract code")
@@ -97,6 +93,9 @@ var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond
 
 // ErrCannotWriteProtectedKey signals an attempt to write to a protected key, while storage protection is enforced
 var ErrCannotWriteProtectedKey = errors.New("cannot write to protected key")
+
+// ErrCannotWriteInReadOnlyMode signals an attempt to write to storage when running in read-only mode
+var ErrCannotWriteInReadOnlyMode = errors.New("cannot write to storage in read-only mode")
 
 // ErrNonPayableFunctionEgld signals that a non-payable function received non-zero call value
 var ErrNonPayableFunctionEgld = errors.New("function does not accept EGLD payment")
@@ -122,8 +121,59 @@ var ErrBitwiseNegative = errors.New("bitwise operations only allowed on positive
 // ErrShiftNegative signals that an attempt to apply a bitwise shift operation on negative numbers has been made
 var ErrShiftNegative = errors.New("bitwise shift operations only allowed on positive integers and by a positive amount")
 
+// ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback signals that the current contract instance cannot modify the AsyncContext
+var ErrAsyncContextUnmodifiableUnlessFirstSCOrFirstCallback = errors.New("AsyncContext can only be modified by the first contract instance with same address or first callback")
+
+// ErrAsyncCallGroupExistsAlready signals that an AsyncCallGroup with the same name already exists
+var ErrAsyncCallGroupExistsAlready = errors.New("async call group exists already")
+
+// ErrAsyncCallGroupDoesNotExist signals that the requested AsyncCallGroup does not exist
+var ErrAsyncCallGroupDoesNotExist = errors.New("async call group does not exist")
+
+// ErrAsyncCallGroupAlreadyComplete signals that no further operations are possible on the AsyncCallGroup because it is complete
+var ErrAsyncCallGroupAlreadyComplete = errors.New("async call group already complete")
+
+// ErrOnlyOneAsyncCallAllowedToAddress signals that there was an attempt to add an AsyncCall to an address already called asynchronously
+var ErrOnlyOneAsyncCallAllowedToAddress = errors.New("only one async call allowed to an address")
+
+// ErrNilDestinationCallVMOutput signals that the destination call execution returned a nil VMOutput
+var ErrNilDestinationCallVMOutput = errors.New("nil destination call VMOutput")
+
+// ErrNilCallbackVMOutput signals that the callback execution returned a nil VMOutput
+var ErrNilCallbackVMOutput = errors.New("nil callback VMOutput")
+
+// ErrAsyncCallNotFound signals that the requested AsyncCall was not found
+var ErrAsyncCallNotFound = errors.New("async call not found")
+
+// ErrUnknownCallType signals that the call type is not recognized
+var ErrUnknownCallType = errors.New("unknown call type")
+
+// ErrCannotUseBuiltinAsCallback signals that the specified callback was set to a built-in function, which is forbidden
+var ErrCannotUseBuiltinAsCallback = errors.New("cannot use built-in function as callback")
+
+// ErrInvalidAsyncCallGroupID signals that the AsyncCallGroup identifier is invalid
+var ErrInvalidAsyncCallGroupID = errors.New("invalid async call group identifier")
+
+// ErrOnlyOneLegacyAsyncCallAllowed signals that there was an attempt to create more than one legacy async calls, which is forbidden
+var ErrOnlyOneLegacyAsyncCallAllowed = errors.New("only one legacy async call allowed")
+
+// ErrLegacyAsyncCallNotFound signals that a legacy async call was expected, but is missing
+var ErrLegacyAsyncCallNotFound = errors.New("legacy async call not found")
+
+// ErrLegacyAsyncCallInvalid signals that the legacy async call is invalid
+var ErrLegacyAsyncCallInvalid = errors.New("legacy async call invalid")
+
+// ErrNoStoredAsyncContextFound signals that no persisted data was found for the AsyncContext to load
+var ErrNoStoredAsyncContextFound = errors.New("no async context found in storage")
+
+// ErrCannotInterpretCallbackArgs signals that the cross-shard callback arguments are invalid
+var ErrCannotInterpretCallbackArgs = errors.New("cannot interpret callback args")
+
 // ErrAsyncContextDoesNotExist signals that the async context does not exist
 var ErrAsyncContextDoesNotExist = errors.New("async context does not exist")
+
+// ErrContextCallbackDisabled signals that group callbacks cannot be set nor executed
+var ErrContextCallbackDisabled = errors.New("context callback disabled")
 
 // ErrInvalidAccount signals that a certain account does not exist
 var ErrInvalidAccount = errors.New("account does not exist")
@@ -186,6 +236,9 @@ var ErrNilHostParameters = errors.New("nil host parameters")
 // ErrNilESDTTransferParser signals that nil esdt transfer parser was provided
 var ErrNilESDTTransferParser = errors.New("nil esdt transfer parser")
 
+// ErrNilCallArgsParser signals that nil call arguments parser was provided
+var ErrNilCallArgsParser = errors.New("nil call args parser")
+
 // ErrNilBuiltInFunctionsContainer signals that nil built in functions container was provided
 var ErrNilBuiltInFunctionsContainer = errors.New("nil built in functions container")
 
@@ -213,11 +266,29 @@ var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 // ErrNilEnableEpochsHandler signals that enable epochs handler is nil
 var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
 
+// ErrNoAsyncParentContext signals that load parent was called for an async call
+var ErrNoAsyncParentContext = errors.New("this should not be called for async calls (only callbacks and direct calls)")
+
+// ErrInvalidAsyncArgsList signals that an error in the async framework produced an invalid arguments list
+var ErrInvalidAsyncArgsList = errors.New("async call has an invalid arguments list")
+
+// ErrAsyncInit signals an async context initialization error
+var ErrAsyncInit = errors.New("async context initialization error")
+
+// ErrAsyncNoOutputFromCallback signals that an error happen while producing the output of a callback
+var ErrAsyncNoOutputFromCallback = errors.New("callback VMOutput should not be nil")
+
+// ErrAsyncNoMultiLevel signals that no multi-level async calls are allowed
+var ErrAsyncNoMultiLevel = errors.New("multi-level async calls are not allowed yet")
+
+// ErrAsyncFrameworkPopCallID signals an error in the async fremwork that did not fill the correct call id arguments
+var ErrAsyncFrameworkPopCallID = errors.New("async framework error - PopCallIDsFromArguments")
+
+// ErrAsyncNoCallbackForClosure signals that closure can't be obtained
+var ErrAsyncNoCallbackForClosure = errors.New("no callback for closure, cannot call callback directly")
+
 // ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
 var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
-
-// ErrCallNotAllowedOnCallback  signals that call is not allowed on callback
-var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
 
 // ErrCallerIsSC signals that caller is a smart contract
 var ErrCallerIsSC = errors.New("caller is a smart contract")

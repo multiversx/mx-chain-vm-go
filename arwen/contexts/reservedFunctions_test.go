@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
@@ -26,4 +26,5 @@ func TestReservedFunctions_IsFunctionReserved(t *testing.T) {
 	require.True(t, reserved.IsReserved("protocolFunctionFoo"))
 	require.True(t, reserved.IsReserved("protocolFunctionBar"))
 	require.True(t, reserved.IsReserved(arwen.UpgradeFunctionName))
+	require.True(t, reserved.IsReserved(arwen.DeleteFunctionName))
 }

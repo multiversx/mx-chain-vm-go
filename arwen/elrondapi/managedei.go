@@ -1,56 +1,13 @@
 package elrondapi
 
-// // Declare the function signatures (see [cgo](https://golang.org/cmd/cgo/)).
-//
-// #include <stdlib.h>
-// typedef unsigned char uint8_t;
-// typedef int int32_t;
-// typedef unsigned long long uint64_t;
-//
-// extern void	v1_4_managedSCAddress(void *context, int32_t addressHandle);
-// extern void	v1_4_managedOwnerAddress(void *context, int32_t addressHandle);
-// extern void	v1_4_managedCaller(void *context, int32_t addressHandle);
-// extern void	v1_4_managedSignalError(void* context, int32_t errHandle1);
-// extern void	v1_4_managedWriteLog(void* context, int32_t topicsHandle, int32_t dataHandle);
-//
-// extern int32_t	v1_4_managedMultiTransferESDTNFTExecute(void *context, int32_t dstHandle, int32_t tokenTransfersHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t	v1_4_managedTransferValueExecute(void *context, int32_t dstHandle, int32_t valueHandle, long long gasLimit, int32_t functionHandle, int32_t argumentsHandle);
-// extern int32_t	v1_4_managedExecuteOnDestContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteOnDestContextByCaller(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteOnSameContext(void *context, long long gas, int32_t addressHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedExecuteReadOnly(void *context, long long gas, int32_t addressHandle, int32_t functionHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedCreateContract(void *context, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
-// extern int32_t	v1_4_managedDeployFromSourceContract(void *context, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultAddressHandle, int32_t resultHandle);
-// extern void		v1_4_managedUpgradeContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t codeHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern void		v1_4_managedUpgradeFromSourceContract(void *context, int32_t dstHandle, long long gas, int32_t valueHandle, int32_t addressHandle, int32_t codeMetadataHandle, int32_t argumentsHandle, int32_t resultHandle);
-// extern void		v1_4_managedAsyncCall(void *context, int32_t dstHandle, int32_t valueHandle, int32_t functionHandle, int32_t argumentsHandle);
-//
-// extern void		v1_4_managedGetMultiESDTCallValue(void *context, int32_t multiCallValueHandle);
-// extern void		v1_4_managedGetESDTBalance(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle);
-// extern void		v1_4_managedGetESDTTokenData(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce, int32_t valueHandle, int32_t propertiesHandle, int32_t hashHandle, int32_t nameHandle, int32_t attributesHandle, int32_t creatorHandle, int32_t royaltiesHandle, int32_t urisHandle);
-//
-// extern void		v1_4_managedGetReturnData(void *context, int32_t resultID, int32_t resultHandle);
-// extern void		v1_4_managedGetPrevBlockRandomSeed(void *context, int32_t resultHandle);
-// extern void		v1_4_managedGetBlockRandomSeed(void *context, int32_t resultHandle);
-// extern void		v1_4_managedGetStateRootHash(void *context, int32_t resultHandle);
-// extern void		v1_4_managedGetOriginalTxHash(void *context, int32_t resultHandle);
-//
-// extern int32_t   v1_4_managedIsESDTFrozen(void *context, int32_t addressHandle, int32_t tokenIDHandle, long long nonce);
-// extern int32_t   v1_4_managedIsESDTPaused(void *context, int32_t tokenIDHandle);
-// extern int32_t   v1_4_managedIsESDTLimitedTransfer(void *context, int32_t tokenIDHandle);
-// extern void      v1_4_managedBufferToHex(void *context, int32_t sourceHandle, int32_t destHandle);
-import "C"
-
 import (
 	"encoding/hex"
 	"errors"
-	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 const (
@@ -70,6 +27,8 @@ const (
 	managedUpgradeContractName              = "managedUpgradeContract"
 	managedUpgradeFromSourceContractName    = "managedUpgradeFromSourceContract"
 	managedAsyncCallName                    = "managedAsyncCall"
+	managedCreateAsyncCallName              = "managedCreateAsyncCall"
+	managedGetCallbackClosure               = "managedGetCallbackClosure"
 	managedGetMultiESDTCallValueName        = "managedGetMultiESDTCallValue"
 	managedGetESDTBalanceName               = "managedGetESDTBalance"
 	managedGetESDTTokenDataName             = "managedGetESDTTokenData"
@@ -84,158 +43,12 @@ const (
 	managedBufferToHexName                  = "managedBufferToHex"
 )
 
-// ManagedEIImports creates a new wasmer.Imports populated with variants of the API methods that use managed types only.
-func ManagedEIImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
-
-	imports, err := imports.Append("managedSCAddress", v1_4_managedSCAddress, C.v1_4_managedSCAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedOwnerAddress", v1_4_managedOwnerAddress, C.v1_4_managedOwnerAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedCaller", v1_4_managedCaller, C.v1_4_managedCaller)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedSignalError", v1_4_managedSignalError, C.v1_4_managedSignalError)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedWriteLog", v1_4_managedWriteLog, C.v1_4_managedWriteLog)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedMultiTransferESDTNFTExecute", v1_4_managedMultiTransferESDTNFTExecute, C.v1_4_managedMultiTransferESDTNFTExecute)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedTransferValueExecute", v1_4_managedTransferValueExecute, C.v1_4_managedTransferValueExecute)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedExecuteOnDestContext", v1_4_managedExecuteOnDestContext, C.v1_4_managedExecuteOnDestContext)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedExecuteOnDestContextByCaller", v1_4_managedExecuteOnDestContextByCaller, C.v1_4_managedExecuteOnDestContextByCaller)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedExecuteOnSameContext", v1_4_managedExecuteOnSameContext, C.v1_4_managedExecuteOnSameContext)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedExecuteReadOnly", v1_4_managedExecuteReadOnly, C.v1_4_managedExecuteReadOnly)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedCreateContract", v1_4_managedCreateContract, C.v1_4_managedCreateContract)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedDeployFromSourceContract", v1_4_managedDeployFromSourceContract, C.v1_4_managedDeployFromSourceContract)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedUpgradeContract", v1_4_managedUpgradeContract, C.v1_4_managedUpgradeContract)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedUpgradeFromSourceContract", v1_4_managedUpgradeFromSourceContract, C.v1_4_managedUpgradeFromSourceContract)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedAsyncCall", v1_4_managedAsyncCall, C.v1_4_managedAsyncCall)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetMultiESDTCallValue", v1_4_managedGetMultiESDTCallValue, C.v1_4_managedGetMultiESDTCallValue)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetESDTBalance", v1_4_managedGetESDTBalance, C.v1_4_managedGetESDTBalance)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetESDTTokenData", v1_4_managedGetESDTTokenData, C.v1_4_managedGetESDTTokenData)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetReturnData", v1_4_managedGetReturnData, C.v1_4_managedGetReturnData)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetPrevBlockRandomSeed", v1_4_managedGetPrevBlockRandomSeed, C.v1_4_managedGetPrevBlockRandomSeed)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetBlockRandomSeed", v1_4_managedGetBlockRandomSeed, C.v1_4_managedGetBlockRandomSeed)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetStateRootHash", v1_4_managedGetStateRootHash, C.v1_4_managedGetStateRootHash)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedGetOriginalTxHash", v1_4_managedGetOriginalTxHash, C.v1_4_managedGetOriginalTxHash)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedIsESDTFrozen", v1_4_managedIsESDTFrozen, C.v1_4_managedIsESDTFrozen)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedIsESDTPaused", v1_4_managedIsESDTPaused, C.v1_4_managedIsESDTPaused)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedIsESDTLimitedTransfer", v1_4_managedIsESDTLimitedTransfer, C.v1_4_managedIsESDTLimitedTransfer)
-	if err != nil {
-		return nil, err
-	}
-
-	imports, err = imports.Append("managedBufferToHex", v1_4_managedBufferToHex, C.v1_4_managedBufferToHex)
-	if err != nil {
-		return nil, err
-	}
-
-	return imports, nil
-}
-
-//export v1_4_managedSCAddress
-func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+// ManagedSCAddress VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedSCAddress(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
 	metering.UseGasAndAddTracedGas(managedSCAddressName, gasToUse)
@@ -245,29 +58,31 @@ func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, scAddress)
 }
 
-//export v1_4_managedOwnerAddress
-func v1_4_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+// ManagedOwnerAddress VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedOwnerAddress(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	blockchain := context.GetBlockchainContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwnerAddress
 	metering.UseGasAndAddTracedGas(managedOwnerAddressName, gasToUse)
 
 	owner, err := blockchain.GetOwnerAddress()
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	managedType.SetBytes(destinationHandle, owner)
 }
 
-//export v1_4_managedCaller
-func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+// ManagedCaller VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedCaller(destinationHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCaller
 	metering.UseGasAndAddTracedGas(managedCallerName, gasToUse)
@@ -276,18 +91,19 @@ func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	managedType.SetBytes(destinationHandle, caller)
 }
 
-//export v1_4_managedSignalError
-func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
-	managedType := arwen.GetManagedTypesContext(context)
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
+// ManagedSignalError VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedSignalError(errHandle int32) {
+	managedType := context.GetManagedTypesContext()
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
 	metering.StartGasTracing(managedSignalErrorName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
 	metering.UseAndTraceGas(gasToUse)
 
 	errBytes, err := managedType.GetBytes(errHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBytes(errBytes)
@@ -295,32 +111,32 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(errBytes))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
-		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	runtime.SignalUserError(string(errBytes))
 }
 
-//export v1_4_managedWriteLog
-func v1_4_managedWriteLog(
-	context unsafe.Pointer,
+// ManagedWriteLog VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedWriteLog(
 	topicsHandle int32,
 	dataHandle int32,
 ) {
-	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	runtime := context.GetRuntimeContext()
+	output := context.GetOutputContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 	metering.StartGasTracing(managedWriteLogName)
 
 	topics, sumOfTopicByteLengths, err := managedType.ReadManagedVecOfManagedBuffers(topicsHandle)
-	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	dataBytes, err := managedType.GetBytes(dataHandle)
-	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return
 	}
 	managedType.ConsumeGasForBytes(dataBytes)
@@ -336,11 +152,12 @@ func v1_4_managedWriteLog(
 	output.WriteLog(runtime.GetContextAddress(), topics, dataBytes)
 }
 
-//export v1_4_managedGetOriginalTxHash
-func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetOriginalTxHash VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetOriginalTxHash(resultHandle int32) {
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetOriginalTxHash
 	metering.UseGasAndAddTracedGas(managedGetOriginalTxHashName, gasToUse)
@@ -348,11 +165,12 @@ func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	managedType.SetBytes(resultHandle, runtime.GetOriginalTxHash())
 }
 
-//export v1_4_managedGetStateRootHash
-func v1_4_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
-	blockchain := arwen.GetBlockchainContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetStateRootHash VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetStateRootHash(resultHandle int32) {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetStateRootHash
 	metering.UseGasAndAddTracedGas(managedGetStateRootHashName, gasToUse)
@@ -360,11 +178,12 @@ func v1_4_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	managedType.SetBytes(resultHandle, blockchain.GetStateRootHash())
 }
 
-//export v1_4_managedGetBlockRandomSeed
-func v1_4_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
-	blockchain := arwen.GetBlockchainContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetBlockRandomSeed VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetBlockRandomSeed(resultHandle int32) {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
 	metering.UseGasAndAddTracedGas(managedGetBlockRandomSeedName, gasToUse)
@@ -372,11 +191,12 @@ func v1_4_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) 
 	managedType.SetBytes(resultHandle, blockchain.CurrentRandomSeed())
 }
 
-//export v1_4_managedGetPrevBlockRandomSeed
-func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int32) {
-	blockchain := arwen.GetBlockchainContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetPrevBlockRandomSeed VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetPrevBlockRandomSeed(resultHandle int32) {
+	blockchain := context.GetBlockchainContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
 	metering.UseGasAndAddTracedGas(managedGetPrevBlockRandomSeedName, gasToUse)
@@ -384,30 +204,32 @@ func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int
 	managedType.SetBytes(resultHandle, blockchain.LastRandomSeed())
 }
 
-//export v1_4_managedGetReturnData
-func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	output := arwen.GetOutputContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetReturnData VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetReturnData(resultID int32, resultHandle int32) {
+	runtime := context.GetRuntimeContext()
+	output := context.GetOutputContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnData
 	metering.UseGasAndAddTracedGas(managedGetReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	managedType.SetBytes(resultHandle, returnData[resultID])
 }
 
-//export v1_4_managedGetMultiESDTCallValue
-func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetMultiESDTCallValue VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetMultiESDTCallValue(multiCallValueHandle int32) {
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
 	metering.UseGasAndAddTracedGas(managedGetMultiESDTCallValueName, gasToUse)
@@ -419,30 +241,31 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 	managedType.SetBytes(multiCallValueHandle, multiCallBytes)
 }
 
-//export v1_4_managedGetESDTBalance
-func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+// ManagedGetESDTBalance VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetESDTBalance(addressHandle int32, tokenIDHandle int32, nonce int64, valueHandle int32) {
+	runtime := context.GetRuntimeContext()
+	metering := context.GetMeteringContext()
+	blockchain := context.GetBlockchainContext()
+	managedType := context.GetManagedTypesContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(managedGetESDTBalanceName, gasToUse)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -450,13 +273,33 @@ func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 	value.Set(esdtToken.Value)
 }
 
-//export v1_4_managedGetESDTTokenData
-func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, tokenIDHandle int32, nonce int64,
+// ManagedGetESDTTokenData VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetESDTTokenData(
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
 	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
-	runtime := arwen.GetRuntimeContext(context)
-	metering := arwen.GetMeteringContext(context)
-	blockchain := arwen.GetBlockchainContext(context)
-	managedType := arwen.GetManagedTypesContext(context)
+	host := context.GetVMHost()
+	ManagedGetESDTTokenDataWithHost(
+		host,
+		addressHandle,
+		tokenIDHandle,
+		nonce,
+		valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle)
+
+}
+
+func ManagedGetESDTTokenDataWithHost(
+	host arwen.VMHost,
+	addressHandle int32,
+	tokenIDHandle int32,
+	nonce int64,
+	valueHandle, propertiesHandle, hashHandle, nameHandle, attributesHandle, creatorHandle, royaltiesHandle, urisHandle int32) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	blockchain := host.Blockchain()
+	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedGetESDTTokenDataName)
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
@@ -464,18 +307,18 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFault(arwen.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -500,14 +343,14 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 
 }
 
-//export v1_4_managedAsyncCall
-func v1_4_managedAsyncCall(
-	context unsafe.Pointer,
+// ManagedAsyncCall VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedAsyncCall(
 	destHandle int32,
 	valueHandle int32,
 	functionHandle int32,
 	argumentsHandle int32) {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	ManagedAsyncCallWithHost(
 		host,
 		destHandle,
@@ -523,6 +366,7 @@ func ManagedAsyncCallWithHost(
 	functionHandle int32,
 	argumentsHandle int32) {
 	runtime := host.Runtime()
+	async := host.Async()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedAsyncCallName)
@@ -532,7 +376,7 @@ func ManagedAsyncCallWithHost(
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -540,26 +384,116 @@ func ManagedAsyncCallWithHost(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(host, arwen.ErrArgOutOfRange, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	gasToUse = math.MulUint64(gasSchedule.BaseOperationCost.DataCopyPerByte, uint64(len(data)))
 	metering.UseAndTraceGas(gasToUse)
 
-	err = runtime.ExecuteAsyncCall(vmInput.destination, []byte(data), value.Bytes())
+	err = async.RegisterLegacyAsyncCall(vmInput.destination, []byte(data), value.Bytes())
 	if errors.Is(err, arwen.ErrNotEnoughGas) {
 		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
 		return
 	}
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 }
 
-//export v1_4_managedUpgradeFromSourceContract
-func v1_4_managedUpgradeFromSourceContract(
-	context unsafe.Pointer,
+// ManagedCreateAsyncCall VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedCreateAsyncCall(
+	destHandle int32,
+	valueHandle int32,
+	functionHandle int32,
+	argumentsHandle int32,
+	successOffset int32,
+	successLength int32,
+	errorOffset int32,
+	errorLength int32,
+	gas int64,
+	extraGasForCallback int64,
+	callbackClosureHandle int32,
+) int32 {
+
+	host := context.GetVMHost()
+	runtime := host.Runtime()
+	managedType := host.ManagedTypes()
+
+	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	data := makeCrossShardCallFromInput(vmInput.function, vmInput.arguments)
+
+	value, err := managedType.GetBigInt(valueHandle)
+	if err != nil {
+		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		return 1
+	}
+
+	successFunc, err := runtime.MemLoad(successOffset, successLength)
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	errorFunc, err := runtime.MemLoad(errorOffset, errorLength)
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	callbackClosure, err := managedType.GetBytes(callbackClosureHandle)
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 1
+	}
+
+	return CreateAsyncCallWithTypedArgs(host,
+		vmInput.destination,
+		value.Bytes(),
+		[]byte(data),
+		successFunc,
+		errorFunc,
+		gas,
+		extraGasForCallback,
+		callbackClosure)
+}
+
+// ManagedGetCallbackClosure VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedGetCallbackClosure(
+	callbackClosureHandle int32,
+) {
+	host := context.GetVMHost()
+	GetCallbackClosureWithHost(host, callbackClosureHandle)
+}
+
+func GetCallbackClosureWithHost(
+	host arwen.VMHost,
+	callbackClosureHandle int32,
+) {
+	runtime := host.Runtime()
+	async := host.Async()
+	metering := host.Metering()
+	managedTypes := host.ManagedTypes()
+
+	metering.StartGasTracing(managedGetCallbackClosure)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallbackClosure
+	metering.UseAndTraceGas(gasToUse)
+
+	callbackClosure, err := async.GetCallbackClosure()
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	managedTypes.SetBytes(callbackClosureHandle, callbackClosure)
+}
+
+// ManagedUpgradeFromSourceContract VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedUpgradeFromSourceContract(
 	destHandle int32,
 	gas int64,
 	valueHandle int32,
@@ -568,7 +502,7 @@ func v1_4_managedUpgradeFromSourceContract(
 	argumentsHandle int32,
 	resultHandle int32,
 ) {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
@@ -578,17 +512,17 @@ func v1_4_managedUpgradeFromSourceContract(
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	sourceContractAddress, err := managedType.GetBytes(addressHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -606,9 +540,9 @@ func v1_4_managedUpgradeFromSourceContract(
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
-//export v1_4_managedUpgradeContract
-func v1_4_managedUpgradeContract(
-	context unsafe.Pointer,
+// ManagedUpgradeContract VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedUpgradeContract(
 	destHandle int32,
 	gas int64,
 	valueHandle int32,
@@ -617,7 +551,7 @@ func v1_4_managedUpgradeContract(
 	argumentsHandle int32,
 	resultHandle int32,
 ) {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
@@ -627,21 +561,21 @@ func v1_4_managedUpgradeContract(
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
@@ -651,9 +585,57 @@ func v1_4_managedUpgradeContract(
 	setReturnDataIfExists(host, lenReturnData, resultHandle)
 }
 
-//export v1_4_managedDeployFromSourceContract
-func v1_4_managedDeployFromSourceContract(
-	context unsafe.Pointer,
+// ManagedDeleteContract VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedDeleteContract(
+	destHandle int32,
+	gasLimit int64,
+	argumentsHandle int32,
+) {
+	host := context.GetVMHost()
+	ManagedDeleteContractWithHost(
+		host,
+		destHandle,
+		gasLimit,
+		argumentsHandle,
+	)
+}
+
+func ManagedDeleteContractWithHost(
+	host arwen.VMHost,
+	destHandle int32,
+	gasLimit int64,
+	argumentsHandle int32,
+) {
+	runtime := host.Runtime()
+	metering := host.Metering()
+	managedType := host.ManagedTypes()
+	metering.StartGasTracing(deleteContractName)
+
+	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	metering.UseAndTraceGas(gasToUse)
+
+	calledSCAddress, err := managedType.GetBytes(destHandle)
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	data, _, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return
+	}
+
+	deleteContract(
+		host,
+		calledSCAddress,
+		data,
+		gasLimit,
+	)
+}
+
+// ManagedDeployFromSourceContract VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedDeployFromSourceContract(
 	gas int64,
 	valueHandle int32,
 	addressHandle int32,
@@ -662,7 +644,7 @@ func v1_4_managedDeployFromSourceContract(
 	resultAddressHandle int32,
 	resultHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
@@ -672,12 +654,12 @@ func v1_4_managedDeployFromSourceContract(
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(host, addressHandle, valueHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -691,7 +673,7 @@ func v1_4_managedDeployFromSourceContract(
 		vmInput.arguments,
 		gas,
 	)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -701,9 +683,9 @@ func v1_4_managedDeployFromSourceContract(
 	return 0
 }
 
-//export v1_4_managedCreateContract
-func v1_4_managedCreateContract(
-	context unsafe.Pointer,
+// ManagedCreateContract VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedCreateContract(
 	gas int64,
 	valueHandle int32,
 	codeHandle int32,
@@ -712,7 +694,7 @@ func v1_4_managedCreateContract(
 	resultAddressHandle int32,
 	resultHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()
@@ -723,12 +705,12 @@ func v1_4_managedCreateContract(
 
 	sender := runtime.GetContextAddress()
 	value, err := managedType.GetBigInt(valueHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -736,18 +718,18 @@ func v1_4_managedCreateContract(
 	metering.UseAndTraceGas(gasToUse)
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
 	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, host, runtime)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -770,21 +752,21 @@ func setReturnDataIfExists(
 	}
 }
 
-//export v1_4_managedExecuteReadOnly
-func v1_4_managedExecuteReadOnly(
-	context unsafe.Pointer,
+// ManagedExecuteReadOnly VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedExecuteReadOnly(
 	gas int64,
 	addressHandle int32,
 	functionHandle int32,
 	argumentsHandle int32,
 	resultHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	metering := host.Metering()
 	metering.StartGasTracing(managedExecuteReadOnlyName)
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -800,9 +782,9 @@ func v1_4_managedExecuteReadOnly(
 	return returnVal
 }
 
-//export v1_4_managedExecuteOnSameContext
-func v1_4_managedExecuteOnSameContext(
-	context unsafe.Pointer,
+// ManagedExecuteOnSameContext VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedExecuteOnSameContext(
 	gas int64,
 	addressHandle int32,
 	valueHandle int32,
@@ -810,12 +792,12 @@ func v1_4_managedExecuteOnSameContext(
 	argumentsHandle int32,
 	resultHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	metering := host.Metering()
 	metering.StartGasTracing(managedExecuteOnSameContextName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -832,9 +814,9 @@ func v1_4_managedExecuteOnSameContext(
 	return returnVal
 }
 
-//export v1_4_managedExecuteOnDestContextByCaller
-func v1_4_managedExecuteOnDestContextByCaller(
-	context unsafe.Pointer,
+// ManagedExecuteOnDestContext VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedExecuteOnDestContext(
 	gas int64,
 	addressHandle int32,
 	valueHandle int32,
@@ -842,44 +824,12 @@ func v1_4_managedExecuteOnDestContextByCaller(
 	argumentsHandle int32,
 	resultHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
-	metering := host.Metering()
-	metering.StartGasTracing(managedExecuteOnDestContextByCallerName)
-
-	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
-		return -1
-	}
-
-	lenReturnData := len(host.Output().ReturnData())
-	returnVal := ExecuteOnDestContextByCallerWithTypedArgs(
-		host,
-		gas,
-		vmInput.value,
-		[]byte(vmInput.function),
-		vmInput.destination,
-		vmInput.arguments,
-	)
-	setReturnDataIfExists(host, lenReturnData, resultHandle)
-	return returnVal
-}
-
-//export v1_4_managedExecuteOnDestContext
-func v1_4_managedExecuteOnDestContext(
-	context unsafe.Pointer,
-	gas int64,
-	addressHandle int32,
-	valueHandle int32,
-	functionHandle int32,
-	argumentsHandle int32,
-	resultHandle int32,
-) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	metering := host.Metering()
 	metering.StartGasTracing(managedExecuteOnDestContextName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -896,28 +846,28 @@ func v1_4_managedExecuteOnDestContext(
 	return returnVal
 }
 
-//export v1_4_managedMultiTransferESDTNFTExecute
-func v1_4_managedMultiTransferESDTNFTExecute(
-	context unsafe.Pointer,
+// ManagedMultiTransferESDTNFTExecute VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedMultiTransferESDTNFTExecute(
 	dstHandle int32,
 	tokenTransfersHandle int32,
 	gasLimit int64,
 	functionHandle int32,
 	argumentsHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
 	metering := host.Metering()
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteName)
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
-	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -931,21 +881,21 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 	)
 }
 
-//export v1_4_managedTransferValueExecute
-func v1_4_managedTransferValueExecute(
-	context unsafe.Pointer,
+// ManagedTransferValueExecute VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedTransferValueExecute(
 	dstHandle int32,
 	valueHandle int32,
 	gasLimit int64,
 	functionHandle int32,
 	argumentsHandle int32,
 ) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	metering := host.Metering()
 	metering.StartGasTracing(managedTransferValueExecuteName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
-	if arwen.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -959,13 +909,13 @@ func v1_4_managedTransferValueExecute(
 	)
 }
 
-//export v1_4_managedIsESDTFrozen
-func v1_4_managedIsESDTFrozen(
-	context unsafe.Pointer,
+// ManagedIsESDTFrozen VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedIsESDTFrozen(
 	addressHandle int32,
 	tokenIDHandle int32,
 	nonce int64) int32 {
-	host := arwen.GetVMHost(context)
+	host := context.GetVMHost()
 	return ManagedIsESDTFrozenWithHost(host, addressHandle, tokenIDHandle, nonce)
 }
 
@@ -984,18 +934,18 @@ func ManagedIsESDTFrozenWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1006,9 +956,10 @@ func ManagedIsESDTFrozenWithHost(
 	return 0
 }
 
-//export v1_4_managedIsESDTLimitedTransfer
-func v1_4_managedIsESDTLimitedTransfer(context unsafe.Pointer, tokenIDHandle int32) int32 {
-	host := arwen.GetVMHost(context)
+// ManagedIsESDTLimitedTransfer VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int32 {
+	host := context.GetVMHost()
 	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
 }
 
@@ -1023,7 +974,7 @@ func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1034,9 +985,10 @@ func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32
 	return 0
 }
 
-//export v1_4_managedIsESDTPaused
-func v1_4_managedIsESDTPaused(context unsafe.Pointer, tokenIDHandle int32) int32 {
-	host := arwen.GetVMHost(context)
+// ManagedIsESDTPaused VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
+	host := context.GetVMHost()
 	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
 }
 
@@ -1051,7 +1003,7 @@ func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1062,9 +1014,10 @@ func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
 	return 0
 }
 
-//export v1_4_managedBufferToHex
-func v1_4_managedBufferToHex(context unsafe.Pointer, sourceHandle int32, destHandle int32) {
-	host := arwen.GetVMHost(context)
+// ManagedBufferToHex VMHooks implementation.
+// @autogenerate(VMHooks)
+func (context *ElrondApi) ManagedBufferToHex(sourceHandle int32, destHandle int32) {
+	host := context.GetVMHost()
 	ManagedBufferToHexWithHost(host, sourceHandle, destHandle)
 }
 
@@ -1078,7 +1031,7 @@ func ManagedBufferToHexWithHost(host arwen.VMHost, sourceHandle int32, destHandl
 
 	mBuff, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 

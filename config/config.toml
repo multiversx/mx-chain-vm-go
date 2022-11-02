@@ -14,6 +14,8 @@
     GetExternalBalance = 10
     GetBlockHash       = 10
     GetOriginalTxHash  = 10
+    GetPrevTxHash      = 10
+    GetCurrentTxHash   = 10
     TransferValue      = 10
     GetArgument        = 10
     GetFunction        = 10
@@ -42,6 +44,11 @@
     ExecuteReadOnly      = 10
     AsyncCallStep        = 10
     AsyncCallbackGasLock = 10
+    CreateAsyncCall      = 10
+    SetAsyncCallback     = 10
+    SetAsyncGroupCallback   = 10
+    SetAsyncContextCallback = 10
+    GetCallbackClosure      = 10
     CreateContract       = 10
     GetReturnData        = 10
     GetNumReturnData     = 10

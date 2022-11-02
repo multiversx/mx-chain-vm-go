@@ -3,6 +3,7 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
@@ -11,8 +12,8 @@ import (
 
 // ForwardAsyncCallMultiContractParentMock is an exposed mock contract method
 func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncBuiltInCallTestConfig)
 	instanceMock.AddMockMethod("forwardAsyncCall", func() *mock.InstanceMock {
+		testConfig := config.(*test.TestConfig)
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		t := instance.T
@@ -21,7 +22,11 @@ func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 		function := string(arguments[1])
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
-		host.Metering().UseGas(testConfig.GasUsedByParent)
+		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
+		if err != nil {
+			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			return instance
+		}
 
 		destinationForBuiltInCall := host.Runtime().GetContextAddress()
 
@@ -29,8 +34,10 @@ func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 		callData.Func(function)
 		callData.Bytes(destinationForBuiltInCall)
 		callData.Bytes(arguments[2])
+		callData.Bytes(arguments[3])
 
-		err := host.Runtime().ExecuteAsyncCall(destination, callData.ToBytes(), value)
+		async := host.Async()
+		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		require.Nil(t, err)
 
 		return instance
@@ -39,6 +46,6 @@ func ForwardAsyncCallMultiContractParentMock(instanceMock *mock.InstanceMock, co
 
 // CallBackMultiContractParentMock is an exposed mock contract method
 func CallBackMultiContractParentMock(instanceMock *mock.InstanceMock, config interface{}) {
-	testConfig := config.(*AsyncBuiltInCallTestConfig)
+	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("callBack", test.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByCallback))
 }

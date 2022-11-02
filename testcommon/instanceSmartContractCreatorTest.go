@@ -3,18 +3,20 @@ package testcommon
 import (
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	"github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
 type TestCreateTemplateConfig struct {
-	t             *testing.T
-	address       []byte
-	input         *vmcommon.ContractCreateInput
-	setup         func(arwen.VMHost, *contextmock.BlockchainHookStub)
-	assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
+	t                  *testing.T
+	address            []byte
+	input              *vmcommon.ContractCreateInput
+	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
+	assertResults      func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host               arwen.VMHost
+	blockchainHookStub *contextmock.BlockchainHookStub
 }
 
 // BuildInstanceCreatorTest starts the building process for a contract creation test
@@ -46,19 +48,28 @@ func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(arwen.VMHost, *
 // AndAssertResults provides the function that will aserts the results
 func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
-	callerTest.runTest()
+	callerTest.runTest(true)
 }
 
-func (callerTest *TestCreateTemplateConfig) runTest() {
-	host, stubBlockchainHook := DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+// AndAssertResults provides the function that will aserts the results
+func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	callerTest.assertResults = assertResults
+	callerTest.runTest(false)
+}
+
+func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
+	if callerTest.host == nil {
+		callerTest.host, callerTest.blockchainHookStub = DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+	}
 	defer func() {
-		host.Reset()
+		if reset {
+			callerTest.host.Reset()
+		}
 	}()
 
-	callerTest.setup(host, stubBlockchainHook)
-
-	vmOutput, err := host.RunSmartContractCreate(callerTest.input)
+	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)
 
 	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
-	callerTest.assertResults(stubBlockchainHook, verify)
+	callerTest.assertResults(callerTest.blockchainHookStub, verify)
 }

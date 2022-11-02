@@ -7,6 +7,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
@@ -16,6 +17,7 @@ import (
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -70,47 +72,33 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	blockGasLimit := uint64(10000000)
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(ae.World, &arwen.VMHostParameters{
-		VMType:                   TestVMType,
-		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
-		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
-		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField:         true,
-			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
-			IsFixOOGReturnCodeFlagEnabledField:                   true,
-			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
-			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
-			IsManagedCryptoAPIsFlagEnabledField:                  true,
-			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
-			IsRefactorContextFlagEnabledField:                    true,
-			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-			IsDisableExecByCallerFlagEnabledField:                true,
-			IsESDTTransferRoleFlagEnabledField:                   true,
-			IsGlobalMintBurnFlagEnabledField:                     true,
-			IsTransferToMetaFlagEnabledField:                     true,
-			IsCheckFrozenCollectionFlagEnabledField:              true,
-			IsFixAsyncCallbackCheckFlagEnabledField:              true,
-			IsESDTNFTImprovementV1FlagEnabledField:               true,
-			IsSaveToSystemAccountFlagEnabledField:                true,
-			IsValueLengthCheckFlagEnabledField:                   true,
-			IsSCDeployFlagEnabledField:                           true,
-			IsRepairCallbackFlagEnabledField:                     true,
-			IsAheadOfTimeGasUsageFlagEnabledField:                true,
-			IsCheckFunctionArgumentFlagEnabledField:              true,
-			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
-		},
-		WasmerSIGSEGVPassthrough: false,
-	})
+
+	executor, err := wasmer.NewExecutor()
+	if err != nil {
+		return err
+	}
+
+	vm, err := arwenHost.NewArwenVM(
+		ae.World,
+		executor,
+		&arwen.VMHostParameters{
+			VMType:                   TestVMType,
+			BlockGasLimit:            blockGasLimit,
+			GasSchedule:              gasSchedule,
+			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
+			ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),
+			WasmerSIGSEGVPassthrough: false,
+		})
 	if err != nil {
 		return err
 	}
 
 	ae.vm = vm
 	ae.vmHost = vm
+	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	return nil
 }
 

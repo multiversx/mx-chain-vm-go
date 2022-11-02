@@ -142,6 +142,7 @@ func (b *MockWorld) CommunicationIdentifier(destShardID uint32) string {
 
 // GetSnapshot -
 func (b *MockWorld) GetSnapshot() int {
+	b.CreateStateBackup()
 	return b.AccountsAdapter.JournalLen()
 }
 

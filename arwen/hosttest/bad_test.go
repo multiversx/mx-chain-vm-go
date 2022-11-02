@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 )
@@ -97,7 +98,7 @@ func TestBadContract_NoPanic_BadWriteLog1(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrors("GuardedMakeByteSlice2D")
+				HasRuntimeErrors("negative length")
 		})
 }
 
@@ -116,7 +117,7 @@ func TestBadContract_NoPanic_BadWriteLog2(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrors("mem load: negative length")
+				HasRuntimeErrors("negative length")
 		})
 }
 
@@ -247,6 +248,6 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				FunctionNotFound().
-				HasRuntimeErrorAndInfo(arwen.ErrInvalidFunction.Error(), "thisDoesNotExist")
+				HasRuntimeErrorAndInfo(executor.ErrInvalidFunction.Error(), "thisDoesNotExist")
 		})
 }
