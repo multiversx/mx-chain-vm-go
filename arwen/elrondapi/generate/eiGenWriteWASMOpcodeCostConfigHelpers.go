@@ -30,6 +30,6 @@ func WriteWASMOpcodeCostConfigHelpers(out *os.File) {
 
 	for fileScanner.Scan() {
 		opcode := fileScanner.Text()
-		out.WriteString(fmt.Sprintf("%s = 1\n", opcode))
+		out.WriteString(fmt.Sprintf("    %s = 1\n", opcode))
 	}
 }
