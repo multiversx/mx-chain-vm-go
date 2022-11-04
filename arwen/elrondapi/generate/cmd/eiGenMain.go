@@ -60,6 +60,7 @@ func main() {
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeOpcodeCost()
+	writeOpcodeCostFuncHelpers()
 	writeRustOpcodeCost()
 	writeRustWasmerMeteringHelpers()
 
@@ -187,6 +188,15 @@ func writeOpcodeCost() {
 	}
 	defer out.Close()
 	eapigen.WriteOpcodeCost(out)
+}
+
+func writeOpcodeCostFuncHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/extractOpcodeCost.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteOpcodeCostFuncHelpers(out)
 }
 
 func writeRustOpcodeCost() {
