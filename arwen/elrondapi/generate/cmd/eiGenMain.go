@@ -57,6 +57,8 @@ func main() {
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
 	writeWASMOpcodeCost()
+	writeWASMOpcodeCostFuncHelpers()
+	writeWASMOpcodeCostConfigHelpers()
 	writeRustWasmerOpcodeCost()
 	writeRustWasmerMeteringHelpers()
 
@@ -157,6 +159,24 @@ func writeWASMOpcodeCost() {
 	}
 	defer out.Close()
 	eapigen.WriteWASMOpcodeCost(out)
+}
+
+func writeWASMOpcodeCostFuncHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/FillGasMap_WASMOpcodeCosts.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteWASMOpcodeCostFuncHelpers(out)
+}
+
+func writeWASMOpcodeCostConfigHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/config.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteWASMOpcodeCostConfigHelpers(out)
 }
 
 func writeRustWasmerOpcodeCost() {

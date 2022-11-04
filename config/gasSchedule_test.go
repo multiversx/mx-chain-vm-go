@@ -64,7 +64,7 @@ func TestDecode_ArwenGas(t *testing.T) {
 }
 
 func TestDecode_ZeroGasCostError(t *testing.T) {
-	gasMap := FillGasMap_WASMOpcodeValues(1)
+	gasMap := FillGasMap_WASMOpcodeCosts(1)
 
 	wasmCosts := &executor.WASMOpcodeCost{}
 	err := mapstructure.Decode(gasMap, wasmCosts)
@@ -79,24 +79,5 @@ func TestDecode_ZeroGasCostError(t *testing.T) {
 	assert.Nil(t, err)
 
 	err = checkForZeroUint64Fields(*wasmCosts)
-	assert.Error(t, err)
-}
-
-func TestDecode_Wasmer2_ZeroGasCostError(t *testing.T) {
-	gasMap := FillGasMap_OpcodeCostWasmer2(3)
-
-	costs := &executor.OpcodeCostWasmer2{}
-	err := mapstructure.Decode(gasMap, costs)
-	assert.Nil(t, err)
-
-	err = checkForZeroUint64Fields(*costs)
-	assert.Nil(t, err)
-
-	gasMap["Unreachable"] = 0
-	costs = &executor.OpcodeCostWasmer2{}
-	err = mapstructure.Decode(gasMap, costs)
-	assert.Nil(t, err)
-
-	err = checkForZeroUint64Fields(*costs)
 	assert.Error(t, err)
 }
