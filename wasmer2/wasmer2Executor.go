@@ -19,6 +19,8 @@ type Wasmer2Executor struct {
 	vmHooks        executor.VMHooks
 	vmHooksPtr     uintptr
 	vmHooksPtrPtr  unsafe.Pointer
+
+	opcodeCost OpcodeCost
 }
 
 // NewExecutor creates a new wasmer executor.
@@ -50,10 +52,10 @@ func NewExecutor() (*Wasmer2Executor, error) {
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
 func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *config.WASMOpcodeCost) {
 	// extract only wasmer2 opcodes
-	opcodeCost := wasmerExecutor.extractOpcodeCost(wasmOps)
+	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
 	cWasmerExecutorSetOpcodeCost(
 		wasmerExecutor.cgoExecutor,
-		(*cWasmerOpcodeCostT)(unsafe.Pointer(&opcodeCost)),
+		(*cWasmerOpcodeCostT)(unsafe.Pointer(&wasmerExecutor.opcodeCost)),
 	)
 }
 
