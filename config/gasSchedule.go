@@ -890,8 +890,11 @@ func FillGasMap_WASMOpcodeCosts(value uint64) map[string]uint64 {
 	gasMap["LocalGet"] = value
 	gasMap["LocalSet"] = value
 	gasMap["LocalTee"] = value
+	gasMap["LocalAllocate"] = value
 	gasMap["LocalsUnmetered"] = value
 	gasMap["Loop"] = value
+	gasMap["MaxMemoryGrow"] = value
+	gasMap["MaxMemoryGrowDelta"] = value
 	gasMap["MemoryAtomicNotify"] = value
 	gasMap["MemoryAtomicWait32"] = value
 	gasMap["MemoryAtomicWait64"] = value

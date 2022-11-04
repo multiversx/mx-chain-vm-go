@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
@@ -28,13 +29,8 @@ func NewExecutor() (*WasmerExecutor, error) {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
+func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
 	SetOpcodeCosts(opcodeCosts)
-}
-
-// SetOpcodeCostWasmer2 sets gas costs globally inside the Wasmer2 executor.
-func (wasmerExecutor *WasmerExecutor) SetOpcodeCostWasmer2(opcodeCost *executor.OpcodeCostWasmer2) {
-	// panic("SetOpcodeCostWasmer2 not implemented for Wasmer1")
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.

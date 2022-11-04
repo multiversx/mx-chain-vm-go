@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 )
@@ -66,7 +65,7 @@ func TestDecode_ArwenGas(t *testing.T) {
 func TestDecode_ZeroGasCostError(t *testing.T) {
 	gasMap := FillGasMap_WASMOpcodeCosts(1)
 
-	wasmCosts := &executor.WASMOpcodeCost{}
+	wasmCosts := &WASMOpcodeCost{}
 	err := mapstructure.Decode(gasMap, wasmCosts)
 	assert.Nil(t, err)
 
@@ -74,7 +73,7 @@ func TestDecode_ZeroGasCostError(t *testing.T) {
 	assert.Nil(t, err)
 
 	gasMap["BrIf"] = 0
-	wasmCosts = &executor.WASMOpcodeCost{}
+	wasmCosts = &WASMOpcodeCost{}
 	err = mapstructure.Decode(gasMap, wasmCosts)
 	assert.Nil(t, err)
 

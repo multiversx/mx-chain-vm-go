@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
@@ -23,11 +24,7 @@ func NewExecutorRecorderMock() *ExecutorRecorderMock {
 	}
 }
 
-func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
-	wasmer.SetOpcodeCosts(opcodeCosts)
-}
-
-func (executorMock *ExecutorRecorderMock) SetOpcodeCostWasmer2(opcodeCosts *executor.OpcodeCostWasmer2) {
+func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
 }
 
 // SetRkyvSerializationEnabled controls a Wasmer flag.

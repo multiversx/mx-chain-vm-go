@@ -494,8 +494,11 @@ type WASMOpcodeCost struct {
 	LocalGet                      uint32
 	LocalSet                      uint32
 	LocalTee                      uint32
+	LocalAllocate                 uint32
 	LocalsUnmetered               uint32
 	Loop                          uint32
+	MaxMemoryGrow                 uint32
+	MaxMemoryGrowDelta            uint32
 	MemoryAtomicNotify            uint32
 	MemoryAtomicWait32            uint32
 	MemoryAtomicWait64            uint32

@@ -485,8 +485,11 @@ If
 LocalGet
 LocalSet
 LocalTee
+LocalAllocate
 LocalsUnmetered
 Loop
+MaxMemoryGrow
+MaxMemoryGrowDelta
 MemoryAtomicNotify
 MemoryAtomicWait32
 MemoryAtomicWait64
