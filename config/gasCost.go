@@ -8,7 +8,7 @@ type GasCost struct {
 	ElrondAPICost        ElrondAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
-	WASMOpcodeCost       WASMOpcodeCost
+	WASMOpcodeCost       *WASMOpcodeCost
 }
 
 type BaseOperationCost struct {

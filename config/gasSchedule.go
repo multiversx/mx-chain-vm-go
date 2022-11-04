@@ -111,7 +111,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		ElrondAPICost:        *elrondOps,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
-		WASMOpcodeCost:       *wasmOps,
+		WASMOpcodeCost:       wasmOps,
 	}
 
 	return gasCost, nil

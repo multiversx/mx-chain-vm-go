@@ -59,6 +59,8 @@ func main() {
 	writeWASMOpcodeCost()
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
+	writeOpcodeCostWasmer1()
+	writeOpcodeCostWasmer2()
 	writeRustWasmerOpcodeCost()
 	writeRustWasmerMeteringHelpers()
 
@@ -177,6 +179,24 @@ func writeWASMOpcodeCostConfigHelpers() {
 	}
 	defer out.Close()
 	eapigen.WriteWASMOpcodeCostConfigHelpers(out)
+}
+
+func writeOpcodeCostWasmer1() {
+	out, err := os.Create(pathToElrondApiPackage + "../../wasmer/opcodeCost.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteOpcodeCostWasmer1(out)
+}
+
+func writeOpcodeCostWasmer2() {
+	out, err := os.Create(pathToElrondApiPackage + "../../wasmer2/opcodeCost.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteOpcodeCostWasmer2(out)
 }
 
 func writeRustWasmerOpcodeCost() {
