@@ -60,7 +60,7 @@ func main() {
 	writeWASMOpcodeCostFuncHelpers()
 	writeWASMOpcodeCostConfigHelpers()
 	writeOpcodeCost()
-	writeRustWasmerOpcodeCost()
+	writeRustOpcodeCost()
 	writeRustWasmerMeteringHelpers()
 
 	fmt.Println("Generated code for opcodes and metering helpers.")
@@ -189,13 +189,13 @@ func writeOpcodeCost() {
 	eapigen.WriteOpcodeCost(out)
 }
 
-func writeRustWasmerOpcodeCost() {
+func writeRustOpcodeCost() {
 	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/opcode_cost.rs")
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
-	eapigen.WriteRustWasmerOpcodeCost(out)
+	eapigen.WriteRustOpcodeCost(out)
 }
 
 func writeRustWasmerMeteringHelpers() {
