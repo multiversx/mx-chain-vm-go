@@ -20,7 +20,7 @@ type Wasmer2Executor struct {
 	vmHooksPtr     uintptr
 	vmHooksPtrPtr  unsafe.Pointer
 
-	opcodeCost OpcodeCost
+	opcodeCost *OpcodeCost
 }
 
 // NewExecutor creates a new wasmer executor.
@@ -55,7 +55,7 @@ func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *config.WASMOpcode
 	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
 	cWasmerExecutorSetOpcodeCost(
 		wasmerExecutor.cgoExecutor,
-		(*cWasmerOpcodeCostT)(unsafe.Pointer(&wasmerExecutor.opcodeCost)),
+		(*cWasmerOpcodeCostT)(unsafe.Pointer(wasmerExecutor.opcodeCost)),
 	)
 }
 
@@ -131,8 +131,8 @@ func (wasmerExecutor *Wasmer2Executor) GetVMHooks() executor.VMHooks {
 	return wasmerExecutor.vmHooks
 }
 
-func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *config.WASMOpcodeCost) OpcodeCost {
-	return OpcodeCost{
+func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *config.WASMOpcodeCost) *OpcodeCost {
+	return &OpcodeCost{
 		AtomicFence:               wasmOps.AtomicFence,
 		Block:                     wasmOps.Block,
 		Br:                        wasmOps.Br,

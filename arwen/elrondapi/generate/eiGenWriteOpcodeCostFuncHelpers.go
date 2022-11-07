@@ -18,8 +18,8 @@ func WriteOpcodeCostFuncHelpers(out *os.File) {
 // !!!!!!!!!!!!!!! USE IN wasmer2/wasmer2Executor.go !!!!!!!!!!!!!!!
 
 `)
-	out.WriteString("func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *config.WASMOpcodeCost) OpcodeCost {\n")
-	out.WriteString("\treturn OpcodeCost {\n")
+	out.WriteString("func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *config.WASMOpcodeCost) *OpcodeCost {\n")
+	out.WriteString("\treturn &OpcodeCost {\n")
 
 	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
 	if err != nil {

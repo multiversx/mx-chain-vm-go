@@ -150,6 +150,8 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["ManagedBufferAPICost"] = FillGasMap_ManagedBufferAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMap_WASMOpcodeCosts(value)
 
+	customFillGasMap_WASMOpcodeCosts(gasMap["WASMOpcodeCost"])
+
 	return gasMap
 }
 
@@ -966,4 +968,10 @@ func FillGasMap_WASMOpcodeCosts(value uint64) map[string]uint64 {
 
 func MakeGasMapForTests() GasScheduleMap {
 	return MakeGasMap(GasValueForTests, AsyncCallbackGasLockForTests)
+}
+
+func customFillGasMap_WASMOpcodeCosts(gasMap map[string]uint64) {
+	gasMap["LocalsUnmetered"] = 100
+	gasMap["MaxMemoryGrow"] = 8
+	gasMap["MaxMemoryGrowDelta"] = 10
 }
