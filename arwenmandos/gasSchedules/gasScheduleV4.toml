@@ -693,7 +693,6 @@
     V8x16LoadSplat = 40
     V8x16Shuffle = 1200
     V8x16Swizzle = 1200
-    # calibrate below then sort
     Catch = 1
     CatchAll = 1
     Delegate = 1
