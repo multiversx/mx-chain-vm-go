@@ -1,0 +1,9 @@
+[
+    "writeLog",
+    "getSCAddress",
+    "getBlockHash",
+    "bigIntNew",
+    "bigIntStorageStoreUnsigned",
+    "bigIntFinishUnsigned"
+]
+
