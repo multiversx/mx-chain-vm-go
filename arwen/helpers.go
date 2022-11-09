@@ -5,12 +5,14 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"unsafe"
 
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // Zero is the big integer 0
@@ -18,6 +20,8 @@ var Zero = big.NewInt(0)
 
 // One is the big integer 1
 var One = big.NewInt(1)
+
+var log = logger.GetOrCreate("arwen/host")
 
 // CustomStorageKey appends the given key type to the given associated key
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
@@ -141,6 +145,18 @@ type nilInterfaceChecker interface {
 
 // GetVMHost returns the vm Context from the vm context map
 func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
+	skipStackLevels := 2
+	pc, _, _, ok := runtime.Caller(skipStackLevels)
+	if ok {
+		callerDetails := runtime.FuncForPC(pc)
+		if callerDetails != nil {
+			funcName := callerDetails.Name()
+			funcNameElements := strings.Split(funcName, "/")
+			funcNameProper := funcNameElements[len(funcNameElements)-1]
+			log.Trace("VM hook called", "name", funcNameProper)
+		}
+	}
+
 	instCtx := wasmer.IntoInstanceContext(vmHostPtr)
 	var ptr = *(*uintptr)(instCtx.Data())
 	return *(*VMHost)(unsafe.Pointer(ptr))
