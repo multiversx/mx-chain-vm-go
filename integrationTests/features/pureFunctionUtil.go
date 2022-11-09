@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
@@ -46,9 +47,13 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
+	executor, err := wasmer.NewExecutor()
+	if err != nil {
+		return nil, err
+	}
 	vm, err := arwenHost.NewArwenVM(
 		world,
-		wasmer.NewExecutor(),
+		executor,
 		&arwen.VMHostParameters{
 			VMType:                   testVMType,
 			BlockGasLimit:            blockGasLimit,
@@ -63,6 +68,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	if err != nil {
 		return nil, err
 	}
+	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	return &pureFunctionExecutor{
 		world: world,
 		vm:    vm,

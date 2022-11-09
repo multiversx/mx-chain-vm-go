@@ -3,11 +3,12 @@ package contexts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 )
 
 var logBlockchain = logger.GetOrCreate("arwen/blockchainContext")
@@ -316,7 +317,7 @@ func (context *blockchainContext) PopSetActiveState() {
 
 	prevSnapshot := context.stateStack[stateStackLen-1]
 	err := context.blockChainHook.RevertToSnapshot(prevSnapshot)
-	if arwen.WithFaultAndHost(context.host, err, true) {
+	if elrondapi.WithFaultAndHost(context.host, err, true) {
 		context.host.Runtime().AddError(err, "RevertToSnapshot")
 		logBlockchain.Error("PopSetActiveState RevertToSnapshot", "error", err)
 		return

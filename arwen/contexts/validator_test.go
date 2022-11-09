@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -11,14 +12,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
-	imports := MakeAPIImports()
+func testImportNames() vmcommon.FunctionNames {
+	importNames := make(vmcommon.FunctionNames)
+	var empty struct{}
+	importNames["getArgument"] = empty
+	importNames["asyncCall"] = empty
+	return importNames
+}
 
+func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 	builtInFuncContainer := builtInFunctions.NewBuiltInFunctionContainer()
 	_ = builtInFuncContainer.Add("protocolFunctionFoo", &mock.BuiltInFunctionStub{})
 	_ = builtInFuncContainer.Add("protocolFunctionBar", &mock.BuiltInFunctionStub{})
 
-	validator := newWASMValidator(imports.Names(), builtInFuncContainer)
+	validator := newWASMValidator(testImportNames(), builtInFuncContainer)
 
 	require.Nil(t, validator.verifyValidFunctionName("foo"))
 	require.Nil(t, validator.verifyValidFunctionName("_"))
@@ -47,12 +54,11 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 
 func TestFunctionsProtected(t *testing.T) {
 	host := InitializeArwenAndWasmer()
-	imports := host.SCAPIMethods
 
-	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
+	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer())
 
 	world := worldmock.NewMockWorld()
-	imb := contextmock.NewInstanceBuilderMock(world)
+	imb := contextmock.NewExecutorMock(world)
 	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
 	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {

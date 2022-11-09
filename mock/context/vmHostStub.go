@@ -1,12 +1,11 @@
 package mock
 
 import (
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ arwen.VMHost = (*VMHostStub)(nil)
@@ -19,22 +18,21 @@ type VMHostStub struct {
 	ClearStateStackCalled func()
 	GetVersionCalled      func() string
 
-	CryptoCalled       func() crypto.VMCrypto
-	BlockchainCalled   func() arwen.BlockchainContext
-	RuntimeCalled      func() arwen.RuntimeContext
-	OutputCalled       func() arwen.OutputContext
-	MeteringCalled     func() arwen.MeteringContext
-	AsyncCalled        func() arwen.AsyncContext
-	StorageCalled      func() arwen.StorageContext
-	EnableEpochsHandlerCalled   func() vmcommon.EnableEpochsHandler
-	GetContextsCalled  func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
-	ManagedTypesCalled func() arwen.ManagedTypesContext
+	CryptoCalled              func() crypto.VMCrypto
+	BlockchainCalled          func() arwen.BlockchainContext
+	RuntimeCalled             func() arwen.RuntimeContext
+	OutputCalled              func() arwen.OutputContext
+	MeteringCalled            func() arwen.MeteringContext
+	AsyncCalled               func() arwen.AsyncContext
+	StorageCalled             func() arwen.StorageContext
+	EnableEpochsHandlerCalled func() vmcommon.EnableEpochsHandler
+	GetContextsCalled         func() (arwen.ManagedTypesContext, arwen.BlockchainContext, arwen.MeteringContext, arwen.OutputContext, arwen.RuntimeContext, arwen.AsyncContext, arwen.StorageContext)
+	ManagedTypesCalled        func() arwen.ManagedTypesContext
 
 	ExecuteESDTTransferCalled   func(destination []byte, sender []byte, transfers []*vmcommon.ESDTTransfer, callType vm.CallType) (*vmcommon.VMOutput, uint64, error)
 	CreateNewContractCalled     func(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContextCalled  func(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContextCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
-	GetAPIMethodsCalled         func() *wasmer.Imports
 	IsBuiltinFunctionNameCalled func(functionName string) bool
 	IsBuiltinFunctionCallCalled func(data []byte) bool
 	AreInSameShardCalled        func(left []byte, right []byte) bool
@@ -214,14 +212,6 @@ func (vhs *VMHostStub) AreInSameShard(left []byte, right []byte) bool {
 		return vhs.AreInSameShardCalled(left, right)
 	}
 	return true
-}
-
-// GetAPIMethods mocked method
-func (vhs *VMHostStub) GetAPIMethods() *wasmer.Imports {
-	if vhs.GetAPIMethodsCalled != nil {
-		return vhs.GetAPIMethodsCalled()
-	}
-	return nil
 }
 
 // IsBuiltinFunctionName mocked method

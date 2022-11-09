@@ -15,10 +15,10 @@ type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
 	Points          uint64
-	Data            uintptr
+	Data            executor.VMHooks
 	GasLimit        uint64
 	BreakpointValue arwen.BreakpointValue
-	Memory          executor.MemoryHandler
+	Memory          executor.Memory
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
@@ -30,7 +30,7 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		Code:            code,
 		Exports:         make(wasmer.ExportsMap),
 		Points:          0,
-		Data:            0,
+		Data:            nil,
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
@@ -50,16 +50,6 @@ func (instance *InstanceMock) AddMockMethod(name string, method func() *Instance
 	}
 
 	instance.Exports[name] = wrappedMethod
-}
-
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
-}
-
-// SetContextData mocked method
-func (instance *InstanceMock) SetContextData(data uintptr) {
-	instance.Data = data
 }
 
 // GetPointsUsed mocked method
@@ -131,18 +121,13 @@ func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
 
-// GetData mocked method
-func (instance *InstanceMock) GetData() uintptr {
-	return instance.Data
-}
-
-// GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executor.MemoryHandler {
-	return instance.Memory
+// HasMemory mocked method
+func (instance *InstanceMock) HasMemory() bool {
+	return true
 }
 
 // GetMemory mocked method
-func (instance *InstanceMock) GetMemory() executor.MemoryHandler {
+func (instance *InstanceMock) GetMemory() executor.Memory {
 	return instance.Memory
 }
 
@@ -158,12 +143,16 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
-// SetMemory mocked method
-func (instance *InstanceMock) SetMemory(_ []byte) bool {
-	return true
-}
-
 // IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+// SetVMHooksPtr mocked method
+func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+}
+
+// GetVMHooksPtr mocked method
+func (instance *InstanceMock) GetVMHooksPtr() uintptr {
+	return 0
 }

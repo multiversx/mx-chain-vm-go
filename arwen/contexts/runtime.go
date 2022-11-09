@@ -6,7 +6,6 @@ import (
 	"fmt"
 	builtinMath "math"
 	"math/big"
-	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/storage"
@@ -26,7 +25,7 @@ const warmCacheSize = 100
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           executor.InstanceHandler
+	instance           executor.Instance
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
 	codeHash           []byte
@@ -40,11 +39,11 @@ type runtimeContext struct {
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
-	instanceStack []executor.InstanceHandler
+	instanceStack []executor.Instance
 
-	validator       *wasmValidator
-	instanceBuilder executor.InstanceBuilder
-	errors          arwen.WrappableError
+	validator  *wasmValidator
+	vmExecutor executor.Executor
+	errors     arwen.WrappableError
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -52,19 +51,19 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
-	vmExecutor executor.InstanceBuilder,
+	vmExecutor executor.Executor,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
 	}
 
-	scAPINames := host.GetAPIMethods().Names()
+	scAPINames := vmExecutor.FunctionNames()
 
 	context := &runtimeContext{
 		host:          host,
 		vmType:        vmType,
 		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]executor.InstanceHandler, 0),
+		instanceStack: make([]executor.Instance, 0),
 		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
 		errors:        nil,
 	}
@@ -75,14 +74,14 @@ func NewRuntimeContext(
 		return nil, err
 	}
 
-	context.instanceBuilder = vmExecutor
+	context.vmExecutor = vmExecutor
 	context.InitState()
 
 	return context, nil
 }
 
 func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(executor.InstanceHandler)
+	instance, ok := value.(executor.Instance)
 	if !ok {
 		return
 	}
@@ -109,10 +108,15 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.instance = nil
 }
 
-// ReplaceInstanceBuilder replaces the instance builder, allowing the creation
+// GetVMExecutor yields the configured contract executor.
+func (context *runtimeContext) GetVMExecutor() executor.Executor {
+	return context.vmExecutor
+}
+
+// ReplaceVMExecutor replaces the executor, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
-func (context *runtimeContext) ReplaceInstanceBuilder(builder executor.InstanceBuilder) {
-	context.instanceBuilder = builder
+func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
+	context.vmExecutor = vmExecutor
 }
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
@@ -161,16 +165,13 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := context.instanceBuilder.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
+	newInstance, err := context.vmExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
 		logRuntime.Error("instance creation", "code", "cached compilation", "error", err)
 		return false
 	}
 
 	context.instance = newInstance
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -189,7 +190,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		Metering:           true,
 		RuntimeBreakpoints: true,
 	}
-	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
+	newInstance, err := context.vmExecutor.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
 		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
@@ -206,9 +207,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 			return err
 		}
 	}
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -238,7 +236,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 		return false
 	}
 
-	instance, ok := cachedObject.(executor.InstanceHandler)
+	instance, ok := cachedObject.(executor.Instance)
 	if !ok {
 		return false
 	}
@@ -254,9 +252,6 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-
-	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
 	return true
 }
@@ -726,7 +721,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 }
 
 // GetInstance returns the current wasmer instance
-func (context *runtimeContext) GetInstance() executor.InstanceHandler {
+func (context *runtimeContext) GetInstance() executor.Instance {
 	return context.instance
 }
 
@@ -816,7 +811,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.instance.GetMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, length)
@@ -871,7 +866,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.instance.GetMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, dataLength)

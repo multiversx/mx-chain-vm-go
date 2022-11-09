@@ -16,16 +16,22 @@ endif
 	cp ./cmd/arwendebug/arwendebug ${ARWENDEBUG_PATH}
 
 test: clean
-	go test -count=1 ./...
-
-test-short:
-	go test -short -count=1 ./...
+	go test ./...
 
 test-v: clean
-	go test -count=1 -v ./...
+	go test ./... -v
 
-test-short-v:
-	go test -short -count=1 -v ./...
+test-serial: clean
+	go test ./... -failfast -p 1
+
+test-short: clean
+	go test ./... -short
+
+test-short-v: clean
+	go test ./... -short -v
+
+test-short-serial:
+	go test ./... -short -failfast -p 1
 
 print-api-costs:
 	@echo "bigIntOps.go:"
@@ -48,6 +54,11 @@ build-test-contracts: build-test-contracts-erdpy build-test-contracts-wat
 
 build-test-contracts-wat:
 	cd test/contracts/init-simple-popcnt && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/data-drop/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/memory-copy/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/memory-fill/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/memory-init/output && wat2wasm *.wat
+	cd test/contracts/forbidden-opcodes/simd/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/imported-global/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-exceeded-max-pages/output && wat2wasm *.wat
 	cd test/contracts/wasmbacking/mem-exceeded-pages/output && wat2wasm *.wat

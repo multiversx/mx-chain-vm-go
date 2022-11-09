@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // StateStack defines the functionality for working with a state stack
@@ -46,7 +45,6 @@ type VMHost interface {
 	CreateNewContract(input *vmcommon.ContractCreateInput) ([]byte, error)
 	ExecuteOnSameContext(input *vmcommon.ContractCallInput) error
 	ExecuteOnDestContext(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, bool, error)
-	GetAPIMethods() *wasmer.Imports
 	IsBuiltinFunctionName(functionName string) bool
 	IsBuiltinFunctionCall(data []byte) bool
 	AreInSameShard(leftAddress []byte, rightAddress []byte) bool
@@ -106,6 +104,8 @@ type BlockchainContext interface {
 type RuntimeContext interface {
 	StateStack
 
+	GetVMExecutor() executor.Executor
+	ReplaceVMExecutor(exec executor.Executor)
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.ContractCallInput
@@ -134,7 +134,7 @@ type RuntimeContext interface {
 	ClearWarmInstanceCache()
 	SetMaxInstanceCount(uint64)
 	VerifyContractCode() error
-	GetInstance() executor.InstanceHandler
+	GetInstance() executor.Instance
 	FunctionNameChecked() (string, error)
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
@@ -156,8 +156,6 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
-
-	ReplaceInstanceBuilder(builder executor.InstanceBuilder)
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
