@@ -2,6 +2,8 @@ package arwenmandos
 
 import (
 	"fmt"
+	"runtime"
+	"strings"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
@@ -109,6 +111,17 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 
 // GetVMHost returns de vm Context from the vm context map
 func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
+	skipStackLevels := 2
+	pc, _, _, ok := runtime.Caller(skipStackLevels)
+	if ok {
+		callerDetails := runtime.FuncForPC(pc)
+		if callerDetails != nil {
+			funcName := callerDetails.Name()
+			funcNameElements := strings.Split(funcName, "/")
+			funcNameProper := funcNameElements[len(funcNameElements)-1]
+			log.Trace("VM hook called", "name", funcNameProper)
+		}
+	}
 	return ae.vmHost
 }
 
