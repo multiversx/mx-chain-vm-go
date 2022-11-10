@@ -150,3 +150,8 @@ func (b *MockWorld) GetSnapshot() int {
 func (b *MockWorld) RevertToSnapshot(snapshot int) error {
 	return b.AccountsAdapter.RevertToSnapshot(snapshot)
 }
+
+// ExecuteSmartContractCallOnOtherVM -
+func (b *MockWorld) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return &vmcommon.VMOutput{}, nil
+}

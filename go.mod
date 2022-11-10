@@ -18,3 +18,5 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
+
+replace github.com/ElrondNetwork/elrond-vm-common v1.3.25-0.20221027135829-abf3f6b8b9f2 => /home/bogdan/Elrond/elrond-vm-common
