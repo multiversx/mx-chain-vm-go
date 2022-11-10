@@ -13,7 +13,6 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
@@ -173,8 +172,6 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 
 	context.instance = newInstance
-
-	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 
 	context.saveWarmInstance()
@@ -210,8 +207,6 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 			return err
 		}
 	}
-
-	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -257,7 +252,6 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	context.instance.SetVMHooks(elrondapi.NewElrondApi(context.host))
 	context.verifyCode = false
 	return true
 }
@@ -817,7 +811,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.instance.GetMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, length)
@@ -872,7 +866,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.instance.GetMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, dataLength)

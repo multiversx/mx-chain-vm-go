@@ -52,21 +52,6 @@ func (instance *InstanceMock) AddMockMethod(name string, method func() *Instance
 	instance.Exports[name] = wrappedMethod
 }
 
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
-}
-
-// SetVMHooks mocked method
-func (instance *InstanceMock) SetVMHooks(callbacks executor.VMHooks) {
-	instance.Data = callbacks
-}
-
-// GetVMHooks mocked method
-func (instance *InstanceMock) GetVMHooks() executor.VMHooks {
-	return instance.Data
-}
-
 // GetPointsUsed mocked method
 func (instance *InstanceMock) GetPointsUsed() uint64 {
 	return instance.Points
@@ -136,9 +121,9 @@ func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
 	return nil
 }
 
-// GetInstanceCtxMemory mocked method
-func (instance *InstanceMock) GetInstanceCtxMemory() executor.Memory {
-	return instance.Memory
+// HasMemory mocked method
+func (instance *InstanceMock) HasMemory() bool {
+	return true
 }
 
 // GetMemory mocked method
@@ -158,12 +143,16 @@ func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	return instance
 }
 
-// SetMemory mocked method
-func (instance *InstanceMock) SetMemory(_ []byte) bool {
-	return true
-}
-
 // IsInterfaceNil mocked method
 func (instance *InstanceMock) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+// SetVMHooksPtr mocked method
+func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+}
+
+// GetVMHooksPtr mocked method
+func (instance *InstanceMock) GetVMHooksPtr() uintptr {
+	return 0
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
@@ -179,6 +180,7 @@ func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte,
 	host, _ := DefaultTestArwenForCall(tb, code, balance)
 
 	executorRecorderMock := contextmock.NewExecutorRecorderMock()
+	executorRecorderMock.InitVMHooks(elrondapi.NewElrondApi(host))
 	host.Runtime().ReplaceVMExecutor(executorRecorderMock)
 
 	return host, executorRecorderMock
@@ -356,6 +358,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 			},
 			WasmerSIGSEGVPassthrough: false,
 		})
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 
@@ -412,6 +415,7 @@ func DefaultTestArwenWithGasSchedule(
 			},
 			WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
 		})
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
 

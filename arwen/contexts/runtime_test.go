@@ -11,6 +11,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
@@ -27,8 +28,7 @@ var vmType = []byte("type")
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
-	opcodeCosts := gasCostConfig.WASMOpcodeCost.ToOpcodeCostsArray()
-	wasmer.SetOpcodeCosts(&opcodeCosts)
+	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
 
 	host := &contextmock.VMHostMock{}
 
@@ -43,6 +43,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 
 func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
 	executor, err := wasmer.NewExecutor()
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	require.Nil(t, err)
 	runtimeContext, err := NewRuntimeContext(
 		host,
@@ -288,6 +289,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	vmType := []byte("type")
 	executor, _ := wasmer.NewExecutor()
+	executor.InitVMHooks(elrondapi.NewElrondApi(host))
 	runtime, _ := NewRuntimeContext(
 		host,
 		vmType,

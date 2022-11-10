@@ -7,8 +7,6 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/wasm-vm/executor"
-
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
@@ -87,11 +85,10 @@ type WasmerInstance struct {
 	// The exported memory of a WebAssembly instance.
 	Memory executor.Memory
 
-	callbacks       executor.VMHooks
-	callbacksPtr    uintptr
-	callbacksPtrPtr unsafe.Pointer
-
+	// The instance context.
 	InstanceCtx InstanceContext
+
+	vmHooksPtr unsafe.Pointer
 }
 
 func newWrappedError(target error) error {
@@ -164,11 +161,6 @@ func newInstance(c_instance *cWasmerInstanceT) (*WasmerInstance, error) {
 	return &WasmerInstance{instance: c_instance, exports: exports, signatures: signatures, Memory: &memory}, nil
 }
 
-// HasMemory checks whether the instance has at least one exported memory.
-func (instance *WasmerInstance) HasMemory() bool {
-	return nil != instance.Memory
-}
-
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
@@ -200,26 +192,6 @@ func NewInstanceFromCompiledCodeWithOptions(
 	}
 
 	return instance, err
-}
-
-// SetVMHooks assigns a data that can be used by all imported
-// functions. Indeed, each imported function receives as its first
-// argument an instance context (see `InstanceContext`). An instance
-// context can hold a pointer to any kind of data. It is important to
-// understand that this data is shared by all imported function, it's
-// global to the instance.
-func (instance *WasmerInstance) SetVMHooks(callbacks executor.VMHooks) {
-	instance.callbacks = callbacks
-	// This has to be a local variable, to fool Go into thinking this has nothing to do with the other structures.
-	localPtr := uintptr(unsafe.Pointer(&instance.callbacks))
-	instance.callbacksPtr = localPtr
-	instance.callbacksPtrPtr = unsafe.Pointer(&localPtr)
-	cWasmerInstanceContextDataSet(instance.instance, instance.callbacksPtrPtr)
-}
-
-// GetVMHooks returns a pointer for the current instance's data
-func (instance *WasmerInstance) GetVMHooks() executor.VMHooks {
-	return instance.callbacks
 }
 
 // Clean cleans instance
@@ -316,9 +288,9 @@ func (instance *WasmerInstance) ValidateVoidFunction(functionName string) error 
 	return instance.verifyVoidFunction(functionName)
 }
 
-// GetInstanceCtxMemory returns the memory for the instance context
-func (instance *WasmerInstance) GetInstanceCtxMemory() executor.Memory {
-	return instance.InstanceCtx.Memory()
+// HasMemory checks whether the instance has at least one exported memory.
+func (instance *WasmerInstance) HasMemory() bool {
+	return nil != instance.Memory
 }
 
 // GetMemory returns the memory for the instance
@@ -332,26 +304,17 @@ func (instance *WasmerInstance) Reset() bool {
 	return result == cWasmerOk
 }
 
-// SetMemory sets the memory for the instance returns true if success
-func (instance *WasmerInstance) SetMemory(data []byte) bool {
-	if instance.instance == nil {
-		return false
-	}
-
-	if check.IfNil(instance.GetMemory()) {
-		return false
-	}
-
-	memory := instance.GetMemory().Data()
-	if len(memory) != len(data) {
-		return false
-	}
-
-	copy(memory, data)
-	return true
-}
-
 // IsInterfaceNil returns true if underlying object is nil
 func (instance *WasmerInstance) IsInterfaceNil() bool {
 	return instance == nil
+}
+
+func (instance *WasmerInstance) SetVMHooksPtr(vmHooksPtr uintptr) {
+	localVMHooksPointer := unsafe.Pointer(&vmHooksPtr)
+	instance.vmHooksPtr = localVMHooksPointer
+	cWasmerInstanceContextDataSet(instance.instance, localVMHooksPointer)
+}
+
+func (instance *WasmerInstance) GetVMHooksPtr() uintptr {
+	return *(*uintptr)(instance.vmHooksPtr)
 }

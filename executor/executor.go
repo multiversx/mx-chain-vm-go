@@ -1,6 +1,8 @@
 package executor
 
-import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+)
 
 // CompilationOptions contains configurations for instantiating an executor instance.
 type CompilationOptions struct {
@@ -13,13 +15,10 @@ type CompilationOptions struct {
 	RuntimeBreakpoints bool
 }
 
-// OpcodeCount is the number of opcodes that we account for when setting gas costs.
-const OpcodeCount = 448
-
 // Executor defines the functionality needed to create any executor instance.
 type Executor interface {
 	// SetOpcodeCosts sets gas costs globally inside an executor.
-	SetOpcodeCosts(opcodeCosts *[OpcodeCount]uint32)
+	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
 
 	// SetRkyvSerializationEnabled controls a Wasmer flag.
 	SetRkyvSerializationEnabled(enabled bool)
@@ -39,4 +38,10 @@ type Executor interface {
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
+
+	// GetVMHooks returns the VM hooks.
+	GetVMHooks() VMHooks
+
+	// InitVMHooks inits the VM hooks.
+	InitVMHooks(vmHooks VMHooks)
 }
