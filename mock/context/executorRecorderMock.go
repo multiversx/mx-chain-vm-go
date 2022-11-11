@@ -4,6 +4,8 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
@@ -17,10 +19,12 @@ type ExecutorRecorderMock struct {
 }
 
 // NewExecutorRecorderMock constructs a new InstanceBuilderRecorderMock
-func NewExecutorRecorderMock() *ExecutorRecorderMock {
-	return &ExecutorRecorderMock{
+func NewExecutorRecorderMock(host arwen.VMHost) *ExecutorRecorderMock {
+	executorMock := &ExecutorRecorderMock{
 		InstanceMap: make(map[string][]executor.Instance),
 	}
+	executorMock.InitVMHooks(elrondapi.NewElrondApi(host))
+	return executorMock
 }
 
 func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
