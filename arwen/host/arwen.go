@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
@@ -161,6 +162,9 @@ func NewArwenVM(
 	if hostParameters.WasmerSIGSEGVPassthrough {
 		vmExecutor.SetSIGSEGVPassthrough()
 	}
+
+	vmHooks := elrondapi.NewElrondApi(host)
+	vmExecutor.InitVMHooks(vmHooks)
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
