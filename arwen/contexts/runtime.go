@@ -133,6 +133,10 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	context.codeHash = codeHash
 
+	defer func() {
+		logRuntime.Trace("warm cache size after starting instance", "size", context.warmInstanceCache.Len())
+	}()
+
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		return nil
