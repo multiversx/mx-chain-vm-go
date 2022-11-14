@@ -38,6 +38,7 @@ type runtimeContext struct {
 	maxWasmerInstances uint64
 
 	warmInstanceCache storage.Cacher
+	usingWarmInstance bool
 
 	stateStack    []*runtimeContext
 	instanceStack []wasmer.InstanceHandler
@@ -101,6 +102,7 @@ func (context *runtimeContext) InitState() {
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
 	context.errors = nil
+	context.usingWarmInstance = false
 
 	logRuntime.Trace("init state")
 }
@@ -109,6 +111,7 @@ func (context *runtimeContext) InitState() {
 func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.warmInstanceCache.Clear()
 	context.instance = nil
+	context.usingWarmInstance = false
 }
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
@@ -119,6 +122,7 @@ func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuil
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
+	context.usingWarmInstance = false
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
 		context.instance = nil
 		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
@@ -260,6 +264,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
+	context.usingWarmInstance = true
 	return true
 }
 
@@ -296,14 +301,28 @@ func (context *runtimeContext) saveCompiledCode() {
 
 func (context *runtimeContext) saveWarmInstance() {
 	if context.isContractOrCodeHashOnTheStack() {
+		context.usingWarmInstance = false
 		return
 	}
 
+	context.usingWarmInstance = true
 	context.warmInstanceCache.Put(
 		context.codeHash,
 		context.instance,
 		1,
 	)
+}
+
+func (context *runtimeContext) deleteWarmInstance() {
+	// If the current contract / code hash was already on the instance stack, it
+	// means it was not saved as a new warm instance (see
+	// context.saveWarmInstance()).
+	if context.isContractOrCodeHashOnTheStack() {
+		return
+	}
+
+	context.warmInstanceCache.Remove(context.codeHash)
+	logRuntime.Trace("instance removed from warm cache")
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -344,12 +363,13 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 // includes the currently running Wasmer instance.
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
-		codeAddress:      context.codeAddress,
-		codeHash:         context.codeHash,
-		callFunction:     context.callFunction,
-		readOnly:         context.readOnly,
-		asyncCallInfo:    context.asyncCallInfo,
-		asyncContextInfo: context.asyncContextInfo,
+		codeAddress:       context.codeAddress,
+		codeHash:          context.codeHash,
+		callFunction:      context.callFunction,
+		readOnly:          context.readOnly,
+		asyncCallInfo:     context.asyncCallInfo,
+		asyncContextInfo:  context.asyncContextInfo,
+		usingWarmInstance: context.usingWarmInstance,
 	}
 	newState.SetVMInput(context.vmInput)
 
@@ -383,6 +403,7 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
 	context.asyncContextInfo = prevState.asyncContextInfo
+	context.usingWarmInstance = prevState.usingWarmInstance
 	context.popInstance(lastCodeHash)
 }
 
@@ -903,9 +924,13 @@ func (context *runtimeContext) CleanInstance() {
 		return
 	}
 
-	context.instance.Clean()
-	context.instance = nil
+	if context.usingWarmInstance {
+		context.deleteWarmInstance()
+	} else {
+		context.instance.Clean()
+	}
 
+	context.instance = nil
 	logRuntime.Trace("instance cleaned")
 	return
 }

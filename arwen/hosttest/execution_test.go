@@ -3190,6 +3190,16 @@ func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
 			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
 		})
 
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
 	testCase.WithInput(vmInputOk).
 		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")

@@ -94,6 +94,10 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	vmOutput := output.GetVMOutput()
+	if vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+		runtime.CleanInstance()
+	}
+
 	return vmOutput, nil
 }
 
@@ -186,12 +190,19 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	err = host.callSCMethod()
 	if err != nil {
 		log.Trace("doRunSmartContractCall", "error", err)
-		return output.CreateVMOutputInCaseOfError(err)
+
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		if vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+			runtime.CleanInstance()
+		}
+
+		return vmOutput
 	}
 
 	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
 		output.RemoveNonUpdatedStorage()
 	}
+
 	vmOutput = output.GetVMOutput()
 
 	log.Trace("doRunSmartContractCall finished",
