@@ -232,6 +232,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
+	return false
+
 	if newCode || len(context.codeHash) == 0 {
 		return false
 	}
