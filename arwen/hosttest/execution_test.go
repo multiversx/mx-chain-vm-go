@@ -357,7 +357,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	interHostsChan := make(chan string)
 	host1Chan := make(chan string)
 
-	host1, _ := test.DefaultTestArwenForCall(t, code, nil)
+	host1 := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Host()
 	defer func() {
 		host1.Reset()
 	}()
@@ -369,7 +371,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
+	host2 := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Host()
 	defer func() {
 		host2.Reset()
 	}()
@@ -464,7 +468,9 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 
 	log := logger.GetOrCreate("arwen/test")
 
-	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
+		Host()
 	defer func() {
 		host.Reset()
 	}()
@@ -499,7 +505,9 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 
 	log := logger.GetOrCreate("arwen/test")
 
-	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
+		Host()
 	defer func() {
 		host.Reset()
 	}()
@@ -1970,7 +1978,10 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// Initialize the VM with the parent SC and child SC, but without really
 	// executing the parent. The initialization emulates the behavior of
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
-	host, _ := test.DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForTwoSCs(parentCode, childCode, nil, nil)).
+		Host()
+
 	defer func() {
 		host.Reset()
 	}()
@@ -2283,7 +2294,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
-	host := test.DefaultTestArwen(t, world)
+	host := test.NewTestHostBuilder(t).WithBlockchainHook(world).Host()
 	defer func() {
 		host.Reset()
 	}()
@@ -2325,7 +2336,7 @@ func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 
 func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
-	host := test.DefaultTestArwen(t, world)
+	host := test.NewTestHostBuilder(t).WithBlockchainHook(world).Host()
 	defer func() {
 		host.Reset()
 	}()
