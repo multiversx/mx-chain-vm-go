@@ -4,16 +4,18 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
-type ExecutorRecorderMockFactory struct{}
+// ExecutorRecorderMockFactory is the factory for the ExecutorRecorderMock.
+type ExecutorRecorderMockFactory struct {
+	// gives access to the created Executor in tests
+	LastCreatedExecutor *ExecutorRecorderMock
+}
 
 // ExecutorFactory returns the Wasmer executor factory.
-func ExecutorFactory() *ExecutorRecorderMockFactory {
+func NewExecutorRecorderMockFactory() *ExecutorRecorderMockFactory {
 	return &ExecutorRecorderMockFactory{}
 }
 
@@ -23,6 +25,7 @@ func (ermf *ExecutorRecorderMockFactory) NewExecutor(args executor.ExecutorFacto
 		InstanceMap: make(map[string][]executor.Instance),
 	}
 	executorMock.InitVMHooks(args.VMHooks)
+	ermf.LastCreatedExecutor = executorMock
 	return executorMock, nil
 }
 
@@ -32,15 +35,6 @@ type ExecutorRecorderMock struct {
 	InstanceMap map[string][]executor.Instance
 	vmHooks     executor.VMHooks
 	vmHooksPtr  uintptr
-}
-
-// NewExecutorRecorderMock constructs a new InstanceBuilderRecorderMock
-func NewExecutorRecorderMock(host arwen.VMHost) *ExecutorRecorderMock {
-	executorMock := &ExecutorRecorderMock{
-		InstanceMap: make(map[string][]executor.Instance),
-	}
-	executorMock.InitVMHooks(elrondapi.NewElrondApi(host))
-	return executorMock
 }
 
 func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {

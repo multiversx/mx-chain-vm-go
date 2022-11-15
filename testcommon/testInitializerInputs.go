@@ -130,7 +130,8 @@ type TestHostBuilder struct {
 
 func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 	return &TestHostBuilder{
-		tb: tb,
+		tb:              tb,
+		executorFactory: wasmer.ExecutorFactory(),
 	}
 }
 
@@ -142,6 +143,11 @@ func (thb *TestHostBuilder) WithBlockchainHookStub(blockchainHookStub *contextmo
 
 func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.BlockchainHook) *TestHostBuilder {
 	thb.blockchainHook = blockchainHook
+	return thb
+}
+
+func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorFactory) *TestHostBuilder {
+	thb.executorFactory = executorFactory
 	return thb
 }
 
@@ -192,24 +198,6 @@ func BlockchainHookStubForCall(code []byte, balance *big.Int) *contextmock.Block
 	}
 
 	return stubBlockchainHook
-}
-
-// _____DefaultTestArwenForCall creates a BlockchainHookStub
-func _____DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.BlockchainHookStub) {
-	stubBlockchainHook := BlockchainHookStubForCall(code, balance)
-	host := defaultTestArwen(tb, stubBlockchainHook)
-	return host, stubBlockchainHook
-}
-
-// DefaultTestArwenForCallWithInstanceRecorderMock creates an ExecutorRecorderMock
-func DefaultTestArwenForCallWithInstanceRecorderMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.ExecutorRecorderMock) {
-	// this uses a Blockchain Hook Stub that does not cache the compiled code
-	host, _ := _____DefaultTestArwenForCall(tb, code, balance)
-
-	executorRecorderMock := contextmock.NewExecutorRecorderMock(host)
-	host.Runtime().ReplaceVMExecutor(executorRecorderMock)
-
-	return host, executorRecorderMock
 }
 
 // DefaultTestArwenForCallWithInstanceMocks creates an ExecutorMock
@@ -332,7 +320,7 @@ func defaultTestArwenForContracts(
 		return nil
 	}
 
-	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule, wasmerSIGSEGVPassthrough)
+	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, wasmer.ExecutorFactory(), gasSchedule, wasmerSIGSEGVPassthrough)
 	return host, stubBlockchainHook
 }
 
@@ -389,19 +377,20 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 func (thb *TestHostBuilder) initializeHost() {
 	if thb.host == nil {
 		customGasSchedule := config.GasScheduleMap(nil)
-		thb.host = DefaultTestArwenWithGasSchedule(thb.tb, thb.blockchainHook, customGasSchedule, thb.wasmerSIGSEGVPassthrough)
+		thb.host = DefaultTestArwenWithGasSchedule(thb.tb, thb.blockchainHook, thb.executorFactory, customGasSchedule, thb.wasmerSIGSEGVPassthrough)
 	}
 }
 
 // defaultTestArwen creates a host configured with a configured blockchain hook
 func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
 	customGasSchedule := config.GasScheduleMap(nil)
-	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule, false)
+	return DefaultTestArwenWithGasSchedule(tb, blockchain, wasmer.ExecutorFactory(), customGasSchedule, false)
 }
 
 func DefaultTestArwenWithGasSchedule(
 	tb testing.TB,
 	blockchain vmcommon.BlockchainHook,
+	executorFactory executor.ExecutorFactory,
 	customGasSchedule config.GasScheduleMap,
 	wasmerSIGSEGVPassthrough bool,
 ) arwen.VMHost {
@@ -413,7 +402,7 @@ func DefaultTestArwenWithGasSchedule(
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	host, err := arwenHost.NewArwenVM(
 		blockchain,
-		wasmer.ExecutorFactory(),
+		executorFactory,
 		&arwen.VMHostParameters{
 			VMType:                   DefaultVMType,
 			BlockGasLimit:            uint64(1000),

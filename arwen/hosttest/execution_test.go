@@ -289,7 +289,11 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	executorFactory := contextmock.NewExecutorRecorderMockFactory()
+	host1 := test.NewTestHostBuilder(t).
+		WithExecutorFactory(executorFactory).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Host()
 	defer func() {
 		host1.Reset()
 	}()
@@ -304,7 +308,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	}
 
 	var vmHooksPtr = make(map[uintptr]bool)
-	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+	for _, instance := range executorFactory.LastCreatedExecutor.GetContractInstances(code) {
 		vmHooksPtr[instance.GetVMHooksPtr()] = true
 	}
 	require.False(t, len(vmHooksPtr) > 1)
@@ -317,7 +321,11 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	executorFactory1 := contextmock.NewExecutorRecorderMockFactory()
+	host1 := test.NewTestHostBuilder(t).
+		WithExecutorFactory(executorFactory1).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Host()
 	defer func() {
 		host1.Reset()
 	}()
@@ -325,7 +333,11 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	executorFactory2 := contextmock.NewExecutorRecorderMockFactory()
+	host2 := test.NewTestHostBuilder(t).
+		WithExecutorFactory(executorFactory2).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Host()
 	defer func() {
 		host2.Reset()
 	}()
@@ -338,10 +350,10 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runNContractsForHostAndVerify(t, host2, input, maxUint8AsInt+1)
 
 	var host1VMHooksPtr = make(map[uintptr]bool)
-	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+	for _, instance := range executorFactory1.LastCreatedExecutor.GetContractInstances(code) {
 		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
 	}
-	for _, instance := range instanceRecorder2.GetContractInstances(code) {
+	for _, instance := range executorFactory2.LastCreatedExecutor.GetContractInstances(code) {
 		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
 		require.False(t, found)
 	}
