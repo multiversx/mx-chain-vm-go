@@ -46,8 +46,6 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 }
 
 func Test_WarmInstancesMemoryUsage(t *testing.T) {
-	arwen.SetLoggingForTests()
-	logger.SetLogLevel("arwen:TRACE,gasTrace:NONE")
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
