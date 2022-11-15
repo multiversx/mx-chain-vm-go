@@ -109,6 +109,8 @@ type Instance struct {
 	DataPointer unsafe.Pointer
 
 	InstanceCtx InstanceContext
+
+	alreadyCleaned bool
 }
 
 type CompilationOptions struct {
@@ -261,12 +263,18 @@ func (instance *Instance) SetContextData(data uintptr) {
 
 // Clean cleans instance
 func (instance *Instance) Clean() {
+	if instance.alreadyCleaned {
+		return
+	}
+
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
 		}
+
+		instance.alreadyCleaned = true
 	}
 }
 
