@@ -10,6 +10,28 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
+// ExecutorMockFactory is the factory for the ExecutorRecorderMock.
+type ExecutorMockFactory struct {
+	World *worldmock.MockWorld
+
+	// gives access to the created Executor in tests
+	LastCreatedExecutor *ExecutorMock
+}
+
+// ExecutorFactory returns the Wasmer executor factory.
+func NewExecutorMockFactory(world *worldmock.MockWorld) *ExecutorMockFactory {
+	return &ExecutorMockFactory{
+		World: world,
+	}
+}
+
+// NewExecutor creates a new Executor instance.
+func (emf *ExecutorMockFactory) NewExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	executorMock := NewExecutorMock(emf.World)
+	emf.LastCreatedExecutor = executorMock
+	return executorMock, nil
+}
+
 // ExecutorMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type ExecutorMock struct {

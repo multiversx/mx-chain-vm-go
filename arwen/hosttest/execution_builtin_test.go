@@ -12,9 +12,12 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,13 +25,25 @@ import (
 
 func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
 	code := test.GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
-	scBalance := big.NewInt(1000)
-	host, world := test.DefaultTestArwenForCallWithWorldMock(t, code, scBalance)
+	gasSchedule := config.MakeGasMapForTests()
+	world := worldmock.NewMockWorld()
+	err := world.InitBuiltinFunctions(gasSchedule)
+	require.Nil(t, err)
+	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, code, world)
+	parentAccount.Balance = big.NewInt(1000)
+
+	host := test.NewTestHostBuilder(t).
+		WithExecutorFactory(wasmer.ExecutorFactory()).
+		WithBlockchainHook(world).
+		WithGasSchedule(gasSchedule).
+		Host()
+
+	host.SetBuiltInFunctionsContainer(world.BuiltinFuncs.Container)
 	defer func() {
 		host.Reset()
 	}()
 
-	err := world.BuiltinFuncs.SetTokenData(
+	err = world.BuiltinFuncs.SetTokenData(
 		test.ParentAddress,
 		test.ESDTTestTokenName,
 		0,

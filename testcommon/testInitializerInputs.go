@@ -121,10 +121,10 @@ func BuildSCModule(scName string, prefixToTestSCs string) {
 
 type TestHostBuilder struct {
 	tb                       testing.TB
-	blockchainHookStub       *contextmock.BlockchainHookStub
 	blockchainHook           vmcommon.BlockchainHook
 	executorFactory          executor.ExecutorFactory
 	wasmerSIGSEGVPassthrough bool
+	gasSchedule              config.GasScheduleMap
 	host                     arwen.VMHost
 }
 
@@ -133,12 +133,6 @@ func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 		tb:              tb,
 		executorFactory: wasmer.ExecutorFactory(),
 	}
-}
-
-func (thb *TestHostBuilder) WithBlockchainHookStub(blockchainHookStub *contextmock.BlockchainHookStub) *TestHostBuilder {
-	thb.blockchainHookStub = blockchainHookStub
-	thb.blockchainHook = blockchainHookStub
-	return thb
 }
 
 func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.BlockchainHook) *TestHostBuilder {
@@ -156,14 +150,14 @@ func (thb *TestHostBuilder) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthroug
 	return thb
 }
 
+func (thb *TestHostBuilder) WithGasSchedule(gasSchedule config.GasScheduleMap) *TestHostBuilder {
+	thb.gasSchedule = gasSchedule
+	return thb
+}
+
 func (thb *TestHostBuilder) Host() arwen.VMHost {
 	thb.initializeHost()
 	return thb.host
-}
-
-func (thb *TestHostBuilder) IntoPair() (arwen.VMHost, *contextmock.BlockchainHookStub) {
-	thb.initializeHost()
-	return thb.host, thb.blockchainHookStub
 }
 
 func BlockchainHookStubForCallSigSegv(code []byte, balance *big.Int) *contextmock.BlockchainHookStub {
@@ -198,41 +192,6 @@ func BlockchainHookStubForCall(code []byte, balance *big.Int) *contextmock.Block
 	}
 
 	return stubBlockchainHook
-}
-
-// DefaultTestArwenForCallWithInstanceMocks creates an ExecutorMock
-func DefaultTestArwenForCallWithInstanceMocks(tb testing.TB) (arwen.VMHost, *contextmock.ExecutorMock) {
-	world := worldmock.NewMockWorld()
-	return DefaultTestArwenForCallWithInstanceMocksAndWorld(tb, world)
-}
-
-// DefaultTestArwenForCallWithInstanceMocksAndWorld creates an ExecutorMock
-func DefaultTestArwenForCallWithInstanceMocksAndWorld(tb testing.TB, world *worldmock.MockWorld) (arwen.VMHost, *contextmock.ExecutorMock) {
-	if world == nil {
-		world = worldmock.NewMockWorld()
-	}
-	host := defaultTestArwen(tb, world)
-
-	executorMock := contextmock.NewExecutorMock(world)
-	host.Runtime().ReplaceVMExecutor(executorMock)
-
-	return host, executorMock
-}
-
-// DefaultTestArwenForCallWithWorldMock creates a MockWorld
-func DefaultTestArwenForCallWithWorldMock(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *worldmock.MockWorld) {
-	world := worldmock.NewMockWorld()
-	host := defaultTestArwen(tb, world)
-
-	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
-	require.Nil(tb, err)
-
-	host.SetBuiltInFunctionsContainer(world.BuiltinFuncs.Container)
-
-	parentAccount := world.AcctMap.CreateSmartContractAccount(UserAddress, ParentAddress, code, world)
-	parentAccount.Balance = balance
-
-	return host, world
 }
 
 // BlockchainHookStubForTwoSCs creates a world stub configured for testing calls between 2 SmartContracts
@@ -375,9 +334,11 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 }
 
 func (thb *TestHostBuilder) initializeHost() {
+	if thb.gasSchedule == nil {
+		thb.gasSchedule = config.GasScheduleMap(nil)
+	}
 	if thb.host == nil {
-		customGasSchedule := config.GasScheduleMap(nil)
-		thb.host = DefaultTestArwenWithGasSchedule(thb.tb, thb.blockchainHook, thb.executorFactory, customGasSchedule, thb.wasmerSIGSEGVPassthrough)
+		thb.host = DefaultTestArwenWithGasSchedule(thb.tb, thb.blockchainHook, thb.executorFactory, thb.gasSchedule, thb.wasmerSIGSEGVPassthrough)
 	}
 }
 
