@@ -10,6 +10,22 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
+type ExecutorRecorderMockFactory struct{}
+
+// ExecutorFactory returns the Wasmer executor factory.
+func ExecutorFactory() *ExecutorRecorderMockFactory {
+	return &ExecutorRecorderMockFactory{}
+}
+
+// NewExecutor creates a new Executor instance.
+func (ermf *ExecutorRecorderMockFactory) NewExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	executorMock := &ExecutorRecorderMock{
+		InstanceMap: make(map[string][]executor.Instance),
+	}
+	executorMock.InitVMHooks(args.VMHooks)
+	return executorMock, nil
+}
+
 // ExecutorRecorderMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type ExecutorRecorderMock struct {

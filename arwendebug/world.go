@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
@@ -38,17 +37,11 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := worldmock.NewMockWorld()
 	blockchainHook.AcctMap = dataModel.Accounts
 
-	executor, err := wasmer.NewExecutor()
-	if err != nil {
-		return nil, err
-	}
-
 	vm, err := host.NewArwenVM(
 		blockchainHook,
-		executor,
+		wasmer.ExecutorFactory(),
 		getHostParameters(),
 	)
-	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	if err != nil {
 		return nil, err
 	}

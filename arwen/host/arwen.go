@@ -60,7 +60,7 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	vmExecutor executor.Executor,
+	vmExecutorFactory executor.ExecutorFactory,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -110,6 +110,22 @@ func NewArwenVM(
 		return nil, err
 	}
 
+	vmHooks := elrondapi.NewElrondApi(host)
+	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
+	if err != nil {
+		return nil, err
+	}
+	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
+		VMHooks:                  vmHooks,
+		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
+		RkyvSerializationEnabled: true,
+		SIGSEGVPassthrough:       hostParameters.WasmerSIGSEGVPassthrough,
+	}
+	vmExecutor, err := vmExecutorFactory.NewExecutor(vmExecutorFactoryArgs)
+	if err != nil {
+		return nil, err
+	}
+
 	host.runtimeContext, err = contexts.NewRuntimeContext(
 		host,
 		hostParameters.VMType,
@@ -149,22 +165,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
-	if err != nil {
-		return nil, err
-	}
-
 	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
-
-	vmExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
-	vmExecutor.SetRkyvSerializationEnabled(true)
-
-	if hostParameters.WasmerSIGSEGVPassthrough {
-		vmExecutor.SetSIGSEGVPassthrough()
-	}
-
-	vmHooks := elrondapi.NewElrondApi(host)
-	vmExecutor.InitVMHooks(vmHooks)
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
