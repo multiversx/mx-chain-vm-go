@@ -318,13 +318,6 @@ func (context *runtimeContext) saveWarmInstance() {
 }
 
 func (context *runtimeContext) deleteWarmInstance() {
-	// If the current contract / code hash was already on the instance stack, it
-	// means it was not saved as a new warm instance (see
-	// context.saveWarmInstance()).
-	if context.isContractOrCodeHashOnTheStack() {
-		return
-	}
-
 	context.warmInstanceCache.Remove(context.codeHash)
 	logRuntime.Trace("instance removed from warm cache")
 }
