@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"unsafe"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -145,17 +143,17 @@ type nilInterfaceChecker interface {
 
 // GetVMHost returns the vm Context from the vm context map
 func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
-	skipStackLevels := 2
-	pc, _, _, ok := runtime.Caller(skipStackLevels)
-	if ok {
-		callerDetails := runtime.FuncForPC(pc)
-		if callerDetails != nil {
-			funcName := callerDetails.Name()
-			funcNameElements := strings.Split(funcName, "/")
-			funcNameProper := funcNameElements[len(funcNameElements)-1]
-			log.Trace("VM hook called", "name", funcNameProper)
-		}
-	}
+	// skipStackLevels := 2
+	// pc, _, _, ok := runtime.Caller(skipStackLevels)
+	// if ok {
+	// 	callerDetails := runtime.FuncForPC(pc)
+	// 	if callerDetails != nil {
+	// 		funcName := callerDetails.Name()
+	// 		funcNameElements := strings.Split(funcName, "/")
+	// 		funcNameProper := funcNameElements[len(funcNameElements)-1]
+	// 		log.Trace("VM hook called", "name", funcNameProper)
+	// 	}
+	// }
 
 	instCtx := wasmer.IntoInstanceContext(vmHostPtr)
 	var ptr = *(*uintptr)(instCtx.Data())

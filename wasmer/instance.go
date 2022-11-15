@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/debug"
 )
 
 const OPCODE_COUNT = 448
@@ -262,6 +263,9 @@ func (instance *Instance) SetContextData(data uintptr) {
 // Clean cleans instance
 func (instance *Instance) Clean() {
 	if instance.instance != nil {
+		debug.PrintMemStat(debug.MainMemStat, "instance.Clean.begin")
+		defer debug.PrintMemStat(debug.MainMemStat, "instance.Clean.end")
+
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {

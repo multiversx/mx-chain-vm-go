@@ -13,6 +13,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/debug"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 )
 
@@ -149,6 +150,9 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 }
 
 func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+	debug.PrintMemStat(debug.MainMemStat, "doRunSmartContractCall.begin")
+	defer debug.PrintMemStat(debug.MainMemStat, "doRunSmartContractCall.end")
+
 	host.InitState()
 	defer func() {
 		errs := host.GetRuntimeErrors()

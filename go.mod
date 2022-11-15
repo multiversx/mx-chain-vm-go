@@ -9,6 +9,7 @@ require (
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
 	github.com/ElrondNetwork/elrond-vm-common v1.3.24
 	github.com/btcsuite/btcd v0.21.0-beta
+	github.com/divan/inspect v0.0.0-20150608165735-4714720b3012
 	github.com/gin-gonic/gin v1.8.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
