@@ -358,6 +358,10 @@ func (instance *Instance) GetMemory() MemoryHandler {
 
 // Reset resets the instance memories and globals
 func (instance *Instance) Reset() bool {
+	if instance.alreadyCleaned {
+		return false
+	}
+
 	result := cWasmerInstanceReset(instance.instance)
 	return result == cWasmerOk
 }
