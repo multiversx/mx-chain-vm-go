@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 )
 
 var _ arwen.BlockchainContext = (*BlockchainContextMock)(nil)
@@ -204,4 +204,9 @@ func (b *BlockchainContextMock) IsPaused(_ []byte) bool {
 
 // ClearCompiledCodes -
 func (b *BlockchainContextMock) ClearCompiledCodes() {
+}
+
+// ExecuteSmartContractCallOnOtherVM -
+func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
 }

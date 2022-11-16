@@ -98,6 +98,7 @@ type BlockchainContext interface {
 	GetSnapshot() int
 	RevertToSnapshot(snapshot int)
 	ClearCompiledCodes()
+	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context

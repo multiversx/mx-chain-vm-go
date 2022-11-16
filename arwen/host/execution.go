@@ -254,6 +254,20 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	scExecutionInput := input
 
 	blockchain := host.Blockchain()
+
+	vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(runtime.GetVMType(), vmType) {
+		vmOutput, err := blockchain.ExecuteSmartContractCallOnOtherVM(input)
+		if err != nil {
+			return err
+		}
+		output.AddToActiveState(vmOutput)
+		return nil
+	}
+
 	blockchain.PushState()
 
 	if host.IsBuiltinFunctionName(input.Function) {
@@ -463,7 +477,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		runtime.AddError(err, input.Function)
 		return err
 	}
-
+	check vm type
 	err = host.execute(input)
 	runtime.AddError(err, input.Function)
 	return err
@@ -681,7 +695,7 @@ func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
-	_, _, metering, output, runtime, _, _ := host.GetContexts()
+	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return arwen.ErrInitFuncCalledInRun
