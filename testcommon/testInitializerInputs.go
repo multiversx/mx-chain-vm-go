@@ -125,6 +125,7 @@ type TestHostBuilder struct {
 	executorFactory          executor.ExecutorFactory
 	wasmerSIGSEGVPassthrough bool
 	gasSchedule              config.GasScheduleMap
+	builtInFunctionContainer vmcommon.BuiltInFunctionContainer
 	host                     arwen.VMHost
 }
 
@@ -137,6 +138,19 @@ func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 
 func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.BlockchainHook) *TestHostBuilder {
 	thb.blockchainHook = blockchainHook
+	return thb
+}
+
+// WithMockWorld sets up a MockWorld with builtin functions as the blockchain hook.
+// It also outputs the created MockWorld as argument, for further interaction.
+func (thb *TestHostBuilder) WithMockWorld(mockWorldOutput **worldmock.MockWorld) *TestHostBuilder {
+	thb.initializeGasCosts()
+	world := worldmock.NewMockWorld()
+	err := world.InitBuiltinFunctions(thb.gasSchedule)
+	require.Nil(thb.tb, err)
+	*mockWorldOutput = world
+	thb.blockchainHook = world
+	thb.builtInFunctionContainer = world.BuiltinFuncs.Container
 	return thb
 }
 
@@ -283,69 +297,60 @@ func defaultTestArwenForContracts(
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwenWithWorldMock creates a host configured with a mock world
-func DefaultTestArwenWithWorldMock(tb testing.TB) (arwen.VMHost, *worldmock.MockWorld) {
-	customGasSchedule := config.GasScheduleMap(nil)
-	return DefaultTestArwenWithWorldMockWithGasSchedule(tb, customGasSchedule)
+func (thb *TestHostBuilder) initializeGasCosts() {
+	if thb.gasSchedule == nil {
+		thb.gasSchedule = config.MakeGasMapForTests()
+	}
 }
 
-// DefaultTestArwenWithWorldMockWithGasSchedule creates a host configured with a mock world
-func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedule config.GasScheduleMap) (arwen.VMHost, *worldmock.MockWorld) {
-	world := worldmock.NewMockWorld()
-	gasSchedule := customGasSchedule
-	if gasSchedule == nil {
-		gasSchedule = config.MakeGasMapForTests()
+func (thb *TestHostBuilder) initializeHost() {
+	thb.initializeGasCosts()
+	if thb.host == nil {
+		// thb.host = DefaultTestArwenWithGasSchedule(thb.tb, thb.blockchainHook, thb.executorFactory,
+		// 	thb.gasSchedule, thb.wasmerSIGSEGVPassthrough)
+		thb.host = thb.newHost()
 	}
-	err := world.InitBuiltinFunctions(gasSchedule)
-	require.Nil(tb, err)
+}
 
+func (thb *TestHostBuilder) newHost() arwen.VMHost {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
+	if thb.builtInFunctionContainer == nil {
+		thb.builtInFunctionContainer = builtInFunctions.NewBuiltInFunctionContainer()
+	}
 	host, err := arwenHost.NewArwenVM(
-		world,
-		wasmer.ExecutorFactory(),
+		thb.blockchainHook,
+		thb.executorFactory,
 		&arwen.VMHostParameters{
 			VMType:                   DefaultVMType,
 			BlockGasLimit:            uint64(1000),
-			GasSchedule:              gasSchedule,
-			BuiltInFuncContainer:     world.BuiltinFuncs.Container,
+			GasSchedule:              thb.gasSchedule,
+			BuiltInFuncContainer:     thb.builtInFunctionContainer,
 			ElrondProtectedKeyPrefix: []byte("ELROND"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-				IsStorageAPICostOptimizationFlagEnabledField:     true,
-				IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
-				IsFixOOGReturnCodeFlagEnabledField:               true,
-				IsRemoveNonUpdatedStorageFlagEnabledField:        true,
-				IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
-				IsManagedCryptoAPIsFlagEnabledField:              true,
-				IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
-				IsESDTTransferRoleFlagEnabledField:               true,
-				IsSendAlwaysFlagEnabledField:                     true,
-				IsGlobalMintBurnFlagEnabledField:                 true,
-				IsCheckFunctionArgumentFlagEnabledField:          true,
-				IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
+				IsStorageAPICostOptimizationFlagEnabledField:         true,
+				IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+				IsFixOOGReturnCodeFlagEnabledField:                   true,
+				IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+				IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+				IsManagedCryptoAPIsFlagEnabledField:                  true,
+				IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+				IsRefactorContextFlagEnabledField:                    true,
+				IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+				IsDisableExecByCallerFlagEnabledField:                true,
+				IsESDTTransferRoleFlagEnabledField:                   true,
+				IsSendAlwaysFlagEnabledField:                         true,
+				IsGlobalMintBurnFlagEnabledField:                     true,
+				IsCheckFunctionArgumentFlagEnabledField:              true,
+				IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 			},
-			WasmerSIGSEGVPassthrough: false,
+			WasmerSIGSEGVPassthrough: thb.wasmerSIGSEGVPassthrough,
 		})
-	require.Nil(tb, err)
-	require.NotNil(tb, host)
+	require.Nil(thb.tb, err)
+	require.NotNil(thb.tb, host)
 
-	return host, world
-}
-
-func (thb *TestHostBuilder) initializeHost() {
-	if thb.gasSchedule == nil {
-		thb.gasSchedule = config.GasScheduleMap(nil)
-	}
-	if thb.host == nil {
-		thb.host = DefaultTestArwenWithGasSchedule(thb.tb, thb.blockchainHook, thb.executorFactory, thb.gasSchedule, thb.wasmerSIGSEGVPassthrough)
-	}
-}
-
-// defaultTestArwen creates a host configured with a configured blockchain hook
-func defaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
-	customGasSchedule := config.GasScheduleMap(nil)
-	return DefaultTestArwenWithGasSchedule(tb, blockchain, wasmer.ExecutorFactory(), customGasSchedule, false)
+	return host
 }
 
 func DefaultTestArwenWithGasSchedule(

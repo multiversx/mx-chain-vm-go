@@ -206,7 +206,10 @@ func TestESDT_GettersAPI(t *testing.T) {
 }
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	var world *worldmock.MockWorld
+	host := test.NewTestHostBuilder(t).
+		WithMockWorld(&world).
+		Host()
 	defer func() {
 		host.Reset()
 	}()

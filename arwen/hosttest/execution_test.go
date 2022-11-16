@@ -616,14 +616,16 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_CachingCompiledCode(t *testing.T) {
-	scAddress := test.MakeTestSCAddress("counter")
-	code := test.GetTestSCCode("counter", "../../")
-
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	var world *worldmock.MockWorld
+	host := test.NewTestHostBuilder(t).
+		WithMockWorld(&world).
+		Host()
 	defer func() {
 		host.Reset()
 	}()
 
+	scAddress := test.MakeTestSCAddress("counter")
+	code := test.GetTestSCCode("counter", "../../")
 	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
 
 	input := test.CreateTestContractCallInputBuilder().
