@@ -310,6 +310,7 @@ func (context *runtimeContext) saveWarmInstance() {
 		context.instance,
 		1,
 	)
+	logRuntime.Trace("save warm instance", "id", context.instance.Id())
 }
 
 func (context *runtimeContext) deleteWarmInstance() {

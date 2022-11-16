@@ -269,6 +269,7 @@ func defaultTestArwenForContracts(
 
 	contractsMap := make(map[string]*contextmock.StubAccount)
 	codeMap := make(map[string]*[]byte)
+	compiledCodeMap := make(map[string][]byte)
 
 	for _, contract := range contracts {
 		codeHash, _ := hashing.NewHasher().Sha256(contract.code)
@@ -295,6 +296,17 @@ func defaultTestArwenForContracts(
 			return *code
 		}
 		return nil
+	}
+
+	stubBlockchainHook.SaveCompiledCodeCalled = func(codehash []byte, code []byte) {
+		compiledCodeMap[string(codehash)] = code
+	}
+	stubBlockchainHook.GetCompiledCodeCalled = func(codeHash []byte) (bool, []byte) {
+		compiledCode, ok := compiledCodeMap[string(codeHash)]
+		if ok {
+			return ok, compiledCode
+		}
+		return false, nil
 	}
 
 	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule, wasmerSIGSEGVPassthrough)
