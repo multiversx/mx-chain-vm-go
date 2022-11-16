@@ -344,6 +344,7 @@ func (host *vmHost) finishExecuteOnDestContext(executeErr error) *vmcommon.VMOut
 	metering.RestoreGas(vmOutput.GasRemaining)
 
 	log.Trace("ExecuteOnDestContext finished", "gas spent", gasSpentByChildContract)
+	logVMOutput(vmOutput)
 
 	return vmOutput
 }
@@ -1000,4 +1001,16 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 	newVMInput.ESDTTransfers = parsedTransfer.ESDTTransfers
 
 	return newVMInput, nil
+}
+
+func logVMOutput(vmOutput *vmcommon.VMOutput) {
+	if vmOutput == nil {
+		log.Trace("VMOutput is nil")
+		return
+	}
+
+	log.Trace("VMOutput.ReturnData", "len", len(vmOutput.ReturnData))
+	for i, value := range vmOutput.ReturnData {
+		log.Trace("VMOutput.ReturnData", "i", i, "value", value)
+	}
 }
