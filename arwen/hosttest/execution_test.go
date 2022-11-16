@@ -2230,7 +2230,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 			WithArguments([]byte{byte(recursiveCalls)}).
 			Build())
 
-	for i := 0; i < 20000; i++ {
+	for i := 0; i < 1; i++ {
 		testCase.AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				// test.ParentAddress
@@ -2248,6 +2248,8 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
 		})
 	}
+
+	testCase.GetVMHost().Close()
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {

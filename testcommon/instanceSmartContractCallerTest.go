@@ -107,6 +107,10 @@ func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResu
 	runTestWithInstances(callerTest, false)
 }
 
+func (callerTest *InstancesTestTemplate) GetVMHost() arwen.VMHost {
+	return callerTest.host
+}
+
 func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
 		callerTest.host, callerTest.blockchainHookStub =
