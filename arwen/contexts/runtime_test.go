@@ -286,9 +286,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
 
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 2, len(runtimeContext.stateStack))
 
