@@ -109,12 +109,12 @@ func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResu
 
 func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
-		callerTest.host, callerTest.blockchainHookStub =
-			defaultTestArwenForContracts(
-				callerTest.tb,
-				callerTest.contracts,
-				callerTest.gasSchedule,
-				callerTest.wasmerSIGSEGVPassthrough)
+		callerTest.blockchainHookStub = BlockchainHookStubForContracts(callerTest.contracts)
+		callerTest.host = NewTestHostBuilder(callerTest.tb).
+			WithBlockchainHook(callerTest.blockchainHookStub).
+			WithGasSchedule(callerTest.gasSchedule).
+			WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
+			Host()
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 
