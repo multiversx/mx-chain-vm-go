@@ -430,8 +430,6 @@ func (context *runtimeContext) popInstance() {
 	prevInstance := context.instanceStack[instanceStackLen-1]
 	context.instanceStack = context.instanceStack[:instanceStackLen-1]
 
-	logRuntime.Trace("popInstance", "id", context.instance.Id(), "codeHash", context.codeHash)
-
 	if prevInstance == context.instance {
 		// The current Wasmer instance was previously pushed on the instance stack,
 		// but a new Wasmer instance has not been created in the meantime. This
@@ -449,6 +447,7 @@ func (context *runtimeContext) popInstance() {
 	}
 
 	context.instance = prevInstance
+	logRuntime.Trace("pop instance", "id", context.instance.Id(), "codeHash", context.codeHash)
 }
 
 // RunningInstancesCount returns the length of the instance stack.
