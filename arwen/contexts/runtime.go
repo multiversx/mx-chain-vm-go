@@ -85,6 +85,7 @@ func instanceEvicted(_ interface{}, value interface{}) {
 		return
 	}
 
+	logRuntime.Trace("evicted instance", "id", instance.Id())
 	instance.Clean()
 }
 
@@ -180,7 +181,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	context.verifyCode = false
 
 	context.saveWarmInstance()
-	logRuntime.Trace("new instance created", "code", "cached compilation")
+	logRuntime.Trace("start instance", "from", "cached compilation", "id", context.instance.Id())
 	return true
 }
 
@@ -225,8 +226,8 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
+	logRuntime.Trace("start instance", "from", "bytecode", "id", context.instance.Id())
 	context.saveCompiledCode()
-	logRuntime.Trace("new instance created", "code", "bytecode")
 
 	return nil
 }
@@ -264,6 +265,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.instance.SetContextData(hostReference)
 	context.verifyCode = false
+	logRuntime.Trace("start instance", "from", "warm", "id", context.instance.Id())
 	return true
 }
 

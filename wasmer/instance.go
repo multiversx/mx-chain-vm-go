@@ -7,9 +7,12 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 const OPCODE_COUNT = 448
+
+var logWasmer = logger.GetOrCreate("arwen/wasmer")
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -263,7 +266,9 @@ func (instance *Instance) SetContextData(data uintptr) {
 
 // Clean cleans instance
 func (instance *Instance) Clean() {
+	logWasmer.Trace("cleaning instance", "id", instance.Id())
 	if instance.alreadyCleaned {
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
 		return
 	}
 
@@ -275,6 +280,7 @@ func (instance *Instance) Clean() {
 		}
 
 		instance.alreadyCleaned = true
+		logWasmer.Trace("cleaned instance", "id", instance.Id())
 	}
 }
 
@@ -351,6 +357,10 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
+func (instance *Instance) Id() string {
+	return fmt.Sprintf("%p", instance.instance)
+}
+
 // GetMemory returns the memory for the instance
 func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
@@ -359,10 +369,12 @@ func (instance *Instance) GetMemory() MemoryHandler {
 // Reset resets the instance memories and globals
 func (instance *Instance) Reset() bool {
 	if instance.alreadyCleaned {
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.instance)
+	logWasmer.Trace("reset: warm instance", "id", instance.Id())
 	return result == cWasmerOk
 }
 

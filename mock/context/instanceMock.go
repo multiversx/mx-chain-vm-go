@@ -36,6 +36,8 @@ func NewInstanceMock(code []byte) *InstanceMock {
 	}
 }
 
+func (instance *InstanceMock) Id() string { return "" }
+
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
 	instance.AddMockMethodWithError(name, method, nil)
