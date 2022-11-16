@@ -5,7 +5,7 @@ type ExecutorFactoryArgs struct {
 	VMHooks                  VMHooks
 	OpcodeCosts              *WASMOpcodeCost
 	RkyvSerializationEnabled bool
-	SIGSEGVPassthrough       bool
+	WasmerSIGSEGVPassthrough bool
 }
 
 // ExecutorFactory defines an object to be passed to the VM to configure the instantiation of the Executor.

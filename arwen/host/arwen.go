@@ -119,7 +119,7 @@ func NewArwenVM(
 		VMHooks:                  vmHooks,
 		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
 		RkyvSerializationEnabled: true,
-		SIGSEGVPassthrough:       hostParameters.WasmerSIGSEGVPassthrough,
+		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
 	}
 	vmExecutor, err := vmExecutorFactory.NewExecutor(vmExecutorFactoryArgs)
 	if err != nil {

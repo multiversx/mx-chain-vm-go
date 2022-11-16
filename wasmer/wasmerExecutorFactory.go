@@ -22,7 +22,7 @@ func (wef *WasmerExecutorFactory) NewExecutor(args executor.ExecutorFactoryArgs)
 		executor.SetOpcodeCosts(args.OpcodeCosts)
 	}
 	executor.SetRkyvSerializationEnabled(args.RkyvSerializationEnabled)
-	if args.SIGSEGVPassthrough {
+	if args.WasmerSIGSEGVPassthrough {
 		executor.SetSIGSEGVPassthrough()
 	}
 
