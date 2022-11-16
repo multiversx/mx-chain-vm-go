@@ -257,15 +257,15 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
 	if err != nil {
-		return err
+		return nil, true, err
 	}
-	if !bytes.Equal(runtime.GetVMType(), vmType) {
+	if !bytes.Equal(host.Runtime().GetVMType(), vmType) {
 		vmOutput, err := blockchain.ExecuteSmartContractCallOnOtherVM(input)
 		if err != nil {
-			return err
+			return nil, true, err
 		}
-		output.AddToActiveState(vmOutput)
-		return nil
+		host.Output().AddToActiveState(vmOutput)
+		return nil, true, err
 	}
 
 	blockchain.PushState()
@@ -443,6 +443,14 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	managedTypes, blockchain, metering, output, runtime, _, _ := host.GetContexts()
 
+	vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(runtime.GetVMType(), vmType) {
+		return vmcommon.ErrInvalidVMType
+	}
+
 	// Back up the states of the contexts (except Storage and Async, which aren't affected
 	// by ExecuteOnSameContext())
 	managedTypes.PushState()
@@ -466,8 +474,6 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 
 	blockchain.PushState()
 
-	var err error
-
 	defer host.finishExecuteOnSameContext(err)
 
 	// Perform a value transfer to the called SC. If the execution fails, this
@@ -477,7 +483,7 @@ func (host *vmHost) ExecuteOnSameContext(input *vmcommon.ContractCallInput) erro
 		runtime.AddError(err, input.Function)
 		return err
 	}
-	check vm type
+
 	err = host.execute(input)
 	runtime.AddError(err, input.Function)
 	return err
@@ -695,7 +701,7 @@ func (host *vmHost) executeDelete(input *vmcommon.ContractCallInput) error {
 // instance from the Runtime instance stack, nor does it restore the remaining
 // gas).
 func (host *vmHost) execute(input *vmcommon.ContractCallInput) error {
-	_, blockchain, metering, output, runtime, _, _ := host.GetContexts()
+	_, _, metering, output, runtime, _, _ := host.GetContexts()
 
 	if host.isInitFunctionBeingCalled() && !input.AllowInitFunction {
 		return arwen.ErrInitFuncCalledInRun
