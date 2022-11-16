@@ -125,12 +125,3 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 	}
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }
-
-// InitVMHooks mocked method
-func (executorMock *ExecutorMock) InitVMHooks(vmHooks executor.VMHooks) {
-}
-
-// GetVMHooks mocked method
-func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
-	return nil
-}

@@ -71,13 +71,8 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	return instance, err
 }
 
-// InitVMHooks inits the VM hooks
-func (wasmerExecutor *WasmerExecutor) InitVMHooks(vmHooks executor.VMHooks) {
+// initVMHooks inits the VM hooks
+func (wasmerExecutor *WasmerExecutor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
 	wasmerExecutor.vmHooksPtr = uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
-}
-
-// GetVMHooks returns the VM hooks
-func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
-	return wasmerExecutor.vmHooks
 }

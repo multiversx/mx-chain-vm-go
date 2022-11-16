@@ -38,10 +38,4 @@ type Executor interface {
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
-
-	// GetVMHooks returns the VM hooks.
-	GetVMHooks() VMHooks
-
-	// InitVMHooks inits the VM hooks.
-	InitVMHooks(vmHooks VMHooks)
 }

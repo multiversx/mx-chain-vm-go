@@ -24,7 +24,7 @@ func (ermf *ExecutorRecorderMockFactory) NewExecutor(args executor.ExecutorFacto
 	executorMock := &ExecutorRecorderMock{
 		InstanceMap: make(map[string][]executor.Instance),
 	}
-	executorMock.InitVMHooks(args.VMHooks)
+	executorMock.initVMHooks(args.VMHooks)
 	ermf.LastCreatedExecutor = executorMock
 	return executorMock, nil
 }
@@ -81,8 +81,8 @@ func (executorMock *ExecutorRecorderMock) NewInstanceFromCompiledCodeWithOptions
 	return instance, err
 }
 
-// InitVMHooks mocked method
-func (executorMock *ExecutorRecorderMock) InitVMHooks(vmHooks executor.VMHooks) {
+// initVMHooks mocked method
+func (executorMock *ExecutorRecorderMock) initVMHooks(vmHooks executor.VMHooks) {
 	executorMock.vmHooks = vmHooks
 	executorMock.vmHooksPtr = uintptr(unsafe.Pointer(&executorMock.vmHooks))
 }
