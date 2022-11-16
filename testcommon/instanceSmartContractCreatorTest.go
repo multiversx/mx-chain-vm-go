@@ -4,17 +4,11 @@ import (
 	"testing"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
-	"github.com/stretchr/testify/require"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
@@ -114,39 +108,10 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainMock() *contextmock.
 }
 
 func (callerTest *TestCreateTemplateConfig) createTestArwenVM() arwen.VMHost {
-	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(
-		callerTest.blockchainHookStub,
-		callerTest.executorFactory,
-		&arwen.VMHostParameters{
-			VMType:                   DefaultVMType,
-			BlockGasLimit:            uint64(1000),
-			GasSchedule:              callerTest.gasSchedule,
-			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-			ElrondProtectedKeyPrefix: []byte("ELROND"),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-				IsStorageAPICostOptimizationFlagEnabledField:         true,
-				IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
-				IsFixOOGReturnCodeFlagEnabledField:                   true,
-				IsRemoveNonUpdatedStorageFlagEnabledField:            true,
-				IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
-				IsManagedCryptoAPIsFlagEnabledField:                  true,
-				IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
-				IsRefactorContextFlagEnabledField:                    true,
-				IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-				IsDisableExecByCallerFlagEnabledField:                true,
-				IsESDTTransferRoleFlagEnabledField:                   true,
-				IsSendAlwaysFlagEnabledField:                         true,
-				IsGlobalMintBurnFlagEnabledField:                     true,
-				IsCheckFunctionArgumentFlagEnabledField:              true,
-				IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
-			},
-			WasmerSIGSEGVPassthrough: callerTest.wasmerSIGSEGVPassthrough,
-		})
-	require.Nil(callerTest.t, err)
-	require.NotNil(callerTest.t, host)
-
-	return host
+	return NewTestHostBuilder(callerTest.t).
+		WithExecutorFactory(callerTest.executorFactory).
+		WithBlockchainHook(callerTest.blockchainHookStub).
+		WithGasSchedule(callerTest.gasSchedule).
+		WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
+		Host()
 }
