@@ -2307,8 +2307,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 }
 
 func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
-	world := worldmock.NewMockWorld()
-	host := test.NewTestHostBuilder(t).WithBlockchainHook(world).Host()
+	var world *worldmock.MockWorld
+	host := test.NewTestHostBuilder(t).
+		WithMockWorld(&world).
+		Host()
 	defer func() {
 		host.Reset()
 	}()
@@ -2349,8 +2351,10 @@ func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 }
 
 func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
-	world := worldmock.NewMockWorld()
-	host := test.NewTestHostBuilder(t).WithBlockchainHook(world).Host()
+	var world *worldmock.MockWorld
+	host := test.NewTestHostBuilder(t).
+		WithMockWorld(&world).
+		Host()
 	defer func() {
 		host.Reset()
 	}()
