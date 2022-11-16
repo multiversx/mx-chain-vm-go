@@ -30,16 +30,6 @@ func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMO
 	SetOpcodeCosts(opcodeCosts)
 }
 
-// SetRkyvSerializationEnabled controls a Wasmer flag.
-func (wasmerExecutor *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) {
-	SetRkyvSerializationEnabled(enabled)
-}
-
-// SetSIGSEGVPassthrough controls a Wasmer flag.
-func (wasmerExecutor *WasmerExecutor) SetSIGSEGVPassthrough() {
-	SetSIGSEGVPassthrough()
-}
-
 func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
 	return wasmerExecutor.eiFunctionNames
 }

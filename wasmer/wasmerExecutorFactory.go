@@ -21,9 +21,9 @@ func (wef *WasmerExecutorFactory) NewExecutor(args executor.ExecutorFactoryArgs)
 		// opcode costs are sometimes not initialized at this point in certain tests
 		executor.SetOpcodeCosts(args.OpcodeCosts)
 	}
-	executor.SetRkyvSerializationEnabled(args.RkyvSerializationEnabled)
+	SetRkyvSerializationEnabled(args.RkyvSerializationEnabled)
 	if args.WasmerSIGSEGVPassthrough {
-		executor.SetSIGSEGVPassthrough()
+		SetSIGSEGVPassthrough()
 	}
 
 	return executor, nil

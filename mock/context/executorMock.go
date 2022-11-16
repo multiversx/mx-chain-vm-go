@@ -51,14 +51,6 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
 }
 
-// SetRkyvSerializationEnabled controls a Wasmer flag, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetRkyvSerializationEnabled(enabled bool) {
-}
-
-// SetSIGSEGVPassthrough controls a Wasmer flag, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetSIGSEGVPassthrough() {
-}
-
 // FunctionNames mocked method
 func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
 	return nil

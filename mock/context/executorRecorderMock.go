@@ -41,16 +41,6 @@ func (executorMock *ExecutorRecorderMock) SetOpcodeCosts(opcodeCosts *executor.W
 	wasmer.SetOpcodeCosts(opcodeCosts)
 }
 
-// SetRkyvSerializationEnabled controls a Wasmer flag.
-func (executorMock *ExecutorRecorderMock) SetRkyvSerializationEnabled(enabled bool) {
-	wasmer.SetRkyvSerializationEnabled(enabled)
-}
-
-// SetSIGSEGVPassthrough controls a Wasmer flag.
-func (executorMock *ExecutorRecorderMock) SetSIGSEGVPassthrough() {
-	wasmer.SetSIGSEGVPassthrough()
-}
-
 func (executorMock *ExecutorRecorderMock) FunctionNames() vmcommon.FunctionNames {
 	return nil
 }
