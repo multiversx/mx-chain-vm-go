@@ -119,21 +119,46 @@ func BuildSCModule(scName string, prefixToTestSCs string) {
 	log.Info("contract built", "output", fmt.Sprintf("\n%s", out))
 }
 
+// TestHostBuilder allows tests to configure and initialize the VM host and blockhain mock on which they operate.
 type TestHostBuilder struct {
-	tb                       testing.TB
-	blockchainHook           vmcommon.BlockchainHook
-	executorFactory          executor.ExecutorFactory
-	wasmerSIGSEGVPassthrough bool
-	gasSchedule              config.GasScheduleMap
-	builtInFunctionContainer vmcommon.BuiltInFunctionContainer
-	host                     arwen.VMHost
+	tb               testing.TB
+	blockchainHook   vmcommon.BlockchainHook
+	executorFactory  executor.ExecutorFactory
+	vmHostParameters *arwen.VMHostParameters
+	host             arwen.VMHost
 }
 
+// NewTestHostBuilder commences a test host builder pattern.
 func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
+	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &TestHostBuilder{
 		tb:              tb,
 		executorFactory: wasmer.ExecutorFactory(),
+		vmHostParameters: &arwen.VMHostParameters{
+			VMType:                   DefaultVMType,
+			BlockGasLimit:            uint64(1000),
+			GasSchedule:              nil,
+			BuiltInFuncContainer:     nil,
+			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ESDTTransferParser:       esdtTransferParser,
+			EpochNotifier:            &mock.EpochNotifierStub{},
+			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubAllFlags(),
+			WasmerSIGSEGVPassthrough: false,
+		},
 	}
+}
+
+func (thb *TestHostBuilder) initializeGasCosts() {
+	if thb.vmHostParameters.GasSchedule == nil {
+		thb.vmHostParameters.GasSchedule = config.MakeGasMapForTests()
+	}
+}
+
+func (thb *TestHostBuilder) initializeBuiltInFuncContainer() {
+	if thb.vmHostParameters.BuiltInFuncContainer == nil {
+		thb.vmHostParameters.BuiltInFuncContainer = builtInFunctions.NewBuiltInFunctionContainer()
+	}
+
 }
 
 func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.BlockchainHook) *TestHostBuilder {
@@ -146,11 +171,11 @@ func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.Blockchai
 func (thb *TestHostBuilder) WithMockWorld(mockWorldOutput **worldmock.MockWorld) *TestHostBuilder {
 	thb.initializeGasCosts()
 	world := worldmock.NewMockWorld()
-	err := world.InitBuiltinFunctions(thb.gasSchedule)
+	err := world.InitBuiltinFunctions(thb.vmHostParameters.GasSchedule)
 	require.Nil(thb.tb, err)
 	*mockWorldOutput = world
 	thb.blockchainHook = world
-	thb.builtInFunctionContainer = world.BuiltinFuncs.Container
+	thb.vmHostParameters.BuiltInFuncContainer = world.BuiltinFuncs.Container
 	return thb
 }
 
@@ -160,12 +185,12 @@ func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.Executo
 }
 
 func (thb *TestHostBuilder) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *TestHostBuilder {
-	thb.wasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
+	thb.vmHostParameters.WasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
 	return thb
 }
 
 func (thb *TestHostBuilder) WithGasSchedule(gasSchedule config.GasScheduleMap) *TestHostBuilder {
-	thb.gasSchedule = gasSchedule
+	thb.vmHostParameters.GasSchedule = gasSchedule
 	return thb
 }
 
@@ -297,12 +322,6 @@ func defaultTestArwenForContracts(
 	return host, stubBlockchainHook
 }
 
-func (thb *TestHostBuilder) initializeGasCosts() {
-	if thb.gasSchedule == nil {
-		thb.gasSchedule = config.MakeGasMapForTests()
-	}
-}
-
 func (thb *TestHostBuilder) initializeHost() {
 	thb.initializeGasCosts()
 	if thb.host == nil {
@@ -313,40 +332,12 @@ func (thb *TestHostBuilder) initializeHost() {
 }
 
 func (thb *TestHostBuilder) newHost() arwen.VMHost {
-	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	if thb.builtInFunctionContainer == nil {
-		thb.builtInFunctionContainer = builtInFunctions.NewBuiltInFunctionContainer()
-	}
+	thb.initializeBuiltInFuncContainer()
 	host, err := arwenHost.NewArwenVM(
 		thb.blockchainHook,
 		thb.executorFactory,
-		&arwen.VMHostParameters{
-			VMType:                   DefaultVMType,
-			BlockGasLimit:            uint64(1000),
-			GasSchedule:              thb.gasSchedule,
-			BuiltInFuncContainer:     thb.builtInFunctionContainer,
-			ElrondProtectedKeyPrefix: []byte("ELROND"),
-			ESDTTransferParser:       esdtTransferParser,
-			EpochNotifier:            &mock.EpochNotifierStub{},
-			EnableEpochsHandler: &worldmock.EnableEpochsHandlerStub{
-				IsStorageAPICostOptimizationFlagEnabledField:         true,
-				IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
-				IsFixOOGReturnCodeFlagEnabledField:                   true,
-				IsRemoveNonUpdatedStorageFlagEnabledField:            true,
-				IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
-				IsManagedCryptoAPIsFlagEnabledField:                  true,
-				IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
-				IsRefactorContextFlagEnabledField:                    true,
-				IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
-				IsDisableExecByCallerFlagEnabledField:                true,
-				IsESDTTransferRoleFlagEnabledField:                   true,
-				IsSendAlwaysFlagEnabledField:                         true,
-				IsGlobalMintBurnFlagEnabledField:                     true,
-				IsCheckFunctionArgumentFlagEnabledField:              true,
-				IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
-			},
-			WasmerSIGSEGVPassthrough: thb.wasmerSIGSEGVPassthrough,
-		})
+		thb.vmHostParameters,
+	)
 	require.Nil(thb.tb, err)
 	require.NotNil(thb.tb, host)
 
