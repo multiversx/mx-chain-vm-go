@@ -25,7 +25,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -123,7 +122,6 @@ func BuildSCModule(scName string, prefixToTestSCs string) {
 type TestHostBuilder struct {
 	tb               testing.TB
 	blockchainHook   vmcommon.BlockchainHook
-	executorFactory  executor.ExecutorFactory
 	vmHostParameters *arwen.VMHostParameters
 	host             arwen.VMHost
 }
@@ -132,8 +130,7 @@ type TestHostBuilder struct {
 func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &TestHostBuilder{
-		tb:              tb,
-		executorFactory: wasmer.ExecutorFactory(),
+		tb: tb,
 		vmHostParameters: &arwen.VMHostParameters{
 			VMType:                   DefaultVMType,
 			BlockGasLimit:            uint64(1000),
@@ -184,7 +181,7 @@ func (thb *TestHostBuilder) WithMockWorld(mockWorldOutput **worldmock.MockWorld)
 
 // WithExecutorFactory allows tests to choose what executor to use. The default is wasmer 1.
 func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorFactory) *TestHostBuilder {
-	thb.executorFactory = executorFactory
+	thb.vmHostParameters.OverrideVMExecutor = executorFactory
 	return thb
 }
 
@@ -217,7 +214,6 @@ func (thb *TestHostBuilder) newHost() arwen.VMHost {
 	thb.initializeBuiltInFuncContainer()
 	host, err := arwenHost.NewArwenVM(
 		thb.blockchainHook,
-		thb.executorFactory,
 		thb.vmHostParameters,
 	)
 	require.Nil(thb.tb, err)

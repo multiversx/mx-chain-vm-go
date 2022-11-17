@@ -18,6 +18,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -31,6 +32,8 @@ var _ arwen.VMHost = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
+
+var defaultVMExecutorFactory executor.ExecutorFactory = wasmer.ExecutorFactory()
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -60,7 +63,6 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	vmExecutorFactory executor.ExecutorFactory,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -114,6 +116,10 @@ func NewArwenVM(
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
 		return nil, err
+	}
+	vmExecutorFactory := defaultVMExecutorFactory
+	if hostParameters.OverrideVMExecutor != nil {
+		vmExecutorFactory = hostParameters.OverrideVMExecutor
 	}
 	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
 		VMHooks:                  vmHooks,
