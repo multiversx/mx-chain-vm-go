@@ -39,7 +39,6 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 
 	vm, err := host.NewArwenVM(
 		blockchainHook,
-		wasmer.ExecutorFactory(),
 		getHostParameters(),
 	)
 	if err != nil {
@@ -57,6 +56,7 @@ func getHostParameters() *arwen.VMHostParameters {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &arwen.VMHostParameters{
 		VMType:                   []byte{5, 0},
+		OverrideVMExecutor:       wasmer.ExecutorFactory(),
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),

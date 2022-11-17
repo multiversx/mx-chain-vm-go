@@ -316,9 +316,10 @@ func TestWASMCreateAndCall(t *testing.T) {
 		WithCallerAddr(test.UserAddress).
 		Build()
 
-	var world *worldmock.MockWorld
+	world := worldmock.NewMockWorld()
 	host := test.NewTestHostBuilder(t).
-		WithMockWorld(&world).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
 		Build()
 	world.NewAddressMocks = append(world.NewAddressMocks, &worldmock.NewAddressMock{
 		CreatorAddress: test.UserAddress,

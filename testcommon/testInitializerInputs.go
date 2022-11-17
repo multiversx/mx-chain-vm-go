@@ -166,16 +166,15 @@ func (thb *TestHostBuilder) WithBlockchainHook(blockchainHook vmcommon.Blockchai
 	return thb
 }
 
-// WithMockWorld sets up a MockWorld with builtin functions as the blockchain hook.
-// It also outputs the created MockWorld as argument, for further interaction.
-func (thb *TestHostBuilder) WithMockWorld(mockWorldOutput **worldmock.MockWorld) *TestHostBuilder {
+// WithBuiltinFunctions sets up builtin functions in the blockchain hook.
+// Only works if the blockchain hook is of type worldmock.MockWorld.
+func (thb *TestHostBuilder) WithBuiltinFunctions() *TestHostBuilder {
 	thb.initializeGasCosts()
-	world := worldmock.NewMockWorld()
-	err := world.InitBuiltinFunctions(thb.vmHostParameters.GasSchedule)
+	mockWorld, ok := thb.blockchainHook.(*worldmock.MockWorld)
+	require.True(thb.tb, ok, "builtin functions can only be injected into blockchain hooks of type MockWorld")
+	err := mockWorld.InitBuiltinFunctions(thb.vmHostParameters.GasSchedule)
 	require.Nil(thb.tb, err)
-	*mockWorldOutput = world
-	thb.blockchainHook = world
-	thb.vmHostParameters.BuiltInFuncContainer = world.BuiltinFuncs.Container
+	thb.vmHostParameters.BuiltInFuncContainer = mockWorld.BuiltinFuncs.Container
 	return thb
 }
 

@@ -48,9 +48,9 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
 	vm, err := arwenHost.NewArwenVM(
 		world,
-		wasmer.ExecutorFactory(),
 		&arwen.VMHostParameters{
 			VMType:                   testVMType,
+			OverrideVMExecutor:       wasmer.ExecutorFactory(),
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),

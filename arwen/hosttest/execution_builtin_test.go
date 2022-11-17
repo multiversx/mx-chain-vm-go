@@ -26,10 +26,11 @@ import (
 func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
 	gasSchedule := config.MakeGasMapForTests()
 
-	var world *worldmock.MockWorld
+	world := worldmock.NewMockWorld()
 	host := test.NewTestHostBuilder(t).
 		WithExecutorFactory(wasmer.ExecutorFactory()).
-		WithMockWorld(&world).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
 		WithGasSchedule(gasSchedule).
 		Build()
 
@@ -204,9 +205,10 @@ func TestESDT_GettersAPI(t *testing.T) {
 }
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
-	var world *worldmock.MockWorld
+	world := worldmock.NewMockWorld()
 	host := test.NewTestHostBuilder(t).
-		WithMockWorld(&world).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
 		Build()
 	defer func() {
 		host.Reset()

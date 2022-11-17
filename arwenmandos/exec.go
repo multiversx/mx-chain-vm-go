@@ -74,9 +74,9 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	vm, err := arwenHost.NewArwenVM(
 		ae.World,
-		wasmer.ExecutorFactory(),
 		&arwen.VMHostParameters{
 			VMType:                   TestVMType,
+			OverrideVMExecutor:       wasmer.ExecutorFactory(),
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
