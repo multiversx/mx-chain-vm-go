@@ -17,7 +17,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 	// 1-byte call value
 	host := testcommon.NewTestHostBuilder(t).
 		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -47,7 +47,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 	// 4-byte call value
 	host = testcommon.NewTestHostBuilder(t).
 		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_4bytes"
@@ -72,7 +72,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 	// BigInt call value
 	host = testcommon.NewTestHostBuilder(t).
 		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_bigInt_to_Bytes"
@@ -102,7 +102,7 @@ func TestElrondEI_int64getArgument(t *testing.T) {
 	code := testcommon.GetTestSCCode("elrondei", "../../")
 	host := testcommon.NewTestHostBuilder(t).
 		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()

@@ -200,8 +200,8 @@ func (thb *TestHostBuilder) WithGasSchedule(gasSchedule config.GasScheduleMap) *
 	return thb
 }
 
-// Host initializes the VM host with all configured options.
-func (thb *TestHostBuilder) Host() arwen.VMHost {
+// Build initializes the VM host with all configured options.
+func (thb *TestHostBuilder) Build() arwen.VMHost {
 	thb.initializeHost()
 	return thb.host
 }

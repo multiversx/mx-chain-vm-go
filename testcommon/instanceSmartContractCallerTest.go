@@ -114,7 +114,7 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 			WithBlockchainHook(callerTest.blockchainHookStub).
 			WithGasSchedule(callerTest.gasSchedule).
 			WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
-			Host()
+			Build()
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 

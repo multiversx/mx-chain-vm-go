@@ -293,7 +293,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host1.Reset()
 	}()
@@ -325,7 +325,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory1).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host1.Reset()
 	}()
@@ -337,7 +337,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	host2 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory2).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host2.Reset()
 	}()
@@ -371,7 +371,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 
 	host1 := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host1.Reset()
 	}()
@@ -385,7 +385,7 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 
 	host2 := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
-		Host()
+		Build()
 	defer func() {
 		host2.Reset()
 	}()
@@ -482,7 +482,7 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 
 	host := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -519,7 +519,7 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 
 	host := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -619,7 +619,7 @@ func TestExecution_CachingCompiledCode(t *testing.T) {
 	var world *worldmock.MockWorld
 	host := test.NewTestHostBuilder(t).
 		WithMockWorld(&world).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -1994,7 +1994,7 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
 	host := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForTwoSCs(parentCode, childCode, nil, nil)).
-		Host()
+		Build()
 
 	defer func() {
 		host.Reset()
@@ -2310,7 +2310,7 @@ func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 	var world *worldmock.MockWorld
 	host := test.NewTestHostBuilder(t).
 		WithMockWorld(&world).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -2354,7 +2354,7 @@ func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 	var world *worldmock.MockWorld
 	host := test.NewTestHostBuilder(t).
 		WithMockWorld(&world).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()

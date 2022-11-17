@@ -20,7 +20,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	host := test.NewTestHostBuilder(t).
 		WithWasmerSIGSEGVPassthrough(true).
 		WithBlockchainHook(blockchain).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -55,7 +55,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	host := test.NewTestHostBuilder(t).
 		WithWasmerSIGSEGVPassthrough(true).
 		WithBlockchainHook(blockchain).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -89,7 +89,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	host := test.NewTestHostBuilder(t).
 		WithWasmerSIGSEGVPassthrough(true).
 		WithBlockchainHook(blockchain).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -120,7 +120,7 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	host := test.NewTestHostBuilder(t).
 		WithWasmerSIGSEGVPassthrough(true).
 		WithBlockchainHook(blockchain).
-		Host()
+		Build()
 
 	defer func() {
 		host.Reset()
@@ -161,7 +161,7 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 		hosts[k] = test.NewTestHostBuilder(t).
 			WithWasmerSIGSEGVPassthrough(true).
 			WithBlockchainHook(blockchains[k]).
-			Host()
+			Build()
 		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 			var i *int
 			i = nil

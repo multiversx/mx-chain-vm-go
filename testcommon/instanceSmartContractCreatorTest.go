@@ -113,5 +113,5 @@ func (callerTest *TestCreateTemplateConfig) createTestArwenVM() arwen.VMHost {
 		WithBlockchainHook(callerTest.blockchainHookStub).
 		WithGasSchedule(callerTest.gasSchedule).
 		WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
-		Host()
+		Build()
 }

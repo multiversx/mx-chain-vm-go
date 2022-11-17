@@ -98,7 +98,7 @@ func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, wo
 	host := NewTestHostBuilder(callerTest.tb).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(world).
-		Host()
+		Build()
 
 	defer func() {
 		host.Reset()

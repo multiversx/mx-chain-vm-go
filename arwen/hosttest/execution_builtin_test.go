@@ -31,7 +31,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 		WithExecutorFactory(wasmer.ExecutorFactory()).
 		WithMockWorld(&world).
 		WithGasSchedule(gasSchedule).
-		Host()
+		Build()
 
 	code := test.GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
 	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, code, world)
@@ -207,7 +207,7 @@ func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
 	var world *worldmock.MockWorld
 	host := test.NewTestHostBuilder(t).
 		WithMockWorld(&world).
-		Host()
+		Build()
 	defer func() {
 		host.Reset()
 	}()
