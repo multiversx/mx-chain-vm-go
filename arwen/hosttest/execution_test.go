@@ -15,6 +15,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -22,6 +23,7 @@ import (
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -289,7 +291,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory := contextmock.NewExecutorRecorderMockFactory()
+	executorFactory := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -321,7 +323,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory1 := contextmock.NewExecutorRecorderMockFactory()
+	executorFactory1 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory1).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -333,7 +335,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	executorFactory2 := contextmock.NewExecutorRecorderMockFactory()
+	executorFactory2 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
 	host2 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory2).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
