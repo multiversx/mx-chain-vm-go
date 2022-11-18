@@ -29,7 +29,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	var vmOutput *vmcommon.VMOutput
 	defer func() {
-		if vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+		if vmOutput == nil || vmOutput.ReturnCode == vmcommon.ExecutionFailed {
 			runtime.CleanInstance()
 		}
 	}()
@@ -120,7 +120,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	var vmOutput *vmcommon.VMOutput
 	defer func() {
-		if vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+		if vmOutput == nil || vmOutput.ReturnCode == vmcommon.ExecutionFailed {
 			runtime.CleanInstance()
 		}
 	}()

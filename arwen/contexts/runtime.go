@@ -910,6 +910,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
 	if check.IfNil(context.instance) {
+		logRuntime.Trace("cannot clean, instance already nil")
 		return
 	}
 
