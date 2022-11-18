@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 type worldDataModel struct {
@@ -56,7 +55,7 @@ func getHostParameters() *arwen.VMHostParameters {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &arwen.VMHostParameters{
 		VMType:                   []byte{5, 0},
-		OverrideVMExecutor:       wasmer.ExecutorFactory(),
+		OverrideVMExecutor:       nil,
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),

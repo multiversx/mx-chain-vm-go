@@ -16,7 +16,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/config"
 	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +49,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		world,
 		&arwen.VMHostParameters{
 			VMType:                   testVMType,
-			OverrideVMExecutor:       wasmer.ExecutorFactory(),
+			OverrideVMExecutor:       nil,
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),

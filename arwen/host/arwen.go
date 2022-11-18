@@ -111,27 +111,10 @@ func NewArwenVM(
 	if err != nil {
 		return nil, err
 	}
-
-	vmHooks := elrondapi.NewElrondApi(host)
-	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
+	vmExecutor, err := host.createExecutor(hostParameters)
 	if err != nil {
 		return nil, err
 	}
-	vmExecutorFactory := defaultVMExecutorFactory
-	if hostParameters.OverrideVMExecutor != nil {
-		vmExecutorFactory = hostParameters.OverrideVMExecutor
-	}
-	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
-		VMHooks:                  vmHooks,
-		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
-		RkyvSerializationEnabled: true,
-		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
-	}
-	vmExecutor, err := vmExecutorFactory.NewExecutor(vmExecutorFactoryArgs)
-	if err != nil {
-		return nil, err
-	}
-
 	host.runtimeContext, err = contexts.NewRuntimeContext(
 		host,
 		hostParameters.VMType,
@@ -177,6 +160,26 @@ func NewArwenVM(
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
 	return host, nil
+}
+
+// Creates a new executor instance. Should only be called once per VM host instantiation.
+func (host *vmHost) createExecutor(hostParameters *arwen.VMHostParameters) (executor.Executor, error) {
+	vmHooks := elrondapi.NewElrondApi(host)
+	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
+	if err != nil {
+		return nil, err
+	}
+	vmExecutorFactory := defaultVMExecutorFactory
+	if hostParameters.OverrideVMExecutor != nil {
+		vmExecutorFactory = hostParameters.OverrideVMExecutor
+	}
+	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
+		VMHooks:                  vmHooks,
+		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
+		RkyvSerializationEnabled: true,
+		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
+	}
+	return vmExecutorFactory.NewExecutor(vmExecutorFactoryArgs)
 }
 
 func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {
