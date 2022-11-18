@@ -20,7 +20,7 @@ type TestCreateTemplateConfig struct {
 	host                     arwen.VMHost
 	gasSchedule              config.GasScheduleMap
 	wasmerSIGSEGVPassthrough bool
-	executorFactory          executor.ExecutorAbstractFactory
+	overrideExecutorFactory  executor.ExecutorAbstractFactory
 	stubAccountInitialNonce  uint64
 	blockchainHookStub       *contextmock.BlockchainHookStub
 }
@@ -32,14 +32,14 @@ func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 		setup:                    func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
 		gasSchedule:              config.MakeGasMapForTests(),
 		wasmerSIGSEGVPassthrough: true,
-		executorFactory:          nil,
+		overrideExecutorFactory:  nil,
 		stubAccountInitialNonce:  24,
 	}
 }
 
 // WithExecutor allows caller to choose the Executor type.
 func (callerTest *TestCreateTemplateConfig) WithExecutor(executorFactory executor.ExecutorAbstractFactory) *TestCreateTemplateConfig {
-	callerTest.executorFactory = executorFactory
+	callerTest.overrideExecutorFactory = executorFactory
 	return callerTest
 }
 
@@ -108,7 +108,7 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.
 
 func (callerTest *TestCreateTemplateConfig) createTestArwenVM() arwen.VMHost {
 	return NewTestHostBuilder(callerTest.t).
-		WithExecutorFactory(callerTest.executorFactory).
+		WithExecutorFactory(callerTest.overrideExecutorFactory).
 		WithBlockchainHook(callerTest.blockchainHookStub).
 		WithGasSchedule(callerTest.gasSchedule).
 		WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
