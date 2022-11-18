@@ -23,7 +23,10 @@ func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 	}
 }
 
-func (instance *InstanceBuilderMock) Id() string { return "" }
+// Id -
+func (instance *InstanceBuilderMock) Id() string {
+	return ""
+}
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account

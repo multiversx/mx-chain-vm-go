@@ -357,6 +357,7 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
+// Id returns an identifier for the instance, unique at runtime
 func (instance *Instance) Id() string {
 	return fmt.Sprintf("%p", instance.instance)
 }

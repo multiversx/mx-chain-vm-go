@@ -29,7 +29,10 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 	return instance, err
 }
 
-func (instance *InstanceBuilderRecorderMock) Id() string { return "" }
+// Id -
+func (instance *InstanceBuilderRecorderMock) Id() string {
+	return ""
+}
 
 // NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()
 func (builder *InstanceBuilderRecorderMock) NewInstanceFromCompiledCodeWithOptions(

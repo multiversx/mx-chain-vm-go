@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Address is a type alias for []byte
 type Address = []byte
 
 var owner = Address("owner")

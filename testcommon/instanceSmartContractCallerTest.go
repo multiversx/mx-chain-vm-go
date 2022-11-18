@@ -107,6 +107,7 @@ func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResu
 	runTestWithInstances(callerTest, false)
 }
 
+// GetVMHost returns the host instantiated in this test template
 func (callerTest *InstancesTestTemplate) GetVMHost() arwen.VMHost {
 	return callerTest.host
 }
