@@ -33,7 +33,7 @@ var _ arwen.VMHost = (*vmHost)(nil)
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
-var defaultVMExecutorFactory executor.ExecutorFactory = wasmer.ExecutorFactory()
+var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer.ExecutorFactory()
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -179,7 +179,7 @@ func (host *vmHost) createExecutor(hostParameters *arwen.VMHostParameters) (exec
 		RkyvSerializationEnabled: true,
 		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
 	}
-	return vmExecutorFactory.NewExecutor(vmExecutorFactoryArgs)
+	return vmExecutorFactory.CreateExecutor(vmExecutorFactoryArgs)
 }
 
 func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {

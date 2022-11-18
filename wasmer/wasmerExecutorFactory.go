@@ -10,9 +10,9 @@ func ExecutorFactory() *WasmerExecutorFactory {
 	return &WasmerExecutorFactory{}
 }
 
-// NewExecutor creates a new Executor instance.
-func (wef *WasmerExecutorFactory) NewExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
-	executor, err := NewExecutor()
+// CreateExecutor creates a new Executor instance.
+func (wef *WasmerExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	executor, err := CreateExecutor()
 	if err != nil {
 		return nil, err
 	}

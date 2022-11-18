@@ -179,7 +179,7 @@ func (thb *TestHostBuilder) WithBuiltinFunctions() *TestHostBuilder {
 }
 
 // WithExecutorFactory allows tests to choose what executor to use. The default is wasmer 1.
-func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorFactory) *TestHostBuilder {
+func (thb *TestHostBuilder) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *TestHostBuilder {
 	thb.vmHostParameters.OverrideVMExecutor = executorFactory
 	return thb
 }

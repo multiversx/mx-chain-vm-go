@@ -8,7 +8,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
@@ -21,7 +20,7 @@ type TestCreateTemplateConfig struct {
 	host                     arwen.VMHost
 	gasSchedule              config.GasScheduleMap
 	wasmerSIGSEGVPassthrough bool
-	executorFactory          executor.ExecutorFactory
+	executorFactory          executor.ExecutorAbstractFactory
 	stubAccountInitialNonce  uint64
 	blockchainHookStub       *contextmock.BlockchainHookStub
 }
@@ -33,13 +32,13 @@ func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 		setup:                    func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
 		gasSchedule:              config.MakeGasMapForTests(),
 		wasmerSIGSEGVPassthrough: true,
-		executorFactory:          wasmer.ExecutorFactory(),
+		executorFactory:          nil,
 		stubAccountInitialNonce:  24,
 	}
 }
 
 // WithExecutor allows caller to choose the Executor type.
-func (callerTest *TestCreateTemplateConfig) WithExecutor(executorFactory executor.ExecutorFactory) *TestCreateTemplateConfig {
+func (callerTest *TestCreateTemplateConfig) WithExecutor(executorFactory executor.ExecutorAbstractFactory) *TestCreateTemplateConfig {
 	callerTest.executorFactory = executorFactory
 	return callerTest
 }
@@ -76,7 +75,7 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertR
 
 func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 	if callerTest.blockchainHookStub == nil {
-		callerTest.blockchainHookStub = callerTest.createBlockchainMock()
+		callerTest.blockchainHookStub = callerTest.createBlockchainStub()
 	}
 	if callerTest.host == nil {
 		callerTest.host = callerTest.createTestArwenVM()
@@ -94,7 +93,7 @@ func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 	callerTest.assertResults(callerTest.blockchainHookStub, verify)
 }
 
-func (callerTest *TestCreateTemplateConfig) createBlockchainMock() *contextmock.BlockchainHookStub {
+func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.BlockchainHookStub {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &contextmock.StubAccount{

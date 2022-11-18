@@ -25,8 +25,8 @@ func NewExecutorMockFactory(world *worldmock.MockWorld) *ExecutorMockFactory {
 	}
 }
 
-// NewExecutor creates a new Executor instance.
-func (emf *ExecutorMockFactory) NewExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+// CreateExecutor creates a new Executor instance.
+func (emf *ExecutorMockFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
 	executorMock := NewExecutorMock(emf.World)
 	emf.LastCreatedExecutor = executorMock
 	return executorMock, nil

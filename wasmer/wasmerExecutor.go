@@ -14,8 +14,8 @@ type WasmerExecutor struct {
 	vmHooksPtr      uintptr
 }
 
-// NewExecutor creates a new wasmer executor.
-func NewExecutor() (*WasmerExecutor, error) {
+// CreateExecutor creates a new wasmer executor.
+func CreateExecutor() (*WasmerExecutor, error) {
 	functionNames, err := injectCgoFunctionPointers()
 	if err != nil {
 		return nil, err

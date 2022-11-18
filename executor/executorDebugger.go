@@ -6,22 +6,22 @@ import (
 
 // ExecutorDebuggerFactory is the factory for the ExecutorDebugger.
 type ExecutorDebuggerFactory struct {
-	wrappedFactory ExecutorFactory
+	wrappedFactory ExecutorAbstractFactory
 
 	// LastCreatedExecutor gives access to the created Executor
 	LastCreatedExecutor *ExecutorDebugger
 }
 
 // ExecutorFactory returns the Wasmer executor factory.
-func NewExecutorDebuggerFactory(wrappedFactory ExecutorFactory) *ExecutorDebuggerFactory {
+func NewExecutorDebuggerFactory(wrappedFactory ExecutorAbstractFactory) *ExecutorDebuggerFactory {
 	return &ExecutorDebuggerFactory{
 		wrappedFactory: wrappedFactory,
 	}
 }
 
-// NewExecutor creates a new Executor instance.
-func (ed *ExecutorDebuggerFactory) NewExecutor(args ExecutorFactoryArgs) (Executor, error) {
-	wrappedExecutor, err := ed.wrappedFactory.NewExecutor(args)
+// CreateExecutor creates a new Executor instance.
+func (ed *ExecutorDebuggerFactory) CreateExecutor(args ExecutorFactoryArgs) (Executor, error) {
+	wrappedExecutor, err := ed.wrappedFactory.CreateExecutor(args)
 	if err != nil {
 		return nil, err
 	}
