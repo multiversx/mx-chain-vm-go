@@ -137,18 +137,6 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 		})
 }
 
-func TestExecution_DeployWASM_WithoutMemory(t *testing.T) {
-	test.BuildInstanceCreatorTest(t).
-		WithInput(test.CreateTestContractCreateInputBuilder().
-			WithGasProvided(1000).
-			WithContractCode(test.GetTestSCCode("memoryless", "../../")).
-			Build()).
-		WithAddress(newAddress).
-		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			verify.ContractInvalid()
-		})
-}
-
 func TestExecution_DeployWASM_WrongInit(t *testing.T) {
 	test.BuildInstanceCreatorTest(t).
 		WithInput(test.CreateTestContractCreateInputBuilder().
@@ -317,7 +305,7 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 		verify.Ok()
 	}
 
-	var host1InstancesData = make(map[interface{}]bool)
+	var host1InstancesData = make(map[uintptr]bool)
 	for _, instance := range instanceRecorder1.GetContractInstances(code) {
 		host1InstancesData[instance.GetData()] = true
 	}
@@ -328,9 +316,6 @@ func TestExecution_MultipleArwens_OverlappingContractInstanceData(t *testing.T) 
 	}()
 	_, _, _, _, runtimeContext2, _ := host2.GetContexts()
 	runtimeContextMock = contextmock.NewRuntimeContextWrapper(&runtimeContext2)
-	runtimeContextMock.GetSCCodeFunc = func() ([]byte, error) {
-		return code, nil
-	}
 	host2.SetRuntimeContext(runtimeContextMock)
 
 	for i := 0; i < maxUint8AsInt+1; i++ {
@@ -2229,7 +2214,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 		storeEntries = append(storeEntries, test.CreateStoreEntry(test.ChildAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 	}
 
-	test.BuildInstanceCallTest(t).
+	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")).
@@ -2243,8 +2228,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 			WithFunction(parentCallsChild).
 			WithGasProvided(test.GasProvided).
 			WithArguments([]byte{byte(recursiveCalls)}).
-			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			Build())
+
+	for i := 0; i < 1; i++ {
+		testCase.AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
@@ -2260,6 +2247,9 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 
 			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
 		})
+	}
+
+	testCase.GetVMHost().Close()
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
@@ -3167,6 +3157,60 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		})
 }
 
+func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("breakpoint", "../../")))
+
+	makeInput := func(behaviour byte) *vmcommon.ContractCallInput {
+		return test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("testFunc").
+			WithArguments([]byte{behaviour}).
+			Build()
+	}
+
+	vmInputOk := makeInput(0)
+	vmInputUserError := makeInput(1)
+	vmInputExecutionFailed := makeInput(2)
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+
+	testCase.WithInput(vmInputUserError).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.UserError().ReturnData().ReturnMessage("exit here")
+		})
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+}
+
 func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
@@ -3240,4 +3284,14 @@ func makeBytecodeWithLocals(numLocals uint64) []byte {
 	result[0x59] = byte(int(result[0x59]) + extraBytes)
 
 	return result
+}
+
+// modifyERC20BytecodeWithCustomTransferEvent rewrites the bytecode of the ERC20
+// contract to change the first bytes of its transferEvent bytes
+func modifyERC20BytecodeWithCustomTransferEvent(erc20Bytecode []byte, replaceBytes []byte) {
+	transferEventBytecodeOffset := 0x144B
+
+	for i, b := range replaceBytes {
+		erc20Bytecode[transferEventBytecodeOffset+i] = b
+	}
 }

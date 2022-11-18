@@ -1,5 +1,7 @@
 #include "../elrond/context.h"
 
+byte array[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 void testFunc() {
   i64 arg = int64getArgument(0);
 
@@ -8,13 +10,12 @@ void testFunc() {
     signalError(msg, 9);
     byte msg2[] = "exit later";
     signalError(msg2, 10);
-  } else {
-    int64finish(100);
   }
-}
 
-void init() {
-}
+  if (arg == 2) {
+    array[2147483647] = 42;
+    int64finish(array[2147483647]);
+  }
 
-void _main() {
+  int64finish(100);
 }

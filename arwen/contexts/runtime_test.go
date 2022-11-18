@@ -232,7 +232,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	runtimeContext.instance = nil
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
@@ -264,7 +264,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 		Function:      funcName,
 	}
 	runtimeContext.InitStateFromContractCallInput(input)
-
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
@@ -286,9 +286,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
 
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 2, len(runtimeContext.stateStack))
 
@@ -636,7 +638,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data2"), memContents)
 
 	// Pop the initial instance from the stack, making it the 'current instance'
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
@@ -686,7 +688,7 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
 }

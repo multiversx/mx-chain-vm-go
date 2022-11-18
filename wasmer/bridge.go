@@ -286,6 +286,12 @@ func cWasmerInstanceContextMemory(instanceContext *cWasmerInstanceContextT) *cWa
 	))
 }
 
+func cWasmerInstanceReset(instance *cWasmerInstanceT) cWasmerResultT {
+	return (cWasmerResultT)(C.wasmer_instance_reset(
+		(*C.wasmer_instance_t)(instance),
+	))
+}
+
 func cWasmerInstanceDestroy(instance *cWasmerInstanceT) {
 	C.wasmer_instance_destroy(
 		(*C.wasmer_instance_t)(instance),

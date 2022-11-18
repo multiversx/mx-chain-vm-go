@@ -159,7 +159,6 @@ type RuntimeContext interface {
 	CleanInstance()
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
-
 	ReplaceInstanceBuilder(builder InstanceBuilder)
 }
 

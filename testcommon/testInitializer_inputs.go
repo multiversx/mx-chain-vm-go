@@ -21,6 +21,7 @@ import (
 	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/stretchr/testify/require"
@@ -268,11 +269,14 @@ func defaultTestArwenForContracts(
 
 	contractsMap := make(map[string]*contextmock.StubAccount)
 	codeMap := make(map[string]*[]byte)
+	compiledCodeMap := make(map[string][]byte)
 
 	for _, contract := range contracts {
+		codeHash, _ := hashing.NewHasher().Sha256(contract.code)
 		contractsMap[string(contract.address)] = &contextmock.StubAccount{
 			Address:      contract.address,
 			Balance:      big.NewInt(contract.balance),
+			CodeHash:     codeHash,
 			CodeMetadata: DefaultCodeMetadata,
 			OwnerAddress: ParentAddress,
 		}
@@ -292,6 +296,17 @@ func defaultTestArwenForContracts(
 			return *code
 		}
 		return nil
+	}
+
+	stubBlockchainHook.SaveCompiledCodeCalled = func(codehash []byte, code []byte) {
+		compiledCodeMap[string(codehash)] = code
+	}
+	stubBlockchainHook.GetCompiledCodeCalled = func(codeHash []byte) (bool, []byte) {
+		compiledCode, ok := compiledCodeMap[string(codeHash)]
+		if ok {
+			return ok, compiledCode
+		}
+		return false, nil
 	}
 
 	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule, wasmerSIGSEGVPassthrough)
