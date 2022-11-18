@@ -316,7 +316,11 @@ func TestWASMCreateAndCall(t *testing.T) {
 		WithCallerAddr(test.UserAddress).
 		Build()
 
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
 	world.NewAddressMocks = append(world.NewAddressMocks, &worldmock.NewAddressMock{
 		CreatorAddress: test.UserAddress,
 		CreatorNonce:   0,

@@ -15,6 +15,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -22,6 +23,7 @@ import (
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -289,7 +291,11 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	executorFactory := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	host1 := test.NewTestHostBuilder(t).
+		WithExecutorFactory(executorFactory).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host1.Reset()
 	}()
@@ -304,7 +310,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	}
 
 	var vmHooksPtr = make(map[uintptr]bool)
-	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+	for _, instance := range executorFactory.LastCreatedExecutor.GetContractInstances(code) {
 		vmHooksPtr[instance.GetVMHooksPtr()] = true
 	}
 	require.False(t, len(vmHooksPtr) > 1)
@@ -317,7 +323,11 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	host1, instanceRecorder1 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	executorFactory1 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	host1 := test.NewTestHostBuilder(t).
+		WithExecutorFactory(executorFactory1).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host1.Reset()
 	}()
@@ -325,7 +335,11 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	host2, instanceRecorder2 := test.DefaultTestArwenForCallWithInstanceRecorderMock(t, code, nil)
+	executorFactory2 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	host2 := test.NewTestHostBuilder(t).
+		WithExecutorFactory(executorFactory2).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host2.Reset()
 	}()
@@ -338,10 +352,10 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runNContractsForHostAndVerify(t, host2, input, maxUint8AsInt+1)
 
 	var host1VMHooksPtr = make(map[uintptr]bool)
-	for _, instance := range instanceRecorder1.GetContractInstances(code) {
+	for _, instance := range executorFactory1.LastCreatedExecutor.GetContractInstances(code) {
 		host1VMHooksPtr[instance.GetVMHooksPtr()] = true
 	}
-	for _, instance := range instanceRecorder2.GetContractInstances(code) {
+	for _, instance := range executorFactory2.LastCreatedExecutor.GetContractInstances(code) {
 		_, found := host1VMHooksPtr[instance.GetVMHooksPtr()]
 		require.False(t, found)
 	}
@@ -357,7 +371,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	interHostsChan := make(chan string)
 	host1Chan := make(chan string)
 
-	host1, _ := test.DefaultTestArwenForCall(t, code, nil)
+	host1 := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host1.Reset()
 	}()
@@ -369,7 +385,9 @@ func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.
 	}
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	host2, _ := test.DefaultTestArwenForCall(t, code, nil)
+	host2 := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host2.Reset()
 	}()
@@ -464,7 +482,9 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 
 	log := logger.GetOrCreate("arwen/test")
 
-	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -499,7 +519,9 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 
 	log := logger.GetOrCreate("arwen/test")
 
-	host, _ := test.DefaultTestArwenForCall(t, contractCode, big.NewInt(0))
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -596,14 +618,17 @@ func TestExecution_Call_Successful(t *testing.T) {
 }
 
 func TestExecution_CachingCompiledCode(t *testing.T) {
-	scAddress := test.MakeTestSCAddress("counter")
-	code := test.GetTestSCCode("counter", "../../")
-
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
 	defer func() {
 		host.Reset()
 	}()
 
+	scAddress := test.MakeTestSCAddress("counter")
+	code := test.GetTestSCCode("counter", "../../")
 	world.AcctMap.CreateSmartContractAccount(test.ParentAddress, scAddress, code, world)
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -1970,7 +1995,10 @@ func TestExecution_ExecuteOnDestContext_GasRemaining(t *testing.T) {
 	// Initialize the VM with the parent SC and child SC, but without really
 	// executing the parent. The initialization emulates the behavior of
 	// host.doRunSmartContractCall(). Gas cost for compilation is skipped.
-	host, _ := test.DefaultTestArwenForTwoSCs(t, parentCode, childCode, nil, nil)
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(test.BlockchainHookStubForTwoSCs(parentCode, childCode, nil, nil)).
+		Build()
+
 	defer func() {
 		host.Reset()
 	}()
@@ -2283,7 +2311,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 
 func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
-	host := test.DefaultTestArwen(t, world)
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -2325,7 +2356,10 @@ func TestExecution_ExecuteOnSameContext_MultipleChildren(t *testing.T) {
 
 func TestExecution_ExecuteOnDestContext_MultipleChildren(t *testing.T) {
 	world := worldmock.NewMockWorld()
-	host := test.DefaultTestArwen(t, world)
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
 	defer func() {
 		host.Reset()
 	}()

@@ -7,7 +7,6 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
@@ -17,7 +16,6 @@ import (
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -73,16 +71,11 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 	blockGasLimit := uint64(10000000)
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
 
-	executor, err := wasmer.NewExecutor()
-	if err != nil {
-		return err
-	}
-
 	vm, err := arwenHost.NewArwenVM(
 		ae.World,
-		executor,
 		&arwen.VMHostParameters{
 			VMType:                   TestVMType,
+			OverrideVMExecutor:       nil,
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
@@ -98,7 +91,6 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	ae.vm = vm
 	ae.vmHost = vm
-	executor.InitVMHooks(elrondapi.NewElrondApi(vm))
 	return nil
 }
 

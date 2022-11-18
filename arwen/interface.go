@@ -105,7 +105,6 @@ type RuntimeContext interface {
 	StateStack
 
 	GetVMExecutor() executor.Executor
-	ReplaceVMExecutor(exec executor.Executor)
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.ContractCallInput

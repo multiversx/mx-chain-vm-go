@@ -4,9 +4,9 @@ import (
 	"math/big"
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +15,9 @@ func TestElrondEI_CallValue(t *testing.T) {
 	code := testcommon.GetTestSCCode("elrondei", "../../")
 
 	// 1-byte call value
-	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
+	host := testcommon.NewTestHostBuilder(t).
+		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host.Reset()
 	}()
@@ -43,7 +45,9 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// 4-byte call value
-	host, _ = testcommon.DefaultTestArwenForCall(t, code, nil)
+	host = testcommon.NewTestHostBuilder(t).
+		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
+		Build()
 	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_4bytes"
@@ -66,7 +70,9 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// BigInt call value
-	host, _ = testcommon.DefaultTestArwenForCall(t, code, nil)
+	host = testcommon.NewTestHostBuilder(t).
+		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
+		Build()
 	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_bigInt_to_Bytes"
@@ -94,7 +100,9 @@ func TestElrondEI_CallValue(t *testing.T) {
 
 func TestElrondEI_int64getArgument(t *testing.T) {
 	code := testcommon.GetTestSCCode("elrondei", "../../")
-	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
+	host := testcommon.NewTestHostBuilder(t).
+		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).
+		Build()
 	defer func() {
 		host.Reset()
 	}()

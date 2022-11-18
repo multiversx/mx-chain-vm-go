@@ -91,14 +91,21 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
 }
 
 func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, world *worldmock.MockWorld, createAccount bool, expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
-	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.tb, world)
+	if world == nil {
+		world = worldmock.NewMockWorld()
+	}
+	executorFactory := mock.NewExecutorMockFactory(world)
+	host := NewTestHostBuilder(callerTest.tb).
+		WithExecutorFactory(executorFactory).
+		WithBlockchainHook(world).
+		Build()
 
 	defer func() {
 		host.Reset()
 	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.Initialize(callerTest.tb, host, imb, createAccount)
+		mockSC.Initialize(callerTest.tb, host, executorFactory.LastCreatedExecutor, createAccount)
 	}
 
 	callerTest.setup(host, world)
