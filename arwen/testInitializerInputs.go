@@ -5,14 +5,11 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/wasm-vm/config"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 )
-
-// DefaultVMType is an exposed value to use in tests
-var DefaultVMType = []byte{0xF, 0xF}
 
 // ErrAccountNotFound is an exposed value to use in tests
 var ErrAccountNotFound = errors.New("account not found")

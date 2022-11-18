@@ -49,6 +49,7 @@ type MockWorld struct {
 	IsPausedValue              bool
 	IsLimitedTransferValue     bool
 	ProvidedBlockchainHook     vmcommon.BlockchainHook
+	OtherVMOutputMap           map[string]*vmcommon.VMOutput
 }
 
 // NewMockWorld creates a new MockWorld instance
@@ -64,6 +65,7 @@ func NewMockWorld() *MockWorld {
 		NewAddressMocks:   nil,
 		CompiledCode:      make(map[string][]byte),
 		BuiltinFuncs:      nil,
+		OtherVMOutputMap:  make(map[string]*vmcommon.VMOutput),
 	}
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
 
@@ -153,5 +155,14 @@ func (b *MockWorld) RevertToSnapshot(snapshot int) error {
 
 // ExecuteSmartContractCallOnOtherVM -
 func (b *MockWorld) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
-	return &vmcommon.VMOutput{}, nil
+	vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
+	if err != nil {
+		return nil, err
+	}
+	vmOutput := b.OtherVMOutputMap[string(vmType)]
+	if vmOutput == nil {
+		return &vmcommon.VMOutput{}, nil
+	}
+
+	return vmOutput, nil
 }

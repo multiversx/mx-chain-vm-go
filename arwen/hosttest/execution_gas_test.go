@@ -1,6 +1,7 @@
 package hosttest
 
 import (
+	"encoding/hex"
 	"errors"
 	"math/big"
 	"testing"
@@ -1930,6 +1931,51 @@ func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey(test.ChildKey).WithValue(test.ChildData),
 				)
 		})
+}
+
+func Test_DifferentVM_ExecuteOnDestCtx(t *testing.T) {
+	testConfig := makeTestConfig()
+
+	fakeVMType, _ := hex.DecodeString("beaf")
+	childAddress, _ := hex.DecodeString("0000000000000000beaf00000000000022cd8429ce92f8973bba2a9fb51e0eb3a1")
+
+	world := worldmock.NewMockWorld()
+	vmOutput := arwen.MakeEmptyVMOutput()
+	arwen.AddNewOutputAccountWithSender(vmOutput,
+		test.ThirdPartyAddress,
+		test.ParentAddress,
+		testConfig.TransferToThirdParty,
+		[]byte("test"))
+	world.OtherVMOutputMap[string(fakeVMType)] = vmOutput
+
+	_, err := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.ExecOnDestCtxParentMock, contracts.WasteGasParentMock),
+		).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(testConfig.GasProvided).
+			WithFunction("execOnDestCtx").
+			WithArguments(childAddress, []byte("wasteGas"), big.NewInt(1).Bytes()).
+			Build()).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+		}).
+		AndAssertResultsWithWorld(world, true, nil, nil, func(startNode *testcommon.TestCallNode, world *worldmock.MockWorld, verify *testcommon.VMOutputVerifier, expectedErrorsForRound []string) {
+			verify.Ok().
+				Transfers(
+					test.CreateTransferEntry(test.ParentAddress, test.ThirdPartyAddress).
+						WithData([]byte("test")).
+						WithValue(big.NewInt(testConfig.TransferToThirdParty)),
+				)
+		})
+
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 type MockClaimBuiltin struct {

@@ -311,3 +311,13 @@ func ChildSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
 		return instance
 	})
 }
+
+// SimpleChildSetStorageMock is an exposed mock contract method
+func SimpleChildSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("simpleChildSetStorage", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		host.Storage().SetStorage(test.ChildKey, test.ChildData)
+		return instance
+	})
+}
