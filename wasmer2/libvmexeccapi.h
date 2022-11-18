@@ -291,8 +291,24 @@ typedef struct {
 
 } vm_exec_opcode_cost_t;
 
+/**
+ * Checks that all public module functions (SC endpoints) have no arguments or results.
+ *
+ * Still in the works.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_check_signatures(vm_exec_instance_t *_instance);
 
+/**
+ * Destroys a VM executor object.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 void vm_exec_executor_destroy(vm_exec_executor_t *executor);
 
 /**
@@ -304,6 +320,10 @@ void vm_exec_executor_destroy(vm_exec_executor_t *executor);
  * of `wasmer_instance_context_data_get()`.
  *
  * This function does nothing if `instance` is a null pointer.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor_ptr,
                                                    void *vm_hooks_ptr);
@@ -322,6 +342,10 @@ vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor_
  *   * `instance` is a null pointer,
  *   * `name` is a null pointer,
  *   * `params` is a null pointer.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
 
@@ -332,11 +356,22 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const c
  * example.
  *
  * If `instance` is a null pointer, this function does nothing.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 void vm_exec_instance_destroy(vm_exec_instance_t *instance);
 
 uint64_t vm_exec_instance_get_points_used(const vm_exec_instance_t *instance_ptr);
 
+/**
+ * Checks whether SC has an endpoint with given name.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 int vm_exec_instance_has_function(vm_exec_instance_t *instance_ptr, const char *func_name_ptr);
 
 /**
@@ -347,6 +382,10 @@ int vm_exec_instance_has_function(vm_exec_instance_t *instance_ptr, const char *
  *
  * Note that when the memory grows, it can be reallocated, and thus
  * the returned pointer can be invalidated.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 uint8_t *vm_exec_instance_memory_data(vm_exec_instance_t *instance_ptr);
 
@@ -354,6 +393,10 @@ uint8_t *vm_exec_instance_memory_data(vm_exec_instance_t *instance_ptr);
  * Gets the size in bytes of the memory data.
  *
  * This function returns 0 if `memory` is a null pointer.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 uint64_t vm_exec_instance_memory_data_length(vm_exec_instance_t *instance_ptr);
 
@@ -364,6 +407,10 @@ uint64_t vm_exec_instance_memory_data_length(vm_exec_instance_t *instance_ptr);
  * `wasmer_result_t::WASMER_ERROR` otherwise. Use
  * `wasmer_last_error_length()` with `wasmer_last_error_message()` to
  * read the error message.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 vm_exec_result_t vm_exec_instance_memory_grow(vm_exec_instance_t *instance_ptr,
                                               uint32_t by_num_pages);
@@ -397,13 +444,32 @@ int vm_exec_last_error_length(void);
  *  * The buffer is too smal to hold the error message.
  *
  * Note: The error message always has a trailing null character.
- * ```
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
  */
 int vm_exec_last_error_message(char *dest_buffer, int dest_buffer_len);
 
+/**
+ * Creates a new VM executor.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_exec_new_executor(vm_exec_executor_t **executor,
                                       vm_exec_vm_hook_c_func_pointers **vm_hook_pointers_ptr_ptr);
 
+/**
+ * Creates a new VM executor instance.
+ *
+ * All of the context comes from the provided VM executor.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor_ptr,
                                       vm_exec_instance_t **instance_ptr_ptr,
                                       uint8_t *wasm_bytes_ptr,
@@ -413,8 +479,28 @@ vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor_ptr,
 vm_exec_result_t vm_exec_set_opcode_costs(vm_exec_executor_t *executor_ptr,
                                           const vm_exec_opcode_cost_t *opcode_cost_ptr);
 
+/**
+ * Returns all SC endpoint names, separated by pipes.
+ *
+ * e.g. `"init|endpoint1|endpoint2"`
+ *
+ * No endpoint order is assumed.
+ *
+ * It is necessary to first call `vm_exported_function_names_length` and pre-allocate a buffer of this length.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 int vm_exported_function_names(vm_exec_instance_t *instance_ptr,
                                char *dest_buffer,
                                int dest_buffer_len);
 
+/**
+ * Required to be able to extract all SC endpoint names. See `vm_exported_function_names`.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 int vm_exported_function_names_length(vm_exec_instance_t *instance_ptr);
