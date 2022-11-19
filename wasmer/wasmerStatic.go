@@ -2,8 +2,7 @@ package wasmer
 
 import "github.com/ElrondNetwork/wasm-vm/executor"
 
-// SetRkyvSerializationEnabled enables or disables RKYV serialization of
-// instances in Wasmer
+// SetRkyvSerializationEnabled enables or disables RKYV serialization of instances in Wasmer.
 func SetRkyvSerializationEnabled(enabled bool) {
 	if enabled {
 		cWasmerInstanceEnableRkyv()
