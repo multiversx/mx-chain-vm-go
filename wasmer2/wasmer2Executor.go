@@ -20,8 +20,8 @@ type Wasmer2Executor struct {
 	vmHooksPtrPtr  unsafe.Pointer
 }
 
-// NewExecutor creates a new wasmer executor.
-func NewExecutor() (*Wasmer2Executor, error) {
+// CreateExecutor creates a new wasmer executor.
+func CreateExecutor() (*Wasmer2Executor, error) {
 	vmHookPointers := populateCgoFunctionPointers()
 	localPtr := uintptr(unsafe.Pointer(vmHookPointers))
 	localPtrPtr := unsafe.Pointer(&localPtr)
@@ -110,15 +110,10 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 }
 
 // InitVMHooks inits the VM hooks
-func (wasmerExecutor *Wasmer2Executor) InitVMHooks(vmHooks executor.VMHooks) {
+func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
 	localPtr := uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 	wasmerExecutor.vmHooksPtr = localPtr
 	wasmerExecutor.vmHooksPtrPtr = unsafe.Pointer(&localPtr)
 	cWasmerExecutorContextDataSet(wasmerExecutor.cgoExecutor, wasmerExecutor.vmHooksPtrPtr)
-}
-
-// GetVMHooks returns the VM hooks
-func (wasmerExecutor *Wasmer2Executor) GetVMHooks() executor.VMHooks {
-	return wasmerExecutor.vmHooks
 }

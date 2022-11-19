@@ -18,6 +18,7 @@ import (
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -77,13 +78,9 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	var executorFactory executor.ExecutorAbstractFactory
 	if ae.UseWasmer2 {
-		// executor, err = wasmer2.NewExecutor()
-		panic("not implemented")
+		executorFactory = wasmer2.ExecutorFactory()
 	} else {
-		executor, err = wasmer.NewExecutorFactory()
-	}
-	if err != nil {
-		return err
+		executorFactory = wasmer.ExecutorFactory()
 	}
 
 	vm, err := arwenHost.NewArwenVM(
