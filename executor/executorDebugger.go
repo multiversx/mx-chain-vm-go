@@ -2,7 +2,6 @@ package executor
 
 import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/config"
 )
 
 // ExecutorDebuggerFactory is the factory for the ExecutorDebugger.
@@ -42,7 +41,7 @@ type ExecutorDebugger struct {
 }
 
 // SetOpcodeCosts wraps the call to the underlying executor.
-func (executorMock *ExecutorDebugger) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
+func (executorMock *ExecutorDebugger) SetOpcodeCosts(opcodeCosts *WASMOpcodeCost) {
 	executorMock.wrappedExecutor.SetOpcodeCosts(opcodeCosts)
 }
 

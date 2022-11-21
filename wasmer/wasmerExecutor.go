@@ -4,7 +4,6 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
@@ -29,7 +28,7 @@ func CreateExecutor() (*WasmerExecutor, error) {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
+func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
 	SetOpcodeCosts(opcodeCosts)
 }
 

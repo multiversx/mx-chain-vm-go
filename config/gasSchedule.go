@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -92,7 +93,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	wasmOps := &WASMOpcodeCost{}
+	wasmOps := &executor.WASMOpcodeCost{}
 	err = mapstructure.Decode(gasMap["WASMOpcodeCost"], wasmOps)
 	if err != nil {
 		return nil, err

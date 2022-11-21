@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
@@ -50,7 +49,7 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 }
 
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
-func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *config.WASMOpcodeCost) {
+func (wasmerExecutor *Wasmer2Executor) SetOpcodeCosts(wasmOps *executor.WASMOpcodeCost) {
 	// extract only wasmer2 opcodes
 	wasmerExecutor.opcodeCost = wasmerExecutor.extractOpcodeCost(wasmOps)
 	cWasmerExecutorSetOpcodeCost(
@@ -126,7 +125,7 @@ func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooks) {
 	cWasmerExecutorContextDataSet(wasmerExecutor.cgoExecutor, wasmerExecutor.vmHooksPtrPtr)
 }
 
-func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *config.WASMOpcodeCost) *OpcodeCost {
+func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMOpcodeCost) *OpcodeCost {
 	return &OpcodeCost{
 		AtomicFence:               wasmOps.AtomicFence,
 		Block:                     wasmOps.Block,

@@ -1,6 +1,6 @@
 package wasmer
 
-import "github.com/ElrondNetwork/wasm-vm/config"
+import "github.com/ElrondNetwork/wasm-vm/executor"
 
 // OpcodeCount is the number of opcodes that we account for when setting gas costs.
 const opcodeCount = 448
@@ -456,7 +456,7 @@ const (
 	OpcodeLocalAllocate
 )
 
-func toOpcodeCostsArray(opcode_costs_struct *config.WASMOpcodeCost) [opcodeCount]uint32 {
+func toOpcodeCostsArray(opcode_costs_struct *executor.WASMOpcodeCost) [opcodeCount]uint32 {
 	opcode_costs := [opcodeCount]uint32{}
 
 	opcode_costs[OpcodeUnreachable] = opcode_costs_struct.Unreachable
