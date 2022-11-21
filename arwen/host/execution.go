@@ -255,17 +255,20 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	blockchain := host.Blockchain()
 
-	vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
-	if err != nil {
-		return nil, true, err
-	}
-	if !bytes.Equal(host.Runtime().GetVMType(), vmType) {
-		vmOutput, err := blockchain.ExecuteSmartContractCallOnOtherVM(input)
+	isSmartContract := blockchain.IsSmartContract(input.RecipientAddr)
+	if isSmartContract {
+		vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
 		if err != nil {
 			return nil, true, err
 		}
-		host.Output().AddToActiveState(vmOutput)
-		return nil, true, err
+		if !bytes.Equal(host.Runtime().GetVMType(), vmType) {
+			vmOutput, err := blockchain.ExecuteSmartContractCallOnOtherVM(input)
+			if err != nil {
+				return nil, true, err
+			}
+			host.Output().AddToActiveState(vmOutput)
+			return nil, true, err
+		}
 	}
 
 	blockchain.PushState()
