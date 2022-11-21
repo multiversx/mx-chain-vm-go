@@ -24,6 +24,7 @@ import (
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -138,8 +139,17 @@ func TestExecution_DeployNotWASM(t *testing.T) {
 		})
 }
 
-func TestExecution_DeployWASM_WrongInit(t *testing.T) {
+func TestExecution_DeployWASM_WrongInit_Wasmer1(t *testing.T) {
+	testExecution_DeployWASM_WrongInit(t, wasmer.ExecutorFactory())
+}
+
+func TestExecution_DeployWASM_WrongInit_Wasmer2(t *testing.T) {
+	testExecution_DeployWASM_WrongInit(t, wasmer2.ExecutorFactory())
+}
+
+func testExecution_DeployWASM_WrongInit(t *testing.T, executorFactory executor.ExecutorAbstractFactory) {
 	test.BuildInstanceCreatorTest(t).
+		WithExecutor(executorFactory).
 		WithInput(test.CreateTestContractCreateInputBuilder().
 			WithGasProvided(1000).
 			WithContractCode(test.GetTestSCCode("init-wrong", "../../")).
