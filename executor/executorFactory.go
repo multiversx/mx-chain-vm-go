@@ -1,9 +1,11 @@
 package executor
 
+import "github.com/ElrondNetwork/wasm-vm/config"
+
 // ExecutorFactoryArgs define the Executor configurations that come from the VM, especially the hooks and the gas costs.
 type ExecutorFactoryArgs struct {
 	VMHooks                  VMHooks
-	OpcodeCosts              *WASMOpcodeCost
+	OpcodeCosts              *config.WASMOpcodeCost
 	RkyvSerializationEnabled bool
 	WasmerSIGSEGVPassthrough bool
 }
