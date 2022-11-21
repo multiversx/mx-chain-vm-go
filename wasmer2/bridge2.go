@@ -195,6 +195,12 @@ func cWasmerInstanceExportedFunctionNames(instance *cWasmerInstanceT, buffer *cC
 	))
 }
 
+func cWasmerCheckSignatures(instance *cWasmerInstanceT) cInt {
+	return (cInt)(C.vm_check_signatures(
+		(*C.vm_exec_instance_t)(instance),
+	))
+}
+
 // func cWasmerInstanceContextGet(instance *cWasmerInstanceT) *cWasmerInstanceContextT {
 // 	return (*cWasmerInstanceContextT)(C.vm_exec_instance_context_get(
 // 		(*C.vm_exec_instance_t)(instance),

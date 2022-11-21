@@ -12,7 +12,7 @@ type Instance interface {
 	CallFunction(functionName string) error
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
-	ValidateVoidFunction(functionName string) error
+	ValidateFunctionArities() error
 	HasMemory() bool
 	GetMemory() Memory
 	IsFunctionImported(name string) bool

@@ -17,8 +17,8 @@ type WasmerExecutor struct {
 	vmHooksPtr      uintptr
 }
 
-// NewExecutor creates a new wasmer executor.
-func NewExecutor() (*WasmerExecutor, error) {
+// CreateExecutor creates a new wasmer executor.
+func CreateExecutor() (*WasmerExecutor, error) {
 	functionNames, err := injectCgoFunctionPointers()
 	if err != nil {
 		return nil, err
@@ -31,16 +31,6 @@ func NewExecutor() (*WasmerExecutor, error) {
 // SetOpcodeCosts sets gas costs globally inside the Wasmer executor.
 func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
 	SetOpcodeCosts(opcodeCosts)
-}
-
-// SetRkyvSerializationEnabled controls a Wasmer flag.
-func (wasmerExecutor *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) {
-	SetRkyvSerializationEnabled(enabled)
-}
-
-// SetSIGSEGVPassthrough controls a Wasmer flag.
-func (wasmerExecutor *WasmerExecutor) SetSIGSEGVPassthrough() {
-	SetSIGSEGVPassthrough()
 }
 
 func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
@@ -74,13 +64,8 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	return instance, err
 }
 
-// InitVMHooks inits the VM hooks
-func (wasmerExecutor *WasmerExecutor) InitVMHooks(vmHooks executor.VMHooks) {
+// initVMHooks inits the VM hooks
+func (wasmerExecutor *WasmerExecutor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
 	wasmerExecutor.vmHooksPtr = uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
-}
-
-// GetVMHooks returns the VM hooks
-func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
-	return wasmerExecutor.vmHooks
 }

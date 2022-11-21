@@ -1,14 +1,15 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/config"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // ArwenVersion returns the current arwen version
 const ArwenVersion = "v1.4"
 
-// Size in bytes of a WASM Linear Memory Page 
+// WASMPageSize is the size in bytes of a WASM Linear Memory Page
 const WASMPageSize = 65536
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
@@ -163,6 +164,7 @@ type CodeDeployInput struct {
 // VMHostParameters represents the parameters to be passed to VMHost
 type VMHostParameters struct {
 	VMType                              []byte
+	OverrideVMExecutor                  executor.ExecutorAbstractFactory
 	BlockGasLimit                       uint64
 	GasSchedule                         config.GasScheduleMap
 	BuiltInFuncContainer                vmcommon.BuiltInFunctionContainer

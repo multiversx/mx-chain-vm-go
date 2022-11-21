@@ -11,6 +11,28 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
+// ExecutorMockFactory is the factory for the ExecutorRecorderMock.
+type ExecutorMockFactory struct {
+	World *worldmock.MockWorld
+
+	// gives access to the created Executor in tests
+	LastCreatedExecutor *ExecutorMock
+}
+
+// ExecutorFactory returns the Wasmer executor factory.
+func NewExecutorMockFactory(world *worldmock.MockWorld) *ExecutorMockFactory {
+	return &ExecutorMockFactory{
+		World: world,
+	}
+}
+
+// CreateExecutor creates a new Executor instance.
+func (emf *ExecutorMockFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+	executorMock := NewExecutorMock(emf.World)
+	emf.LastCreatedExecutor = executorMock
+	return executorMock, nil
+}
+
 // ExecutorMock can be passed to RuntimeContext as an InstanceBuilder to
 // create mocked Wasmer instances.
 type ExecutorMock struct {
@@ -28,14 +50,6 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 
 // SetOpcodeCosts should set gas costs, but it does nothing in the case of this mock.
 func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
-}
-
-// SetRkyvSerializationEnabled controls a Wasmer flag, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetRkyvSerializationEnabled(enabled bool) {
-}
-
-// SetSIGSEGVPassthrough controls a Wasmer flag, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetSIGSEGVPassthrough() {
 }
 
 // FunctionNames mocked method
@@ -103,13 +117,4 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 		return instance, nil
 	}
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
-}
-
-// InitVMHooks mocked method
-func (executorMock *ExecutorMock) InitVMHooks(vmHooks executor.VMHooks) {
-}
-
-// GetVMHooks mocked method
-func (executorMock *ExecutorMock) GetVMHooks() executor.VMHooks {
-	return nil
 }

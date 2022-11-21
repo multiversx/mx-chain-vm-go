@@ -212,8 +212,13 @@ func (instance *Wasmer2Instance) GetFunctionNames() []string {
 	return strings.Split(buffer, "|")
 }
 
-func (instance *Wasmer2Instance) ValidateVoidFunction(functionName string) error {
-	// return instance.verifyVoidFunction(functionName)
+// ValidateFunctionArities checks that no function (endpoint) of the given contract has any parameters or returns any result.
+// All arguments and results should be transferred via the import functions.
+func (instance *Wasmer2Instance) ValidateFunctionArities() error {
+	var result = cWasmerCheckSignatures(instance.cgoInstance)
+	if result != cWasmerOk {
+		return executor.ErrFunctionNonvoidSignature
+	}
 	return nil
 }
 
