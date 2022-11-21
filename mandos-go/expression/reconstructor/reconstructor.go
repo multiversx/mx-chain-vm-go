@@ -118,7 +118,11 @@ func addressPretty(value []byte) string {
 		addrStr := string(value[:31])
 		addrStr = strings.TrimRight(addrStr, "_")
 		shard_id := value[31]
-		return fmt.Sprintf("address:%s#%02x", addrStr, shard_id)
+		address_expr := fmt.Sprintf("address:%s#%02x", addrStr, shard_id)
+		if !canInterpretAsString(value[:31]) {
+			return fmt.Sprintf("0x%s (%s)", hex.EncodeToString(value), address_expr)
+		}
+		return address_expr
 	}
 }
 
