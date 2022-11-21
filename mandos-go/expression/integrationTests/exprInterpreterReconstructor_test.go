@@ -167,19 +167,19 @@ func TestSCAddress(t *testing.T) {
 
 	result, err := ei.InterpretString("sc:a")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00a_______________________"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00a_____________________"), result)
 	require.Equal(t, "sc:a", er.Reconstruct(result, mer.AddressHint))
 
-	result, err = ei.InterpretString("sc:12345678901234567890120s")
+	result, err = ei.InterpretString("sc:123456789012345678912s")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x0012345678901234567890120s"), result)
-	require.Equal(t, "sc:12345678901234567890120#73", er.Reconstruct(result, mer.AddressHint))
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912s"), result)
+	require.Equal(t, "sc:123456789012345678912#73", er.Reconstruct(result, mer.AddressHint))
 
 	// trims excess
-	result, err = ei.InterpretString("sc:12345678901234567890120sx")
+	result, err = ei.InterpretString("sc:123456789012345678912sx")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x0012345678901234567890120s"), result)
-	require.Equal(t, "sc:12345678901234567890120#73", er.Reconstruct(result, mer.AddressHint))
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912s"), result)
+	require.Equal(t, "sc:123456789012345678912#73", er.Reconstruct(result, mer.AddressHint))
 }
 
 func TestSCAddressWithShardId(t *testing.T) {
@@ -188,19 +188,19 @@ func TestSCAddressWithShardId(t *testing.T) {
 
 	result, err := ei.InterpretString("sc:a#44")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00a______________________\x44"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00a____________________\x44"), result)
 	require.Equal(t, "sc:a#44", er.Reconstruct(result, mer.AddressHint))
 
-	result, err = ei.InterpretString("sc:12345678901234567890120#88")
+	result, err = ei.InterpretString("sc:123456789012345678912#88")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x0012345678901234567890120\x88"), result)
-	require.Equal(t, "sc:12345678901234567890120#88", er.Reconstruct(result, mer.AddressHint))
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912\x88"), result)
+	require.Equal(t, "sc:123456789012345678912#88", er.Reconstruct(result, mer.AddressHint))
 
 	// trims excess
-	result, err = ei.InterpretString("sc:12345678901234567890120x#88")
+	result, err = ei.InterpretString("sc:123456789012345678912x#88")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x0012345678901234567890120\x88"), result)
-	require.Equal(t, "sc:12345678901234567890120#88", er.Reconstruct(result, mer.AddressHint))
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912\x88"), result)
+	require.Equal(t, "sc:123456789012345678912#88", er.Reconstruct(result, mer.AddressHint))
 }
 
 func TestUnsignedNumber(t *testing.T) {

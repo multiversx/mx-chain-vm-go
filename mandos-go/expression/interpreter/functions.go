@@ -11,7 +11,9 @@ import (
 )
 
 // SCAddressNumLeadingZeros is the number of zero bytes every smart contract address begins with.
-const SCAddressNumLeadingZeros = 8
+// Its value is 10.
+// 10 = 8 zeros for all SC addresses + 2 zeros as placeholder for the VM type.
+const SCAddressNumLeadingZeros = vmcommon.NumInitCharactersForScAddress
 
 // Keccak256 cryptographic function
 // TODO: externalize the same way as the file resolver
@@ -69,8 +71,8 @@ func addressExpression(input string) ([]byte, error) {
 }
 
 // Generates a 32-byte smart contract address based on the input.
-func scExpression(input string) ([]byte, error) {
+func (ei *ExprInterpreter) scExpression(input string) ([]byte, error) {
 	address, err := createAddressOptionalShardId(input, SCAddressNumLeadingZeros)
-	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], []byte{0, 0})
+	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], ei.GetVMType()[:])
 	return address, err
 }
