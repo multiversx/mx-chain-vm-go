@@ -347,7 +347,7 @@ func TestWASMCreateAndCall(t *testing.T) {
 	}
 }
 
-func TestWasmMiddlewares_UnreachablGlobals(t *testing.T) {
+func TestWASMMiddleware_GlobalsUnreachable(t *testing.T) {
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
