@@ -70,6 +70,7 @@ func NewMockWorld() *MockWorld {
 	return world
 }
 
+// SetProvidedBlockchainHook -
 func (b *MockWorld) SetProvidedBlockchainHook(bh vmcommon.BlockchainHook) {
 	b.ProvidedBlockchainHook = bh
 }

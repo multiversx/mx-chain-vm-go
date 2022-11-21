@@ -12,18 +12,32 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
 //TODO package contains snake case named files, rename those.
 
 func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T) {
+	gasSchedule := config.MakeGasMapForTests()
+
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithExecutorFactory(wasmer.ExecutorFactory()).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		WithGasSchedule(gasSchedule).
+		Build()
+
 	code := test.GetTestSCCodeModule("exec-dest-ctx-esdt/basic", "basic", "../../")
-	scBalance := big.NewInt(1000)
-	host, world := test.DefaultTestArwenForCallWithWorldMock(t, code, scBalance)
+	parentAccount := world.AcctMap.CreateSmartContractAccount(test.UserAddress, test.ParentAddress, code, world)
+	parentAccount.Balance = big.NewInt(1000)
+
 	defer func() {
 		host.Reset()
 	}()
@@ -191,7 +205,11 @@ func TestESDT_GettersAPI(t *testing.T) {
 }
 
 func TestESDT_GettersAPI_ExecuteAfterBuiltinCall(t *testing.T) {
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	world := worldmock.NewMockWorld()
+	host := test.NewTestHostBuilder(t).
+		WithBlockchainHook(world).
+		WithBuiltinFunctions().
+		Build()
 	defer func() {
 		host.Reset()
 	}()
