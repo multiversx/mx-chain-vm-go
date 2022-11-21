@@ -287,6 +287,10 @@ typedef struct {
 
 } vm_exec_compilation_options_t;
 
+typedef struct {
+
+} vm_exec_opcode_cost_t;
+
 /**
  * Checks that all public module functions (SC endpoints) have no arguments or results.
  *
@@ -359,6 +363,8 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const c
  */
 void vm_exec_instance_destroy(vm_exec_instance_t *instance);
 
+uint64_t vm_exec_instance_get_points_used(const vm_exec_instance_t *instance_ptr);
+
 /**
  * Checks whether SC has an endpoint with given name.
  *
@@ -408,6 +414,12 @@ uint64_t vm_exec_instance_memory_data_length(vm_exec_instance_t *instance_ptr);
  */
 vm_exec_result_t vm_exec_instance_memory_grow(vm_exec_instance_t *instance_ptr,
                                               uint32_t by_num_pages);
+
+vm_exec_result_t vm_exec_instance_set_points_limit(const vm_exec_instance_t *instance_ptr,
+                                                   uint64_t limit);
+
+vm_exec_result_t vm_exec_instance_set_points_used(const vm_exec_instance_t *instance_ptr,
+                                                  uint64_t points);
 
 /**
  * Gets the length in bytes of the last error if any.
@@ -463,6 +475,9 @@ vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor_ptr,
                                       uint8_t *wasm_bytes_ptr,
                                       uint32_t wasm_bytes_len,
                                       const vm_exec_compilation_options_t *options_ptr);
+
+vm_exec_result_t vm_exec_set_opcode_costs(vm_exec_executor_t *executor_ptr,
+                                          const vm_exec_opcode_cost_t *opcode_cost_ptr);
 
 /**
  * Returns all SC endpoint names, separated by pipes.

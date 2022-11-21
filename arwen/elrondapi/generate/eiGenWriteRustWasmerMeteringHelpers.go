@@ -18,7 +18,7 @@ func WriteRustWasmerMeteringHelpers(out *os.File) {
 	out.WriteString("use elrond_exec_service::OpcodeCost;\n")
 	out.WriteString("use wasmer::wasmparser::Operator;\n\n")
 
-	readFile, err := os.Open("generate/opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -30,12 +30,12 @@ func WriteRustWasmerMeteringHelpers(out *os.File) {
 	var content string
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
-		content += "\t\tOperator::" + line + " { .. } => " + "opcode_cost.opcode_" + strings.ToLower(line) + ",\n"
+		content += "        Operator::" + line + " { .. } => " + "opcode_cost.opcode_" + strings.ToLower(line) + ",\n"
 	}
 
 	out.WriteString("pub fn get_opcode_cost(op: &Operator, opcode_cost: &OpcodeCost) -> u32 {\n")
-	out.WriteString("\tmatch op {\n")
+	out.WriteString("    match op {\n")
 	out.WriteString(content)
-	out.WriteString("\t}\n")
+	out.WriteString("    }\n")
 	out.WriteString("}\n")
 }

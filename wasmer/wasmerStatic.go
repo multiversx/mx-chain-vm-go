@@ -1,6 +1,6 @@
 package wasmer
 
-import "github.com/ElrondNetwork/wasm-vm/executor"
+import "github.com/ElrondNetwork/wasm-vm/config"
 
 // SetRkyvSerializationEnabled enables or disables RKYV serialization of instances in Wasmer.
 func SetRkyvSerializationEnabled(enabled bool) {
@@ -20,7 +20,7 @@ func SetSIGSEGVPassthrough() {
 }
 
 // SetOpcodeCosts sets gas costs globally for Wasmer.
-func SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
+func SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
 	opcodeCostsArray := toOpcodeCostsArray(opcodeCosts)
 	cWasmerSetOpcodeCosts(&opcodeCostsArray)
 }

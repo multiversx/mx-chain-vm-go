@@ -19,7 +19,7 @@ func WriteRustOpcodeCost(out *os.File) {
 	out.WriteString("#[derive(Clone, Debug, Default)]\n")
 	out.WriteString("pub struct OpcodeCost {\n")
 
-	readFile, err := os.Open("generate/opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +30,7 @@ func WriteRustOpcodeCost(out *os.File) {
 
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
-		out.WriteString(fmt.Sprintf("\tpub opcode_%s: u32,\n", strings.ToLower(line)))
+		out.WriteString(fmt.Sprintf("    pub opcode_%s: u32,\n", strings.ToLower(line)))
 	}
 	out.WriteString("}\n")
 }

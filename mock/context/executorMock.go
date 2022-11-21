@@ -5,6 +5,7 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/wasm-vm/executor"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
@@ -48,7 +49,7 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 }
 
 // SetOpcodeCosts should set gas costs, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
+func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *config.WASMOpcodeCost) {
 }
 
 // FunctionNames mocked method

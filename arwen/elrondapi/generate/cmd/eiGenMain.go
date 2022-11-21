@@ -56,7 +56,11 @@ func main() {
 
 	fmt.Printf("Generated code for %d executor callback methods.\n", len(eiMetadata.AllFunctions))
 
+	writeWASMOpcodeCost()
+	writeWASMOpcodeCostFuncHelpers()
+	writeWASMOpcodeCostConfigHelpers()
 	writeOpcodeCost()
+	writeOpcodeCostFuncHelpers()
 	writeRustOpcodeCost()
 	writeRustWasmerMeteringHelpers()
 
@@ -150,13 +154,49 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 	eapigen.WriteRustWasmerImports(out, eiMetadata)
 }
 
+func writeWASMOpcodeCost() {
+	out, err := os.Create(pathToElrondApiPackage + "../../config/gasCostWASM.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteWASMOpcodeCost(out)
+}
+
+func writeWASMOpcodeCostFuncHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/FillGasMap_WASMOpcodeCosts.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteWASMOpcodeCostFuncHelpers(out)
+}
+
+func writeWASMOpcodeCostConfigHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/config.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteWASMOpcodeCostConfigHelpers(out)
+}
+
 func writeOpcodeCost() {
-	out, err := os.Create(pathToElrondApiPackage + "../../executor/opcodeCostWasmer2.go")
+	out, err := os.Create(pathToElrondApiPackage + "../../wasmer2/opcodeCost.go")
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
 	eapigen.WriteOpcodeCost(out)
+}
+
+func writeOpcodeCostFuncHelpers() {
+	out, err := os.Create(pathToElrondApiPackage + "generate/cmd/output/extractOpcodeCost.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteOpcodeCostFuncHelpers(out)
 }
 
 func writeRustOpcodeCost() {

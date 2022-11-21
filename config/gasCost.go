@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/ElrondNetwork/wasm-vm/executor"
-)
-
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
 	BigIntAPICost        BigIntAPICost
@@ -12,7 +8,7 @@ type GasCost struct {
 	ElrondAPICost        ElrondAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
-	WASMOpcodeCost       *executor.WASMOpcodeCost
+	WASMOpcodeCost       *WASMOpcodeCost
 }
 
 type BaseOperationCost struct {
