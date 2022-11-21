@@ -7,7 +7,7 @@ require (
 	github.com/ElrondNetwork/elrond-go-core v1.1.13
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
-	github.com/ElrondNetwork/elrond-vm-common v1.3.25-0.20221027135829-abf3f6b8b9f2
+	github.com/ElrondNetwork/elrond-vm-common v1.3.25-0.20221116113837-c7ddf1c3baee
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/gin-gonic/gin v1.7.6
@@ -18,5 +18,3 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
-
-replace github.com/ElrondNetwork/elrond-vm-common v1.3.25-0.20221027135829-abf3f6b8b9f2 => /home/bogdan/Elrond/elrond-vm-common
