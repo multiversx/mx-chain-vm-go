@@ -91,7 +91,7 @@ func (callerTest *InstancesTestTemplate) WithGasSchedule(gasSchedule config.GasS
 	return callerTest
 }
 
-// WithHost provides the host for the test
+// WithExecutorFactory provides the wasmer executor for the test
 func (callerTest *InstancesTestTemplate) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *InstancesTestTemplate {
 	callerTest.executorFactory = executorFactory
 	return callerTest
