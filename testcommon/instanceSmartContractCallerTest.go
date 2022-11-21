@@ -6,6 +6,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 )
 
@@ -51,6 +52,7 @@ type InstancesTestTemplate struct {
 	assertResults      func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
 	host               arwen.VMHost
 	blockchainHookStub *contextmock.BlockchainHookStub
+	executorFactory    executor.ExecutorAbstractFactory
 }
 
 // BuildInstanceCallTest starts the building process for a contract call test
@@ -89,6 +91,12 @@ func (callerTest *InstancesTestTemplate) WithGasSchedule(gasSchedule config.GasS
 	return callerTest
 }
 
+// WithExecutorFactory provides the wasmer executor for the test
+func (callerTest *InstancesTestTemplate) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *InstancesTestTemplate {
+	callerTest.executorFactory = executorFactory
+	return callerTest
+}
+
 // WithWasmerSIGSEGVPassthrough sets the wasmerSIGSEGVPassthrough flag
 func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGSEGVPassthrough bool) *InstancesTestTemplate {
 	callerTest.wasmerSIGSEGVPassthrough = wasmerSIGSEGVPassthrough
@@ -111,6 +119,7 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
 		callerTest.blockchainHookStub = BlockchainHookStubForContracts(callerTest.contracts)
 		callerTest.host = NewTestHostBuilder(callerTest.tb).
+			WithExecutorFactory(callerTest.executorFactory).
 			WithBlockchainHook(callerTest.blockchainHookStub).
 			WithGasSchedule(callerTest.gasSchedule).
 			WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).

@@ -8,6 +8,7 @@ import (
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -344,4 +345,19 @@ func TestWASMCreateAndCall(t *testing.T) {
 		verify = test.NewVMOutputVerifier(t, vmOutput, err)
 		verify.Ok()
 	}
+}
+
+func TestWASMMiddleware_GlobalsUnreachable(t *testing.T) {
+	test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCodeModule("wasmbacking/middleware-globals", "middleware-globals", "../../"))).
+		WithInput(test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("getglobal").
+			Build()).
+		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
 }
