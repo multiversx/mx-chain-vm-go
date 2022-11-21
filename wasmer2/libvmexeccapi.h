@@ -300,7 +300,7 @@ typedef struct {
  *
  * C API function, works with raw object pointers.
  */
-vm_exec_result_t vm_check_signatures(vm_exec_instance_t *_instance);
+vm_exec_result_t vm_check_signatures(vm_exec_instance_t *instance_ptr);
 
 /**
  * Destroys a VM executor object.
