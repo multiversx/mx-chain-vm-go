@@ -36,7 +36,7 @@ func TestMandoSetAccountSCAddressErr1(t *testing.T) {
 func TestMandoSetAccountSCAddressErr2(t *testing.T) {
 	err := runSingleTestReturnError("mandos-self-test/set-check", "set-account-sc-addr.err2.json")
 	require.EqualError(t, err,
-		"\"setState\" step validation failed for account \"sc:should-be-sc\": account has code but not a smart contract address: 000000000000000073686f756c642d62652d73635f5f5f5f5f5f5f5f5f5f5f5f")
+		"\"setState\" step validation failed for account \"sc:should-be-sc\": account has code but not a smart contract address: 0000000000000000000073686f756c642d62652d73635f5f5f5f5f5f5f5f5f5f")
 }
 
 func TestMandoSetAccountSCAddressErr3(t *testing.T) {
