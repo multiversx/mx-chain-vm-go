@@ -155,7 +155,7 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeWASMOpcodeCost() {
-	out, err := os.Create(pathToElrondApiPackage + "../../config/gasCostWASM.go")
+	out, err := os.Create(pathToElrondApiPackage + "../../executor/gasCostWASM.go")
 	if err != nil {
 		panic(err)
 	}
