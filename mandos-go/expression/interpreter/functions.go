@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -68,5 +70,7 @@ func addressExpression(input string) ([]byte, error) {
 
 // Generates a 32-byte smart contract address based on the input.
 func scExpression(input string) ([]byte, error) {
-	return createAddressOptionalShardId(input, SCAddressNumLeadingZeros)
+	address, err := createAddressOptionalShardId(input, SCAddressNumLeadingZeros)
+	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], []byte{0, 0})
+	return address, err
 }
