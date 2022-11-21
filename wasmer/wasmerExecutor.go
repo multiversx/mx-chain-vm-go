@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-var _ = (executor.Executor)((*WasmerExecutor)(nil))
+var _ executor.Executor = (*WasmerExecutor)(nil)
 
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
 type WasmerExecutor struct {
