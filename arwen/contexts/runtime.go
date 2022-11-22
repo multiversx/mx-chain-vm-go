@@ -364,8 +364,7 @@ func (context *runtimeContext) PopSetActiveState() {
 		return
 	}
 
-	lastCodeHash := make([]byte, len(context.codeHash))
-	copy(lastCodeHash, context.codeHash)
+	context.popInstance()
 
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
@@ -375,7 +374,6 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
-	context.popInstance(lastCodeHash)
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -385,11 +383,9 @@ func (context *runtimeContext) PopDiscard() {
 		return
 	}
 
-	lastCodeHash := make([]byte, len(context.codeHash))
-	copy(lastCodeHash, context.codeHash)
+	context.popInstance()
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
-	context.popInstance(lastCodeHash)
 }
 
 // ClearStateStack discards the entire state state stack and initializes it anew.
@@ -404,7 +400,7 @@ func (context *runtimeContext) pushInstance() {
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) popInstance(lastCodeHash []byte) {
+func (context *runtimeContext) popInstance() {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -424,7 +420,7 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		if bytes.Equal(context.codeHash, lastCodeHash) {
+		if context.isCodeHashOnTheStack(context.codeHash) {
 			context.instance.Clean()
 			context.numRunningInstances--
 		}

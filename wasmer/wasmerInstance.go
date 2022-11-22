@@ -65,6 +65,8 @@ type WasmerInstance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
 
+	alreadyCleaned bool
+
 	// All functions exported by the WebAssembly instance, indexed
 	// by their name as a string. An exported function is a
 	// regular variadic Go closure. Arguments are untyped. Since
@@ -196,12 +198,19 @@ func NewInstanceFromCompiledCodeWithOptions(
 
 // Clean cleans instance
 func (instance *WasmerInstance) Clean() {
+	if instance.alreadyCleaned {
+		return
+	}
+
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
 		}
+
+		instance.alreadyCleaned = true
+
 	}
 }
 
@@ -300,8 +309,14 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 
 // Reset resets the instance memories and globals
 func (instance *WasmerInstance) Reset() bool {
+	if instance.alreadyCleaned {
+		return false
+	}
+
 	result := cWasmerInstanceReset(instance.instance)
-	return result == cWasmerOk
+	ok := result == cWasmerOk
+
+	return ok
 }
 
 // IsInterfaceNil returns true if underlying object is nil
