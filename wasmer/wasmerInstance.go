@@ -198,7 +198,9 @@ func NewInstanceFromCompiledCodeWithOptions(
 
 // Clean cleans instance
 func (instance *WasmerInstance) Clean() {
+	logWasmer.Trace("cleaning instance", "id", instance.Id())
 	if instance.alreadyCleaned {
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
 		return
 	}
 
@@ -210,6 +212,7 @@ func (instance *WasmerInstance) Clean() {
 		}
 
 		instance.alreadyCleaned = true
+		logWasmer.Trace("cleaned instance", "id", instance.Id())
 
 	}
 }
@@ -302,6 +305,11 @@ func (instance *WasmerInstance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+// Id returns an identifier for the instance, unique at runtime
+func (instance *WasmerInstance) Id() string {
+	return fmt.Sprintf("%p", instance.instance)
+}
+
 // GetMemory returns the memory for the instance
 func (instance *WasmerInstance) GetMemory() executor.Memory {
 	return instance.Memory
@@ -310,12 +318,14 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 // Reset resets the instance memories and globals
 func (instance *WasmerInstance) Reset() bool {
 	if instance.alreadyCleaned {
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.instance)
 	ok := result == cWasmerOk
 
+	logWasmer.Trace("reset: warm instance", "id", instance.Id(), "ok", ok)
 	return ok
 }
 
