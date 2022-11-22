@@ -20,12 +20,6 @@ type Executor interface {
 	// SetOpcodeCosts sets gas costs globally inside an executor.
 	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
 
-	// SetRkyvSerializationEnabled controls a Wasmer flag.
-	SetRkyvSerializationEnabled(enabled bool)
-
-	// SetSIGSEGVPassthrough controls a Wasmer flag.
-	SetSIGSEGVPassthrough()
-
 	// FunctionNames return the low-level function names provided to contracts.
 	FunctionNames() vmcommon.FunctionNames
 
@@ -38,10 +32,4 @@ type Executor interface {
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
-
-	// GetVMHooks returns the VM hooks.
-	GetVMHooks() VMHooks
-
-	// InitVMHooks inits the VM hooks.
-	InitVMHooks(vmHooks VMHooks)
 }

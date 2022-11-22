@@ -13,13 +13,11 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -232,11 +230,8 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	executor, err := wasmer.NewExecutor()
-	require.Nil(tb, err)
 	host, err := arwenHost.NewArwenVM(
 		mockWorld,
-		executor,
 		&arwen.VMHostParameters{
 			VMType:                   testcommon.DefaultVMType,
 			BlockGasLimit:            uint64(1000),
@@ -248,8 +243,6 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 			WasmerSIGSEGVPassthrough: false,
 		})
-	executor.InitVMHooks(elrondapi.NewElrondApi(host))
-	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err
 }
 

@@ -18,6 +18,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/ElrondNetwork/wasm-vm/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -31,6 +32,8 @@ var _ arwen.VMHost = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
+
+var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer.ExecutorFactory()
 
 // vmHost implements HostContext interface.
 type vmHost struct {
@@ -60,7 +63,6 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	vmExecutor executor.Executor,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
 
@@ -109,7 +111,10 @@ func NewArwenVM(
 	if err != nil {
 		return nil, err
 	}
-
+	vmExecutor, err := host.createExecutor(hostParameters)
+	if err != nil {
+		return nil, err
+	}
 	host.runtimeContext, err = contexts.NewRuntimeContext(
 		host,
 		hostParameters.VMType,
@@ -149,27 +154,32 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
-	if err != nil {
-		return nil, err
-	}
-
 	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
-
-	vmExecutor.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
-	vmExecutor.SetRkyvSerializationEnabled(true)
-
-	if hostParameters.WasmerSIGSEGVPassthrough {
-		vmExecutor.SetSIGSEGVPassthrough()
-	}
-
-	vmHooks := elrondapi.NewElrondApi(host)
-	vmExecutor.InitVMHooks(vmHooks)
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)
 
 	return host, nil
+}
+
+// Creates a new executor instance. Should only be called once per VM host instantiation.
+func (host *vmHost) createExecutor(hostParameters *arwen.VMHostParameters) (executor.Executor, error) {
+	vmHooks := elrondapi.NewElrondApi(host)
+	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
+	if err != nil {
+		return nil, err
+	}
+	vmExecutorFactory := defaultVMExecutorFactory
+	if hostParameters.OverrideVMExecutor != nil {
+		vmExecutorFactory = hostParameters.OverrideVMExecutor
+	}
+	vmExecutorFactoryArgs := executor.ExecutorFactoryArgs{
+		VMHooks:                  vmHooks,
+		OpcodeCosts:              gasCostConfig.WASMOpcodeCost,
+		RkyvSerializationEnabled: true,
+		WasmerSIGSEGVPassthrough: hostParameters.WasmerSIGSEGVPassthrough,
+	}
+	return vmExecutorFactory.CreateExecutor(vmExecutorFactoryArgs)
 }
 
 func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {
