@@ -24,9 +24,9 @@ import (
 var log = logger.GetOrCreate("arwen/host")
 var logGasTrace = logger.GetOrCreate("gasTrace")
 
-// MaximumWasmerInstanceCount specifies the maximum number of allowed Wasmer
+// MaximumRuntimeInstanceStackSize specifies the maximum number of allowed Wasmer
 // instances on the InstanceStack of the RuntimeContext
-var MaximumWasmerInstanceCount = uint64(10)
+var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ arwen.VMHost = (*vmHost)(nil)
 
@@ -154,7 +154,7 @@ func NewArwenVM(
 		return nil, err
 	}
 
-	host.runtimeContext.SetMaxInstanceCount(MaximumWasmerInstanceCount)
+	host.runtimeContext.SetMaxInstanceStackSize(MaximumRuntimeInstanceStackSize)
 
 	host.initContexts()
 	hostParameters.EpochNotifier.RegisterNotifyHandler(host)

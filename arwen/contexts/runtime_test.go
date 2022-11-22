@@ -92,7 +92,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	var dummy []byte
@@ -117,7 +117,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -201,7 +201,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -229,7 +229,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:    []byte("caller"),
@@ -361,7 +361,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -413,7 +413,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 
 	host.OutputContext = mockOutput
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -466,7 +466,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -498,7 +498,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
@@ -528,7 +528,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -592,7 +592,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -657,7 +657,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(2)
+	runtimeContext.SetMaxInstanceStackSize(2)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode

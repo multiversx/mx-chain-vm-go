@@ -24,17 +24,17 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 const warmCacheSize = 100
 
 type runtimeContext struct {
-	host               arwen.VMHost
-	instance           executor.Instance
-	vmInput            *vmcommon.ContractCallInput
-	codeAddress        []byte
-	codeHash           []byte
-	codeSize           uint64
-	callFunction       string
-	vmType             []byte
-	readOnly           bool
-	verifyCode         bool
-	maxWasmerInstances uint64
+	host                 arwen.VMHost
+	instance             executor.Instance
+	vmInput              *vmcommon.ContractCallInput
+	codeAddress          []byte
+	codeHash             []byte
+	codeSize             uint64
+	callFunction         string
+	vmType               []byte
+	readOnly             bool
+	verifyCode           bool
+	maxInstanceStackSize uint64
 
 	warmInstanceCache storage.Cacher
 
@@ -113,9 +113,9 @@ func (context *runtimeContext) GetVMExecutor() executor.Executor {
 	return context.vmExecutor
 }
 
-// StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
+// StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
-	if context.GetInstanceStackSize() >= context.maxWasmerInstances {
+	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
 		context.instance = nil
 		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
@@ -298,10 +298,10 @@ func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
 }
 
-// SetMaxInstanceCount sets the maximum number of allowed Wasmer instances on
+// SetMaxInstanceStackSize sets the maximum number of allowed Wasmer instances on
 // the instance stack, for recursivity.
-func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
-	context.maxWasmerInstances = maxInstances
+func (context *runtimeContext) SetMaxInstanceStackSize(maxInstances uint64) {
+	context.maxInstanceStackSize = maxInstances
 }
 
 // InitStateFromContractCallInput initializes the state of the runtime context

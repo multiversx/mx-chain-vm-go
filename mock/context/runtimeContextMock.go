@@ -107,8 +107,8 @@ func (r *RuntimeContextMock) GetInstanceStackSize() uint64 {
 	return r.InstanceStackSize
 }
 
-// SetMaxInstanceCount mocked method
-func (r *RuntimeContextMock) SetMaxInstanceCount(uint64) {
+// SetMaxInstanceStackSize mocked method
+func (r *RuntimeContextMock) SetMaxInstanceStackSize(uint64) {
 }
 
 // ClearInstanceStack mocked method

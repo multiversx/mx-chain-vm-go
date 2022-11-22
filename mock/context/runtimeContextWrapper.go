@@ -74,7 +74,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ClearWarmInstanceCacheFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetMaxInstanceCountFunc func(maxInstances uint64)
+	SetMaxInstanceStackSizeFunc func(maxInstanceStackSize uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -236,8 +236,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.ClearWarmInstanceCache()
 	}
 
-	runtimeWrapper.SetMaxInstanceCountFunc = func(maxInstances uint64) {
-		runtimeWrapper.runtimeContext.SetMaxInstanceCount(maxInstances)
+	runtimeWrapper.SetMaxInstanceStackSizeFunc = func(maxInstanceStackSize uint64) {
+		runtimeWrapper.runtimeContext.SetMaxInstanceStackSize(maxInstanceStackSize)
 	}
 
 	runtimeWrapper.VerifyContractCodeFunc = func() error {
@@ -470,9 +470,9 @@ func (contextWrapper *RuntimeContextWrapper) ClearWarmInstanceCache() {
 	contextWrapper.ClearWarmInstanceCacheFunc()
 }
 
-// SetMaxInstanceCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceCount(maxInstances uint64) {
-	contextWrapper.SetMaxInstanceCountFunc(maxInstances)
+// SetMaxInstanceStackSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceStackSize(maxInstanceStackSize uint64) {
+	contextWrapper.SetMaxInstanceStackSizeFunc(maxInstanceStackSize)
 }
 
 // VerifyContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

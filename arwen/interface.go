@@ -131,7 +131,7 @@ type RuntimeContext interface {
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
 	ClearWarmInstanceCache()
-	SetMaxInstanceCount(uint64)
+	SetMaxInstanceStackSize(uint64)
 	VerifyContractCode() error
 	GetInstance() executor.Instance
 	FunctionNameChecked() (string, error)
