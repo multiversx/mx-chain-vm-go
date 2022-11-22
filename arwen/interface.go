@@ -124,7 +124,7 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	RunningInstancesCount() uint64
+	GetInstanceStackSize() uint64
 	CountSameContractInstancesOnStack(address []byte) uint64
 	IsFunctionImported(name string) bool
 	ReadOnly() bool

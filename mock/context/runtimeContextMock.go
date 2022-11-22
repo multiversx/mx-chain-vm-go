@@ -31,7 +31,7 @@ type RuntimeContextMock struct {
 	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
 	AsyncCallInfo            *arwen.AsyncCallInfo
-	RunningInstances         uint64
+	InstanceStackSize        uint64
 	CurrentTxHash            []byte
 	OriginalTxHash           []byte
 	TraceGasEnabled          bool
@@ -102,9 +102,9 @@ func (r *RuntimeContextMock) IsWarmInstance() bool {
 func (r *RuntimeContextMock) ResetWarmInstance() {
 }
 
-// RunningInstancesCount mocked method
-func (r *RuntimeContextMock) RunningInstancesCount() uint64 {
-	return r.RunningInstances
+// GetInstanceStackSize mocked method
+func (r *RuntimeContextMock) GetInstanceStackSize() uint64 {
+	return r.InstanceStackSize
 }
 
 // SetMaxInstanceCount mocked method

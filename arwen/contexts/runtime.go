@@ -115,7 +115,7 @@ func (context *runtimeContext) GetVMExecutor() executor.Executor {
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
-	if context.RunningInstancesCount() >= context.maxWasmerInstances {
+	if context.GetInstanceStackSize() >= context.maxWasmerInstances {
 		context.instance = nil
 		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
@@ -415,14 +415,15 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	if !check.IfNil(context.instance) {
 		if bytes.Equal(context.codeHash, lastCodeHash) {
 			context.instance.Clean()
+			context.numRunningInstances--
 		}
 	}
 
 	context.instance = prevInstance
 }
 
-// RunningInstancesCount returns the number of the currently running Wasmer instances.
-func (context *runtimeContext) RunningInstancesCount() uint64 {
+// GetInstanceStackSize returns the number of the currently running Wasmer instances.
+func (context *runtimeContext) GetInstanceStackSize() uint64 {
 	return uint64(len(context.instanceStack))
 }
 
