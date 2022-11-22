@@ -349,6 +349,10 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 
+func (r *RuntimeContextMock) NumRunningInstances() (int, int) {
+	return 0, 0
+}
+
 // CleanInstance mocked method
 func (r *RuntimeContextMock) CleanInstance() {
 }

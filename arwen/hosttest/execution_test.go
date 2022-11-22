@@ -2272,6 +2272,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				Storage(storeEntries...)
 
 			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
+
+			// Check remaining instances count
+			numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
+			require.Equal(t, 0, numColdInstances, "cold instances still running")
+			require.Equal(t, 2, numWarmInstances, "warm instances still running")
 		})
 }
 

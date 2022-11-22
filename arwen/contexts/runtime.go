@@ -36,6 +36,8 @@ type runtimeContext struct {
 	verifyCode           bool
 	maxInstanceStackSize uint64
 
+	numRunningInstances int
+
 	warmInstanceCache storage.Cacher
 
 	stateStack    []*runtimeContext
@@ -60,12 +62,13 @@ func NewRuntimeContext(
 	scAPINames := vmExecutor.FunctionNames()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]executor.Instance, 0),
-		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:        nil,
+		host:                host,
+		vmType:              vmType,
+		stateStack:          make([]*runtimeContext, 0),
+		instanceStack:       make([]executor.Instance, 0),
+		validator:           newWASMValidator(scAPINames, builtInFuncContainer),
+		numRunningInstances: 0,
+		errors:              nil,
 	}
 
 	var err error
@@ -97,6 +100,7 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
+	context.numRunningInstances = 0
 	context.errors = nil
 
 	logRuntime.Trace("init state")
@@ -131,10 +135,17 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
+		context.numRunningInstances++
 		return nil
 	}
 
-	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
+	err := context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
+	if err != nil {
+		return err
+	}
+
+	context.numRunningInstances++
+	return nil
 }
 
 func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) bool {
@@ -728,6 +739,7 @@ func (context *runtimeContext) CleanInstance() {
 
 	context.instance.Clean()
 	context.instance = nil
+	context.numRunningInstances--
 
 	logRuntime.Trace("instance cleaned")
 }
@@ -934,6 +946,13 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
+}
+
+// NumRunningInstances returns the number of currently running instances (cold and warm)
+func (context *runtimeContext) NumRunningInstances() (int, int) {
+	numWarmInstances := context.warmInstanceCache.Len()
+	numColdInstances := context.numRunningInstances - numWarmInstances
+	return numWarmInstances, numColdInstances
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

@@ -332,6 +332,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.CleanInstance()
 	}
 
+	runtimeWrapper.NumRunningInstancesFunc = func() (int, int) {
+		return runtimeWrapper.runtimeContext.NumRunningInstances()
+	}
+
 	return runtimeWrapper
 }
 
@@ -608,4 +612,9 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
+}
+
+// NumRunningInstances calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) NumRunningInstances() (int, int) {
+	return contextWrapper.NumRunningInstancesFunc()
 }
