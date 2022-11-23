@@ -24,17 +24,19 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 const warmCacheSize = 100
 
 type runtimeContext struct {
-	host               arwen.VMHost
-	instance           executor.Instance
-	vmInput            *vmcommon.ContractCallInput
-	codeAddress        []byte
-	codeHash           []byte
-	codeSize           uint64
-	callFunction       string
-	vmType             []byte
-	readOnly           bool
-	verifyCode         bool
-	maxWasmerInstances uint64
+	host                 arwen.VMHost
+	instance             executor.Instance
+	vmInput              *vmcommon.ContractCallInput
+	codeAddress          []byte
+	codeHash             []byte
+	codeSize             uint64
+	callFunction         string
+	vmType               []byte
+	readOnly             bool
+	verifyCode           bool
+	maxInstanceStackSize uint64
+
+	numRunningInstances int
 
 	warmInstanceCache storage.Cacher
 
@@ -60,12 +62,13 @@ func NewRuntimeContext(
 	scAPINames := vmExecutor.FunctionNames()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]executor.Instance, 0),
-		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:        nil,
+		host:                host,
+		vmType:              vmType,
+		stateStack:          make([]*runtimeContext, 0),
+		instanceStack:       make([]executor.Instance, 0),
+		validator:           newWASMValidator(scAPINames, builtInFuncContainer),
+		numRunningInstances: 0,
+		errors:              nil,
 	}
 
 	var err error
@@ -86,6 +89,7 @@ func instanceEvicted(_ interface{}, value interface{}) {
 		return
 	}
 
+	logRuntime.Trace("evicted instance", "id", instance.Id())
 	instance.Clean()
 }
 
@@ -97,6 +101,7 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
+	context.numRunningInstances = 0
 	context.errors = nil
 
 	logRuntime.Trace("init state")
@@ -113,9 +118,9 @@ func (context *runtimeContext) GetVMExecutor() executor.Executor {
 	return context.vmExecutor
 }
 
-// StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
+// StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
-	if context.RunningInstancesCount() >= context.maxWasmerInstances {
+	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
 		context.instance = nil
 		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
@@ -125,16 +130,27 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	codeHash := blockchain.GetCodeHash(context.codeAddress)
 	context.codeHash = codeHash
 
+	defer func() {
+		logRuntime.Trace("warm cache size after starting instance", "size", context.warmInstanceCache.Len())
+	}()
+
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		return nil
 	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
+		context.numRunningInstances++
 		return nil
 	}
 
-	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
+	err := context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
+	if err != nil {
+		return err
+	}
+
+	context.numRunningInstances++
+	return nil
 }
 
 func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) bool {
@@ -161,7 +177,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	}
 	newInstance, err := context.vmExecutor.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 	if err != nil {
-		logRuntime.Error("instance creation", "code", "cached compilation", "error", err)
+		logRuntime.Error("instance creation", "from", "cached compilation", "error", err)
 		return false
 	}
 
@@ -169,7 +185,7 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	context.verifyCode = false
 
 	context.saveWarmInstance()
-	logRuntime.Trace("new instance created", "code", "cached compilation")
+	logRuntime.Trace("start instance", "from", "cached compilation", "id", context.instance.Id())
 	return true
 }
 
@@ -187,7 +203,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	newInstance, err := context.vmExecutor.NewInstanceWithOptions(contract, options)
 	if err != nil {
 		context.instance = nil
-		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
+		logRuntime.Trace("instance creation", "from", "bytecode", "error", err)
 		return err
 	}
 
@@ -197,7 +213,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		context.codeHash, err = context.host.Crypto().Sha256(contract)
 		if err != nil {
 			context.CleanInstance()
-			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
+			logRuntime.Error("instance creation", "from", "bytecode", "error", err)
 			return err
 		}
 	}
@@ -206,13 +222,13 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		err = context.VerifyContractCode()
 		if err != nil {
 			context.CleanInstance()
-			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
+			logRuntime.Trace("instance creation", "from", "bytecode", "error", err)
 			return err
 		}
 	}
 
+	logRuntime.Trace("start instance", "from", "bytecode", "id", context.instance.Id())
 	context.saveCompiledCode()
-	logRuntime.Trace("new instance created", "code", "bytecode")
 
 	return nil
 }
@@ -221,10 +237,10 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	if newCode || len(context.codeHash) == 0 {
 		return false
 	}
-
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
+
 	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
 	if !ok {
 		return false
@@ -247,6 +263,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.instance.SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 	context.verifyCode = false
+	logRuntime.Trace("start instance", "from", "warm", "id", context.instance.Id())
 	return true
 }
 
@@ -291,6 +308,7 @@ func (context *runtimeContext) saveWarmInstance() {
 		context.instance,
 		1,
 	)
+	logRuntime.Trace("save warm instance", "id", context.instance.Id())
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -298,10 +316,10 @@ func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
 }
 
-// SetMaxInstanceCount sets the maximum number of allowed Wasmer instances on
+// SetMaxInstanceStackSize sets the maximum number of allowed Wasmer instances on
 // the instance stack, for recursivity.
-func (context *runtimeContext) SetMaxInstanceCount(maxInstances uint64) {
-	context.maxWasmerInstances = maxInstances
+func (context *runtimeContext) SetMaxInstanceStackSize(maxInstances uint64) {
+	context.maxInstanceStackSize = maxInstances
 }
 
 // InitStateFromContractCallInput initializes the state of the runtime context
@@ -353,8 +371,7 @@ func (context *runtimeContext) PopSetActiveState() {
 		return
 	}
 
-	lastCodeHash := make([]byte, len(context.codeHash))
-	copy(lastCodeHash, context.codeHash)
+	context.popInstance()
 
 	prevState := context.stateStack[stateStackLen-1]
 	context.stateStack = context.stateStack[:stateStackLen-1]
@@ -364,7 +381,6 @@ func (context *runtimeContext) PopSetActiveState() {
 	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
-	context.popInstance(lastCodeHash)
 }
 
 // PopDiscard removes the latest entry from the state stack
@@ -374,11 +390,9 @@ func (context *runtimeContext) PopDiscard() {
 		return
 	}
 
-	lastCodeHash := make([]byte, len(context.codeHash))
-	copy(lastCodeHash, context.codeHash)
+	context.popInstance()
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
-	context.popInstance(lastCodeHash)
 }
 
 // ClearStateStack discards the entire state state stack and initializes it anew.
@@ -389,11 +403,13 @@ func (context *runtimeContext) ClearStateStack() {
 // pushInstance pushes the current Wasmer instance on the instance stack (separate from the state stack).
 func (context *runtimeContext) pushInstance() {
 	context.instanceStack = append(context.instanceStack, context.instance)
+	logRuntime.Trace("pushing instance", "id", context.instance.Id(), "codeHash", context.codeHash)
+
 }
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
-func (context *runtimeContext) popInstance(lastCodeHash []byte) {
+func (context *runtimeContext) popInstance() {
 	instanceStackLen := len(context.instanceStack)
 	if instanceStackLen == 0 {
 		return
@@ -413,16 +429,18 @@ func (context *runtimeContext) popInstance(lastCodeHash []byte) {
 	}
 
 	if !check.IfNil(context.instance) {
-		if bytes.Equal(context.codeHash, lastCodeHash) {
+		if context.isCodeHashOnTheStack(context.codeHash) {
 			context.instance.Clean()
+			context.numRunningInstances--
 		}
 	}
 
 	context.instance = prevInstance
+	logRuntime.Trace("pop instance", "id", context.instance.Id(), "codeHash", context.codeHash)
 }
 
-// RunningInstancesCount returns the number of the currently running Wasmer instances.
-func (context *runtimeContext) RunningInstancesCount() uint64 {
+// GetInstanceStackSize returns the number of the currently running Wasmer instances.
+func (context *runtimeContext) GetInstanceStackSize() uint64 {
 	return uint64(len(context.instanceStack))
 }
 
@@ -722,11 +740,13 @@ func (context *runtimeContext) GetInstance() executor.Instance {
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
 	if check.IfNil(context.instance) {
+		logRuntime.Trace("cannot clean, instance already nil")
 		return
 	}
 
 	context.instance.Clean()
 	context.instance = nil
+	context.numRunningInstances--
 
 	logRuntime.Trace("instance cleaned")
 }
@@ -933,6 +953,13 @@ func (context *runtimeContext) HasFunction(functionName string) bool {
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
+}
+
+// NumRunningInstances returns the number of currently running instances (cold and warm)
+func (context *runtimeContext) NumRunningInstances() (int, int) {
+	numWarmInstances := context.warmInstanceCache.Len()
+	numColdInstances := context.numRunningInstances - numWarmInstances
+	return numWarmInstances, numColdInstances
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

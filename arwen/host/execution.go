@@ -28,9 +28,17 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 
 	_, blockchain, metering, output, runtime, _, storage := host.GetContexts()
 
+	var vmOutput *vmcommon.VMOutput
+	defer func() {
+		if vmOutput == nil || vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+			runtime.CleanInstance()
+		}
+	}()
+
 	address, err := blockchain.NewAddress(input.CallerAddr)
 	if err != nil {
-		return output.CreateVMOutputInCaseOfError(err)
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		return vmOutput
 	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -51,10 +59,11 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err := host.performCodeDeployment(codeDeployInput)
+	vmOutput, err = host.performCodeDeployment(codeDeployInput)
 	if err != nil {
 		log.Trace("doRunSmartContractCreate", "error", err)
-		return output.CreateVMOutputInCaseOfError(err)
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		return vmOutput
 	}
 
 	log.Trace("doRunSmartContractCreate",
@@ -110,10 +119,18 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	_, _, metering, output, runtime, _, storage := host.GetContexts()
 
+	var vmOutput *vmcommon.VMOutput
+	defer func() {
+		if vmOutput == nil || vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+			runtime.CleanInstance()
+		}
+	}()
+
 	err := host.checkUpgradePermission(input)
 	if err != nil {
 		log.Trace("doRunSmartContractUpgrade", "error", arwen.ErrUpgradeNotAllowed)
-		return output.CreateVMOutputInCaseOfError(err)
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		return vmOutput
 	}
 
 	runtime.InitStateFromContractCallInput(input)
@@ -123,7 +140,8 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 
 	code, codeMetadata, err := runtime.ExtractCodeUpgradeFromArgs()
 	if err != nil {
-		return output.CreateVMOutputInCaseOfError(arwen.ErrInvalidUpgradeArguments)
+		vmOutput = output.CreateVMOutputInCaseOfError(arwen.ErrInvalidUpgradeArguments)
+		return vmOutput
 	}
 
 	codeDeployInput := arwen.CodeDeployInput{
@@ -133,10 +151,11 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 		CodeDeployerAddress:  input.CallerAddr,
 	}
 
-	vmOutput, err := host.performCodeDeployment(codeDeployInput)
+	vmOutput, err = host.performCodeDeployment(codeDeployInput)
 	if err != nil {
 		log.Trace("doRunSmartContractUpgrade", "error", err)
-		return output.CreateVMOutputInCaseOfError(err)
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		return vmOutput
 	}
 
 	return vmOutput
@@ -165,7 +184,7 @@ func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) 
 	return vmOutput
 }
 
-func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput) {
+func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	host.InitState()
 	defer func() {
 		errs := host.GetRuntimeErrors()
@@ -176,12 +195,20 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 
 	_, _, metering, output, runtime, async, storage := host.GetContexts()
 
+	var vmOutput *vmcommon.VMOutput
+	defer func() {
+		if vmOutput == nil || vmOutput.ReturnCode == vmcommon.ExecutionFailed {
+			host.Runtime().CleanInstance()
+		}
+	}()
+
 	runtime.InitStateFromContractCallInput(input)
 
 	err := async.InitStateFromInput(input)
 	if err != nil {
 		log.Trace("doRunSmartContractCall init async", "error", arwen.ErrAsyncInit)
-		return output.CreateVMOutputInCaseOfError(err)
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		return vmOutput
 	}
 	metering.InitStateFromContractCallInput(&input.VMInput)
 	output.AddTxValueToAccount(input.RecipientAddr, input.CallValue)
@@ -190,30 +217,35 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 	err = host.checkGasForGetCode(input, metering)
 	if err != nil {
 		log.Trace("doRunSmartContractCall check gas for GetSCCode", "error", arwen.ErrNotEnoughGas)
-		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+		vmOutput = output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+		return vmOutput
 	}
 
 	contract, err := runtime.GetSCCode()
 	if err != nil {
 		log.Trace("doRunSmartContractCall get code", "error", arwen.ErrContractNotFound)
-		return output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
+		vmOutput = output.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
+		return vmOutput
 	}
 
 	err = metering.DeductInitialGasForExecution(contract)
 	if err != nil {
 		log.Trace("doRunSmartContractCall initial gas", "error", arwen.ErrNotEnoughGas)
-		return output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+		vmOutput = output.CreateVMOutputInCaseOfError(arwen.ErrNotEnoughGas)
+		return vmOutput
 	}
 
 	err = runtime.StartWasmerInstance(contract, metering.GetGasForExecution(), false)
 	if err != nil {
-		return output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
+		vmOutput = output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
+		return vmOutput
 	}
 
 	err = host.callSCMethod()
 	if err != nil {
 		log.Trace("doRunSmartContractCall", "error", err)
-		return output.CreateVMOutputInCaseOfError(err)
+		vmOutput = output.CreateVMOutputInCaseOfError(err)
+		return vmOutput
 	}
 
 	if host.enableEpochsHandler.IsRemoveNonUpdatedStorageFlagEnabled() {
@@ -226,7 +258,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) (v
 		"message", vmOutput.ReturnMessage,
 		"data", vmOutput.ReturnData)
 
-	return
+	return vmOutput
 }
 
 func copyTxHashesFromContext(runtime arwen.RuntimeContext, input *vmcommon.ContractCallInput) {
