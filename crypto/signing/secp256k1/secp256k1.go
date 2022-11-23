@@ -1,12 +1,10 @@
 package secp256k1
 
 import (
-	"math/big"
-
 	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing"
-
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )
 
@@ -30,7 +28,7 @@ func NewSecp256k1() *secp256k1 {
 // VerifySecp256k1 checks a secp256k1 signature provided in the DER encoding format.
 // The hash type used over the message can also be configured using @param hashType
 func (sec *secp256k1) VerifySecp256k1(key, msg, sig []byte, hashType uint8) error {
-	pubKey, err := btcec.ParsePubKey(key, btcec.S256())
+	pubKey, err := btcec.ParsePubKey(key)
 	if err != nil {
 		return err
 	}
@@ -40,7 +38,7 @@ func (sec *secp256k1) VerifySecp256k1(key, msg, sig []byte, hashType uint8) erro
 		return err
 	}
 
-	signature, err := btcec.ParseSignature(sig, btcec.S256())
+	signature, err := ecdsa.ParseSignature(sig)
 	if err != nil {
 		return err
 	}
@@ -53,14 +51,17 @@ func (sec *secp256k1) VerifySecp256k1(key, msg, sig []byte, hashType uint8) erro
 	return nil
 }
 
-// EncodeDERSecp256k1Signature creates a DER encoding of a signature provided with r and s.
+// EncodeSecp256k1DERSignature creates a DER encoding of a signature provided with r and s.
 // Useful when having the plain params - like in the case of ecrecover
 //  from ethereum
 func (sec *secp256k1) EncodeSecp256k1DERSignature(r, s []byte) []byte {
-	sig := &btcec.Signature{
-		R: big.NewInt(0).SetBytes(r),
-		S: big.NewInt(0).SetBytes(s),
-	}
+	rScalar := &btcec.ModNScalar{}
+	rScalar.SetByteSlice(r)
+
+	sScalar := &btcec.ModNScalar{}
+	sScalar.SetByteSlice(s)
+
+	sig := ecdsa.NewSignature(rScalar, sScalar)
 
 	return sig.Serialize()
 }
