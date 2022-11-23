@@ -67,18 +67,18 @@ func cWasmerInstanceGetPointsUsed(instance *cWasmerInstanceT) uint64 {
 	))
 }
 
-// func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) {
-// 	C.vm_exec_instance_set_runtime_breakpoint_value(
-// 		(*C.vm_exec_instance_t)(instance),
-// 		(C.uint64_t)(value),
-// 	)
-// }
+func cWasmerInstanceSetBreakpointValue(instance *cWasmerInstanceT, value uint64) cWasmerResultT {
+	return (cWasmerResultT)(C.vm_exec_instance_set_breakpoint_value(
+		(*C.vm_exec_instance_t)(instance),
+		(C.uint64_t)(value),
+	))
+}
 
-// func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
-// 	return uint64(C.vm_exec_instance_get_runtime_breakpoint_value(
-// 		(*C.vm_exec_instance_t)(instance),
-// 	))
-// }
+func cWasmerInstanceGetBreakpointValue(instance *cWasmerInstanceT) uint64 {
+	return uint64(C.vm_exec_instance_get_breakpoint_value(
+		(*C.vm_exec_instance_t)(instance),
+	))
+}
 
 // func cWasmerInstanceIsFunctionImported(instance *cWasmerInstanceT, name string) bool {
 // 	var functionName = cCString(name)
