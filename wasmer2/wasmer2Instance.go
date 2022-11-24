@@ -116,12 +116,11 @@ func (instance *Wasmer2Instance) GetPointsUsed() uint64 {
 }
 
 func (instance *Wasmer2Instance) SetBreakpointValue(value uint64) {
-	// cWasmerInstanceSetBreakpointValue(instance.instance, value)
+	cWasmerInstanceSetBreakpointValue(instance.cgoInstance, value)
 }
 
 func (instance *Wasmer2Instance) GetBreakpointValue() uint64 {
-	return 0
-	// return cWasmerInstanceGetBreakpointValue(instance.instance)
+	return cWasmerInstanceGetBreakpointValue(instance.cgoInstance)
 }
 
 func (instance *Wasmer2Instance) Cache() ([]byte, error) {
