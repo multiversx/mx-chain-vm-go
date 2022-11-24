@@ -118,6 +118,12 @@ func (context *runtimeContext) GetVMExecutor() executor.Executor {
 	return context.vmExecutor
 }
 
+// ReplaceVMExecutor force-replaces the current executor.
+// Do not use in production code, it is only suited for tests! The executor should normally be immutable, once initialized.
+func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
+	context.vmExecutor = vmExecutor
+}
+
 // StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
