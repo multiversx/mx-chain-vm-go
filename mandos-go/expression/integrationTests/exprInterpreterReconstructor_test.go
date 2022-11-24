@@ -11,15 +11,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func interpreter() mei.ExprInterpreter {
+	return mei.ExprInterpreter{
+		VMType: &[2]byte{'V', 'M'},
+	}
+}
+
+func reconstructor() mer.ExprReconstructor {
+	return mer.ExprReconstructor{}
+}
+
 func TestEmpty(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("")
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, result)
 }
 
 func TestBool(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("true")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01}, result)
@@ -30,8 +40,8 @@ func TestBool(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("``abcdefg")
 	require.Nil(t, err)
@@ -95,8 +105,8 @@ func TestString(t *testing.T) {
 }
 
 func TestAddress(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("address:")
 	require.Nil(t, err)
@@ -131,8 +141,8 @@ func TestAddress(t *testing.T) {
 }
 
 func TestAddressWithShardId(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("address:#05")
 	require.Nil(t, err)
@@ -162,50 +172,50 @@ func TestAddressWithShardId(t *testing.T) {
 }
 
 func TestSCAddress(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("sc:a")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00a_____________________"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00VMa_____________________"), result)
 	require.Equal(t, "sc:a", er.Reconstruct(result, mer.AddressHint))
 
 	result, err = ei.InterpretString("sc:123456789012345678912s")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912s"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00VM123456789012345678912s"), result)
 	require.Equal(t, "sc:123456789012345678912#73", er.Reconstruct(result, mer.AddressHint))
 
 	// trims excess
 	result, err = ei.InterpretString("sc:123456789012345678912sx")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912s"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00VM123456789012345678912s"), result)
 	require.Equal(t, "sc:123456789012345678912#73", er.Reconstruct(result, mer.AddressHint))
 }
 
 func TestSCAddressWithShardId(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("sc:a#44")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00a____________________\x44"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00VMa____________________\x44"), result)
 	require.Equal(t, "sc:a#44", er.Reconstruct(result, mer.AddressHint))
 
 	result, err = ei.InterpretString("sc:123456789012345678912#88")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912\x88"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00VM123456789012345678912\x88"), result)
 	require.Equal(t, "sc:123456789012345678912#88", er.Reconstruct(result, mer.AddressHint))
 
 	// trims excess
 	result, err = ei.InterpretString("sc:123456789012345678912x#88")
 	require.Nil(t, err)
-	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00123456789012345678912\x88"), result)
+	require.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00VM123456789012345678912\x88"), result)
 	require.Equal(t, "sc:123456789012345678912#88", er.Reconstruct(result, mer.AddressHint))
 }
 
 func TestUnsignedNumber(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("0x1234")
 	require.Nil(t, err)
@@ -242,8 +252,8 @@ func TestUnsignedNumber(t *testing.T) {
 }
 
 func TestSignedNumber(t *testing.T) {
-	ei := mei.ExprInterpreter{}
-	er := mer.ExprReconstructor{}
+	ei := interpreter()
+	er := reconstructor()
 
 	result, err := ei.InterpretString("-1")
 	require.Nil(t, err)
@@ -279,7 +289,7 @@ func TestSignedNumber(t *testing.T) {
 }
 
 func TestUnsignedFixedWidth(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("u8:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00}, result)
@@ -318,7 +328,7 @@ func TestUnsignedFixedWidth(t *testing.T) {
 }
 
 func TestSignedFixedWidth(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("i8:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00}, result)
@@ -383,7 +393,7 @@ func TestSignedFixedWidth(t *testing.T) {
 }
 
 func TestBigFloat(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("bigfloat:6297134613497.34523924564572445")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x0, 0x0, 0x0, 0x12, 0x01, 0x0a, 0x00, 0x00, 0x00, 0x35, 0x00, 0x00, 0x00, 0x2b, 0xb7, 0x45, 0x4f, 0x18, 0x7f, 0x2b, 0x10, 0x00}, result)
@@ -419,7 +429,7 @@ func TestBigFloat(t *testing.T) {
 }
 
 func TestBigUint(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("biguint:0")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x00, 0x00, 0x00, 0x00}, result)
@@ -467,7 +477,7 @@ func TestBigUint(t *testing.T) {
 }
 
 func TestConcat(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("0x01|5")
 	require.Nil(t, err)
 	require.Equal(t, []byte{0x01, 0x05}, result)
@@ -514,7 +524,7 @@ func TestConcat(t *testing.T) {
 }
 
 func TestKeccak256(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	result, err := ei.InterpretString("keccak256:0x01|5")
 	require.Nil(t, err)
 	expected, _ := mei.Keccak256([]byte{0x01, 0x05})
@@ -588,7 +598,7 @@ func TestFile(t *testing.T) {
 }
 
 func TestInterpretSubTree1(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	jobj, err := oj.ParseOrderedJSON([]byte(`
 		["''part1", "''part2"]
 	`))
@@ -599,7 +609,7 @@ func TestInterpretSubTree1(t *testing.T) {
 }
 
 func TestInterpretSubTree2(t *testing.T) {
-	ei := mei.ExprInterpreter{}
+	ei := interpreter()
 	jobj, err := oj.ParseOrderedJSON([]byte(`
 		{
 			"''field1": "u32:5",

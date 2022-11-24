@@ -6,14 +6,16 @@ import (
 	"strings"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"golang.org/x/crypto/sha3"
 )
 
 // SCAddressNumLeadingZeros is the number of zero bytes every smart contract address begins with.
+const SCAddressNumLeadingZeros = 8
+
+// SCAddressReservedPrefixLength is the number of zero bytes every smart contract address begins with.
 // Its value is 10.
 // 10 = 8 zeros for all SC addresses + 2 zeros as placeholder for the VM type.
-const SCAddressNumLeadingZeros = vmcommon.NumInitCharactersForScAddress
+const SCAddressReservedPrefixLength = SCAddressNumLeadingZeros + 2
 
 // Keccak256 cryptographic function
 // TODO: externalize the same way as the file resolver
@@ -72,7 +74,7 @@ func addressExpression(input string) ([]byte, error) {
 
 // Generates a 32-byte smart contract address based on the input.
 func (ei *ExprInterpreter) scExpression(input string) ([]byte, error) {
-	address, err := createAddressOptionalShardId(input, SCAddressNumLeadingZeros)
-	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], ei.GetVMType()[:])
+	address, err := createAddressOptionalShardId(input, SCAddressReservedPrefixLength)
+	copy(address[SCAddressReservedPrefixLength-core.VMTypeLen:], ei.GetVMType()[:])
 	return address, err
 }
