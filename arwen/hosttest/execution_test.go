@@ -2272,6 +2272,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				Storage(storeEntries...)
 
 			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
+
+			// Check remaining instances count
+			numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
+			require.Equal(t, 0, numColdInstances, "cold instances still running")
+			require.Equal(t, 2, numWarmInstances, "warm instances still running")
 		})
 }
 
@@ -3374,6 +3379,65 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok()
+		})
+}
+
+func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("breakpoint", "../../")))
+
+	makeInput := func(behaviour byte) *vmcommon.ContractCallInput {
+		return test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("testFunc").
+			WithArguments([]byte{behaviour}).
+			Build()
+	}
+
+	vmInputOk := makeInput(0)
+	vmInputUserError := makeInput(1)
+	vmInputExecutionFailed := makeInput(2)
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+
+	testCase.WithInput(vmInputUserError).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.UserError().ReturnData().ReturnMessage("exit here")
+		})
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
 		})
 }
 

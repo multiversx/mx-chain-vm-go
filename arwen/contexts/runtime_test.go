@@ -92,7 +92,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	var dummy []byte
@@ -117,7 +117,7 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -201,7 +201,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -215,7 +215,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	runtimeContext.instance = nil
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
@@ -229,7 +229,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	vmInput := vmcommon.VMInput{
 		CallerAddr:    []byte("caller"),
@@ -247,6 +247,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	}
 	runtimeContext.InitStateFromContractCallInput(input)
 
+	runtimeContext.instance = &wasmer.WasmerInstance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
@@ -268,9 +269,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
 
+	runtimeContext.instance = &wasmer.WasmerInstance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
+	runtimeContext.instance = &wasmer.WasmerInstance{}
 	runtimeContext.PushState()
 	require.Equal(t, 2, len(runtimeContext.stateStack))
 
@@ -316,6 +319,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
+	runtime.instance = &wasmer.WasmerInstance{}
 	runtime.PushState()
 	input.RecipientAddr = beta
 	runtime.InitStateFromContractCallInput(input)
@@ -323,6 +327,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
+	runtime.instance = &wasmer.WasmerInstance{}
 	runtime.PushState()
 	input.RecipientAddr = gamma
 	runtime.InitStateFromContractCallInput(input)
@@ -330,6 +335,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
+	runtime.instance = &wasmer.WasmerInstance{}
 	runtime.PushState()
 	input.RecipientAddr = alpha
 	runtime.InitStateFromContractCallInput(input)
@@ -361,7 +367,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -413,7 +419,7 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 
 	host.OutputContext = mockOutput
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -466,7 +472,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -498,7 +504,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
@@ -528,7 +534,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -592,7 +598,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(1)
+	runtimeContext.SetMaxInstanceStackSize(1)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -657,7 +663,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
-	runtimeContext.SetMaxInstanceCount(2)
+	runtimeContext.SetMaxInstanceStackSize(2)
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
@@ -693,7 +699,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data2"), memContents)
 
 	// Pop the initial instance from the stack, making it the 'current instance'
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
@@ -743,7 +749,7 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
 }

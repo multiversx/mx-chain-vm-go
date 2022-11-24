@@ -65,6 +65,8 @@ type WasmerInstance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
 
+	alreadyCleaned bool
+
 	// All functions exported by the WebAssembly instance, indexed
 	// by their name as a string. An exported function is a
 	// regular variadic Go closure. Arguments are untyped. Since
@@ -196,12 +198,22 @@ func NewInstanceFromCompiledCodeWithOptions(
 
 // Clean cleans instance
 func (instance *WasmerInstance) Clean() {
+	logWasmer.Trace("cleaning instance", "id", instance.Id())
+	if instance.alreadyCleaned {
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
+		return
+	}
+
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
 		}
+
+		instance.alreadyCleaned = true
+		logWasmer.Trace("cleaned instance", "id", instance.Id())
+
 	}
 }
 
@@ -293,6 +305,11 @@ func (instance *WasmerInstance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+// Id returns an identifier for the instance, unique at runtime
+func (instance *WasmerInstance) Id() string {
+	return fmt.Sprintf("%p", instance.instance)
+}
+
 // GetMemory returns the memory for the instance
 func (instance *WasmerInstance) GetMemory() executor.Memory {
 	return instance.Memory
@@ -300,8 +317,16 @@ func (instance *WasmerInstance) GetMemory() executor.Memory {
 
 // Reset resets the instance memories and globals
 func (instance *WasmerInstance) Reset() bool {
+	if instance.alreadyCleaned {
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
+		return false
+	}
+
 	result := cWasmerInstanceReset(instance.instance)
-	return result == cWasmerOk
+	ok := result == cWasmerOk
+
+	logWasmer.Trace("reset: warm instance", "id", instance.Id(), "ok", ok)
+	return ok
 }
 
 // IsInterfaceNil returns true if underlying object is nil

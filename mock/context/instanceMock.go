@@ -2,6 +2,7 @@ package mock
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
@@ -141,6 +142,11 @@ func (instance *InstanceMock) IsFunctionImported(name string) bool {
 func GetMockInstance(host arwen.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
+}
+
+// Id returns an identifier for the instance, unique at runtime
+func (instance *InstanceMock) Id() string {
+	return fmt.Sprintf("%p", instance)
 }
 
 // IsInterfaceNil mocked method

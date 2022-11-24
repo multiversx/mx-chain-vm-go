@@ -125,14 +125,14 @@ type RuntimeContext interface {
 	MustVerifyNextContractCode()
 	SetRuntimeBreakpointValue(value BreakpointValue)
 	GetRuntimeBreakpointValue() BreakpointValue
-	RunningInstancesCount() uint64
+	GetInstanceStackSize() uint64
 	CountSameContractInstancesOnStack(address []byte) uint64
 	IsFunctionImported(name string) bool
 	ReadOnly() bool
 	SetReadOnly(readOnly bool)
 	StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error
 	ClearWarmInstanceCache()
-	SetMaxInstanceCount(uint64)
+	SetMaxInstanceStackSize(uint64)
 	VerifyContractCode() error
 	GetInstance() executor.Instance
 	FunctionNameChecked() (string, error)
@@ -149,6 +149,7 @@ type RuntimeContext interface {
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	CleanInstance()
+	NumRunningInstances() (int, int)
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
