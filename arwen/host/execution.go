@@ -291,16 +291,15 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 
 	if host.IsOutOfVMFunctionExecution(input) {
 		vmOutput, err = host.handleFunctionCallOnOtherVM(input)
-		scExecutionInput = nil
 		if err != nil {
 			blockchain.PopSetActiveState()
 			host.Runtime().AddError(err, input.Function)
 			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
 			isChildComplete = true
-			return
 		} else {
 			blockchain.PopDiscard()
 		}
+		return
 	}
 
 	if host.IsBuiltinFunctionName(input.Function) {
