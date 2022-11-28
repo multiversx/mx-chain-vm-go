@@ -29,6 +29,7 @@ type EnableEpochsHandlerStub struct {
 	IsTransferToMetaFlagEnabledField                     bool
 	IsESDTNFTImprovementV1FlagEnabledField               bool
 	IsFixOldTokenLiquidityEnabledField                   bool
+	IsRuntimeMemStoreLimitEnabledField                   bool
 	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
 	FixOOGReturnCodeEnableEpochField                     uint32
 	RemoveNonUpdatedStorageEnableEpochField              uint32
@@ -174,6 +175,11 @@ func (stub *EnableEpochsHandlerStub) IsTransferToMetaFlagEnabled() bool {
 // IsESDTNFTImprovementV1FlagEnabled -
 func (stub *EnableEpochsHandlerStub) IsESDTNFTImprovementV1FlagEnabled() bool {
 	return stub.IsESDTNFTImprovementV1FlagEnabledField
+}
+
+// IsRuntimeMemStoreLimitEnabled -
+func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
+	return stub.IsRuntimeMemStoreLimitEnabledField
 }
 
 // MultiESDTTransferAsyncCallBackEnableEpoch -
