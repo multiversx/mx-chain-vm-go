@@ -14,6 +14,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/factory"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
@@ -580,6 +581,11 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 
 func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
 	host := InitializeArwenAndWasmer()
+	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+		IsRuntimeMemStoreLimitEnabledField: true,
+	}
+	host.EnableEpochsHandlerField = enableEpochsHandler
+
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
