@@ -1141,7 +1141,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	epochsHandler := context.host.EnableEpochsHandler()
 
 	if isNewPageNecessary {
-		if epochsHandler.IsRuntimeStoreLimitEnabled() {
+		if epochsHandler.IsRuntimeMemStoreLimitEnabled() {
 			return arwen.ErrBadUpperBounds
 		}
 
