@@ -452,10 +452,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	require.Nil(t, err)
 
 	memory := runtimeContext.instance.GetMemory()
-	err = memory.Grow(30)
-	require.Nil(t, err)
-
-	totalPages := 32
+	totalPages := 2
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
 	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))

@@ -1138,8 +1138,20 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	}
 
 	isNewPageNecessary := uint32(requestedEnd) > memoryLength
+	epochsHandler := context.host.EnableEpochsHandler()
+
 	if isNewPageNecessary {
-		return arwen.ErrBadUpperBounds
+		if epochsHandler.IsRuntimeStoreLimitEnabled() {
+			return arwen.ErrBadUpperBounds
+		}
+
+		err := memory.Grow(1)
+		if err != nil {
+			return err
+		}
+
+		memoryView = memory.Data()
+		memoryLength = memory.Length()
 	}
 
 	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength

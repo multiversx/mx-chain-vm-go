@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
-	github.com/ElrondNetwork/elrond-go-core v1.1.13
+	github.com/ElrondNetwork/elrond-go-core v1.1.24
 	github.com/ElrondNetwork/elrond-go-crypto v1.0.0
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
 	github.com/ElrondNetwork/elrond-vm-common v1.3.24
@@ -16,3 +16,5 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
+
+replace github.com/ElrondNetwork/elrond-vm-common v1.3.24 => ../elrond-vm-common
