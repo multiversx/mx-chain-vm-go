@@ -10,7 +10,7 @@ require (
 	github.com/ElrondNetwork/elrond-vm-common v1.3.28-0.20221128170449-9e43f6ab8956
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/stretchr/testify v1.7.1
