@@ -4,10 +4,10 @@ go 1.17
 
 require (
 	github.com/ElrondNetwork/big-int-util v0.1.0
-	github.com/ElrondNetwork/elrond-go-core v1.1.26-0.20221123085822-f43d6bc3f56c
-	github.com/ElrondNetwork/elrond-go-crypto v1.2.2-0.20221123100725-da401911b9ad
-	github.com/ElrondNetwork/elrond-go-logger v1.0.10-0.20221123090326-b29b6e6dc1f7
-	github.com/ElrondNetwork/elrond-vm-common v1.3.27-0.20221123101012-b6b037dd0d71
+	github.com/ElrondNetwork/elrond-go-core v1.1.26
+	github.com/ElrondNetwork/elrond-go-crypto v1.2.2
+	github.com/ElrondNetwork/elrond-go-logger v1.0.10
+	github.com/ElrondNetwork/elrond-vm-common v1.3.27
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1
 	github.com/gin-gonic/gin v1.8.0
