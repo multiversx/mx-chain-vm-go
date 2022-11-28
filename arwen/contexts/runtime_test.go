@@ -545,30 +545,14 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	pageSize := uint32(65536)
 	memory := runtimeContext.instance.GetMemory()
-	require.Equal(t, 2*pageSize, memory.Length())
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
 
 	// Bad lower bounds
 	memContents := []byte("test data")
 	offset := int32(-2)
 	err = runtimeContext.MemStore(offset, memContents)
 	require.True(t, errors.Is(err, arwen.ErrBadLowerBounds))
-
-	// Memory growth
-	require.Equal(t, 2*pageSize, memory.Length())
-	offset = int32(memory.Length() - 4)
-	err = runtimeContext.MemStore(offset, memContents)
-	require.Nil(t, err)
-	require.Equal(t, 3*pageSize, memory.Length())
-
-	// Bad upper bounds - forcing the Wasmer memory to grow more than a page at a
-	// time is not allowed
-	memContents = make([]byte, pageSize+100)
-	offset = int32(memory.Length() - 50)
-	err = runtimeContext.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
-	require.Equal(t, 4*pageSize, memory.Length())
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
@@ -595,6 +579,39 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents, err = runtimeContext.MemLoad(offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
+}
+
+func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	runtimeContext := makeDefaultRuntimeContext(t, host)
+	defer runtimeContext.ClearWarmInstanceCache()
+
+	runtimeContext.SetMaxInstanceCount(1)
+
+	gasLimit := uint64(100000000)
+	path := counterWasmCode
+	contractCode := arwen.GetSCCode(path)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+	require.Nil(t, err)
+
+	memory := runtimeContext.instance.GetMemory()
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+
+	memContents := []byte("test data")
+
+	// Memory growth via MemStore forbidden
+	offset := int32(memory.Length() - 4)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+
+	// Memory growth via MemStore forbidden
+	memContents = make([]byte, arwen.WASMPageSize+100)
+	offset = int32(memory.Length() - 50)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {

@@ -1133,19 +1133,13 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	requestedEnd := math.AddInt32(offset, dataLength)
 
 	isOffsetTooSmall := offset < 0
-	isNewPageNecessary := uint32(requestedEnd) > memoryLength
-
 	if isOffsetTooSmall {
 		return arwen.ErrBadLowerBounds
 	}
-	if isNewPageNecessary {
-		err := memory.Grow(1)
-		if err != nil {
-			return err
-		}
 
-		memoryView = memory.Data()
-		memoryLength = memory.Length()
+	isNewPageNecessary := uint32(requestedEnd) > memoryLength
+	if isNewPageNecessary {
+		return arwen.ErrBadUpperBounds
 	}
 
 	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
