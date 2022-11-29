@@ -4,6 +4,7 @@ import "github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
+	MaxPerTransaction    MaxPerTransaction
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
 	EthAPICost           EthAPICost
@@ -21,6 +22,10 @@ type BaseOperationCost struct {
 	CompilePerByte    uint64
 	AoTPreparePerByte uint64
 	GetCode           uint64
+}
+
+type MaxPerTransaction struct {
+	MaxTrieReadsPerTx uint64
 }
 
 type ElrondAPICost struct {
