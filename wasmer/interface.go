@@ -19,6 +19,8 @@ type InstanceHandler interface {
 	SetMemory(data []byte) bool
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
+	Reset() bool
+	Id() string
 }
 
 // MemoryHandler defines the functionality of the memory of a Wasmer instance

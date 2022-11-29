@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
 )
 
 func (p *Parser) parseAccountAddress(addrRaw string) (mj.JSONBytesFromString, error) {
@@ -38,6 +38,7 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 		AsyncCallData:   "",
 		ESDTData:        nil,
 		Update:          false,
+		DeveloperReward: mj.JSONBigIntZero(),
 	}
 
 	var err error
@@ -125,6 +126,12 @@ func (p *Parser) processAccount(acctRaw oj.OJsonObject) (*mj.Account, error) {
 			acct.Update, err = p.parseBool(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid update flag bool: %w", err)
+			}
+
+		case "developerRewards":
+			acct.DeveloperReward, err = p.processBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
+				return nil, errors.New("invalid developerRewards")
 			}
 		default:
 			return nil, fmt.Errorf("unknown account field: %s", kvp.Key)

@@ -6,16 +6,16 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	gasSchedules "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos/gasSchedules"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -958,7 +958,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 	t.Skip()
 
 	testConfig := &contracts.AsyncCallRecursiveTestConfig{
-		AsyncCallBaseTestConfig: *&asyncBaseTestConfig,
+		AsyncCallBaseTestConfig: asyncBaseTestConfig,
 		RecursiveChildCalls:     2,
 	}
 
@@ -1008,7 +1008,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 	t.Skip()
 
 	testConfig := &contracts.AsyncCallMultiChildTestConfig{
-		AsyncCallBaseTestConfig: *&asyncBaseTestConfig,
+		AsyncCallBaseTestConfig: asyncBaseTestConfig,
 		ChildCalls:              2,
 	}
 
@@ -1398,27 +1398,29 @@ func TestGasUsed_AsyncCallManaged_Mocks(t *testing.T) {
 	stopValue := uint64(100)
 	decrement := uint64(1)
 
+	tester := test.BuildMockInstanceCallTest(t).
+		WithContracts(
+			test.CreateMockContract(test.ParentAddress).
+				WithBalance(testConfig.ParentBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.GasMismatchAsyncCallParentMock, contracts.GasMismatchCallBackParentMock),
+			test.CreateMockContract(test.ChildAddress).
+				WithBalance(testConfig.ChildBalance).
+				WithConfig(testConfig).
+				WithMethods(contracts.GasMismatchAsyncCallChildMock),
+		).
+		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			setZeroCodeCosts(host)
+			setAsyncCosts(host, testConfig.GasLockCost)
+		})
+
 	for gasLimit := startValue; gasLimit >= stopValue; gasLimit -= decrement {
-		test.BuildMockInstanceCallTest(t).
-			WithContracts(
-				test.CreateMockContract(test.ParentAddress).
-					WithBalance(testConfig.ParentBalance).
-					WithConfig(testConfig).
-					WithMethods(contracts.GasMismatchAsyncCallParentMock, contracts.GasMismatchCallBackParentMock),
-				test.CreateMockContract(test.ChildAddress).
-					WithBalance(testConfig.ChildBalance).
-					WithConfig(testConfig).
-					WithMethods(contracts.GasMismatchAsyncCallChildMock),
-			).
-			WithInput(test.CreateTestContractCallInputBuilder().
-				WithRecipientAddr(test.ParentAddress).
-				WithGasProvided(gasLimit).
-				WithFunction("gasMismatchParent").
-				Build()).
-			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
-				setZeroCodeCosts(host)
-				setAsyncCosts(host, testConfig.GasLockCost)
-			}).
+
+		tester.WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithGasProvided(gasLimit).
+			WithFunction("gasMismatchParent").
+			Build()).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 				if gasLimit > outOfGasValue {
 					verify.
@@ -1440,23 +1442,24 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 	gasSchedule, err := gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	require.Nil(t, err)
 
+	tester := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("async-call-parent-managed", "../../")).
+				WithBalance(1000),
+			test.CreateInstanceContract(test.ChildAddress).
+				WithCode(test.GetTestSCCode("async-call-child-managed", "../../")).
+				WithBalance(1000),
+		).
+		WithGasSchedule(gasSchedule)
+
 	for gasLimit := startValue; gasLimit >= stopValue; gasLimit -= decrement {
-		test.BuildInstanceCallTest(t).
-			WithContracts(
-				test.CreateInstanceContract(test.ParentAddress).
-					WithCode(test.GetTestSCCode("async-call-parent-managed", "../../")).
-					WithBalance(1000),
-				test.CreateInstanceContract(test.ChildAddress).
-					WithCode(test.GetTestSCCode("async-call-child-managed", "../../")).
-					WithBalance(1000),
-			).
-			WithInput(test.CreateTestContractCallInputBuilder().
-				WithRecipientAddr(test.ParentAddress).
-				WithFunction("foo").
-				WithGasProvided(gasLimit).
-				WithArguments(test.ChildAddress).
-				Build()).
-			WithGasSchedule(gasSchedule).
+		tester.WithInput(test.CreateTestContractCallInputBuilder().
+			WithRecipientAddr(test.ParentAddress).
+			WithFunction("foo").
+			WithGasProvided(gasLimit).
+			WithArguments(test.ChildAddress).
+			Build()).
 			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 				if gasLimit > outOfGasValue {
 					verify.

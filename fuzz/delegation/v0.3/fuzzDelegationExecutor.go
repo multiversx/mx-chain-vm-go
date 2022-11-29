@@ -7,13 +7,13 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
+	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
+	mjparse "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/parse"
+	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 

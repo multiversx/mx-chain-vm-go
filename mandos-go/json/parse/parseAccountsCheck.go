@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
 )
 
 func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, error) {
@@ -29,6 +29,7 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 		IgnoreESDT:            false,
 		MoreESDTTokensAllowed: false,
 		CheckESDTData:         nil,
+		DeveloperReward:       mj.JSONCheckBigIntUnspecified(),
 	}
 	var err error
 
@@ -120,6 +121,11 @@ func (p *Parser) processCheckAccount(acctRaw oj.OJsonObject) (*mj.CheckAccount, 
 			acct.AsyncCallData, err = p.parseCheckBytes(kvp.Value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid asyncCallData: %w", err)
+			}
+		case "developerRewards":
+			acct.DeveloperReward, err = p.processCheckBigInt(kvp.Value, bigIntUnsignedBytes)
+			if err != nil {
+				return nil, fmt.Errorf("invalid developerRewards: %w", err)
 			}
 
 		default:

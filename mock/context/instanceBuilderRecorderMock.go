@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 )
 
 // InstanceBuilderRecorderMock can be passed to RuntimeContext as an InstanceBuilder to
@@ -27,6 +27,11 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 		builder.addContractInstanceToInstanceMap(contractCode, instance)
 	}
 	return instance, err
+}
+
+// Id -
+func (instance *InstanceBuilderRecorderMock) Id() string {
+	return ""
 }
 
 // NewInstanceFromCompiledCodeWithOptions - see InstanceBuilderMock.NewInstanceFromCompiledCodeWithOptions()

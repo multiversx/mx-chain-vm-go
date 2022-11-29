@@ -3,8 +3,8 @@ package elrondgo_exporter
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	txDataBuilder "github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 

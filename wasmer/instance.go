@@ -5,9 +5,14 @@ import "C"
 import (
 	"fmt"
 	"unsafe"
+
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 const OPCODE_COUNT = 448
+
+var logWasmer = logger.GetOrCreate("arwen/wasmer")
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -107,6 +112,8 @@ type Instance struct {
 	DataPointer unsafe.Pointer
 
 	InstanceCtx InstanceContext
+
+	alreadyCleaned bool
 }
 
 type CompilationOptions struct {
@@ -257,36 +264,52 @@ func (instance *Instance) SetContextData(data uintptr) {
 	cWasmerInstanceContextDataSet(instance.instance, instance.DataPointer)
 }
 
+// Clean cleans instance
 func (instance *Instance) Clean() {
+	logWasmer.Trace("cleaning instance", "id", instance.Id())
+	if instance.alreadyCleaned {
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
+		return
+	}
+
 	if instance.instance != nil {
 		cWasmerInstanceDestroy(instance.instance)
 
 		if instance.Memory != nil {
 			instance.Memory.Destroy()
 		}
+
+		instance.alreadyCleaned = true
+		logWasmer.Trace("cleaned instance", "id", instance.Id())
 	}
 }
 
+// GetPointsUsed returns the internal instance gas counter
 func (instance *Instance) GetPointsUsed() uint64 {
 	return cWasmerInstanceGetPointsUsed(instance.instance)
 }
 
+// SetPointsUsed sets the internal instance gas counter
 func (instance *Instance) SetPointsUsed(points uint64) {
 	cWasmerInstanceSetPointsUsed(instance.instance, points)
 }
 
+// SetGasLimit sets the gas limit for the instance
 func (instance *Instance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
 }
 
+// SetBreakpoints sets the breakpoint value for the instance
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
 
+// GetBreakpointValue returns the breakpoint value
 func (instance *Instance) GetBreakpointValue() uint64 {
 	return cWasmerInstanceGetBreakpointValue(instance.instance)
 }
 
+// Cache caches the instance
 func (instance *Instance) Cache() ([]byte, error) {
 	var cacheBytes *cUchar
 	var cacheLen cUint32T
@@ -334,20 +357,44 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
+// Id returns an identifier for the instance, unique at runtime
+func (instance *Instance) Id() string {
+	return fmt.Sprintf("%p", instance.instance)
+}
+
 // GetMemory returns the memory for the instance
 func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
 }
 
-// SetMemory sets the memory for the instance returns true if success
-func (instance *Instance) SetMemory(cleanMemory []byte) bool {
-	instanceMemory := instance.GetMemory().Data()
-	if len(instanceMemory) != len(cleanMemory) {
-		// TODO shrink the instance memory instead and return true
+// Reset resets the instance memories and globals
+func (instance *Instance) Reset() bool {
+	if instance.alreadyCleaned {
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
 		return false
 	}
 
-	copy(instanceMemory, cleanMemory)
+	result := cWasmerInstanceReset(instance.instance)
+	logWasmer.Trace("reset: warm instance", "id", instance.Id())
+	return result == cWasmerOk
+}
+
+// SetMemory sets the memory for the instance returns true if success
+func (instance *Instance) SetMemory(data []byte) bool {
+	if instance.instance == nil {
+		return false
+	}
+
+	if check.IfNil(instance.GetMemory()) {
+		return false
+	}
+
+	memory := instance.GetMemory().Data()
+	if len(memory) != len(data) {
+		return false
+	}
+
+	copy(memory, data)
 	return true
 }
 

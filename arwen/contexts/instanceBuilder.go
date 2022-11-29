@@ -1,7 +1,7 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 )
 
 // WasmerInstanceBuilder is the default instance builder, which produces real

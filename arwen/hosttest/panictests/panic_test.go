@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,13 +22,13 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 		host.Reset()
 	}()
 
-	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		var i *int
 		i = nil
 
 		// dereference a nil pointer
 		*i = *i + 1
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -53,11 +53,11 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 		host.Reset()
 	}()
 
-	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		i := 5
 		j := 4
 		i = i / (j - 4)
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -83,9 +83,9 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 		host.Reset()
 	}()
 
-	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		time.Sleep(2 * time.Second)
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -111,14 +111,14 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 		host.Reset()
 	}()
 
-	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		var i *int
 		i = nil
 
 		// dereference a nil pointer
 		time.Sleep(time.Second)
 		*i = *i + 1
-		return nil, nil
+		return nil, 0, nil
 	}
 
 	input := test.CreateTestContractCallInputBuilder().
@@ -143,14 +143,14 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 	for k := 0; k < numParallel; k++ {
 		code := test.GetTestSCCode("counter", "../../../")
 		hosts[k], blockchains[k] = test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
-		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, error) {
+		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 			var i *int
 			i = nil
 
 			// dereference a nil pointer
 			time.Sleep(time.Second)
 			*i = *i + 1
-			return nil, nil
+			return nil, 0, nil
 		}
 	}
 

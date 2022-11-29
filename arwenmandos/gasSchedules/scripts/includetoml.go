@@ -20,7 +20,7 @@ func main() {
 	out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"))
 	out.Write([]byte("\n"))
 	out.Write([]byte("// Please do not edit manually!\n"))
-	out.Write([]byte("// Call `go generate` in `arwen-wasm-vm/arwenmandos/gasSchedules` to update it.\n"))
+	out.Write([]byte("// Call `go generate` in `arwen-wasm-vm-v1_4/arwenmandos/gasSchedules` to update it.\n"))
 	out.Write([]byte("\n"))
 	out.Write([]byte("const (\n"))
 	for _, f := range fs {

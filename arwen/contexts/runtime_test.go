@@ -7,33 +7,35 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/cryptoapi"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/cryptoapi"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/factory"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
-const WASMPageSize = 65536
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
 
 func MakeAPIImports() *wasmer.Imports {
-	imports, _ := elrondapi.ElrondEIImports()
-	imports, _ = elrondapi.BigIntImports(imports)
-	imports, _ = elrondapi.BigFloatImports(imports)
-	imports, _ = elrondapi.ManagedBufferImports(imports)
-	imports, _ = elrondapi.SmallIntImports(imports)
-	imports, _ = cryptoapi.CryptoImports(imports)
-	return imports
+	imports := elrondapimeta.NewEIFunctions()
+	_ = elrondapi.ElrondEIImports(imports)
+	_ = elrondapi.BigIntImports(imports)
+	_ = elrondapi.BigFloatImports(imports)
+	_ = elrondapi.ManagedBufferImports(imports)
+	_ = elrondapi.SmallIntImports(imports)
+	_ = cryptoapi.CryptoImports(imports)
+	return wasmer.ConvertImports(imports)
 }
 
 func InitializeArwenAndWasmer() *contextmock.VMHostMock {
@@ -62,9 +64,6 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
-		epochNotifier,
-		0,
-		0,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
@@ -234,7 +233,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	runtimeContext.instance = nil
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 	require.NotNil(t, runtimeContext.instance)
 	require.Equal(t, instance, runtimeContext.instance)
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
@@ -266,7 +265,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 		Function:      funcName,
 	}
 	runtimeContext.InitStateFromContractCallInput(input)
-
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
@@ -288,9 +287,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
 
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
+	runtimeContext.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 2, len(runtimeContext.stateStack))
 
@@ -452,13 +453,10 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	require.Nil(t, err)
 
 	memory := runtimeContext.instance.GetMemory()
-	err = memory.Grow(30)
-	require.Nil(t, err)
-
-	totalPages := 32
+	totalPages := 2
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {
@@ -545,30 +543,14 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	pageSize := uint32(65536)
 	memory := runtimeContext.instance.GetMemory()
-	require.Equal(t, 2*pageSize, memory.Length())
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
 
 	// Bad lower bounds
 	memContents := []byte("test data")
 	offset := int32(-2)
 	err = runtimeContext.MemStore(offset, memContents)
 	require.True(t, errors.Is(err, arwen.ErrBadLowerBounds))
-
-	// Memory growth
-	require.Equal(t, 2*pageSize, memory.Length())
-	offset = int32(memory.Length() - 4)
-	err = runtimeContext.MemStore(offset, memContents)
-	require.Nil(t, err)
-	require.Equal(t, 3*pageSize, memory.Length())
-
-	// Bad upper bounds - forcing the Wasmer memory to grow more than a page at a
-	// time is not allowed
-	memContents = make([]byte, pageSize+100)
-	offset = int32(memory.Length() - 50)
-	err = runtimeContext.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
-	require.Equal(t, 4*pageSize, memory.Length())
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
@@ -595,6 +577,44 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents, err = runtimeContext.MemLoad(offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
+}
+
+func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+		IsRuntimeMemStoreLimitEnabledField: true,
+	}
+	host.EnableEpochsHandlerField = enableEpochsHandler
+
+	runtimeContext := makeDefaultRuntimeContext(t, host)
+	defer runtimeContext.ClearWarmInstanceCache()
+
+	runtimeContext.SetMaxInstanceCount(1)
+
+	gasLimit := uint64(100000000)
+	path := counterWasmCode
+	contractCode := arwen.GetSCCode(path)
+	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
+	require.Nil(t, err)
+
+	memory := runtimeContext.instance.GetMemory()
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+
+	memContents := []byte("test data")
+
+	// Memory growth via MemStore forbidden
+	offset := int32(memory.Length() - 4)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+
+	// Memory growth via MemStore forbidden
+	memContents = make([]byte, arwen.WASMPageSize+100)
+	offset = int32(memory.Length() - 50)
+	err = runtimeContext.MemStore(offset, memContents)
+	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
+	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
@@ -638,7 +658,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, []byte("test data2"), memContents)
 
 	// Pop the initial instance from the stack, making it the 'current instance'
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 	require.Equal(t, 0, len(runtimeContext.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
@@ -688,7 +708,7 @@ func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
-	runtimeContext.popInstance([]byte{1})
+	runtimeContext.popInstance()
 
 	require.Equal(t, 0, len(runtimeContext.stateStack))
 }

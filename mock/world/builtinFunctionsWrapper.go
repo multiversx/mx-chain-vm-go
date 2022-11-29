@@ -3,11 +3,12 @@ package worldmock
 import (
 	"bytes"
 
-	"github.com/ElrondNetwork/wasm-vm/config"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of
@@ -37,10 +38,35 @@ func NewBuiltinFunctionsWrapper(
 		MapDNSAddresses:                  dnsMap,
 		Marshalizer:                      WorldMarshalizer,
 		Accounts:                         world.AccountsAdapter,
+    GuardedAccountHandler:            world.GuardedAccountHandler,
 		ShardCoordinator:                 world,
-		EpochNotifier:                    &EpochNotifierStub{},
 		MaxNumOfAddressesForTransferRole: 100,
-		GuardedAccountHandler: world.GuardedAccountHandler,
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:         true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+			IsFixOOGReturnCodeFlagEnabledField:                   true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+			IsManagedCryptoAPIsFlagEnabledField:                  true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+			IsRefactorContextFlagEnabledField:                    true,
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsDisableExecByCallerFlagEnabledField:                true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsTransferToMetaFlagEnabledField:                     true,
+			IsCheckFrozenCollectionFlagEnabledField:              true,
+			IsFixAsyncCallbackCheckFlagEnabledField:              true,
+			IsESDTNFTImprovementV1FlagEnabledField:               true,
+			IsSaveToSystemAccountFlagEnabledField:                true,
+			IsValueLengthCheckFlagEnabledField:                   true,
+			IsSCDeployFlagEnabledField:                           true,
+			IsRepairCallbackFlagEnabledField:                     true,
+			IsAheadOfTimeGasUsageFlagEnabledField:                true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+			IsFixOldTokenLiquidityEnabledField:                   true,
+		},
 	}
 
 	builtinFuncFactory, err := builtInFunctions.NewBuiltInFunctionsCreator(argsBuiltIn)

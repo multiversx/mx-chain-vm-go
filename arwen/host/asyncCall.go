@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -104,7 +104,7 @@ func (host *vmHost) isESDTTransferOnReturnDataFromFunctionAndArgs(
 	functionName string,
 	args [][]byte,
 ) (bool, string, [][]byte) {
-	if !host.flagMultiESDTTransferAsyncCallBack.IsSet() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
+	if !host.enableEpochsHandler.IsMultiESDTTransferFixOnCallBackFlagEnabled() && functionName == core.BuiltInFunctionMultiESDTNFTTransfer {
 		return false, functionName, args
 	}
 
@@ -206,7 +206,7 @@ func (host *vmHost) executeSyncCallbackCall(
 	destinationErr error,
 ) (*vmcommon.VMOutput, error) {
 	actualDestination := asyncCallInfo.GetDestination()
-	if host.flagMultiESDTTransferAsyncCallBack.IsSet() {
+	if host.enableEpochsHandler.IsMultiESDTTransferFixOnCallBackFlagEnabled() {
 		actualDestination = host.determineDestinationForAsyncCall(asyncCallInfo)
 	}
 	callbackCallInput, err := host.createCallbackContractCallInput(
@@ -281,7 +281,7 @@ func (host *vmHost) sendAsyncCallToDestination(asyncCallInfo arwen.AsyncCallInfo
 }
 
 func (host *vmHost) returnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
-	if host.flagFixAsyncCallArguments.IsSet() && returnCode == vmcommon.Ok {
+	if host.enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() && returnCode == vmcommon.Ok {
 		return []byte{0}
 	}
 	return big.NewInt(int64(returnCode)).Bytes()
@@ -295,7 +295,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	currentCall := runtime.GetVMInput()
 
 	retData := []byte("@" + core.ConvertToEvenHex(int(output.ReturnCode())))
-	if !host.flagFixAsyncCallArguments.IsSet() {
+	if !host.enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
 		// the legacy implementation was using the message string instead of the code
 		retData = []byte("@" + hex.EncodeToString([]byte(output.ReturnCode().String())))
 	}
@@ -305,7 +305,7 @@ func (host *vmHost) sendCallbackToCurrentCaller() error {
 	}
 
 	valueToTransfer := currentCall.CallValue
-	if host.flagUseDifferentGasCostForCachedStorage.IsSet() {
+	if host.enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
 		valueToTransfer = big.NewInt(0)
 	}
 

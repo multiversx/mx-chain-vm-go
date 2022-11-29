@@ -7,7 +7,7 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
@@ -118,6 +118,7 @@ func (v *VMOutputVerifier) HasRuntimeErrorAndInfo(message string, otherInfo stri
 	for index, err := range errors {
 		if strings.HasPrefix(err.Error(), message) && strings.HasPrefix(otherInfos[index], otherInfo) {
 			errorFound = true
+			break
 		}
 	}
 	require.True(v.T, errorFound, fmt.Sprintf("No error with message '%s' found", message))

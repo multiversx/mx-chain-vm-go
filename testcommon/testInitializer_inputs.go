@@ -12,16 +12,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
+	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
@@ -267,11 +269,14 @@ func defaultTestArwenForContracts(
 
 	contractsMap := make(map[string]*contextmock.StubAccount)
 	codeMap := make(map[string]*[]byte)
+	compiledCodeMap := make(map[string][]byte)
 
 	for _, contract := range contracts {
+		codeHash, _ := hashing.NewHasher().Sha256(contract.code)
 		contractsMap[string(contract.address)] = &contextmock.StubAccount{
 			Address:      contract.address,
 			Balance:      big.NewInt(contract.balance),
+			CodeHash:     codeHash,
 			CodeMetadata: DefaultCodeMetadata,
 			OwnerAddress: ParentAddress,
 		}
@@ -291,6 +296,17 @@ func defaultTestArwenForContracts(
 			return *code
 		}
 		return nil
+	}
+
+	stubBlockchainHook.SaveCompiledCodeCalled = func(codehash []byte, code []byte) {
+		compiledCodeMap[string(codehash)] = code
+	}
+	stubBlockchainHook.GetCompiledCodeCalled = func(codeHash []byte) (bool, []byte) {
+		compiledCode, ok := compiledCodeMap[string(codeHash)]
+		if ok {
+			return ok, compiledCode
+		}
+		return false, nil
 	}
 
 	host := DefaultTestArwenWithGasSchedule(tb, stubBlockchainHook, gasSchedule, wasmerSIGSEGVPassthrough)
@@ -321,7 +337,21 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:     true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
+			IsFixOOGReturnCodeFlagEnabledField:               true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:        true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:   true,
+			IsManagedCryptoAPIsFlagEnabledField:              true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:   true,
+			IsESDTTransferRoleFlagEnabledField:               true,
+			IsSendAlwaysFlagEnabledField:                     true,
+			IsGlobalMintBurnFlagEnabledField:                 true,
+			IsCheckFunctionArgumentFlagEnabledField:          true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
+		},
 		WasmerSIGSEGVPassthrough: false,
 	})
 	require.Nil(tb, err)
@@ -355,9 +385,25 @@ func DefaultTestArwenWithGasSchedule(
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ElrondProtectedKeyPrefix: []byte("ELROND"),
 		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &worldmock.EpochNotifierStub{},
+		EpochNotifier:            &mock.EpochNotifierStub{},
+		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField:         true,
+			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,
+			IsFixOOGReturnCodeFlagEnabledField:                   true,
+			IsRemoveNonUpdatedStorageFlagEnabledField:            true,
+			IsCreateNFTThroughExecByCallerFlagEnabledField:       true,
+			IsManagedCryptoAPIsFlagEnabledField:                  true,
+			IsFailExecutionOnEveryAPIErrorFlagEnabledField:       true,
+			IsRefactorContextFlagEnabledField:                    true,
+			IsCheckCorrectTokenIDForTransferRoleFlagEnabledField: true,
+			IsDisableExecByCallerFlagEnabledField:                true,
+			IsESDTTransferRoleFlagEnabledField:                   true,
+			IsSendAlwaysFlagEnabledField:                         true,
+			IsGlobalMintBurnFlagEnabledField:                     true,
+			IsCheckFunctionArgumentFlagEnabledField:              true,
+			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
+		},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
-		UseDifferentGasCostForReadingCachedStorageEpoch: 0,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

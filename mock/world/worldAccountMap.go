@@ -7,7 +7,10 @@ import (
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
 )
+
+var hasher = hashing.NewHasher()
 
 // AccountMap is a map from address to Account, also implementing the
 // AccountsAdapter interface
@@ -69,6 +72,10 @@ func (am AccountMap) CreateSmartContractAccountWithCodeHash(owner []byte, addres
 
 // PutAccount inserts account based on address.
 func (am AccountMap) PutAccount(account *Account) {
+	if account.Code != nil && account.CodeHash == nil {
+		hash, _ := hasher.Sha256(account.Code)
+		account.CodeHash = hash
+	}
 	am[string(account.Address)] = account
 }
 

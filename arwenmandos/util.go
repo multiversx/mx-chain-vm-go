@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
+	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
@@ -34,7 +34,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		Nonce:           testAcct.Nonce.Value,
 		Balance:         big.NewInt(0).Set(testAcct.Balance.Value),
 		BalanceDelta:    big.NewInt(0),
-		DeveloperReward: big.NewInt(0),
+		DeveloperReward: big.NewInt(0).Set(testAcct.DeveloperReward.Value),
 		Username:        testAcct.Username.Value,
 		Storage:         storage,
 		Code:            testAcct.Code.Value,

@@ -4,13 +4,14 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	arwenMock "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
+	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
+	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	testcommon "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -460,7 +461,8 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *updateFromSourceTestConfi
 			gasSchedule.ElrondAPICost.AsyncCallbackGasLock = 0
 
 			if !testConfig.isFlagEnabled {
-				host.Storage().DisableUseDifferentGasCostFlag()
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
 		AndAssertResults(asserts)

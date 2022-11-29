@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
 )
 
 // AccountsToOJ converts a mandos-format account to an ordered JSON representation.
@@ -40,6 +40,9 @@ func AccountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 		}
 		if len(account.Owner.Value) > 0 {
 			acctOJ.Put("owner", bytesFromStringToOJ(account.Owner))
+		}
+		if len(account.DeveloperReward.Original) > 0 {
+			acctOJ.Put("developerRewards", bigIntToOJ(account.DeveloperReward))
 		}
 		if len(account.AsyncCallData) > 0 {
 			acctOJ.Put("asyncCallData", stringToOJ(account.AsyncCallData))
@@ -94,6 +97,9 @@ func checkAccountsToOJ(checkAccounts *mj.CheckAccounts) oj.OJsonObject {
 		}
 		if !checkAccount.Owner.IsUnspecified() {
 			acctOJ.Put("owner", checkBytesToOJ(checkAccount.Owner))
+		}
+		if !checkAccount.DeveloperReward.IsUnspecified() {
+			acctOJ.Put("developerRewards", checkBigIntToOJ(checkAccount.DeveloperReward))
 		}
 		if !checkAccount.AsyncCallData.IsUnspecified() {
 			acctOJ.Put("asyncCallData", checkBytesToOJ(checkAccount.AsyncCallData))

@@ -50,10 +50,10 @@ import (
 	"crypto/elliptic"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
-	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing/secp256k1"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 )
 
 const blsPublicKeyLength = 96
@@ -91,199 +91,199 @@ const (
 )
 
 // CryptoImports adds some crypto imports to the Wasmer Imports map
-func CryptoImports(imports *wasmer.Imports) (*wasmer.Imports, error) {
-	imports = imports.Namespace("env")
-	imports, err := imports.Append("sha256", v1_4_sha256, C.v1_4_sha256)
+func CryptoImports(imports elrondapimeta.EIFunctionReceiver) error {
+	imports.Namespace("env")
+	err := imports.Append("sha256", v1_4_sha256, C.v1_4_sha256)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedSha256", v1_4_managedSha256, C.v1_4_managedSha256)
+	err = imports.Append("managedSha256", v1_4_managedSha256, C.v1_4_managedSha256)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("keccak256", v1_4_keccak256, C.v1_4_keccak256)
+	err = imports.Append("keccak256", v1_4_keccak256, C.v1_4_keccak256)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedKeccak256", v1_4_managedKeccak256, C.v1_4_managedKeccak256)
+	err = imports.Append("managedKeccak256", v1_4_managedKeccak256, C.v1_4_managedKeccak256)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("ripemd160", v1_4_ripemd160, C.v1_4_ripemd160)
+	err = imports.Append("ripemd160", v1_4_ripemd160, C.v1_4_ripemd160)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedRipemd160", v1_4_managedRipemd160, C.v1_4_managedRipemd160)
+	err = imports.Append("managedRipemd160", v1_4_managedRipemd160, C.v1_4_managedRipemd160)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("verifyBLS", v1_4_verifyBLS, C.v1_4_verifyBLS)
+	err = imports.Append("verifyBLS", v1_4_verifyBLS, C.v1_4_verifyBLS)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedVerifyBLS", v1_4_managedVerifyBLS, C.v1_4_managedVerifyBLS)
+	err = imports.Append("managedVerifyBLS", v1_4_managedVerifyBLS, C.v1_4_managedVerifyBLS)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("verifyEd25519", v1_4_verifyEd25519, C.v1_4_verifyEd25519)
+	err = imports.Append("verifyEd25519", v1_4_verifyEd25519, C.v1_4_verifyEd25519)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedVerifyEd25519", v1_4_managedVerifyEd25519, C.v1_4_managedVerifyEd25519)
+	err = imports.Append("managedVerifyEd25519", v1_4_managedVerifyEd25519, C.v1_4_managedVerifyEd25519)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("verifySecp256k1", v1_4_verifySecp256k1, C.v1_4_verifySecp256k1)
+	err = imports.Append("verifySecp256k1", v1_4_verifySecp256k1, C.v1_4_verifySecp256k1)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedVerifySecp256k1", v1_4_managedVerifySecp256k1, C.v1_4_managedVerifySecp256k1)
+	err = imports.Append("managedVerifySecp256k1", v1_4_managedVerifySecp256k1, C.v1_4_managedVerifySecp256k1)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("verifyCustomSecp256k1", v1_4_verifyCustomSecp256k1, C.v1_4_verifyCustomSecp256k1)
+	err = imports.Append("verifyCustomSecp256k1", v1_4_verifyCustomSecp256k1, C.v1_4_verifyCustomSecp256k1)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedVerifyCustomSecp256k1", v1_4_managedVerifyCustomSecp256k1, C.v1_4_managedVerifyCustomSecp256k1)
+	err = imports.Append("managedVerifyCustomSecp256k1", v1_4_managedVerifyCustomSecp256k1, C.v1_4_managedVerifyCustomSecp256k1)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("encodeSecp256k1DerSignature", v1_4_encodeSecp256k1DerSignature, C.v1_4_encodeSecp256k1DerSignature)
+	err = imports.Append("encodeSecp256k1DerSignature", v1_4_encodeSecp256k1DerSignature, C.v1_4_encodeSecp256k1DerSignature)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedEncodeSecp256k1DerSignature", v1_4_managedEncodeSecp256k1DerSignature, C.v1_4_managedEncodeSecp256k1DerSignature)
+	err = imports.Append("managedEncodeSecp256k1DerSignature", v1_4_managedEncodeSecp256k1DerSignature, C.v1_4_managedEncodeSecp256k1DerSignature)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("addEC", v1_4_addEC, C.v1_4_addEC)
+	err = imports.Append("addEC", v1_4_addEC, C.v1_4_addEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("doubleEC", v1_4_doubleEC, C.v1_4_doubleEC)
+	err = imports.Append("doubleEC", v1_4_doubleEC, C.v1_4_doubleEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("isOnCurveEC", v1_4_isOnCurveEC, C.v1_4_isOnCurveEC)
+	err = imports.Append("isOnCurveEC", v1_4_isOnCurveEC, C.v1_4_isOnCurveEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("scalarBaseMultEC", v1_4_scalarBaseMultEC, C.v1_4_scalarBaseMultEC)
+	err = imports.Append("scalarBaseMultEC", v1_4_scalarBaseMultEC, C.v1_4_scalarBaseMultEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedScalarBaseMultEC", v1_4_managedScalarBaseMultEC, C.v1_4_managedScalarBaseMultEC)
+	err = imports.Append("managedScalarBaseMultEC", v1_4_managedScalarBaseMultEC, C.v1_4_managedScalarBaseMultEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("scalarMultEC", v1_4_scalarMultEC, C.v1_4_scalarMultEC)
+	err = imports.Append("scalarMultEC", v1_4_scalarMultEC, C.v1_4_scalarMultEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedScalarMultEC", v1_4_managedScalarMultEC, C.v1_4_managedScalarMultEC)
+	err = imports.Append("managedScalarMultEC", v1_4_managedScalarMultEC, C.v1_4_managedScalarMultEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("marshalEC", v1_4_marshalEC, C.v1_4_marshalEC)
+	err = imports.Append("marshalEC", v1_4_marshalEC, C.v1_4_marshalEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedMarshalEC", v1_4_managedMarshalEC, C.v1_4_managedMarshalEC)
+	err = imports.Append("managedMarshalEC", v1_4_managedMarshalEC, C.v1_4_managedMarshalEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("unmarshalEC", v1_4_unmarshalEC, C.v1_4_unmarshalEC)
+	err = imports.Append("unmarshalEC", v1_4_unmarshalEC, C.v1_4_unmarshalEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedUnmarshalEC", v1_4_managedUnmarshalEC, C.v1_4_managedUnmarshalEC)
+	err = imports.Append("managedUnmarshalEC", v1_4_managedUnmarshalEC, C.v1_4_managedUnmarshalEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("marshalCompressedEC", v1_4_marshalCompressedEC, C.v1_4_marshalCompressedEC)
+	err = imports.Append("marshalCompressedEC", v1_4_marshalCompressedEC, C.v1_4_marshalCompressedEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedMarshalCompressedEC", v1_4_managedMarshalCompressedEC, C.v1_4_managedMarshalCompressedEC)
+	err = imports.Append("managedMarshalCompressedEC", v1_4_managedMarshalCompressedEC, C.v1_4_managedMarshalCompressedEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("unmarshalCompressedEC", v1_4_unmarshalCompressedEC, C.v1_4_unmarshalCompressedEC)
+	err = imports.Append("unmarshalCompressedEC", v1_4_unmarshalCompressedEC, C.v1_4_unmarshalCompressedEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedUnmarshalCompressedEC", v1_4_managedUnmarshalCompressedEC, C.v1_4_managedUnmarshalCompressedEC)
+	err = imports.Append("managedUnmarshalCompressedEC", v1_4_managedUnmarshalCompressedEC, C.v1_4_managedUnmarshalCompressedEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("generateKeyEC", v1_4_generateKeyEC, C.v1_4_generateKeyEC)
+	err = imports.Append("generateKeyEC", v1_4_generateKeyEC, C.v1_4_generateKeyEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedGenerateKeyEC", v1_4_managedGenerateKeyEC, C.v1_4_managedGenerateKeyEC)
+	err = imports.Append("managedGenerateKeyEC", v1_4_managedGenerateKeyEC, C.v1_4_managedGenerateKeyEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("createEC", v1_4_createEC, C.v1_4_createEC)
+	err = imports.Append("createEC", v1_4_createEC, C.v1_4_createEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("managedCreateEC", v1_4_managedCreateEC, C.v1_4_managedCreateEC)
+	err = imports.Append("managedCreateEC", v1_4_managedCreateEC, C.v1_4_managedCreateEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getCurveLengthEC", v1_4_getCurveLengthEC, C.v1_4_getCurveLengthEC)
+	err = imports.Append("getCurveLengthEC", v1_4_getCurveLengthEC, C.v1_4_getCurveLengthEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("getPrivKeyByteLengthEC", v1_4_getPrivKeyByteLengthEC, C.v1_4_getPrivKeyByteLengthEC)
+	err = imports.Append("getPrivKeyByteLengthEC", v1_4_getPrivKeyByteLengthEC, C.v1_4_getPrivKeyByteLengthEC)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	imports, err = imports.Append("ellipticCurveGetValues", v1_4_ellipticCurveGetValues, C.v1_4_ellipticCurveGetValues)
+	err = imports.Append("ellipticCurveGetValues", v1_4_ellipticCurveGetValues, C.v1_4_ellipticCurveGetValues)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return imports, nil
+	return nil
 }
 
 //export v1_4_sha256
