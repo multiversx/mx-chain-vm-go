@@ -192,6 +192,7 @@ func NewArwenVM(
 		hostParameters.EpochNotifier,
 		hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch,
 		hostParameters.ManagedCryptoAPIEnableEpoch,
+		hostParameters.RuntimeStoreLimitEnableEpoch,
 	)
 	if err != nil {
 		return nil, err
@@ -257,6 +258,7 @@ func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]stru
 	activationMap[hostParameters.MultiESDTTransferAsyncCallBackEnableEpoch] = struct{}{}
 	activationMap[hostParameters.RemoveNonUpdatedStorageEnableEpoch] = struct{}{}
 	activationMap[hostParameters.UseDifferentGasCostForReadingCachedStorageEpoch] = struct{}{}
+	activationMap[hostParameters.RuntimeStoreLimitEnableEpoch] = struct{}{}
 
 	return activationMap
 }

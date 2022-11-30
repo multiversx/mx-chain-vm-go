@@ -55,6 +55,9 @@ type runtimeContext struct {
 
 	managedCryptoApiEnableEpoch uint32
 	flagEnableManagedCryptoAPI  atomic.Flag
+
+	runtimeStoreLimitEnableEpoch uint32
+	flagRuntimeStoreLimit        atomic.Flag
 }
 
 type instanceAndMemory struct {
@@ -70,6 +73,7 @@ func NewRuntimeContext(
 	epochNotifier vmcommon.EpochNotifier,
 	useDifferentGasCostForReadingCachedStorageEpoch uint32,
 	managedCryptoAPIEnableEpoch uint32,
+	runtimeStoreLimitEnableEpoch uint32,
 ) (*runtimeContext, error) {
 	scAPINames := host.GetAPIMethods().Names()
 
@@ -1094,6 +1098,9 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return arwen.ErrBadLowerBounds
 	}
 	if isNewPageNecessary {
+		if context.flagRuntimeStoreLimit.IsSet() {
+			return arwen.ErrBadUpperBounds
+		}
 		err := memory.Grow(1)
 		if err != nil {
 			return err
@@ -1141,6 +1148,9 @@ func (context *runtimeContext) EpochConfirmed(epoch uint32, _ uint64) {
 
 	context.flagEnableManagedCryptoAPI.SetValue(epoch >= context.managedCryptoApiEnableEpoch)
 	log.Debug("Arwen VM: managed crypto API", "enabled", context.flagEnableNewAPIMethods.IsSet())
+
+	context.flagRuntimeStoreLimit.SetValue(epoch >= context.runtimeStoreLimitEnableEpoch)
+	log.Debug("Arwen VM: runtime store limit", "enabled", context.flagRuntimeStoreLimit.IsSet())
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
