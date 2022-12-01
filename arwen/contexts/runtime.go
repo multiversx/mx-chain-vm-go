@@ -86,6 +86,7 @@ func NewRuntimeContext(
 		errors:                      nil,
 		managedCryptoApiEnableEpoch: managedCryptoAPIEnableEpoch,
 		useDifferentGasCostForReadingCachedStorageEpoch: useDifferentGasCostForReadingCachedStorageEpoch,
+		runtimeStoreLimitEnableEpoch:                    runtimeStoreLimitEnableEpoch,
 	}
 
 	var err error
