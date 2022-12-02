@@ -100,7 +100,6 @@ func (context *runtimeContext) InitState() {
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
-	context.numRunningInstances = 0
 	context.asyncCallInfo = nil
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
@@ -135,7 +134,11 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	context.codeHash = codeHash
 
 	defer func() {
-		logRuntime.Trace("warm cache size after starting instance", "size", context.warmInstanceCache.Len())
+		warm, cold := context.NumRunningInstances()
+		logRuntime.Trace("num instances after starting new one",
+			"warm", warm,
+			"cold", cold,
+			"total", context.numRunningInstances)
 	}()
 
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
@@ -453,8 +456,9 @@ func (context *runtimeContext) popInstance() {
 
 	if !check.IfNil(context.instance) {
 		if context.isCodeHashOnTheStack(context.codeHash) {
-			context.instance.Clean()
-			context.numRunningInstances--
+			if context.instance.Clean() {
+				context.numRunningInstances--
+			}
 		}
 	}
 
@@ -926,9 +930,10 @@ func (context *runtimeContext) CleanInstance() {
 		return
 	}
 
-	context.instance.Clean()
+	if context.instance.Clean() {
+		context.numRunningInstances--
+	}
 	context.instance = nil
-	context.numRunningInstances--
 
 	logRuntime.Trace("instance cleaned")
 }

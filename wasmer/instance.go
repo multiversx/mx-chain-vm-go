@@ -265,11 +265,11 @@ func (instance *Instance) SetContextData(data uintptr) {
 }
 
 // Clean cleans instance
-func (instance *Instance) Clean() {
+func (instance *Instance) Clean() bool {
 	logWasmer.Trace("cleaning instance", "id", instance.Id())
 	if instance.alreadyCleaned {
 		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
-		return
+		return false
 	}
 
 	if instance.instance != nil {
@@ -281,7 +281,11 @@ func (instance *Instance) Clean() {
 
 		instance.alreadyCleaned = true
 		logWasmer.Trace("cleaned instance", "id", instance.Id())
+
+		return true
 	}
+
+	return false
 }
 
 // GetPointsUsed returns the internal instance gas counter
