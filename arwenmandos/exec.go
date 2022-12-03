@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
 	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
@@ -25,13 +26,14 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	World             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	vmHost            arwen.VMHost
-	checkGas          bool
-	scenarioTraceGas  []bool
-	fileResolver      fr.FileResolver
-	exprReconstructor er.ExprReconstructor
+	World              *worldhook.MockWorld
+	vm                 vmi.VMExecutionHandler
+	OverrideVMExecutor executor.ExecutorAbstractFactory
+	vmHost             arwen.VMHost
+	checkGas           bool
+	scenarioTraceGas   []bool
+	fileResolver       fr.FileResolver
+	exprReconstructor  er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -75,7 +77,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		ae.World,
 		&arwen.VMHostParameters{
 			VMType:                   TestVMType,
-			OverrideVMExecutor:       nil,
+			OverrideVMExecutor:       ae.OverrideVMExecutor,
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,

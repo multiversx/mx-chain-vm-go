@@ -1,7 +1,8 @@
-package executorwrappers
+package executorwrapper
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
@@ -14,14 +15,11 @@ type WrapperInstance struct {
 
 // GetPointsUsed wraps the call to the underlying instance.
 func (inst *WrapperInstance) GetPointsUsed() uint64 {
-	result := inst.wrappedInstance.GetPointsUsed()
-	inst.logger.LogExecutorEvent(fmt.Sprintf("GetPointsUsed: %d", result))
-	return result
+	return inst.wrappedInstance.GetPointsUsed()
 }
 
 // SetPointsUsed wraps the call to the underlying instance.
 func (inst *WrapperInstance) SetPointsUsed(points uint64) {
-	inst.logger.LogExecutorEvent(fmt.Sprintf("SetPointsUsed: %d", points))
 	inst.wrappedInstance.SetPointsUsed(points)
 
 }
@@ -57,7 +55,7 @@ func (inst *WrapperInstance) Clean() {
 
 // CallFunction wraps the call to the underlying instance.
 func (inst *WrapperInstance) CallFunction(functionName string) error {
-	inst.logger.LogExecutorEvent(fmt.Sprintf("CallFunction:(%s)", functionName))
+	inst.logger.LogExecutorEvent(fmt.Sprintf("CallFunction(%s):", functionName))
 	return inst.wrappedInstance.CallFunction(functionName)
 }
 
@@ -71,15 +69,16 @@ func (inst *WrapperInstance) HasFunction(functionName string) bool {
 // GetFunctionNames wraps the call to the underlying instance.
 func (inst *WrapperInstance) GetFunctionNames() []string {
 	result := inst.wrappedInstance.GetFunctionNames()
+	sort.Strings(result) // to get consistent logs, function names must be sorted
 	inst.logger.LogExecutorEvent(fmt.Sprintf("GetFunctionNames: %s", result))
 	return result
 }
 
 // ValidateVoidFunction wraps the call to the underlying instance.
 func (inst *WrapperInstance) ValidateVoidFunction(functionName string) error {
-	result := inst.wrappedInstance.ValidateVoidFunction(functionName)
-	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateVoidFunction: %s", result))
-	return result
+	err := inst.wrappedInstance.ValidateVoidFunction(functionName)
+	inst.logger.LogExecutorEvent(fmt.Sprintf("ValidateVoidFunction(%s): %t", functionName, err == nil))
+	return err
 }
 
 // HasMemory wraps the call to the underlying instance.

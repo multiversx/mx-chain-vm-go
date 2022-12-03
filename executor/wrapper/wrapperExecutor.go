@@ -1,4 +1,4 @@
-package executorwrappers
+package executorwrapper
 
 import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -22,8 +22,8 @@ func (wexec *WrapperExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCos
 
 // FunctionNames wraps the call to the underlying executor.
 func (wexec *WrapperExecutor) FunctionNames() vmcommon.FunctionNames {
-	functionNames1 := wexec.wrappedExecutor.FunctionNames()
-	return functionNames1
+	functionNames := wexec.wrappedExecutor.FunctionNames()
+	return functionNames
 }
 
 // NewInstanceWithOptions wraps the call to the underlying executor.
@@ -36,6 +36,7 @@ func (wexec *WrapperExecutor) NewInstanceWithOptions(
 		return nil, err
 	}
 	wexec.addContractInstanceToInstanceMap(contractCode, wrappedInstance)
+	wexec.logger.SetCurrentInstance(wrappedInstance)
 	return &WrapperInstance{
 		logger:          wexec.logger,
 		wrappedInstance: wrappedInstance,
@@ -52,6 +53,7 @@ func (wexec *WrapperExecutor) NewInstanceFromCompiledCodeWithOptions(
 		return nil, err
 	}
 	wexec.addContractInstanceToInstanceMap(compiledCode, wrappedInstance)
+	wexec.logger.SetCurrentInstance(wrappedInstance)
 	return &WrapperInstance{
 		logger:          wexec.logger,
 		wrappedInstance: wrappedInstance,

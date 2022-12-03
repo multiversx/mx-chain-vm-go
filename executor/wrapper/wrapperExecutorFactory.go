@@ -1,4 +1,4 @@
-package executorwrappers
+package executorwrapper
 
 import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
@@ -30,7 +30,15 @@ func SimpleWrappedExecutorFactory(wrappedFactory executor.ExecutorAbstractFactor
 
 // CreateExecutor creates a new Executor instance.
 func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
-	wrappedExecutor, err := factory.wrappedFactory.CreateExecutor(args)
+	wrappedExecutor, err := factory.wrappedFactory.CreateExecutor(executor.ExecutorFactoryArgs{
+		VMHooks: &WrapperVMHooks{
+			logger:         factory.logger,
+			wrappedVMHooks: args.VMHooks,
+		},
+		OpcodeCosts:              &executor.WASMOpcodeCost{},
+		RkyvSerializationEnabled: false,
+		WasmerSIGSEGVPassthrough: false,
+	})
 	if err != nil {
 		return nil, err
 	}
