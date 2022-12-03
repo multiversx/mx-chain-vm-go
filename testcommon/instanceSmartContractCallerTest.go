@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	"github.com/stretchr/testify/require"
 )
 
 // InstanceTestSmartContract represents the config data for the smart contract instance to be tested
@@ -135,5 +136,9 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 		allErrors := callerTest.host.Runtime().GetAllErrors()
 		verify := NewVMOutputVerifierWithAllErrors(callerTest.tb, vmOutput, err, allErrors)
 		callerTest.assertResults(callerTest.host, callerTest.blockchainHookStub, verify)
+
+		// Extra verification for instance leaks
+		_, numColdInstances := callerTest.host.Runtime().NumRunningInstances()
+		require.Zero(callerTest.tb, numColdInstances)
 	}
 }
