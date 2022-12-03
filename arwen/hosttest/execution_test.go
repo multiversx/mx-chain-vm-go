@@ -15,7 +15,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	executorwrappers "github.com/ElrondNetwork/wasm-vm/executor/wrappers"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
@@ -291,7 +291,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	executorFactory := executorwrappers.SimpleWrappedExecutorFactory(wasmer.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -323,7 +323,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory1 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	executorFactory1 := executorwrappers.SimpleWrappedExecutorFactory(wasmer.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory1).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -335,7 +335,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	executorFactory2 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	executorFactory2 := executorwrappers.SimpleWrappedExecutorFactory(wasmer.ExecutorFactory())
 	host2 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory2).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
