@@ -29,93 +29,107 @@ func getTestRoot() string {
 	return arwenTestRoot
 }
 
-func runAllTestsInFolder(t *testing.T, folder string) {
-	runTestsInFolder(t, folder, []string{})
+type MandosTestBuilder struct {
+	t              *testing.T
+	folder         string
+	singleFile     string
+	exclusions     []string
+	executorLogger *executorwrapper.StringLogger
+	currentError   error
 }
 
-func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
+func MandosTest(t *testing.T) *MandosTestBuilder {
+	return &MandosTestBuilder{
+		t:              t,
+		folder:         "",
+		singleFile:     "",
+		executorLogger: nil,
+	}
+}
+
+func (mtb *MandosTestBuilder) Folder(folder string) *MandosTestBuilder {
+	mtb.folder = folder
+	return mtb
+}
+
+func (mtb *MandosTestBuilder) File(fileName string) *MandosTestBuilder {
+	mtb.singleFile = fileName
+	return mtb
+}
+
+func (mtb *MandosTestBuilder) Exclude(path string) *MandosTestBuilder {
+	mtb.exclusions = append(mtb.exclusions, path)
+	return mtb
+}
+
+func (mtb *MandosTestBuilder) WithExecutorLogs() *MandosTestBuilder {
+	mtb.executorLogger = executorwrapper.NewStringLogger()
+	return mtb
+}
+
+func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 	executor, err := am.NewArwenTestExecutor()
-	require.Nil(t, err)
+	require.Nil(mtb.t, err)
 	defer executor.Close()
+
+	if mtb.executorLogger != nil {
+		executor.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(
+			mtb.executorLogger,
+			wasmer.ExecutorFactory())
+	}
 
 	runner := mc.NewScenarioRunner(
 		executor,
 		mc.NewDefaultFileResolver(),
 	)
 
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		folder,
-		".scen.json",
-		exclusions,
-		mc.DefaultRunScenarioOptions())
+	if len(mtb.singleFile) > 0 {
+		fullPath := path.Join(getTestRoot(), mtb.folder)
+		fullPath = path.Join(fullPath, mtb.singleFile)
 
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func runSingleTestReturnError(folder string, filename string) error {
-	executor, err := am.NewArwenTestExecutor()
-	if err != nil {
-		return err
-	}
-	defer executor.Close()
-
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-
-	fullPath := path.Join(getTestRoot(), folder)
-	fullPath = path.Join(fullPath, filename)
-
-	return runner.RunSingleJSONScenario(
-		fullPath,
-		mc.DefaultRunScenarioOptions())
-}
-
-func runTestsInFolderWithLog(t *testing.T, folder string, exclusions []string) string {
-	executor, err := am.NewArwenTestExecutor()
-	logger := executorwrapper.NewStringLogger()
-	executor.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(logger, wasmer.ExecutorFactory())
-	require.Nil(t, err)
-	defer executor.Close()
-
-	runner := mc.NewScenarioRunner(
-		executor,
-		mc.NewDefaultFileResolver(),
-	)
-
-	err = runner.RunAllJSONScenariosInDirectory(
-		getTestRoot(),
-		folder,
-		".scen.json",
-		exclusions,
-		mc.DefaultRunScenarioOptions())
-
-	if err != nil {
-		t.Error(err)
+		mtb.currentError = runner.RunSingleJSONScenario(
+			fullPath,
+			mc.DefaultRunScenarioOptions())
+	} else {
+		mtb.currentError = runner.RunAllJSONScenariosInDirectory(
+			getTestRoot(),
+			mtb.folder,
+			".scen.json",
+			mtb.exclusions,
+			mc.DefaultRunScenarioOptions())
 	}
 
-	return logger.String()
+	return mtb
 }
 
-func runTestsInFolderCheckLog(t *testing.T, folder string, exclusions []string, expectedLog string) {
-	actualLog := runTestsInFolderWithLog(t, "adder/mandos", []string{})
-	if actualLog != expectedLog {
+func (mtb *MandosTestBuilder) CheckNoError() *MandosTestBuilder {
+	if mtb.currentError != nil {
+		mtb.t.Error(mtb.currentError)
+	}
+	return mtb
+}
+
+func (mtb *MandosTestBuilder) RequireError(expectedErrorMsg string) *MandosTestBuilder {
+	require.EqualError(mtb.t, mtb.currentError, expectedErrorMsg)
+	return mtb
+}
+
+func (mtb *MandosTestBuilder) CheckLog(expectedLogs string) *MandosTestBuilder {
+	require.NotNil(mtb.t, mtb.executorLogger)
+	actualLog := mtb.executorLogger.String()
+	if actualLog != expectedLogs {
 		timestampStr := time.Now().Format("2006_01_02_15_04_05")
 		fileExpected, err := os.Create(fmt.Sprintf("executorLog_%s_expected.txt", timestampStr))
-		require.Nil(t, err)
-		fileExpected.WriteString(expectedLog)
+		require.Nil(mtb.t, err)
+		fileExpected.WriteString(expectedLogs)
 		err = fileExpected.Close()
-		require.Nil(t, err)
+		require.Nil(mtb.t, err)
 		fileActual, err := os.Create(fmt.Sprintf("executorLog_%s_actual.txt", timestampStr))
-		require.Nil(t, err)
+		require.Nil(mtb.t, err)
 		fileActual.WriteString(actualLog)
 		err = fileActual.Close()
-		require.Nil(t, err)
-		t.Error("log mismatch, see saved logs")
+		require.Nil(mtb.t, err)
+		mtb.t.Error("log mismatch, see saved logs")
 	}
-
+	return mtb
 }
