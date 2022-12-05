@@ -69,5 +69,10 @@ VM hook end:   MBufferStorageStore(-102, -105) points used: 142437
 `
 
 func TestRustAdderLog(t *testing.T) {
-	runTestsInFolderCheckLog(t, "adder/mandos", []string{}, expectedAdderLog)
+	MandosTest(t).
+		Folder("adder/mandos").
+		WithExecutorLogs().
+		Run().
+		CheckNoError().
+		CheckLog(expectedAdderLog)
 }

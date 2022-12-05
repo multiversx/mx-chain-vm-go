@@ -2,53 +2,72 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestRustAdder(t *testing.T) {
-	runAllTestsInFolder(t, "adder/mandos")
+	MandosTest(t).
+		Folder("adder/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestRustFactorial(t *testing.T) {
-	runAllTestsInFolder(t, "factorial/mandos")
+	MandosTest(t).
+		Folder("factorial/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestRustErc20(t *testing.T) {
-	runAllTestsInFolder(t, "erc20-rust/mandos")
+	MandosTest(t).
+		Folder("erc20-rust/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestCErc20(t *testing.T) {
-	runAllTestsInFolder(t, "erc20-c")
+	MandosTest(t).
+		Folder("erc20-c").
+		Run().
+		CheckNoError()
 }
 
 func TestDigitalCash(t *testing.T) {
-	runAllTestsInFolder(t, "digital-cash")
+	MandosTest(t).
+		Folder("digital-cash").
+		Run().
+		CheckNoError()
 }
 
 func TestESDTMultiTransferOnCallback(t *testing.T) {
-	err := runSingleTestReturnError(
-		"features/composability/mandos",
-		"forw_raw_call_async_retrieve_multi_transfer.scen.json")
-	require.Nil(t, err)
+	MandosTest(t).
+		Folder("features/composability/mandos").
+		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestCreateAsyncCall(t *testing.T) {
-	err := runSingleTestReturnError(
-		"features/composability/mandos-promises",
-		"promises_single_transfer.scen.json")
-	require.Nil(t, err)
+	MandosTest(t).
+		Folder("features/composability/mandos-promises").
+		File("promises_single_transfer.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
-	err := runSingleTestReturnError(
-		"features/composability/mandos",
-		"forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json")
-	require.Nil(t, err)
+	MandosTest(t).
+		Folder("features/composability/mandos").
+		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestMultisig(t *testing.T) {
-	runAllTestsInFolder(t, "multisig/mandos")
+	MandosTest(t).
+		Folder("multisig/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestDnsContract(t *testing.T) {
@@ -56,19 +75,31 @@ func TestDnsContract(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "dns")
+	MandosTest(t).
+		Folder("dns").
+		Run().
+		CheckNoError()
 }
 
 func TestCrowdfundingEsdt(t *testing.T) {
-	runAllTestsInFolder(t, "crowdfunding-esdt")
+	MandosTest(t).
+		Folder("crowdfunding-esdt").
+		Run().
+		CheckNoError()
 }
 
 func TestEgldEsdtSwap(t *testing.T) {
-	runAllTestsInFolder(t, "egld-esdt-swap")
+	MandosTest(t).
+		Folder("egld-esdt-swap").
+		Run().
+		CheckNoError()
 }
 
 func TestPingPongEgld(t *testing.T) {
-	runAllTestsInFolder(t, "ping-pong-egld")
+	MandosTest(t).
+		Folder("ping-pong-egld").
+		Run().
+		CheckNoError()
 }
 
 func TestRustAttestation(t *testing.T) {
@@ -76,12 +107,19 @@ func TestRustAttestation(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "attestation-rust")
+	MandosTest(t).
+		Folder("attestation-rust").
+		Run().
+		CheckNoError()
 }
 
 func TestCAttestation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-	runAllTestsInFolder(t, "attestation-c")
+
+	MandosTest(t).
+		Folder("attestation-c").
+		Run().
+		CheckNoError()
 }
