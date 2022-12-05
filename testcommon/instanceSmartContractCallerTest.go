@@ -127,11 +127,11 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	defer func() {
 		if reset {
 			callerTest.host.Reset()
-
-			// Extra verification for instance leaks
-			_, numColdInstances := callerTest.host.Runtime().NumRunningInstances()
-			require.Zero(callerTest.tb, numColdInstances, "number of instances leaked")
 		}
+
+		// Extra verification for instance leaks
+		_, numColdInstances := callerTest.host.Runtime().NumRunningInstances()
+		require.Zero(callerTest.tb, numColdInstances, "number of instances leaked")
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)

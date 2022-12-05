@@ -92,7 +92,7 @@ func (context *runtimeContext) makeInstanceEvictionCallback() func(interface{}, 
 
 		logRuntime.Trace("evicted instance", "id", instance.Id())
 		if instance.Clean() {
-			context.numRunningInstances--
+			context.updateNumRunningInstances(-1)
 		}
 	}
 }
@@ -128,8 +128,9 @@ func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuil
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
+	context.instance = nil
+
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
-		context.instance = nil
 		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
@@ -152,7 +153,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
-		context.numRunningInstances++
+		context.updateNumRunningInstances(+1)
 		return nil
 	}
 
@@ -161,7 +162,7 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return err
 	}
 
-	context.numRunningInstances++
+	context.updateNumRunningInstances(+1)
 	return nil
 }
 
@@ -332,11 +333,6 @@ func (context *runtimeContext) saveWarmInstance() {
 	logRuntime.Trace("save warm instance", "id", context.instance.Id())
 }
 
-func (context *runtimeContext) deleteWarmInstance() {
-	context.warmInstanceCache.Remove(context.codeHash)
-	logRuntime.Trace("instance removed from warm cache")
-}
-
 // MustVerifyNextContractCode sets the verifyCode field to true
 func (context *runtimeContext) MustVerifyNextContractCode() {
 	context.verifyCode = true
@@ -462,7 +458,7 @@ func (context *runtimeContext) popInstance() {
 	if !check.IfNil(context.instance) {
 		if context.isCodeHashOnTheStack(context.codeHash) {
 			if context.instance.Clean() {
-				context.numRunningInstances--
+				context.updateNumRunningInstances(-1)
 			}
 		}
 
@@ -936,12 +932,18 @@ func (context *runtimeContext) CleanInstance() {
 		return
 	}
 
-	if context.instance.Clean() {
-		context.numRunningInstances--
+	if context.isCodeHashOnTheStack(context.codeHash) {
+		if context.instance.Clean() {
+			context.updateNumRunningInstances(-1)
+		}
+	} else {
+		context.warmInstanceCache.Remove(context.codeHash)
 	}
 	context.instance = nil
 
-	logRuntime.Trace("instance cleaned")
+	numWarmInstances, numColdInstances := context.NumRunningInstances()
+	logRuntime.Trace("instance cleaned; num instances", "warm", numWarmInstances, "cold", numColdInstances)
+
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
@@ -1209,6 +1211,11 @@ func (context *runtimeContext) NumRunningInstances() (int, int) {
 	numWarmInstances := context.warmInstanceCache.Len()
 	numColdInstances := context.numRunningInstances - numWarmInstances
 	return numWarmInstances, numColdInstances
+}
+
+func (context *runtimeContext) updateNumRunningInstances(delta int) {
+	context.numRunningInstances += delta
+	logRuntime.Trace("num running instances updated", "delta", delta)
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
