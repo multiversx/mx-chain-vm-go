@@ -144,7 +144,9 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		logRuntime.Trace("num instances after starting new one",
 			"warm", warm,
 			"cold", cold,
-			"total", context.numRunningInstances)
+			"total", context.numRunningInstances,
+			"new code", newCode,
+		)
 	}()
 
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
@@ -201,7 +203,10 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 	context.verifyCode = false
 
 	context.saveWarmInstance()
-	logRuntime.Trace("start instance", "from", "cached compilation", "id", context.instance.Id())
+	logRuntime.Trace("start instance", "from", "cached compilation",
+		"id", context.instance.Id(),
+		"codeHash", context.codeHash,
+	)
 	return true
 }
 
@@ -246,7 +251,11 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	logRuntime.Trace("start instance", "from", "bytecode", "id", context.instance.Id())
+	logRuntime.Trace("start instance",
+		"from", "bytecode",
+		"id", context.instance.Id(),
+		"codeHash", context.codeHash,
+	)
 	context.saveCompiledCode()
 
 	return nil
@@ -316,6 +325,12 @@ func (context *runtimeContext) saveCompiledCode() {
 
 	blockchain := context.host.Blockchain()
 	blockchain.SaveCompiledCode(context.codeHash, compiledCode)
+	logRuntime.Trace("save compiled code", "codeHash", context.codeHash)
+
+	found, _ := blockchain.GetCompiledCode(context.codeHash)
+	if !found {
+		logRuntime.Trace("save compiled code silent fail, code hash not found")
+	}
 
 	context.saveWarmInstance()
 }
@@ -325,12 +340,31 @@ func (context *runtimeContext) saveWarmInstance() {
 		return
 	}
 
-	context.warmInstanceCache.Put(
-		context.codeHash,
-		context.instance,
-		1,
+	lenCacheBeforeSaving := context.warmInstanceCache.Len()
+
+	codeHashInWarmCache := context.warmInstanceCache.Has(context.codeHash)
+	if !codeHashInWarmCache {
+		logRuntime.Trace("warm instance not found, saving",
+			"id", context.instance.Id(),
+			"codeHash", context.codeHash,
+		)
+		context.warmInstanceCache.Put(
+			context.codeHash,
+			context.instance,
+			1,
+		)
+	}
+
+	lenCacheAfterSaving := context.warmInstanceCache.Len()
+	logRuntime.Trace("save warm instance length",
+		"before", lenCacheBeforeSaving,
+		"after", lenCacheAfterSaving,
 	)
-	logRuntime.Trace("save warm instance", "id", context.instance.Id())
+
+	logRuntime.Trace("save warm instance",
+		"id", context.instance.Id(),
+		"codeHash", context.codeHash,
+	)
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
