@@ -230,7 +230,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	instance := runtimeContext.instance
 
 	runtimeContext.pushInstance()
-	runtimeContext.instance = nil
+	runtimeContext.instance = &wasmer.Instance{}
 	require.Equal(t, 1, len(runtimeContext.instanceStack))
 
 	runtimeContext.popInstance()

@@ -71,7 +71,8 @@ func NewRuntimeContext(
 	}
 
 	var err error
-	context.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvicted)
+	instanceEvictedCallback := context.makeInstanceEvictionCallback()
+	context.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvictedCallback)
 	if err != nil {
 		return nil, err
 	}
@@ -82,14 +83,18 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(wasmer.InstanceHandler)
-	if !ok {
-		return
-	}
+func (context *runtimeContext) makeInstanceEvictionCallback() func(interface{}, interface{}) {
+	return func(_ interface{}, value interface{}) {
+		instance, ok := value.(wasmer.InstanceHandler)
+		if !ok {
+			return
+		}
 
-	logRuntime.Trace("evicted instance", "id", instance.Id())
-	instance.Clean()
+		logRuntime.Trace("evicted instance", "id", instance.Id())
+		if instance.Clean() {
+			context.numRunningInstances--
+		}
+	}
 }
 
 // InitState initializes all the contexts fields with default data.
@@ -460,10 +465,11 @@ func (context *runtimeContext) popInstance() {
 				context.numRunningInstances--
 			}
 		}
+
+		logRuntime.Trace("pop instance", "id", context.instance.Id(), "codeHash", context.codeHash)
 	}
 
 	context.instance = prevInstance
-	logRuntime.Trace("pop instance", "id", context.instance.Id(), "codeHash", context.codeHash)
 }
 
 // RunningInstancesCount returns the length of the instance stack.
