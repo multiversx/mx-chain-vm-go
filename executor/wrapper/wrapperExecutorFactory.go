@@ -35,9 +35,9 @@ func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFact
 			logger:         factory.logger,
 			wrappedVMHooks: args.VMHooks,
 		},
-		OpcodeCosts:              &executor.WASMOpcodeCost{},
-		RkyvSerializationEnabled: false,
-		WasmerSIGSEGVPassthrough: false,
+		OpcodeCosts:              args.OpcodeCosts,
+		RkyvSerializationEnabled: args.RkyvSerializationEnabled,
+		WasmerSIGSEGVPassthrough: args.WasmerSIGSEGVPassthrough,
 	})
 	if err != nil {
 		return nil, err
