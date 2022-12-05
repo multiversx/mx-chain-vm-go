@@ -353,6 +353,9 @@ func (context *runtimeContext) saveWarmInstance() {
 			context.instance,
 			1,
 		)
+	} else {
+		context.updateNumRunningInstances(-1)
+		logRuntime.Trace("warm instance already in cache", "id", context.instance.Id())
 	}
 
 	lenCacheAfterSaving := context.warmInstanceCache.Len()
