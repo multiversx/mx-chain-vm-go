@@ -139,6 +139,6 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 
 		// Extra verification for instance leaks
 		_, numColdInstances := callerTest.host.Runtime().NumRunningInstances()
-		require.Zero(callerTest.tb, numColdInstances)
+		require.Zero(callerTest.tb, numColdInstances, "number of instances leaked")
 	}
 }
