@@ -288,6 +288,11 @@ func (instance *Instance) Clean() bool {
 	return false
 }
 
+// AlreadyCleaned returns the internal field alreadyCleaned
+func (instance *Instance) AlreadyCleaned() bool {
+	return instance.alreadyCleaned
+}
+
 // GetPointsUsed returns the internal instance gas counter
 func (instance *Instance) GetPointsUsed() uint64 {
 	return cWasmerInstanceGetPointsUsed(instance.instance)
