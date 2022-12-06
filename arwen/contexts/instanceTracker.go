@@ -206,6 +206,7 @@ func (tracker *instanceTracker) ReplaceInstance(instance wasmer.InstanceHandler)
 	if !tracker.instance.AlreadyCleaned() {
 		logRuntime.Trace("running instance about to be replaced without cleaning",
 			"id", tracker.instance.Id(),
+			"stacked", tracker.isInstanceOnTheStack(instance),
 		)
 	}
 	tracker.instance = instance
@@ -215,6 +216,7 @@ func (tracker *instanceTracker) UnsetInstance() {
 	if !tracker.instance.AlreadyCleaned() {
 		logRuntime.Trace("running instance about to be unset without cleaning",
 			"id", tracker.instance.Id(),
+			"stacked", tracker.isInstanceOnTheStack(tracker.instance),
 		)
 	}
 	tracker.instance = nil
@@ -242,6 +244,16 @@ func (tracker *instanceTracker) IsCodeHashOnTheStack(codeHash []byte) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func (tracker *instanceTracker) isInstanceOnTheStack(instance wasmer.InstanceHandler) bool {
+	for _, stackedInstance := range tracker.instanceStack {
+		if stackedInstance.Id() == instance.Id() {
+			return true
+		}
+	}
+
 	return false
 }
 
