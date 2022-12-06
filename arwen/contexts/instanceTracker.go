@@ -140,7 +140,7 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte) bool {
 }
 
 func (tracker *instanceTracker) ForceCleanInstance() {
-	if check.IfNil(tracker.Instance()) {
+	if check.IfNil(tracker.instance) {
 		logRuntime.Trace("cannot clean, instance already nil")
 		return
 	}
@@ -203,16 +203,27 @@ func (tracker *instanceTracker) SetNewInstance(instance wasmer.InstanceHandler, 
 }
 
 func (tracker *instanceTracker) ReplaceInstance(instance wasmer.InstanceHandler) {
+	tracker.instance = instance
+
+	if check.IfNil(tracker.instance) {
+		logRuntime.Trace("ReplaceInstance: current instance is nil")
+		return
+	}
+
 	if !tracker.instance.AlreadyCleaned() {
 		logRuntime.Trace("running instance about to be replaced without cleaning",
 			"id", tracker.instance.Id(),
 			"stacked", tracker.isInstanceOnTheStack(instance),
 		)
 	}
-	tracker.instance = instance
 }
 
 func (tracker *instanceTracker) UnsetInstance() {
+	if check.IfNil(tracker.instance) {
+		logRuntime.Trace("UnsetInstance: current instance is nil")
+		return
+	}
+
 	if !tracker.instance.AlreadyCleaned() {
 		logRuntime.Trace("running instance about to be unset without cleaning",
 			"id", tracker.instance.Id(),
