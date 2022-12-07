@@ -38,7 +38,11 @@ func NewInstanceTracker() (*instanceTracker, error) {
 
 	var err error
 	instanceEvictedCallback := tracker.makeInstanceEvictionCallback()
-	tracker.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvictedCallback)
+	if WarmInstancesEnabled {
+		tracker.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvictedCallback)
+	} else {
+		tracker.warmInstanceCache = nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +120,9 @@ func (tracker *instanceTracker) CodeHash() []byte {
 }
 
 func (tracker *instanceTracker) ClearWarmInstanceCache() {
-	tracker.warmInstanceCache.Clear()
+	if WarmInstancesEnabled {
+		tracker.warmInstanceCache.Clear()
+	}
 }
 
 func (tracker *instanceTracker) UseWarmInstance(codeHash []byte) bool {
@@ -248,7 +254,11 @@ func (tracker *instanceTracker) LogCounts() {
 
 // NumRunningInstances returns the number of currently running instances (cold and warm)
 func (tracker *instanceTracker) NumRunningInstances() (int, int) {
-	numWarmInstances := tracker.warmInstanceCache.Len()
+	numWarmInstances := 0
+	if WarmInstancesEnabled {
+		numWarmInstances = tracker.warmInstanceCache.Len()
+	}
+
 	numColdInstances := tracker.numRunningInstances - numWarmInstances
 	return numWarmInstances, numColdInstances
 }
