@@ -20,9 +20,9 @@ var logRuntime = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
-const warmCacheSize = 100
+const warmCacheSize = 10
 
-const WarmInstancesEnabled = false
+const WarmInstancesEnabled = true
 
 type runtimeContext struct {
 	host               arwen.VMHost
@@ -96,6 +96,11 @@ func (context *runtimeContext) InitState() {
 func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.iTracker.ClearWarmInstanceCache()
 	context.iTracker.UnsetInstance()
+}
+
+// ResetUsedWarmInstances resets the warm instances recorded as used
+func (context *runtimeContext) ResetUsedWarmInstances() {
+	context.iTracker.ResetUsedWarmInstances()
 }
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation

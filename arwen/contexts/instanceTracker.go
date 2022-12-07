@@ -28,12 +28,15 @@ type instanceTracker struct {
 	cacheLevel          instanceCacheLevel
 	instanceStack       []wasmer.InstanceHandler
 	codeHashStack       [][]byte
+
+	usedWarmInstances [][]byte
 }
 
 func NewInstanceTracker() (*instanceTracker, error) {
 	tracker := &instanceTracker{
 		instanceStack:       make([]wasmer.InstanceHandler, 0),
 		numRunningInstances: 0,
+		usedWarmInstances:   make([][]byte, 0),
 	}
 
 	var err error
@@ -125,6 +128,31 @@ func (tracker *instanceTracker) ClearWarmInstanceCache() {
 	}
 }
 
+func (tracker *instanceTracker) ResetUsedWarmInstances() {
+	logRuntime.Trace("resetting used warm instances", "n", len(tracker.usedWarmInstances))
+	for _, codeHash := range tracker.usedWarmInstances {
+		cachedObject, ok := tracker.warmInstanceCache.Get(codeHash)
+		if !ok {
+			logRuntime.Trace("incorrect used codeHash")
+			continue
+		}
+		instance, ok := cachedObject.(wasmer.InstanceHandler)
+		if !ok {
+			logRuntime.Trace("invalid used instance object")
+			continue
+		}
+		ok = instance.Reset()
+		if !ok {
+			// we must remove instance, which cleans it to free the memory
+			logRuntime.Trace("used instance could not be reset, removing...")
+			tracker.warmInstanceCache.Remove(codeHash)
+			continue
+		}
+		logRuntime.Trace("used instance reset", "id", instance.Id(), "codeHash", codeHash)
+	}
+	tracker.usedWarmInstances = make([][]byte, 0)
+}
+
 func (tracker *instanceTracker) UseWarmInstance(codeHash []byte) bool {
 	cachedObject, ok := tracker.warmInstanceCache.Get(codeHash)
 	if !ok {
@@ -144,6 +172,7 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte) bool {
 	}
 
 	tracker.SetNewInstance(instance, Warm)
+	tracker.recordUsedWarmInstance(codeHash)
 	return true
 }
 
@@ -280,6 +309,11 @@ func (tracker *instanceTracker) isInstanceOnTheStack(instance wasmer.InstanceHan
 	}
 
 	return false
+}
+
+func (tracker *instanceTracker) recordUsedWarmInstance(codeHash []byte) {
+	tracker.usedWarmInstances = append(tracker.usedWarmInstances, codeHash)
+	logRuntime.Trace("recording used warm instance", "codeHash", codeHash)
 }
 
 func (tracker *instanceTracker) makeInstanceEvictionCallback() func(interface{}, interface{}) {

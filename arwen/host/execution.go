@@ -94,6 +94,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	defer func() {
+		runtime.ResetUsedWarmInstances()
 		if !contexts.WarmInstancesEnabled {
 			runtime.CleanInstance()
 		}
@@ -221,6 +222,7 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 	}
 
 	defer func() {
+		runtime.ResetUsedWarmInstances()
 		if !contexts.WarmInstancesEnabled {
 			runtime.CleanInstance()
 		}

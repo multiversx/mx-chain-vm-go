@@ -659,6 +659,10 @@ func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
 }
 
+// ResetUsedWarmInstances mocked method
+func (r *RuntimeContextWrapper) ResetUsedWarmInstances() {
+}
+
 // NumRunningInstances -
 func (contextWrapper *RuntimeContextWrapper) NumRunningInstances() (int, int) {
 	return 0, 0
