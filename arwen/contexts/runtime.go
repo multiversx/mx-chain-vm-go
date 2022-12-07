@@ -22,6 +22,8 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 100
 
+const WarmInstancesEnabled = false
+
 type runtimeContext struct {
 	host               arwen.VMHost
 	vmInput            *vmcommon.ContractCallInput
@@ -229,6 +231,10 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
+	if !WarmInstancesEnabled {
+		return false
+	}
+
 	codeHash := context.iTracker.CodeHash()
 	if newCode || len(codeHash) == 0 {
 		return false
@@ -292,6 +298,10 @@ func (context *runtimeContext) saveCompiledCode() {
 }
 
 func (context *runtimeContext) saveWarmInstance() {
+	if !WarmInstancesEnabled {
+		return
+	}
+
 	if context.isContractOrCodeHashOnTheStack() {
 		return
 	}

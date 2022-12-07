@@ -76,7 +76,9 @@ func (tracker *instanceTracker) PopSetActiveState() {
 	}
 
 	if !check.IfNil(tracker.instance) {
-		if tracker.IsCodeHashOnTheStack(tracker.codeHash) {
+		onStack := tracker.IsCodeHashOnTheStack(tracker.codeHash)
+		cold := !WarmInstancesEnabled
+		if onStack || cold {
 			if tracker.instance.Clean() {
 				tracker.updateNumRunningInstances(-1)
 			}
@@ -145,7 +147,9 @@ func (tracker *instanceTracker) ForceCleanInstance() {
 		return
 	}
 
-	if tracker.IsCodeHashOnTheStack(tracker.codeHash) {
+	onStack := tracker.IsCodeHashOnTheStack(tracker.codeHash)
+	cold := !WarmInstancesEnabled
+	if onStack || cold {
 		if tracker.instance.Clean() {
 			tracker.updateNumRunningInstances(-1)
 		}
@@ -206,7 +210,7 @@ func (tracker *instanceTracker) ReplaceInstance(instance wasmer.InstanceHandler)
 	tracker.instance = instance
 
 	if check.IfNil(tracker.instance) {
-		logRuntime.Trace("ReplaceInstance: current instance is nil")
+		logRuntime.Trace("ReplaceInstance: current instance is already nil")
 		return
 	}
 
@@ -220,7 +224,7 @@ func (tracker *instanceTracker) ReplaceInstance(instance wasmer.InstanceHandler)
 
 func (tracker *instanceTracker) UnsetInstance() {
 	if check.IfNil(tracker.instance) {
-		logRuntime.Trace("UnsetInstance: current instance is nil")
+		logRuntime.Trace("UnsetInstance: current instance is already nil")
 		return
 	}
 
