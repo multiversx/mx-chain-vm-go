@@ -74,7 +74,6 @@ func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(mtb.t, err)
 	defer executor.Close()
-	executor.UseWasmer2 = *useWasmer2
 
 	if mtb.executorLogger != nil {
 		executor.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(
