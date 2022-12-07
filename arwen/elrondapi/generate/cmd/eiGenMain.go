@@ -43,6 +43,7 @@ func main() {
 	}
 
 	writeVMHooks(eiMetadata)
+	writeVMHooksWrapper(eiMetadata)
 	writeWasmer1ImportsCgo(eiMetadata)
 	writeWasmer2ImportsCgo(eiMetadata)
 	writeWasmer2Names(eiMetadata)
@@ -76,6 +77,15 @@ func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
 	}
 	defer out.Close()
 	eapigen.WriteEIInterface(out, eiMetadata)
+}
+
+func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {
+	out, err := os.Create(pathToElrondApiPackage + "../../executor/wrapper/wrapperVMHooks.go")
+	if err != nil {
+		panic(err)
+	}
+	defer out.Close()
+	eapigen.WriteVMHooksWrapper(out, eiMetadata)
 }
 
 func writeWasmer1ImportsCgo(eiMetadata *eapigen.EIMetadata) {

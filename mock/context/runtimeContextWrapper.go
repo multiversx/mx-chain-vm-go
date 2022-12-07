@@ -60,7 +60,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetAsyncContextFunc func(contextIdentifier []byte) (*arwen.AsyncContext, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	RunningInstancesCountFunc func() uint64
+	GetInstanceStackSizeFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CountSameContractInstancesOnStackFunc func(address []byte) uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -74,7 +74,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ClearWarmInstanceCacheFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetMaxInstanceCountFunc func(maxInstances uint64)
+	SetMaxInstanceStackSizeFunc func(maxInstanceStackSize uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -123,6 +123,8 @@ type RuntimeContextWrapper struct {
 	ClearStateStackFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CleanInstanceFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	NumRunningInstancesFunc func() (int, int)
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
@@ -210,8 +212,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.GetRuntimeBreakpointValue()
 	}
 
-	runtimeWrapper.RunningInstancesCountFunc = func() uint64 {
-		return runtimeWrapper.runtimeContext.RunningInstancesCount()
+	runtimeWrapper.GetInstanceStackSizeFunc = func() uint64 {
+		return runtimeWrapper.runtimeContext.GetInstanceStackSize()
 	}
 
 	runtimeWrapper.IsFunctionImportedFunc = func(name string) bool {
@@ -234,8 +236,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.ClearWarmInstanceCache()
 	}
 
-	runtimeWrapper.SetMaxInstanceCountFunc = func(maxInstances uint64) {
-		runtimeWrapper.runtimeContext.SetMaxInstanceCount(maxInstances)
+	runtimeWrapper.SetMaxInstanceStackSizeFunc = func(maxInstanceStackSize uint64) {
+		runtimeWrapper.runtimeContext.SetMaxInstanceStackSize(maxInstanceStackSize)
 	}
 
 	runtimeWrapper.VerifyContractCodeFunc = func() error {
@@ -328,6 +330,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.CleanInstanceFunc = func() {
 		runtimeWrapper.runtimeContext.CleanInstance()
+	}
+
+	runtimeWrapper.NumRunningInstancesFunc = func() (int, int) {
+		return runtimeWrapper.runtimeContext.NumRunningInstances()
 	}
 
 	return runtimeWrapper
@@ -439,8 +445,8 @@ func (contextWrapper *RuntimeContextWrapper) CountSameContractInstancesOnStack(a
 }
 
 // RunningInstancesCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) RunningInstancesCount() uint64 {
-	return contextWrapper.RunningInstancesCountFunc()
+func (contextWrapper *RuntimeContextWrapper) GetInstanceStackSize() uint64 {
+	return contextWrapper.GetInstanceStackSizeFunc()
 }
 
 // IsFunctionImported calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -468,9 +474,9 @@ func (contextWrapper *RuntimeContextWrapper) ClearWarmInstanceCache() {
 	contextWrapper.ClearWarmInstanceCacheFunc()
 }
 
-// SetMaxInstanceCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceCount(maxInstances uint64) {
-	contextWrapper.SetMaxInstanceCountFunc(maxInstances)
+// SetMaxInstanceStackSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceStackSize(maxInstanceStackSize uint64) {
+	contextWrapper.SetMaxInstanceStackSizeFunc(maxInstanceStackSize)
 }
 
 // VerifyContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -606,4 +612,9 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
+}
+
+// NumRunningInstances calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) NumRunningInstances() (int, int) {
+	return contextWrapper.NumRunningInstancesFunc()
 }

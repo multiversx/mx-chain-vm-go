@@ -15,14 +15,12 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	executorwrapper "github.com/ElrondNetwork/wasm-vm/executor/wrapper"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +30,7 @@ import (
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
 var maxUint8AsInt = int(math.MaxUint8)
-var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
+var newAddress = test.MakeTestSCAddress("new smartcontract")
 var mBufferKey = []byte("mBuffer")
 var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
 	0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24,
@@ -301,7 +299,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	executorFactory := executorwrapper.SimpleWrappedExecutorFactory(wasmer.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -333,7 +331,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	input.GasProvided = 1000000
 	input.Function = get
 
-	executorFactory1 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	executorFactory1 := executorwrapper.SimpleWrappedExecutorFactory(wasmer.ExecutorFactory())
 	host1 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory1).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -345,7 +343,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	runtimeContextMock := contextmock.NewRuntimeContextWrapper(&runtimeContext1)
 	host1.SetRuntimeContext(runtimeContextMock)
 
-	executorFactory2 := executor.NewExecutorDebuggerFactory(wasmer.ExecutorFactory())
+	executorFactory2 := executorwrapper.SimpleWrappedExecutorFactory(wasmer.ExecutorFactory())
 	host2 := test.NewTestHostBuilder(t).
 		WithExecutorFactory(executorFactory2).
 		WithBlockchainHook(test.BlockchainHookStubForCall(code, nil)).
@@ -2282,6 +2280,11 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				Storage(storeEntries...)
 
 			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
+
+			// Check remaining instances count
+			numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
+			require.Equal(t, 0, numColdInstances, "cold instances still running")
+			require.Equal(t, 2, numWarmInstances, "warm instances still running")
 		})
 }
 
@@ -2886,7 +2889,7 @@ func TestExecution_CreateNewContract_Success(t *testing.T) {
 }
 
 func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
-	sourceAddress := testcommon.MakeTestSCAddress("sourceAddress")
+	sourceAddress := test.MakeTestSCAddress("sourceAddress")
 	sourceCode := test.GetTestSCCode("init-correct", "../../")
 	generatedNewAddress := []byte("newAddress")
 
@@ -2908,7 +2911,7 @@ func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				Code(generatedNewAddress, sourceCode).
-				CodeMetadata(generatedNewAddress, testcommon.DefaultCodeMetadata).
+				CodeMetadata(generatedNewAddress, test.DefaultCodeMetadata).
 				ReturnData(
 					// returned by the new deployed contract from the existing source code
 					[]byte("init successful"),
@@ -2919,9 +2922,9 @@ func TestExecution_DeployNewContractFromExistingCode_Success(t *testing.T) {
 }
 
 func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
-	initialAddress := testcommon.MakeTestSCAddress("destAddress")
+	initialAddress := test.MakeTestSCAddress("destAddress")
 	initialCode := test.GetTestSCCode("init-simple", "../../")
-	sourceAddress := testcommon.MakeTestSCAddress("sourceAddress")
+	sourceAddress := test.MakeTestSCAddress("sourceAddress")
 	sourceCode := test.GetTestSCCode("init-correct", "../../")
 
 	test.BuildInstanceCallTest(t).
@@ -2988,8 +2991,8 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 
 	newAddr := "newAddr_"
 	ownerNonce := uint64(23)
-	parentAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 24))
-	childAddress := testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 25))
+	parentAddress := test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 24))
+	childAddress := test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, 25))
 
 	input := test.CreateTestContractCreateInputBuilder().
 		WithCallValue(1000).
@@ -3012,7 +3015,7 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 			}
 			stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
 				ownerNonce++
-				return testcommon.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
+				return test.MakeTestSCAddress(fmt.Sprintf("%s_%d", newAddr, ownerNonce)), nil
 			}
 			stubBlockchainHook.IsSmartContractCalled = func(address []byte) bool {
 				outputAccounts := host.Output().GetOutputAccounts()
@@ -3031,8 +3034,8 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
 						host.Metering().UseGas(500)
@@ -3055,8 +3058,8 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 				}),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(0).
-				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
-					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+				WithMethods(func(childInstance *contextmock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
 						host.Metering().UseGas(100)
@@ -3093,10 +3096,10 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
-						instance := mock.GetMockInstance(host)
+						instance := contextmock.GetMockInstance(host)
 
 						elrondapi.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
 
@@ -3111,9 +3114,9 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 
 						return instance
 					})
-					parentInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+					parentInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
-						instance := mock.GetMockInstance(host)
+						instance := contextmock.GetMockInstance(host)
 						host.Runtime().SignalUserError("my user error")
 						return instance
 					})
@@ -3135,10 +3138,10 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
 				WithCodeHash(UniqueCodeHash).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
-						instance := mock.GetMockInstance(host)
+						instance := contextmock.GetMockInstance(host)
 
 						elrondapi.WithFaultAndHost(host, arwen.ErrNotEnoughGas, true)
 
@@ -3157,10 +3160,10 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(1000).
 				WithCodeHash(UniqueCodeHash).
-				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
-					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+				WithMethods(func(childInstance *contextmock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := childInstance.Host
-						instance := mock.GetMockInstance(host)
+						instance := contextmock.GetMockInstance(host)
 						host.Runtime().SignalUserError("my user error")
 						return instance
 					})
@@ -3184,10 +3187,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
-						instance := mock.GetMockInstance(host)
+						instance := contextmock.GetMockInstance(host)
 						childInput := test.DefaultTestContractCallInput()
 						childInput.CallerAddr = test.ParentAddress
 						childInput.RecipientAddr = test.ChildAddress
@@ -3258,10 +3261,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 				}),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(0).
-				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
-					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+				WithMethods(func(childInstance *contextmock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := childInstance.Host
-						instance := mock.GetMockInstance(host)
+						instance := contextmock.GetMockInstance(host)
 						host.Output().Finish([]byte(zero))
 						host.Output().Finish([]byte(one))
 						host.Output().Finish([]byte(two))
@@ -3387,13 +3390,72 @@ func TestExecution_Opcodes_MemorySize(t *testing.T) {
 		})
 }
 
+func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
+	testCase := test.BuildInstanceCallTest(t).
+		WithContracts(
+			test.CreateInstanceContract(test.ParentAddress).
+				WithCode(test.GetTestSCCode("breakpoint", "../../")))
+
+	makeInput := func(behaviour byte) *vmcommon.ContractCallInput {
+		return test.CreateTestContractCallInputBuilder().
+			WithGasProvided(100000).
+			WithFunction("testFunc").
+			WithArguments([]byte{behaviour}).
+			Build()
+	}
+
+	vmInputOk := makeInput(0)
+	vmInputUserError := makeInput(1)
+	vmInputExecutionFailed := makeInput(2)
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+
+	testCase.WithInput(vmInputUserError).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.UserError().ReturnData().ReturnMessage("exit here")
+		})
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputExecutionFailed).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ExecutionFailed().ReturnData().ReturnMessage("execution failed")
+		})
+
+	testCase.WithInput(vmInputOk).
+		AndAssertResultsWithoutReset(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.Ok().ReturnData([]byte{100}).ReturnMessage("")
+		})
+}
+
 func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 	test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
-				WithMethods(func(parentInstance *mock.InstanceMock, config interface{}) {
-					parentInstance.AddMockMethod("callChild", func() *mock.InstanceMock {
+				WithMethods(func(parentInstance *contextmock.InstanceMock, config interface{}) {
+					parentInstance.AddMockMethod("callChild", func() *contextmock.InstanceMock {
 						host := parentInstance.Host
 						host.Output().Finish([]byte("parent returns this"))
 						host.Metering().UseGas(500)
@@ -3403,8 +3465,8 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 				}),
 			test.CreateMockContract(test.ChildAddress).
 				WithBalance(100).
-				WithMethods(func(childInstance *mock.InstanceMock, config interface{}) {
-					childInstance.AddMockMethod("doSomething", func() *mock.InstanceMock {
+				WithMethods(func(childInstance *contextmock.InstanceMock, config interface{}) {
+					childInstance.AddMockMethod("doSomething", func() *contextmock.InstanceMock {
 						host := childInstance.Host
 						host.Output().Finish([]byte("child returns this"))
 						host.Metering().UseGas(100)
@@ -3414,8 +3476,8 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 				}),
 			test.CreateMockContract(test.NephewAddress).
 				WithBalance(0).
-				WithMethods(func(nephewInstance *mock.InstanceMock, config interface{}) {
-					nephewInstance.AddMockMethod("doSomethingNephew", func() *mock.InstanceMock {
+				WithMethods(func(nephewInstance *contextmock.InstanceMock, config interface{}) {
+					nephewInstance.AddMockMethod("doSomethingNephew", func() *contextmock.InstanceMock {
 						host := nephewInstance.Host
 						host.Output().Finish([]byte("newphew returns this"))
 						caller := host.Runtime().GetVMInput().CallerAddr

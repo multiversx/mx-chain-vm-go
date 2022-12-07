@@ -28,14 +28,14 @@ var TestVMType = []byte{0, 0}
 
 // ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
 type ArwenTestExecutor struct {
-	World             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	vmHost            arwen.VMHost
-	UseWasmer2        bool
-	checkGas          bool
-	scenarioTraceGas  []bool
-	fileResolver      fr.FileResolver
-	exprReconstructor er.ExprReconstructor
+	World              *worldhook.MockWorld
+	vm                 vmi.VMExecutionHandler
+	OverrideVMExecutor executor.ExecutorAbstractFactory
+	vmHost             arwen.VMHost
+	checkGas           bool
+	scenarioTraceGas   []bool
+	fileResolver       fr.FileResolver
+	exprReconstructor  er.ExprReconstructor
 }
 
 var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
@@ -87,7 +87,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 		ae.World,
 		&arwen.VMHostParameters{
 			VMType:                   TestVMType,
-			OverrideVMExecutor:       executorFactory,
+			OverrideVMExecutor:       ae.OverrideVMExecutor,
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,

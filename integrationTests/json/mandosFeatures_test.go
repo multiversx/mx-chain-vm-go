@@ -2,8 +2,6 @@ package vmjsonintegrationtest
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestRustAllocFeatures(t *testing.T) {
@@ -11,7 +9,10 @@ func TestRustAllocFeatures(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/alloc-features/mandos")
+	MandosTest(t).
+		Folder("features/alloc-features/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestRustBasicFeaturesLatest(t *testing.T) {
@@ -19,8 +20,11 @@ func TestRustBasicFeaturesLatest(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runTestsInFolder(t, "features/basic-features/mandos", []string{
-		"features/basic-features/mandos/storage_mapper_fungible_token.scen.json"})
+	MandosTest(t).
+		Folder("features/basic-features/mandos").
+		Exclude("features/basic-features/mandos/storage_mapper_fungible_token.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
@@ -28,7 +32,10 @@ func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/basic-features-no-small-int-api/mandos")
+	MandosTest(t).
+		Folder("features/basic-features-no-small-int-api/mandos").
+		Run().
+		CheckNoError()
 }
 
 // Backwards compatibility.
@@ -37,7 +44,10 @@ func TestRustBasicFeaturesLegacy(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/basic-features-legacy/mandos")
+	MandosTest(t).
+		Folder("features/basic-features-legacy/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestRustBigFloatFeatures(t *testing.T) {
@@ -45,7 +55,10 @@ func TestRustBigFloatFeatures(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/big-float-features/mandos")
+	MandosTest(t).
+		Folder("features/big-float-features/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestRustPayableFeaturesLatest(t *testing.T) {
@@ -53,7 +66,10 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "features/payable-features/mandos")
+	MandosTest(t).
+		Folder("features/payable-features/mandos").
+		Run().
+		CheckNoError()
 }
 
 func TestRustComposability(t *testing.T) {
@@ -61,73 +77,69 @@ func TestRustComposability(t *testing.T) {
 	// which are unsupported by the legacy async calls on which the forwarder is
 	// currently based. The new AsyncContext will block multi-level async calls
 	// anyway in its first release.
-	runTestsInFolder(t, "features/composability/mandos", []string{
-		"features/composability/mandos/forwarder_send_twice_egld.scen.json",
-		"features/composability/mandos/forwarder_send_twice_esdt.scen.json",
-	})
+	MandosTest(t).
+		Folder("features/composability/mandos").
+		Exclude("features/composability/mandos/forwarder_send_twice_egld.scen.json").
+		Exclude("features/composability/mandos/forwarder_send_twice_esdt.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestRustPromisesFeatures(t *testing.T) {
-	runAllTestsInFolder(t, "features/composability/mandos-promises")
+	MandosTest(t).
+		Folder("features/composability/mandos-promises").
+		Run().
+		CheckNoError()
 }
 
 // TODO: debug, then delete
 func TestRustPromisesFeaturesDebug(t *testing.T) {
-	runAllTestsInFolder(t, "features/composability/mandos-promises/promises_call_async_retrieve_egld.scen.json")
+	MandosTest(t).
+		Folder("features/composability/mandos-promises/promises_call_async_retrieve_egld.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestRustFormattedMessageFeatures(t *testing.T) {
-	runAllTestsInFolder(t, "features/formatted-message-features/mandos")
+	MandosTest(t).
+		Folder("features/formatted-message-features/mandos").
+		Run().
+		CheckNoError()
 }
-
-// For debugging:
-// func TestESDTMultiTransferOnCallback(t *testing.T) {
-// 	err := runSingleTestReturnError(
-// 		"features/composability/mandos",
-// 		"forw_raw_call_async_retrieve_multi_transfer.scen.json")
-// 	require.Nil(t, err)
-// }
-
-// func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
-// 	err := runSingleTestReturnError(
-// 		"features/composability/mandos",
-// 		"forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json")
-// 	require.Nil(t, err)
-// }
-
-// func TestExecOnDestByCallerAndNFTCreate(t *testing.T) {
-// 	err := runSingleTestReturnError(
-// 		"features/composability/mandos",
-// 		"forwarder_builtin_nft_create_by_caller.scen.json")
-// 	require.Nil(t, err)
-// }
 
 func TestRustLegacyComposability(t *testing.T) {
 	// TODO The two excluded tests perform async calls from within async calls,
 	// which are unsupported by the legacy async calls on which the forwarder is
 	// currently based. The new AsyncContext will block multi-level async calls
 	// anyway in its first release.
-	runTestsInFolder(t, "features/composability/mandos-legacy", []string{
-		"features/composability/mandos-legacy/l_forwarder_send_twice_egld.scen.json",
-		"features/composability/mandos-legacy/l_forwarder_send_twice_esdt.scen.json",
-	})
+	MandosTest(t).
+		Folder("features/composability/mandos-legacy").
+		Exclude("features/composability/mandos-legacy/l_forwarder_send_twice_egld.scen.json").
+		Exclude("features/composability/mandos-legacy/l_forwarder_send_twice_esdt.scen.json").
+		Run().
+		CheckNoError()
+
 }
 
 func TestTimelocks(t *testing.T) {
-	runAllTestsInFolder(t, "timelocks")
+	MandosTest(t).
+		Folder("timelocks").
+		Run().
+		CheckNoError()
 }
 
-// func TestSingleJson(t *testing.T) {
-// 	err := runSingleTestReturnError("delegation/v0_2/activate", "activate_other_shard.scen.json")
-// 	require.Nil(t, err)
-// }
-
 func TestForwarderTransfExec(t *testing.T) {
-	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_nft.scen.json")
-	require.Nil(t, err)
+	MandosTest(t).
+		Folder("features/composability/mandos").
+		File("forwarder_call_transf_exec_reject_nft.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestForwarderTransfExecMultiReject(t *testing.T) {
-	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_multi_transfer.scen.json")
-	require.Nil(t, err)
+	MandosTest(t).
+		Folder("features/composability/mandos").
+		File("forwarder_call_transf_exec_reject_multi_transfer.scen.json").
+		Run().
+		CheckNoError()
 }
