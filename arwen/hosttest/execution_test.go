@@ -15,6 +15,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	"github.com/ElrondNetwork/wasm-vm/config"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	executorwrapper "github.com/ElrondNetwork/wasm-vm/executor/wrapper"
 	arwenMath "github.com/ElrondNetwork/wasm-vm/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
