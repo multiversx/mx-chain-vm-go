@@ -22,7 +22,7 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 50
 
-const WarmInstancesEnabled = true
+const WarmInstancesEnabled = false
 
 type runtimeContext struct {
 	host               arwen.VMHost
