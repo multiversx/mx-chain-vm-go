@@ -98,11 +98,6 @@ func (context *runtimeContext) ClearWarmInstanceCache() {
 	context.iTracker.UnsetInstance()
 }
 
-// ResetUsedWarmInstances resets the warm instances recorded as used
-func (context *runtimeContext) ResetUsedWarmInstances() {
-	context.iTracker.ResetUsedWarmInstances()
-}
-
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
 // of mocked Wasmer instances; this is used for tests only
 func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuilder) {

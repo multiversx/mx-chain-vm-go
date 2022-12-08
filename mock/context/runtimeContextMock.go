@@ -359,7 +359,3 @@ func (r *RuntimeContextMock) NumRunningInstances() (int, int) {
 // CleanInstance mocked method
 func (r *RuntimeContextMock) CleanInstance() {
 }
-
-// ResetUsedWarmInstances mocked method
-func (r *RuntimeContextMock) ResetUsedWarmInstances() {
-}
