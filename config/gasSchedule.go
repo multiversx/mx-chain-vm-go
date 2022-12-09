@@ -202,7 +202,7 @@ func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
 
 func FillGasMap_MaxPerTransaction() map[string]uint64 {
 	gasMap := make(map[string]uint64)
-	gasMap["MaxTrieReadsPerTx"] = 100
+	gasMap["MaxNumberOfTrieReadsPerTx"] = 100
 	return gasMap
 }
 

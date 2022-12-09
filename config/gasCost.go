@@ -25,7 +25,7 @@ type BaseOperationCost struct {
 }
 
 type MaxPerTransaction struct {
-	MaxTrieReadsPerTx uint64
+	MaxNumberOfTrieReadsPerTx uint64
 }
 
 type ElrondAPICost struct {

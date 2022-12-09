@@ -7,7 +7,7 @@
     AoTPreparePerByte = 10
 
 [MaxPerTransaction]
-    MaxTrieReadsPerTx = 10
+    MaxNumberOfTrieReadsPerTx = 10
 
 [ElrondAPICost]
     GetSCAddress       = 10
