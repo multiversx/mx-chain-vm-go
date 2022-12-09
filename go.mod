@@ -11,7 +11,7 @@ require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pelletier/go-toml v1.9.3
