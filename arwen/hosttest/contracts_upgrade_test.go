@@ -34,7 +34,7 @@ func TestUpgrade_WithWorldMock(t *testing.T) {
 
 	usc := newUpgradeScenario(t)
 
-	nUpgradeIterations := 100
+	nUpgradeIterations := 4000
 	nPairs := 1000
 	contractPairs := make([]*upgradeSCPair, nPairs)
 	for i := 0; i < nPairs; i++ {
@@ -45,9 +45,12 @@ func TestUpgrade_WithWorldMock(t *testing.T) {
 
 	validateTest(t, usc, contractPairs)
 
+	logger.SetLogLevel("*:NONE,arwen/test:TRACE")
 	for u := 0; u < nUpgradeIterations; u++ {
+		logUpgTest.Trace("beginning upgrade iteration", "u", u)
 		for _, pair := range contractPairs {
 			pair.upgradeChild(usc, pair.index+u)
+			usc.host.Reset()
 		}
 	}
 }
