@@ -51,7 +51,7 @@ func Test_WarmInstancesMemoryUsage(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageBenchmark(t, 100, 1)
+	runMemoryUsageBenchmark(t, 500, 20000)
 }
 
 func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
@@ -59,7 +59,7 @@ func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageFuzzyBenchmark(t, 7593, 10)
+	runMemoryUsageFuzzyBenchmark(t, 7593, 1000)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
@@ -181,7 +181,7 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 					continue
 				}
 				remainingContracts[j] = v
-				j += 1
+				j++
 			}
 			availableContracts = remainingContracts
 			delete(remainingTransfers, contract)

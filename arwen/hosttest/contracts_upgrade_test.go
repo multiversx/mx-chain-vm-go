@@ -50,7 +50,6 @@ func TestUpgrade_WithWorldMock(t *testing.T) {
 		logUpgTest.Trace("beginning upgrade iteration", "u", u)
 		for _, pair := range contractPairs {
 			pair.upgradeChild(usc, pair.index+u)
-			usc.host.Reset()
 		}
 	}
 }
