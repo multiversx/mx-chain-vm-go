@@ -4,7 +4,8 @@ void init() {
 	int64finish(42);
 }
 
+byte finishMsg[10] = "finish0000";
+
 void dummy() {
-	byte msg[] = "dummy text";
-	finish(msg, 10);
+	finish(finishMsg, 10);
 }

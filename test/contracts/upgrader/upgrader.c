@@ -30,6 +30,24 @@ void upgradeCodeFromAnotherContract() {
 
 byte childContractAddress[32] = {};
 byte childCode[5000] = {};
+byte finishMsg[10] = "finish0000";
+
+void deployChildContract() {
+	int codeLen = getArgument(0, childCode);
+
+	int initArgLengths[] = {1};
+	int result = createContract(
+			0xFFFFFFFF,
+			zeroValue,
+			childCode,
+			contractMetadata,
+			codeLen,
+			newAddress,
+			0,
+			0,
+			0);
+	finishResult(result);
+}
 
 void upgradeChildContract() {
 	getArgument(0, childContractAddress);
@@ -37,17 +55,18 @@ void upgradeChildContract() {
 
 	upgradeContract(
 			childContractAddress,
-			500000,
+			0xFFFFFFFF,
 			zeroValue,
 			childCode,
 			contractMetadata,
 			codeLen,
 			0,
 			(byte*)argumentsLengths,
-			arguments);			
+			arguments);
+
+	finish(finishMsg, 10);
 }
 
 void dummy() {
-	byte msg[] = "dummy text";
-	finish(msg, 10);
+	finish(finishMsg, 10);
 }
