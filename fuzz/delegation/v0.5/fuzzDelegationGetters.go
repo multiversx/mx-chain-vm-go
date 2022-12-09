@@ -32,6 +32,7 @@ func (pfe *fuzzDelegationExecutor) getWithdrawTargetBalance() *big.Int {
 	return acct.Balance
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getContractBalance() *big.Int {
 	acct := pfe.world.AcctMap.GetAccount(pfe.interpretExpr(pfe.delegationContractAddress))
 	return acct.Balance

@@ -30,7 +30,7 @@ func (builder *InstanceBuilderRecorderMock) NewInstanceWithOptions(
 }
 
 // Id -
-func (instance *InstanceBuilderRecorderMock) Id() string {
+func (builder *InstanceBuilderRecorderMock) Id() string {
 	return ""
 }
 

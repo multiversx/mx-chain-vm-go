@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math/big"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
@@ -146,7 +146,7 @@ func ExecESDTTransferInAsyncCall(instanceMock *mock.InstanceMock, config interfa
 		receiver := arguments[0]
 
 		callData := txDataBuilder.NewBuilder()
-		callData.Func(string("ESDTTransfer"))
+		callData.Func("ESDTTransfer")
 		callData.Bytes(test.ESDTTestTokenName)
 		callData.Bytes(big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes())
 
@@ -164,7 +164,7 @@ func ExecESDTTransferInAsyncCall(instanceMock *mock.InstanceMock, config interfa
 }
 
 // EvilCallback is an exposed mock contract method
-func EvilCallback(instanceMock *mock.InstanceMock, config interface{}) {
+func EvilCallback(instanceMock *mock.InstanceMock, _ interface{}) {
 	// testConfig := config.(*AsyncCallTestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host

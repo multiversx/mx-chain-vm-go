@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -123,7 +123,7 @@ func (host *vmHost) determineDestinationForAsyncCall(asyncCallInfo arwen.AsyncCa
 	}
 
 	argsParser := parsers.NewCallArgsParser()
-	functionName, args, err := argsParser.ParseData(string(asyncCallInfo.GetData()))
+	functionName, args, _ := argsParser.ParseData(string(asyncCallInfo.GetData()))
 	if !host.IsBuiltinFunctionName(functionName) {
 		return asyncCallInfo.GetDestination()
 	}
@@ -675,37 +675,6 @@ func (host *vmHost) savePendingAsyncCalls(pendingAsyncMap *arwen.AsyncContextInf
 	}
 
 	return nil
-}
-
-/**
- * saveCrossShardCalls goes through the list of async calls and saves the ones that are cross shard
- */
-func (host *vmHost) saveCrossShardCalls(asyncInfo *arwen.AsyncContextInfo) error {
-	crossMap := &arwen.AsyncContextInfo{
-		CallerAddr:      asyncInfo.CallerAddr,
-		ReturnData:      asyncInfo.ReturnData,
-		AsyncContextMap: make(map[string]*arwen.AsyncContext),
-	}
-
-	for contextIdentifier, asyncContext := range asyncInfo.AsyncContextMap {
-		for _, asyncCall := range asyncContext.AsyncCalls {
-			if !host.canExecuteSynchronously(asyncCall.Destination, asyncCall.Data) {
-				_, ok := crossMap.AsyncContextMap[contextIdentifier]
-				if !ok {
-					crossMap.AsyncContextMap[contextIdentifier] = &arwen.AsyncContext{
-						Callback:   asyncContext.Callback,
-						AsyncCalls: make([]*arwen.AsyncGeneratedCall, 0),
-					}
-				}
-				crossMap.AsyncContextMap[contextIdentifier].AsyncCalls = append(
-					crossMap.AsyncContextMap[contextIdentifier].AsyncCalls,
-					asyncCall,
-				)
-			}
-		}
-	}
-
-	return host.savePendingAsyncCalls(crossMap)
 }
 
 /**

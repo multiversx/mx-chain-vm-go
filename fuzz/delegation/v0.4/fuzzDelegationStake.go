@@ -7,6 +7,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) stake(delegIndex int, amount *big.Int) error {
 	// keep track of stake added
 	pfe.totalStakeAdded.Add(pfe.totalStakeAdded, amount)
@@ -129,6 +130,7 @@ func (pfe *fuzzDelegationExecutor) activateGenesis() error {
 	return err
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) stakeAllAvailable(delegIndex int) error {
 	pfe.log("stakeAllAvailable, called by delegator: %d", delegIndex)
 	_, err := pfe.executeTxStep(fmt.Sprintf(`
@@ -159,6 +161,7 @@ func (pfe *fuzzDelegationExecutor) stakeAllAvailable(delegIndex int) error {
 	return err
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount *big.Int) error {
 	// actual withdraw
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
@@ -218,10 +221,12 @@ func (pfe *fuzzDelegationExecutor) withdrawInactiveStake(delegIndex int, amount 
 	return nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getUserInactiveStake(delegIndex int) (*big.Int, error) {
 	return pfe.delegatorQuery("getUserInactiveStake", delegIndex)
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) withdrawAllInactiveStake(delegIndex int) error {
 	inactiveStake, err := pfe.getUserInactiveStake(delegIndex)
 	if err != nil {
@@ -230,10 +235,12 @@ func (pfe *fuzzDelegationExecutor) withdrawAllInactiveStake(delegIndex int) erro
 	return pfe.withdrawInactiveStake(delegIndex, inactiveStake)
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getUserActiveStake(delegIndex int) (*big.Int, error) {
 	return pfe.delegatorQuery("getUserActiveStake", delegIndex)
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) announceUnStake(delegIndex int, amount *big.Int) error {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -268,6 +275,7 @@ func (pfe *fuzzDelegationExecutor) announceUnStake(delegIndex int, amount *big.I
 	return nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) announceUnStakeAll(delegIndex int) error {
 	userActiveStake, err := pfe.getUserActiveStake(delegIndex)
 	if err != nil {
@@ -276,6 +284,7 @@ func (pfe *fuzzDelegationExecutor) announceUnStakeAll(delegIndex int) error {
 	return pfe.announceUnStake(delegIndex, userActiveStake)
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, amount *big.Int) error {
 	// get the value from the big sack
 	_, err := pfe.executeTxStep(fmt.Sprintf(`
@@ -327,7 +336,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d", sellerIndex, buyerIndex, amount)
 
 		// forward received sum
-		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "transfer",
 			"txId": "%d",
@@ -349,7 +358,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d, fail, %s", sellerIndex, buyerIndex, amount, output.ReturnMessage)
 
 		// return the value
-		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "transfer",
 			"txId": "%d",
@@ -372,6 +381,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 	return nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) unStake(delegIndex int) error {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -403,6 +413,7 @@ func (pfe *fuzzDelegationExecutor) unStake(delegIndex int) error {
 	return nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) unBondAllAvailable() error {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{

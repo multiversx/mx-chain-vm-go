@@ -146,6 +146,7 @@ type nilInterfaceChecker interface {
 }
 
 // GetVMHost returns the vm Context from the vm context map
+//nolint:all
 func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
 	if logVMHookCalls {
 		logVMHookCall()
@@ -192,8 +193,8 @@ func GetStorageContext(vmHostPtr unsafe.Pointer) StorageContext {
 
 // WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFault(err error, vmHostPtr unsafe.Pointer, failExecution bool) bool {
-	runtime := GetVMHost(vmHostPtr)
-	return WithFaultAndHost(runtime, err, failExecution)
+	runtimeInstance := GetVMHost(vmHostPtr)
+	return WithFaultAndHost(runtimeInstance, err, failExecution)
 }
 
 // WithFaultAndHost fails the execution with the provided error
@@ -203,24 +204,24 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	}
 
 	if failExecution {
-		runtime := host.Runtime()
+		runtimeInstance := host.Runtime()
 		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
-		runtime.FailExecution(err)
+		runtimeInstance.FailExecution(err)
 	}
 
 	return true
 }
 
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+// WithFaultIfFailAlwaysActive returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecution bool) {
-	runtime := GetVMHost(vmHostPtr)
-	if runtime.FixFailExecutionEnabled() {
-		_ = WithFaultAndHost(runtime, err, failExecution)
+	runtimeInstance := GetVMHost(vmHostPtr)
+	if runtimeInstance.FixFailExecutionEnabled() {
+		_ = WithFaultAndHost(runtimeInstance, err, failExecution)
 	}
 }
 
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+// WithFaultAndHostIfFailAlwaysActive returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bool) {
 	if host.FixFailExecutionEnabled() {
 		_ = WithFaultAndHost(host, err, failExecution)
@@ -228,8 +229,8 @@ func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bo
 }
 
 func logVMHookCall() {
-	skipStackLevels := 3
-	pc, _, _, _ := runtime.Caller(skipStackLevels)
+	skipNumStackLevels := 3
+	pc, _, _, _ := runtime.Caller(skipNumStackLevels)
 	qualifiedFunctionName := runtime.FuncForPC(pc).Name()
 	functionNameIndex := strings.LastIndex(qualifiedFunctionName, "/")
 	if functionNameIndex > 0 {

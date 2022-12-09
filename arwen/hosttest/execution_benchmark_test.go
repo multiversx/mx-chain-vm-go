@@ -155,17 +155,17 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	}
 
 	seed := rand.NewSource(time.Now().UnixNano())
-	rand := rand.New(seed)
+	randInstance := rand.New(seed)
 
 	for len(availableContracts) != 0 {
-		contract := availableContracts[rand.Intn(len(availableContracts))]
-		transfers := rand.Intn(remainingTransfers[contract]) + 1
+		contract := availableContracts[randInstance.Intn(len(availableContracts))]
+		transfers := randInstance.Intn(remainingTransfers[contract]) + 1
 
 		for i := 0; i < transfers; i++ {
 			transferInput := createTransferInput(contract)
 
-			vmOutput, err := host.RunSmartContractCall(transferInput)
-			require.Nil(tb, err)
+			vmOutput, errRun := host.RunSmartContractCall(transferInput)
+			require.Nil(tb, errRun)
 			require.NotNil(tb, vmOutput)
 			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
 

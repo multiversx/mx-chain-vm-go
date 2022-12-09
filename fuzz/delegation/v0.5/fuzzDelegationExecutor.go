@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
@@ -17,7 +18,6 @@ import (
 	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,7 +37,7 @@ type fuzzDelegationExecutorInitArgs struct {
 	numBlocksBeforeUnbond       int
 	numDelegators               int
 	stakePerNode                *big.Int
-	numGenesisNodes             int
+	numGenesisNodes             int //nolint:all
 	totalDelegationCap          *big.Int
 }
 
@@ -312,6 +312,7 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 	return result, nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegatorIndex int) (*big.Int, error) {
 	delegatorAddr := fmt.Sprintf(`"str:%s"`, pfe.delegatorAddress(delegatorIndex))
 	return pfe.querySingleResult(funcName, delegatorAddr)

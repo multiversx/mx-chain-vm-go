@@ -23,8 +23,6 @@ var ScAddressPrefixLength = 10
 
 var benchmarkTxIdent = "benchmark"
 
-var InvalidBenchmarkTxPos = -1
-
 var minimumAcceptedGasPrice = uint64(1)
 
 type ScenarioWithBenchmark struct {
@@ -181,7 +179,7 @@ func convertMandosAccountToTestAccount(mandosAcc *mj.Account) (*TestAccount, err
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
+	_ = esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
 	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value, mandosAcc.Owner.Value)
 
 	if len(account.code) != 0 && len(account.ownerAddress) == 0 {

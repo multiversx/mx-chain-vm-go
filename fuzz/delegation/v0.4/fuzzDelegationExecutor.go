@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strings"
 
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
@@ -14,7 +15,6 @@ import (
 	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type fuzzDelegationExecutor struct {
@@ -75,7 +75,7 @@ type fuzzDelegationExecutorInitArgs struct {
 	numBlocksBeforeUnbond       int
 	numDelegators               int
 	stakePerNode                *big.Int
-	numGenesisNodes             int
+	numGenesisNodes             int //nolint:all
 }
 
 func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
@@ -103,12 +103,14 @@ func (pfe *fuzzDelegationExecutor) getContractBalance() *big.Int {
 	return acct.Balance
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getDelegatorBalance(delegIndex int) *big.Int {
-	delegAddr := []byte(pfe.delegatorAddress(delegIndex))
+	delegAddr := pfe.delegatorAddress(delegIndex)
 	acct := pfe.world.AcctMap.GetAccount(delegAddr)
 	return acct.Balance
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getAllDelegatorsBalance() *big.Int {
 	totalDelegatorBalance := big.NewInt(0)
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
@@ -118,11 +120,13 @@ func (pfe *fuzzDelegationExecutor) getAllDelegatorsBalance() *big.Int {
 	return totalDelegatorBalance
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getAuctionBalance() *big.Int {
 	acct := pfe.world.AcctMap.GetAccount(pfe.auctionMockAddress)
 	return acct.Balance
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getWithdrawTargetBalance() *big.Int {
 	acct := pfe.world.AcctMap.GetAccount(pfe.withdrawTargetAddress)
 	return acct.Balance
@@ -150,6 +154,7 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -189,15 +194,18 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 	return result, nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
 	return pfe.querySingleResult(funcName, "")
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegIndex int) (*big.Int, error) {
 	delegAddr := fmt.Sprintf(`"''%s"`, string(pfe.delegatorAddress(delegIndex)))
 	return pfe.querySingleResult(funcName, delegAddr)
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 	curentBlockNonce := uint64(0)
 	if pfe.world.CurrentBlockInfo != nil {
@@ -222,6 +230,7 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 	return nil
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) dumpState() error {
 	return pfe.executeStep(`
 	{
@@ -255,28 +264,4 @@ func blsKeySignatureArgsString(startIndex, numNodes int) string {
 		blsKeyArgs = append(blsKeyArgs, "\"''"+blsSignature(i)+"\"")
 	}
 	return strings.Join(blsKeyArgs, ",")
-}
-
-func blsKeyArgsString(numNodes int) string {
-	var blsKeyArgs []string
-	for i := 0; i < numNodes; i++ {
-		blsKey := fmt.Sprintf(
-			"bls key %5d ..................................................................................",
-			i)
-		blsKeyArg := "\"''" + blsKey + "\""
-		blsKeyArgs = append(blsKeyArgs, blsKeyArg)
-	}
-	return strings.Join(blsKeyArgs, ",")
-}
-
-func blsSignatureArgsString(numNodes int) string {
-	var blsSigArgs []string
-	for i := 0; i < numNodes; i++ {
-		blsSig := fmt.Sprintf(
-			"bls key signature %5d ........",
-			i)
-		blsSigArg := "\"''" + blsSig + "\""
-		blsSigArgs = append(blsSigArgs, blsSigArg)
-	}
-	return strings.Join(blsSigArgs, ",")
 }

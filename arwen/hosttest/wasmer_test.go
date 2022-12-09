@@ -335,7 +335,7 @@ func TestWASMCreateAndCall(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCreate(deployInput)
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
 	verify.Ok()
-	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
 
 	input := test.CreateTestContractCallInputBuilder().
 		WithGasProvided(100000).
