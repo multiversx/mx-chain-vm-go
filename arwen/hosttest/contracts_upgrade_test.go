@@ -35,7 +35,7 @@ func TestUpgrade_WithWorldMock(t *testing.T) {
 	usc := newUpgradeScenario(t)
 
 	nUpgradeIterations := 4000
-	nPairs := 1000
+	nPairs := 10
 	contractPairs := make([]*upgradeSCPair, nPairs)
 	for i := 0; i < nPairs; i++ {
 		pair := newUpgradeSCPair(usc.ownerAccount.Address, i)
