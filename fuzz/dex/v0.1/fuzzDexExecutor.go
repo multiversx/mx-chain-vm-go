@@ -66,6 +66,7 @@ type FarmerInfo struct {
 	farm  Farm
 }
 
+//nolint:all
 type fuzzDexExecutor struct {
 	arwenTestExecutor *am.ArwenTestExecutor
 	world             *worldhook.MockWorld
@@ -88,7 +89,7 @@ type fuzzDexExecutor struct {
 	wemeSwapAddress         string
 	webuSwapAddress         string
 	numUsers                int
-	numTokens               int //nolint:all
+	numTokens               int
 	numEvents               int
 	removeLiquidityProb     int
 	addLiquidityProb        int
@@ -108,7 +109,7 @@ type fuzzDexExecutor struct {
 	compoundRewardsMaxValue int
 	tokenDepositMaxValue    int
 	blockNonceIncrease      int
-	tokensCheckFrequency    int //nolint:all
+	tokensCheckFrequency    int
 	currentFarmTokenNonce   map[string]int
 	farmers                 map[int]FarmerInfo
 	generatedScenario       *mj.Scenario

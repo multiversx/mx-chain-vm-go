@@ -29,6 +29,7 @@ const (
 	UserUnbondable      = "getUnBondable"
 )
 
+//nolint:all
 type fuzzDelegationExecutorInitArgs struct {
 	serviceFee                  int
 	ownerMinStake               int
@@ -37,7 +38,7 @@ type fuzzDelegationExecutorInitArgs struct {
 	numBlocksBeforeUnbond       int
 	numDelegators               int
 	stakePerNode                *big.Int
-	numGenesisNodes             int //nolint:all
+	numGenesisNodes             int
 	totalDelegationCap          *big.Int
 }
 

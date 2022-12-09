@@ -1,9 +1,11 @@
 package hashing
 
+//nolint:all - backwards compatibility
+
 import (
 	"crypto/sha256"
 
-	"golang.org/x/crypto/ripemd160" //nolint:all - backwards compatibility
+	"golang.org/x/crypto/ripemd160"
 	"golang.org/x/crypto/sha3"
 )
 

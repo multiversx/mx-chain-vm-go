@@ -68,6 +68,7 @@ func (pfe *fuzzDelegationExecutor) log(info string, args ...interface{}) {
 	fmt.Printf(info+"\n", args...)
 }
 
+//nolint:all
 type fuzzDelegationExecutorInitArgs struct {
 	serviceFee                  int
 	ownerMinStake               int
@@ -75,7 +76,7 @@ type fuzzDelegationExecutorInitArgs struct {
 	numBlocksBeforeUnbond       int
 	numDelegators               int
 	stakePerNode                *big.Int
-	numGenesisNodes             int //nolint:all
+	numGenesisNodes             int
 }
 
 func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
