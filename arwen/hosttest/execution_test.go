@@ -2705,7 +2705,7 @@ func TestExecution_UpgradeContractFromExistingCode_Success(t *testing.T) {
 				WithCode(initialCode).
 				WithBalance(1000),
 			test.CreateInstanceContract(test.ParentAddress).
-				WithCode(test.GetTestSCCode("upgrader-fromanother-contract", "../../")).
+				WithCode(test.GetTestSCCode("upgrader", "../../")).
 				WithBalance(1000),
 		).
 		WithInput(test.CreateTestContractCallInputBuilder().

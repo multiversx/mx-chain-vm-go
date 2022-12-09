@@ -2,6 +2,7 @@ package mock
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
@@ -36,7 +37,9 @@ func NewInstanceMock(code []byte) *InstanceMock {
 	}
 }
 
-func (instance *InstanceMock) Id() string { return "" }
+func (instance *InstanceMock) Id() string {
+	return fmt.Sprintf("%p", instance)
+}
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
