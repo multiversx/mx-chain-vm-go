@@ -6,7 +6,8 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )
 
