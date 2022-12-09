@@ -9,7 +9,10 @@ func TestDelegation_v0_2(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_2")
+	MandosTest(t).
+		Folder("delegation/v0_2").
+		Run().
+		CheckNoError()
 }
 
 func TestDelegation_v0_3(t *testing.T) {
@@ -17,9 +20,11 @@ func TestDelegation_v0_3(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runTestsInFolder(t, "delegation/v0_3", []string{
-		"delegation/v0_3/test/integration/genesis/genesis.scen.json",
-	})
+	MandosTest(t).
+		Folder("delegation/v0_3").
+		Exclude("delegation/v0_3/test/integration/genesis/genesis.scen.json").
+		Run().
+		CheckNoError()
 }
 
 func TestDelegation_v0_4_genesis(t *testing.T) {
@@ -27,7 +32,10 @@ func TestDelegation_v0_4_genesis(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_4_genesis")
+	MandosTest(t).
+		Folder("delegation/v0_4_genesis").
+		Run().
+		CheckNoError()
 }
 
 func TestDelegation_v0_5_latest_full(t *testing.T) {
@@ -35,7 +43,10 @@ func TestDelegation_v0_5_latest_full(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_5_latest_full")
+	MandosTest(t).
+		Folder("delegation/v0_5_latest_full").
+		Run().
+		CheckNoError()
 }
 
 func TestDelegation_v0_5_latest_update(t *testing.T) {
@@ -43,5 +54,9 @@ func TestDelegation_v0_5_latest_update(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runAllTestsInFolder(t, "delegation/v0_5_latest_update")
+	MandosTest(t).
+		Folder("delegation/v0_5_latest_update").
+		Run().
+		CheckNoError()
+
 }

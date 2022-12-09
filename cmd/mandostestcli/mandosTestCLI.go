@@ -9,6 +9,7 @@ import (
 
 	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
 	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 )
 
 func resolveArgument(exeDir string, arg string) (string, bool, error) {
@@ -62,7 +63,9 @@ func MandosTestCLI() {
 	if err != nil {
 		panic("Could not instantiate Arwen VM")
 	}
-	executor.UseWasmer2 = options.UseWasmer2
+	if options.UseWasmer2 {
+		executor.OverrideVMExecutor = wasmer2.ExecutorFactory()
+	}
 
 	// execute
 	switch {

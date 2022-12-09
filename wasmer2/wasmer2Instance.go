@@ -231,6 +231,11 @@ func (instance *Wasmer2Instance) GetMemory() executor.Memory {
 	return &instance.memory
 }
 
+// Id returns an identifier for the instance, unique at runtime
+func (instance *Wasmer2Instance) Id() string {
+	return fmt.Sprintf("%p", instance.cgoInstance)
+}
+
 // Reset resets the instance memories and globals
 func (instance *Wasmer2Instance) Reset() bool {
 	// result := cWasmerInstanceReset(instance.instance)
