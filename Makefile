@@ -115,7 +115,7 @@ build-test-contracts-erdpy:
 	erdpy contract build ./test/contracts/promises-tracking
 	erdpy contract build ./test/contracts/signatures
 	erdpy contract build ./test/contracts/timelocks
-	erdpy contract build ./test/contracts/upgrader-fromanother-contract
+	erdpy contract build ./test/contracts/upgrader
 
 build-delegation:
 ifndef SANDBOX
