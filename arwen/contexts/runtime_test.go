@@ -227,19 +227,19 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	instance := runtimeContext.instance
+	instance := runtimeContext.iTracker.instance
 
 	runtimeContext.pushInstance()
-	runtimeContext.instance = nil
-	require.Equal(t, 1, len(runtimeContext.instanceStack))
+	runtimeContext.iTracker.instance = &wasmer.Instance{}
+	require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
 
 	runtimeContext.popInstance()
-	require.NotNil(t, runtimeContext.instance)
-	require.Equal(t, instance, runtimeContext.instance)
-	require.Equal(t, 0, len(runtimeContext.instanceStack))
+	require.NotNil(t, runtimeContext.iTracker.instance)
+	require.Equal(t, instance, runtimeContext.iTracker.instance)
+	require.Equal(t, 0, len(runtimeContext.iTracker.instanceStack))
 
 	runtimeContext.pushInstance()
-	require.Equal(t, 1, len(runtimeContext.instanceStack))
+	require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
@@ -265,7 +265,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 		Function:      funcName,
 	}
 	runtimeContext.InitStateFromContractCallInput(input)
-	runtimeContext.instance = &wasmer.Instance{}
+	runtimeContext.iTracker.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
@@ -287,11 +287,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeContext.ReadOnly())
 	require.Nil(t, runtimeContext.Arguments())
 
-	runtimeContext.instance = &wasmer.Instance{}
+	runtimeContext.iTracker.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 1, len(runtimeContext.stateStack))
 
-	runtimeContext.instance = &wasmer.Instance{}
+	runtimeContext.iTracker.instance = &wasmer.Instance{}
 	runtimeContext.PushState()
 	require.Equal(t, 2, len(runtimeContext.stateStack))
 
@@ -343,7 +343,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	require.NotNil(t, initFunc)
 
 	runtimeContext.ClearWarmInstanceCache()
-	require.Nil(t, runtimeContext.instance)
+	require.Nil(t, runtimeContext.iTracker.instance)
 }
 
 func TestRuntimeContext_Breakpoints(t *testing.T) {
@@ -420,7 +420,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.GetMemory()
+	memory := runtimeContext.iTracker.instance.GetMemory()
 
 	memContents, err := runtimeContext.MemLoad(10, 10)
 	require.Nil(t, err)
@@ -452,7 +452,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.GetMemory()
+	memory := runtimeContext.iTracker.instance.GetMemory()
 	totalPages := 2
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
@@ -479,7 +479,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.GetMemory()
+	memory := runtimeContext.iTracker.instance.GetMemory()
 
 	var offset int32
 	var length int32
@@ -543,7 +543,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.GetMemory()
+	memory := runtimeContext.iTracker.instance.GetMemory()
 	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
 
 	// Bad lower bounds
@@ -597,7 +597,7 @@ func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeContext.instance.GetMemory()
+	memory := runtimeContext.iTracker.instance.GetMemory()
 	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
 
 	memContents := []byte("test data")
@@ -641,7 +641,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Push the current instance down the instance stack
 	runtimeContext.pushInstance()
-	require.Equal(t, 1, len(runtimeContext.instanceStack))
+	require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
 
 	// Create a new Wasmer instance
 	contractCode = arwen.GetSCCode(path)
@@ -659,7 +659,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Pop the initial instance from the stack, making it the 'current instance'
 	runtimeContext.popInstance()
-	require.Equal(t, 0, len(runtimeContext.instanceStack))
+	require.Equal(t, 0, len(runtimeContext.iTracker.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
 	// memory of the initial instance

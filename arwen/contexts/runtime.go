@@ -9,8 +9,6 @@ import (
 	"unsafe"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/storage"
-	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
@@ -22,14 +20,15 @@ var logRuntime = logger.GetOrCreate("arwen/runtime")
 
 var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
-const warmCacheSize = 100
+const warmCacheSize = 50
+
+// WarmInstancesEnabled controls the usage of warm instances
+const WarmInstancesEnabled = false
 
 type runtimeContext struct {
 	host               arwen.VMHost
-	instance           wasmer.InstanceHandler
 	vmInput            *vmcommon.ContractCallInput
 	codeAddress        []byte
-	codeHash           []byte
 	codeSize           uint64
 	callFunction       string
 	vmType             []byte
@@ -37,10 +36,9 @@ type runtimeContext struct {
 	verifyCode         bool
 	maxWasmerInstances uint64
 
-	warmInstanceCache storage.Cacher
+	iTracker *instanceTracker
 
-	stateStack    []*runtimeContext
-	instanceStack []wasmer.InstanceHandler
+	stateStack []*runtimeContext
 
 	asyncCallInfo    *arwen.AsyncCallInfo
 	asyncContextInfo *arwen.AsyncContextInfo
@@ -59,19 +57,18 @@ func NewRuntimeContext(
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
-		host:          host,
-		vmType:        vmType,
-		stateStack:    make([]*runtimeContext, 0),
-		instanceStack: make([]wasmer.InstanceHandler, 0),
-		validator:     newWASMValidator(scAPINames, builtInFuncContainer),
-		errors:        nil,
+		host:       host,
+		vmType:     vmType,
+		stateStack: make([]*runtimeContext, 0),
+		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
+		errors:     nil,
 	}
 
-	var err error
-	context.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvicted)
+	iTracker, err := NewInstanceTracker()
 	if err != nil {
 		return nil, err
 	}
+	context.iTracker = iTracker
 
 	context.instanceBuilder = &WasmerInstanceBuilder{}
 	context.InitState()
@@ -79,21 +76,10 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(wasmer.InstanceHandler)
-	if !ok {
-		return
-	}
-
-	logRuntime.Trace("evicted instance", "id", instance.Id())
-	instance.Clean()
-}
-
 // InitState initializes all the contexts fields with default data.
 func (context *runtimeContext) InitState() {
 	context.vmInput = &vmcommon.ContractCallInput{}
 	context.codeAddress = make([]byte, 0)
-	context.codeHash = make([]byte, 0)
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
@@ -101,6 +87,7 @@ func (context *runtimeContext) InitState() {
 	context.asyncContextInfo = &arwen.AsyncContextInfo{
 		AsyncContextMap: make(map[string]*arwen.AsyncContext),
 	}
+	context.iTracker.InitState()
 	context.errors = nil
 
 	logRuntime.Trace("init state")
@@ -108,8 +95,8 @@ func (context *runtimeContext) InitState() {
 
 // ClearWarmInstanceCache clears all elements from warm instance cache
 func (context *runtimeContext) ClearWarmInstanceCache() {
-	context.warmInstanceCache.Clear()
-	context.instance = nil
+	context.iTracker.ClearWarmInstanceCache()
+	context.iTracker.UnsetInstance()
 }
 
 // ReplaceInstanceBuilder replaces the instance builder, allowing the creation
@@ -120,24 +107,27 @@ func (context *runtimeContext) ReplaceInstanceBuilder(builder arwen.InstanceBuil
 
 // StartWasmerInstance creates a new wasmer instance if the maxWasmerInstances has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
+	context.iTracker.UnsetInstance()
+
 	if context.RunningInstancesCount() >= context.maxWasmerInstances {
-		context.instance = nil
 		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
 		return arwen.ErrMaxInstancesReached
 	}
 
 	blockchain := context.host.Blockchain()
 	codeHash := blockchain.GetCodeHash(context.codeAddress)
-	context.codeHash = codeHash
+	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
-		logRuntime.Trace("warm cache size after starting instance", "size", context.warmInstanceCache.Len())
+		context.iTracker.LogCounts()
+		logRuntime.Trace("code was new", "new", newCode)
 	}()
 
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		return nil
 	}
+
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
 		return nil
@@ -147,12 +137,13 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 }
 
 func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) bool {
-	if newCode || len(context.codeHash) == 0 {
+	codeHash := context.iTracker.CodeHash()
+	if newCode || len(codeHash) == 0 {
 		return false
 	}
 
 	blockchain := context.host.Blockchain()
-	found, compiledCode := blockchain.GetCompiledCode(context.codeHash)
+	found, compiledCode := blockchain.GetCompiledCode(codeHash)
 	if !found {
 		logRuntime.Trace("instance creation", "code", "cached compilation", "error", "compiled code was not found")
 		return false
@@ -174,14 +165,17 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 		return false
 	}
 
-	context.instance = newInstance
+	context.iTracker.SetNewInstance(newInstance, Precompiled)
 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.iTracker.Instance().SetContextData(hostReference)
 	context.verifyCode = false
 
 	context.saveWarmInstance()
-	logRuntime.Trace("start instance", "from", "cached compilation", "id", context.instance.Id())
+	logRuntime.Trace("start instance", "from", "cached compilation",
+		"id", context.iTracker.Instance().Id(),
+		"codeHash", context.iTracker.Instance(),
+	)
 	return true
 }
 
@@ -198,24 +192,25 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	}
 	newInstance, err := context.instanceBuilder.NewInstanceWithOptions(contract, options)
 	if err != nil {
-		context.instance = nil
+		context.iTracker.UnsetInstance()
 		logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 		return err
 	}
 
-	context.instance = newInstance
+	context.iTracker.SetNewInstance(newInstance, Bytecode)
 
-	if newCode || len(context.codeHash) == 0 {
-		context.codeHash, err = context.host.Crypto().Sha256(contract)
+	if newCode || len(context.iTracker.CodeHash()) == 0 {
+		codeHash, err := context.host.Crypto().Sha256(contract)
 		if err != nil {
 			context.CleanInstance()
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
+		context.iTracker.SetCodeHash(codeHash)
 	}
 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.iTracker.Instance().SetContextData(hostReference)
 
 	if newCode {
 		err = context.VerifyContractCode()
@@ -226,46 +221,42 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 		}
 	}
 
-	logRuntime.Trace("start instance", "from", "bytecode", "id", context.instance.Id())
+	logRuntime.Trace("start instance",
+		"from", "bytecode",
+		"id", context.iTracker.Instance().Id(),
+		"codeHash", context.iTracker.CodeHash(),
+	)
 	context.saveCompiledCode()
 
 	return nil
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
-	if newCode || len(context.codeHash) == 0 {
+	if !WarmInstancesEnabled {
+		return false
+	}
+
+	codeHash := context.iTracker.CodeHash()
+	if newCode || len(codeHash) == 0 {
 		return false
 	}
 
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
-	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
+	ok := context.iTracker.UseWarmInstance(codeHash)
 	if !ok {
 		return false
 	}
 
-	instance, ok := cachedObject.(wasmer.InstanceHandler)
-	if !ok {
-		return false
-	}
-
-	ok = instance.Reset()
-	if !ok {
-		// we must remove instance, which cleans it to free the memory
-		context.warmInstanceCache.Remove(context.codeHash)
-		return false
-	}
-
-	context.instance = instance
 	context.SetPointsUsed(0)
-	context.instance.SetGasLimit(gasLimit)
+	context.iTracker.Instance().SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
-	context.instance.SetContextData(hostReference)
+	context.iTracker.Instance().SetContextData(hostReference)
 	context.verifyCode = false
-	logRuntime.Trace("start instance", "from", "warm", "id", context.instance.Id())
+	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance().Id())
 	return true
 }
 
@@ -288,34 +279,35 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 }
 
 func (context *runtimeContext) saveCompiledCode() {
-	compiledCode, err := context.instance.Cache()
+	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
 		return
 	}
 
+	codeHash := context.iTracker.CodeHash()
 	blockchain := context.host.Blockchain()
-	blockchain.SaveCompiledCode(context.codeHash, compiledCode)
+	blockchain.SaveCompiledCode(codeHash, compiledCode)
+	logRuntime.Trace("save compiled code", "codeHash", codeHash)
+
+	found, _ := blockchain.GetCompiledCode(codeHash)
+	if !found {
+		logRuntime.Trace("save compiled code silent fail, code hash not found")
+	}
 
 	context.saveWarmInstance()
 }
 
 func (context *runtimeContext) saveWarmInstance() {
+	if !WarmInstancesEnabled {
+		return
+	}
+
 	if context.isContractOrCodeHashOnTheStack() {
 		return
 	}
 
-	context.warmInstanceCache.Put(
-		context.codeHash,
-		context.instance,
-		1,
-	)
-	logRuntime.Trace("save warm instance", "id", context.instance.Id())
-}
-
-func (context *runtimeContext) deleteWarmInstance() {
-	context.warmInstanceCache.Remove(context.codeHash)
-	logRuntime.Trace("instance removed from warm cache")
+	context.iTracker.SaveAsWarmInstance()
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -357,7 +349,6 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
 		codeAddress:      context.codeAddress,
-		codeHash:         context.codeHash,
 		callFunction:     context.callFunction,
 		readOnly:         context.readOnly,
 		asyncCallInfo:    context.asyncCallInfo,
@@ -389,7 +380,6 @@ func (context *runtimeContext) PopSetActiveState() {
 
 	context.SetVMInput(prevState.vmInput)
 	context.codeAddress = prevState.codeAddress
-	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 	context.asyncCallInfo = prevState.asyncCallInfo
@@ -403,7 +393,7 @@ func (context *runtimeContext) PopDiscard() {
 		return
 	}
 
-	context.popInstance()
+	context.iTracker.PopSetActiveState()
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
@@ -411,48 +401,23 @@ func (context *runtimeContext) PopDiscard() {
 // ClearStateStack reinitializes the state stack.
 func (context *runtimeContext) ClearStateStack() {
 	context.stateStack = make([]*runtimeContext, 0)
+	context.iTracker.ClearStateStack()
 }
 
 // pushInstance appends the current wasmer instance to the instance stack.
 func (context *runtimeContext) pushInstance() {
-	context.instanceStack = append(context.instanceStack, context.instance)
-	logRuntime.Trace("pushing instance", "id", context.instance.Id(), "codeHash", context.codeHash)
+	context.iTracker.PushState()
 }
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
 func (context *runtimeContext) popInstance() {
-	instanceStackLen := len(context.instanceStack)
-	if instanceStackLen == 0 {
-		return
-	}
-
-	prevInstance := context.instanceStack[instanceStackLen-1]
-	context.instanceStack = context.instanceStack[:instanceStackLen-1]
-
-	if prevInstance == context.instance {
-		// The current Wasmer instance was previously pushed on the instance stack,
-		// but a new Wasmer instance has not been created in the meantime. This
-		// means that the instance at the top of the stack is the same as the
-		// current instance, so it cannot be cleaned, because the execution will
-		// resume on it. Popping will therefore only remove the top of the stack,
-		// without cleaning anything.
-		return
-	}
-
-	if !check.IfNil(context.instance) {
-		if context.isCodeHashOnTheStack(context.codeHash) {
-			context.instance.Clean()
-		}
-	}
-
-	context.instance = prevInstance
-	logRuntime.Trace("pop instance", "id", context.instance.Id(), "codeHash", context.codeHash)
+	context.iTracker.PopSetActiveState()
 }
 
 // RunningInstancesCount returns the length of the instance stack.
 func (context *runtimeContext) RunningInstancesCount() uint64 {
-	return uint64(len(context.instanceStack))
+	return context.iTracker.StackSize()
 }
 
 // GetVMType returns the vm type for the current context.
@@ -597,7 +562,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	if !check.IfNil(context.instance) {
+	if !check.IfNil(context.iTracker.Instance()) {
 		context.SetRuntimeBreakpointValue(breakpoint)
 	}
 
@@ -619,13 +584,13 @@ func (context *runtimeContext) SignalUserError(message string) {
 
 // SetRuntimeBreakpointValue sets the given value as a breakpoint value.
 func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
-	context.instance.SetBreakpointValue(uint64(value))
+	context.iTracker.Instance().SetBreakpointValue(uint64(value))
 	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
 // GetRuntimeBreakpointValue returns the breakpoint value for the current wasmer instance.
 func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
-	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+	return arwen.BreakpointValue(context.iTracker.Instance().GetBreakpointValue())
 }
 
 // VerifyContractCode checks the current wasmer instance for enough memory and for correct functions.
@@ -636,13 +601,13 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	context.verifyCode = false
 
-	err := context.validator.verifyMemoryDeclaration(context.instance)
+	err := context.validator.verifyMemoryDeclaration(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
-	err = context.validator.verifyFunctions(context.instance)
+	err = context.validator.verifyFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
@@ -666,7 +631,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 	}
 
 	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
-		err = context.validator.verifyProtectedFunctions(context.instance)
+		err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
 			return err
@@ -679,31 +644,31 @@ func (context *runtimeContext) VerifyContractCode() error {
 }
 
 func (context *runtimeContext) checkBackwardCompatibility() error {
-	if context.instance.IsFunctionImported("mBufferSetByteSlice") {
+	if context.iTracker.Instance().IsFunctionImported("mBufferSetByteSlice") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("getESDTLocalRoles") {
+	if context.iTracker.Instance().IsFunctionImported("getESDTLocalRoles") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("validateTokenIdentifier") {
+	if context.iTracker.Instance().IsFunctionImported("validateTokenIdentifier") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedSha256") {
+	if context.iTracker.Instance().IsFunctionImported("managedSha256") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedKeccak256") {
+	if context.iTracker.Instance().IsFunctionImported("managedKeccak256") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("mBufferStorageLoadFromAddress") {
+	if context.iTracker.Instance().IsFunctionImported("mBufferStorageLoadFromAddress") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("cleanReturnData") {
+	if context.iTracker.Instance().IsFunctionImported("cleanReturnData") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("deleteFromReturnData") {
+	if context.iTracker.Instance().IsFunctionImported("deleteFromReturnData") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("completedTxEvent") {
+	if context.iTracker.Instance().IsFunctionImported("completedTxEvent") {
 		return arwen.ErrContractInvalid
 	}
 
@@ -711,130 +676,130 @@ func (context *runtimeContext) checkBackwardCompatibility() error {
 }
 
 func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
-	if context.instance.IsFunctionImported("managedIsESDTFrozen") {
+	if context.iTracker.Instance().IsFunctionImported("managedIsESDTFrozen") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedIsESDTPaused") {
+	if context.iTracker.Instance().IsFunctionImported("managedIsESDTPaused") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedIsESDTLimitedTransfer") {
+	if context.iTracker.Instance().IsFunctionImported("managedIsESDTLimitedTransfer") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedBufferToHex") {
+	if context.iTracker.Instance().IsFunctionImported("managedBufferToHex") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigIntToString") {
+	if context.iTracker.Instance().IsFunctionImported("bigIntToString") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedRipemd160") {
+	if context.iTracker.Instance().IsFunctionImported("managedRipemd160") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedVerifyBLS") {
+	if context.iTracker.Instance().IsFunctionImported("managedVerifyBLS") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedVerifyEd25519") {
+	if context.iTracker.Instance().IsFunctionImported("managedVerifyEd25519") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedVerifySecp256k1") {
+	if context.iTracker.Instance().IsFunctionImported("managedVerifySecp256k1") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedVerifyCustomSecp256k1") {
+	if context.iTracker.Instance().IsFunctionImported("managedVerifyCustomSecp256k1") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedEncodeSecp256k1DerSignature") {
+	if context.iTracker.Instance().IsFunctionImported("managedEncodeSecp256k1DerSignature") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedScalarBaseMultEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedScalarBaseMultEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedScalarMultEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedScalarMultEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedMarshalEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedMarshalEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedUnmarshalEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedUnmarshalEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedMarshalCompressedEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedMarshalCompressedEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedUnmarshalCompressedEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedUnmarshalCompressedEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedGenerateKeyEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedGenerateKeyEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("managedCreateEC") {
+	if context.iTracker.Instance().IsFunctionImported("managedCreateEC") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("mBufferToBigFloat") {
+	if context.iTracker.Instance().IsFunctionImported("mBufferToBigFloat") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("mBufferFromBigFloat") {
+	if context.iTracker.Instance().IsFunctionImported("mBufferFromBigFloat") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatNewFromParts") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatNewFromParts") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatNewFromFrac") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatNewFromFrac") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatNewFromSci") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatNewFromSci") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatAdd") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatAdd") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatSub") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatSub") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatMul") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatMul") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatDiv") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatDiv") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatAbs") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatAbs") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatCmp") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatCmp") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatSign") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatSign") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatClone") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatClone") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatSqrt") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatSqrt") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatPow") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatPow") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatFloor") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatFloor") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatCeil") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatCeil") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatTruncate") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatTruncate") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatIsInt") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatIsInt") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatSetInt64") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatSetInt64") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatSetBigInt") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatSetBigInt") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatGetConstPi") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatGetConstPi") {
 		return arwen.ErrContractInvalid
 	}
-	if context.instance.IsFunctionImported("bigFloatGetConstE") {
+	if context.iTracker.Instance().IsFunctionImported("bigFloatGetConstE") {
 		return arwen.ErrContractInvalid
 	}
 
@@ -873,10 +838,10 @@ func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
 
 // GetPointsUsed returns the gas points used by the current wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
-	if context.instance == nil {
+	if context.iTracker.Instance() == nil {
 		return 0
 	}
-	return context.instance.GetPointsUsed()
+	return context.iTracker.Instance().GetPointsUsed()
 }
 
 // SetPointsUsed sets the given gas points as the gas points used by the current wasmer instance.
@@ -884,7 +849,7 @@ func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
 	if gasPoints > builtinMath.MaxInt64 {
 		gasPoints = builtinMath.MaxInt64
 	}
-	context.instance.SetPointsUsed(gasPoints)
+	context.iTracker.Instance().SetPointsUsed(gasPoints)
 }
 
 // ReadOnly returns true if the current context is readOnly
@@ -899,25 +864,17 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 
 // GetInstance returns the current wasmer instance
 func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
-	return context.instance
+	return context.iTracker.Instance()
 }
 
 // GetInstanceExports returns the current wasmer instance exports.
 func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
-	return context.instance.GetExports()
+	return context.iTracker.Instance().GetExports()
 }
 
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
-	if check.IfNil(context.instance) {
-		logRuntime.Trace("cannot clean, instance already nil")
-		return
-	}
-
-	context.instance.Clean()
-
-	context.instance = nil
-	logRuntime.Trace("instance cleaned")
+	context.iTracker.ForceCleanInstance()
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
@@ -926,16 +883,7 @@ func (context *runtimeContext) isContractOrCodeHashOnTheStack() bool {
 	if context.isScAddressOnTheStack(context.codeAddress) {
 		return true
 	}
-	return context.isCodeHashOnTheStack(context.codeHash)
-}
-
-func (context *runtimeContext) isCodeHashOnTheStack(codeHash []byte) bool {
-	for _, state := range context.stateStack {
-		if bytes.Equal(codeHash, state.codeHash) {
-			return true
-		}
-	}
-	return false
+	return context.iTracker.IsCodeHashOnTheStack(context.iTracker.CodeHash())
 }
 
 func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
@@ -949,7 +897,7 @@ func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
 
 // GetFunctionToCall returns the function to call from the wasmer instance exports.
 func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
-	exports := context.instance.GetExports()
+	exports := context.iTracker.Instance().GetExports()
 	logRuntime.Trace("get function to call", "function", context.callFunction)
 	if function, ok := exports[context.callFunction]; ok {
 		return function, nil
@@ -966,7 +914,7 @@ func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallb
 
 // GetInitFunction returns the init function from the current wasmer instance exports.
 func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
-	exports := context.instance.GetExports()
+	exports := context.iTracker.Instance().GetExports()
 	if init, ok := exports[arwen.InitFunctionName]; ok {
 		return init
 	}
@@ -1057,13 +1005,13 @@ func (context *runtimeContext) GetAsyncCallInfo() *arwen.AsyncCallInfo {
 
 // HasCallbackMethod returns true if the current wasmer instance exports has a callback method.
 func (context *runtimeContext) HasCallbackMethod() bool {
-	_, ok := context.instance.GetExports()[arwen.CallbackFunctionName]
+	_, ok := context.iTracker.Instance().GetExports()[arwen.CallbackFunctionName]
 	return ok
 }
 
 // IsFunctionImported returns true if the WASM module imports the specified function.
 func (context *runtimeContext) IsFunctionImported(name string) bool {
-	return context.instance.IsFunctionImported(name)
+	return context.iTracker.Instance().IsFunctionImported(name)
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.
@@ -1072,7 +1020,7 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 		return []byte{}, nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.iTracker.Instance().GetInstanceCtxMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, length)
@@ -1127,7 +1075,7 @@ func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 		return nil
 	}
 
-	memory := context.instance.GetInstanceCtxMemory()
+	memory := context.iTracker.Instance().GetInstanceCtxMemory()
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
 	requestedEnd := math.AddInt32(offset, dataLength)
@@ -1178,6 +1126,11 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 // GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
+}
+
+// NumRunningInstances returns the number of currently running instances (cold and warm)
+func (context *runtimeContext) NumRunningInstances() (int, int) {
+	return context.iTracker.NumRunningInstances()
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

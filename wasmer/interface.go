@@ -10,7 +10,8 @@ type InstanceHandler interface {
 	SetBreakpointValue(value uint64)
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
-	Clean()
+	Clean() bool
+	AlreadyCleaned() bool
 	GetExports() ExportsMap
 	GetSignature(functionName string) (*ExportedFunctionSignature, bool)
 	GetData() uintptr

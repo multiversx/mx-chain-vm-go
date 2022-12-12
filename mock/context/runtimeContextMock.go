@@ -351,6 +351,11 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
 
+// NumRunningInstances -
+func (r *RuntimeContextMock) NumRunningInstances() (int, int) {
+	return 0, 0
+}
+
 // CleanInstance mocked method
 func (r *RuntimeContextMock) CleanInstance() {
 }

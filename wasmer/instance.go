@@ -113,7 +113,7 @@ type Instance struct {
 
 	InstanceCtx InstanceContext
 
-	alreadyCleaned bool
+	AlreadyClean bool
 }
 
 type CompilationOptions struct {
@@ -265,11 +265,11 @@ func (instance *Instance) SetContextData(data uintptr) {
 }
 
 // Clean cleans instance
-func (instance *Instance) Clean() {
+func (instance *Instance) Clean() bool {
 	logWasmer.Trace("cleaning instance", "id", instance.Id())
-	if instance.alreadyCleaned {
+	if instance.AlreadyClean {
 		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
-		return
+		return false
 	}
 
 	if instance.instance != nil {
@@ -279,9 +279,18 @@ func (instance *Instance) Clean() {
 			instance.Memory.Destroy()
 		}
 
-		instance.alreadyCleaned = true
+		instance.AlreadyClean = true
 		logWasmer.Trace("cleaned instance", "id", instance.Id())
+
+		return true
 	}
+
+	return false
+}
+
+// AlreadyCleaned returns the internal field AlreadyClean
+func (instance *Instance) AlreadyCleaned() bool {
+	return instance.AlreadyClean
 }
 
 // GetPointsUsed returns the internal instance gas counter
@@ -369,7 +378,7 @@ func (instance *Instance) GetMemory() MemoryHandler {
 
 // Reset resets the instance memories and globals
 func (instance *Instance) Reset() bool {
-	if instance.alreadyCleaned {
+	if instance.AlreadyClean {
 		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
 		return false
 	}

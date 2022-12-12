@@ -370,6 +370,10 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
+
+		numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
+		log.Trace("RunSmartContractCreate end instances", "warm", numWarmInstances, "cold", numColdInstances)
+
 		host.logFromGasTracer("init")
 	}()
 
@@ -433,6 +437,10 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
+
+		numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
+		log.Trace("RunSmartContractCall end instances", "warm", numWarmInstances, "cold", numColdInstances)
+
 		host.logFromGasTracer(input.Function)
 	}()
 
