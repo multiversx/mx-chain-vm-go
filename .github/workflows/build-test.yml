@@ -3,7 +3,7 @@ name: Build and run tests
 on:
   push:
     branches:
-      - master
+      - [ master, rc/* ]
   pull_request:
 
 jobs:
