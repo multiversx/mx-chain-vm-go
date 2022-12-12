@@ -3,8 +3,9 @@ name: Build and run tests
 on:
   push:
     branches:
-      - [ master, rc/* ]
+      - [ master ]
   pull_request:
+    branches: [ master, rc/* ]
 
 jobs:
   test:
