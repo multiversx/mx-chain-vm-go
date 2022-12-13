@@ -242,6 +242,9 @@ const (
     MBufferFinish                = 1000
     MBufferSetRandom             = 6000
 
+[MaxPerTransaction]
+    MaxNumberOfTrieReadsPerTx = 100
+
 [WASMOpcodeCost]
     Unreachable = 1
     Nop = 1
@@ -930,6 +933,9 @@ const (
     MBufferGetArgument           = 1000
     MBufferFinish                = 1000
     MBufferSetRandom             = 6000
+
+[MaxPerTransaction]
+    MaxNumberOfTrieReadsPerTx = 100
 
 [WASMOpcodeCost]
     Unreachable = 5

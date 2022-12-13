@@ -3,6 +3,7 @@ package contexts
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -20,6 +21,7 @@ type storageContext struct {
 	stateStack                    [][]byte
 	elrondProtectedKeyPrefix      []byte
 	arwenStorageProtectionEnabled bool
+	crtNumberOfTrieReads          uint64
 }
 
 // NewStorageContext creates a new storageContext
@@ -45,6 +47,7 @@ func NewStorageContext(
 
 // InitState does nothing
 func (context *storageContext) InitState() {
+	context.crtNumberOfTrieReads = 0
 }
 
 // PushState appends the current address to the state stack.
@@ -93,13 +96,16 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 // GetStorage returns the storage data mapped to the given key.
-func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
-	value, usedCache := context.GetStorageUnmetered(key)
+func (context *storageContext) GetStorage(key []byte) ([]byte, bool, error) {
+	value, usedCache, err := context.GetStorageUnmetered(key)
+	if err != nil {
+		return nil, false, err
+	}
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 	logStorage.Trace("get", "key", key, "value", value)
 
-	return value, usedCache
+	return value, usedCache, nil
 }
 
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
@@ -128,18 +134,18 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 }
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
-func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool, error) {
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false
+			return nil, false, nil
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false
+			return nil, false, nil
 		}
 	}
 
@@ -148,22 +154,23 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	// contracts themselves cannot change protected values. Values stored under
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
-	value, usedCache := context.getStorageFromAddressUnmetered(address, key)
+	value, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
 
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
-	return value, usedCache
+	return value, usedCache, err
 }
 
-func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool, error) {
 	var value []byte
+	var err error
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if context.isElrondReservedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
-		value, _, _ = context.blockChainHook.GetStorageData(address, key)
-		return value, false
+		value, err = context.readFromBlockchain(address, key)
+		return value, false, err
 	}
 
 	storageUpdates := context.GetStorageUpdates(address)
@@ -171,7 +178,10 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		value = storageUpdate.Data
 	} else {
-		value, _, _ = context.blockChainHook.GetStorageData(address, key)
+		value, err = context.readFromBlockchain(address, key)
+		if err != nil {
+			return nil, false, err
+		}
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   value,
@@ -179,11 +189,35 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 		usedCache = false
 	}
 
-	return value, usedCache
+	return value, usedCache, nil
+}
+
+func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, error) {
+	err := context.processCrtNumberOfTrieReadsCounter()
+	if err != nil {
+		return nil, err
+	}
+	value, _, err := context.blockChainHook.GetStorageData(address, key)
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
+}
+
+func (context *storageContext) processCrtNumberOfTrieReadsCounter() error {
+	context.crtNumberOfTrieReads++
+
+	metering := context.host.Metering()
+	maxNumberOfTrieReadsPerTx := metering.GasSchedule().MaxPerTransaction.MaxNumberOfTrieReadsPerTx
+	if context.crtNumberOfTrieReads > maxNumberOfTrieReadsPerTx {
+		return fmt.Errorf("%w too many reads", arwen.ErrMaxNumberOfTrieReadsPerTx)
+	}
+
+	return nil
 }
 
 // GetStorageUnmetered returns the data under the given key.
-func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool, error) {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
@@ -237,7 +271,10 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (arwen.Stora
 	length := len(value)
 
 	storageUpdates := context.GetStorageUpdates(context.address)
-	oldValue, usedCache := context.getOldValue(storageUpdates, key)
+	oldValue, usedCache, err := context.getOldValue(storageUpdates, key)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
 
 	gasForKey := context.computeGasForKey(key, usedCache)
 	metering.UseGas(gasForKey)
@@ -348,13 +385,18 @@ func (context *storageContext) computeGasForUnchangedValue(length int, usedCache
 	return useGas
 }
 
-func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.StorageUpdate, key []byte) ([]byte, bool) {
+func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.StorageUpdate, key []byte) ([]byte, bool, error) {
 	var oldValue []byte
+	var err error
+
 	usedCache := true
 	strKey := string(key)
 	if update, ok := storageUpdates[strKey]; !ok {
 		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
-		oldValue, _ = context.GetStorageUnmetered(key)
+		oldValue, _, err = context.GetStorageUnmetered(key)
+		if err != nil {
+			return nil, false, err
+		}
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,
@@ -363,7 +405,7 @@ func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.S
 	} else {
 		oldValue = update.Data
 	}
-	return oldValue, usedCache
+	return oldValue, usedCache, nil
 }
 
 func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint64 {

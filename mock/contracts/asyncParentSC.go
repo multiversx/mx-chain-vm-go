@@ -6,11 +6,11 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
@@ -94,7 +94,11 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData, _ := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _, err := host.Storage().GetStorage(test.ParentKeyB)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+			return instance
+		}
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {
@@ -107,7 +111,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 				return instance
 			}
 		}
-		err := handleTransferToVault(host, arguments)
+		err = handleTransferToVault(host, arguments)
 		require.Nil(t, err)
 
 		finishResult(host, status)

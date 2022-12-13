@@ -123,6 +123,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       *opcodeCosts,
+		MaxPerTransaction:    *maxPerTx,
 	}
 
 	return gasCost, nil

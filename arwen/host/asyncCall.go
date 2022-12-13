@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -752,13 +752,16 @@ func (host *vmHost) processCallbackStack() error {
 	storage := host.Storage()
 
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
-	buff, _ := storage.GetStorageUnmetered(storageKey)
+	buff, _, err := storage.GetStorageUnmetered(storageKey)
+	if err != nil {
+		return err
+	}
 	if len(buff) == 0 {
 		return nil
 	}
 
 	asyncInfo := &arwen.AsyncContextInfo{}
-	err := json.Unmarshal(buff, &asyncInfo)
+	err = json.Unmarshal(buff, &asyncInfo)
 	if err != nil {
 		return err
 	}
@@ -935,12 +938,15 @@ func (host *vmHost) getCurrentAsyncInfo() (*arwen.AsyncContextInfo, error) {
 
 	asyncInfo := &arwen.AsyncContextInfo{}
 	storageKey := arwen.CustomStorageKey(arwen.AsyncDataPrefix, runtime.GetOriginalTxHash())
-	buff, _ := storage.GetStorageUnmetered(storageKey)
+	buff, _, err := storage.GetStorageUnmetered(storageKey)
+	if err != nil {
+		return nil, err
+	}
 	if len(buff) == 0 {
 		return asyncInfo, nil
 	}
 
-	err := json.Unmarshal(buff, &asyncInfo)
+	err = json.Unmarshal(buff, &asyncInfo)
 	if err != nil {
 		return nil, err
 	}
