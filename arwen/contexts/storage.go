@@ -2,8 +2,6 @@ package contexts
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -19,26 +17,31 @@ type storageContext struct {
 	blockChainHook                vmcommon.BlockchainHook
 	address                       []byte
 	stateStack                    [][]byte
-	elrondProtectedKeyPrefix      []byte
+	protectedKeyPrefix            []byte
 	arwenStorageProtectionEnabled bool
-	crtNumberOfTrieReads          uint64
 }
 
 // NewStorageContext creates a new storageContext
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
-	elrondProtectedKeyPrefix []byte,
+	protectedKeyPrefix []byte,
 ) (*storageContext, error) {
-	if len(elrondProtectedKeyPrefix) == 0 {
-		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
+	if len(protectedKeyPrefix) == 0 {
+		return nil, arwen.ErrEmptyProtectedKeyPrefix
+	}
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+	if check.IfNil(blockChainHook) {
+		return nil, arwen.ErrNilBlockChainHook
 	}
 
 	context := &storageContext{
 		host:                          host,
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
-		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
+		protectedKeyPrefix:            protectedKeyPrefix,
 		arwenStorageProtectionEnabled: true,
 	}
 
@@ -47,7 +50,6 @@ func NewStorageContext(
 
 // InitState does nothing
 func (context *storageContext) InitState() {
-	context.crtNumberOfTrieReads = 0
 }
 
 // PushState appends the current address to the state stack.
@@ -193,27 +195,17 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 }
 
 func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, error) {
-	err := context.processCrtNumberOfTrieReadsCounter()
-	if err != nil {
-		return nil, err
-	}
 	value, _, err := context.blockChainHook.GetStorageData(address, key)
 	if err != nil {
-		return nil, err
+		enableEpochsHandler := context.host.EnableEpochsHandler()
+		if enableEpochsHandler.IsMaxBlockchainHookCountersFlagEnabled() {
+			return nil, err
+		}
+
+		return value, nil // backwards compatibility
 	}
+
 	return value, nil
-}
-
-func (context *storageContext) processCrtNumberOfTrieReadsCounter() error {
-	context.crtNumberOfTrieReads++
-
-	metering := context.host.Metering()
-	maxNumberOfTrieReadsPerTx := metering.GasSchedule().MaxPerTransaction.MaxNumberOfTrieReadsPerTx
-	if context.crtNumberOfTrieReads > maxNumberOfTrieReadsPerTx {
-		return fmt.Errorf("%w too many reads", arwen.ErrMaxNumberOfTrieReadsPerTx)
-	}
-
-	return nil
 }
 
 // GetStorageUnmetered returns the data under the given key.
@@ -236,7 +228,7 @@ func (context *storageContext) isArwenProtectedKey(key []byte) bool {
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
-	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
+	return bytes.HasPrefix(key, context.protectedKeyPrefix)
 }
 
 // SetProtectedStorage sets storage for timelocks and promises

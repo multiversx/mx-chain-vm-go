@@ -213,14 +213,11 @@ var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 // ErrNilEnableEpochsHandler signals that enable epochs handler is nil
 var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
 
-// ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
-var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
+// ErrNilVMHost signals that the VM Host is nil
+var ErrNilVMHost = errors.New("nil VM Host")
 
-// ErrCallNotAllowedOnCallback  signals that call is not allowed on callback
-var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
-
-// ErrCallerIsSC signals that caller is a smart contract
-var ErrCallerIsSC = errors.New("caller is a smart contract")
+// ErrEmptyProtectedKeyPrefix signals that the protected key prefix is empty or nil
+var ErrEmptyProtectedKeyPrefix = errors.New("protectedKeyPrefix is empty or nil")
 
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")
@@ -239,6 +236,3 @@ var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")
 
 // ErrCannotWriteOnReadOnly signals that write operation on read only is not allowed
 var ErrCannotWriteOnReadOnly = errors.New("cannot write on read only mode")
-
-// ErrMaxNumberOfTrieReadsPerTx signals that the maximum number of tire reads per tx has been reached
-var ErrMaxNumberOfTrieReadsPerTx = errors.New("the maximum number of tire reads per tx has been reached")
