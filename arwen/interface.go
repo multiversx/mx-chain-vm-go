@@ -157,6 +157,7 @@ type RuntimeContext interface {
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	ExecuteAsyncCall(address []byte, data []byte, value []byte) error
 	CleanInstance()
+	NumRunningInstances() (int, int)
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 	ReplaceInstanceBuilder(builder InstanceBuilder)

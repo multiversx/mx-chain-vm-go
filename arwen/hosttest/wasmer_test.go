@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/contexts"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
@@ -237,6 +238,10 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 }
 
 func TestWASMMemories_ResetContent(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("test only relevant with warm instances")
+	}
+
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -263,6 +268,10 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 }
 
 func TestWASMMemories_ResetDataInitializers(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("test only relevant with warm instances")
+	}
+
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).

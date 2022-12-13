@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"unsafe"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -18,6 +20,10 @@ var Zero = big.NewInt(0)
 
 // One is the big integer 1
 var One = big.NewInt(1)
+
+const logVMHookCalls = false
+
+var log = logger.GetOrCreate("arwen/host")
 
 // CustomStorageKey appends the given key type to the given associated key
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {
@@ -141,6 +147,9 @@ type nilInterfaceChecker interface {
 
 // GetVMHost returns the vm Context from the vm context map
 func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
+	if logVMHookCalls {
+		logVMHookCall()
+	}
 	instCtx := wasmer.IntoInstanceContext(vmHostPtr)
 	var ptr = *(*uintptr)(instCtx.Data())
 	return *(*VMHost)(unsafe.Pointer(ptr))
@@ -215,5 +224,16 @@ func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecut
 func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bool) {
 	if host.FixFailExecutionEnabled() {
 		_ = WithFaultAndHost(host, err, failExecution)
+	}
+}
+
+func logVMHookCall() {
+	skipStackLevels := 3
+	pc, _, _, _ := runtime.Caller(skipStackLevels)
+	qualifiedFunctionName := runtime.FuncForPC(pc).Name()
+	functionNameIndex := strings.LastIndex(qualifiedFunctionName, "/")
+	if functionNameIndex > 0 {
+		functionName := qualifiedFunctionName[functionNameIndex+1:]
+		log.Trace("VM hook called", "name", functionName)
 	}
 }

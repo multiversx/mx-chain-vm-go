@@ -103,7 +103,13 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 }
 
 // Clean mocked method
-func (instance *InstanceMock) Clean() {
+func (instance *InstanceMock) Clean() bool {
+	return true
+}
+
+// AlreadyCleaned mocked method
+func (instance *InstanceMock) AlreadyCleaned() bool {
+	return false
 }
 
 // Reset mocked method

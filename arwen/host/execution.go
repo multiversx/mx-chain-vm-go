@@ -13,6 +13,7 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/contexts"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 )
 
@@ -92,6 +93,12 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 		return nil, arwen.ErrContractInvalid
 	}
 
+	defer func() {
+		if !contexts.WarmInstancesEnabled {
+			runtime.CleanInstance()
+		}
+	}()
+
 	err = host.callInitFunction()
 	if err != nil {
 		return nil, err
@@ -103,6 +110,7 @@ func (host *vmHost) performCodeDeployment(input arwen.CodeDeployInput) (*vmcommo
 	}
 
 	vmOutput := output.GetVMOutput()
+
 	return vmOutput, nil
 }
 
@@ -211,6 +219,12 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		vmOutput = output.CreateVMOutputInCaseOfError(arwen.ErrContractInvalid)
 		return vmOutput
 	}
+
+	defer func() {
+		if !contexts.WarmInstancesEnabled {
+			runtime.CleanInstance()
+		}
+	}()
 
 	err = host.callSCMethod()
 	if err != nil {
