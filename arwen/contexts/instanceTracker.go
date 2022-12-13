@@ -153,6 +153,13 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) b
 		return false
 	}
 
+	if newCode {
+		// A warm instance was found, but newCode == true, meaning this is an
+		// upgrade; the old warm instance must be cleaned
+		tracker.ForceCleanInstance()
+		return false
+	}
+
 	tracker.SetNewInstance(instance, Warm)
 	return true
 }

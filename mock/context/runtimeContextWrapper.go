@@ -663,3 +663,8 @@ func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 func (contextWrapper *RuntimeContextWrapper) NumRunningInstances() (int, int) {
 	return 0, 0
 }
+
+// EndExecution -
+func (contextWrapper *RuntimeContextWrapper) EndExecution() error {
+	return nil
+}

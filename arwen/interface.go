@@ -161,6 +161,7 @@ type RuntimeContext interface {
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
 	ReplaceInstanceBuilder(builder InstanceBuilder)
+	EndExecution() error
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context

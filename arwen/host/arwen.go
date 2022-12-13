@@ -337,6 +337,13 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		return nil, arwen.ErrVMIsClosing
 	}
 
+	defer func() {
+		err = host.Runtime().EndExecution()
+		if err != nil {
+			vmOutput = nil
+		}
+	}()
+
 	host.setGasTracerEnabledIfLogIsTrace()
 	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
@@ -377,6 +384,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 		host.logFromGasTracer("init")
 	}()
 
+	err = host.Runtime().EndExecution()
+	if err != nil {
+		return nil, err
+	}
+
 	select {
 	case <-done:
 		return
@@ -397,6 +409,13 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	if host.closingInstance {
 		return nil, arwen.ErrVMIsClosing
 	}
+
+	defer func() {
+		err = host.Runtime().EndExecution()
+		if err != nil {
+			vmOutput = nil
+		}
+	}()
 
 	host.setGasTracerEnabledIfLogIsTrace()
 	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)

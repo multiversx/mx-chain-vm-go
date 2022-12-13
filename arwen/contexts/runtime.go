@@ -1128,9 +1128,51 @@ func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
 
+func (context *runtimeContext) EndExecution() error {
+	context.iTracker.UnsetInstance()
+
+	err := context.CheckGlobalInstanceCount()
+	if err != nil {
+		return err
+	}
+
+	err = context.iTracker.CheckInstances()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NumRunningInstances returns the number of currently running instances (cold and warm)
 func (context *runtimeContext) NumRunningInstances() (int, int) {
 	return context.iTracker.NumRunningInstances()
+}
+
+// CheckGlobalInstanceCount returns an error if the GlobalInstanceCount does
+// not match the current size of the warm instance cache
+func (context *runtimeContext) CheckGlobalInstanceCount() error {
+	logRuntime.Trace("CheckGlobalInstanceCount starting")
+	if WarmInstancesEnabled == false {
+		logRuntime.Trace("CheckGlobalInstanceCount not checking")
+		return nil
+	}
+
+	warm, cold := context.iTracker.NumRunningInstances()
+	logRuntime.Trace("CheckGlobalInstanceCount",
+		"warm", warm,
+		"cold", cold,
+		"global", wasmer.GlobalInstanceCounter)
+	if warm != wasmer.GlobalInstanceCounter {
+		err := fmt.Errorf("instance count mismatch, warm = %d, global counter = %d",
+			warm,
+			wasmer.GlobalInstanceCounter,
+		)
+		logRuntime.Trace("CheckGlobalInstanceCount", "err", err)
+		return nil
+	}
+
+	return nil
 }
 
 // IsInterfaceNil returns true if there is no value under the interface
