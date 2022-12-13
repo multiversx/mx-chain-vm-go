@@ -298,9 +298,9 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
-	GetStorage(key []byte) ([]byte, bool)
-	GetStorageUnmetered(key []byte) ([]byte, bool)
+	GetStorageFromAddress(address []byte, key []byte) ([]byte, uint32, bool)
+	GetStorage(key []byte) ([]byte, uint32, bool)
+	GetStorageUnmetered(key []byte) ([]byte, uint32, bool)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	UseGasForStorageLoad(tracedFunctionName string, blockChainLoadCost uint64, usedCache bool)

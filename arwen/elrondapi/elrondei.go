@@ -950,6 +950,7 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	tokenID, err := managedType.GetBytes(tokenIdHandle)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -959,8 +960,13 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	esdtRoleKeyPrefix := []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
-	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
+	data, trieDepth, usedCache := storage.GetStorage(key)
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.StorageLoad, enableEpochsHandler)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	storage.UseGasForStorageLoad(storageLoadName, blockchainLoadCost, usedCache)
 
 	return getESDTRoles(data)
 }
@@ -1970,14 +1976,19 @@ func v1_4_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength i
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	data, usedCache := storage.GetStorageUnmetered(key)
-	storage.UseGasForStorageLoad(storageLoadLengthName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
+	data, trieDepth, usedCache := storage.GetStorageUnmetered(key)
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.StorageLoad, enableEpochsHandler)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+	storage.UseGasForStorageLoad(storageLoadLengthName, blockchainLoadCost, usedCache)
 
 	return int32(len(data))
 }
@@ -2008,7 +2019,10 @@ func StorageLoadFromAddressWithHost(host arwen.VMHost, addressOffset int32, keyO
 		return -1
 	}
 
-	data := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	data, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	err = runtime.MemStore(dataOffset, data)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2019,12 +2033,17 @@ func StorageLoadFromAddressWithHost(host arwen.VMHost, addressOffset int32, keyO
 }
 
 // StorageLoadFromAddressWithTypedArgs - storageLoadFromAddress with args already read from memory
-func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key []byte) []byte {
+func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
-	data, usedCache := storage.GetStorageFromAddress(address, key)
-	storage.UseGasForStorageLoad(storageLoadFromAddressName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
-	return data
+	data, trieDepth, usedCache := storage.GetStorageFromAddress(address, key)
+
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.StorageLoad, host.EnableEpochsHandler())
+	if err != nil {
+		return []byte{}, err
+	}
+	storage.UseGasForStorageLoad(storageLoadFromAddressName, blockchainLoadCost, usedCache)
+	return data, nil
 }
 
 //export v1_4_storageLoad
@@ -2047,7 +2066,10 @@ func StorageLoadWithHost(host arwen.VMHost, keyOffset int32, keyLength int32, da
 		return -1
 	}
 
-	data := StorageLoadWithWithTypedArgs(host, key)
+	data, err := StorageLoadWithWithTypedArgs(host, key)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	err = runtime.MemStore(dataOffset, data)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2058,12 +2080,18 @@ func StorageLoadWithHost(host arwen.VMHost, keyOffset int32, keyLength int32, da
 }
 
 // StorageLoadWithWithTypedArgs - storageLoad with args already read from memory
-func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) []byte {
+func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
-	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
-	return data
+	data, trieDepth, usedCache := storage.GetStorage(key)
+
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.StorageLoad, host.EnableEpochsHandler())
+	if err != nil {
+		return []byte{}, err
+	}
+
+	storage.UseGasForStorageLoad(storageLoadName, blockchainLoadCost, usedCache)
+	return data, nil
 }
 
 //export v1_4_setStorageLock
@@ -2111,6 +2139,7 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2118,8 +2147,14 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	}
 
 	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
-	data, usedCache := storage.GetStorage(timeLockKey)
-	storage.UseGasForStorageLoad(getStorageLockName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
+	data, trieDepth, usedCache := storage.GetStorage(timeLockKey)
+
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.StorageLoad, enableEpochsHandler)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	storage.UseGasForStorageLoad(getStorageLockName, blockchainLoadCost, usedCache)
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
@@ -2296,9 +2331,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 	runtime := arwen.GetRuntimeContext(context)
 	metering := arwen.GetMeteringContext(context)
 	storage := arwen.GetStorageContext(context)
-
-	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
-	metering.UseGasAndAddTracedGas(getCurrentESDTNFTNonceName, gasToUse)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	destination, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2311,7 +2344,14 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 	}
 
 	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
-	data, _ := storage.GetStorageFromAddress(destination, key)
+	data, trieDepth, _ := storage.GetStorageFromAddress(destination, key)
+
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.StorageLoad, enableEpochsHandler)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
+
+	metering.UseGasAndAddTracedGas(getCurrentESDTNFTNonceName, blockchainLoadCost)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
 	return int64(nonce)

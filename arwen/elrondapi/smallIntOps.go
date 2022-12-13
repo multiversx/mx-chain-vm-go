@@ -238,14 +238,21 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
+	data, trieDepth, usedCache := storage.GetStorage(key)
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, enableEpochsHandler)
+	if err != nil {
+		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
+	}
+
+	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, blockchainLoadCost, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
@@ -261,14 +268,21 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
+	data, trieDepth, usedCache := storage.GetStorage(key)
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, enableEpochsHandler)
+	if err != nil {
+		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		return 0
+	}
+
+	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, blockchainLoadCost, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {

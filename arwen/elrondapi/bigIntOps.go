@@ -399,14 +399,20 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
+	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	bytes, usedCache := storage.GetStorage(key)
-	storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
+	bytes, trieDepth, usedCache := storage.GetStorage(key)
+	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, enableEpochsHandler)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
+
+	storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, blockchainLoadCost, usedCache)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
 	value.SetBytes(bytes)

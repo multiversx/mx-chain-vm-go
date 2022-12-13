@@ -11,6 +11,7 @@ type GasCost struct {
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       WASMOpcodeCost
+	DynamicStorageLoad   DynamicStorageLoad
 }
 
 type BaseOperationCost struct {
@@ -66,6 +67,15 @@ type ElrondAPICost struct {
 	GetReturnDataSize    uint64
 	CleanReturnData      uint64
 	DeleteFromReturnData uint64
+}
+
+type DynamicStorageLoad struct {
+	A       uint64
+	SignOfA uint64
+	B       uint64
+	SignOfB uint64
+	C       uint64
+	SignOfC uint64
 }
 
 type EthAPICost struct {

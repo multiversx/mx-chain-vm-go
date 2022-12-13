@@ -90,7 +90,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, uint64(len(valueA)), accountA.BytesAddedToStorage)
 	require.Equal(t, uint64(0), accountA.BytesDeletedFromStorage)
-	foundValueA, _ := storageContext.GetStorage(keyA)
+	foundValueA, _, _ := storageContext.GetStorage(keyA)
 	require.Equal(t, valueA, foundValueA)
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 0)
@@ -103,11 +103,11 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	require.Equal(t, uint64(0), accountB.BytesDeletedFromStorage)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	foundValueB, _ := storageContext.GetStorage(keyB)
+	foundValueB, _, _ := storageContext.GetStorage(keyB)
 	require.Equal(t, valueB, foundValueB)
 	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
 	require.Len(t, storageContext.GetStorageUpdates(addressB), 1)
-	foundValueA, _ = storageContext.GetStorage(keyA)
+	foundValueA, _, _ = storageContext.GetStorage(keyA)
 	require.Equal(t, []byte(nil), foundValueA)
 }
 
@@ -183,7 +183,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _ := storageContext.GetStorage(key)
+	foundValue, _, _ := storageContext.GetStorage(key)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -195,7 +195,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -206,7 +206,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -218,7 +218,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -230,7 +230,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -242,7 +242,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.StorageDeleted, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, []byte{}, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -251,7 +251,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Equal(t, err, arwen.ErrCannotWriteOnReadOnly)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, []byte{}, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 1)
 
@@ -261,7 +261,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageContext.GetStorage(key)
 	require.Equal(t, value, foundValue)
 	require.Len(t, storageContext.GetStorageUpdates(address), 2)
 
@@ -319,7 +319,7 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	value := []byte("value")
 	storageStatus, err := storageContext.SetStorage(key, value)
 	gasLeft := gasProvided - storeCost*len(value)
-	storedValue, _ := storageContext.GetStorage(key)
+	storedValue, _, _ := storageContext.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
@@ -329,7 +329,7 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	value2 := []byte("value2")
 	mockMetering.GasLeftMock = uint64(gasProvided)
 	storageStatus, err = storageContext.SetStorage(key, value2)
-	storedValue, _ = storageContext.GetStorage(key)
+	storedValue, _, _ = storageContext.GetStorage(key)
 	gasLeft = gasProvided - persistCost*len(value) - storeCost*(len(value2)-len(value))
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
@@ -341,7 +341,7 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	storageStatus, err = storageContext.SetStorage(key, value)
 	gasLeft = gasProvided - persistCost*len(value)
 	gasFreed := releaseCost * (len(value2) - len(value))
-	storedValue, _ = storageContext.GetStorage(key)
+	storedValue, _, _ = storageContext.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
@@ -445,13 +445,13 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	storageContext.SetAddress(scAddress)
 
 	key := []byte("key")
-	data, _ := storageContext.GetStorageFromAddress(scAddress, key)
+	data, _, _ := storageContext.GetStorageFromAddress(scAddress, key)
 	require.Equal(t, data, internalData)
 
-	data, _ = storageContext.GetStorageFromAddress(readable, key)
+	data, _, _ = storageContext.GetStorageFromAddress(readable, key)
 	require.Equal(t, data, internalData)
 
-	data, _ = storageContext.GetStorageFromAddress(nonreadable, key)
+	data, _, _ = storageContext.GetStorageFromAddress(nonreadable, key)
 	require.Nil(t, data)
 }
 

@@ -93,13 +93,13 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 // GetStorage returns the storage data mapped to the given key.
-func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
-	value, usedCache := context.GetStorageUnmetered(key)
+func (context *storageContext) GetStorage(key []byte) ([]byte, uint32, bool) {
+	value, trieDepth, usedCache := context.GetStorageUnmetered(key)
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 	logStorage.Trace("get", "key", key, "value", value)
 
-	return value, usedCache
+	return value, trieDepth, usedCache
 }
 
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
@@ -128,18 +128,18 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 }
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
-func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, uint32, bool) {
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false
+			return nil, 0, false
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false
+			return nil, 0, false
 		}
 	}
 
@@ -148,22 +148,23 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 	// contracts themselves cannot change protected values. Values stored under
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
-	value, usedCache := context.getStorageFromAddressUnmetered(address, key)
+	value, trieDepth, usedCache := context.getStorageFromAddressUnmetered(address, key)
 
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 
-	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
-	return value, usedCache
+	logStorage.Trace("get from address", "address", address, "key", key, "value", value, "trieDepth", trieDepth)
+	return value, trieDepth, usedCache
 }
 
-func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, uint32, bool) {
 	var value []byte
+	var trieDepth uint32
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if context.isElrondReservedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
-		value, _, _ = context.blockChainHook.GetStorageData(address, key)
-		return value, false
+		value, trieDepth, _ = context.blockChainHook.GetStorageData(address, key)
+		return value, trieDepth, false
 	}
 
 	storageUpdates := context.GetStorageUpdates(address)
@@ -171,7 +172,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		value = storageUpdate.Data
 	} else {
-		value, _, _ = context.blockChainHook.GetStorageData(address, key)
+		value, trieDepth, _ = context.blockChainHook.GetStorageData(address, key)
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   value,
@@ -179,11 +180,11 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 		usedCache = false
 	}
 
-	return value, usedCache
+	return value, trieDepth, usedCache
 }
 
 // GetStorageUnmetered returns the data under the given key.
-func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, uint32, bool) {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
@@ -354,7 +355,7 @@ func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.S
 	strKey := string(key)
 	if update, ok := storageUpdates[strKey]; !ok {
 		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
-		oldValue, _ = context.GetStorageUnmetered(key)
+		oldValue, _, _ = context.GetStorageUnmetered(key)
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,
