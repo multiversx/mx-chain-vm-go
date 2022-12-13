@@ -185,6 +185,8 @@ func NewInstanceWithOptions(
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
+
+	logWasmer.Trace("new instance created", "id", instance.Id())
 	return instance, err
 }
 
