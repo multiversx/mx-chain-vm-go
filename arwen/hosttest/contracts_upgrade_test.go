@@ -30,11 +30,12 @@ func TestUpgrade_WithWorldMock(t *testing.T) {
 	codeInitSimple = testcommon.GetTestSCCode("init-simple", "../../")
 	codeInitSimpleMarkOffset = bytes.Index(codeInitSimple, []byte("finish0000"))
 
+	logger.SetLogLevel("*:NONE,arwen/test:TRACE")
 	setupStructs()
 
 	usc := newUpgradeScenario(t)
 
-	nUpgradeIterations := 4000
+	nUpgradeIterations := 10000
 	nPairs := 10
 	contractPairs := make([]*upgradeSCPair, nPairs)
 	for i := 0; i < nPairs; i++ {
@@ -45,11 +46,12 @@ func TestUpgrade_WithWorldMock(t *testing.T) {
 
 	validateTest(t, usc, contractPairs)
 
-	logger.SetLogLevel("*:NONE,arwen/test:TRACE")
 	for u := 0; u < nUpgradeIterations; u++ {
-		logUpgTest.Trace("beginning upgrade iteration", "u", u)
+		logUpgTest.Trace("beginning upgrade iteration",
+			"u", fmt.Sprintf("%0d4", u),
+			"pairs", nPairs)
 		for _, pair := range contractPairs {
-			pair.upgradeChild(usc, pair.index+u)
+			pair.upgradeChild(usc, pair.index)
 		}
 	}
 }
@@ -124,7 +126,7 @@ func (pair *upgradeSCPair) upgradeChild(usc *upgradeScenario, index int) {
 		"upgradeChildContract",
 		[][]byte{
 			pair.childAddress,
-			makeModifiedBytecodeInitSimple(pair.index),
+			makeModifiedBytecodeInitSimple(index),
 		},
 	)
 }

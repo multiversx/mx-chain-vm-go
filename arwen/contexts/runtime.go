@@ -22,7 +22,8 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 100
 
-const WarmInstancesEnabled = false
+// WarmInstancesEnabled enables or disables warm instances
+const WarmInstancesEnabled = true
 
 type runtimeContext struct {
 	host               arwen.VMHost
@@ -243,7 +244,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
-	ok := context.iTracker.UseWarmInstance(codeHash)
+	ok := context.iTracker.UseWarmInstance(codeHash, newCode)
 	if !ok {
 		return false
 	}
