@@ -362,6 +362,11 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
+			} else {
+				err = host.Runtime().EndExecution()
+				if err != nil {
+					vmOutput = nil
+				}
 			}
 
 			close(done)
@@ -378,16 +383,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
 
-		numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
-		log.Trace("RunSmartContractCreate end instances", "warm", numWarmInstances, "cold", numColdInstances)
-
 		host.logFromGasTracer("init")
 	}()
-
-	err = host.Runtime().EndExecution()
-	if err != nil {
-		return nil, err
-	}
 
 	select {
 	case <-done:
@@ -410,13 +407,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		return nil, arwen.ErrVMIsClosing
 	}
 
-	defer func() {
-		err = host.Runtime().EndExecution()
-		if err != nil {
-			vmOutput = nil
-		}
-	}()
-
 	host.setGasTracerEnabledIfLogIsTrace()
 	ctx, cancel := context.WithTimeout(context.Background(), host.executionTimeout)
 	defer cancel()
@@ -434,6 +424,11 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
+			} else {
+				err = host.Runtime().EndExecution()
+				if err != nil {
+					vmOutput = nil
+				}
 			}
 
 			close(done)
@@ -456,9 +451,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
-
-		numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
-		log.Trace("RunSmartContractCall end instances", "warm", numWarmInstances, "cold", numColdInstances)
 
 		host.logFromGasTracer(input.Function)
 	}()

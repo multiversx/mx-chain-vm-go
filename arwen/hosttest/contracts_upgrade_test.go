@@ -8,6 +8,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/contexts"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
@@ -24,6 +25,9 @@ var defaultDeployInput *vmcommon.ContractCreateInput
 var defaultCallInput *vmcommon.ContractCallInput
 
 func TestUpgrade_WithWorldMock(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	codeUpgrader = testcommon.GetTestSCCode("upgrader", "../../")
 	codeUpgraderMarkOffset = bytes.Index(codeUpgrader, []byte("finish0000"))
 

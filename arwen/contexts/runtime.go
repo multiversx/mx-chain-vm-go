@@ -25,6 +25,9 @@ const warmCacheSize = 100
 // WarmInstancesEnabled enables or disables warm instances
 const WarmInstancesEnabled = true
 
+// WarmInstanceChecks enables end-of-execution checks for warm instances
+const WarmInstanceChecks = true
+
 type runtimeContext struct {
 	host               arwen.VMHost
 	vmInput            *vmcommon.ContractCallInput
@@ -202,7 +205,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode || len(context.iTracker.CodeHash()) == 0 {
 		codeHash, err := context.host.Crypto().Sha256(contract)
 		if err != nil {
-			context.CleanInstance()
+			context.iTracker.ForceCleanInstance(true)
 			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -215,7 +218,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
-			context.CleanInstance()
+			context.iTracker.ForceCleanInstance(true)
 			logRuntime.Trace("instance creation", "code", "bytecode", "error", err)
 			return err
 		}
@@ -874,7 +877,7 @@ func (context *runtimeContext) GetInstanceExports() wasmer.ExportsMap {
 
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
-	context.iTracker.ForceCleanInstance()
+	context.iTracker.ForceCleanInstance(false)
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
@@ -1128,15 +1131,25 @@ func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
 
+// EndExecution validates the current state of the instances used for
+// execution
 func (context *runtimeContext) EndExecution() error {
 	context.iTracker.UnsetInstance()
 
-	err := context.CheckGlobalInstanceCount()
+	if !WarmInstancesEnabled {
+		return nil
+	}
+
+	if !WarmInstanceChecks {
+		return nil
+	}
+
+	err := context.iTracker.CheckInstances()
 	if err != nil {
 		return err
 	}
 
-	err = context.iTracker.CheckInstances()
+	err = context.checkNumRunningInstances()
 	if err != nil {
 		return err
 	}
@@ -1144,32 +1157,10 @@ func (context *runtimeContext) EndExecution() error {
 	return nil
 }
 
-// NumRunningInstances returns the number of currently running instances (cold and warm)
-func (context *runtimeContext) NumRunningInstances() (int, int) {
-	return context.iTracker.NumRunningInstances()
-}
-
-// CheckGlobalInstanceCount returns an error if the GlobalInstanceCount does
-// not match the current size of the warm instance cache
-func (context *runtimeContext) CheckGlobalInstanceCount() error {
-	logRuntime.Trace("CheckGlobalInstanceCount starting")
-	if WarmInstancesEnabled == false {
-		logRuntime.Trace("CheckGlobalInstanceCount not checking")
-		return nil
-	}
-
-	warm, cold := context.iTracker.NumRunningInstances()
-	logRuntime.Trace("CheckGlobalInstanceCount",
-		"warm", warm,
-		"cold", cold,
-		"global", wasmer.GlobalInstanceCounter)
-	if warm != wasmer.GlobalInstanceCounter {
-		err := fmt.Errorf("instance count mismatch, warm = %d, global counter = %d",
-			warm,
-			wasmer.GlobalInstanceCounter,
-		)
-		logRuntime.Trace("CheckGlobalInstanceCount", "err", err)
-		return nil
+func (context *runtimeContext) checkNumRunningInstances() error {
+	_, cold := context.iTracker.NumRunningInstances()
+	if cold > 0 {
+		return fmt.Errorf("potentially leaked cold instances")
 	}
 
 	return nil

@@ -79,34 +79,32 @@ func (tracker *instanceTracker) PopSetActiveState() {
 		return
 	}
 
-	prevInstance := tracker.instanceStack[instanceStackLen-1]
+	activeInstance := tracker.instance
+	activeCodeHash := tracker.codeHash
+	stackedPrevInstance := tracker.instanceStack[instanceStackLen-1]
 
-	if prevInstance == tracker.instance {
-		// The current Wasmer instance was previously pushed on the instance stack,
-		// but a new Wasmer instance has not been created in the meantime. This
-		// means that the instance at the top of the stack is the same as the
-		// current instance, so it cannot be cleaned, because the execution will
-		// resume on it. Popping will therefore only remove the top of the stack,
-		// without cleaning anything.
-		return
+	onStack := tracker.IsCodeHashOnTheStack(activeCodeHash)
+	activeInstanceIsTopOfStack := stackedPrevInstance == activeInstance
+	cold := !WarmInstancesEnabled
+
+	if !activeInstanceIsTopOfStack && (onStack || cold) {
+		tracker.cleanPoppedInstance(activeInstance, activeCodeHash)
+		tracker.ReplaceInstance(stackedPrevInstance)
 	}
 
-	if !check.IfNil(tracker.instance) {
-		onStack := tracker.IsCodeHashOnTheStack(tracker.codeHash)
-		cold := !WarmInstancesEnabled
-		if onStack || cold {
-			if tracker.instance.Clean() {
-				tracker.updateNumRunningInstances(-1)
-			}
-		}
-
-		logTracker.Trace("pop instance", "id", tracker.instance.ID(), "codeHash", tracker.codeHash)
-	}
-
-	tracker.ReplaceInstance(prevInstance)
 	tracker.instanceStack = tracker.instanceStack[:instanceStackLen-1]
 	tracker.codeHash = tracker.codeHashStack[instanceStackLen-1]
 	tracker.codeHashStack = tracker.codeHashStack[:instanceStackLen-1]
+}
+
+func (tracker *instanceTracker) cleanPoppedInstance(instance wasmer.InstanceHandler, codeHash []byte) {
+	if !check.IfNil(instance) {
+		if instance.Clean() {
+			tracker.updateNumRunningInstances(-1)
+		}
+
+		logTracker.Trace("clean popped instance", "id", instance.ID(), "codeHash", codeHash)
+	}
 }
 
 func (tracker *instanceTracker) PopDiscard() {
@@ -156,7 +154,7 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) b
 	if newCode {
 		// A warm instance was found, but newCode == true, meaning this is an
 		// upgrade; the old warm instance must be cleaned
-		tracker.ForceCleanInstance()
+		tracker.ForceCleanInstance(false)
 		return false
 	}
 
@@ -164,9 +162,23 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) b
 	return true
 }
 
-func (tracker *instanceTracker) ForceCleanInstance() {
+func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool) {
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("cannot clean, instance already nil")
+		return
+	}
+
+	defer func() {
+		tracker.UnsetInstance()
+		numWarmInstances, numColdInstances := tracker.NumRunningInstances()
+		logTracker.Trace("instance cleaned; num instances", "warm", numWarmInstances, "cold", numColdInstances)
+	}()
+
+	if bypassWarmAndStackChecks {
+		if tracker.instance.Clean() {
+			tracker.updateNumRunningInstances(-1)
+		}
+
 		return
 	}
 
@@ -179,11 +191,6 @@ func (tracker *instanceTracker) ForceCleanInstance() {
 	} else {
 		tracker.warmInstanceCache.Remove(tracker.codeHash)
 	}
-	tracker.UnsetInstance()
-
-	numWarmInstances, numColdInstances := tracker.NumRunningInstances()
-	logTracker.Trace("instance cleaned; num instances", "warm", numWarmInstances, "cold", numColdInstances)
-
 }
 
 func (tracker *instanceTracker) SaveAsWarmInstance() {

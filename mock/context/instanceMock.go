@@ -22,6 +22,7 @@ type InstanceMock struct {
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
+	AlreadyClean    bool
 }
 
 // NewInstanceMock creates a new InstanceMock
@@ -109,12 +110,13 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 
 // Clean mocked method
 func (instance *InstanceMock) Clean() bool {
+	instance.AlreadyClean = true
 	return true
 }
 
 // AlreadyCleaned mocked method
 func (instance *InstanceMock) AlreadyCleaned() bool {
-	return false
+	return instance.AlreadyClean
 }
 
 // Reset mocked method

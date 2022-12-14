@@ -13,7 +13,6 @@ import (
 const OPCODE_COUNT = 448
 
 var logWasmer = logger.GetOrCreate("arwen/wasmer")
-var GlobalInstanceCounter = 0
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -186,7 +185,6 @@ func NewInstanceWithOptions(
 		c_instance_context := cWasmerInstanceContextGet(c_instance)
 		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
 	}
-	GlobalInstanceCounter++
 
 	logWasmer.Trace("new instance created", "id", instance.ID())
 	return instance, err
@@ -286,7 +284,6 @@ func (instance *Instance) Clean() bool {
 		instance.AlreadyClean = true
 		logWasmer.Trace("cleaned instance", "id", instance.ID())
 
-		GlobalInstanceCounter--
 		return true
 	}
 
