@@ -193,8 +193,8 @@ func GetStorageContext(vmHostPtr unsafe.Pointer) StorageContext {
 
 // WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFault(err error, vmHostPtr unsafe.Pointer, failExecution bool) bool {
-	runtimeInstance := GetVMHost(vmHostPtr)
-	return WithFaultAndHost(runtimeInstance, err, failExecution)
+	runtime := GetVMHost(vmHostPtr)
+	return WithFaultAndHost(runtime, err, failExecution)
 }
 
 // WithFaultAndHost fails the execution with the provided error
@@ -204,10 +204,10 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	}
 
 	if failExecution {
-		runtimeInstance := host.Runtime()
+		runtime := host.Runtime()
 		metering := host.Metering()
 		metering.UseGas(metering.GasLeft())
-		runtimeInstance.FailExecution(err)
+		runtime.FailExecution(err)
 	}
 
 	return true
