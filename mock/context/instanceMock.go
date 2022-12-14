@@ -34,10 +34,12 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
+		AlreadyClean:    false,
 	}
 }
 
-func (instance *InstanceMock) Id() string {
+// ID -
+func (instance *InstanceMock) ID() string {
 	return fmt.Sprintf("%p", instance)
 }
 

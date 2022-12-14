@@ -173,8 +173,8 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 
 	context.saveWarmInstance()
 	logRuntime.Trace("start instance", "from", "cached compilation",
-		"id", context.iTracker.Instance().Id(),
-		"codeHash", context.iTracker.Instance(),
+		"id", context.iTracker.Instance().ID(),
+		"codeHash", context.iTracker.codeHash,
 	)
 	return true
 }
@@ -223,7 +223,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 
 	logRuntime.Trace("start instance",
 		"from", "bytecode",
-		"id", context.iTracker.Instance().Id(),
+		"id", context.iTracker.Instance().ID(),
 		"codeHash", context.iTracker.CodeHash(),
 	)
 	context.saveCompiledCode()
@@ -256,7 +256,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	hostReference := uintptr(unsafe.Pointer(&context.host))
 	context.iTracker.Instance().SetContextData(hostReference)
 	context.verifyCode = false
-	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance().Id())
+	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance().ID())
 	return true
 }
 
