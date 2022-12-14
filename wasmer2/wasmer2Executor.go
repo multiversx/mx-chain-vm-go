@@ -1,7 +1,6 @@
 package wasmer2
 
 import (
-	"errors"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -98,11 +97,6 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	}
 
 	instance, err := newInstance(c_instance)
-	// if instance != nil && instance.Memory != nil {
-	// 	c_instance_context := cWasmerInstanceContextGet(c_instance)
-	// 	instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
-	// }
-
 	return instance, err
 }
 
@@ -112,8 +106,29 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	// return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
-	return nil, errors.New("NewInstanceFromCompiledCodeWithOptions not implemented")
+	var c_instance *cWasmerInstanceT
+
+	if len(compiledCode) == 0 {
+		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
+		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+	}
+
+	cOptions := unsafe.Pointer(&options)
+	var compileResult = cWasmerInstanceFromCache(
+		wasmerExecutor.cgoExecutor,
+		&c_instance,
+		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
+		cUint32T(len(compiledCode)),
+		(*cWasmerCompilationOptions)(cOptions),
+	)
+
+	if compileResult != cWasmerOk {
+		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
+		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+	}
+
+	instance, err := newInstance(c_instance)
+	return instance, err
 }
 
 // InitVMHooks inits the VM hooks

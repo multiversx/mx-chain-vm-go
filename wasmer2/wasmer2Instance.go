@@ -124,27 +124,24 @@ func (instance *Wasmer2Instance) GetBreakpointValue() uint64 {
 }
 
 func (instance *Wasmer2Instance) Cache() ([]byte, error) {
-	// return []byte{}, errors.New("instance Cache not implemented")
-	// var cacheBytes *cUchar
-	// var cacheLen cUint32T
+	var cacheBytes *cUchar
+	var cacheLen cUint32T
 
-	// var cacheResult = cWasmerInstanceCache(
-	// 	instance.instance,
-	// 	&cacheBytes,
-	// 	&cacheLen,
-	// )
+	var cacheResult = cWasmerInstanceCache(
+		instance.cgoInstance,
+		&cacheBytes,
+		&cacheLen,
+	)
 
-	// if cacheResult != cWasmerOk {
-	// 	return nil, ErrCachingFailed
-	// }
+	if cacheResult != cWasmerOk {
+		return nil, ErrCachingFailed
+	}
 
-	// goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
+	goBytes := C.GoBytes(unsafe.Pointer(cacheBytes), C.int(cacheLen))
 
-	// C.free(unsafe.Pointer(cacheBytes))
-	// cacheBytes = nil
-	// return goBytes, nil
-
-	return nil, ErrCachingFailed
+	C.free(unsafe.Pointer(cacheBytes))
+	cacheBytes = nil
+	return goBytes, nil
 }
 
 // IsFunctionImported returns true if the instance imports the specified function
@@ -238,9 +235,8 @@ func (instance *Wasmer2Instance) Id() string {
 
 // Reset resets the instance memories and globals
 func (instance *Wasmer2Instance) Reset() bool {
-	// result := cWasmerInstanceReset(instance.instance)
-	// return result == cWasmerOk
-	return true
+	result := cWasmerInstanceReset(instance.cgoInstance)
+	return result == cWasmerOk
 }
 
 // IsInterfaceNil returns true if underlying object is nil

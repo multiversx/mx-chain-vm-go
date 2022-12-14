@@ -18,7 +18,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/ElrondNetwork/wasm-vm/wasmer2"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -33,7 +33,7 @@ var _ arwen.VMHost = (*vmHost)(nil)
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
-var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer.ExecutorFactory()
+var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer2.ExecutorFactory()
 
 // vmHost implements HostContext interface.
 type vmHost struct {
