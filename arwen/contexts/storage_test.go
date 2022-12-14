@@ -435,7 +435,7 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Parallel()
 
-	t.Run("blockchain hook errors but flag is inactive", func(t *testing.T) {
+	t.Run("blockchain hook errors", func(t *testing.T) {
 		t.Parallel()
 
 		scAddress := []byte("account")
@@ -451,67 +451,6 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 
 		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField: true,
-			IsMaxBlockchainHookCountersFlagEnabledField:  false,
-		}
-
-		host := &contextmock.VMHostMock{
-			OutputContext:            mockOutput,
-			MeteringContext:          mockMetering,
-			RuntimeContext:           mockRuntime,
-			EnableEpochsHandlerField: enableEpochsHandler,
-		}
-
-		readable := []byte("readable")
-		nonreadable := []byte("nonreadable")
-
-		bcHook := &contextmock.BlockchainHookStub{
-			GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
-				if bytes.Equal(readable, address) {
-					return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
-				}
-				if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-					return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
-				}
-				return nil, nil
-			},
-			GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
-				return nil, 0, errors.New("too many requests")
-			},
-		}
-
-		storageContextInstance, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
-		storageContextInstance.SetAddress(scAddress)
-
-		key := []byte("key")
-		data, _, err := storageContextInstance.GetStorageFromAddress(scAddress, key)
-		require.Nil(t, data)
-		assert.Nil(t, err)
-
-		data, _, err = storageContextInstance.GetStorageFromAddress(readable, key)
-		require.Nil(t, data)
-		assert.Nil(t, err)
-
-		data, _, err = storageContextInstance.GetStorageFromAddress(nonreadable, key)
-		require.Nil(t, data)
-		assert.Nil(t, err)
-	})
-	t.Run("blockchain hook errors and flag is active", func(t *testing.T) {
-		t.Parallel()
-
-		scAddress := []byte("account")
-		mockOutput := &contextmock.OutputContextMock{}
-		account := mockOutput.NewVMOutputAccount(scAddress)
-		mockOutput.OutputAccountMock = account
-		mockOutput.OutputAccountIsNew = false
-
-		mockRuntime := &contextmock.RuntimeContextMock{}
-		mockMetering := &contextmock.MeteringContextMock{}
-		mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-		mockMetering.BlockGasLimitMock = uint64(15000)
-
-		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
-			IsStorageAPICostOptimizationFlagEnabledField: true,
-			IsMaxBlockchainHookCountersFlagEnabledField:  true,
 		}
 
 		host := &contextmock.VMHostMock{

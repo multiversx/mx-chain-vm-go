@@ -196,16 +196,8 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 
 func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, error) {
 	value, _, err := context.blockChainHook.GetStorageData(address, key)
-	if err != nil {
-		enableEpochsHandler := context.host.EnableEpochsHandler()
-		if enableEpochsHandler.IsMaxBlockchainHookCountersFlagEnabled() {
-			return nil, err
-		}
 
-		return value, nil // backwards compatibility
-	}
-
-	return value, nil
+	return value, err
 }
 
 // GetStorageUnmetered returns the data under the given key.
