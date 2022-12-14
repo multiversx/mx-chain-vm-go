@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -68,7 +69,6 @@ func (pfe *fuzzDelegationExecutor) log(info string, args ...interface{}) {
 	fmt.Printf(info+"\n", args...)
 }
 
-//nolint:all
 type fuzzDelegationExecutorInitArgs struct {
 	serviceFee                  int
 	ownerMinStake               int
@@ -104,14 +104,12 @@ func (pfe *fuzzDelegationExecutor) getContractBalance() *big.Int {
 	return acct.Balance
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) getDelegatorBalance(delegIndex int) *big.Int {
 	delegAddr := pfe.delegatorAddress(delegIndex)
 	acct := pfe.world.AcctMap.GetAccount(delegAddr)
 	return acct.Balance
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) getAllDelegatorsBalance() *big.Int {
 	totalDelegatorBalance := big.NewInt(0)
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
@@ -121,13 +119,11 @@ func (pfe *fuzzDelegationExecutor) getAllDelegatorsBalance() *big.Int {
 	return totalDelegatorBalance
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) getAuctionBalance() *big.Int {
 	acct := pfe.world.AcctMap.GetAccount(pfe.auctionMockAddress)
 	return acct.Balance
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) getWithdrawTargetBalance() *big.Int {
 	acct := pfe.world.AcctMap.GetAccount(pfe.withdrawTargetAddress)
 	return acct.Balance
@@ -155,7 +151,6 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
 	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
@@ -195,18 +190,15 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 	return result, nil
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) simpleQuery(funcName string) (*big.Int, error) {
 	return pfe.querySingleResult(funcName, "")
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegIndex int) (*big.Int, error) {
 	delegAddr := fmt.Sprintf(`"''%s"`, string(pfe.delegatorAddress(delegIndex)))
 	return pfe.querySingleResult(funcName, delegAddr)
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 	curentBlockNonce := uint64(0)
 	if pfe.world.CurrentBlockInfo != nil {
@@ -231,7 +223,6 @@ func (pfe *fuzzDelegationExecutor) increaseBlockNonce(nonceDelta int) error {
 	return nil
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) dumpState() error {
 	return pfe.executeStep(`
 	{

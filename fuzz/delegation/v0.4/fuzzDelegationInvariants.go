@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -5,7 +6,6 @@ import (
 	"math/big"
 )
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) checkNoUnexpectedBalance() error {
 	err := pfe.computeAllRewards()
 	if err != nil {
@@ -27,7 +27,6 @@ func (pfe *fuzzDelegationExecutor) checkNoUnexpectedBalance() error {
 }
 
 // Currently outdated, not used.
-//nolint:all
 func (pfe *fuzzDelegationExecutor) checkContractBalanceVsState() error {
 	err := pfe.computeAllRewards()
 	if err != nil {

@@ -38,8 +38,8 @@ func TestFacade_RunContract_Counter(t *testing.T) {
 	counterValue := context.queryContract(contractAddressHex, alice.hex, "get").getFirstResultAsInt64()
 	require.Equal(t, int64(2), counterValue)
 
-	worldInstance := context.loadWorld()
-	state, err := worldInstance.blockchainHook.GetAllState(contractAddress)
+	testWorld := context.loadWorld()
+	state, err := testWorld.blockchainHook.GetAllState(contractAddress)
 	require.Nil(t, err)
 	require.NotNil(t, state)
 	require.Equal(t, []byte{2}, state["COUNTER"])

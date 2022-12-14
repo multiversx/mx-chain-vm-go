@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
-	"runtime"
+	goRuntime "runtime"
 	"strings"
 	"unsafe"
 
@@ -215,9 +215,9 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 
 // WithFaultIfFailAlwaysActive returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecution bool) {
-	runtimeInstance := GetVMHost(vmHostPtr)
-	if runtimeInstance.FixFailExecutionEnabled() {
-		_ = WithFaultAndHost(runtimeInstance, err, failExecution)
+	runtime := GetVMHost(vmHostPtr)
+	if runtime.FixFailExecutionEnabled() {
+		_ = WithFaultAndHost(runtime, err, failExecution)
 	}
 }
 
@@ -230,8 +230,8 @@ func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bo
 
 func logVMHookCall() {
 	skipNumStackLevels := 3
-	pc, _, _, _ := runtime.Caller(skipNumStackLevels)
-	qualifiedFunctionName := runtime.FuncForPC(pc).Name()
+	pc, _, _, _ := goRuntime.Caller(skipNumStackLevels)
+	qualifiedFunctionName := goRuntime.FuncForPC(pc).Name()
 	functionNameIndex := strings.LastIndex(qualifiedFunctionName, "/")
 	if functionNameIndex > 0 {
 		functionName := qualifiedFunctionName[functionNameIndex+1:]

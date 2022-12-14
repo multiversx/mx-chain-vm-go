@@ -16,10 +16,10 @@ func NewSeedRandReader(seed []byte) *seedRandReader {
 	seedNumber := binary.BigEndian.Uint64(seedHash[:])
 
 	source := rand.NewSource(int64(seedNumber))
-	randInstance := rand.New(source)
+	randomizer := rand.New(source)
 
 	return &seedRandReader{
-		rand: randInstance,
+		rand: randomizer,
 	}
 }
 

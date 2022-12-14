@@ -155,11 +155,11 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	}
 
 	seed := rand.NewSource(time.Now().UnixNano())
-	randInstance := rand.New(seed)
+	randomizer := rand.New(seed)
 
 	for len(availableContracts) != 0 {
-		contract := availableContracts[randInstance.Intn(len(availableContracts))]
-		transfers := randInstance.Intn(remainingTransfers[contract]) + 1
+		contract := availableContracts[randomizer.Intn(len(availableContracts))]
+		transfers := randomizer.Intn(remainingTransfers[contract]) + 1
 
 		for i := 0; i < transfers; i++ {
 			transferInput := createTransferInput(contract)

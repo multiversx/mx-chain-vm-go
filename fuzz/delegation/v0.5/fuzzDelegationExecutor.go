@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -29,7 +30,6 @@ const (
 	UserUnbondable      = "getUnBondable"
 )
 
-//nolint:all
 type fuzzDelegationExecutorInitArgs struct {
 	serviceFee                  int
 	ownerMinStake               int
@@ -313,7 +313,6 @@ func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args strin
 	return result, nil
 }
 
-//nolint:all
 func (pfe *fuzzDelegationExecutor) delegatorQuery(funcName string, delegatorIndex int) (*big.Int, error) {
 	delegatorAddr := fmt.Sprintf(`"str:%s"`, pfe.delegatorAddress(delegatorIndex))
 	return pfe.querySingleResult(funcName, delegatorAddr)
