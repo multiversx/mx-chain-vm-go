@@ -447,7 +447,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
+	path := "./../../test/contracts/answer/output/answer.wasm"
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
