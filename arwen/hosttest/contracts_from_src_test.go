@@ -79,10 +79,10 @@ func TestDeployFromSource_Success(t *testing.T) {
 	deployedCode := testConfig.deployedContractAddress /* this is the actual mock code of the deployed contract */
 	deployedCodeLen := uint64(len(deployedCode))
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+		verify.Ok()
+
 		newContractAddress := verify.VmOutput.ReturnData[0]
-		verify.
-			Ok().
-			Code(newContractAddress, deployedCode).
+		verify.Code(newContractAddress, deployedCode).
 			GasRemaining(testConfig.gasProvided -
 				testConfig.gasUsedByInit -
 				deployedCodeLen*testConfig.compilePerByteCost -

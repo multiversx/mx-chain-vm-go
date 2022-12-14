@@ -1,3 +1,4 @@
+// Package testcommon contains utility code for writing tests
 package testcommon
 
 import (

@@ -513,7 +513,7 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	gasRemainingBeforeChange := vmOutput.GasRemaining
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
 
-	gasSchedule["ElrondAPICost"]["Finish"] += 1
+	gasSchedule["ElrondAPICost"]["Finish"]++
 	host.GasScheduleChange(gasSchedule)
 
 	vmOutput, err = host.RunSmartContractCall(input)
@@ -932,8 +932,8 @@ func buildRandomizer(host arwen.VMHost) io.Reader {
 
 func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	// mByteSetByteSlice not yet enabled
-	runTestMBufferSetByteSlice_Deploy(t, false, vmcommon.ContractInvalid)
-	runTestMBufferSetByteSlice_Deploy(t, true, vmcommon.Ok)
+	runTestMBufferSetByteSliceDeploy(t, false, vmcommon.ContractInvalid)
+	runTestMBufferSetByteSliceDeploy(t, true, vmcommon.Ok)
 
 	// Correct copying from "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" over "abcdefghijklmnopqrstuvwxyz"
 	runTestMBufferSetByteSlice(t, true, 0, 4, vmcommon.Ok, []byte("ABCDefghijklmnopqrstuvwxyz"))
@@ -950,7 +950,7 @@ func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	runTestMBufferSetByteSlice(t, true, 0, 27, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
 }
 
-func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
+func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
 	input := test.CreateTestContractCreateInputBuilder().
 		WithCallValue(1000).
 		WithGasProvided(100_000).

@@ -14,6 +14,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/contexts"
 	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos/gasSchedules"
@@ -47,6 +48,9 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 }
 
 func Test_WarmInstancesMemoryUsage(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
@@ -55,6 +59,9 @@ func Test_WarmInstancesMemoryUsage(t *testing.T) {
 }
 
 func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}

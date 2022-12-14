@@ -43,7 +43,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	require.Equal(t, arwen.ErrExecutionPanicked, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
@@ -73,7 +73,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	require.Equal(t, arwen.ErrExecutionPanicked, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
@@ -100,7 +100,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionFailedWithTimeout)
+	require.Equal(t, arwen.ErrExecutionFailedWithTimeout, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
@@ -175,8 +175,8 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 			}()
 
 			_, err := hosts[idx].RunSmartContractCall(input)
-			require.NotNil(t, err)
 			wg.Done()
+			require.NotNil(t, err)
 		}(k)
 	}
 
