@@ -3,12 +3,13 @@ package esdtconvert
 import (
 	"math/big"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
+// MakeESDTUserMetadataBytes creates metadata byte slice
 func MakeESDTUserMetadataBytes(frozen bool) []byte {
 	metadata := &builtInFunctions.ESDTUserMetadata{
 		Frozen: frozen,
@@ -17,35 +18,7 @@ func MakeESDTUserMetadataBytes(frozen bool) []byte {
 	return metadata.ToBytes()
 }
 
-func WriteMockESDTToStorage(esdtData map[string]*MockESDTData, destination map[string][]byte) error {
-	for _, token := range esdtData {
-		tokenIdentifier := token.TokenIdentifier
-		for _, instance := range token.Instances {
-			tokenNonce := instance.TokenMetaData.Nonce
-			tokenKey := makeTokenKey(tokenIdentifier, tokenNonce)
-			err := setTokenDataByKey(tokenKey, instance, destination)
-			if err != nil {
-				return err
-			}
-		}
-		err := SetLastNonce(tokenIdentifier, token.LastNonce, destination)
-		if err != nil {
-			return err
-		}
-
-		rolesAsStrings := make([]string, len(token.Roles))
-		for i, roleBytes := range token.Roles {
-			rolesAsStrings[i] = string(roleBytes)
-		}
-		err = SetTokenRolesAsStrings(tokenIdentifier, rolesAsStrings, destination)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
+// WriteMandosESDTToStorage writes the Mandos ESDT data to the provided storage map
 func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
 	for _, mandosESDTData := range esdtData {
 		tokenIdentifier := mandosESDTData.TokenIdentifier.Value
@@ -100,6 +73,7 @@ func setTokenDataByKey(tokenKey []byte, tokenData *esdt.ESDigitalToken, destinat
 	return nil
 }
 
+// SetTokenData sets the token data
 func SetTokenData(tokenIdentifier []byte, nonce uint64, tokenData *esdt.ESDigitalToken, destination map[string][]byte) error {
 	tokenKey := makeTokenKey(tokenIdentifier, nonce)
 	return setTokenDataByKey(tokenKey, tokenData, destination)

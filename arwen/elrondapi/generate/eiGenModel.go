@@ -6,7 +6,7 @@ type EIFunctionArg struct {
 	Type string
 }
 
-// EIFunctionArg models the executor callback method result.
+// EIFunctionResult models the executor callback method result.
 type EIFunctionResult struct {
 	Type string
 }

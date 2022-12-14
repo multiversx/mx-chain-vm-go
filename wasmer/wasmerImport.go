@@ -71,6 +71,7 @@ func newWasmerImports() *wasmerImports {
 	return &wasmerImports{imports, currentNamespace}
 }
 
+// Count returns the number of imports
 func (imports *wasmerImports) Count() int {
 	count := 0
 	for _, namespacedImports := range imports.imports {
@@ -163,14 +164,6 @@ func (imports *wasmerImports) Close() {
 type InstanceContext struct {
 	context *cWasmerInstanceContextT
 	memory  executor.Memory
-}
-
-// NewInstanceContext creates a new wasmer context given a cWasmerInstance and a memory
-func NewInstanceContext(ctx *cWasmerInstanceContextT, mem Memory) *InstanceContext {
-	return &InstanceContext{
-		context: ctx,
-		memory:  &mem,
-	}
 }
 
 // IntoInstanceContext casts the first `context unsafe.Pointer`

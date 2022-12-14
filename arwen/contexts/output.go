@@ -335,8 +335,7 @@ func (context *outputContext) Transfer(destination []byte, sender []byte, gasLim
 		return err
 	}
 
-	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) &&
-		(asyncData == nil || len(asyncData) == 0) {
+	if (callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack) && len(asyncData) == 0 {
 		return vmcommon.ErrAsyncParams
 	}
 

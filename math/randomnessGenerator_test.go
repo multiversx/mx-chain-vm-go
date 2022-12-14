@@ -31,24 +31,24 @@ func TestRandomnessGenerator(t *testing.T) {
 	require.False(t, thirdRandomizer.IsInterfaceNil())
 
 	a := make([]byte, 100)
-	firstRandomizer.Read(a)
+	_, _ = firstRandomizer.Read(a)
 	require.NotEqual(t, firstRandomizer, secondRandomizer)
 	b := make([]byte, 100)
-	secondRandomizer.Read(b)
+	_, _ = secondRandomizer.Read(b)
 	require.Equal(t, a, b)
 	require.Equal(t, firstRandomizer, secondRandomizer)
 	c := make([]byte, 100)
-	thirdRandomizer.Read(c)
+	_, _ = thirdRandomizer.Read(c)
 	require.NotEqual(t, a, c)
 
-	len, err := thirdRandomizer.Read(nil)
+	length, err := thirdRandomizer.Read(nil)
 	require.Nil(t, err)
-	require.Equal(t, 0, len)
+	require.Equal(t, 0, length)
 
 	c = make([]byte, 0)
-	len, err = thirdRandomizer.Read(c)
+	length, err = thirdRandomizer.Read(c)
 	require.Nil(t, err)
-	require.Equal(t, 0, len)
+	require.Equal(t, 0, length)
 }
 
 func TestBackwardsCompatible(t *testing.T) {
@@ -57,6 +57,6 @@ func TestBackwardsCompatible(t *testing.T) {
 	seed := []byte(str)
 	randomizer := NewSeedRandReader(seed)
 	a := make([]byte, 32)
-	randomizer.Read(a)
+	_, _ = randomizer.Read(a)
 	require.Equal(t, "7459d163b20b5b0269ce2211a2cc061cc9e512fdcbe025b0fa359014f6619ed0", hex.EncodeToString(a))
 }

@@ -5,10 +5,10 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 const esdtTransferLen = 16

@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (

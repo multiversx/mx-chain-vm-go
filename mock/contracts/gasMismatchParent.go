@@ -9,7 +9,7 @@ import (
 )
 
 // GasMismatchAsyncCallParentMock is an exposed mock contract method
-func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("gasMismatchParent", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		managedTypes := host.ManagedTypes()
@@ -35,7 +35,7 @@ func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, config inte
 }
 
 // GasMismatchCallBackParentMock is an exposed mock contract method
-func GasMismatchCallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
+func GasMismatchCallBackParentMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

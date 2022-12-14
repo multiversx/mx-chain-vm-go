@@ -1,6 +1,6 @@
 package mandosjsonmodel
 
-// ESDTTransfer models the transfer of tokens in a tx
+// ESDTTxData models the transfer of tokens in a tx
 type ESDTTxData struct {
 	TokenIdentifier JSONBytesFromString
 	Nonce           JSONUint64

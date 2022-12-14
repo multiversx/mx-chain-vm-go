@@ -51,7 +51,9 @@ func writeVMHooks(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteEIInterface(out, eiMetadata)
 }
 
@@ -60,7 +62,9 @@ func writeVMHooksWrapper(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteVMHooksWrapper(out, eiMetadata)
 }
 
@@ -69,7 +73,9 @@ func writeWasmer1ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteWasmer1Cgo(out, eiMetadata)
 }
 
@@ -78,7 +84,9 @@ func writeWasmer2ImportsCgo(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteWasmer2Cgo(out, eiMetadata)
 }
 
@@ -87,7 +95,9 @@ func writeRustVMHooksTrait(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteRustVMHooksTrait(out, eiMetadata)
 }
 
@@ -96,7 +106,9 @@ func writeRustVMHooksPointers(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteRustVMHooksPointers(out, eiMetadata)
 }
 
@@ -105,6 +117,8 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 	if err != nil {
 		panic(err)
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	eapigen.WriteRustWasmerImports(out, eiMetadata)
 }

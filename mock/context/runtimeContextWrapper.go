@@ -444,7 +444,7 @@ func (contextWrapper *RuntimeContextWrapper) CountSameContractInstancesOnStack(a
 	return contextWrapper.CountSameContractInstancesOnStackFunc(address)
 }
 
-// RunningInstancesCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// GetInstanceStackSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetInstanceStackSize() uint64 {
 	return contextWrapper.GetInstanceStackSizeFunc()
 }
@@ -544,7 +544,7 @@ func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution()
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
 }
 
-// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// BigFloatAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
 }

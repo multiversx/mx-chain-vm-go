@@ -7,9 +7,9 @@ import (
 	"math/big"
 	"strings"
 
+	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
 	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
 var strPrefixes = []string{"str:", "``", "''"}

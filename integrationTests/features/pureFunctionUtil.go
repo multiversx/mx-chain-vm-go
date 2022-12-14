@@ -10,7 +10,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm/config"

@@ -175,6 +175,7 @@ func (stub *EnableEpochsHandlerStub) IsESDTNFTImprovementV1FlagEnabled() bool {
 	return stub.IsESDTNFTImprovementV1FlagEnabledField
 }
 
+// IsFixOldTokenLiquidityEnabled -
 func (stub *EnableEpochsHandlerStub) IsFixOldTokenLiquidityEnabled() bool {
 	return stub.IsFixOldTokenLiquidityEnabledField
 }

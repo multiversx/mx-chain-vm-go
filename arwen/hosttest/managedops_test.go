@@ -8,15 +8,16 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 )
 
 // wasm memory ~~~> managed buffer
 func TestManaged_SetByteSlice(t *testing.T) {
 	prefix := "ABCD"
 	slice := "EFGHIJKLMN"
-	sufix := "OPR"
-	data := prefix + slice + sufix
-	test.BuildMockInstanceCallTest(t).
+	suffix := "OPR"
+	data := prefix + slice + suffix
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -49,18 +50,19 @@ func TestManaged_SetByteSlice(t *testing.T) {
 			verify.Ok().
 				// |....ABCDEFGHIJ...|
 				ReturnData(append(make([]byte, len(prefix)),
-					append([]byte(data[0:len(slice)]), make([]byte, len(sufix))...)...))
+					append([]byte(data[0:len(slice)]), make([]byte, len(suffix))...)...))
 		})
+	assert.Nil(t, err)
 }
 
 // managed buffer ~~~> managed buffer
 func TestManaged_CopyByteSlice_DifferentBuffer(t *testing.T) {
 	prefix := "ABCD"
 	slice := "EFGHIJKLMN"
-	sufix := "OPR"
-	sourceData := prefix + slice + sufix
+	suffix := "OPR"
+	sourceData := prefix + slice + suffix
 	destinationData := "01234567890123456789"
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -95,15 +97,16 @@ func TestManaged_CopyByteSlice_DifferentBuffer(t *testing.T) {
 			verify.Ok().
 				ReturnData([]byte(slice))
 		})
+	assert.Nil(t, err)
 }
 
 func TestManaged_CopyByteSlice_SameBuffer(t *testing.T) {
 	prefix := "ABCD"
 	slice := "EFGHIJKLMN"
-	sufix := "OPR"
-	sourceData := prefix + slice + sufix
+	suffix := "OPR"
+	sourceData := prefix + slice + suffix
 	deltaForSlice := int32(2)
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -141,4 +144,5 @@ func TestManaged_CopyByteSlice_SameBuffer(t *testing.T) {
 					append([]byte(prefix)[prefixLen-deltaForSlice:prefixLen],
 						[]byte(slice)[:sliceLen-deltaForSlice]...))
 		})
+	assert.Nil(t, err)
 }

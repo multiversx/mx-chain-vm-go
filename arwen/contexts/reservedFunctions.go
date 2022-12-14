@@ -1,8 +1,8 @@
 package contexts
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 )
 
 // reservedFunctions holds the reserved function names

@@ -55,7 +55,7 @@ func validateGivenArguments(
 }
 
 func callWasmFunction(
-	c_instance *cWasmerInstanceT,
+	cInstance *cWasmerInstanceT,
 	exportedFunctionName string,
 	wasmFunctionInputsArity cUint32T,
 	wasmFunctionOutputsArity cUint32T,
@@ -80,7 +80,7 @@ func callWasmFunction(
 	}
 
 	var callResult = cWasmerInstanceCall(
-		c_instance,
+		cInstance,
 		wasmFunctionName,
 		wasmInputsCPointer,
 		wasmFunctionInputsArity,
@@ -160,19 +160,19 @@ func writeInt32ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interfa
 	case uint16:
 		*pointer = int32(typedValue)
 	case int32:
-		*pointer = int32(typedValue)
+		*pointer = typedValue
 	case int:
 		*pointer = int32(typedValue)
 	case uint:
 		*pointer = int32(typedValue)
 	case Value:
-		var value = value.(Value)
+		var val = value.(Value)
 
-		if value.GetType() != TypeI32 {
+		if val.GetType() != TypeI32 {
 			return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `i32`, cannot cast given value to this type.", index+1))
 		}
 
-		*pointer = value.ToI32()
+		*pointer = val.ToI32()
 	default:
 		return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `i32`, cannot cast given value to this type.", index+1))
 	}
@@ -198,19 +198,19 @@ func writeInt64ToWasmInputs(wasmInputs []cWasmerValueT, index int, value interfa
 	case uint32:
 		*pointer = int64(typedValue)
 	case int64:
-		*pointer = int64(typedValue)
+		*pointer = typedValue
 	case int:
 		*pointer = int64(typedValue)
 	case uint:
 		*pointer = int64(typedValue)
 	case Value:
-		var value = value.(Value)
+		var val = value.(Value)
 
-		if value.GetType() != TypeI64 {
+		if val.GetType() != TypeI64 {
 			return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `i64`, cannot cast given value to this type.", index+1))
 		}
 
-		*pointer = value.ToI64()
+		*pointer = val.ToI64()
 	default:
 		return NewExportedFunctionError(exportedFunctionName, fmt.Sprintf("Argument #%d of the `%%s` exported function must be of type `i64`, cannot cast given value to this type.", index+1))
 	}

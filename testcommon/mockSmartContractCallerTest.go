@@ -12,7 +12,14 @@ import (
 
 var logMock = logger.GetOrCreate("arwen/mock")
 
+// SetupFunction -
 type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
+
+// AssertResultsFunc -
+type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
+
+// AssertResultsWithStartNodeFunc -
+type AssertResultsWithStartNodeFunc func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)
 
 type testTemplateConfig struct {
 	tb                       testing.TB
@@ -65,16 +72,12 @@ func (callerTest *MockInstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmer
 	return callerTest
 }
 
-type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
-
 // AndAssertResults provides the function that will aserts the results
 func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults AssertResultsFunc) (*vmcommon.VMOutput, error) {
 	return callerTest.AndAssertResultsWithWorld(nil, true, nil, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
 		assertResults(world, verify)
 	})
 }
-
-type AssertResultsWithStartNodeFunc func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)
 
 // AndAssertResultsWithWorld provides the function that will aserts the results
 func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
@@ -151,15 +154,6 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		}
 
 		host.Output().Finish(returnData)
-		return instance
-	}
-}
-
-// Empty
-func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
-	return func() *mock.InstanceMock {
-		host := instanceMock.Host
-		instance := mock.GetMockInstance(host)
 		return instance
 	}
 }

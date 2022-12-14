@@ -1,19 +1,5 @@
 package mandosjsonmodel
 
-import (
-	"bytes"
-	"math/big"
-)
-
-// ResultEqual returns true if result bytes encode the same number.
-func ResultEqual(expected JSONBytesFromString, actual []byte) bool {
-	if bytes.Equal(expected.Value, actual) {
-		return true
-	}
-
-	return big.NewInt(0).SetBytes(expected.Value).Cmp(big.NewInt(0).SetBytes(actual)) == 0
-}
-
 // JSONBytesFromTreeValues extracts values from a slice of JSONBytesFromTree into a list
 func JSONBytesFromTreeValues(jbs []JSONBytesFromTree) [][]byte {
 	result := make([][]byte, len(jbs))
@@ -23,6 +9,7 @@ func JSONBytesFromTreeValues(jbs []JSONBytesFromTree) [][]byte {
 	return result
 }
 
+// ToInt returns the int representation of the current TraceGasStatus
 func (tgs TraceGasStatus) ToInt() int {
 	return int(tgs)
 }

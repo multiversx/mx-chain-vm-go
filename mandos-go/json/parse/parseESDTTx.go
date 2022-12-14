@@ -9,7 +9,7 @@ import (
 )
 
 func (p *Parser) processTxESDT(txEsdtRaw oj.OJsonObject) ([]*mj.ESDTTxData, error) {
-	allEsdtData := []*mj.ESDTTxData{}
+	allEsdtData := make([]*mj.ESDTTxData, 0)
 
 	switch txEsdt := txEsdtRaw.(type) {
 	case *oj.OJsonMap:
