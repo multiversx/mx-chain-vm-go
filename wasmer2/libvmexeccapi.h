@@ -458,7 +458,7 @@ vm_exec_result_t vm_exec_instance_memory_grow(vm_exec_instance_t *instance_ptr,
                                               uint32_t by_num_pages);
 
 /**
- * Resets an instance, cleaning memories and globals
+ * Resets an instance, cleaning memories and globals.
  *
  * # Safety
  *
