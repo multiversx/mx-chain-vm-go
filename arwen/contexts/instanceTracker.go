@@ -89,8 +89,9 @@ func (tracker *instanceTracker) PopSetActiveState() {
 
 	if !activeInstanceIsTopOfStack && (onStack || cold) {
 		tracker.cleanPoppedInstance(activeInstance, activeCodeHash)
-		tracker.ReplaceInstance(stackedPrevInstance)
 	}
+
+	tracker.ReplaceInstance(stackedPrevInstance)
 
 	tracker.instanceStack = tracker.instanceStack[:instanceStackLen-1]
 	tracker.codeHash = tracker.codeHashStack[instanceStackLen-1]
@@ -124,6 +125,20 @@ func (tracker *instanceTracker) Instance() wasmer.InstanceHandler {
 	return tracker.instance
 }
 
+func (tracker *instanceTracker) GetWarmInstance(codeHash []byte) (wasmer.InstanceHandler, bool) {
+	cachedObject, ok := tracker.warmInstanceCache.Get(codeHash)
+	if !ok {
+		return nil, false
+	}
+
+	instance, ok := cachedObject.(wasmer.InstanceHandler)
+	if !ok {
+		return nil, false
+	}
+
+	return instance, true
+}
+
 func (tracker *instanceTracker) CodeHash() []byte {
 	return tracker.codeHash
 }
@@ -135,12 +150,7 @@ func (tracker *instanceTracker) ClearWarmInstanceCache() {
 }
 
 func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) bool {
-	cachedObject, ok := tracker.warmInstanceCache.Get(codeHash)
-	if !ok {
-		return false
-	}
-
-	instance, ok := cachedObject.(wasmer.InstanceHandler)
+	instance, ok := tracker.GetWarmInstance(codeHash)
 	if !ok {
 		return false
 	}
@@ -308,11 +318,7 @@ func (tracker *instanceTracker) CheckInstances() error {
 
 	warmInstanceCacheByID := make(map[string]wasmer.InstanceHandler)
 	for _, key := range tracker.warmInstanceCache.Keys() {
-		cachedObject, exists := tracker.warmInstanceCache.Get(key)
-		if !exists {
-			return fmt.Errorf("degenerate cache")
-		}
-		instance, ok := cachedObject.(wasmer.InstanceHandler)
+		instance, ok := tracker.GetWarmInstance(key)
 		if !ok {
 			return fmt.Errorf("degenerate cache")
 		}

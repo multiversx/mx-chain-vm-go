@@ -25,9 +25,12 @@ var defaultDeployInput *vmcommon.ContractCreateInput
 var defaultCallInput *vmcommon.ContractCallInput
 
 func TestUpgrade_WithWorldMock(t *testing.T) {
+	t.Skip("this test exists for debugging only")
+
 	if !contexts.WarmInstancesEnabled {
 		t.Skip("this test is only relevant with warm instances")
 	}
+
 	codeUpgrader = testcommon.GetTestSCCode("upgrader", "../../")
 	codeUpgraderMarkOffset = bytes.Index(codeUpgrader, []byte("finish0000"))
 

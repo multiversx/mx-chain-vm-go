@@ -117,8 +117,19 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 		return arwen.ErrMaxInstancesReached
 	}
 
-	blockchain := context.host.Blockchain()
-	codeHash := blockchain.GetCodeHash(context.codeAddress)
+	var codeHash []byte
+	var err error
+
+	if newCode {
+		codeHash, err = context.host.Crypto().Sha256(contract)
+		if err != nil {
+			return err
+		}
+	} else {
+		blockchain := context.host.Blockchain()
+		codeHash = blockchain.GetCodeHash(context.codeAddress)
+	}
+
 	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
@@ -247,6 +258,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
+
 	ok := context.iTracker.UseWarmInstance(codeHash, newCode)
 	if !ok {
 		return false
@@ -306,7 +318,8 @@ func (context *runtimeContext) saveWarmInstance() {
 		return
 	}
 
-	if context.isContractOrCodeHashOnTheStack() {
+	codeHash := context.iTracker.CodeHash()
+	if context.iTracker.IsCodeHashOnTheStack(codeHash) {
 		return
 	}
 
@@ -868,6 +881,11 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 // GetInstance returns the current wasmer instance
 func (context *runtimeContext) GetInstance() wasmer.InstanceHandler {
 	return context.iTracker.Instance()
+}
+
+// GetWarmInstance retrieves an instance from the warm cache
+func (context *runtimeContext) GetWarmInstance(codeHash []byte) (wasmer.InstanceHandler, bool) {
+	return context.iTracker.GetWarmInstance(codeHash)
 }
 
 // GetInstanceExports returns the current wasmer instance exports.

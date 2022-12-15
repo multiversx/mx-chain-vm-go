@@ -80,6 +80,8 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceFunc func() wasmer.InstanceHandler
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetWarmInstanceFunc func(codeHash []byte) (wasmer.InstanceHandler, bool)
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceExportsFunc func() wasmer.ExportsMap
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInitFunctionFunc func() wasmer.ExportedFunctionCallback
@@ -268,6 +270,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.GetInstanceFunc = func() wasmer.InstanceHandler {
 		return runtimeWrapper.runtimeContext.GetInstance()
+	}
+
+	runtimeWrapper.GetWarmInstanceFunc = func(codeHash []byte) (wasmer.InstanceHandler, bool) {
+		return runtimeWrapper.runtimeContext.GetWarmInstance(codeHash)
 	}
 
 	runtimeWrapper.GetInstanceExportsFunc = func() wasmer.ExportsMap {
@@ -542,6 +548,11 @@ func (contextWrapper *RuntimeContextWrapper) GetInstance() wasmer.InstanceHandle
 // GetInstanceExports calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetInstanceExports() wasmer.ExportsMap {
 	return contextWrapper.GetInstanceExportsFunc()
+}
+
+// GetWarmInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetWarmInstance(codeHash []byte) (wasmer.InstanceHandler, bool) {
+	return contextWrapper.GetWarmInstanceFunc(codeHash)
 }
 
 // GetInitFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

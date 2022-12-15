@@ -64,28 +64,6 @@ func TestRustFormattedMessageFeatures(t *testing.T) {
 	runAllTestsInFolder(t, "features/formatted-message-features/mandos")
 }
 
-// For debugging:
-// func TestESDTMultiTransferOnCallback(t *testing.T) {
-// 	err := runSingleTestReturnError(
-// 		"features/composability/mandos",
-// 		"forw_raw_call_async_retrieve_multi_transfer.scen.json")
-// 	require.Nil(t, err)
-// }
-
-// func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
-// 	err := runSingleTestReturnError(
-// 		"features/composability/mandos",
-// 		"forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json")
-// 	require.Nil(t, err)
-// }
-
-// func TestExecOnDestByCallerAndNFTCreate(t *testing.T) {
-// 	err := runSingleTestReturnError(
-// 		"features/composability/mandos",
-// 		"forwarder_builtin_nft_create_by_caller.scen.json")
-// 	require.Nil(t, err)
-// }
-
 func TestRustLegacyComposability(t *testing.T) {
 	runAllTestsInFolder(t, "features/composability/mandos-legacy")
 }
@@ -94,30 +72,8 @@ func TestTimelocks(t *testing.T) {
 	runAllTestsInFolder(t, "timelocks")
 }
 
-// func TestPromises(t *testing.T) {
-// 	executor, err := am.NewArwenTestExecutor()
-// 	require.Nil(t, err)
-// 	runner := mc.NewScenarioRunner(
-// 		executor,
-// 		mc.NewDefaultFileResolver(),
-// 	)
-// 	err = runner.RunAllJSONScenariosInDirectory(
-// 		getTestRoot(),
-// 		"promises",
-// 		".scen.json",
-// 		[]string{})
-
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
-
-func TestForwarderTransfExec(t *testing.T) {
-	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_nft.scen.json")
-	require.Nil(t, err)
-}
-
-func TestForwarderTransfExecMultiReject(t *testing.T) {
-	err := runSingleTestReturnError("features/composability/mandos", "forwarder_call_transf_exec_reject_multi_transfer.scen.json")
+func TestIndividualScenarios(t *testing.T) {
+	var err error
+	err = runSingleTestReturnError("features/composability/mandos", "forw_raw_contract_upgrade_self.scen.json")
 	require.Nil(t, err)
 }
