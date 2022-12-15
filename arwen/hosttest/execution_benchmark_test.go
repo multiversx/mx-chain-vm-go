@@ -36,7 +36,7 @@ func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-	runERC20Benchmark(t, 1000, 100, false)
+	runERC20Benchmark(t, 100, 100, false)
 }
 
 func Test_RunERC20BenchmarkFail(t *testing.T) {
@@ -44,7 +44,7 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runERC20Benchmark(t, 10, 1000, true)
+	runERC20Benchmark(t, 10, 100, true)
 }
 
 func Test_WarmInstancesMemoryUsage(t *testing.T) {
@@ -55,7 +55,7 @@ func Test_WarmInstancesMemoryUsage(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageBenchmark(t, 500, 20000)
+	runMemoryUsageBenchmark(t, 100, 200)
 }
 
 func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
@@ -66,7 +66,7 @@ func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageFuzzyBenchmark(t, 7593, 1000)
+	runMemoryUsageFuzzyBenchmark(t, 100, 100)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
