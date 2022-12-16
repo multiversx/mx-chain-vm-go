@@ -22,7 +22,7 @@ var _ arwen.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 100
 
-// WarmInstancesEnabled enables or disables warm instances
+// WarmInstancesEnabled controls the usage of warm instances
 const WarmInstancesEnabled = true
 
 // WarmInstanceChecks enables end-of-execution checks for warm instances

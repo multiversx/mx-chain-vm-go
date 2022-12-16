@@ -15,13 +15,13 @@ import (
 type instanceCacheLevel int
 
 const (
-	// Warm indicates that an instance is warm
+	// Warm indicates that the instance to track is a warm instance
 	Warm instanceCacheLevel = iota
 
-	// Precompiled indicates that an instance has precompiled code
+	// Precompiled indicates that the instance to track is cold and has been created from precompiled code
 	Precompiled
 
-	// Bytecode indicates that an instance must be compiled from bytecode
+	// Bytecode indicates that the instance to track is cold and has been created from raw bytecode
 	Bytecode
 )
 
@@ -41,7 +41,7 @@ type instanceTracker struct {
 	instances map[string]wasmer.InstanceHandler
 }
 
-// NewInstanceTracker creates a new instanceTracker
+// NewInstanceTracker creates a new instanceTracker instance
 func NewInstanceTracker() (*instanceTracker, error) {
 	tracker := &instanceTracker{
 		instances:           make(map[string]wasmer.InstanceHandler),
@@ -193,8 +193,8 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 	}
 
 	onStack := tracker.IsCodeHashOnTheStack(tracker.codeHash)
-	cold := !WarmInstancesEnabled
-	if onStack || cold {
+	coldOnlyEnabled := !WarmInstancesEnabled
+	if onStack || coldOnlyEnabled {
 		if tracker.instance.Clean() {
 			tracker.updateNumRunningInstances(-1)
 		}
