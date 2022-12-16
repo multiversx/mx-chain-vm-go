@@ -63,16 +63,20 @@ func NewInstanceTracker() (*instanceTracker, error) {
 	return tracker, nil
 }
 
+// InitState initializes the internal instanceTracker state
 func (tracker *instanceTracker) InitState() {
+	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 }
 
+// PushState pushes the active instance and codeHash on the state stacks
 func (tracker *instanceTracker) PushState() {
 	tracker.instanceStack = append(tracker.instanceStack, tracker.instance)
 	tracker.codeHashStack = append(tracker.codeHashStack, tracker.codeHash)
 	logTracker.Trace("pushing instance", "id", tracker.instance.ID(), "codeHash", tracker.codeHash)
 }
 
+// PopSetActiveState pops the instance and codeHash from the state stacks and sets them as active
 func (tracker *instanceTracker) PopSetActiveState() {
 	instanceStackLen := len(tracker.instanceStack)
 	if instanceStackLen == 0 {
@@ -108,6 +112,7 @@ func (tracker *instanceTracker) cleanPoppedInstance(instance wasmer.InstanceHand
 	}
 }
 
+// PopDiscard does nothing for the instanceTracker
 func (tracker *instanceTracker) PopDiscard() {
 }
 
@@ -117,14 +122,17 @@ func (tracker *instanceTracker) ClearStateStack() {
 	tracker.instanceStack = make([]wasmer.InstanceHandler, 0)
 }
 
+// StackSize returns the size of the instance stack
 func (tracker *instanceTracker) StackSize() uint64 {
 	return uint64(len(tracker.instanceStack))
 }
 
+// Instance returns the active instance
 func (tracker *instanceTracker) Instance() wasmer.InstanceHandler {
 	return tracker.instance
 }
 
+// GetWarmInstance retrieves a warm instance from the internal cache
 func (tracker *instanceTracker) GetWarmInstance(codeHash []byte) (wasmer.InstanceHandler, bool) {
 	cachedObject, ok := tracker.warmInstanceCache.Get(codeHash)
 	if !ok {
@@ -139,16 +147,20 @@ func (tracker *instanceTracker) GetWarmInstance(codeHash []byte) (wasmer.Instanc
 	return instance, true
 }
 
+// CodeHash returns the codeHash of the active instance
 func (tracker *instanceTracker) CodeHash() []byte {
 	return tracker.codeHash
 }
 
+// ClearWarmInstanceCache clears the internal warm instance cache
 func (tracker *instanceTracker) ClearWarmInstanceCache() {
 	if WarmInstancesEnabled {
 		tracker.warmInstanceCache.Clear()
 	}
 }
 
+// UseWarmInstance attempts to retrieve a warm instance for the given codeHash
+// and to set it as active; returns false if not possible
 func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) bool {
 	instance, ok := tracker.GetWarmInstance(codeHash)
 	if !ok {
@@ -172,6 +184,8 @@ func (tracker *instanceTracker) UseWarmInstance(codeHash []byte, newCode bool) b
 	return true
 }
 
+// ForceCleanInstance cleans the active instance and evicts it from the
+// internal warm instance cache if possible
 func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool) {
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("cannot clean, instance already nil")
@@ -203,6 +217,7 @@ func (tracker *instanceTracker) ForceCleanInstance(bypassWarmAndStackChecks bool
 	}
 }
 
+// SaveAsWarmInstance saves the active instance into the internal warm instance cache
 func (tracker *instanceTracker) SaveAsWarmInstance() {
 	lenCacheBeforeSaving := tracker.warmInstanceCache.Len()
 
@@ -241,10 +256,12 @@ func (tracker *instanceTracker) SaveAsWarmInstance() {
 	)
 }
 
+// SetCodeHash sets the active codeHash; it must correspond with the active instance
 func (tracker *instanceTracker) SetCodeHash(codeHash []byte) {
 	tracker.codeHash = codeHash
 }
 
+// SetNewInstance sets the given instance as active and tracks its creation
 func (tracker *instanceTracker) SetNewInstance(instance wasmer.InstanceHandler, cacheLevel instanceCacheLevel) {
 	tracker.ReplaceInstance(instance)
 	tracker.cacheLevel = cacheLevel
@@ -254,6 +271,7 @@ func (tracker *instanceTracker) SetNewInstance(instance wasmer.InstanceHandler, 
 	tracker.instances[instance.ID()] = instance
 }
 
+// ReplaceInstance replaces the currently active instance with the given one
 func (tracker *instanceTracker) ReplaceInstance(instance wasmer.InstanceHandler) {
 	var previousInstanceID string
 	if check.IfNil(tracker.instance) {
@@ -269,6 +287,7 @@ func (tracker *instanceTracker) ReplaceInstance(instance wasmer.InstanceHandler)
 	tracker.instance = instance
 }
 
+// UnsetInstance replaces the currently active instance with nil
 func (tracker *instanceTracker) UnsetInstance() {
 	if check.IfNil(tracker.instance) {
 		logTracker.Trace("UnsetInstance: current instance is already nil")
@@ -283,6 +302,7 @@ func (tracker *instanceTracker) UnsetInstance() {
 
 }
 
+// LogCounts prints the instance counter to the log
 func (tracker *instanceTracker) LogCounts() {
 	warm, cold := tracker.NumRunningInstances()
 	logTracker.Trace("num instances after starting new one",
@@ -303,6 +323,7 @@ func (tracker *instanceTracker) NumRunningInstances() (int, int) {
 	return numWarmInstances, numColdInstances
 }
 
+// IsCodeHashOnTheStack returns true if the given codeHash is found on the codeHash stack
 func (tracker *instanceTracker) IsCodeHashOnTheStack(codeHash []byte) bool {
 	for _, stackedCodeHash := range tracker.codeHashStack {
 		if bytes.Equal(codeHash, stackedCodeHash) {
@@ -312,6 +333,8 @@ func (tracker *instanceTracker) IsCodeHashOnTheStack(codeHash []byte) bool {
 	return false
 }
 
+// CheckInstances returns an error if there are tracked cold instances which
+// have not been cleaned (leak detection)
 func (tracker *instanceTracker) CheckInstances() error {
 	unclosedWarm := 0
 	unclosedCold := 0
