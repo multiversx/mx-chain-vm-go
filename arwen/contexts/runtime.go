@@ -26,7 +26,7 @@ const warmCacheSize = 100
 const WarmInstancesEnabled = true
 
 // WarmInstanceChecks enables end-of-execution checks for warm instances
-const WarmInstanceChecks = true
+const WarmInstanceChecks = false
 
 type runtimeContext struct {
 	host               arwen.VMHost
