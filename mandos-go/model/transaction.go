@@ -57,7 +57,7 @@ func (tt TransactionType) HasGasLimit() bool {
 	return tt == ScDeploy || tt == ScCall || tt == Transfer
 }
 
-// HasGasLimit is a helper function to indicate if transaction has `gasPrice` field.
+// HasGasPrice is a helper function to indicate if transaction has `gasPrice` field.
 func (tt TransactionType) HasGasPrice() bool {
 	return tt == ScDeploy || tt == ScCall || tt == Transfer
 }

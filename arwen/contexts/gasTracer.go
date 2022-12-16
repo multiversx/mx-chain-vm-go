@@ -35,9 +35,9 @@ func (gt *gasTracer) AddToCurrentTrace(usedGas uint64) {
 	funcTrace := gt.gasTrace[gt.scAddress][gt.functionNameTraced]
 	length := len(funcTrace)
 	if length > 0 {
-		funcTrace[length-1] += usedGas
+		gt.gasTrace[gt.scAddress][gt.functionNameTraced][length-1] += usedGas
 	} else {
-		funcTrace = append(funcTrace, usedGas)
+		gt.gasTrace[gt.scAddress][gt.functionNameTraced] = append(funcTrace, usedGas)
 	}
 }
 

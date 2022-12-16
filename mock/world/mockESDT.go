@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 )
 
 // GetTokenBalance returns the ESDT balance of an account for the given token

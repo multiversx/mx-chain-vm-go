@@ -46,7 +46,7 @@ func I64(value int64) Value {
 	}
 }
 
-// void constructs an empty WebAssembly value.
+// Void constructs an empty WebAssembly value.
 func Void() Value {
 	return Value{
 		value: 0,

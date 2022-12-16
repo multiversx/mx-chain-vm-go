@@ -599,14 +599,14 @@ func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution()
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
 }
 
-// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// BigFloatAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
 }
 
 // ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ManagedBufferAPIErrorShouldFailExecution()
+	return contextWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc()
 }
 
 // ExecuteAsyncCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

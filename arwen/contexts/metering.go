@@ -3,12 +3,12 @@ package contexts
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 )
 
 var logMetering = logger.GetOrCreate("arwen/metering")
@@ -335,7 +335,7 @@ func (context *meteringContext) UseAndTraceGas(gas uint64) {
 	context.traceGas(gas)
 }
 
-// UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
+// UseGasAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
 func (context *meteringContext) UseGasAndAddTracedGas(functionName string, gas uint64) {
 	context.UseGas(gas)
 	context.addToGasTrace(functionName, gas)

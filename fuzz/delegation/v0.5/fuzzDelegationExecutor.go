@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
@@ -17,7 +19,6 @@ import (
 	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 

@@ -5,14 +5,14 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
 	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
 	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 const includeElrondProtectedStorage = false
@@ -141,7 +141,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 	return &mj.Account{
 		Address: mj.JSONBytesFromString{
 			Value:    account.Address,
-			Original: ae.exprReconstructor.Reconstruct([]byte(account.Address), er.AddressHint),
+			Original: ae.exprReconstructor.Reconstruct(account.Address, er.AddressHint),
 		},
 		Nonce: mj.JSONUint64{
 			Value:    account.Nonce,

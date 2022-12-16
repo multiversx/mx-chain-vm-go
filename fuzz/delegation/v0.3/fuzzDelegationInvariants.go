@@ -18,7 +18,7 @@ func (pfe *fuzzDelegationExecutor) checkNoUnexpectedBalance() error {
 
 	if unexpectedBalance.Sign() > 0 {
 		return fmt.Errorf(
-			"Should not have unexpected balance in the fuzzer. Unexpected balance: %d",
+			"should not have unexpected balance in the fuzzer. Unexpected balance: %d",
 			unexpectedBalance)
 	}
 
@@ -26,6 +26,7 @@ func (pfe *fuzzDelegationExecutor) checkNoUnexpectedBalance() error {
 }
 
 // Currently outdated, not used.
+//nolint:all
 func (pfe *fuzzDelegationExecutor) checkContractBalanceVsState() error {
 	err := pfe.computeAllRewards()
 	if err != nil {

@@ -10,8 +10,8 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
 

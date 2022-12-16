@@ -4,8 +4,7 @@ import (
 	"bytes"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/storage"
-	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
+	"github.com/ElrondNetwork/elrond-go-storage/lrucache"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 )
@@ -28,7 +27,7 @@ var _ arwen.StateStack = (*instanceTracker)(nil)
 type instanceTracker struct {
 	codeHash            []byte
 	numRunningInstances int
-	warmInstanceCache   storage.Cacher
+	warmInstanceCache   Cacher
 	instance            wasmer.InstanceHandler
 	cacheLevel          instanceCacheLevel
 	instanceStack       []wasmer.InstanceHandler

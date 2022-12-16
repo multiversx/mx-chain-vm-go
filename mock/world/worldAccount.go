@@ -38,7 +38,7 @@ type Account struct {
 	MockWorld       *MockWorld
 }
 
-var storageDefaultValue = []byte{}
+var storageDefaultValue = make([]byte, 0)
 
 // StorageValue yields the storage value for key, default 0
 func (a *Account) StorageValue(key string) []byte {
@@ -54,8 +54,8 @@ func (a *Account) StorageValue(key string) []byte {
 // The code metadata must be given explicitly.
 func (a *Account) SetCodeAndMetadata(code []byte, codeMetadata *vmcommon.CodeMetadata) {
 	a.Code = code
-	hasher := hashing.NewHasher()
-	hash, err := hasher.Sha256(code)
+	hasherInstance := hashing.NewHasher()
+	hash, err := hasherInstance.Sha256(code)
 	if err != nil {
 		logger.GetOrCreate("worldAccount").Trace("Account.SetCodeAndMetadata", "error", err)
 	}

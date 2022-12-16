@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -327,7 +328,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d", sellerIndex, buyerIndex, amount)
 
 		// forward received sum
-		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "transfer",
 			"txId": "%d",
@@ -349,7 +350,7 @@ func (pfe *fuzzDelegationExecutor) purchaseStake(sellerIndex, buyerIndex int, am
 		pfe.log("purchaseStake, seller: %d, buyer: %d, amount: %d, fail, %s", sellerIndex, buyerIndex, amount, output.ReturnMessage)
 
 		// return the value
-		_, err := pfe.executeTxStep(fmt.Sprintf(`
+		_, err = pfe.executeTxStep(fmt.Sprintf(`
 		{
 			"step": "transfer",
 			"txId": "%d",
