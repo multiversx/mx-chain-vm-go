@@ -132,6 +132,7 @@ type VMHostParameters struct {
 	WasmerSIGSEGVPassthrough            bool
 	EpochNotifier                       vmcommon.EpochNotifier
 	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
+	Hasher                              HashComputer
 	TimeOutForSCExecutionInMilliseconds uint32
 }
 

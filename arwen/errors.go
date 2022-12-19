@@ -213,6 +213,9 @@ var ErrNilEpochNotifier = errors.New("nil epoch notifier")
 // ErrNilEnableEpochsHandler signals that enable epochs handler is nil
 var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
 
+// ErrNilHasher signals that the provided hasher is nil
+var ErrNilHasher = errors.New("nil hasher")
+
 // ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
 var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
 

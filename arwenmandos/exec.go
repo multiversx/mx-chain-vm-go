@@ -16,6 +16,7 @@ import (
 	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
 	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -104,6 +105,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   testcommon.DefaultHasher,
 	})
 	if err != nil {
 		return err

@@ -331,3 +331,10 @@ type GasTracing interface {
 	GetGasTrace() map[string]map[string][]uint64
 	IsInterfaceNil() bool
 }
+
+// HashComputer provides hash computation
+type HashComputer interface {
+	Compute(string) []byte
+	Size() int
+	IsInterfaceNil() bool
+}

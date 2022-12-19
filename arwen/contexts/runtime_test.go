@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/hashing/blake2b"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
@@ -22,6 +23,8 @@ import (
 	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	"github.com/stretchr/testify/require"
 )
+
+var defaultHasher = blake2b.NewBlake2b()
 
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
@@ -64,6 +67,7 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		defaultHasher,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)

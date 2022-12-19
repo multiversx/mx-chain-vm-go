@@ -77,6 +77,9 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, arwen.ErrNilEnableEpochsHandler
 	}
+	if check.IfNil(hostParameters.Hasher) {
+		return nil, arwen.ErrNilHasher
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
@@ -124,6 +127,7 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		hostParameters.Hasher,
 	)
 	if err != nil {
 		return nil, err

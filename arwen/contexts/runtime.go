@@ -28,6 +28,13 @@ const WarmInstancesEnabled = true
 // WarmInstanceChecks enables end-of-execution checks for warm instances
 const WarmInstanceChecks = false
 
+// HashComputer provides hash computation
+type HashComputer interface {
+	Compute(string) []byte
+	Size() int
+	IsInterfaceNil() bool
+}
+
 type runtimeContext struct {
 	host               arwen.VMHost
 	vmInput            *vmcommon.ContractCallInput
@@ -48,7 +55,9 @@ type runtimeContext struct {
 
 	validator       *wasmValidator
 	instanceBuilder arwen.InstanceBuilder
-	errors          arwen.WrappableError
+	hasher          arwen.HashComputer
+
+	errors arwen.WrappableError
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -56,7 +65,13 @@ func NewRuntimeContext(
 	host arwen.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
+	hasher arwen.HashComputer,
 ) (*runtimeContext, error) {
+
+	if check.IfNil(hasher) {
+		return nil, arwen.ErrNilHasher
+	}
+
 	scAPINames := host.GetAPIMethods().Names()
 
 	context := &runtimeContext{
