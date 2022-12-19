@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/storage"
 	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
@@ -369,16 +368,6 @@ func (tracker *instanceTracker) CheckInstances() error {
 	}
 
 	return nil
-}
-
-func (tracker *instanceTracker) isInstanceOnTheStack(instance wasmer.InstanceHandler) bool {
-	for _, stackedInstance := range tracker.instanceStack {
-		if stackedInstance.ID() == instance.ID() {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (tracker *instanceTracker) makeInstanceEvictionCallback() func(interface{}, interface{}) {

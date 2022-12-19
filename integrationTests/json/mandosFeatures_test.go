@@ -73,7 +73,6 @@ func TestTimelocks(t *testing.T) {
 }
 
 func TestIndividualScenarios(t *testing.T) {
-	var err error
-	err = runSingleTestReturnError("features/composability/mandos", "forw_raw_contract_upgrade_self.scen.json")
+	err := runSingleTestReturnError("features/composability/mandos", "forw_raw_contract_upgrade_self.scen.json")
 	require.Nil(t, err)
 }

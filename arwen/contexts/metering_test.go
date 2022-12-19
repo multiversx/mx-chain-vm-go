@@ -541,7 +541,6 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 	meteringContext.gasForExecution = gasProvided
 	gasUsed1 := uint64(1000)
 	gasUsed2 := uint64(3000)
-	//gasUsed3 := uint64(5000)
 
 	require.NotNil(t, meteringContext.gasTracer)
 
