@@ -7,7 +7,6 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/stretchr/testify/require"
@@ -204,7 +203,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
-	expectedCodeHash, _ := hashing.NewHasher().Sha256(expectedCode)
+	expectedCodeHash := defaultHasher.Compute(string(expectedCode))
 
 	// GetCode: Test if error is propagated from blockchain hook
 	outputContext.OutputAccountIsNew = true

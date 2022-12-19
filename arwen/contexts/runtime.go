@@ -133,13 +133,9 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	var codeHash []byte
-	var err error
 
 	if newCode {
-		codeHash, err = context.host.Crypto().Sha256(contract)
-		if err != nil {
-			return err
-		}
+		codeHash = context.hasher.Compute(string(contract))
 	} else {
 		blockchain := context.host.Blockchain()
 		codeHash = blockchain.GetCodeHash(context.codeAddress)
@@ -229,12 +225,7 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	context.iTracker.SetNewInstance(newInstance, Bytecode)
 
 	if newCode || len(context.iTracker.CodeHash()) == 0 {
-		codeHash, err := context.host.Crypto().Sha256(contract)
-		if err != nil {
-			context.iTracker.ForceCleanInstance(true)
-			logRuntime.Error("instance creation", "code", "bytecode", "error", err)
-			return err
-		}
+		codeHash := context.hasher.Compute(string(contract))
 		context.iTracker.SetCodeHash(codeHash)
 	}
 
