@@ -151,7 +151,7 @@ func createExportedFunctionWrapper(
 		)
 
 		if callResult != cWasmerOk {
-			err = fmt.Errorf("Failed to call the `%s` exported function.", exportedFunctionName)
+			err = fmt.Errorf("failed to call the `%s` exported function", exportedFunctionName)
 			return Void(), newWrappedError(err)
 		}
 

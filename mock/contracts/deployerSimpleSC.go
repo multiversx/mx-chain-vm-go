@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// DeployContractFromSourceMock creates a mock method which deploys a cotract from source
 func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("deployContractFromSource", func() *mock.InstanceMock {
 		host := instanceMock.Host

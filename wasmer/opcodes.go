@@ -1,5 +1,6 @@
 package wasmer
 
+// These constants are used as indices in the an opcode costs array
 const (
 	OpcodeUnreachable = iota
 	OpcodeNop
