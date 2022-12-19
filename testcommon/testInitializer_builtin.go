@@ -16,7 +16,7 @@ type MockBuiltin struct {
 // ProcessBuiltinFunction - see BuiltinFunction.ProcessBuiltInFunction()
 func (m *MockBuiltin) ProcessBuiltinFunction(acntSnd, acntRcv vmcommon.UserAccountHandler, vmInput *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
 	if m.ProcessBuiltinFunctionCall == nil {
-		return nil, errors.New("Undefined processBuiltinFunction")
+		return nil, errors.New("undefined processBuiltinFunction")
 	}
 	return m.ProcessBuiltinFunctionCall(acntSnd, acntRcv, vmInput)
 }

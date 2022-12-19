@@ -7,7 +7,7 @@ import (
 )
 
 // GasMismatchAsyncCallChildMock is an exposed mock contract method
-func GasMismatchAsyncCallChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+func GasMismatchAsyncCallChildMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("gasMismatchChild", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

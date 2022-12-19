@@ -14,22 +14,22 @@ const suffix = ".toml"
 func main() {
 	fs, _ := ioutil.ReadDir(".")
 	out, _ := os.Create("gasScheduleEmbedGenerated.go")
-	out.Write([]byte("package gasschedules \n\n"))
-	out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"))
-	out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!\n"))
-	out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"))
-	out.Write([]byte("\n"))
-	out.Write([]byte("// Please do not edit manually!\n"))
-	out.Write([]byte("// Call `go generate` in `arwen-wasm-vm-v1_4/arwenmandos/gasSchedules` to update it.\n"))
-	out.Write([]byte("\n"))
-	out.Write([]byte("const (\n"))
+	_, _ = out.Write([]byte("package gasschedules \n\n"))
+	_, _ = out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"))
+	_, _ = out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!! AUTO-GENERATED FILE !!!!!!!!!!!!!!!!!!!!!!\n"))
+	_, _ = out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"))
+	_, _ = out.Write([]byte("\n"))
+	_, _ = out.Write([]byte("// Please do not edit manually!\n"))
+	_, _ = out.Write([]byte("// Call `go generate` in `arwen-wasm-vm-v1_4/arwenmandos/gasSchedules` to update it.\n"))
+	_, _ = out.Write([]byte("\n"))
+	_, _ = out.Write([]byte("const (\n"))
 	for _, f := range fs {
 		if strings.HasSuffix(f.Name(), suffix) {
-			out.Write([]byte("\t" + strings.TrimSuffix(f.Name(), suffix) + " = `"))
+			_, _ = out.Write([]byte("\t" + strings.TrimSuffix(f.Name(), suffix) + " = `"))
 			f, _ := os.Open(f.Name())
-			io.Copy(out, f)
-			out.Write([]byte("`\n"))
+			_, _ = io.Copy(out, f)
+			_, _ = out.Write([]byte("`\n"))
 		}
 	}
-	out.Write([]byte(")\n"))
+	_, _ = out.Write([]byte(")\n"))
 }

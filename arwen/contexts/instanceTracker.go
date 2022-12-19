@@ -32,7 +32,7 @@ var logTracker = logger.GetOrCreate("arwen/tracker")
 type instanceTracker struct {
 	codeHash            []byte
 	numRunningInstances int
-	warmInstanceCache   storage.Cacher
+	warmInstanceCache   Cacher
 	instance            wasmer.InstanceHandler
 	cacheLevel          instanceCacheLevel
 	instanceStack       []wasmer.InstanceHandler

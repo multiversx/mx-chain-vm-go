@@ -617,7 +617,7 @@ func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution
 
 // ManagedBufferAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ManagedBufferAPIErrorShouldFailExecution()
+	return contextWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc()
 }
 
 // ExecuteAsyncCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

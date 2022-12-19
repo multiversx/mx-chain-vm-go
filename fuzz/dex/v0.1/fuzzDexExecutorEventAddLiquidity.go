@@ -3,9 +3,10 @@ package dex
 import (
 	"errors"
 	"fmt"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
 	"math/rand"
+
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatistics) error {
@@ -37,7 +38,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatist
 		return err
 	}
 
-	output, err := pfe.executeTxStep(fmt.Sprintf(`
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "accept-esdt-payment",
@@ -72,7 +73,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatist
 		return err
 	}
 
-	output, err = pfe.executeTxStep(fmt.Sprintf(`
+	_, err = pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "accept-esdt-payment",
@@ -107,7 +108,7 @@ func (pfe *fuzzDexExecutor) addLiquidity(r *rand.Rand, statistics *eventsStatist
 		return err
 	}
 
-	output, err = pfe.executeTxStep(fmt.Sprintf(`
+	output, err := pfe.executeTxStep(fmt.Sprintf(`
 	{
 		"step": "scCall",
 		"txId": "add-liquidity",

@@ -152,15 +152,15 @@ func SetImports(imports *Imports) error {
 	return nil
 }
 
-func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
-	cWasmerSetOpcodeCosts(opcode_costs)
+func SetOpcodeCosts(opcodeCosts *[OPCODE_COUNT]uint32) {
+	cWasmerSetOpcodeCosts(opcodeCosts)
 }
 
 func NewInstanceWithOptions(
 	bytes []byte,
 	options CompilationOptions,
 ) (*Instance, error) {
-	var c_instance *cWasmerInstanceT
+	var cInstance *cWasmerInstanceT
 
 	if len(bytes) == 0 {
 		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
@@ -169,7 +169,7 @@ func NewInstanceWithOptions(
 
 	cOptions := unsafe.Pointer(&options)
 	var compileResult = cWasmerInstantiateWithOptions(
-		&c_instance,
+		&cInstance,
 		(*cUchar)(unsafe.Pointer(&bytes[0])),
 		cUint(len(bytes)),
 		(*cWasmerCompilationOptions)(cOptions),
@@ -180,26 +180,26 @@ func NewInstanceWithOptions(
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
+	instance, err := newInstance(cInstance)
 	if instance != nil && instance.Memory != nil {
-		c_instance_context := cWasmerInstanceContextGet(c_instance)
-		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+		cInstanceContext := cWasmerInstanceContextGet(cInstance)
+		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
 
 	logWasmer.Trace("new instance created", "id", instance.ID())
 	return instance, err
 }
 
-func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
+func newInstance(cInstance *cWasmerInstanceT) (*Instance, error) {
 	var emptyInstance = &Instance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory bool
 
-	cWasmerInstanceExports(c_instance, &wasmExports)
+	cWasmerInstanceExports(cInstance, &wasmExports)
 	defer cWasmerExportsDestroy(wasmExports)
 
-	exports, signatures, err := retrieveExportedFunctions(c_instance, wasmExports)
+	exports, signatures, err := retrieveExportedFunctions(cInstance, wasmExports)
 	if err != nil {
 		return emptyInstance, err
 	}
@@ -210,10 +210,10 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 	}
 
 	if !hasMemory {
-		return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: nil}, nil
+		return &Instance{instance: cInstance, Exports: exports, Signatures: signatures, Memory: nil}, nil
 	}
 
-	return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
+	return &Instance{instance: cInstance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.
@@ -225,7 +225,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options CompilationOptions,
 ) (*Instance, error) {
-	var c_instance *cWasmerInstanceT
+	var cInstance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {
 		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
@@ -234,7 +234,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 
 	cOptions := unsafe.Pointer(&options)
 	var instantiateResult = cWasmerInstanceFromCache(
-		&c_instance,
+		&cInstance,
 		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
 		cUint32T(len(compiledCode)),
 		(*cWasmerCompilationOptions)(cOptions),
@@ -245,10 +245,10 @@ func NewInstanceFromCompiledCodeWithOptions(
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
+	instance, err := newInstance(cInstance)
 	if instance != nil && instance.Memory != nil {
-		c_instance_context := cWasmerInstanceContextGet(c_instance)
-		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+		cInstanceContext := cWasmerInstanceContextGet(cInstance)
+		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
 
 	return instance, err
@@ -310,7 +310,7 @@ func (instance *Instance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
 }
 
-// SetBreakpoints sets the breakpoint value for the instance
+// SetBreakpointValue sets the breakpoint value for the instance
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }

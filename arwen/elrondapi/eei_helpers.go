@@ -38,25 +38,25 @@ func roleFromByteArray(bytes []byte) int64 {
 	}
 }
 
-func getESDTRoles(data_buffer []byte) int64 {
+func getESDTRoles(dataBuffer []byte) int64 {
 	result := int64(0)
-	current_index := 0
-	value_len := len(data_buffer)
+	currentIndex := 0
+	valueLen := len(dataBuffer)
 
-	for current_index < value_len {
+	for currentIndex < valueLen {
 		// first character before each role is a \n, so we skip it
-		current_index += 1
+		currentIndex += 1
 
 		// next is the length of the role as string
-		role_len := int(data_buffer[current_index])
-		current_index += 1
+		roleLen := int(dataBuffer[currentIndex])
+		currentIndex += 1
 
 		// next is role's ASCII string representation
-		end_index := current_index + role_len
-		role_name := data_buffer[current_index:end_index]
-		current_index = end_index
+		endIndex := currentIndex + roleLen
+		roleName := dataBuffer[currentIndex:endIndex]
+		currentIndex = endIndex
 
-		result |= roleFromByteArray(role_name)
+		result |= roleFromByteArray(roleName)
 	}
 	return result
 }
