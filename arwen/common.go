@@ -1,3 +1,4 @@
+// Package arwen contains the top-level components and definitions of the VM
 package arwen
 
 import (

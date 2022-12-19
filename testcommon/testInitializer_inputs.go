@@ -32,6 +32,8 @@ var ErrAccountNotFound = errors.New("account not found")
 
 // UserAddress is an exposed value to use in tests
 var UserAddress = []byte("userAccount.....................")
+
+// UserAddress2 is an exposed value to use in tests
 var UserAddress2 = []byte("userAccount2....................")
 
 // AddressSize is the size of an account address, in bytes.
@@ -341,12 +343,13 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	return host, world
 }
 
-// DefaultTestArwen creates a host configured with a configured blockchain hook
+// DefaultTestArwen creates a host configured with a blockchain hook
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
 	customGasSchedule := config.GasScheduleMap(nil)
 	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule, false)
 }
 
+// DefaultTestArwenWithGasSchedule creates a host with the provided blockchain hook and gas schedule
 func DefaultTestArwenWithGasSchedule(
 	tb testing.TB,
 	blockchain vmcommon.BlockchainHook,
