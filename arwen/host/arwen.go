@@ -80,6 +80,9 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.Hasher) {
 		return nil, arwen.ErrNilHasher
 	}
+	if hostParameters.VMType == nil {
+		return nil, arwen.ErrNilVMType
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{

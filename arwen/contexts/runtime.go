@@ -68,6 +68,15 @@ func NewRuntimeContext(
 	hasher arwen.HashComputer,
 ) (*runtimeContext, error) {
 
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilHost
+	}
+	if len(vmType) == 0 {
+		return nil, arwen.ErrNilVMType
+	}
+	if check.IfNil(builtInFuncContainer) {
+		return nil, arwen.ErrNilBuiltInFunctionsContainer
+	}
 	if check.IfNil(hasher) {
 		return nil, arwen.ErrNilHasher
 	}

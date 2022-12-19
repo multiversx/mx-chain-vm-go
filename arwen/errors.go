@@ -180,8 +180,14 @@ var ErrPointNotOnCurve = errors.New("point is not on curve")
 // ErrNoManagedBufferUnderThisHandle signals that there is no buffer for the given handle
 var ErrNoManagedBufferUnderThisHandle = errors.New("no managed buffer under the given handle")
 
+// ErrNilHost signals that a nil host was provided
+var ErrNilHost = errors.New("nil host")
+
 // ErrNilHostParameters signals that nil host parameters was provided
 var ErrNilHostParameters = errors.New("nil host parameters")
+
+// ErrNilVMType signals that a nil VMType was provided
+var ErrNilVMType = errors.New("nil vm type")
 
 // ErrNilESDTTransferParser signals that nil esdt transfer parser was provided
 var ErrNilESDTTransferParser = errors.New("nil esdt transfer parser")

@@ -75,6 +75,33 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 	return runtimeContext
 }
 
+func TestNewRuntimeContextErrors(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	bfc := builtInFunctions.NewBuiltInFunctionContainer()
+	hasher := defaultHasher
+
+	t.Run("NilHost", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(nil, vmType, bfc, hasher)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilHost)
+	})
+	t.Run("NilVMType", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(host, nil, bfc, hasher)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilVMType)
+	})
+	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(host, vmType, nil, hasher)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilBuiltInFunctionsContainer)
+	})
+	t.Run("NilHasher", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(host, vmType, bfc, nil)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilHasher)
+	})
+}
+
 func TestNewRuntimeContext(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
