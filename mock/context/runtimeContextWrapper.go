@@ -671,6 +671,10 @@ func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 }
 
 // EndExecution -
-func (contextWrapper *RuntimeContextWrapper) EndExecution() error {
+func (contextWrapper *RuntimeContextWrapper) EndExecution() {
+}
+
+// ValidateInstances -
+func (contextWrapper *RuntimeContextWrapper) ValidateInstances() error {
 	return nil
 }

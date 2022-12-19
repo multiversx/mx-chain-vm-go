@@ -25,9 +25,6 @@ const warmCacheSize = 100
 // WarmInstancesEnabled controls the usage of warm instances
 const WarmInstancesEnabled = true
 
-// WarmInstanceChecks enables end-of-execution checks for warm instances
-const WarmInstanceChecks = false
-
 // HashComputer provides hash computation
 type HashComputer interface {
 	Compute(string) []byte
@@ -143,7 +140,6 @@ func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uin
 	}
 
 	var codeHash []byte
-
 	if newCode {
 		codeHash = context.hasher.Compute(string(contract))
 	} else {
@@ -1165,16 +1161,14 @@ func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
 }
 
-// EndExecution validates the current state of the instances used for
-// execution
-func (context *runtimeContext) EndExecution() error {
+// EndExecution performs final steps after execution ends
+func (context *runtimeContext) EndExecution() {
 	context.iTracker.UnsetInstance()
+}
 
+// ValidateInstances checks the state of the instances after execution
+func (context *runtimeContext) ValidateInstances() error {
 	if !WarmInstancesEnabled {
-		return nil
-	}
-
-	if !WarmInstanceChecks {
 		return nil
 	}
 

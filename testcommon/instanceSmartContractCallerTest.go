@@ -131,7 +131,7 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 		}
 
 		// Extra verification for instance leaks
-		err := callerTest.host.Runtime().EndExecution()
+		err := callerTest.host.Runtime().ValidateInstances()
 		require.Nil(callerTest.tb, err)
 	}()
 

@@ -363,10 +363,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				err = arwen.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
 			} else {
-				err = host.Runtime().EndExecution()
-				if err != nil {
-					vmOutput = nil
-				}
+				host.Runtime().EndExecution()
 			}
 
 			close(done)
@@ -425,10 +422,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				err = arwen.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
 			} else {
-				err = host.Runtime().EndExecution()
-				if err != nil {
-					vmOutput = nil
-				}
+				host.Runtime().EndExecution()
 			}
 
 			close(done)

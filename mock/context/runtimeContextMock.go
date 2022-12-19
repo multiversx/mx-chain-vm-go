@@ -357,7 +357,11 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 }
 
 // EndExecution -
-func (r *RuntimeContextMock) EndExecution() error {
+func (r *RuntimeContextMock) EndExecution() {
+}
+
+// ValidateInstances -
+func (r *RuntimeContextMock) ValidateInstances() error {
 	return nil
 }
 

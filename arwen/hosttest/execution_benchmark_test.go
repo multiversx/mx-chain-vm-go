@@ -135,7 +135,7 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 	}
 
 	defer func() {
-		err := host.Runtime().EndExecution()
+		err := host.Runtime().ValidateInstances()
 		require.Nil(tb, err)
 		host.Reset()
 	}()
@@ -147,7 +147,7 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	require.Nil(tb, err)
 
 	defer func() {
-		err := host.Runtime().EndExecution()
+		err := host.Runtime().ValidateInstances()
 		require.Nil(tb, err)
 		host.Reset()
 	}()
@@ -205,7 +205,7 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	require.Nil(tb, err)
 
 	defer func() {
-		err := host.Runtime().EndExecution()
+		err := host.Runtime().ValidateInstances()
 		require.Nil(tb, err)
 		host.Reset()
 	}()
