@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 )
 
 type worldDataModel struct {
@@ -64,7 +63,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
-		Hasher:                   testcommon.DefaultHasher,
+		Hasher:                   worldmock.DefaultHasher,
 	}
 }
 

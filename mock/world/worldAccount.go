@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 )
 
 // ErrOperationNotPermitted indicates an operation rejected due to insufficient
@@ -53,7 +52,7 @@ func (a *Account) StorageValue(key string) []byte {
 // The code metadata must be given explicitly.
 func (a *Account) SetCodeAndMetadata(code []byte, codeMetadata *vmcommon.CodeMetadata) {
 	a.Code = code
-	hash := testcommon.DefaultHasher.Compute(string(code))
+	hash := DefaultHasher.Compute(string(code))
 
 	a.CodeHash = hash
 	a.IsSmartContract = true
@@ -123,7 +122,7 @@ func (a *Account) IsInterfaceNil() bool {
 // SetCode -
 func (a *Account) SetCode(code []byte) {
 	a.Code = code
-	a.CodeHash = testcommon.DefaultHasher.Compute(string(code))
+	a.CodeHash = DefaultHasher.Compute(string(code))
 	a.IsSmartContract = true
 }
 

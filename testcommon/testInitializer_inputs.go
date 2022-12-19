@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/elrond-go-core/hashing/blake2b"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -24,9 +23,6 @@ import (
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	"github.com/stretchr/testify/require"
 )
-
-// DefaultHasher is an exposed value to use in tests
-var DefaultHasher = blake2b.NewBlake2b()
 
 // DefaultVMType is an exposed value to use in tests
 var DefaultVMType = []byte{0xF, 0xF}
@@ -340,7 +336,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
 		},
 		WasmerSIGSEGVPassthrough: false,
-		Hasher:                   DefaultHasher,
+		Hasher:                   worldmock.DefaultHasher,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -393,7 +389,7 @@ func DefaultTestArwenWithGasSchedule(
 			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
-		Hasher:                   DefaultHasher,
+		Hasher:                   worldmock.DefaultHasher,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)

@@ -8,8 +8,6 @@ import (
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	"github.com/ElrondNetwork/wasm-vm/testcommon"
 )
 
 var hasher = hashing.NewHasher()
@@ -75,7 +73,7 @@ func (am AccountMap) CreateSmartContractAccountWithCodeHash(owner []byte, addres
 // PutAccount inserts account based on address.
 func (am AccountMap) PutAccount(account *Account) {
 	if account.Code != nil && account.CodeHash == nil {
-		hash := testcommon.DefaultHasher.Compute(string(account.Code))
+		hash := DefaultHasher.Compute(string(account.Code))
 		account.CodeHash = hash
 	}
 	am[string(account.Address)] = account

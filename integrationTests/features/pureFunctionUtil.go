@@ -55,6 +55,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldhook.DefaultHasher,
 	})
 	if err != nil {
 		return nil, err

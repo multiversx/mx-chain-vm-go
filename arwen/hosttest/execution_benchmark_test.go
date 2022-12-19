@@ -252,6 +252,7 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldmock.DefaultHasher,
 	})
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err
