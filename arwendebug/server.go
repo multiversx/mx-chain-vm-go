@@ -21,7 +21,7 @@ func NewDebugServer(facade *DebugFacade, address string) *DebugServer {
 	}
 }
 
-// StartServer starts the debugging server
+// Start starts the debugging server
 func (server *DebugServer) Start() error {
 	log.Debug("Start()")
 

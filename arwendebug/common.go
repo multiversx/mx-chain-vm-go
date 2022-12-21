@@ -50,11 +50,3 @@ func toHex(bytes []byte) string {
 func fromHex(encoded string) ([]byte, error) {
 	return hex.DecodeString(encoded)
 }
-
-func fromHexNoError(encoded string) []byte {
-	decoded, err := hex.DecodeString(encoded)
-	if err != nil {
-		return nil
-	}
-	return decoded
-}

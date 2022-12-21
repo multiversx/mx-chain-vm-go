@@ -1,5 +1,9 @@
 package mock
 
+import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+
+var _ vmcommon.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
+
 // EnableEpochsHandlerStub -
 type EnableEpochsHandlerStub struct {
 	IsGlobalMintBurnFlagEnabledField                     bool

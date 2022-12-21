@@ -62,7 +62,6 @@ const ed25519PublicKeyLength = 32
 const ed25519SignatureLength = 64
 const secp256k1CompressedPublicKeyLength = 33
 const secp256k1UncompressedPublicKeyLength = 65
-const secp256k1SignatureLength = 64
 const curveNameLength = 4
 
 const (
@@ -71,7 +70,6 @@ const (
 	ripemd160Name                   = "ripemd160"
 	verifyBLSName                   = "verifyBLS"
 	verifyEd25519Name               = "verifyEd25519"
-	verifySecp256k1Name             = "verifySecp256k1"
 	verifyCustomSecp256k1Name       = "verifyCustomSecp256k1"
 	encodeSecp256k1DerSignatureName = "encodeSecp256k1DerSignature"
 	addECName                       = "addEC"

@@ -10,7 +10,7 @@ import (
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	arwen "github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
@@ -55,6 +55,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldhook.DefaultHasher,
 	})
 	if err != nil {
 		return nil, err

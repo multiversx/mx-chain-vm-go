@@ -1,3 +1,4 @@
+// Package testcommon contains utility code for writing tests
 package testcommon
 
 import (
@@ -130,8 +131,8 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 		}
 
 		// Extra verification for instance leaks
-		_, numColdInstances := callerTest.host.Runtime().NumRunningInstances()
-		require.Zero(callerTest.tb, numColdInstances, "number of instances leaked")
+		err := callerTest.host.Runtime().ValidateInstances()
+		require.Nil(callerTest.tb, err)
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)

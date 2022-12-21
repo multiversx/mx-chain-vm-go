@@ -14,6 +14,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/contexts"
 	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	gasSchedules "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos/gasSchedules"
@@ -35,7 +36,7 @@ func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-	runERC20Benchmark(t, 1000, 100, false)
+	runERC20Benchmark(t, 100, 100, false)
 }
 
 func Test_RunERC20BenchmarkFail(t *testing.T) {
@@ -43,23 +44,29 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runERC20Benchmark(t, 10, 1000, true)
+	runERC20Benchmark(t, 10, 100, true)
 }
 
 func Test_WarmInstancesMemoryUsage(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageBenchmark(t, 100, 1)
+	runMemoryUsageBenchmark(t, 100, 200)
 }
 
 func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageFuzzyBenchmark(t, 7593, 10)
+	runMemoryUsageFuzzyBenchmark(t, 100, 100)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
@@ -128,8 +135,8 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 	}
 
 	defer func() {
-		_, numColdInstances := host.Runtime().NumRunningInstances()
-		require.Zero(tb, numColdInstances)
+		err := host.Runtime().ValidateInstances()
+		require.Nil(tb, err)
 		host.Reset()
 	}()
 }
@@ -140,8 +147,8 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	require.Nil(tb, err)
 
 	defer func() {
-		_, numColdInstances := host.Runtime().NumRunningInstances()
-		require.Zero(tb, numColdInstances)
+		err := host.Runtime().ValidateInstances()
+		require.Nil(tb, err)
 		host.Reset()
 	}()
 
@@ -155,17 +162,17 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	}
 
 	seed := rand.NewSource(time.Now().UnixNano())
-	rand := rand.New(seed)
+	randomizer := rand.New(seed)
 
 	for len(availableContracts) != 0 {
-		contract := availableContracts[rand.Intn(len(availableContracts))]
-		transfers := rand.Intn(remainingTransfers[contract]) + 1
+		contract := availableContracts[randomizer.Intn(len(availableContracts))]
+		transfers := randomizer.Intn(remainingTransfers[contract]) + 1
 
 		for i := 0; i < transfers; i++ {
 			transferInput := createTransferInput(contract)
 
-			vmOutput, err := host.RunSmartContractCall(transferInput)
-			require.Nil(tb, err)
+			vmOutput, errRun := host.RunSmartContractCall(transferInput)
+			require.Nil(tb, errRun)
 			require.NotNil(tb, vmOutput)
 			require.Equal(tb, vmcommon.Ok, vmOutput.ReturnCode)
 
@@ -181,7 +188,7 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 					continue
 				}
 				remainingContracts[j] = v
-				j += 1
+				j++
 			}
 			availableContracts = remainingContracts
 			delete(remainingTransfers, contract)
@@ -198,8 +205,8 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	require.Nil(tb, err)
 
 	defer func() {
-		_, numColdInstances := host.Runtime().NumRunningInstances()
-		require.Zero(tb, numColdInstances)
+		err := host.Runtime().ValidateInstances()
+		require.Nil(tb, err)
 		host.Reset()
 	}()
 
@@ -245,6 +252,7 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldmock.DefaultHasher,
 	})
 	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err

@@ -1,3 +1,4 @@
+//nolint:all
 package hashing
 
 import (
@@ -39,7 +40,8 @@ func (h *hasher) Keccak256(data []byte) ([]byte, error) {
 	return result, nil
 }
 
-// Ripemd160 is a legacy hash and should not be used for new applications
+// Ripemd160 is a legacy hash and should not be used for new
+// this usage causes linter issues but will be kept for backwards compatibility for now
 func (h *hasher) Ripemd160(data []byte) ([]byte, error) {
 	hash := ripemd160.New()
 	_, err := hash.Write(data)

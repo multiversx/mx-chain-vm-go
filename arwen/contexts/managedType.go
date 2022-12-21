@@ -9,9 +9,9 @@ import (
 	basicMath "math"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const bigFloatPrecision = 53
@@ -302,12 +302,13 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Floa
 	}
 	if value.IsInf() {
 		return nil, arwen.ErrInfinityFloatOperation
-	} else {
-		exponent := value.MantExp(nil)
-		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
-			return nil, arwen.ErrExponentTooBigOrTooSmall
-		}
 	}
+
+	exponent := value.MantExp(nil)
+	if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+		return nil, arwen.ErrExponentTooBigOrTooSmall
+	}
+
 	return value, nil
 }
 
@@ -319,12 +320,13 @@ func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error
 	}
 	if value.IsInf() {
 		return nil, arwen.ErrInfinityFloatOperation
-	} else {
-		exponent := value.MantExp(nil)
-		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
-			return nil, arwen.ErrExponentTooBigOrTooSmall
-		}
 	}
+
+	exponent := value.MantExp(nil)
+	if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+		return nil, arwen.ErrExponentTooBigOrTooSmall
+	}
+
 	return value, nil
 }
 
@@ -341,14 +343,15 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 	}
 	if value1.IsInf() || value2.IsInf() {
 		return nil, nil, arwen.ErrInfinityFloatOperation
-	} else {
-		exponent1 := value1.MantExp(nil)
-		exponent2 := value2.MantExp(nil)
-		if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
-			return nil, nil, arwen.ErrExponentTooBigOrTooSmall
-
-		}
 	}
+
+	exponent1 := value1.MantExp(nil)
+	exponent2 := value2.MantExp(nil)
+	if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
+		return nil, nil, arwen.ErrExponentTooBigOrTooSmall
+
+	}
+
 	return value1, value2, nil
 }
 

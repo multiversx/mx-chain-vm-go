@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"path/filepath"
-	"runtime"
+	goRuntime "runtime"
 	"strings"
 	"unsafe"
 
@@ -146,6 +146,7 @@ type nilInterfaceChecker interface {
 }
 
 // GetVMHost returns the vm Context from the vm context map
+//nolint:all
 func GetVMHost(vmHostPtr unsafe.Pointer) VMHost {
 	if logVMHookCalls {
 		logVMHookCall()
@@ -212,7 +213,7 @@ func WithFaultAndHost(host VMHost, err error, failExecution bool) bool {
 	return true
 }
 
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+// WithFaultIfFailAlwaysActive returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecution bool) {
 	runtime := GetVMHost(vmHostPtr)
 	if runtime.FixFailExecutionEnabled() {
@@ -220,7 +221,7 @@ func WithFaultIfFailAlwaysActive(err error, vmHostPtr unsafe.Pointer, failExecut
 	}
 }
 
-// WithFault returns true if the error is not nil, and uses the remaining gas if the execution has failed
+// WithFaultAndHostIfFailAlwaysActive returns true if the error is not nil, and uses the remaining gas if the execution has failed
 func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bool) {
 	if host.FixFailExecutionEnabled() {
 		_ = WithFaultAndHost(host, err, failExecution)
@@ -228,9 +229,9 @@ func WithFaultAndHostIfFailAlwaysActive(err error, host VMHost, failExecution bo
 }
 
 func logVMHookCall() {
-	skipStackLevels := 3
-	pc, _, _, _ := runtime.Caller(skipStackLevels)
-	qualifiedFunctionName := runtime.FuncForPC(pc).Name()
+	skipNumStackLevels := 3
+	pc, _, _, _ := goRuntime.Caller(skipNumStackLevels)
+	qualifiedFunctionName := goRuntime.FuncForPC(pc).Name()
 	functionNameIndex := strings.LastIndex(qualifiedFunctionName, "/")
 	if functionNameIndex > 0 {
 		functionName := qualifiedFunctionName[functionNameIndex+1:]

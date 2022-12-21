@@ -2,6 +2,7 @@ package mock
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
@@ -21,6 +22,7 @@ type InstanceMock struct {
 	Host            arwen.VMHost
 	T               testing.TB
 	Address         []byte
+	AlreadyClean    bool
 }
 
 // NewInstanceMock creates a new InstanceMock
@@ -33,10 +35,14 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
+		AlreadyClean:    false,
 	}
 }
 
-func (instance *InstanceMock) Id() string { return "" }
+// ID -
+func (instance *InstanceMock) ID() string {
+	return fmt.Sprintf("%p", instance)
+}
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
@@ -104,12 +110,13 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 
 // Clean mocked method
 func (instance *InstanceMock) Clean() bool {
+	instance.AlreadyClean = true
 	return true
 }
 
 // AlreadyCleaned mocked method
 func (instance *InstanceMock) AlreadyCleaned() bool {
-	return false
+	return instance.AlreadyClean
 }
 
 // Reset mocked method

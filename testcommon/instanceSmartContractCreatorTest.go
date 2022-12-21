@@ -51,7 +51,7 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(
 	callerTest.runTest(true)
 }
 
-// AndAssertResults provides the function that will aserts the results
+// AndAssertResultsWithoutReset provides the function that will aserts the results
 func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
 	callerTest.runTest(false)

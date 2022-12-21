@@ -77,6 +77,12 @@ func NewArwenVM(
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, arwen.ErrNilEnableEpochsHandler
 	}
+	if check.IfNil(hostParameters.Hasher) {
+		return nil, arwen.ErrNilHasher
+	}
+	if hostParameters.VMType == nil {
+		return nil, arwen.ErrNilVMType
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
@@ -124,6 +130,7 @@ func NewArwenVM(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
+		hostParameters.Hasher,
 	)
 	if err != nil {
 		return nil, err
@@ -355,6 +362,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
+			} else {
+				host.Runtime().EndExecution()
 			}
 
 			close(done)
@@ -370,9 +379,6 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
-
-		numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
-		log.Trace("RunSmartContractCreate end instances", "warm", numWarmInstances, "cold", numColdInstances)
 
 		host.logFromGasTracer("init")
 	}()
@@ -415,6 +421,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = arwen.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
+			} else {
+				host.Runtime().EndExecution()
 			}
 
 			close(done)
@@ -437,9 +445,6 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			"returnCode", vmOutput.ReturnCode,
 			"returnMessage", vmOutput.ReturnMessage,
 			"gasRemaining", vmOutput.GasRemaining)
-
-		numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
-		log.Trace("RunSmartContractCall end instances", "warm", numWarmInstances, "cold", numColdInstances)
 
 		host.logFromGasTracer(input.Function)
 	}()

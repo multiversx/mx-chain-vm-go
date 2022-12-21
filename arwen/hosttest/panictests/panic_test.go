@@ -24,7 +24,6 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		var i *int
-		i = nil
 
 		// dereference a nil pointer
 		*i = *i + 1
@@ -43,7 +42,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	require.Equal(t, arwen.ErrExecutionPanicked, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
@@ -56,7 +55,10 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		i := 5
 		j := 4
-		i = i / (j - 4)
+		// trick the linter with this for loop. It will eventually cause a division by 0 exception
+		for counter := 0; counter <= j; counter++ {
+			i = i / (counter - 4)
+		}
 		return nil, 0, nil
 	}
 
@@ -73,7 +75,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	require.Equal(t, arwen.ErrExecutionPanicked, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
@@ -100,7 +102,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionFailedWithTimeout)
+	require.Equal(t, arwen.ErrExecutionFailedWithTimeout, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
@@ -113,7 +115,6 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		var i *int
-		i = nil
 
 		// dereference a nil pointer
 		time.Sleep(time.Second)
@@ -145,7 +146,6 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 		hosts[k], blockchains[k] = test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
 		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 			var i *int
-			i = nil
 
 			// dereference a nil pointer
 			time.Sleep(time.Second)
@@ -175,8 +175,8 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 			}()
 
 			_, err := hosts[idx].RunSmartContractCall(input)
-			require.NotNil(t, err)
 			wg.Done()
+			require.NotNil(t, err)
 		}(k)
 	}
 

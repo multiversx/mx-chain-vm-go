@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/hashing/blake2b"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
@@ -22,6 +23,8 @@ import (
 	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
 	"github.com/stretchr/testify/require"
 )
+
+var defaultHasher = blake2b.NewBlake2b()
 
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
@@ -64,11 +67,39 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 		host,
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
+		defaultHasher,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeContext)
 
 	return runtimeContext
+}
+
+func TestNewRuntimeContextErrors(t *testing.T) {
+	host := InitializeArwenAndWasmer()
+	bfc := builtInFunctions.NewBuiltInFunctionContainer()
+	hasher := defaultHasher
+
+	t.Run("NilHost", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(nil, vmType, bfc, hasher)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilHost)
+	})
+	t.Run("NilVMType", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(host, nil, bfc, hasher)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilVMType)
+	})
+	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(host, vmType, nil, hasher)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilBuiltInFunctionsContainer)
+	})
+	t.Run("NilHasher", func(t *testing.T) {
+		runtimeContext, err := NewRuntimeContext(host, vmType, bfc, nil)
+		require.Nil(t, runtimeContext)
+		require.ErrorIs(t, err, arwen.ErrNilHasher)
+	})
 }
 
 func TestNewRuntimeContext(t *testing.T) {
@@ -447,7 +478,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	runtimeContext.SetMaxInstanceCount(1)
 
 	gasLimit := uint64(100000000)
-	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
+	path := "./../../test/contracts/answer/output/answer.wasm"
 	contractCode := arwen.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)

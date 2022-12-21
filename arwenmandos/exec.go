@@ -104,6 +104,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldhook.DefaultHasher,
 	})
 	if err != nil {
 		return err
@@ -119,7 +120,7 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
 }
 
-// GetVMHost returns de vm Context from the vm context map
+// GetVMHost returns the VM host instance in the test executor.
 func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
 	return ae.vmHost
 }
@@ -139,6 +140,7 @@ func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSc
 	}
 }
 
+// PeekTraceGas -
 func (ae *ArwenTestExecutor) PeekTraceGas() bool {
 	length := len(ae.scenarioTraceGas)
 	if length != 0 {

@@ -10,7 +10,8 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-const OPCODE_COUNT = 448
+// OpcodeCount is the total number of WASM opcodes currently supported by Wasmer
+const OpcodeCount = 448
 
 var logWasmer = logger.GetOrCreate("arwen/wasmer")
 
@@ -79,8 +80,13 @@ func (error *ExportedFunctionError) Error() string {
 	return error.message
 }
 
+// ExportedFunctionCallback is the type of an exported WASM function
 type ExportedFunctionCallback func(...interface{}) (Value, error)
+
+// ExportsMap is a map of names to ExportedFunctionCallback values
 type ExportsMap map[string]ExportedFunctionCallback
+
+// ExportSignaturesMap is a map of names to ExportedFunctionSignatures
 type ExportSignaturesMap map[string]*ExportedFunctionSignature
 
 // Instance represents a WebAssembly instance.
@@ -116,6 +122,7 @@ type Instance struct {
 	AlreadyClean bool
 }
 
+// CompilationOptions contains options for creating a Wasmer instance
 type CompilationOptions struct {
 	GasLimit           uint64
 	UnmeteredLocals    uint64
@@ -138,6 +145,7 @@ func newWrappedError(target error) error {
 	return fmt.Errorf("%w: %s", target, lastError)
 }
 
+// SetImports creates a static imports object and sets it into Wasmer
 func SetImports(imports *Imports) error {
 	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
 
@@ -152,15 +160,18 @@ func SetImports(imports *Imports) error {
 	return nil
 }
 
-func SetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
-	cWasmerSetOpcodeCosts(opcode_costs)
+// SetOpcodeCosts sets the opcode costs in Wasmer
+func SetOpcodeCosts(opcodeCosts *[OpcodeCount]uint32) {
+	cWasmerSetOpcodeCosts(opcodeCosts)
 }
 
+// NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode with
+// the provided compilation options
 func NewInstanceWithOptions(
 	bytes []byte,
 	options CompilationOptions,
 ) (*Instance, error) {
-	var c_instance *cWasmerInstanceT
+	var cInstance *cWasmerInstanceT
 
 	if len(bytes) == 0 {
 		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
@@ -169,7 +180,7 @@ func NewInstanceWithOptions(
 
 	cOptions := unsafe.Pointer(&options)
 	var compileResult = cWasmerInstantiateWithOptions(
-		&c_instance,
+		&cInstance,
 		(*cUchar)(unsafe.Pointer(&bytes[0])),
 		cUint(len(bytes)),
 		(*cWasmerCompilationOptions)(cOptions),
@@ -180,24 +191,26 @@ func NewInstanceWithOptions(
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
+	instance, err := newInstance(cInstance)
 	if instance != nil && instance.Memory != nil {
-		c_instance_context := cWasmerInstanceContextGet(c_instance)
-		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+		cInstanceContext := cWasmerInstanceContextGet(cInstance)
+		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
+
+	logWasmer.Trace("new instance created", "id", instance.ID())
 	return instance, err
 }
 
-func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
+func newInstance(cInstance *cWasmerInstanceT) (*Instance, error) {
 	var emptyInstance = &Instance{instance: nil, Exports: nil, Signatures: nil, Memory: nil}
 
 	var wasmExports *cWasmerExportsT
 	var hasMemory bool
 
-	cWasmerInstanceExports(c_instance, &wasmExports)
+	cWasmerInstanceExports(cInstance, &wasmExports)
 	defer cWasmerExportsDestroy(wasmExports)
 
-	exports, signatures, err := retrieveExportedFunctions(c_instance, wasmExports)
+	exports, signatures, err := retrieveExportedFunctions(cInstance, wasmExports)
 	if err != nil {
 		return emptyInstance, err
 	}
@@ -208,10 +221,10 @@ func newInstance(c_instance *cWasmerInstanceT) (*Instance, error) {
 	}
 
 	if !hasMemory {
-		return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: nil}, nil
+		return &Instance{instance: cInstance, Exports: exports, Signatures: signatures, Memory: nil}, nil
 	}
 
-	return &Instance{instance: c_instance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
+	return &Instance{instance: cInstance, Exports: exports, Signatures: signatures, Memory: &memory}, nil
 }
 
 // HasMemory checks whether the instance has at least one exported memory.
@@ -219,11 +232,13 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+// NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
+// precompiled code with the provided compilation options
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options CompilationOptions,
 ) (*Instance, error) {
-	var c_instance *cWasmerInstanceT
+	var cInstance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {
 		var emptyInstance = &Instance{instance: nil, Exports: nil, Memory: nil}
@@ -232,7 +247,7 @@ func NewInstanceFromCompiledCodeWithOptions(
 
 	cOptions := unsafe.Pointer(&options)
 	var instantiateResult = cWasmerInstanceFromCache(
-		&c_instance,
+		&cInstance,
 		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
 		cUint32T(len(compiledCode)),
 		(*cWasmerCompilationOptions)(cOptions),
@@ -243,10 +258,10 @@ func NewInstanceFromCompiledCodeWithOptions(
 		return emptyInstance, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
+	instance, err := newInstance(cInstance)
 	if instance != nil && instance.Memory != nil {
-		c_instance_context := cWasmerInstanceContextGet(c_instance)
-		instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
+		cInstanceContext := cWasmerInstanceContextGet(cInstance)
+		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
 
 	return instance, err
@@ -266,9 +281,9 @@ func (instance *Instance) SetContextData(data uintptr) {
 
 // Clean cleans instance
 func (instance *Instance) Clean() bool {
-	logWasmer.Trace("cleaning instance", "id", instance.Id())
+	logWasmer.Trace("cleaning instance", "id", instance.ID())
 	if instance.AlreadyClean {
-		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
@@ -280,7 +295,7 @@ func (instance *Instance) Clean() bool {
 		}
 
 		instance.AlreadyClean = true
-		logWasmer.Trace("cleaned instance", "id", instance.Id())
+		logWasmer.Trace("cleaned instance", "id", instance.ID())
 
 		return true
 	}
@@ -308,7 +323,7 @@ func (instance *Instance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.instance, gasLimit)
 }
 
-// SetBreakpoints sets the breakpoint value for the instance
+// SetBreakpointValue sets the breakpoint value for the instance
 func (instance *Instance) SetBreakpointValue(value uint64) {
 	cWasmerInstanceSetBreakpointValue(instance.instance, value)
 }
@@ -366,8 +381,8 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *Instance) Id() string {
+// ID returns an identifier for the instance, unique at runtime
+func (instance *Instance) ID() string {
 	return fmt.Sprintf("%p", instance.instance)
 }
 
@@ -379,12 +394,12 @@ func (instance *Instance) GetMemory() MemoryHandler {
 // Reset resets the instance memories and globals
 func (instance *Instance) Reset() bool {
 	if instance.AlreadyClean {
-		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.instance)
-	logWasmer.Trace("reset: warm instance", "id", instance.Id())
+	logWasmer.Trace("reset: warm instance", "id", instance.ID())
 	return result == cWasmerOk
 }
 

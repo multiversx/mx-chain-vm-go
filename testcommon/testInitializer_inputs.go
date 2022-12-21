@@ -6,14 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -27,8 +24,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var log = logger.GetOrCreate("arwen/host")
-
 // DefaultVMType is an exposed value to use in tests
 var DefaultVMType = []byte{0xF, 0xF}
 
@@ -37,6 +32,8 @@ var ErrAccountNotFound = errors.New("account not found")
 
 // UserAddress is an exposed value to use in tests
 var UserAddress = []byte("userAccount.....................")
+
+// UserAddress2 is an exposed value to use in tests
 var UserAddress2 = []byte("userAccount2....................")
 
 // AddressSize is the size of an account address, in bytes.
@@ -53,8 +50,6 @@ var ChildAddress = MakeTestSCAddress("childSC")
 
 // NephewAddress is an exposed value to use in tests
 var NephewAddress = MakeTestSCAddress("NephewAddress")
-
-var customGasSchedule = config.GasScheduleMap(nil)
 
 // ESDTTransferGasCost is an exposed value to use in tests
 var ESDTTransferGasCost = uint64(1)
@@ -105,18 +100,6 @@ func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs strin
 	return GetSCCode(pathToSC)
 }
 
-// BuildSCModule invokes erdpy to build the contract into a WASM module
-func BuildSCModule(scName string, prefixToTestSCs string) {
-	pathToSCDir := prefixToTestSCs + "test/contracts/" + scName
-	out, err := exec.Command("erdpy", "contract", "build", "--no-optimization", pathToSCDir).Output()
-	if err != nil {
-		log.Error("error building contract", "err", err, "contract", pathToSCDir)
-		return
-	}
-
-	log.Info("contract built", "output", fmt.Sprintf("\n%s", out))
-}
-
 // DefaultTestArwenForDeployment creates an Arwen vmHost configured for testing deployments
 func DefaultTestArwenForDeployment(t *testing.T, _ uint64, newAddress []byte) (arwen.VMHost, *contextmock.BlockchainHookStub) {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
@@ -152,7 +135,7 @@ func DefaultTestArwenForCall(tb testing.TB, code []byte, balance *big.Int) (arwe
 	return host, stubBlockchainHook
 }
 
-// DefaultTestArwenForCall creates a BlockchainHookStub
+// DefaultTestArwenForCallSigSegv creates a BlockchainHookStub and a host
 func DefaultTestArwenForCallSigSegv(tb testing.TB, code []byte, balance *big.Int) (arwen.VMHost, *contextmock.BlockchainHookStub) {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
@@ -353,6 +336,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 			IsCheckExecuteOnReadOnlyFlagEnabledField:         true,
 		},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldmock.DefaultHasher,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -360,12 +344,13 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	return host, world
 }
 
-// DefaultTestArwen creates a host configured with a configured blockchain hook
+// DefaultTestArwen creates a host configured with a blockchain hook
 func DefaultTestArwen(tb testing.TB, blockchain vmcommon.BlockchainHook) arwen.VMHost {
 	customGasSchedule := config.GasScheduleMap(nil)
 	return DefaultTestArwenWithGasSchedule(tb, blockchain, customGasSchedule, false)
 }
 
+// DefaultTestArwenWithGasSchedule creates a host with the provided blockchain hook and gas schedule
 func DefaultTestArwenWithGasSchedule(
 	tb testing.TB,
 	blockchain vmcommon.BlockchainHook,
@@ -404,6 +389,7 @@ func DefaultTestArwenWithGasSchedule(
 			IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		},
 		WasmerSIGSEGVPassthrough: wasmerSIGSEGVPassthrough,
+		Hasher:                   worldmock.DefaultHasher,
 	})
 	require.Nil(tb, err)
 	require.NotNil(tb, host)
@@ -602,27 +588,6 @@ func MakeVMOutput() *vmcommon.VMOutput {
 	}
 }
 
-// MakeVMOutputError creates a vmcommon.VMOutput struct with default values
-// for errors
-func MakeVMOutputError() *vmcommon.VMOutput {
-	return &vmcommon.VMOutput{
-		ReturnCode:      vmcommon.ExecutionFailed,
-		ReturnMessage:   "",
-		ReturnData:      nil,
-		GasRemaining:    0,
-		GasRefund:       big.NewInt(0),
-		DeletedAccounts: nil,
-		TouchedAccounts: nil,
-		Logs:            nil,
-		OutputAccounts:  nil,
-	}
-}
-
-// AddFinishData appends the provided []byte to the ReturnData of the given vmOutput
-func AddFinishData(vmOutput *vmcommon.VMOutput, data []byte) {
-	vmOutput.ReturnData = append(vmOutput.ReturnData, data)
-}
-
 // AddNewOutputAccount creates a new vmcommon.OutputAccount from the provided arguments and adds it to OutputAccounts of the provided vmOutput
 func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, sender []byte, address []byte, balanceDelta int64, data []byte) *vmcommon.OutputAccount {
 	account := &vmcommon.OutputAccount{
@@ -644,36 +609,4 @@ func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, sender []byte, address []b
 	}
 	vmOutput.OutputAccounts[string(address)] = account
 	return account
-}
-
-// SetStorageUpdate sets a storage update to the provided vmcommon.OutputAccount
-func SetStorageUpdate(account *vmcommon.OutputAccount, key []byte, data []byte) {
-	keyString := string(key)
-	update, exists := account.StorageUpdates[keyString]
-	if !exists {
-		update = &vmcommon.StorageUpdate{}
-		account.StorageUpdates[keyString] = update
-	}
-	update.Offset = key
-	update.Data = data
-}
-
-// SetStorageUpdateStrings sets a storage update to the provided vmcommon.OutputAccount, from string arguments
-func SetStorageUpdateStrings(account *vmcommon.OutputAccount, key string, data string) {
-	SetStorageUpdate(account, []byte(key), []byte(data))
-}
-
-// OpenFile method opens the file from given path - does not close the file
-func OpenFile(relativePath string) (*os.File, error) {
-	path, err := filepath.Abs(relativePath)
-	if err != nil {
-		fmt.Printf("cannot create absolute path for the provided file: %s", err.Error())
-		return nil, err
-	}
-	f, err := os.Open(filepath.Clean(path))
-	if err != nil {
-		return nil, err
-	}
-
-	return f, nil
 }

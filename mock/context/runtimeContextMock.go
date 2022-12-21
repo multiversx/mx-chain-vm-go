@@ -224,9 +224,14 @@ func (r *RuntimeContextMock) SetReadOnly(readOnly bool) {
 	r.ReadOnlyFlag = readOnly
 }
 
-// GetInstance mocked method()
+// GetInstance mocked method
 func (r *RuntimeContextMock) GetInstance() wasmer.InstanceHandler {
 	return nil
+}
+
+// GetWarmInstance mocked method
+func (r *RuntimeContextMock) GetWarmInstance(codeHash []byte) (wasmer.InstanceHandler, bool) {
+	return nil, false
 }
 
 // GetInstanceExports mocked method
@@ -351,9 +356,13 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 	return nil
 }
 
-// NumRunningInstances -
-func (r *RuntimeContextMock) NumRunningInstances() (int, int) {
-	return 0, 0
+// EndExecution -
+func (r *RuntimeContextMock) EndExecution() {
+}
+
+// ValidateInstances -
+func (r *RuntimeContextMock) ValidateInstances() error {
+	return nil
 }
 
 // CleanInstance mocked method

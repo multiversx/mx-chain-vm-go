@@ -41,7 +41,7 @@ func getInvalidScenarioWithBenchmark() ScenarioWithBenchmark {
 		DeployedAccs:   nil,
 		Txs:            nil,
 		DeployTxs:      nil,
-		BenchmarkTxPos: -1,
+		BenchmarkTxPos: InvalidBenchmarkTxPos,
 	}
 }
 
@@ -67,7 +67,7 @@ func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 }
 
 func getAccountsAndTransactionsFromSteps(steps []mj.Step) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
-	stateAndBenchmarkInfo.BenchmarkTxPos = -1
+	stateAndBenchmarkInfo.BenchmarkTxPos = InvalidBenchmarkTxPos
 
 	if len(steps) == 0 {
 		return getInvalidScenarioWithBenchmark(), errNoStepsProvided
@@ -181,7 +181,7 @@ func convertMandosAccountToTestAccount(mandosAcc *mj.Account) (*TestAccount, err
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
+	_ = esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
 	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value, mandosAcc.Owner.Value)
 
 	if len(account.code) != 0 && len(account.ownerAddress) == 0 {
@@ -208,7 +208,7 @@ func stepIsExternalStep(step mj.Step) bool {
 }
 
 func benchmarkTxPosIsNotSet(benchmarkTxPos int) bool {
-	return benchmarkTxPos == -1
+	return benchmarkTxPos == InvalidBenchmarkTxPos
 }
 
 func txIdRequiresBenchmark(txIdent string) bool {
