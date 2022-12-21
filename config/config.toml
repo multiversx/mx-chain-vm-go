@@ -6,9 +6,6 @@
     ReleasePerByte    = 10
     AoTPreparePerByte = 10
 
-[MaxPerTransaction]
-    MaxNumberOfTrieReadsPerTx = 10
-
 [ElrondAPICost]
     GetSCAddress       = 10
     GetOwnerAddress    = 10

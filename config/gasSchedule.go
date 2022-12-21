@@ -26,17 +26,6 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	maxPerTx := &MaxPerTransaction{}
-	err = mapstructure.Decode(gasMap["MaxPerTransaction"], maxPerTx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = checkForZeroUint64Fields(*maxPerTx)
-	if err != nil {
-		return nil, err
-	}
-
 	elrondOps := &ElrondAPICost{}
 	err = mapstructure.Decode(gasMap["ElrondAPICost"], elrondOps)
 	if err != nil {
@@ -123,7 +112,6 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       *opcodeCosts,
-		MaxPerTransaction:    *maxPerTx,
 	}
 
 	return gasCost, nil
@@ -154,7 +142,6 @@ func MakeGasMap(value, asyncCallbackGasLock uint64) GasScheduleMap {
 func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasScheduleMap {
 	gasMap["BuiltInCost"] = FillGasMap_BuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMap_BaseOperationCosts(value)
-	gasMap["MaxPerTransaction"] = FillGasMap_MaxPerTransaction()
 	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock)
 	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
@@ -198,12 +185,6 @@ func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
 	gasMap["AoTPreparePerByte"] = value
 	gasMap["GetCode"] = value
 
-	return gasMap
-}
-
-func FillGasMap_MaxPerTransaction() map[string]uint64 {
-	gasMap := make(map[string]uint64)
-	gasMap["MaxNumberOfTrieReadsPerTx"] = 100
 	return gasMap
 }
 

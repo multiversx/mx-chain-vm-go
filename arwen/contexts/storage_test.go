@@ -325,7 +325,6 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	gasMap["BaseOperationCost"]["StorePerByte"] = uint64(storeCost)
 	gasMap["BaseOperationCost"]["PersistPerByte"] = uint64(persistCost)
 	gasMap["BaseOperationCost"]["ReleasePerByte"] = uint64(releaseCost)
-	gasMap["MaxPerTransaction"]["MaxNumberOfTrieReadsPerTx"] = 1000
 
 	mockRuntime := &contextmock.RuntimeContextMock{}
 	mockMetering := &contextmock.MeteringContextMock{}

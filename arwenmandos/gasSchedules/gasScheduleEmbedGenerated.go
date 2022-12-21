@@ -181,7 +181,7 @@ const (
     BigIntGetExternalBalance    = 10000
     CopyPerByteForTooBig        = 1000
 
-    [BigFloatAPICost]
+[BigFloatAPICost]
     BigFloatNewFromParts = 3000
     BigFloatAdd          = 7000
     BigFloatSub          = 7000
@@ -241,9 +241,6 @@ const (
     MBufferGetArgument           = 1000
     MBufferFinish                = 1000
     MBufferSetRandom             = 6000
-
-[MaxPerTransaction]
-    MaxNumberOfTrieReadsPerTx = 100
 
 [WASMOpcodeCost]
     Unreachable = 1
@@ -762,7 +759,7 @@ const (
     GetNumArguments    = 100
     StorageStore       = 75000
     StorageLoad        = 50000
-    CachedStorageLoad  = 100    
+    CachedStorageLoad  = 100
     GetCaller          = 100
     GetCallValue       = 100
     Log                = 3750
@@ -873,7 +870,7 @@ const (
     BigIntGetExternalBalance    = 10000
     CopyPerByteForTooBig        = 1000
 
-    [BigFloatAPICost]
+[BigFloatAPICost]
     BigFloatNewFromParts = 3000
     BigFloatAdd          = 7000
     BigFloatSub          = 7000
@@ -892,7 +889,7 @@ const (
     BigFloatSetBigInt    = 3000
     BigFloatSetInt64     = 1000
     BigFloatGetConst     = 1000
-    
+
 [CryptoAPICost]
     SHA256                 = 1000000
     Keccak256              = 1000000
@@ -933,9 +930,6 @@ const (
     MBufferGetArgument           = 1000
     MBufferFinish                = 1000
     MBufferSetRandom             = 6000
-
-[MaxPerTransaction]
-    MaxNumberOfTrieReadsPerTx = 100
 
 [WASMOpcodeCost]
     Unreachable = 5
