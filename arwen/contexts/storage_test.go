@@ -310,7 +310,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
 }
 
-func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
+func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	address := []byte("account")
 	mockOutput := &contextmock.OutputContextMock{}
 	account := mockOutput.NewVMOutputAccount(address)
