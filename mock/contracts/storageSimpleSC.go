@@ -18,7 +18,7 @@ func LoadStore(instanceMock *mock.InstanceMock, _ interface{}) {
 		}
 
 		key := arguments[0]
-		elrondapi.StorageLoadWithWithTypedArgs(host, key)
+		_, _ = elrondapi.StorageLoadWithWithTypedArgs(host, key)
 		value, _ := elrondapi.StorageLoadWithWithTypedArgs(host, key)
 
 		host.Output().Finish(value)
@@ -41,7 +41,7 @@ func LoadStoreFromAddress(instanceMock *mock.InstanceMock, _ interface{}) {
 		address := arguments[0]
 		key := arguments[1]
 
-		elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
+		_, _ = elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
 		value, _ := elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
 
 		host.Output().Finish(value)
