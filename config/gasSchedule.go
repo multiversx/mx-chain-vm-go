@@ -9,6 +9,8 @@ import (
 
 const GasValueForTests = 1
 
+const isNegativeNumber = 1
+
 var AsyncCallbackGasLockForTests = uint64(100_000)
 
 // GasScheduleMap (alias) is the map for gas schedule
@@ -103,10 +105,20 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	dynamicStorageLoadParams := &DynamicStorageLoad{}
-	err = mapstructure.Decode(gasMap["DynamicStorageLoad"], dynamicStorageLoadParams)
+	dynamicStorageLoadUnsigned := &DynamicStorageLoadUnsigned{}
+	err = mapstructure.Decode(gasMap["DynamicStorageLoad"], dynamicStorageLoadUnsigned)
 	if err != nil {
 		return nil, err
+	}
+
+	a := getSignedCoefficient(dynamicStorageLoadUnsigned.A, dynamicStorageLoadUnsigned.SignOfA)
+	b := getSignedCoefficient(dynamicStorageLoadUnsigned.B, dynamicStorageLoadUnsigned.SignOfB)
+	c := getSignedCoefficient(dynamicStorageLoadUnsigned.C, dynamicStorageLoadUnsigned.SignOfC)
+
+	dynamicStorageLoadParams := &DynamicStorageLoad{
+		A: a,
+		B: b,
+		C: c,
 	}
 
 	gasCost := &GasCost{
@@ -122,6 +134,14 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	}
 
 	return gasCost, nil
+}
+
+func getSignedCoefficient(coefficient uint64, sign uint64) int64 {
+	if sign == isNegativeNumber {
+		return int64(coefficient) * -1
+	}
+
+	return int64(coefficient)
 }
 
 func checkForZeroUint64Fields(arg interface{}) error {

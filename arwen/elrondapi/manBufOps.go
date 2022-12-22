@@ -680,7 +680,6 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
-	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := managedType.GetBytes(keyHandle)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
@@ -688,7 +687,7 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	}
 
 	storageBytes, trieDepth, usedCache := storage.GetStorage(key)
-	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, enableEpochsHandler)
+	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}

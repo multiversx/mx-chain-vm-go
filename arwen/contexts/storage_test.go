@@ -494,3 +494,144 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 
 	require.Equal(t, 0, len(storageContext.stateStack))
 }
+
+func TestStorageContext_GetStorageLoadCost(t *testing.T) {
+	t.Parallel()
+
+	t.Run("disabled DynamicGasCostForDataTrieStorageLoad returns static cost", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &mock.EnableEpochsHandlerStub{}
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+		trieDepth := int64(7)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, staticCost, cost)
+	})
+
+	t.Run("trie depth 0", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoad{
+					A: 2,
+					B: 3,
+					C: 5,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+		trieDepth := int64(0)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, uint64(0), cost)
+	})
+
+	t.Run("fx < 0", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoad{
+					A: 2,
+					B: 3,
+					C: -500,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.NotNil(t, err)
+		require.Equal(t, uint64(0), cost)
+	})
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoad{
+					A: 687,
+					B: 30483,
+					C: -15883,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, uint64(153707), cost)
+	})
+
+	t.Run("less than minimum gas cost returns static gas cost", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+			IsDynamicGasCostForDataTrieStorageLoadEnabledField: true,
+		}
+		mockMetering := &contextmock.MeteringContextMock{
+			GasCost: &config.GasCost{
+				DynamicStorageLoad: config.DynamicStorageLoad{
+					A: 2,
+					B: 5,
+					C: 6,
+				},
+			},
+		}
+
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+			MeteringContext:          mockMetering,
+		}
+
+		storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+		trieDepth := int64(5)
+		staticCost := uint64(40000)
+
+		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
+		require.Nil(t, err)
+		require.Equal(t, staticCost, cost)
+	})
+}

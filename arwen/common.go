@@ -1,7 +1,6 @@
 package arwen
 
 import (
-	"fmt"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 )
@@ -112,8 +111,6 @@ const (
 	// UpgradeFunctionName specifies if the call is an upgradeContract call
 	UpgradeFunctionName = "upgradeContract"
 )
-
-const isNegativeNumber = 1
 
 // CodeDeployInput contains code deploy state, whether it comes from a ContractCreateInput or a ContractCallInput
 type CodeDeployInput struct {
@@ -226,38 +223,4 @@ func (ac *AsyncGeneratedCall) GetValueBytes() []byte {
 // IsInterfaceNil returns true if there is no value under the interface
 func (ac *AsyncGeneratedCall) IsInterfaceNil() bool {
 	return ac == nil
-}
-
-func GetStorageLoadCost(trieDepth int64, metering MeteringContext, staticGasCost uint64, enableEpochsHandler vmcommon.EnableEpochsHandler) (uint64, error) {
-	if enableEpochsHandler.IsDynamicGasCostForDataTrieStorageLoadEnabled() {
-		return computeGasForStorageLoadBasedOnTrieDepth(trieDepth, metering.GasSchedule().DynamicStorageLoad)
-	}
-
-	return staticGasCost, nil
-}
-
-func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, quadraticCoefficients config.DynamicStorageLoad) (uint64, error) {
-	if trieDepth == 0 {
-		return 0, nil
-	}
-
-	a := getSignedCoefficient(quadraticCoefficients.A, quadraticCoefficients.SignOfA)
-	b := getSignedCoefficient(quadraticCoefficients.B, quadraticCoefficients.SignOfB)
-	c := getSignedCoefficient(quadraticCoefficients.C, quadraticCoefficients.SignOfC)
-
-	fx := a*trieDepth*trieDepth + b*trieDepth + c
-
-	if fx < 0 {
-		return 0, fmt.Errorf("invalid value for gas cost, a = %v, b = %v, c = %v, trie depth = %v", a, b, c, trieDepth)
-	}
-
-	return uint64(fx), nil
-}
-
-func getSignedCoefficient(coefficient uint64, sign uint64) int64 {
-	if sign == isNegativeNumber {
-		return int64(coefficient) * -1
-	}
-
-	return int64(coefficient)
 }

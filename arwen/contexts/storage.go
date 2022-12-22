@@ -3,15 +3,19 @@ package contexts
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 )
 
 var logStorage = logger.GetOrCreate("arwen/storage")
+
+const minimumStorageLoadCost = 10000
 
 type storageContext struct {
 	host                          arwen.VMHost
@@ -399,4 +403,38 @@ func (context *storageContext) IsUseDifferentGasCostFlagSet() bool {
 // IsInterfaceNil returns true if there is no value under the interface
 func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
+}
+
+// GetStorageLoadCost returns the gas cost for the storage load operation
+func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost uint64) (uint64, error) {
+	if context.host.EnableEpochsHandler().IsDynamicGasCostForDataTrieStorageLoadEnabled() {
+		return computeGasForStorageLoadBasedOnTrieDepth(trieDepth, context.host.Metering().GasSchedule().DynamicStorageLoad, staticGasCost)
+	}
+
+	return staticGasCost, nil
+}
+
+func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoad, staticGasCost uint64) (uint64, error) {
+	if trieDepth == 0 {
+		return 0, nil
+	}
+
+	fx := coefficients.A*trieDepth*trieDepth + coefficients.B*trieDepth + coefficients.C
+
+	if fx < 0 {
+		return 0, fmt.Errorf("invalid value for gas cost, a = %v, b = %v, c = %v, trie depth = %v",
+			coefficients.A, coefficients.B, coefficients.C, trieDepth)
+	}
+
+	if fx < minimumStorageLoadCost {
+		log.Error("invalid value for gas cost",
+			"a", coefficients.A,
+			"b", coefficients.B,
+			"c", coefficients.C,
+			"trie depth", trieDepth,
+		)
+		return staticGasCost, nil
+	}
+
+	return uint64(fx), nil
 }

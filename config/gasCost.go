@@ -69,7 +69,17 @@ type ElrondAPICost struct {
 	DeleteFromReturnData uint64
 }
 
+// DynamicStorageLoad holds the signed coefficients of the func that will compute the gas cost
+// based on the trie depth.
 type DynamicStorageLoad struct {
+	A int64
+	B int64
+	C int64
+}
+
+// DynamicStorageLoadUnsigned is used to store the coefficients for the func that will compute the gas cost
+// based on the trie depth. The coefficients are unsigned.
+type DynamicStorageLoadUnsigned struct {
 	A       uint64
 	SignOfA uint64
 	B       uint64

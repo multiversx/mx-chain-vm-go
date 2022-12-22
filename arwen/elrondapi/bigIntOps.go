@@ -399,7 +399,6 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	runtime := arwen.GetRuntimeContext(context)
 	storage := arwen.GetStorageContext(context)
 	metering := arwen.GetMeteringContext(context)
-	enableEpochsHandler := arwen.GetVMHost(context).EnableEpochsHandler()
 
 	key, err := runtime.MemLoad(keyOffset, keyLength)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
@@ -407,7 +406,7 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	}
 
 	bytes, trieDepth, usedCache := storage.GetStorage(key)
-	blockchainLoadCost, err := arwen.GetStorageLoadCost(int64(trieDepth), metering, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, enableEpochsHandler)
+	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned)
 	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}

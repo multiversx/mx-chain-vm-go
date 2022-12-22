@@ -80,3 +80,26 @@ func TestDecode_ZeroGasCostError(t *testing.T) {
 	err = checkForZeroUint64Fields(*wasmCosts)
 	assert.Error(t, err)
 }
+
+func Test_getSignedCoefficient(t *testing.T) {
+	gasScheduleMap := MakeGasMap(1, 1)
+
+	A := uint64(687)
+	B := uint64(30483)
+	C := uint64(15883)
+
+	gasMap := make(map[string]uint64)
+	gasMap["A"] = A
+	gasMap["SignOfA"] = 0
+	gasMap["B"] = B
+	gasMap["SignOfB"] = 0
+	gasMap["C"] = C
+	gasMap["SignOfC"] = 1
+	gasScheduleMap["DynamicStorageLoad"] = gasMap
+
+	gasCost, err := CreateGasConfig(gasScheduleMap)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(A), gasCost.DynamicStorageLoad.A)
+	assert.Equal(t, int64(B), gasCost.DynamicStorageLoad.B)
+	assert.Equal(t, int64(C)*-1, gasCost.DynamicStorageLoad.C)
+}
