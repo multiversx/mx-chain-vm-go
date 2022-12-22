@@ -64,10 +64,10 @@ func (j *OJsonList) writeJSON(sb *strings.Builder, indent int) {
 	sb.WriteString("]")
 }
 
-func (j *OJsonString) writeJSON(sb *strings.Builder, indent int) {
+func (j *OJsonString) writeJSON(sb *strings.Builder, _ int) {
 	sb.WriteString(fmt.Sprintf("\"%s\"", j.Value))
 }
 
-func (j *OJsonBool) writeJSON(sb *strings.Builder, indent int) {
+func (j *OJsonBool) writeJSON(sb *strings.Builder, _ int) {
 	sb.WriteString(fmt.Sprintf("%v", bool(*j)))
 }

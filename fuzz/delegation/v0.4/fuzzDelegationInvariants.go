@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -18,7 +19,7 @@ func (pfe *fuzzDelegationExecutor) checkNoUnexpectedBalance() error {
 
 	if unexpectedBalance.Sign() > 0 {
 		return fmt.Errorf(
-			"Should not have unexpected balance in the fuzzer. Unexpected balance: %d",
+			"should not have unexpected balance in the fuzzer. Unexpected balance: %d",
 			unexpectedBalance)
 	}
 

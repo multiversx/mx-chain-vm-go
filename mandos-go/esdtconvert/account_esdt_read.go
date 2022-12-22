@@ -90,18 +90,6 @@ func GetTokenRoles(tokenName []byte, source map[string][]byte) ([][]byte, error)
 
 }
 
-// GetTokenKeys returns the storage keys of all the ESDT tokens owned by the account.
-func GetTokenKeys(source map[string][]byte) [][]byte {
-	tokenKeys := make([][]byte, 0)
-	for key := range source {
-		if isTokenKey([]byte(key)) {
-			tokenKeys = append(tokenKeys, []byte(key))
-		}
-	}
-
-	return tokenKeys
-}
-
 // GetFullMockESDTData returns the information about all the ESDT tokens held by the account.
 func GetFullMockESDTData(source map[string][]byte, systemAccStorage map[string][]byte) (map[string]*MockESDTData, error) {
 	resultMap := make(map[string]*MockESDTData)

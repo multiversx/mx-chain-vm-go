@@ -9,9 +9,9 @@ import (
 	basicMath "math"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 const bigFloatPrecision = 53

@@ -21,15 +21,15 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
-var maxUint8AsInt = int(math.MaxUint8)
+var maxUint8AsInt = math.MaxUint8
 var newAddress = testcommon.MakeTestSCAddress("new smartcontract")
 var mBufferKey = []byte("mBuffer")
 var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
@@ -932,8 +932,8 @@ func buildRandomizer(host arwen.VMHost) io.Reader {
 
 func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	// mByteSetByteSlice not yet enabled
-	runTestMBufferSetByteSlice_Deploy(t, false, vmcommon.ContractInvalid)
-	runTestMBufferSetByteSlice_Deploy(t, true, vmcommon.Ok)
+	runTestMBufferSetByteSliceDeploy(t, false, vmcommon.ContractInvalid)
+	runTestMBufferSetByteSliceDeploy(t, true, vmcommon.Ok)
 
 	// Correct copying from "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" over "abcdefghijklmnopqrstuvwxyz"
 	runTestMBufferSetByteSlice(t, true, 0, 4, vmcommon.Ok, []byte("ABCDefghijklmnopqrstuvwxyz"))
@@ -950,7 +950,7 @@ func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	runTestMBufferSetByteSlice(t, true, 0, 27, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
 }
 
-func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
+func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
 	input := test.CreateTestContractCreateInputBuilder().
 		WithCallValue(1000).
 		WithGasProvided(100_000).
@@ -1464,7 +1464,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(callRecursive).
 			WithGasProvided(test.GasProvided).
-			WithArguments([]byte{byte(recursiveCalls)}).
+			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
@@ -1662,7 +1662,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(parentCallsChild).
 			WithGasProvided(10000).
-			WithArguments([]byte{byte(recursiveCalls)}).
+			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
@@ -2249,7 +2249,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 		})
 	}
 
-	testCase.GetVMHost().Close()
+	_ = testCase.GetVMHost().Close()
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
@@ -2271,7 +2271,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(parentCallsChild).
 			WithGasProvided(10000).
-			WithArguments([]byte{byte(recursiveCalls)}).
+			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
@@ -2375,7 +2375,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// many as requested. The parent calls the child using
 	// executeOnDestContextByCaller(), which means that the child will not see
 	// the parent as its caller, but the original caller of the transaction
-	// instead. Thus the original caller (the user address) will receive 42
+	// instead. Thus, the original caller (the user address) will receive 42
 	// tokens, and not the parent, even if the parent is the one making the call
 	// to the child.
 
@@ -3049,7 +3049,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 		})
 }
 
-var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
+var codeOpcodes = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
 	maxGrows := uint32(math.MaxUint32)

@@ -58,16 +58,6 @@ type CheckAccounts struct {
 	MoreAccountsAllowed bool
 }
 
-// FindAccount searches an account list by address.
-func FindAccount(accounts []*Account, address []byte) *Account {
-	for _, acct := range accounts {
-		if bytes.Equal(acct.Address.Value, address) {
-			return acct
-		}
-	}
-	return nil
-}
-
 // FindCheckAccount searches a check account list by address.
 func FindCheckAccount(accounts []*CheckAccount, address []byte) *CheckAccount {
 	for _, acct := range accounts {

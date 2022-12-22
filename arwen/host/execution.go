@@ -22,7 +22,7 @@ func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractCreate full error list"), "error", errs)
+			log.Trace("doRunSmartContractCreate full error list", "error", errs)
 		}
 	}()
 
@@ -120,7 +120,7 @@ func (host *vmHost) doRunSmartContractUpgrade(input *vmcommon.ContractCallInput)
 	defer func() {
 		errs := host.GetRuntimeErrors()
 		if errs != nil {
-			log.Trace(fmt.Sprintf("doRunSmartContractUpgrade full error list"), "error", errs)
+			log.Trace("doRunSmartContractUpgrade full error list", "error", errs)
 		}
 	}()
 
@@ -481,6 +481,7 @@ func (host *vmHost) isInitFunctionBeingCalled() bool {
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
 }
 
+//nolint:all
 func (host *vmHost) isBuiltinFunctionBeingCalled() bool {
 	functionName := host.Runtime().Function()
 	return host.IsBuiltinFunctionName(functionName)

@@ -24,7 +24,7 @@ func NewInstanceBuilderMock(world *worldmock.MockWorld) *InstanceBuilderMock {
 }
 
 // Id -
-func (instance *InstanceBuilderMock) Id() string {
+func (builder *InstanceBuilderMock) Id() string {
 	return ""
 }
 

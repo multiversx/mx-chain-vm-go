@@ -3,10 +3,10 @@ package testcommon
 import (
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type testTemplateConfig struct {
@@ -92,15 +92,6 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 	return func() *mock.InstanceMock {
 		host := instanceMock.Host
 		host.Metering().UseGas(gas)
-		instance := mock.GetMockInstance(host)
-		return instance
-	}
-}
-
-// Empty
-func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
-	return func() *mock.InstanceMock {
-		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
 		return instance
 	}
