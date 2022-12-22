@@ -960,12 +960,11 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
 	data, trieDepth, usedCache := storage.GetStorage(key)
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad)
+
+	err = storage.UseGasForStorageLoad(storageLoadName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
-
-	storage.UseGasForStorageLoad(storageLoadName, blockchainLoadCost, usedCache)
 
 	return getESDTRoles(data)
 }
@@ -1982,11 +1981,11 @@ func v1_4_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength i
 	}
 
 	data, trieDepth, usedCache := storage.GetStorageUnmetered(key)
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad)
+
+	err = storage.UseGasForStorageLoad(storageLoadLengthName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	storage.UseGasForStorageLoad(storageLoadLengthName, blockchainLoadCost, usedCache)
 
 	return int32(len(data))
 }
@@ -2036,11 +2035,11 @@ func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key 
 	metering := host.Metering()
 	data, trieDepth, usedCache := storage.GetStorageFromAddress(address, key)
 
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad)
+	err := storage.UseGasForStorageLoad(storageLoadFromAddressName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	if err != nil {
 		return []byte{}, err
 	}
-	storage.UseGasForStorageLoad(storageLoadFromAddressName, blockchainLoadCost, usedCache)
+
 	return data, nil
 }
 
@@ -2083,12 +2082,11 @@ func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) ([]byte, error)
 	metering := host.Metering()
 	data, trieDepth, usedCache := storage.GetStorage(key)
 
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad)
+	err := storage.UseGasForStorageLoad(storageLoadName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	storage.UseGasForStorageLoad(storageLoadName, blockchainLoadCost, usedCache)
 	return data, nil
 }
 
@@ -2146,12 +2144,10 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
 	data, trieDepth, usedCache := storage.GetStorage(timeLockKey)
 
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad)
+	err = storage.UseGasForStorageLoad(getStorageLockName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
-
-	storage.UseGasForStorageLoad(getStorageLockName, blockchainLoadCost, usedCache)
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
 
@@ -2342,12 +2338,10 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
 	data, trieDepth, _ := storage.GetStorageFromAddress(destination, key)
 
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad)
+	err = storage.UseGasForStorageLoad(getCurrentESDTNFTNonceName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.StorageLoad, false)
 	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
-
-	metering.UseGasAndAddTracedGas(getCurrentESDTNFTNonceName, blockchainLoadCost)
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
 	return int64(nonce)

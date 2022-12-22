@@ -245,13 +245,12 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	}
 
 	data, trieDepth, usedCache := storage.GetStorage(key)
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.Int64StorageLoad)
+
+	err = storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 	if err != nil {
 		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
-
-	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, blockchainLoadCost, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
@@ -274,13 +273,12 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	}
 
 	data, trieDepth, usedCache := storage.GetStorage(key)
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ElrondAPICost.Int64StorageLoad)
+
+	err = storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, int64(trieDepth), metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 	if err != nil {
 		_ = arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
-
-	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, blockchainLoadCost, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {

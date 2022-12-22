@@ -110,16 +110,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	a := getSignedCoefficient(dynamicStorageLoadUnsigned.A, dynamicStorageLoadUnsigned.SignOfA)
-	b := getSignedCoefficient(dynamicStorageLoadUnsigned.B, dynamicStorageLoadUnsigned.SignOfB)
-	c := getSignedCoefficient(dynamicStorageLoadUnsigned.C, dynamicStorageLoadUnsigned.SignOfC)
-
-	dynamicStorageLoadParams := &DynamicStorageLoad{
-		A: a,
-		B: b,
-		C: c,
-	}
+	dynamicStorageLoadParams := convertFromUnsignedToSigned(dynamicStorageLoadUnsigned)
 
 	gasCost := &GasCost{
 		BaseOperationCost:    *baseOps,
@@ -134,6 +125,18 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	}
 
 	return gasCost, nil
+}
+
+func convertFromUnsignedToSigned(dynamicStorageLoadUnsigned *DynamicStorageLoadUnsigned) *DynamicStorageLoad {
+	a := getSignedCoefficient(dynamicStorageLoadUnsigned.A, dynamicStorageLoadUnsigned.SignOfA)
+	b := getSignedCoefficient(dynamicStorageLoadUnsigned.B, dynamicStorageLoadUnsigned.SignOfB)
+	c := getSignedCoefficient(dynamicStorageLoadUnsigned.C, dynamicStorageLoadUnsigned.SignOfC)
+
+	return &DynamicStorageLoad{
+		A: a,
+		B: b,
+		C: c,
+	}
 }
 
 func getSignedCoefficient(coefficient uint64, sign uint64) int64 {

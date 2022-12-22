@@ -384,14 +384,20 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 }
 
 // UseGasForStorageLoad - single spot of gas consumption for storage load
-func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, loadCost uint64, usedCache bool) {
+func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, staticGasCost uint64, usedCache bool) error {
+	blockchainLoadCost, err := context.GetStorageLoadCost(trieDepth, staticGasCost)
+	if err != nil {
+		return err
+	}
+
 	metering := context.host.Metering()
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
-		loadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
+		blockchainLoadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
 	}
 
-	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)
+	metering.UseGasAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
+	return nil
 }
 
 // IsUseDifferentGasCostFlagSet - getter for flag

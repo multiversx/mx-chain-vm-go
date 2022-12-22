@@ -687,12 +687,11 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 	}
 
 	storageBytes, trieDepth, usedCache := storage.GetStorage(key)
-	blockchainLoadCost, err := storage.GetStorageLoadCost(int64(trieDepth), metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad)
+
+	err = storage.UseGasForStorageLoad(mBufferStorageLoadName, int64(trieDepth), metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
 	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
-
-	storage.UseGasForStorageLoad(mBufferStorageLoadName, blockchainLoadCost, usedCache)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
 
