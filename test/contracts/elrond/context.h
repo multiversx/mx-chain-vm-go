@@ -75,16 +75,6 @@ int executeOnDestContext(
 		byte *argumentsLengths,
 		byte *arguments);
 
-int executeOnDestContextByCaller(
-		long long gas,
-		byte *address,
-		byte *value,
-		byte *function,
-		int functionLength,
-		int numArguments,
-		byte *argumentsLengths,
-		byte *arguments);
-
 int createContract(
 		long long gas,
 		byte *value,
@@ -95,6 +85,17 @@ int createContract(
 		int numInitArgs,
 		byte *initArgLengths,
 		byte *initArgs);
+
+void upgradeContract(
+		byte *destContractAddress,
+		long long gas,
+		byte *value,
+		byte *code,
+		byte *codeMetadata,
+		int codeLen,
+		int numInitArgs,
+		byte *initArgLengths,
+		byte *initArgs);	
 
 int deployFromSourceContract(
 		long long gas,

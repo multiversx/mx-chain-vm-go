@@ -102,7 +102,7 @@ func TestManBuffers_SetRandom(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.Ok().
 				ReturnData(randomBuffer)
@@ -140,7 +140,7 @@ func TestManBuffers_GetBytes(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.Ok().
 				ReturnData(randomBuffer, randomBuffer[:numberOfReps])
@@ -163,7 +163,7 @@ func TestManBuffers_AppendBytes(t *testing.T) {
 			finalBuffer := make([]byte, 0)
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				finalBuffer = append(finalBuffer, randomBuffer...)
 			}
 			verify.Ok().
@@ -186,7 +186,7 @@ func TestManBuffers_mBufferToBigIntUnsigned(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.Ok().
 				ReturnData(randomBuffer, randomBuffer)
@@ -208,7 +208,7 @@ func TestManBuffers_mBufferToBigIntSigned(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			expectedBuffer := twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:]
 			verify.Ok().
@@ -231,7 +231,7 @@ func TestManBuffers_mBufferFromBigIntUnsigned(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			verify.Ok().
 				ReturnData(randomBuffer, randomBuffer)
@@ -253,7 +253,7 @@ func TestManBuffers_mBufferFromBigIntSigned(t *testing.T) {
 
 			randomBuffer := make([]byte, numberOfReps)
 			for i := 0; i < numberOfReps; i++ {
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(randomBuffer)
 			}
 			expectedBuffer := twoscomplement.ToBytes(big.NewInt(0).SetBytes(randomBuffer))[1:]
 			verify.Ok().
@@ -280,8 +280,8 @@ func TestManBuffers_StorageStore(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {
@@ -314,8 +314,8 @@ func TestManBuffers_StorageLoad(t *testing.T) {
 			for i := 0; i < numberOfReps; i++ {
 				keyBuffer := make([]byte, 5)
 				randomBuffer := make([]byte, numberOfReps)
-				randReader.Read(keyBuffer)
-				randReader.Read(randomBuffer)
+				_, _ = randReader.Read(keyBuffer)
+				_, _ = randReader.Read(randomBuffer)
 				entry := test.CreateStoreEntry(test.ParentAddress).WithKey(keyBuffer).WithValue(randomBuffer)
 				storage = append(storage, entry)
 				if i == numberOfReps-1 {

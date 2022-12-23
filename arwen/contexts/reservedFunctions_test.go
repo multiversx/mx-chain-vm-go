@@ -3,10 +3,10 @@ package contexts
 import (
 	"testing"
 
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/stretchr/testify/require"
 )
 

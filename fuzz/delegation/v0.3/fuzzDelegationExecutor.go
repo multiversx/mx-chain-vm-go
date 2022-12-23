@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strings"
 
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
 	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
@@ -14,7 +15,6 @@ import (
 	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type fuzzDelegationExecutor struct {
@@ -97,13 +97,14 @@ func (pfe *fuzzDelegationExecutor) nextTxIndex() int {
 	return pfe.txIndex
 }
 
+//nolint:all
 func (pfe *fuzzDelegationExecutor) getContractBalance() *big.Int {
 	acct := pfe.world.AcctMap.GetAccount(pfe.delegationContractAddress)
 	return acct.Balance
 }
 
 func (pfe *fuzzDelegationExecutor) getDelegatorBalance(delegIndex int) *big.Int {
-	delegAddr := []byte(pfe.delegatorAddress(delegIndex))
+	delegAddr := pfe.delegatorAddress(delegIndex)
 	acct := pfe.world.AcctMap.GetAccount(delegAddr)
 	return acct.Balance
 }
@@ -247,28 +248,4 @@ func blsKeySignatureArgsString(startIndex, numNodes int) string {
 		blsKeyArgs = append(blsKeyArgs, "\"''"+blsSignature(i)+"\"")
 	}
 	return strings.Join(blsKeyArgs, ",")
-}
-
-func blsKeyArgsString(numNodes int) string {
-	var blsKeyArgs []string
-	for i := 0; i < numNodes; i++ {
-		blsKey := fmt.Sprintf(
-			"bls key %5d ..................................................................................",
-			i)
-		blsKeyArg := "\"''" + blsKey + "\""
-		blsKeyArgs = append(blsKeyArgs, blsKeyArg)
-	}
-	return strings.Join(blsKeyArgs, ",")
-}
-
-func blsSignatureArgsString(numNodes int) string {
-	var blsSigArgs []string
-	for i := 0; i < numNodes; i++ {
-		blsSig := fmt.Sprintf(
-			"bls key signature %5d ........",
-			i)
-		blsSigArg := "\"''" + blsSig + "\""
-		blsSigArgs = append(blsSigArgs, blsSigArg)
-	}
-	return strings.Join(blsSigArgs, ",")
 }

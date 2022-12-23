@@ -63,6 +63,7 @@ func getHostParameters() *arwen.VMHostParameters {
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldmock.DefaultHasher,
 	}
 }
 

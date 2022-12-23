@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	arwen "github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,10 +30,6 @@ func unsignedInterpreter(bytes []byte) *big.Int {
 	return big.NewInt(0).SetBytes(bytes)
 }
 
-func signedInterpreter(bytes []byte) *big.Int {
-	return twos.FromBytes(bytes)
-}
-
 func appendBinaryOpTestCase(
 	testCases []*pureFunctionIO,
 	opName string, signed bool,
@@ -48,7 +44,7 @@ func appendBinaryOpTestCase(
 		typeName = "big_uint"
 	}
 
-	expectedResults := [][]byte{}
+	expectedResults := make([][]byte, 0)
 	if expectedStatus == vmi.Ok {
 		expectedResults = [][]byte{result}
 	}

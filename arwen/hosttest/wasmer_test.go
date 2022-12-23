@@ -256,8 +256,12 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 
 	assertFunc := func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData([]byte(keyword))
-		instance := host.Runtime().GetInstance()
+
+		codeHash := host.Blockchain().GetCodeHash(test.ParentAddress)
+		instance, ok := host.Runtime().GetWarmInstance(codeHash)
+		require.True(t, ok)
 		require.NotNil(verify.T, instance)
+
 		memory := instance.GetMemory().Data()
 		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
@@ -286,8 +290,12 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 
 	assertFunc := func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData([]byte(keyword))
-		instance := host.Runtime().GetInstance()
+
+		codeHash := host.Blockchain().GetCodeHash(test.ParentAddress)
+		instance, ok := host.Runtime().GetWarmInstance(codeHash)
+		require.True(t, ok)
 		require.NotNil(verify.T, instance)
+
 		memory := instance.GetMemory().Data()
 		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
@@ -335,7 +343,7 @@ func TestWASMCreateAndCall(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCreate(deployInput)
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
 	verify.Ok()
-	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	_ = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
 
 	input := test.CreateTestContractCallInputBuilder().
 		WithGasProvided(100000).

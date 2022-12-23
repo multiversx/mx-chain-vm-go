@@ -55,6 +55,7 @@ func (imports *Imports) Namespace(namespace string) *Imports {
 	return imports
 }
 
+// Count returns the number of imports
 func (imports *Imports) Count() int {
 	count := 0
 	for _, namespacedImports := range imports.imports {
@@ -63,6 +64,7 @@ func (imports *Imports) Count() int {
 	return count
 }
 
+// Names returns a map of function names
 func (imports *Imports) Names() vmcommon.FunctionNames {
 	names := make(vmcommon.FunctionNames)
 	var empty struct{}
@@ -84,6 +86,7 @@ func convertArgType(argType elrondapimeta.EIFunctionValue) cWasmerValueTag {
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
+// ConvertImports creates an Imports object from an EIFunctions struct
 func ConvertImports(eiFunctions *elrondapimeta.EIFunctions) *Imports {
 	imports := NewImports()
 
@@ -135,14 +138,6 @@ func (imports *Imports) Close() {
 type InstanceContext struct {
 	context *cWasmerInstanceContextT
 	memory  MemoryHandler
-}
-
-// NewInstanceContext creates a new wasmer context given a cWasmerInstance and a memory
-func NewInstanceContext(ctx *cWasmerInstanceContextT, mem Memory) *InstanceContext {
-	return &InstanceContext{
-		context: ctx,
-		memory:  &mem,
-	}
 }
 
 // IntoInstanceContext casts the first `context unsafe.Pointer`

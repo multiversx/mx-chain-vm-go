@@ -98,7 +98,7 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
-				ReturnMessage("Return value 1").
+				ReturnMessage("return value 1").
 				HasRuntimeErrors("whatdidyoudo").
 				GasRemaining(0)
 		})

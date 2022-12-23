@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 )
 
 // ErrTrieHandlingNotImplemented indicates that no trie-related operations are

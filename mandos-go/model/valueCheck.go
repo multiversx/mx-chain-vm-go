@@ -37,16 +37,6 @@ func JSONCheckBytesStar() JSONCheckBytes {
 	}
 }
 
-// JSONCheckBytesStar yields JSONCheckBytes explicit "*" value.
-func JSONCheckListStar() JSONCheckBytes {
-	return JSONCheckBytes{
-		Value:       []byte{},
-		IsStar:      true,
-		Original:    &oj.OJsonList{&oj.OJsonString{Value: "*"}},
-		Unspecified: false,
-	}
-}
-
 // JSONCheckBytesReconstructed creates a JSONCheckBytes without an original JSON source.
 func JSONCheckBytesReconstructed(value []byte, originalString string) JSONCheckBytes {
 	return JSONCheckBytes{

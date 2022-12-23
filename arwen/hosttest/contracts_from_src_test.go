@@ -10,8 +10,8 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -79,10 +79,10 @@ func TestDeployFromSource_Success(t *testing.T) {
 	deployedCode := testConfig.deployedContractAddress /* this is the actual mock code of the deployed contract */
 	deployedCodeLen := uint64(len(deployedCode))
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
+		verify.Ok()
+
 		newContractAddress := verify.VmOutput.ReturnData[0]
-		verify.
-			Ok().
-			Code(newContractAddress, deployedCode).
+		verify.Code(newContractAddress, deployedCode).
 			GasRemaining(testConfig.gasProvided -
 				testConfig.gasUsedByInit -
 				deployedCodeLen*testConfig.compilePerByteCost -

@@ -1,5 +1,9 @@
 package mock
 
+import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+
+var _ vmcommon.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
+
 // EnableEpochsHandlerStub -
 type EnableEpochsHandlerStub struct {
 	IsGlobalMintBurnFlagEnabledField                     bool
@@ -30,6 +34,7 @@ type EnableEpochsHandlerStub struct {
 	IsESDTNFTImprovementV1FlagEnabledField               bool
 	IsFixOldTokenLiquidityEnabledField                   bool
 	IsRuntimeMemStoreLimitEnabledField                   bool
+	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
 	FixOOGReturnCodeEnableEpochField                     uint32
 	RemoveNonUpdatedStorageEnableEpochField              uint32
@@ -180,6 +185,11 @@ func (stub *EnableEpochsHandlerStub) IsESDTNFTImprovementV1FlagEnabled() bool {
 // IsRuntimeMemStoreLimitEnabled -
 func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
 	return stub.IsRuntimeMemStoreLimitEnabledField
+}
+
+// IsWipeSingleNFTLiquidityDecreaseEnabled -
+func (stub *EnableEpochsHandlerStub) IsWipeSingleNFTLiquidityDecreaseEnabled() bool {
+	return stub.IsWipeSingleNFTLiquidityDecreaseEnabledField
 }
 
 // MultiESDTTransferAsyncCallBackEnableEpoch -

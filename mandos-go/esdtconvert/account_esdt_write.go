@@ -3,10 +3,10 @@ package esdtconvert
 import (
 	"math/big"
 
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
 )
 
 func MakeESDTUserMetadataBytes(frozen bool) []byte {
@@ -15,35 +15,6 @@ func MakeESDTUserMetadataBytes(frozen bool) []byte {
 	}
 
 	return metadata.ToBytes()
-}
-
-func WriteMockESDTToStorage(esdtData map[string]*MockESDTData, destination map[string][]byte) error {
-	for _, token := range esdtData {
-		tokenIdentifier := token.TokenIdentifier
-		for _, instance := range token.Instances {
-			tokenNonce := instance.TokenMetaData.Nonce
-			tokenKey := makeTokenKey(tokenIdentifier, tokenNonce)
-			err := setTokenDataByKey(tokenKey, instance, destination)
-			if err != nil {
-				return err
-			}
-		}
-		err := SetLastNonce(tokenIdentifier, token.LastNonce, destination)
-		if err != nil {
-			return err
-		}
-
-		rolesAsStrings := make([]string, len(token.Roles))
-		for i, roleBytes := range token.Roles {
-			rolesAsStrings[i] = string(roleBytes)
-		}
-		err = SetTokenRolesAsStrings(tokenIdentifier, rolesAsStrings, destination)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {

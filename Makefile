@@ -115,7 +115,7 @@ build-test-contracts-erdpy:
 	erdpy contract build ./test/contracts/promises-tracking
 	erdpy contract build ./test/contracts/signatures
 	erdpy contract build ./test/contracts/timelocks
-	erdpy contract build ./test/contracts/upgrader-fromanother-contract
+	erdpy contract build ./test/contracts/upgrader
 
 build-delegation:
 ifndef SANDBOX
@@ -166,3 +166,15 @@ endif
 	erdpy contract test ${SANDBOX}/sc-examples-rs/simple-coin
 	cp ${SANDBOX}/sc-examples-rs/adder/output/adder.wasm ./test/adder/adder.wasm
 	cp ${SANDBOX}/sc-examples-rs/simple-coin/output/simple-coin.wasm ./test/erc20/contracts/simple-coin.wasm
+
+lint-install:
+ifeq (,$(wildcard test -f bin/golangci-lint))
+	@echo "Installing golint"
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s
+endif
+
+run-lint:
+	@echo "Running golint"
+	bin/golangci-lint run --max-issues-per-linter 0 --max-same-issues 0 --timeout=2m
+
+lint: lint-install run-lint

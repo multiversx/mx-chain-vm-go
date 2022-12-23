@@ -4,12 +4,12 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -541,7 +541,6 @@ func TestMeteringContext_GasTracer(t *testing.T) {
 	meteringContext.gasForExecution = gasProvided
 	gasUsed1 := uint64(1000)
 	gasUsed2 := uint64(3000)
-	//gasUsed3 := uint64(5000)
 
 	require.NotNil(t, meteringContext.gasTracer)
 

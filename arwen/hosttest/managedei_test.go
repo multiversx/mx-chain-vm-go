@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/cryptoapi"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
@@ -19,8 +21,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,7 +63,7 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 
 						managedTypes := host.ManagedTypes()
 						addressHandle = managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
-						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
+						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
 						retValue := elrondapi.ManagedIsESDTFrozenWithHost(
 							host,
@@ -102,14 +102,14 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 }
 
 func Test_ManagedIsESDTFrozen_IsPaused(t *testing.T) {
-	testManagedIsESDTFrozen_IsPaused(t, true)
+	testManagedIsESDTFrozenIsPaused(t, true)
 }
 
 func Test_ManagedIsESDTFrozen_IsNotPaused(t *testing.T) {
-	testManagedIsESDTFrozen_IsPaused(t, false)
+	testManagedIsESDTFrozenIsPaused(t, false)
 }
 
-func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
+func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 	testConfig := baseTestConfig
 
 	var tokenIDHandle int32
@@ -129,7 +129,7 @@ func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
-						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
+						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
 						retValue := elrondapi.ManagedIsESDTPausedWithHost(
 							host,
@@ -156,14 +156,14 @@ func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
 }
 
 func Test_ManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T) {
-	testManagedIsESDTFrozen_IsLimitedTransfer(t, true)
+	testManagedIsESDTFrozenIsLimitedTransfer(t, true)
 }
 
 func Test_ManagedIsESDTFrozen_IsNotLimitedTransfer(t *testing.T) {
-	testManagedIsESDTFrozen_IsLimitedTransfer(t, false)
+	testManagedIsESDTFrozenIsLimitedTransfer(t, false)
 }
 
-func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer bool) {
+func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bool) {
 	testConfig := baseTestConfig
 
 	var tokenIDHandle int32
@@ -183,7 +183,7 @@ func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer b
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
-						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
+						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
 						retValue := elrondapi.ManagedIsESDTLimitedTransferWithHost(
 							host,
