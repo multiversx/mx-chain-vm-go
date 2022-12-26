@@ -222,14 +222,11 @@ var ErrNilEnableEpochsHandler = errors.New("nil enable epochs handler")
 // ErrNilHasher signals that the provided hasher is nil
 var ErrNilHasher = errors.New("nil hasher")
 
-// ErrNotBuiltInNFTCreate signals that function is not of built in NFT create
-var ErrNotBuiltInNFTCreate = errors.New("not built in NFT create")
+// ErrNilVMHost signals that the VM Host is nil
+var ErrNilVMHost = errors.New("nil VM Host")
 
-// ErrCallNotAllowedOnCallback  signals that call is not allowed on callback
-var ErrCallNotAllowedOnCallback = errors.New("call not allowed on callback")
-
-// ErrCallerIsSC signals that caller is a smart contract
-var ErrCallerIsSC = errors.New("caller is a smart contract")
+// ErrEmptyProtectedKeyPrefix signals that the protected key prefix is empty or nil
+var ErrEmptyProtectedKeyPrefix = errors.New("protectedKeyPrefix is empty or nil")
 
 // ErrVMIsClosing signals that vm is closing
 var ErrVMIsClosing = errors.New("vm is closing")

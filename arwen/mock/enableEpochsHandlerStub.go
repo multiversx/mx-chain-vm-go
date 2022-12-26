@@ -34,6 +34,7 @@ type EnableEpochsHandlerStub struct {
 	IsESDTNFTImprovementV1FlagEnabledField               bool
 	IsFixOldTokenLiquidityEnabledField                   bool
 	IsRuntimeMemStoreLimitEnabledField                   bool
+	IsMaxBlockchainHookCountersFlagEnabledField          bool
 	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 	MultiESDTTransferAsyncCallBackEnableEpochField       uint32
 	FixOOGReturnCodeEnableEpochField                     uint32
@@ -185,6 +186,11 @@ func (stub *EnableEpochsHandlerStub) IsESDTNFTImprovementV1FlagEnabled() bool {
 // IsRuntimeMemStoreLimitEnabled -
 func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
 	return stub.IsRuntimeMemStoreLimitEnabledField
+}
+
+// IsMaxBlockchainHookCountersFlagEnabled -
+func (stub *EnableEpochsHandlerStub) IsMaxBlockchainHookCountersFlagEnabled() bool {
+	return stub.IsMaxBlockchainHookCountersFlagEnabledField
 }
 
 // IsWipeSingleNFTLiquidityDecreaseEnabled -

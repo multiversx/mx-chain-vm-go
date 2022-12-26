@@ -6,12 +6,14 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
 	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
 	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,17 +22,49 @@ var elrondReservedTestPrefix = []byte("RESERVED")
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
 
-	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
-		IsStorageAPICostOptimizationFlagEnabledField: true,
-	}
-	host := &contextmock.VMHostMock{
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
-	mockBlockchain := worldmock.NewMockWorld()
+	t.Run("empty protected key prefix should error", func(t *testing.T) {
+		t.Parallel()
 
-	storageContext, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
-	require.Nil(t, err)
-	require.NotNil(t, storageContext)
+		host := &contextmock.VMHostMock{}
+		mockBlockchain := worldmock.NewMockWorld()
+
+		storageCtx, err := NewStorageContext(host, mockBlockchain, make([]byte, 0))
+		require.Equal(t, arwen.ErrEmptyProtectedKeyPrefix, err)
+		require.True(t, check.IfNil(storageCtx))
+	})
+	t.Run("nil VM host should error", func(t *testing.T) {
+		t.Parallel()
+
+		mockBlockchain := worldmock.NewMockWorld()
+
+		storageCtx, err := NewStorageContext(nil, mockBlockchain, elrondReservedTestPrefix)
+		require.Equal(t, arwen.ErrNilVMHost, err)
+		require.True(t, check.IfNil(storageCtx))
+	})
+	t.Run("nil blockchain hook should error", func(t *testing.T) {
+		t.Parallel()
+
+		host := &contextmock.VMHostMock{}
+
+		storageCtx, err := NewStorageContext(host, nil, elrondReservedTestPrefix)
+		require.Equal(t, arwen.ErrNilBlockChainHook, err)
+		require.True(t, check.IfNil(storageCtx))
+	})
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		enableEpochsHandler := &mock.EnableEpochsHandlerStub{
+			IsStorageAPICostOptimizationFlagEnabledField: true,
+		}
+		host := &contextmock.VMHostMock{
+			EnableEpochsHandlerField: enableEpochsHandler,
+		}
+		mockBlockchain := worldmock.NewMockWorld()
+
+		storageCtx, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
+		require.Nil(t, err)
+		require.False(t, check.IfNil(storageCtx))
+	})
 }
 
 func TestStorageContext_SetAddress(t *testing.T) {
@@ -79,35 +113,35 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
 
 	keyA := []byte("keyA")
 	valueA := []byte("valueA")
 
-	storageContext.SetAddress(addressA)
-	storageStatus, err := storageContext.SetStorage(keyA, valueA)
+	storageCtx.SetAddress(addressA)
+	storageStatus, err := storageCtx.SetStorage(keyA, valueA)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, uint64(len(valueA)), accountA.BytesAddedToStorage)
 	require.Equal(t, uint64(0), accountA.BytesDeletedFromStorage)
-	foundValueA, _ := storageContext.GetStorage(keyA)
+	foundValueA, _, _ := storageCtx.GetStorage(keyA)
 	require.Equal(t, valueA, foundValueA)
-	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
-	require.Len(t, storageContext.GetStorageUpdates(addressB), 0)
+	require.Len(t, storageCtx.GetStorageUpdates(addressA), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(addressB), 0)
 
 	keyB := []byte("keyB")
 	valueB := []byte("valueB")
-	storageContext.SetAddress(addressB)
-	storageStatus, err = storageContext.SetStorage(keyB, valueB)
+	storageCtx.SetAddress(addressB)
+	storageStatus, err = storageCtx.SetStorage(keyB, valueB)
 	require.Equal(t, uint64(len(valueB)), accountB.BytesAddedToStorage)
 	require.Equal(t, uint64(0), accountB.BytesDeletedFromStorage)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	foundValueB, _ := storageContext.GetStorage(keyB)
+	foundValueB, _, _ := storageCtx.GetStorage(keyB)
 	require.Equal(t, valueB, foundValueB)
-	require.Len(t, storageContext.GetStorageUpdates(addressA), 1)
-	require.Len(t, storageContext.GetStorageUpdates(addressB), 1)
-	foundValueA, _ = storageContext.GetStorage(keyA)
+	require.Len(t, storageCtx.GetStorageUpdates(addressA), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(addressB), 1)
+	foundValueA, _, _ = storageCtx.GetStorage(keyA)
 	require.Equal(t, []byte(nil), foundValueA)
 }
 
@@ -134,9 +168,9 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	}
 
 	mockBlockchainHook := worldmock.NewMockWorld()
-	storageContext, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
 
-	storageUpdates := storageContext.GetStorageUpdates([]byte("account"))
+	storageUpdates := storageCtx.GetStorageUpdates([]byte("account"))
 	require.Equal(t, 1, len(storageUpdates))
 	require.Equal(t, []byte("update"), storageUpdates["update"].Offset)
 	require.Equal(t, []byte("some data"), storageUpdates["update"].Data)
@@ -167,8 +201,8 @@ func TestStorageContext_SetStorage(t *testing.T) {
 		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
-	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
-	storageContext.SetAddress(address)
+	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx.SetAddress(address)
 
 	val1 := []byte("value")
 	val2 := []byte("newValue")
@@ -178,105 +212,105 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	value := val1
 	addedBytes := len(value)
 
-	storageStatus, err := storageContext.SetStorage(key, value)
+	storageStatus, err := storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _ := storageContext.GetStorage(key)
+	foundValue, _, _ := storageCtx.GetStorage(key)
 	require.Equal(t, value, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	value = val2
 	addedBytes += len(value) - len(val1)
 
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, value, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	value = val2
 
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(0), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, value, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	value = val1
 	deletedBytes := len(val2) - len(val1)
 
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, value, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	value = val3
 	deletedBytes += len(val1) - len(val3)
 
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, value, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	value = nil
 	deletedBytes += len(val3)
 
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageDeleted, storageStatus)
 	require.Equal(t, uint64(addedBytes), account.BytesAddedToStorage)
 	require.Equal(t, uint64(deletedBytes), account.BytesDeletedFromStorage)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, []byte{}, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	mockRuntime.SetReadOnly(true)
 	value = val2
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, err, arwen.ErrCannotWriteOnReadOnly)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, []byte{}, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
 	mockRuntime.SetReadOnly(false)
 	key = []byte("other_key")
 	value = []byte("other_value")
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	foundValue, _ = storageContext.GetStorage(key)
+	foundValue, _, _ = storageCtx.GetStorage(key)
 	require.Equal(t, value, foundValue)
-	require.Len(t, storageContext.GetStorageUpdates(address), 2)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 2)
 
 	key = []byte("RESERVEDkey")
 	value = []byte("doesn't matter")
-	_, err = storageContext.SetStorage(key, value)
+	_, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
 
 	key = []byte("RESERVED")
 	value = []byte("doesn't matter")
-	_, err = storageContext.SetStorage(key, value)
+	_, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, arwen.ErrStoreElrondReservedKey, err)
 }
 
-func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
+func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	address := []byte("account")
 	mockOutput := &contextmock.OutputContextMock{}
 	account := mockOutput.NewVMOutputAccount(address)
@@ -308,8 +342,8 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
-	storageContext.SetAddress(address)
+	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx.SetAddress(address)
 
 	gasProvided := 100
 	mockMetering.GasLeftMock = uint64(gasProvided)
@@ -317,9 +351,9 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 
 	// Store new value
 	value := []byte("value")
-	storageStatus, err := storageContext.SetStorage(key, value)
+	storageStatus, err := storageCtx.SetStorage(key, value)
 	gasLeft := gasProvided - storeCost*len(value)
-	storedValue, _ := storageContext.GetStorage(key)
+	storedValue, _, _ := storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
@@ -328,8 +362,8 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 	// Update with longer value
 	value2 := []byte("value2")
 	mockMetering.GasLeftMock = uint64(gasProvided)
-	storageStatus, err = storageContext.SetStorage(key, value2)
-	storedValue, _ = storageContext.GetStorage(key)
+	storageStatus, err = storageCtx.SetStorage(key, value2)
+	storedValue, _, _ = storageCtx.GetStorage(key)
 	gasLeft = gasProvided - persistCost*len(value) - storeCost*(len(value2)-len(value))
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
@@ -338,10 +372,10 @@ func TestStorageConext_SetStorage_GasUsage(t *testing.T) {
 
 	// Revert to initial value
 	mockMetering.GasLeftMock = uint64(gasProvided)
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	gasLeft = gasProvided - persistCost*len(value)
 	gasFreed := releaseCost * (len(value2) - len(value))
-	storedValue, _ = storageContext.GetStorage(key)
+	storedValue, _, _ = storageCtx.GetStorage(key)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageModified, storageStatus)
 	require.Equal(t, gasLeft, int(mockMetering.GasLeft()))
@@ -373,86 +407,145 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
-	storageContext.SetAddress(address)
+	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx.SetAddress(address)
 
 	key := []byte(arwen.ProtectedStoragePrefix + "something")
 	value := []byte("data")
 
-	storageStatus, err := storageContext.SetStorage(key, value)
+	storageStatus, err := storageCtx.SetStorage(key, value)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
-	require.Len(t, storageContext.GetStorageUpdates(address), 0)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 0)
 
-	storageContext.disableStorageProtection()
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageCtx.disableStorageProtection()
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Nil(t, err)
 	require.Equal(t, arwen.StorageAdded, storageStatus)
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 
-	storageContext.enableStorageProtection()
-	storageStatus, err = storageContext.SetStorage(key, value)
+	storageCtx.enableStorageProtection()
+	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, arwen.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, arwen.ErrCannotWriteProtectedKey))
-	require.Len(t, storageContext.GetStorageUpdates(address), 1)
+	require.Len(t, storageCtx.GetStorageUpdates(address), 1)
 }
 
 func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Parallel()
 
 	scAddress := []byte("account")
-	mockOutput := &contextmock.OutputContextMock{}
-	account := mockOutput.NewVMOutputAccount(scAddress)
-	mockOutput.OutputAccountMock = account
-	mockOutput.OutputAccountIsNew = false
-
-	mockRuntime := &contextmock.RuntimeContextMock{}
-	mockMetering := &contextmock.MeteringContextMock{}
-	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-	mockMetering.BlockGasLimitMock = uint64(15000)
-
 	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
 	}
 
-	host := &contextmock.VMHostMock{
-		OutputContext:            mockOutput,
-		MeteringContext:          mockMetering,
-		RuntimeContext:           mockRuntime,
-		EnableEpochsHandlerField: enableEpochsHandler,
-	}
+	t.Run("blockchain hook errors", func(t *testing.T) {
+		t.Parallel()
 
-	readable := []byte("readable")
-	nonreadable := []byte("nonreadable")
-	internalData := []byte("internalData")
+		mockOutput := &contextmock.OutputContextMock{}
+		account := mockOutput.NewVMOutputAccount(scAddress)
+		mockOutput.OutputAccountMock = account
+		mockOutput.OutputAccountIsNew = false
 
-	bcHook := &contextmock.BlockchainHookStub{
-		GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
-			if bytes.Equal(readable, address) {
-				return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
-			}
-			if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-				return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
-			}
-			return nil, nil
-		},
-		GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
-			return internalData, 0, nil
-		},
-	}
+		mockRuntime := &contextmock.RuntimeContextMock{}
+		mockMetering := &contextmock.MeteringContextMock{}
+		mockMetering.SetGasSchedule(config.MakeGasMapForTests())
+		mockMetering.BlockGasLimitMock = uint64(15000)
 
-	storageContext, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
-	storageContext.SetAddress(scAddress)
+		host := &contextmock.VMHostMock{
+			OutputContext:            mockOutput,
+			MeteringContext:          mockMetering,
+			RuntimeContext:           mockRuntime,
+			EnableEpochsHandlerField: enableEpochsHandler,
+		}
 
-	key := []byte("key")
-	data, _ := storageContext.GetStorageFromAddress(scAddress, key)
-	require.Equal(t, data, internalData)
+		readable := []byte("readable")
+		nonreadable := []byte("nonreadable")
 
-	data, _ = storageContext.GetStorageFromAddress(readable, key)
-	require.Equal(t, data, internalData)
+		errTooManyRequests := errors.New("too many requests")
+		bcHook := &contextmock.BlockchainHookStub{
+			GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
+				if bytes.Equal(readable, address) {
+					return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
+				}
+				if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
+					return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
+				}
+				return nil, nil
+			},
+			GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
+				return nil, 0, errTooManyRequests
+			},
+		}
 
-	data, _ = storageContext.GetStorageFromAddress(nonreadable, key)
-	require.Nil(t, data)
+		storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+		storageCtx.SetAddress(scAddress)
+
+		key := []byte("key")
+		data, _, err := storageCtx.GetStorageFromAddress(scAddress, key)
+		require.Nil(t, data)
+		assert.Equal(t, errTooManyRequests, err)
+
+		data, _, _ = storageCtx.GetStorageFromAddress(readable, key)
+		require.Nil(t, data)
+		assert.Equal(t, errTooManyRequests, err)
+
+		data, _, _ = storageCtx.GetStorageFromAddress(nonreadable, key)
+		require.Nil(t, data)
+		assert.Equal(t, errTooManyRequests, err)
+	})
+	t.Run("should work when blockchain hook does not error", func(t *testing.T) {
+		t.Parallel()
+
+		mockOutput := &contextmock.OutputContextMock{}
+		account := mockOutput.NewVMOutputAccount(scAddress)
+		mockOutput.OutputAccountMock = account
+		mockOutput.OutputAccountIsNew = false
+
+		mockRuntime := &contextmock.RuntimeContextMock{}
+		mockMetering := &contextmock.MeteringContextMock{}
+		mockMetering.SetGasSchedule(config.MakeGasMapForTests())
+		mockMetering.BlockGasLimitMock = uint64(15000)
+
+		host := &contextmock.VMHostMock{
+			OutputContext:            mockOutput,
+			MeteringContext:          mockMetering,
+			RuntimeContext:           mockRuntime,
+			EnableEpochsHandlerField: enableEpochsHandler,
+		}
+
+		readable := []byte("readable")
+		nonreadable := []byte("nonreadable")
+		internalData := []byte("internalData")
+
+		bcHook := &contextmock.BlockchainHookStub{
+			GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
+				if bytes.Equal(readable, address) {
+					return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
+				}
+				if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
+					return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
+				}
+				return nil, nil
+			},
+			GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
+				return internalData, 0, nil
+			},
+		}
+
+		storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+		storageCtx.SetAddress(scAddress)
+
+		key := []byte("key")
+		data, _, _ := storageCtx.GetStorageFromAddress(scAddress, key)
+		require.Equal(t, data, internalData)
+
+		data, _, _ = storageCtx.GetStorageFromAddress(readable, key)
+		require.Equal(t, data, internalData)
+
+		data, _, _ = storageCtx.GetStorageFromAddress(nonreadable, key)
+		require.Nil(t, data)
+	})
 }
 
 func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
@@ -473,10 +566,10 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
-	storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
-	storageContext.PopSetActiveState()
+	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageCtx.PopSetActiveState()
 
-	require.Equal(t, 0, len(storageContext.stateStack))
+	require.Equal(t, 0, len(storageCtx.stateStack))
 }
 
 func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
@@ -489,8 +582,8 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
-	storageContext, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
-	storageContext.PopDiscard()
+	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageCtx.PopDiscard()
 
-	require.Equal(t, 0, len(storageContext.stateStack))
+	require.Equal(t, 0, len(storageCtx.stateStack))
 }

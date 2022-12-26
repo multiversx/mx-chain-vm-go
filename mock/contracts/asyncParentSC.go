@@ -93,7 +93,11 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData, _ := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _, err := host.Storage().GetStorage(test.ParentKeyB)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+			return instance
+		}
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {
@@ -106,7 +110,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 				return instance
 			}
 		}
-		err := handleTransferToVault(host, arguments)
+		err = handleTransferToVault(host, arguments)
 		require.Nil(t, err)
 
 		finishResult(host, status)

@@ -959,7 +959,10 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	esdtRoleKeyPrefix := []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 	key := []byte(string(esdtRoleKeyPrefix) + string(tokenID))
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 
 	return getESDTRoles(data)
@@ -1976,7 +1979,10 @@ func v1_4_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength i
 		return -1
 	}
 
-	data, usedCache := storage.GetStorageUnmetered(key)
+	data, usedCache, err := storage.GetStorageUnmetered(key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 	storage.UseGasForStorageLoad(storageLoadLengthName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 
 	return int32(len(data))
@@ -2008,7 +2014,10 @@ func StorageLoadFromAddressWithHost(host arwen.VMHost, addressOffset int32, keyO
 		return -1
 	}
 
-	data := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	data, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	err = runtime.MemStore(dataOffset, data)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2019,12 +2028,15 @@ func StorageLoadFromAddressWithHost(host arwen.VMHost, addressOffset int32, keyO
 }
 
 // StorageLoadFromAddressWithTypedArgs - storageLoadFromAddress with args already read from memory
-func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key []byte) []byte {
+func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
-	data, usedCache := storage.GetStorageFromAddress(address, key)
+	data, usedCache, err := storage.GetStorageFromAddress(address, key)
+	if err != nil {
+		return nil, err
+	}
 	storage.UseGasForStorageLoad(storageLoadFromAddressName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
-	return data
+	return data, nil
 }
 
 //export v1_4_storageLoad
@@ -2047,7 +2059,10 @@ func StorageLoadWithHost(host arwen.VMHost, keyOffset int32, keyLength int32, da
 		return -1
 	}
 
-	data := StorageLoadWithWithTypedArgs(host, key)
+	data, err := StorageLoadWithWithTypedArgs(host, key)
+	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return -1
+	}
 
 	err = runtime.MemStore(dataOffset, data)
 	if arwen.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2058,12 +2073,15 @@ func StorageLoadWithHost(host arwen.VMHost, keyOffset int32, keyLength int32, da
 }
 
 // StorageLoadWithWithTypedArgs - storageLoad with args already read from memory
-func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) []byte {
+func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if err != nil {
+		return nil, err
+	}
 	storage.UseGasForStorageLoad(storageLoadName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
-	return data
+	return data, nil
 }
 
 //export v1_4_setStorageLock
@@ -2118,7 +2136,10 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	}
 
 	timeLockKey := arwen.CustomStorageKey(arwen.TimeLockKeyPrefix, key)
-	data, usedCache := storage.GetStorage(timeLockKey)
+	data, usedCache, err := storage.GetStorage(timeLockKey)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(getStorageLockName, metering.GasSchedule().ElrondAPICost.StorageLoad, usedCache)
 
 	timeLock := big.NewInt(0).SetBytes(data).Int64()
@@ -2311,7 +2332,10 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 	}
 
 	key := []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier + string(tokenID))
-	data, _ := storage.GetStorageFromAddress(destination, key)
+	data, _, err := storage.GetStorageFromAddress(destination, key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 
 	nonce := big.NewInt(0).SetBytes(data).Uint64()
 	return int64(nonce)

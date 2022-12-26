@@ -405,7 +405,10 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 		return -1
 	}
 
-	bytes, usedCache := storage.GetStorage(key)
+	bytes, usedCache, err := storage.GetStorage(key)
+	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
 	storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)

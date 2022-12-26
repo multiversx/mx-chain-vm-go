@@ -244,7 +244,10 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
@@ -267,7 +270,10 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if arwen.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)

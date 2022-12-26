@@ -7,8 +7,8 @@ github.com/ElrondNetwork/elrond-go-crypto v1.2.3 h1:kX/xIWuQLKDvfPNSsCrFWcmNABa1
 github.com/ElrondNetwork/elrond-go-crypto v1.2.3/go.mod h1:04TNYc9JT+bXGFjaWf1oP7iFudRprHp5iULyQaVYMao=
 github.com/ElrondNetwork/elrond-go-logger v1.0.10 h1:2xQOWZErcHW5sl9qSRO+7mGNw+QhFhqiUlLLtOgvuuk=
 github.com/ElrondNetwork/elrond-go-logger v1.0.10/go.mod h1:+rMODFw4yQptTi5WuLUBzvl/AE26V+2YJtc52wX30Eg=
-github.com/ElrondNetwork/elrond-vm-common v1.3.31 h1:xgYywTZgP3e2C61xl7QHWB39pvB7A3lEJvOXwEdCQck=
-github.com/ElrondNetwork/elrond-vm-common v1.3.31/go.mod h1:3GKLv9hUFYEVxoBgtaCmaZo9HMNfKN9mM/O/xX83Rbw=
+github.com/ElrondNetwork/elrond-vm-common v1.3.32 h1:yeL5xt5CllsrVRrA52OHaOkgcbVnj4GTLiBnwHXmYl0=
+github.com/ElrondNetwork/elrond-vm-common v1.3.32/go.mod h1:3GKLv9hUFYEVxoBgtaCmaZo9HMNfKN9mM/O/xX83Rbw=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
 github.com/btcsuite/btcd v0.20.1-beta/go.mod h1:wVuoA8VJLEcwgqHBwHmzLRazpKxTv13Px/pDuV7OomQ=
 github.com/btcsuite/btcd v0.22.0-beta.0.20220111032746-97732e52810c/go.mod h1:tjmYdS6MLJ5/s0Fj4DbLgSbDHbEqLJrtnHecBFkdz5M=

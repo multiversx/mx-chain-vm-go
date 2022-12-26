@@ -686,7 +686,10 @@ func v1_4_mBufferStorageLoad(context unsafe.Pointer, keyHandle int32, destinatio
 		return 1
 	}
 
-	storageBytes, usedCache := storage.GetStorage(key)
+	storageBytes, usedCache, err := storage.GetStorage(key)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(mBufferStorageLoadName, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
@@ -711,7 +714,10 @@ func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, k
 		return
 	}
 
-	storageBytes := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	storageBytes, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	if arwen.WithFault(err, context, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	managedType.SetBytes(destinationHandle, storageBytes)
 }
