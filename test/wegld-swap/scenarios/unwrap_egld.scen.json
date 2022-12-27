@@ -8,7 +8,7 @@
         },
         {
             "step": "scCall",
-            "txId": "unwrap-egld",
+            "id": "unwrap-egld",
             "tx": {
                 "from": "address:user",
                 "to": "sc:egld_esdt_swap",
@@ -62,7 +62,7 @@
                     "storage": {
                         "str:wrappedEgldTokenId": "str:EGLD-abcdef"
                     },
-                    "code": "file:../output/egld-esdt-swap.wasm"
+                    "code": "file:../output/elrond-sc-wegld-swap.wasm"
                 }
             }
         }

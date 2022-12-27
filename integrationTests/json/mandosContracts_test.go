@@ -6,21 +6,21 @@ import (
 
 func TestRustAdder(t *testing.T) {
 	MandosTest(t).
-		Folder("adder/mandos").
+		Folder("adder/scenarios").
 		Run().
 		CheckNoError()
 }
 
 func TestRustFactorial(t *testing.T) {
 	MandosTest(t).
-		Folder("factorial/mandos").
+		Folder("factorial/scenarios").
 		Run().
 		CheckNoError()
 }
 
 func TestRustErc20(t *testing.T) {
 	MandosTest(t).
-		Folder("erc20-rust/mandos").
+		Folder("erc20-rust/scenarios").
 		Run().
 		CheckNoError()
 }
@@ -41,7 +41,7 @@ func TestDigitalCash(t *testing.T) {
 
 func TestESDTMultiTransferOnCallback(t *testing.T) {
 	MandosTest(t).
-		Folder("features/composability/mandos").
+		Folder("features/composability/scenarios").
 		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
 		Run().
 		CheckNoError()
@@ -49,7 +49,7 @@ func TestESDTMultiTransferOnCallback(t *testing.T) {
 
 func TestCreateAsyncCall(t *testing.T) {
 	MandosTest(t).
-		Folder("features/composability/mandos-promises").
+		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
 		Run().
 		CheckNoError()
@@ -57,7 +57,7 @@ func TestCreateAsyncCall(t *testing.T) {
 
 func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
 	MandosTest(t).
-		Folder("features/composability/mandos").
+		Folder("features/composability/scenarios").
 		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
 		Run().
 		CheckNoError()
@@ -65,7 +65,7 @@ func TestESDTMultiTransferOnCallAndCallback(t *testing.T) {
 
 func TestMultisig(t *testing.T) {
 	MandosTest(t).
-		Folder("multisig/mandos").
+		Folder("multisig/scenarios").
 		Run().
 		CheckNoError()
 }
@@ -88,9 +88,9 @@ func TestCrowdfundingEsdt(t *testing.T) {
 		CheckNoError()
 }
 
-func TestEgldEsdtSwap(t *testing.T) {
+func TestWEgldSwap(t *testing.T) {
 	MandosTest(t).
-		Folder("egld-esdt-swap").
+		Folder("wegld-swap").
 		Run().
 		CheckNoError()
 }

@@ -11,25 +11,30 @@
         {
             "step": "setState",
             "accounts": {
-                "sc:other-shard-2": {
-                    "shard": "1",
-                    "code": "file:../output/multisig-external-view.wasm"
+                "address:faucet": {
+                    "balance": "10"
                 }
             }
         },
         {
+            "step": "transfer",
+            "id": "1",
+            "tx": {
+                "from": "address:faucet",
+                "to": "sc:multisig",
+                "egldValue": "10"
+            }
+        },
+        {
             "step": "scCall",
-            "id": "propose-send-to-other-shard-2",
+            "id": "propose-send-to-other-shard-1",
             "tx": {
                 "from": "address:alice",
                 "to": "sc:multisig",
                 "function": "proposeTransferExecute",
                 "arguments": [
-                    "sc:other-shard-2",
-                    "0",
-                    "str:method-from-other-shard",
-                    "str:arg1",
-                    "str:arg2"
+                    "sc:other-shard-1",
+                    "10"
                 ],
                 "gasLimit": "100,000,000",
                 "gasPrice": "0"
@@ -46,7 +51,7 @@
         },
         {
             "step": "scCall",
-            "id": "perform-send-to-other-shard-2",
+            "id": "perform-send-to-other-shard-1",
             "tx": {
                 "from": "address:alice",
                 "to": "sc:multisig",
@@ -54,7 +59,7 @@
                 "arguments": [
                     "1"
                 ],
-                "gasLimit": "200,000,000",
+                "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
