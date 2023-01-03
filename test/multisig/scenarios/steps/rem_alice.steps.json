@@ -1,18 +1,39 @@
 {
+    "name": "adder",
+    "comment": "add then check",
     "steps": [
         {
-            "step": "externalSteps",
-            "path": "steps/init_accounts.steps.json"
+            "step": "scCall",
+            "id": "rem-alice-prop",
+            "tx": {
+                "from": "address:paul",
+                "to": "sc:multisig",
+                "function": "proposeRemoveUser",
+                "arguments": [
+                    "address:alice"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "3"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
         },
         {
-            "step": "scDeploy",
-            "id": "multisig-deploy",
+            "step": "scCall",
+            "id": "rem-alice-sign-bob",
             "tx": {
-                "from": "address:owner",
-                "contractCode": "file:../output/multisig-external-view.wasm",
+                "from": "address:bob",
+                "to": "sc:multisig",
+                "function": "sign",
                 "arguments": [
-                    "1",
-                    "address:alice"
+                    "3"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -27,36 +48,13 @@
         },
         {
             "step": "scCall",
-            "id": "rem-alice-prop",
+            "id": "rem-alice-sign-charlie",
             "tx": {
-                "from": "address:alice",
-                "to": "sc:multisig",
-                "function": "proposeRemoveUser",
-                "arguments": [
-                    "address:alice"
-                ],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [
-                    "1"
-                ],
-                "status": "",
-                "logs": "*",
-                "gas": "*",
-                "refund": "*"
-            }
-        },
-        {
-            "step": "scCall",
-            "id": "rem-alice-sign-alice",
-            "tx": {
-                "from": "address:alice",
+                "from": "address:charlie",
                 "to": "sc:multisig",
                 "function": "sign",
                 "arguments": [
-                    "1"
+                    "3"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -73,22 +71,37 @@
             "step": "scCall",
             "id": "rem-alice--perform",
             "tx": {
-                "from": "address:alice",
+                "from": "address:paul",
                 "to": "sc:multisig",
                 "function": "performAction",
                 "arguments": [
-                    "1"
+                    "3"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
-                "status": "4",
-                "message": "str:cannot remove all board members and proposers",
+                "status": "",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "getAllBoardMembers",
+            "tx": {
+                "to": "sc:multisig-view",
+                "function": "getAllBoardMembers",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                    "address:bob",
+                    "address:charlie",
+                    "address:dan"
+                ]
             }
         }
     ]

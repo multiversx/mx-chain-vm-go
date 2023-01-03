@@ -29,13 +29,13 @@
                     "storage": {
                         "str:wrappedEgldTokenId": "str:EGLD-abcdef"
                     },
-                    "code": "file:../output/egld-esdt-swap.wasm"
+                    "code": "file:../output/elrond-sc-wegld-swap.wasm"
                 }
             }
         },
         {
             "step": "scCall",
-            "txId": "wrap-egld",
+            "id": "wrap-egld",
             "tx": {
                 "from": "address:user",
                 "to": "sc:egld_esdt_swap",
@@ -46,7 +46,9 @@
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": [
+                    "nested:str:EGLD-abcdef|u64:0|biguint:500"
+                ],
                 "status": "0",
                 "message": "",
                 "gas": "*",
@@ -84,7 +86,7 @@
                     "storage": {
                         "str:wrappedEgldTokenId": "str:EGLD-abcdef"
                     },
-                    "code": "file:../output/egld-esdt-swap.wasm"
+                    "code": "file:../output/elrond-sc-wegld-swap.wasm"
                 }
             }
         }

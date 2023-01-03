@@ -7,17 +7,17 @@ import (
 // Tests Mandos consistency, no smart contracts.
 func TestMandosSelfTest(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test").
-		Exclude("mandos-self-test/builtin-func-esdt-transfer.scen.json").
-		Exclude("mandos-self-test/esdt-zero-balance-check-err.scen.json").
-		Exclude("mandos-self-test/esdt-non-zero-balance-check-err.scen.json").
+		Folder("scenarios-self-test").
+		Exclude("scenarios-self-test/builtin-func-esdt-transfer.scen.json").
+		Exclude("scenarios-self-test/esdt-zero-balance-check-err.scen.json").
+		Exclude("scenarios-self-test/esdt-non-zero-balance-check-err.scen.json").
 		Run().
 		CheckNoError()
 }
 
 func TestMandoSetAccountAddressLengthErr1(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-account-addr-len.err1.json").
 		Run().
 		RequireError(
@@ -26,7 +26,7 @@ func TestMandoSetAccountAddressLengthErr1(t *testing.T) {
 
 func TestMandoSetAccountAddressLengthErr2(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-account-addr-len.err2.json").
 		Run().
 		RequireError(
@@ -35,7 +35,7 @@ func TestMandoSetAccountAddressLengthErr2(t *testing.T) {
 
 func TestMandoSetAccountSCAddressErr1(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-account-sc-addr.err1.json").
 		Run().
 		RequireError(
@@ -44,7 +44,7 @@ func TestMandoSetAccountSCAddressErr1(t *testing.T) {
 
 func TestMandoSetAccountSCAddressErr2(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-account-sc-addr.err2.json").
 		Run().
 		RequireError(
@@ -53,7 +53,7 @@ func TestMandoSetAccountSCAddressErr2(t *testing.T) {
 
 func TestMandoSetAccountSCAddressErr3(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-account-sc-addr.err3.json").
 		Run().
 		RequireError(
@@ -62,7 +62,7 @@ func TestMandoSetAccountSCAddressErr3(t *testing.T) {
 
 func TestMandosCheckNonceErr(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-nonce.err.json").
 		Run().
 		RequireError(
@@ -71,7 +71,7 @@ func TestMandosCheckNonceErr(t *testing.T) {
 
 func TestMandosCheckOwnerErr1(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-owner.err1.json").
 		Run().
 		RequireError(
@@ -80,7 +80,7 @@ func TestMandosCheckOwnerErr1(t *testing.T) {
 
 func TestMandosCheckOwnerErr2(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-owner.err2.json").
 		Run().
 		RequireError(
@@ -89,7 +89,7 @@ func TestMandosCheckOwnerErr2(t *testing.T) {
 
 func TestMandosCheckBalanceErr(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-balance.err.json").
 		Run().
 		RequireError(
@@ -98,7 +98,7 @@ func TestMandosCheckBalanceErr(t *testing.T) {
 
 func TestMandosCheckUsernameErr(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-username.err.json").
 		Run().
 		RequireError(
@@ -107,7 +107,7 @@ func TestMandosCheckUsernameErr(t *testing.T) {
 
 func TestMandosCheckCodeErr(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-code.err.json").
 		Run().
 		RequireError(
@@ -116,7 +116,7 @@ func TestMandosCheckCodeErr(t *testing.T) {
 
 func TestMandosCheckStorageErr1(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err1.json").
 		Run().
 		RequireError(
@@ -126,7 +126,7 @@ func TestMandosCheckStorageErr1(t *testing.T) {
 
 func TestMandosCheckStorageErr2(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err2.json").
 		Run().
 		RequireError(
@@ -136,7 +136,7 @@ func TestMandosCheckStorageErr2(t *testing.T) {
 
 func TestMandosCheckStorageErr3(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err3.json").
 		Run().
 		RequireError(
@@ -146,7 +146,7 @@ func TestMandosCheckStorageErr3(t *testing.T) {
 
 func TestMandosCheckStorageErr4(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err4.json").
 		Run().
 		RequireError(
@@ -156,7 +156,7 @@ func TestMandosCheckStorageErr4(t *testing.T) {
 
 func TestMandosCheckStorageErr5(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err5.json").
 		Run().
 		RequireError(
@@ -166,7 +166,7 @@ func TestMandosCheckStorageErr5(t *testing.T) {
 
 func TestMandosCheckESDTErr1(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test/set-check").
+		Folder("scenarios-self-test/set-check").
 		File("set-check-esdt.err1.json").
 		Run().
 		RequireError(
@@ -181,7 +181,7 @@ func TestMandosCheckESDTErr1(t *testing.T) {
 
 func TestMandosEsdtZeroBalance(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test").
+		Folder("scenarios-self-test").
 		File("esdt-zero-balance-check-err.scen.json").
 		Run().
 		RequireError(
@@ -191,7 +191,7 @@ func TestMandosEsdtZeroBalance(t *testing.T) {
 
 func TestMandosEsdtNonZeroBalance(t *testing.T) {
 	MandosTest(t).
-		Folder("mandos-self-test").
+		Folder("scenarios-self-test").
 		File("esdt-non-zero-balance-check-err.scen.json").
 		Run().
 		RequireError(

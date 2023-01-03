@@ -1,39 +1,18 @@
 {
-    "name": "adder",
-    "comment": "add then check",
     "steps": [
         {
-            "step": "scCall",
-            "id": "rem-alice-prop",
-            "tx": {
-                "from": "address:paul",
-                "to": "sc:multisig",
-                "function": "proposeRemoveUser",
-                "arguments": [
-                    "address:alice"
-                ],
-                "gasLimit": "50,000,000",
-                "gasPrice": "0"
-            },
-            "expect": {
-                "out": [
-                    "3"
-                ],
-                "status": "",
-                "logs": "*",
-                "gas": "*",
-                "refund": "*"
-            }
+            "step": "externalSteps",
+            "path": "steps/init_accounts.steps.json"
         },
         {
-            "step": "scCall",
-            "id": "rem-alice-sign-bob",
+            "step": "scDeploy",
+            "id": "multisig-deploy",
             "tx": {
-                "from": "address:bob",
-                "to": "sc:multisig",
-                "function": "sign",
+                "from": "address:owner",
+                "contractCode": "file:../output/multisig.wasm",
                 "arguments": [
-                    "3"
+                    "1",
+                    "address:alice"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -48,13 +27,36 @@
         },
         {
             "step": "scCall",
-            "id": "rem-alice-sign-charlie",
+            "id": "rem-alice-prop",
             "tx": {
-                "from": "address:charlie",
+                "from": "address:alice",
+                "to": "sc:multisig",
+                "function": "proposeRemoveUser",
+                "arguments": [
+                    "address:alice"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "1"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "rem-alice-sign-alice",
+            "tx": {
+                "from": "address:alice",
                 "to": "sc:multisig",
                 "function": "sign",
                 "arguments": [
-                    "3"
+                    "1"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
@@ -71,18 +73,19 @@
             "step": "scCall",
             "id": "rem-alice--perform",
             "tx": {
-                "from": "address:paul",
+                "from": "address:alice",
                 "to": "sc:multisig",
                 "function": "performAction",
                 "arguments": [
-                    "3"
+                    "1"
                 ],
                 "gasLimit": "50,000,000",
                 "gasPrice": "0"
             },
             "expect": {
                 "out": [],
-                "status": "",
+                "status": "4",
+                "message": "str:cannot remove all board members and proposers",
                 "logs": "*",
                 "gas": "*",
                 "refund": "*"
