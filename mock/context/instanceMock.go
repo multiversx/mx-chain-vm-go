@@ -132,6 +132,21 @@ func (instance *InstanceMock) GetMemory() executor.Memory {
 	return instance.Memory
 }
 
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (instance *InstanceMock) MemLoad(offset int32, length int32) ([]byte, error) {
+	return executor.MemLoad(instance.GetMemory(), offset, length)
+}
+
+// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
+func (instance *InstanceMock) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
+	return executor.MemLoadMultiple(instance.GetMemory(), offset, lengths)
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
+func (instance *InstanceMock) MemStore(offset int32, data []byte) error {
+	return executor.MemStore(instance.GetMemory(), offset, data)
+}
+
 // IsFunctionImported mocked method
 func (instance *InstanceMock) IsFunctionImported(name string) bool {
 	_, ok := instance.Exports[name]

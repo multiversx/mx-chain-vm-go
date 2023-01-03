@@ -3,7 +3,6 @@ package contexts
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	builtinMath "math"
 	"math/big"
 
@@ -13,7 +12,6 @@ import (
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
@@ -820,93 +818,17 @@ func (context *runtimeContext) IsFunctionImported(name string) bool {
 
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
-	if length == 0 {
-		return []byte{}, nil
-	}
-
-	memory := context.instance.GetMemory()
-	memoryView := memory.Data()
-	memoryLength := memory.Length()
-	requestedEnd := math.AddInt32(offset, length)
-
-	isOffsetTooSmall := offset < 0
-	isOffsetTooLarge := uint32(offset) > memoryLength
-	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
-	isLengthNegative := length < 0
-
-	if isOffsetTooSmall || isOffsetTooLarge {
-		return nil, fmt.Errorf("mem load: %w", arwen.ErrBadBounds)
-	}
-	if isLengthNegative {
-		return nil, fmt.Errorf("mem load: %w", arwen.ErrNegativeLength)
-	}
-
-	result := make([]byte, length)
-	if isRequestedEndTooLarge {
-		copy(result, memoryView[offset:])
-	} else {
-		copy(result, memoryView[offset:requestedEnd])
-	}
-
-	return result, nil
+	return context.instance.MemLoad(offset, length)
 }
 
 // MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
 func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	if len(lengths) == 0 {
-		return [][]byte{}, nil
-	}
-
-	results := make([][]byte, len(lengths))
-
-	for i, length := range lengths {
-		result, err := context.MemLoad(offset, length)
-		if err != nil {
-			return nil, err
-		}
-
-		results[i] = result
-		offset += length
-	}
-
-	return results, nil
+	return context.instance.MemLoadMultiple(offset, lengths)
 }
 
 // MemStore stores the given data in the WASM memory at the given offset.
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
-	dataLength := int32(len(data))
-	if dataLength == 0 {
-		return nil
-	}
-
-	memory := context.instance.GetMemory()
-	memoryView := memory.Data()
-	memoryLength := memory.Length()
-	requestedEnd := math.AddInt32(offset, dataLength)
-
-	isOffsetTooSmall := offset < 0
-	isNewPageNecessary := uint32(requestedEnd) > memoryLength
-
-	if isOffsetTooSmall {
-		return arwen.ErrBadLowerBounds
-	}
-	if isNewPageNecessary {
-		err := memory.Grow(1)
-		if err != nil {
-			return err
-		}
-
-		memoryView = memory.Data()
-		memoryLength = memory.Length()
-	}
-
-	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
-	if isRequestedEndTooLarge {
-		return arwen.ErrBadUpperBounds
-	}
-
-	copy(memoryView[offset:requestedEnd], data)
-	return nil
+	return context.instance.MemStore(offset, data)
 }
 
 // AddError adds an error to the global error list on runtime context

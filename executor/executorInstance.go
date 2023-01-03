@@ -15,19 +15,13 @@ type Instance interface {
 	ValidateVoidFunction(functionName string) error
 	HasMemory() bool
 	GetMemory() Memory
+	MemLoad(offset int32, length int32) ([]byte, error)
+	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
+	MemStore(offset int32, data []byte) error
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 	Reset() bool
 	SetVMHooksPtr(vmHooksPtr uintptr)
 	GetVMHooksPtr() uintptr
 	Id() string
-}
-
-// Memory defines the functionality of the memory of a Wasmer instance
-type Memory interface {
-	Length() uint32
-	Data() []byte
-	Grow(pages uint32) error
-	Destroy()
-	IsInterfaceNil() bool
 }

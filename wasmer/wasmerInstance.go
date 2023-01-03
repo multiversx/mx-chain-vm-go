@@ -310,14 +310,24 @@ func (instance *WasmerInstance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *WasmerInstance) Id() string {
-	return fmt.Sprintf("%p", instance.instance)
-}
-
 // GetMemory returns the memory for the instance
 func (instance *WasmerInstance) GetMemory() executor.Memory {
 	return instance.Memory
+}
+
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (instance *WasmerInstance) MemLoad(offset int32, length int32) ([]byte, error) {
+	return executor.MemLoad(instance.GetMemory(), offset, length)
+}
+
+// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
+func (instance *WasmerInstance) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
+	return executor.MemLoadMultiple(instance.GetMemory(), offset, lengths)
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
+func (instance *WasmerInstance) MemStore(offset int32, data []byte) error {
+	return executor.MemStore(instance.GetMemory(), offset, data)
 }
 
 // Reset resets the instance memories and globals
@@ -349,4 +359,9 @@ func (instance *WasmerInstance) SetVMHooksPtr(vmHooksPtr uintptr) {
 // GetVMHooksPtr returns the VM hooks pointer
 func (instance *WasmerInstance) GetVMHooksPtr() uintptr {
 	return *(*uintptr)(instance.vmHooksPtr)
+}
+
+// Id returns an identifier for the instance, unique at runtime
+func (instance *WasmerInstance) Id() string {
+	return fmt.Sprintf("%p", instance.instance)
 }

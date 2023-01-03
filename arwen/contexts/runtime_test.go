@@ -550,21 +550,21 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	offset = -3
 	length = 10
 	memContents, err := runtimeCtx.MemLoad(offset, length)
-	require.True(t, errors.Is(err, arwen.ErrBadBounds))
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 	require.Nil(t, memContents)
 
 	// Offset too larget
 	offset = int32(memory.Length() + 1)
 	length = 10
 	memContents, err = runtimeCtx.MemLoad(offset, length)
-	require.True(t, errors.Is(err, arwen.ErrBadBounds))
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 	require.Nil(t, memContents)
 
 	// Negative length
 	offset = 10
 	length = -2
 	memContents, err = runtimeCtx.MemLoad(offset, length)
-	require.True(t, errors.Is(err, arwen.ErrNegativeLength))
+	require.True(t, errors.Is(err, executor.ErrMemoryNegativeLength))
 	require.Nil(t, memContents)
 
 	// Requested end too large
@@ -614,7 +614,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents := []byte("test data")
 	offset := int32(-2)
 	err = runtimeCtx.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadLowerBounds))
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 
 	// Memory growth
 	require.Equal(t, 2*pageSize, memory.Length())
@@ -628,7 +628,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents = make([]byte, pageSize+100)
 	offset = int32(memory.Length() - 50)
 	err = runtimeCtx.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 	require.Equal(t, 4*pageSize, memory.Length())
 
 	// Write something, then overwrite, then overwrite with empty byte slice
