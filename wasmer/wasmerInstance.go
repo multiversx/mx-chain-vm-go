@@ -310,24 +310,34 @@ func (instance *WasmerInstance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
-// GetMemory returns the memory for the instance
-func (instance *WasmerInstance) GetMemory() executor.Memory {
-	return instance.Memory
-}
-
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (instance *WasmerInstance) MemLoad(offset int32, length int32) ([]byte, error) {
-	return executor.MemLoad(instance.GetMemory(), offset, length)
+	return executor.MemLoad(instance.Memory, offset, length)
 }
 
 // MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
 func (instance *WasmerInstance) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return executor.MemLoadMultiple(instance.GetMemory(), offset, lengths)
+	return executor.MemLoadMultiple(instance.Memory, offset, lengths)
 }
 
 // MemStore stores the given data in the WASM memory at the given offset.
 func (instance *WasmerInstance) MemStore(offset int32, data []byte) error {
-	return executor.MemStore(instance.GetMemory(), offset, data)
+	return executor.MemStore(instance.Memory, offset, data)
+}
+
+// MemLength returns the length of the allocated memory. Only called directly in tests.
+func (instance *WasmerInstance) MemLength() uint32 {
+	return instance.Memory.Length()
+}
+
+// MemGrow allocates more pages to the current memory. Only called directly in tests.
+func (instance *WasmerInstance) MemGrow(pages uint32) error {
+	return instance.Memory.Grow(pages)
+}
+
+// MemDump yields the entire contents of the memory. Only used in tests.
+func (instance *WasmerInstance) MemDump() []byte {
+	return instance.Memory.Data()
 }
 
 // Reset resets the instance memories and globals

@@ -480,19 +480,17 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeCtx.instance.GetMemory()
-
 	memContents, err := runtimeCtx.MemLoad(10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, memContents)
 
 	pageSize := uint32(65536)
-	require.Equal(t, 2*pageSize, memory.Length())
+	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
 
 	memContents = []byte("test data")
 	err = runtimeCtx.MemStore(10, memContents)
 	require.Nil(t, err)
-	require.Equal(t, 2*pageSize, memory.Length())
+	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
 
 	memContents, err = runtimeCtx.MemLoad(10, 10)
 	require.Nil(t, err)
@@ -512,13 +510,12 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeCtx.instance.GetMemory()
-	err = memory.Grow(30)
+	err = runtimeCtx.instance.MemGrow(30)
 	require.Nil(t, err)
 
 	totalPages := 32
-	memoryContents := memory.Data()
-	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
+	memoryContents := runtimeCtx.instance.MemDump()
+	require.Equal(t, runtimeCtx.instance.MemLength(), uint32(len(memoryContents)))
 	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
@@ -542,8 +539,6 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memory := runtimeCtx.instance.GetMemory()
-
 	var offset int32
 	var length int32
 	// Offset too small
@@ -554,7 +549,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	require.Nil(t, memContents)
 
 	// Offset too larget
-	offset = int32(memory.Length() + 1)
+	offset = int32(runtimeCtx.instance.MemLength() + 1)
 	length = 10
 	memContents, err = runtimeCtx.MemLoad(offset, length)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
@@ -569,24 +564,24 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 
 	// Requested end too large
 	memContents = []byte("test data")
-	offset = int32(memory.Length() - 9)
+	offset = int32(runtimeCtx.instance.MemLength() - 9)
 	err = runtimeCtx.MemStore(offset, memContents)
 	require.Nil(t, err)
 
-	offset = int32(memory.Length() - 9)
+	offset = int32(runtimeCtx.instance.MemLength() - 9)
 	length = 9
 	memContents, err = runtimeCtx.MemLoad(offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data"), memContents)
 
-	offset = int32(memory.Length() - 8)
+	offset = int32(runtimeCtx.instance.MemLength() - 8)
 	length = 9
 	memContents, err = runtimeCtx.MemLoad(offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte{'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
 
 	// Zero length
-	offset = int32(memory.Length() - 8)
+	offset = int32(runtimeCtx.instance.MemLength() - 8)
 	length = 0
 	memContents, err = runtimeCtx.MemLoad(offset, length)
 	require.Nil(t, err)
@@ -607,8 +602,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	require.Nil(t, err)
 
 	pageSize := uint32(65536)
-	memory := runtimeCtx.instance.GetMemory()
-	require.Equal(t, 2*pageSize, memory.Length())
+	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
 
 	// Bad lower bounds
 	memContents := []byte("test data")
@@ -617,23 +611,23 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 
 	// Memory growth
-	require.Equal(t, 2*pageSize, memory.Length())
-	offset = int32(memory.Length() - 4)
+	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
+	offset = int32(runtimeCtx.instance.MemLength() - 4)
 	err = runtimeCtx.MemStore(offset, memContents)
 	require.Nil(t, err)
-	require.Equal(t, 3*pageSize, memory.Length())
+	require.Equal(t, 3*pageSize, runtimeCtx.instance.MemLength())
 
 	// Bad upper bounds - forcing the Wasmer memory to grow more than a page at a
 	// time is not allowed
 	memContents = make([]byte, pageSize+100)
-	offset = int32(memory.Length() - 50)
+	offset = int32(runtimeCtx.instance.MemLength() - 50)
 	err = runtimeCtx.MemStore(offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
-	require.Equal(t, 4*pageSize, memory.Length())
+	require.Equal(t, 4*pageSize, runtimeCtx.instance.MemLength())
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
-	offset = int32(memory.Length() - 100)
+	offset = int32(runtimeCtx.instance.MemLength() - 100)
 	err = runtimeCtx.MemStore(offset, memContents)
 	require.Nil(t, err)
 

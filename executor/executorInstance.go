@@ -14,10 +14,12 @@ type Instance interface {
 	GetFunctionNames() []string
 	ValidateVoidFunction(functionName string) error
 	HasMemory() bool
-	GetMemory() Memory
 	MemLoad(offset int32, length int32) ([]byte, error)
 	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
 	MemStore(offset int32, data []byte) error
+	MemLength() uint32
+	MemGrow(pages uint32) error
+	MemDump() []byte
 	IsFunctionImported(name string) bool
 	IsInterfaceNil() bool
 	Reset() bool
