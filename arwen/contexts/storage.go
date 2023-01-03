@@ -399,8 +399,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, t
 		}
 	}
 
-	metering.UseGasAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
-	return nil
+	return metering.UseGasBoundedAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
 }
 
 // IsUseDifferentGasCostFlagSet - getter for flag
@@ -423,23 +422,23 @@ func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost
 	return staticGasCost, nil
 }
 
-func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoad, staticGasCost uint64) (uint64, error) {
+func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoadCostCoefficients, staticGasCost uint64) (uint64, error) {
 	if trieDepth == 0 {
 		return 0, nil
 	}
 
-	fx := coefficients.A*trieDepth*trieDepth + coefficients.B*trieDepth + coefficients.C
+	fx := coefficients.Quadratic*trieDepth*trieDepth + coefficients.Linear*trieDepth + coefficients.Constant
 
 	if fx < 0 {
-		return 0, fmt.Errorf("invalid value for gas cost, a = %v, b = %v, c = %v, trie depth = %v",
-			coefficients.A, coefficients.B, coefficients.C, trieDepth)
+		return 0, fmt.Errorf("invalid value for gas cost, quadratic coefficient = %v, linear coefficient = %v, constant coefficient = %v, trie depth = %v",
+			coefficients.Quadratic, coefficients.Linear, coefficients.Constant, trieDepth)
 	}
 
 	if fx < minimumStorageLoadCost {
 		log.Error("invalid value for gas cost",
-			"a", coefficients.A,
-			"b", coefficients.B,
-			"c", coefficients.C,
+			"quadratic coefficient", coefficients.Quadratic,
+			"linear coefficient", coefficients.Linear,
+			"constant coefficient", coefficients.Constant,
 			"trie depth", trieDepth,
 		)
 		return staticGasCost, nil

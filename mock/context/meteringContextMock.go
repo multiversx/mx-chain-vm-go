@@ -71,6 +71,10 @@ func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {
 func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {
 }
 
+func (m *MeteringContextMock) UseGasBoundedAndAddTracedGas(_ string, _ uint64) error {
+	return nil
+}
+
 // FreeGas mocked method
 func (m *MeteringContextMock) FreeGas(gas uint64) {
 	m.GasFreedMock += gas

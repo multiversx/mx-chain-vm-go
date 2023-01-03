@@ -99,7 +99,7 @@ func Test_getSignedCoefficient(t *testing.T) {
 
 	gasCost, err := CreateGasConfig(gasScheduleMap)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(A), gasCost.DynamicStorageLoad.A)
-	assert.Equal(t, int64(B), gasCost.DynamicStorageLoad.B)
-	assert.Equal(t, int64(C)*-1, gasCost.DynamicStorageLoad.C)
+	assert.Equal(t, int64(A), gasCost.DynamicStorageLoad.Quadratic)
+	assert.Equal(t, int64(B), gasCost.DynamicStorageLoad.Linear)
+	assert.Equal(t, int64(C)*-1, gasCost.DynamicStorageLoad.Constant)
 }

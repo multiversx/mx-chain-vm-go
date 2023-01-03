@@ -523,10 +523,10 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
-				DynamicStorageLoad: config.DynamicStorageLoad{
-					A: 2,
-					B: 3,
-					C: 5,
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    3,
+					Constant:  5,
 				},
 			},
 		}
@@ -553,10 +553,10 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
-				DynamicStorageLoad: config.DynamicStorageLoad{
-					A: 2,
-					B: 3,
-					C: -500,
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    3,
+					Constant:  -500,
 				},
 			},
 		}
@@ -583,10 +583,10 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
-				DynamicStorageLoad: config.DynamicStorageLoad{
-					A: 687,
-					B: 30483,
-					C: -15883,
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 687,
+					Linear:    30483,
+					Constant:  -15883,
 				},
 			},
 		}
@@ -613,10 +613,10 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		}
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
-				DynamicStorageLoad: config.DynamicStorageLoad{
-					A: 2,
-					B: 5,
-					C: 6,
+				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
+					Quadratic: 2,
+					Linear:    5,
+					Constant:  6,
 				},
 			},
 		}
