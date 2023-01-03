@@ -387,6 +387,7 @@ type AsyncContext interface {
 	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
 }
 
+// AsyncCallLocation defines the functionality for async calls
 type AsyncCallLocation interface {
 	GetAsyncCall() *AsyncCall
 	GetGroupIndex() int

@@ -3,10 +3,10 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 )
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)
@@ -142,7 +142,7 @@ func (o *OutputContextMock) ClearReturnData() {
 }
 
 // RemoveReturnData mocked method
-func (o *OutputContextMock) RemoveReturnData(index uint32) {
+func (o *OutputContextMock) RemoveReturnData(_ uint32) {
 }
 
 // Finish mocked method
@@ -163,9 +163,7 @@ func (o *OutputContextMock) DeleteFirstReturnData() {
 }
 
 // WriteLog mocked method
-func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {
-	return
-}
+func (o *OutputContextMock) WriteLog(_ []byte, _ [][]byte, _ []byte) {}
 
 // TransferValueOnly mocked method
 func (o *OutputContextMock) TransferValueOnly(_ []byte, _ []byte, _ *big.Int, _ bool) error {

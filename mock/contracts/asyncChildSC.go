@@ -4,12 +4,13 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 )
 
+// TransferToAsyncParentOnCallbackChildMock -
 func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*test.TestConfig)
 	instanceMock.AddMockMethod("transferToThirdParty", func() *mock.InstanceMock {
@@ -27,7 +28,7 @@ func TransferToAsyncParentOnCallbackChildMock(instanceMock *mock.InstanceMock, c
 
 		valueToTransfer := big.NewInt(0).SetBytes(arguments[0])
 
-		output.Transfer(
+		_ = output.Transfer(
 			vmInput.CallerAddr,
 			scAddress,
 			0,
@@ -106,18 +107,18 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 
 		outputContext.Finish([]byte("vault"))
 
-		host.Storage().SetStorage(test.ChildKey, test.ChildData)
+		_, _ = host.Storage().SetStorage(test.ChildKey, test.ChildData)
 
 		return instance
 	})
 }
 
 // ExecutedOnSameContextByCallback is an exposed mock contract method
-func ExecutedOnSameContextByCallback(instanceMock *mock.InstanceMock, config interface{}) {
+func ExecutedOnSameContextByCallback(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("executedOnSameContextByCallback", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Storage().SetStorage(test.ParentKeyB, test.ParentDataA)
+		_, _ = host.Storage().SetStorage(test.ParentKeyB, test.ParentDataA)
 		return instance
 	})
 }

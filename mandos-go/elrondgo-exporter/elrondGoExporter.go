@@ -17,16 +17,17 @@ var errScAccountMustHaveOwner = errors.New("scAccount must have owner")
 
 var okStatus = big.NewInt(0)
 
+// ScAddressPrefix is the smart contract address prefix
 var ScAddressPrefix = []byte{0, 0, 0, 0, 0, 0, 0, 0, 5, 0}
 
+// ScAddressPrefixLength defines the length of the smart contract address prefix
 var ScAddressPrefixLength = 10
 
 var benchmarkTxIdent = "benchmark"
 
-var InvalidBenchmarkTxPos = -1
-
 var minimumAcceptedGasPrice = uint64(1)
 
+// ScenarioWithBenchmark defines the component used to hold scenario benchmark
 type ScenarioWithBenchmark struct {
 	Accs           []*TestAccount
 	DeployedAccs   []*TestAccount
@@ -45,6 +46,7 @@ func getInvalidScenarioWithBenchmark() ScenarioWithBenchmark {
 	}
 }
 
+// GetAccountsAndTransactionsFromMandos will retrieve the ScenarioWithBenchmark component
 func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
 	scenario, err := getScenario(mandosTestPath)
 	if err != nil {
@@ -181,7 +183,7 @@ func convertMandosAccountToTestAccount(mandosAcc *mj.Account) (*TestAccount, err
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
+	_ = esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
 	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value, mandosAcc.Owner.Value)
 
 	if len(account.code) != 0 && len(account.ownerAddress) == 0 {

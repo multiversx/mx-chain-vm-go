@@ -1,3 +1,4 @@
+//nolint:all
 package dex
 
 import (
@@ -5,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
@@ -12,7 +14,6 @@ import (
 	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 type fuzzDexExecutorInitArgs struct {
@@ -46,6 +47,7 @@ type fuzzDexExecutorInitArgs struct {
 	blockNonceIncrease      int
 }
 
+// SwapPair defines a struct able to hold a swap operation
 type SwapPair struct {
 	firstToken  string
 	secondToken string
@@ -53,6 +55,7 @@ type SwapPair struct {
 	address     string
 }
 
+// Farm defines a struct able to hold a farm operation
 type Farm struct {
 	farmingToken string
 	farmToken    string
@@ -60,6 +63,7 @@ type Farm struct {
 	address      string
 }
 
+// FarmerInfo defines the struct used for holding a farm info
 type FarmerInfo struct {
 	user  string
 	value int64

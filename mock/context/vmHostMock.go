@@ -147,7 +147,7 @@ func (host *VMHostMock) IsBuiltinFunctionName(_ string) bool {
 	return host.IsBuiltinFunc
 }
 
-// IsBuiltinFunctionName mocked method
+// IsBuiltinFunctionCall mocked method
 func (host *VMHostMock) IsBuiltinFunctionCall(_ []byte) bool {
 	return host.IsBuiltinFunc
 }

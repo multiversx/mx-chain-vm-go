@@ -8,9 +8,8 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/storage"
-	"github.com/ElrondNetwork/elrond-go-core/storage/lrucache"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go-storage/lrucache"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/executor"
@@ -38,7 +37,7 @@ type runtimeContext struct {
 
 	numRunningInstances int
 
-	warmInstanceCache storage.Cacher
+	warmInstanceCache Cacher
 
 	stateStack    []*runtimeContext
 	instanceStack []executor.Instance
@@ -552,7 +551,7 @@ func (context *runtimeContext) GetPrevTxHash() []byte {
 	return context.vmInput.PrevTxHash
 }
 
-// Function returns the name of the contract function to be called next
+// FunctionName returns the name of the contract function to be called next
 func (context *runtimeContext) FunctionName() string {
 	return context.callFunction
 }

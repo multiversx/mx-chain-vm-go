@@ -27,7 +27,9 @@ func ParseMandosScenario(parser mjparse.Parser, scenFilePath string) (*mj.Scenar
 	}
 
 	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
+	defer func() {
+		_ = jsonFile.Close()
+	}()
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
@@ -38,7 +40,7 @@ func ParseMandosScenario(parser mjparse.Parser, scenFilePath string) (*mj.Scenar
 	return parser.ParseScenarioFile(byteValue)
 }
 
-// ParseMandosScenario reads and parses a Mandos scenario from a JSON file.
+// ParseMandosScenarioDefaultParser reads and parses a Mandos scenario from a JSON file.
 func ParseMandosScenarioDefaultParser(scenFilePath string) (*mj.Scenario, error) {
 	parser := mjparse.NewParser(NewDefaultFileResolver())
 	parser.ExprInterpreter.FileResolver.SetContext(scenFilePath)

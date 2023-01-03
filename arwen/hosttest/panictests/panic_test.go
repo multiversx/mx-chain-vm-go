@@ -27,7 +27,6 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		var i *int
-		i = nil
 
 		// dereference a nil pointer
 		*i = *i + 1
@@ -63,7 +62,10 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		i := 5
 		j := 4
-		i = i / (j - 4)
+		// trick the linter with this for loop. It will eventually cause a division by 0 exception
+		for counter := 0; counter <= j; counter++ {
+			i = i / (counter - 4)
+		}
 		return nil, 0, nil
 	}
 
@@ -128,7 +130,6 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 
 	blockchain.GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 		var i *int
-		i = nil
 
 		// dereference a nil pointer
 		time.Sleep(time.Second)
@@ -164,7 +165,6 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 			Build()
 		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 			var i *int
-			i = nil
 
 			// dereference a nil pointer
 			time.Sleep(time.Second)

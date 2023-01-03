@@ -13,6 +13,7 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
+// VMStoragePrefix defines the VM prefix
 const VMStoragePrefix = "VM@"
 
 type storageContext struct {
@@ -465,6 +466,7 @@ func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
 }
 
+// GetVmProtectedPrefix returns the VM protected prefix as byte slice
 func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
 }

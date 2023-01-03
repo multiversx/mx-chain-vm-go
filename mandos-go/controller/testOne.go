@@ -4,10 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
-
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
 // RunSingleJSONTest parses and prepares test, then calls testCallback.
@@ -50,42 +46,4 @@ func (r *TestRunner) RunSingleJSONTest(contextPath string) error {
 	}
 
 	return nil
-}
-
-// tool to convert .test.json -> .scen.json
-// use with extreme caution
-func convertTestToScenario(contextPath string, top []*mj.Test) {
-	if strings.HasSuffix(contextPath, ".test.json") {
-		scenario, err := mj.ConvertTestToScenario(top)
-		if err != nil {
-			panic(err)
-		}
-		scenarioSerialized := mjwrite.ScenarioToJSONString(scenario)
-
-		newPath := contextPath[:len(contextPath)-len(".test.json")] + ".scen.json"
-		err = os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
-		if err != nil {
-			panic(err)
-		}
-
-		err = ioutil.WriteFile(newPath, []byte(scenarioSerialized), 0644)
-		if err != nil {
-			panic(err)
-		}
-	}
-}
-
-// tool to modify tests
-// use with extreme caution
-func saveModifiedTest(toPath string, top []*mj.Test) {
-	resultJSON := mjwrite.TestToJSONString(top)
-
-	err := os.MkdirAll(filepath.Dir(toPath), os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	err = ioutil.WriteFile(toPath, []byte(resultJSON), 0644)
-	if err != nil {
-		panic(err)
-	}
 }

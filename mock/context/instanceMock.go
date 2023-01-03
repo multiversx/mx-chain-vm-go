@@ -118,7 +118,7 @@ func (instance *InstanceMock) GetFunctionNames() []string {
 }
 
 // ValidateVoidFunction mocked method
-func (instance *InstanceMock) ValidateVoidFunction(functionName string) error {
+func (instance *InstanceMock) ValidateVoidFunction(_ string) error {
 	return nil
 }
 
@@ -155,7 +155,7 @@ func (instance *InstanceMock) IsInterfaceNil() bool {
 }
 
 // SetVMHooksPtr mocked method
-func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+func (instance *InstanceMock) SetVMHooksPtr(_ uintptr) {
 }
 
 // GetVMHooksPtr mocked method

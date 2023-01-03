@@ -19,11 +19,6 @@ var negativeEncodedBigFloatPrefix = [...]byte{1, 11, 0, 0, 0, 53}
 var positiveEncodedBigFloatForPowPrefix = [...]byte{1, 10, 0, 0, 53, 0, 0, 0}
 var negativeEncodedBigFloatForPowPrefix = [...]byte{1, 11, 0, 0, 53, 0, 0, 0}
 
-const copyBigFloatGasCost = 18000
-
-var maxValForExponent = big.NewInt(0).SetInt64(math.MaxInt8)
-var minValForExponent = big.NewInt(0).SetInt64(math.MinInt8)
-
 // contract endpoint names
 const (
 	bfToManagedBufferName = "BigFloatToManagedBufferTest"
@@ -47,29 +42,6 @@ const (
 	bfIsIntName           = "BigFloatIsIntTest"
 	bfSetInt64Name        = "BigFloatSetInt64Test"
 	bfSetIntName          = "BigFloatSetIntTest"
-	bfGetPiName           = "BigFloatGetConstPiTest"
-	bfGetEName            = "BigFloatGetConstETest"
-)
-
-const (
-	bfNewFromPartsGasCost = 3000
-	bfAddGasCost          = 10000
-	bfSubGasCost          = 10000
-	bfMulGasCost          = 10000
-	bfDivGasCost          = 10000
-	bfTruncateGasCost     = 7000
-	bfNegGasCost          = 7000
-	bfCloneGasCost        = 7000
-	bfCmpGasCost          = 4500
-	bfAbsGasCost          = 7000
-	bfSqrtGasCost         = 10000
-	bfPowGasCost          = 10000
-	bfFloorGasCost        = 7000
-	bfCeilGasCost         = 7000
-	bfIsIntGasCost        = 4000
-	bfSetBigIntGasCost    = 3000
-	bfSetInt64GasCost     = 1000
-	bfGetConstGasCost     = 1000
 )
 
 //POW AND SETBIGINT
@@ -103,7 +75,7 @@ func main() {
 func generateBigFloatFromPartsData() {
 	file, _ := os.Create(bfFromPartsName + ".data")
 	for i := 0; i < numberOfDataSets; i++ {
-		file.WriteString("BigFloatNewFromPartsTest@")
+		_, _ = file.WriteString("BigFloatNewFromPartsTest@")
 
 		// integralPart
 		integralPart := rand.Intn(math.MaxInt32 - 1)
@@ -112,28 +84,30 @@ func generateBigFloatFromPartsData() {
 			bigIntegralPart.Neg(bigIntegralPart)
 		}
 		hexEncodedIntegralPart := hex.EncodeToString(twos.ToBytes(bigIntegralPart))
-		file.WriteString(hexEncodedIntegralPart + "@")
+		_, _ = file.WriteString(hexEncodedIntegralPart + "@")
 		// fractionalPart
 		fractionalPart := rand.Intn(math.MaxInt32 - 1)
 		bigFractionalPart := big.NewInt(0).SetInt64(int64(fractionalPart))
 		hexEncodedFractionalPart := hex.EncodeToString(twos.ToBytes(bigFractionalPart))
-		file.WriteString(hexEncodedFractionalPart + "@")
+		_, _ = file.WriteString(hexEncodedFractionalPart + "@")
 		// exponent
 		exponent := rand.Intn(400)
 		bigExponent := big.NewInt(0).SetInt64(int64(exponent))
 		validExponent := big.NewInt(0).Neg(bigExponent)
 		hexEncodedExponent := hex.EncodeToString(validExponent.Bytes())
-		file.WriteString(hexEncodedExponent + ":30000" + "\n")
+		_, _ = file.WriteString(hexEncodedExponent + ":30000" + "\n")
 
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateBigFloatsFromFracData() {
 	file, _ := os.Create(bfFromFracName + ".data")
 
 	for i := 0; i < numberOfDataSets; i++ {
-		file.WriteString("BigFloatNewFromFracTest@")
+		_, _ = file.WriteString("BigFloatNewFromFracTest@")
 
 		// numerator
 		numeratorPart := rand.Intn(math.MaxInt64 - 1)
@@ -142,22 +116,24 @@ func generateBigFloatsFromFracData() {
 			bigNumeratorPart.Neg(bigNumeratorPart)
 		}
 		hexEncodedNumerator := hex.EncodeToString(bigNumeratorPart.Bytes())
-		file.WriteString(hexEncodedNumerator + "@")
+		_, _ = file.WriteString(hexEncodedNumerator + "@")
 		// denominator
 		denominatorPart := rand.Intn(math.MaxInt64 - 1)
 		bigDenominatorPart := big.NewInt(0).SetInt64(int64(denominatorPart))
 		hexEncodedDenominator := hex.EncodeToString(bigDenominatorPart.Bytes())
-		file.WriteString(hexEncodedDenominator + ":30000" + "\n")
+		_, _ = file.WriteString(hexEncodedDenominator + ":30000" + "\n")
 
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateBigFloatsFromSciData() {
 	file, _ := os.Create(bfFromSciName + ".data")
 
 	for i := 0; i < numberOfDataSets; i++ {
-		file.WriteString("BigFloatNewFromSciTest@")
+		_, _ = file.WriteString("BigFloatNewFromSciTest@")
 
 		// significand
 		significandPart := rand.Intn(math.MaxInt64 - 1)
@@ -166,37 +142,41 @@ func generateBigFloatsFromSciData() {
 			bigSignificandPart.Neg(bigSignificandPart)
 		}
 		hexEncodedSignificand := hex.EncodeToString(bigSignificandPart.Bytes())
-		file.WriteString(hexEncodedSignificand + "@")
+		_, _ = file.WriteString(hexEncodedSignificand + "@")
 		// exponent
 		exponentPart := rand.Intn(400)
 		bigExponentPart := big.NewInt(0).SetInt64(int64(exponentPart))
 		hexEncodedExponent := hex.EncodeToString(bigExponentPart.Bytes())
-		file.WriteString(hexEncodedExponent + ":30000" + "\n")
+		_, _ = file.WriteString(hexEncodedExponent + ":30000" + "\n")
 	}
 
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateBigFloatsSetBigInt() {
 	file, _ := os.Create(bfSetIntName + ".data")
 
 	for i := 0; i < numberOfDataSets; i++ {
-		file.WriteString("BigFloatSetBigIntTest@")
+		_, _ = file.WriteString("BigFloatSetBigIntTest@")
 		numberOfBytes := rand.Intn(200)
 		bigIntBytes := make([]byte, numberOfBytes)
 		rand.Read(bigIntBytes)
 
 		hexEncodedBytes := hex.EncodeToString(bigIntBytes)
-		file.WriteString(hexEncodedBytes + ":4000000" + "\n")
+		_, _ = file.WriteString(hexEncodedBytes + ":4000000" + "\n")
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateBigFloatsSetInt64() {
 	file, _ := os.Create(bfSetInt64Name + ".data")
 
 	for i := 0; i < numberOfDataSets; i++ {
-		file.WriteString("BigFloatSetInt64Test@")
+		_, _ = file.WriteString("BigFloatSetInt64Test@")
 		smallValue := rand.Intn(math.MaxInt64 - 1)
 		bigIntVal := big.NewInt(int64(smallValue))
 		if rand.Intn(2) == 1 {
@@ -204,17 +184,19 @@ func generateBigFloatsSetInt64() {
 		}
 		argumentBytes := twos.ToBytes(bigIntVal)
 		hexEncodedArgument := hex.EncodeToString(argumentBytes)
-		file.WriteString(hexEncodedArgument + ":4000000" + "\n")
+		_, _ = file.WriteString(hexEncodedArgument + ":4000000" + "\n")
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateDataForBigFloatPow() {
 	file, _ := os.Create(bfPowName + ".data")
 	for i := 0; i < 1000; i++ {
-		file.WriteString("BigFloatPowTest@")
+		_, _ = file.WriteString("BigFloatPowTest@")
 		hexEncodedFloat := generateHexEncodedBigFloatForPow()
-		file.WriteString(hexEncodedFloat + "@")
+		_, _ = file.WriteString(hexEncodedFloat + "@")
 
 		bytes, _ := hex.DecodeString(hexEncodedFloat)
 		floatVal := big.NewFloat(0)
@@ -240,10 +222,12 @@ func generateDataForBigFloatPow() {
 			gasToUse = gasForPow.Uint64() + 10000
 		}
 		hexEncodedExponent := hex.EncodeToString(exponentBytes)
-		file.WriteString(hexEncodedExponent)
-		file.WriteString(":" + strconv.Itoa(int(gasToUse)) + "\n")
+		_, _ = file.WriteString(hexEncodedExponent)
+		_, _ = file.WriteString(":" + strconv.Itoa(int(gasToUse)) + "\n")
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateDataForEndpoint(numberOfBigFloats int, endpointName string, gasLimit int) {
@@ -251,14 +235,16 @@ func generateDataForEndpoint(numberOfBigFloats int, endpointName string, gasLimi
 	file, _ := os.Create(fileName)
 
 	for i := 0; i < numberOfDataSets; i++ {
-		file.WriteString(endpointName)
+		_, _ = file.WriteString(endpointName)
 		for j := 0; j < numberOfBigFloats; j++ {
 			bigFloatValue := generateHexEncodedBigFloat()
-			file.WriteString("@" + bigFloatValue)
+			_, _ = file.WriteString("@" + bigFloatValue)
 		}
-		file.WriteString(":" + strconv.Itoa(gasLimit) + "\n")
+		_, _ = file.WriteString(":" + strconv.Itoa(gasLimit) + "\n")
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 }
 
 func generateHexEncodedBigFloat() string {

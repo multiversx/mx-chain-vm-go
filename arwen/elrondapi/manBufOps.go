@@ -145,6 +145,7 @@ func (context *ElrondApi) MBufferCopyByteSlice(sourceHandle int32, startingPosit
 	return ManagedBufferCopyByteSliceWithHost(host, sourceHandle, startingPosition, sliceLength, destinationHandle)
 }
 
+// ManagedBufferCopyByteSliceWithHost VMHooks implementation.
 func ManagedBufferCopyByteSliceWithHost(host arwen.VMHost, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
@@ -232,6 +233,7 @@ func (context *ElrondApi) MBufferSetByteSlice(mBufferHandle int32, startingPosit
 	return ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
 }
 
+// ManagedBufferSetByteSliceWithHost VMHooks implementation.
 func ManagedBufferSetByteSliceWithHost(host arwen.VMHost, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -248,6 +250,7 @@ func ManagedBufferSetByteSliceWithHost(host arwen.VMHost, mBufferHandle int32, s
 	return ManagedBufferSetByteSliceWithTypedArgs(host, mBufferHandle, startingPosition, dataLength, data)
 }
 
+// ManagedBufferSetByteSliceWithTypedArgs VMHooks implementation.
 func ManagedBufferSetByteSliceWithTypedArgs(host arwen.VMHost, mBufferHandle int32, startingPosition int32, dataLength int32, data []byte) int32 {
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()

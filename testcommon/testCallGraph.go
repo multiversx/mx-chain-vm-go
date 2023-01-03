@@ -7,7 +7,6 @@ import (
 
 	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/wasm-vm/crypto/factory"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 // DefaultCallGraphLockedGas is the default gas locked value
@@ -15,8 +14,6 @@ const DefaultCallGraphLockedGas = 150
 
 // FakeCallbackName - used by test framework to reprezent visually a callback that is not present
 const FakeCallbackName = "<>"
-
-var logTestGraph = logger.GetOrCreate("arwen/testgraph")
 
 // TestCall represents the payload of a node in the call graph
 type TestCall struct {
@@ -282,10 +279,8 @@ func (edge *TestCallEdge) SetFail() *TestCallEdge {
 	switch edge.Type {
 	case Sync:
 		edge.ErrFail = ErrSyncCallFail
-		break
 	case Async, AsyncCrossShard:
 		edge.ErrFail = ErrAsyncCallFail
-		break
 	}
 	edge.To.ErrFail = edge.ErrFail
 	return edge
@@ -459,7 +454,7 @@ func (graph *TestCallGraph) addAsyncEdgeWithType(edgeType TestCallEdgeType, from
 	return edge
 }
 
-func (edge *TestCallEdge) setAsyncEdgeAttributes(group string, callBack string) {
+func (edge *TestCallEdge) setAsyncEdgeAttributes(_ string, callBack string) {
 	edge.Label = "Async"
 	// if group != "" {
 	// 	edge.Label += "[" + group + "]"
@@ -772,7 +767,7 @@ func addFinishNodeWithEdgeFunc(graph *TestCallGraph, sourceNode *TestCallNode, a
 	addEdge(sourceNode, finishNode, false)
 }
 
-func buildFinishNode(graph *TestCallGraph, sourceNode *TestCallNode) *TestCallNode {
+func buildFinishNode(graph *TestCallGraph, _ *TestCallNode) *TestCallNode {
 	finishNode := graph.AddNode("", LeafLabel)
 	finishNode.Label = LeafLabel
 	return finishNode
@@ -959,15 +954,6 @@ func pathsTreeFromDag(graph *TestCallGraph) *TestCallGraph {
 	return newGraph
 }
 
-func isGroupPresent(group string, groups []string) bool {
-	for _, crtGroup := range groups {
-		if group == crtGroup {
-			return true
-		}
-	}
-	return false
-}
-
 // PropagateSyncFailures -
 func (graph *TestCallGraph) PropagateSyncFailures() {
 	// propagate failure to parent until we reach an async node
@@ -991,7 +977,7 @@ func (graph *TestCallGraph) PropagateSyncFailures() {
 }
 
 // AssignExecutionRounds -
-func (graph *TestCallGraph) AssignExecutionRounds(t *testing.T) {
+func (graph *TestCallGraph) AssignExecutionRounds(_ *testing.T) {
 	visits := make(map[uint]bool)
 
 	// init execution rounds for graph, all -1 except root and it's execution leaf
@@ -1020,21 +1006,16 @@ func (graph *TestCallGraph) AssignExecutionRounds(t *testing.T) {
 			switch incomingEdge.Type {
 			case Sync:
 				node.ExecutionRound = parent.ExecutionRound
-				break
 			case Async:
 				node.ExecutionRound = parent.ExecutionRound
-				break
 			case AsyncCrossShard:
 				// fmt.Println("Set node.ExecutionRound of " + node.Label + " to " + strconv.Itoa(parent.MaxSubtreeExecutionRound+1))
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound + 1
-				break
 			case Callback:
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound
-				break
 			case CallbackCrossShard:
 				// fmt.Println("Set node.ExecutionRound of " + node.Label + " to " + strconv.Itoa(parent.MaxSubtreeExecutionRound+1))
 				node.ExecutionRound = parent.MaxSubtreeExecutionRound + 1
-				break
 			}
 
 			node.MaxSubtreeExecutionRound = node.ExecutionRound
@@ -1065,7 +1046,7 @@ func getGasLeaf(node *TestCallNode) *TestCallNode {
 
 // ComputeRemainingGasBeforeCallbacks - adjusts the gas graph / tree remaining gas info using the gas provided to children
 // this will not take into consideration callback nodes that don't have provided gas info computed yet (see ComputeGasStepByStep)
-func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks(t *testing.T) {
+func (graph *TestCallGraph) ComputeRemainingGasBeforeCallbacks(_ *testing.T) {
 	graph.DfsGraphFromNodePostOrder(graph.StartNode, func(parent *TestCallNode, node *TestCallNode, incomingEdge *TestCallEdge) *TestCallNode {
 		if node.IsLeaf() || node.IsCallback() || node.WillNotExecute() {
 			return node
@@ -1180,7 +1161,7 @@ func badGasConfigError(node *TestCallNode, incomingEdge *TestCallEdge, t *testin
 	if incomingEdge != nil {
 		incomingEdgeLabel = incomingEdge.Label
 	}
-	err := fmt.Errorf("Bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel)
+	err := fmt.Errorf("bad test gas configuration %s incoming edge '%s'", node.Label, incomingEdgeLabel)
 	if t != nil {
 		t.Error(err)
 	} else {

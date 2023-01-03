@@ -45,7 +45,7 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // GetVMExecutor mocked method
-func (context *RuntimeContextMock) GetVMExecutor() executor.Executor {
+func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 	return nil
 }
 
@@ -131,11 +131,11 @@ func (r *RuntimeContextMock) SetVMInput(vmInput *vmcommon.ContractCallInput) {
 }
 
 // CountSameContractInstancesOnStack mocked method
-func (r *RuntimeContextMock) CountSameContractInstancesOnStack(address []byte) uint64 {
+func (r *RuntimeContextMock) CountSameContractInstancesOnStack(_ []byte) uint64 {
 	return r.SameContractOnStackCount
 }
 
-// GetSCAddress mocked method
+// GetContextAddress mocked method
 func (r *RuntimeContextMock) GetContextAddress() []byte {
 	return r.SCAddress
 }
@@ -155,7 +155,7 @@ func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
 	return r.SCCodeSize
 }
 
-// Function mocked method
+// FunctionName mocked method
 func (r *RuntimeContextMock) FunctionName() string {
 	return r.CallFunction
 }
@@ -203,7 +203,7 @@ func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
 }
 
 // PrepareLegacyAsyncCall mocked method
-func (r *RuntimeContextMock) PrepareLegacyAsyncCall(address []byte, data []byte, value []byte) error {
+func (r *RuntimeContextMock) PrepareLegacyAsyncCall(_ []byte, _ []byte, _ []byte) error {
 	return r.Err
 }
 
@@ -250,7 +250,7 @@ func (r *RuntimeContextMock) FunctionNameChecked() (string, error) {
 }
 
 // CallSCFunction mocked method
-func (r *RuntimeContextMock) CallSCFunction(functionName string) error {
+func (r *RuntimeContextMock) CallSCFunction(_ string) error {
 	return r.Err
 }
 
@@ -335,12 +335,12 @@ func (r *RuntimeContextMock) GetAllErrors() error {
 }
 
 // ValidateCallbackName mocked method
-func (r *RuntimeContextMock) ValidateCallbackName(callbackName string) error {
+func (r *RuntimeContextMock) ValidateCallbackName(_ string) error {
 	return nil
 }
 
 // HasFunction mocked method
-func (r *RuntimeContextMock) HasFunction(functionName string) bool {
+func (r *RuntimeContextMock) HasFunction(_ string) bool {
 	return r.HasFunctionResult
 }
 
@@ -349,6 +349,7 @@ func (r *RuntimeContextMock) GetPrevTxHash() []byte {
 	return nil
 }
 
+// NumRunningInstances mocked method
 func (r *RuntimeContextMock) NumRunningInstances() (int, int) {
 	return 0, 0
 }

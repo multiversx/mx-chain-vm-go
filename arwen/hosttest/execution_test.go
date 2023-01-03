@@ -28,7 +28,7 @@ import (
 
 var counterKey = []byte("COUNTER")
 var WASMLocalsLimit = uint64(4000)
-var maxUint8AsInt = int(math.MaxUint8)
+var maxUint8AsInt = math.MaxUint8
 var newAddress = test.MakeTestSCAddress("new smartcontract")
 var mBufferKey = []byte("mBuffer")
 var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
@@ -958,7 +958,7 @@ func buildRandomizer(host arwen.VMHost) io.Reader {
 
 func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	// mByteSetByteSlice not yet enabled
-	runTestMBufferSetByteSlice_Deploy(t, true, vmcommon.Ok)
+	runTestMBufferSetByteSliceDeploy(t, true, vmcommon.Ok)
 
 	// Correct copying from "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" over "abcdefghijklmnopqrstuvwxyz"
 	runTestMBufferSetByteSlice(t, true, 0, 4, vmcommon.Ok, []byte("ABCDefghijklmnopqrstuvwxyz"))
@@ -975,7 +975,7 @@ func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
 	runTestMBufferSetByteSlice(t, true, 0, 27, vmcommon.Ok, []byte("abcdefghijklmnopqrstuvwxyz"))
 }
 
-func runTestMBufferSetByteSlice_Deploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
+func runTestMBufferSetByteSliceDeploy(t *testing.T, enabled bool, retCode vmcommon.ReturnCode) {
 	input := test.CreateTestContractCreateInputBuilder().
 		WithCallValue(1000).
 		WithGasProvided(100_000).
@@ -1489,7 +1489,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(callRecursive).
 			WithGasProvided(test.GasProvided).
-			WithArguments([]byte{byte(recursiveCalls)}).
+			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
@@ -1687,7 +1687,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(parentCallsChild).
 			WithGasProvided(10000).
-			WithArguments([]byte{byte(recursiveCalls)}).
+			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
@@ -2297,7 +2297,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithRecipientAddr(test.ParentAddress).
 			WithFunction(parentCallsChild).
 			WithGasProvided(10000).
-			WithArguments([]byte{byte(recursiveCalls)}).
+			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
@@ -3020,7 +3020,7 @@ func TestExecution_CreateNewContract_IsSmartContract(t *testing.T) {
 }
 
 func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -3079,10 +3079,11 @@ func TestExecution_Mocked_Wasmer_Instances(t *testing.T) {
 					test.CreateStoreEntry(test.ChildAddress).WithKey([]byte("child")).WithValue([]byte("child storage")),
 				)
 		})
+	assert.Nil(t, err)
 }
 
 func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T) {
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -3120,10 +3121,11 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Same_Address(t *testing.T
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.OutOfGas()
 		})
+	assert.Nil(t, err)
 }
 
 func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *testing.T) {
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -3167,13 +3169,14 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.OutOfGas()
 		})
+	assert.Nil(t, err)
 }
 
 func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 	zero := "zero"
 	one := "one"
 	two := "two"
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -3270,9 +3273,10 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			// No assertions here, because they were performed during the instance call
 		})
+	assert.Nil(t, err)
 }
 
-var codeOpcodes []byte = test.GetTestSCCode("opcodes", "../../")
+var codeOpcodes = test.GetTestSCCode("opcodes", "../../")
 
 func TestExecution_Opcodes_MemoryGrow(t *testing.T) {
 	maxGrows := uint32(math.MaxUint32)
@@ -3440,7 +3444,7 @@ func TestExecution_WarmInstance_ExecutionStatus(t *testing.T) {
 }
 
 func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(1000).
@@ -3491,6 +3495,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 			verify.Ok().
 				ReturnData([]byte("parent returns this"), []byte("child returns this"), []byte("newphew returns this"), []byte("OK"))
 		})
+	assert.Nil(t, err)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

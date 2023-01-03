@@ -9,8 +9,10 @@ import (
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )
 
+// MessageHashType defines the type of hash algorithm
 type MessageHashType uint8
 
+// constants that define the available hash algorithms
 const (
 	ECDSAPlainMsg MessageHashType = iota
 	ECDSASha256
@@ -22,6 +24,7 @@ const (
 type secp256k1 struct {
 }
 
+// NewSecp256k1 returns the component able to verify Secp256k1 signatures
 func NewSecp256k1() *secp256k1 {
 	return &secp256k1{}
 }

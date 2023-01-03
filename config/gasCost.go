@@ -4,6 +4,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
+// GasCost defines the gas cost config structure
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
 	BigIntAPICost        BigIntAPICost
@@ -15,6 +16,7 @@ type GasCost struct {
 	WASMOpcodeCost       *executor.WASMOpcodeCost
 }
 
+// BaseOperationCost defines the base operations gas cost config structure
 type BaseOperationCost struct {
 	StorePerByte      uint64
 	ReleasePerByte    uint64
@@ -25,6 +27,7 @@ type BaseOperationCost struct {
 	GetCode           uint64
 }
 
+// ElrondAPICost defines the API operations gas cost config structure
 type ElrondAPICost struct {
 	GetSCAddress            uint64
 	GetOwnerAddress         uint64
@@ -77,6 +80,7 @@ type ElrondAPICost struct {
 	DeleteFromReturnData    uint64
 }
 
+// EthAPICost -
 // TODO remove this struct
 type EthAPICost struct {
 	UseGas              uint64
@@ -114,6 +118,7 @@ type EthAPICost struct {
 	GetBlockTimeStamp   uint64
 }
 
+// BigIntAPICost defines the big int operations gas cost config structure
 type BigIntAPICost struct {
 	BigIntNew                  uint64
 	BigIntUnsignedByteLength   uint64
@@ -156,6 +161,7 @@ type BigIntAPICost struct {
 	CopyPerByteForTooBig       uint64
 }
 
+// BigFloatAPICost defines the big float operations gas cost config structure
 type BigFloatAPICost struct {
 	BigFloatNewFromParts uint64
 	BigFloatAdd          uint64
@@ -177,6 +183,7 @@ type BigFloatAPICost struct {
 	BigFloatGetConst     uint64
 }
 
+// CryptoAPICost defines the crypto operations gas cost config structure
 type CryptoAPICost struct {
 	SHA256                 uint64
 	Keccak256              uint64
@@ -197,6 +204,7 @@ type CryptoAPICost struct {
 	EncodeDERSig           uint64
 }
 
+// ManagedBufferAPICost defines the managed buffer operations gas cost config structure
 type ManagedBufferAPICost struct {
 	MBufferNew                uint64
 	MBufferNewFromBytes       uint64

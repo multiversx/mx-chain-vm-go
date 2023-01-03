@@ -73,5 +73,5 @@ func (j *OJsonMap) KeyValuePairsSortedByKey() []*OJsonKeyValuePair {
 
 // AsList converts a JSON list to a slice of objects.
 func (j *OJsonList) AsList() []OJsonObject {
-	return []OJsonObject(*j)
+	return *j
 }
