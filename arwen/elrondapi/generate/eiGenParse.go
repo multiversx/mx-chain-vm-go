@@ -109,6 +109,7 @@ func extractEIFunctions(f *ast.File) ([]*EIFunction, error) {
 	return result, nil
 }
 
+// ReadAndParseEIMetadata will read and parse EI metadata
 func ReadAndParseEIMetadata(fset *token.FileSet, pathToSources string, eiMetadata *EIMetadata) error {
 	for _, group := range eiMetadata.Groups {
 		f, err := parser.ParseFile(fset, pathToSources+group.SourcePath, nil, parser.ParseComments)

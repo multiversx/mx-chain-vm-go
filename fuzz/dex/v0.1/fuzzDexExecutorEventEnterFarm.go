@@ -24,7 +24,7 @@ func (pfe *fuzzDexExecutor) enterFarm(r *rand.Rand, statistics *eventsStatistics
 			amount = pfe.farmers[nonce].value
 			farm = pfe.farmers[nonce].farm
 
-			depositAmount := int64(amountMax)
+			var depositAmount int64
 			if int64(amountMax) > amount {
 				depositAmount = amount
 				delete(pfe.farmers, nonce)

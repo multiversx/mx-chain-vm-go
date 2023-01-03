@@ -45,6 +45,7 @@ func (memory *Memory) Length() uint32 {
 }
 
 // Data returns a slice of bytes over the WebAssembly memory.
+//nolint:all
 func (memory *Memory) Data() []byte {
 	if nil == memory.memory {
 		return make([]byte, 0)

@@ -3,11 +3,11 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	"github.com/ElrondNetwork/wasm-vm/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,7 +56,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 			}
 		}
 
-		async.SetContextCallback(
+		_ = async.SetContextCallback(
 			testcommon.TestContextCallbackFunction,
 			nil,
 			testConfig.GasProvidedToCallback)

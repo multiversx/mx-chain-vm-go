@@ -6,7 +6,7 @@ import (
 )
 
 // LoadStore is an exposed mock contract method
-func LoadStore(instanceMock *mock.InstanceMock, config interface{}) {
+func LoadStore(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("loadStore", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -27,7 +27,7 @@ func LoadStore(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // LoadStoreFromAddress is an exposed mock contract method
-func LoadStoreFromAddress(instanceMock *mock.InstanceMock, config interface{}) {
+func LoadStoreFromAddress(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("loadStoreFromAddress", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -50,7 +50,7 @@ func LoadStoreFromAddress(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // SetStore is an exposed mock contract method
-func SetStore(instanceMock *mock.InstanceMock, config interface{}) {
+func SetStore(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("setStore", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

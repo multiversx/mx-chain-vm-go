@@ -14,7 +14,6 @@ const ed25519PublicKeyLength = 32
 const ed25519SignatureLength = 64
 const secp256k1CompressedPublicKeyLength = 33
 const secp256k1UncompressedPublicKeyLength = 65
-const secp256k1SignatureLength = 64
 const curveNameLength = 4
 
 const (
@@ -23,7 +22,6 @@ const (
 	ripemd160Name                   = "ripemd160"
 	verifyBLSName                   = "verifyBLS"
 	verifyEd25519Name               = "verifyEd25519"
-	verifySecp256k1Name             = "verifySecp256k1"
 	verifyCustomSecp256k1Name       = "verifyCustomSecp256k1"
 	encodeSecp256k1DerSignatureName = "encodeSecp256k1DerSignature"
 	addECName                       = "addEC"
@@ -193,6 +191,7 @@ func (context *ElrondApi) ManagedRipemd160(inputHandle int32, outputHandle int32
 	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
 }
 
+// ManagedRipemd160WithHost VMHooks implementation.
 func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -272,6 +271,7 @@ func (context *ElrondApi) ManagedVerifyBLS(
 	return ManagedVerifyBLSWithHost(host, keyHandle, messageHandle, sigHandle)
 }
 
+// ManagedVerifyBLSWithHost VMHooks implementation.
 func ManagedVerifyBLSWithHost(
 	host arwen.VMHost,
 	keyHandle int32,
@@ -366,6 +366,7 @@ func (context *ElrondApi) ManagedVerifyEd25519(
 	return ManagedVerifyEd25519WithHost(host, keyHandle, messageHandle, sigHandle)
 }
 
+// ManagedVerifyEd25519WithHost VMHooks implementation.
 func ManagedVerifyEd25519WithHost(
 	host arwen.VMHost,
 	keyHandle, messageHandle, sigHandle int32,
@@ -480,6 +481,7 @@ func (context *ElrondApi) ManagedVerifyCustomSecp256k1(
 		hashType)
 }
 
+// ManagedVerifyCustomSecp256k1WithHost VMHooks implementation.
 func ManagedVerifyCustomSecp256k1WithHost(
 	host arwen.VMHost,
 	keyHandle, messageHandle, sigHandle int32,
@@ -549,6 +551,7 @@ func (context *ElrondApi) ManagedVerifySecp256k1(
 	return ManagedVerifySecp256k1WithHost(host, keyHandle, messageHandle, sigHandle)
 }
 
+// ManagedVerifySecp256k1WithHost VMHooks implementation.
 func ManagedVerifySecp256k1WithHost(
 	host arwen.VMHost,
 	keyHandle, messageHandle, sigHandle int32,
@@ -606,6 +609,7 @@ func (context *ElrondApi) ManagedEncodeSecp256k1DerSignature(
 	return ManagedEncodeSecp256k1DerSignatureWithHost(host, rHandle, sHandle, sigHandle)
 }
 
+// ManagedEncodeSecp256k1DerSignatureWithHost VMHooks implementation.
 func ManagedEncodeSecp256k1DerSignatureWithHost(
 	host arwen.VMHost,
 	rHandle, sHandle, sigHandle int32,
@@ -829,6 +833,7 @@ func (context *ElrondApi) ManagedScalarBaseMultEC(
 	)
 }
 
+// ManagedScalarBaseMultECWithHost VMHooks implementation.
 func ManagedScalarBaseMultECWithHost(
 	host arwen.VMHost,
 	xResultHandle int32,
@@ -953,6 +958,7 @@ func (context *ElrondApi) ManagedScalarMultEC(
 	)
 }
 
+// ManagedScalarMultECWithHost VMHooks implementation.
 func ManagedScalarMultECWithHost(
 	host arwen.VMHost,
 	xResultHandle int32,
@@ -1068,6 +1074,7 @@ func (context *ElrondApi) ManagedMarshalEC(
 	)
 }
 
+// ManagedMarshalECWithHost VMHooks implementation.
 func ManagedMarshalECWithHost(
 	host arwen.VMHost,
 	xPairHandle int32,
@@ -1115,7 +1122,7 @@ func commonMarshalEC(
 	if !ec.IsOnCurve(x, y) {
 		return nil, arwen.ErrPointNotOnCurve
 	}
-	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
+	if x.BitLen() > ec.BitSize || y.BitLen() > ec.BitSize {
 		return nil, arwen.ErrLengthOfBufferNotCorrect
 	}
 
@@ -1166,6 +1173,7 @@ func (context *ElrondApi) ManagedMarshalCompressedEC(
 	)
 }
 
+// ManagedMarshalCompressedECWithHost VMHooks implementation.
 func ManagedMarshalCompressedECWithHost(
 	host arwen.VMHost,
 	xPairHandle int32,
@@ -1213,7 +1221,7 @@ func commonMarshalCompressedEC(host arwen.VMHost,
 	if !ec.IsOnCurve(x, y) {
 		return nil, arwen.ErrPointNotOnCurve
 	}
-	if x.BitLen() > int(ec.BitSize) || y.BitLen() > int(ec.BitSize) {
+	if x.BitLen() > ec.BitSize || y.BitLen() > ec.BitSize {
 		return nil, arwen.ErrLengthOfBufferNotCorrect
 	}
 
@@ -1272,6 +1280,7 @@ func (context *ElrondApi) ManagedUnmarshalEC(
 	)
 }
 
+// ManagedUnmarshalECWithHost VMHooks implementation.
 func ManagedUnmarshalECWithHost(
 	host arwen.VMHost,
 	xResultHandle int32,
@@ -1387,6 +1396,7 @@ func (context *ElrondApi) ManagedUnmarshalCompressedEC(
 	)
 }
 
+// ManagedUnmarshalCompressedECWithHost VMHooks implementation.
 func ManagedUnmarshalCompressedECWithHost(
 	host arwen.VMHost,
 	xResultHandle int32,
@@ -1493,6 +1503,7 @@ func (context *ElrondApi) ManagedGenerateKeyEC(
 	)
 }
 
+// ManagedGenerateKeyECWithHost VMHooks implementation.
 func ManagedGenerateKeyECWithHost(
 	host arwen.VMHost,
 	xPubKeyHandle int32,
@@ -1597,6 +1608,7 @@ func (context *ElrondApi) ManagedCreateEC(dataHandle int32) int32 {
 	return ManagedCreateECWithHost(host, dataHandle)
 }
 
+// ManagedCreateECWithHost VMHooks implementation.
 func ManagedCreateECWithHost(host arwen.VMHost, dataHandle int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()

@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
+//nolint:all
 func getVMHooksFromContextRawPtr(contextPtr unsafe.Pointer) executor.VMHooks {
 	instCtx := IntoInstanceContext(contextPtr)
 	vmHooksPtr := *(*uintptr)(instCtx.Data())
@@ -17,7 +18,11 @@ func injectCgoFunctionPointers() (vmcommon.FunctionNames, error) {
 	importsInfo := newWasmerImports()
 	defer importsInfo.Close()
 
-	populateWasmerImports(importsInfo)
+	err := populateWasmerImports(importsInfo)
+	if err != nil {
+		return nil, err
+	}
+
 	wasmImportsCPointer, numberOfImports := generateWasmerImports(importsInfo)
 
 	var result = cWasmerCacheImportObjectFromImports(

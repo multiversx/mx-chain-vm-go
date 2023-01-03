@@ -8,6 +8,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 )
 
 var smallKey = []byte("testKey")
@@ -31,7 +32,7 @@ func loadStorage(t *testing.T, key []byte) {
 
 	expectedUsedGas := computeExpectedGasForGetStorage(key, value)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(0).
@@ -60,6 +61,7 @@ func loadStorage(t *testing.T, key []byte) {
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				ReturnData(value)
 		})
+	assert.Nil(t, err)
 }
 
 func TestGasUsed_LoadStorageFromAddress_SmallKey_FlagEnabled(t *testing.T) {
@@ -76,7 +78,7 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 
 	expectedUsedGas := computeExpectedGasForGetStorage(key, value)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.UserAddress).
 				WithBalance(0).
@@ -110,6 +112,7 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				ReturnData(value)
 		})
+	assert.Nil(t, err)
 }
 
 func computeExpectedGasForGetStorage(key []byte, value []byte) uint64 {
@@ -142,7 +145,7 @@ func setStorage(t *testing.T, key []byte) {
 		expectedUsedGas += uint64(len(key) - arwen.AddressLen)
 	}
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.UserAddress).
 				WithBalance(0).
@@ -174,6 +177,7 @@ func setStorage(t *testing.T, key []byte) {
 				GasUsed(test.ParentAddress, expectedUsedGas).
 				GasRemaining(testConfig.GasProvided - expectedUsedGas)
 		})
+	assert.Nil(t, err)
 }
 
 var expectedAddByParent = len(contracts.TestStorageValue1) +
@@ -190,7 +194,7 @@ var expectedDeletedByChild = len(contracts.TestStorageValue1) - len(contracts.Te
 
 func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
 	simpleGasTestConfig := makeTestConfig()
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(simpleGasTestConfig.ParentBalance).
@@ -222,11 +226,12 @@ func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
 				BytesDeletedFromStorage(test.ChildAddress,
 					0)
 		})
+	assert.Nil(t, err)
 }
 
 func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
 	simpleGasTestConfig := makeTestConfig()
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(simpleGasTestConfig.ParentBalance).
@@ -258,4 +263,5 @@ func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
 				BytesDeletedFromStorage(test.ChildAddress,
 					expectedDeletedByChild)
 		})
+	assert.Nil(t, err)
 }

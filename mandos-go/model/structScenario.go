@@ -32,8 +32,10 @@ type BlockInfo struct {
 	BlockRandomSeed *JSONBytesFromTree
 }
 
+// TraceGasStatus defines the trace gas status
 type TraceGasStatus int
 
+// constants defining all TraceGasStatus possible values
 const (
 	FalseValue TraceGasStatus = iota
 	TrueValue  TraceGasStatus = iota

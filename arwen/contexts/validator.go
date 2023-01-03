@@ -9,7 +9,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
-const noArity = -1
 const allowedCharsInFunctionName = "abcdefghijklmnopqrstuvwxyz0123456789_"
 
 // wasmValidator is a validator for WASM SmartContracts

@@ -7,16 +7,17 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/arwen/contexts"
+	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
+	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -754,6 +755,7 @@ type assertsConfig struct {
 
 var noAssertsAfterEachRootCall = func(*test.TestCallNode, *worldmock.MockWorld, *test.VMOutputVerifier, []string) {}
 
+//nolint:all
 var assertsConfigForR1MultiLevel = &assertsConfig{
 	assertsAfterEachRootCall: noAssertsAfterEachRootCall,
 	finalAsserts: func(t *testing.T, world *worldmock.MockWorld, expectedCallFinishData []*test.CallFinishDataItem, callsFinishData *test.CallsFinishData) {
@@ -838,7 +840,7 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 
 		expectedErrorsForRound := computeExpectedErrorsForRound(gasGraph, startNode)
 
-		arguments := [][]byte{}
+		arguments := make([][]byte, 0)
 		if len(crossShardCall.Data) != 0 {
 			_, parsedArguments, err := parsers.NewCallArgsParser().ParseData(string(crossShardCall.Data))
 			if err != nil {
@@ -856,7 +858,7 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 		currentVMOutput, _ = mockInstancesTestTemplate.
 			WithInput(test.CreateTestContractCallInputBuilder().
 				WithCallerAddr(crossShardCall.CallerAddress).
-				WithRecipientAddr([]byte(startNode.Call.ContractAddress)).
+				WithRecipientAddr(startNode.Call.ContractAddress).
 				WithFunction(startNode.Call.FunctionName).
 				WithGasProvided(startNode.GasLimit).
 				WithGasLocked(startNode.GasLocked).
@@ -938,7 +940,7 @@ func checkThatStoreIsEmpty(t testing.TB, world *worldmock.MockWorld) {
 	}
 }
 
-func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, crossShardCallsQueue *test.CrossShardCallsQueue) []*test.TestCallEdge {
+func getCrossShardEdgesFromSubtree(gasGraph *test.TestCallGraph, startNode *test.TestCallNode, _ *test.CrossShardCallsQueue) []*test.TestCallEdge {
 	crossShardEdges := make([]*test.TestCallEdge, 0)
 	visits := make(map[uint]bool)
 	gasGraph.DfsGraphFromNode(startNode, func(path []*test.TestCallNode, parent *test.TestCallNode, node *test.TestCallNode, incomingEdge *test.TestCallEdge) *test.TestCallNode {
@@ -1113,40 +1115,26 @@ func extractOuptutTransferCalls(vmOutput *vmcommon.VMOutput, crossShardEdges []*
 	}
 }
 
-func extractAndPersistStores(t testing.TB, world *worldmock.MockWorld, vmOutput *vmcommon.VMOutput) {
+func extractAndPersistStores(tb testing.TB, world *worldmock.MockWorld, vmOutput *vmcommon.VMOutput) {
 	// check if accounts with storage from OutputAccounts have the same shardID as world mock
 	for _, outputAccount := range vmOutput.OutputAccounts {
 		if len(outputAccount.StorageUpdates) != 0 {
-			require.Equal(t, world.SelfShardID, world.GetShardOfAddress(outputAccount.Address), fmt.Sprintf("Incorrect shard for account with address '%s'", string(outputAccount.Address)))
+			require.Equal(tb, world.SelfShardID, world.GetShardOfAddress(outputAccount.Address), fmt.Sprintf("Incorrect shard for account with address '%s'", string(outputAccount.Address)))
 		}
 	}
 
-	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	err := world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	assert.Nil(tb, err)
 }
 
-func extractGasUsedPerContract(vmOutput *vmcommon.VMOutput, gasUsedPerContract map[string]uint64) {
-	for _, outputAccount := range vmOutput.OutputAccounts {
-		if _, ok := gasUsedPerContract[string(outputAccount.Address)]; !ok {
-			gasUsedPerContract[string(outputAccount.Address)] = 0
-		}
-		gasUsedPerContract[string(outputAccount.Address)] += outputAccount.GasUsed
-	}
-}
-
-func checkCallFinishDataForGraphTesting(t testing.TB, expectedCallsFinishData []*test.CallFinishDataItem, callsFinishData []*test.CallFinishDataItem) {
-	require.Equal(t, len(expectedCallsFinishData), len(callsFinishData), "CallFinishData length")
+func checkCallFinishDataForGraphTesting(tb testing.TB, expectedCallsFinishData []*test.CallFinishDataItem, callsFinishData []*test.CallFinishDataItem) {
+	require.Equal(tb, len(expectedCallsFinishData), len(callsFinishData), "CallFinishData length")
 	for idx := range expectedCallsFinishData {
 		expectedCallFinishData := expectedCallsFinishData[idx]
 		actualCallFinishData := callsFinishData[idx]
-		require.Equal(t, expectedCallFinishData.ContractAndFunction, actualCallFinishData.ContractAndFunction, "CallFinishData - Call")
-		require.Equal(t, int(expectedCallFinishData.GasProvided), int(actualCallFinishData.GasProvided), fmt.Sprintf("CallFinishData - Gas Limit for '%s'", actualCallFinishData.ContractAndFunction))
-		require.Equal(t, int(expectedCallFinishData.GasRemaining), int(actualCallFinishData.GasRemaining), fmt.Sprintf("CallFinishData - Gas Remaining for '%s'", actualCallFinishData.ContractAndFunction))
-		require.Equal(t, expectedCallFinishData.FailError, actualCallFinishData.FailError, fmt.Sprintf("CallFinishData - Fail error for '%s'", actualCallFinishData.ContractAndFunction))
-	}
-}
-
-func CheckUsedGasPerContract(t testing.TB, expectedGasUsagePerContract map[string]uint64, gasUsedPerContract map[string]uint64) {
-	for expectedContract, expectedGas := range expectedGasUsagePerContract {
-		require.Equal(t, int(expectedGas), int(gasUsedPerContract[expectedContract]), fmt.Sprintf("Used gas for contract %s", expectedContract))
+		require.Equal(tb, expectedCallFinishData.ContractAndFunction, actualCallFinishData.ContractAndFunction, "CallFinishData - Call")
+		require.Equal(tb, int(expectedCallFinishData.GasProvided), int(actualCallFinishData.GasProvided), fmt.Sprintf("CallFinishData - Gas Limit for '%s'", actualCallFinishData.ContractAndFunction))
+		require.Equal(tb, int(expectedCallFinishData.GasRemaining), int(actualCallFinishData.GasRemaining), fmt.Sprintf("CallFinishData - Gas Remaining for '%s'", actualCallFinishData.ContractAndFunction))
+		require.Equal(tb, expectedCallFinishData.FailError, actualCallFinishData.FailError, fmt.Sprintf("CallFinishData - Fail error for '%s'", actualCallFinishData.ContractAndFunction))
 	}
 }

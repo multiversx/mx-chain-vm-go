@@ -121,6 +121,7 @@ func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSc
 	}
 }
 
+// PeekTraceGas returns the last position from the scenarioTraceGas, if existing
 func (ae *ArwenTestExecutor) PeekTraceGas() bool {
 	length := len(ae.scenarioTraceGas)
 	if length != 0 {

@@ -24,7 +24,6 @@ type jsonParserStateMap struct {
 type jsonStateMapKeyValue struct {
 	keyBuffer bytes.Buffer
 	state     int // 0=key, 1=':', 2=value
-	currentKV OJsonKeyValuePair
 }
 
 type jsonParserStateList struct {
@@ -77,7 +76,7 @@ func ParseOrderedJSON(input []byte) (OJsonObject, error) {
 				}
 			case *jsonParserStateSingleValue:
 				if specificState.buffer.Len() == 0 {
-					specificState.stringEscape = (c == '"')
+					specificState.stringEscape = c == '"'
 					specificState.buffer.WriteByte(c)
 				} else {
 					prevChar := input[i-1]

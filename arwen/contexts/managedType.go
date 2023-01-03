@@ -9,10 +9,10 @@ import (
 	basicMath "math"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 var logMTypes = logger.GetOrCreate("arwen/mtypes")

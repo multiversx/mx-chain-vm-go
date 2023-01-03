@@ -98,12 +98,15 @@ func (queue *CrossShardCallsQueue) CanExecuteLocalCallback(callbackNode *TestCal
 	return true
 }
 
+// Len -
 func (queue *CrossShardCallsQueue) Len() int { return len(queue.Data) }
 
+// Less -
 func (queue *CrossShardCallsQueue) Less(i, j int) bool {
 	return queue.Data[i].StartNode.ExecutionRound < queue.Data[j].StartNode.ExecutionRound
 }
 
+// Swap -
 func (queue *CrossShardCallsQueue) Swap(i, j int) {
 	queue.Data[i], queue.Data[j] = queue.Data[j], queue.Data[i]
 }
