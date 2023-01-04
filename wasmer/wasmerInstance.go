@@ -315,11 +315,6 @@ func (instance *WasmerInstance) MemLoad(memPtr executor.MemPtr, length executor.
 	return executor.MemLoad(instance.Memory, memPtr, length)
 }
 
-// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
-func (instance *WasmerInstance) MemLoadMultiple(memPtr executor.MemPtr, lengths []int32) ([][]byte, error) {
-	return executor.MemLoadMultiple(instance.Memory, memPtr, lengths)
-}
-
 // MemStore stores the given data in the WASM memory at the given offset.
 func (instance *WasmerInstance) MemStore(offset int32, data []byte) error {
 	return executor.MemStore(instance.Memory, offset, data)

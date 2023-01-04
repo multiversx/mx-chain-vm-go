@@ -821,11 +821,6 @@ func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, erro
 	return context.instance.MemLoad(executor.MemPtr(offset), length)
 }
 
-// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
-func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return context.instance.MemLoadMultiple(executor.MemPtr(offset), lengths)
-}
-
 // MemStore stores the given data in the WASM memory at the given offset.
 func (context *runtimeContext) MemStore(offset int32, data []byte) error {
 	return context.instance.MemStore(offset, data)

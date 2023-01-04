@@ -90,10 +90,6 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	MemStoreFunc func(offset int32, data []byte) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemLoadFunc func(offset int32, length int32) ([]byte, error)
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemLoadMultipleFunc func(offset int32, lengths []int32) ([][]byte, error)
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondSyncExecAPIErrorShouldFailExecutionFunc func() bool
@@ -266,14 +262,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.MemStoreFunc = func(offset int32, data []byte) error {
 		return runtimeWrapper.runtimeContext.MemStore(offset, data)
-	}
-
-	runtimeWrapper.MemLoadFunc = func(offset int32, length int32) ([]byte, error) {
-		return runtimeWrapper.runtimeContext.MemLoad(offset, length)
-	}
-
-	runtimeWrapper.MemLoadMultipleFunc = func(offset int32, lengths []int32) ([][]byte, error) {
-		return runtimeWrapper.runtimeContext.MemLoadMultiple(offset, lengths)
 	}
 
 	runtimeWrapper.ElrondAPIErrorShouldFailExecutionFunc = func() bool {
@@ -512,16 +500,6 @@ func (contextWrapper *RuntimeContextWrapper) SetPointsUsed(gasPoints uint64) {
 // MemStore calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) MemStore(offset int32, data []byte) error {
 	return contextWrapper.MemStoreFunc(offset, data)
-}
-
-// MemLoad calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemLoad(offset int32, length int32) ([]byte, error) {
-	return contextWrapper.MemLoadFunc(offset, length)
-}
-
-// MemLoadMultiple calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return contextWrapper.MemLoadMultipleFunc(offset, lengths)
 }
 
 // ElrondAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

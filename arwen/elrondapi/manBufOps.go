@@ -6,6 +6,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -47,7 +48,7 @@ func (context *ElrondApi) MBufferNew() int32 {
 
 // MBufferNewFromBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MBufferNewFromBytes(dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) MBufferNewFromBytes(dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -55,7 +56,7 @@ func (context *ElrondApi) MBufferNewFromBytes(dataOffset int32, dataLength int32
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferNewFromBytes
 	metering.UseGasAndAddTracedGas(mBufferNewFromBytesName, gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, dataLength)
+	data, err := context.MemLoad(dataOffset, dataLength)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -207,7 +208,7 @@ func (context *ElrondApi) MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) 
 
 // MBufferSetBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -216,7 +217,7 @@ func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset int32,
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, dataLength)
+	data, err := context.MemLoad(dataOffset, dataLength)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -228,13 +229,24 @@ func (context *ElrondApi) MBufferSetBytes(mBufferHandle int32, dataOffset int32,
 
 // MBufferSetByteSlice VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MBufferSetByteSlice(mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
+func (context *ElrondApi) MBufferSetByteSlice(
+	mBufferHandle int32,
+	startingPosition int32,
+	dataLength executor.MemLength,
+	dataOffset executor.MemPtr) int32 {
+
 	host := context.GetVMHost()
-	return ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
+	return context.ManagedBufferSetByteSliceWithHost(host, mBufferHandle, startingPosition, dataLength, dataOffset)
 }
 
 // ManagedBufferSetByteSliceWithHost VMHooks implementation.
-func ManagedBufferSetByteSliceWithHost(host arwen.VMHost, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
+func (context *ElrondApi) ManagedBufferSetByteSliceWithHost(
+	host arwen.VMHost,
+	mBufferHandle int32,
+	startingPosition int32,
+	dataLength executor.MemLength,
+	dataOffset executor.MemPtr) int32 {
+
 	runtime := host.Runtime()
 	metering := host.Metering()
 	metering.StartGasTracing(mBufferGetByteSliceName)
@@ -242,7 +254,7 @@ func ManagedBufferSetByteSliceWithHost(host arwen.VMHost, mBufferHandle int32, s
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferSetBytes
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, dataLength)
+	data, err := context.MemLoad(dataOffset, dataLength)
 	if WithFaultAndHost(host, err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -308,7 +320,7 @@ func (context *ElrondApi) MBufferAppend(accumulatorHandle int32, dataHandle int3
 
 // MBufferAppendBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -317,7 +329,7 @@ func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset
 	gasToUse := metering.GasSchedule().ManagedBufferAPICost.MBufferAppendBytes
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, dataLength)
+	data, err := context.MemLoad(dataOffset, dataLength)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}

@@ -23,7 +23,28 @@ func NewElrondApi(host arwen.VMHost) *ElrondApi {
 
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (context *ElrondApi) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
-	return context.host.Runtime().MemLoad(int32(memPtr), length)
+	return context.host.Runtime().GetInstance().MemLoad(memPtr, length)
+}
+
+// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
+func (context *ElrondApi) MemLoadMultiple(memPtr executor.MemPtr, lengths []int32) ([][]byte, error) {
+	if len(lengths) == 0 {
+		return [][]byte{}, nil
+	}
+
+	results := make([][]byte, len(lengths))
+
+	for i, length := range lengths {
+		result, err := context.MemLoad(memPtr, length)
+		if err != nil {
+			return nil, err
+		}
+
+		results[i] = result
+		memPtr = memPtr.Offset(length)
+	}
+
+	return results, nil
 }
 
 // GetVMHost returns the vm Context from the vm context map

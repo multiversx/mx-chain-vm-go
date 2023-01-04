@@ -209,7 +209,13 @@ func (context *ElrondApi) BigIntGetExternalBalance(addressOffset executor.MemPtr
 
 // BigIntGetESDTExternalBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetESDTExternalBalance(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
+func (context *ElrondApi) BigIntGetESDTExternalBalance(
+	addressOffset executor.MemPtr,
+	tokenIDOffset executor.MemPtr,
+	tokenIDLen executor.MemLength,
+	nonce int64,
+	resultHandle int32) {
+
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()

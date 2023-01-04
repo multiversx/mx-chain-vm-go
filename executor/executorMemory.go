@@ -59,27 +59,6 @@ func MemLoad(memory Memory, memPtr MemPtr, length MemLength) ([]byte, error) {
 	return result, nil
 }
 
-// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
-func MemLoadMultiple(memory Memory, memPtr MemPtr, lengths []int32) ([][]byte, error) {
-	if len(lengths) == 0 {
-		return [][]byte{}, nil
-	}
-
-	results := make([][]byte, len(lengths))
-
-	for i, length := range lengths {
-		result, err := MemLoad(memory, memPtr, length)
-		if err != nil {
-			return nil, err
-		}
-
-		results[i] = result
-		memPtr = memPtr.Offset(length)
-	}
-
-	return results, nil
-}
-
 // MemStore stores the given data in the WASM memory at the given offset.
 func MemStore(memory Memory, offset int32, data []byte) error {
 	dataLength := int32(len(data))
