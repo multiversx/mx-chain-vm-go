@@ -19,18 +19,18 @@ type VMHooks interface {
 
 type MainVMHooks interface {
 	GetGasLeft() int64
-	GetSCAddress(resultOffset int32)
-	GetOwnerAddress(resultOffset int32)
+	GetSCAddress(resultOffset MemPtr)
+	GetOwnerAddress(resultOffset MemPtr)
 	GetShardOfAddress(addressOffset MemPtr) int32
 	IsSmartContract(addressOffset MemPtr) int32
 	SignalError(messageOffset MemPtr, messageLength MemLength)
-	GetExternalBalance(addressOffset MemPtr, resultOffset int32)
-	GetBlockHash(nonce int64, resultOffset int32) int32
-	GetESDTBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultOffset int32) int32
+	GetExternalBalance(addressOffset MemPtr, resultOffset MemPtr)
+	GetBlockHash(nonce int64, resultOffset MemPtr) int32
+	GetESDTBalance(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, resultOffset MemPtr) int32
 	GetESDTNFTNameLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32
 	GetESDTNFTAttributeLength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32
 	GetESDTNFTURILength(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64) int32
-	GetESDTTokenData(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, valueHandle int32, propertiesOffset int32, hashOffset int32, nameOffset int32, attributesOffset int32, creatorOffset int32, royaltiesHandle int32, urisOffset int32) int32
+	GetESDTTokenData(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength, nonce int64, valueHandle int32, propertiesOffset MemPtr, hashOffset MemPtr, nameOffset MemPtr, attributesOffset MemPtr, creatorOffset MemPtr, royaltiesHandle int32, urisOffset MemPtr) int32
 	GetESDTLocalRoles(tokenIdHandle int32) int64
 	ValidateTokenIdentifier(tokenIdHandle int32) int32
 	TransferValue(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength) int32
@@ -45,59 +45,59 @@ type MainVMHooks interface {
 	DeleteContract(destOffset MemPtr, gasLimit int64, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr)
 	AsyncCall(destOffset MemPtr, valueOffset MemPtr, dataOffset MemPtr, length MemLength)
 	GetArgumentLength(id int32) int32
-	GetArgument(id int32, argOffset int32) int32
-	GetFunction(functionOffset int32) int32
+	GetArgument(id int32, argOffset MemPtr) int32
+	GetFunction(functionOffset MemPtr) int32
 	GetNumArguments() int32
 	StorageStore(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr, dataLength MemLength) int32
 	StorageLoadLength(keyOffset MemPtr, keyLength MemLength) int32
-	StorageLoadFromAddress(addressOffset MemPtr, keyOffset MemPtr, keyLength MemLength, dataOffset int32) int32
-	StorageLoad(keyOffset MemPtr, keyLength MemLength, dataOffset int32) int32
+	StorageLoadFromAddress(addressOffset MemPtr, keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) int32
+	StorageLoad(keyOffset MemPtr, keyLength MemLength, dataOffset MemPtr) int32
 	SetStorageLock(keyOffset MemPtr, keyLength MemLength, lockTimestamp int64) int32
 	GetStorageLock(keyOffset MemPtr, keyLength MemLength) int64
 	IsStorageLocked(keyOffset MemPtr, keyLength MemLength) int32
 	ClearStorageLock(keyOffset MemPtr, keyLength MemLength) int32
-	GetCaller(resultOffset int32)
+	GetCaller(resultOffset MemPtr)
 	CheckNoPayment()
-	GetCallValue(resultOffset int32) int32
-	GetESDTValue(resultOffset int32) int32
-	GetESDTValueByIndex(resultOffset int32, index int32) int32
-	GetESDTTokenName(resultOffset int32) int32
-	GetESDTTokenNameByIndex(resultOffset int32, index int32) int32
+	GetCallValue(resultOffset MemPtr) int32
+	GetESDTValue(resultOffset MemPtr) int32
+	GetESDTValueByIndex(resultOffset MemPtr, index int32) int32
+	GetESDTTokenName(resultOffset MemPtr) int32
+	GetESDTTokenNameByIndex(resultOffset MemPtr, index int32) int32
 	GetESDTTokenNonce() int64
 	GetESDTTokenNonceByIndex(index int32) int64
 	GetCurrentESDTNFTNonce(addressOffset MemPtr, tokenIDOffset MemPtr, tokenIDLen MemLength) int64
 	GetESDTTokenType() int32
 	GetESDTTokenTypeByIndex(index int32) int32
 	GetNumESDTTransfers() int32
-	GetCallValueTokenName(callValueOffset int32, tokenNameOffset int32) int32
-	GetCallValueTokenNameByIndex(callValueOffset int32, tokenNameOffset int32, index int32) int32
+	GetCallValueTokenName(callValueOffset MemPtr, tokenNameOffset MemPtr) int32
+	GetCallValueTokenNameByIndex(callValueOffset MemPtr, tokenNameOffset MemPtr, index int32) int32
 	WriteLog(dataPointer MemPtr, dataLength MemLength, topicPtr MemPtr, numTopics int32)
 	WriteEventLog(numTopics int32, topicLengthsOffset MemPtr, topicOffset MemPtr, dataOffset MemPtr, dataLength MemLength)
 	GetBlockTimestamp() int64
 	GetBlockNonce() int64
 	GetBlockRound() int64
 	GetBlockEpoch() int64
-	GetBlockRandomSeed(pointer int32)
-	GetStateRootHash(pointer int32)
+	GetBlockRandomSeed(pointer MemPtr)
+	GetStateRootHash(pointer MemPtr)
 	GetPrevBlockTimestamp() int64
 	GetPrevBlockNonce() int64
 	GetPrevBlockRound() int64
 	GetPrevBlockEpoch() int64
-	GetPrevBlockRandomSeed(pointer int32)
+	GetPrevBlockRandomSeed(pointer MemPtr)
 	Finish(pointer MemPtr, length MemLength)
 	ExecuteOnSameContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
 	ExecuteOnDestContext(gasLimit int64, addressOffset MemPtr, valueOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
 	ExecuteReadOnly(gasLimit int64, addressOffset MemPtr, functionOffset MemPtr, functionLength MemLength, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	CreateContract(gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, resultOffset int32, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
-	DeployFromSourceContract(gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, resultAddressOffset int32, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
+	CreateContract(gasLimit int64, valueOffset MemPtr, codeOffset MemPtr, codeMetadataOffset MemPtr, length MemLength, resultOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
+	DeployFromSourceContract(gasLimit int64, valueOffset MemPtr, sourceContractAddressOffset MemPtr, codeMetadataOffset MemPtr, resultAddressOffset MemPtr, numArguments int32, argumentsLengthOffset MemPtr, dataOffset MemPtr) int32
 	GetNumReturnData() int32
 	GetReturnDataSize(resultID int32) int32
-	GetReturnData(resultID int32, dataOffset int32) int32
+	GetReturnData(resultID int32, dataOffset MemPtr) int32
 	CleanReturnData()
 	DeleteFromReturnData(resultID int32)
-	GetOriginalTxHash(dataOffset int32)
-	GetCurrentTxHash(dataOffset int32)
-	GetPrevTxHash(dataOffset int32)
+	GetOriginalTxHash(dataOffset MemPtr)
+	GetCurrentTxHash(dataOffset MemPtr)
+	GetPrevTxHash(dataOffset MemPtr)
 }
 
 type ManagedVMHooks interface {
@@ -171,8 +171,8 @@ type BigIntVMHooks interface {
 	BigIntNew(smallValue int64) int32
 	BigIntUnsignedByteLength(referenceHandle int32) int32
 	BigIntSignedByteLength(referenceHandle int32) int32
-	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset int32) int32
-	BigIntGetSignedBytes(referenceHandle int32, byteOffset int32) int32
+	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset MemPtr) int32
+	BigIntGetSignedBytes(referenceHandle int32, byteOffset MemPtr) int32
 	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength)
 	BigIntSetSignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength)
 	BigIntIsInt64(destinationHandle int32) int32
@@ -207,8 +207,8 @@ type ManagedBufferVMHooks interface {
 	MBufferNew() int32
 	MBufferNewFromBytes(dataOffset MemPtr, dataLength MemLength) int32
 	MBufferGetLength(mBufferHandle int32) int32
-	MBufferGetBytes(mBufferHandle int32, resultOffset int32) int32
-	MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32
+	MBufferGetBytes(mBufferHandle int32, resultOffset MemPtr) int32
+	MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset MemPtr) int32
 	MBufferCopyByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32
 	MBufferEq(mBufferHandle1 int32, mBufferHandle2 int32) int32
 	MBufferSetBytes(mBufferHandle int32, dataOffset MemPtr, dataLength MemLength) int32
@@ -245,11 +245,11 @@ type SmallIntVMHooks interface {
 }
 
 type CryptoVMHooks interface {
-	Sha256(dataOffset MemPtr, length MemLength, resultOffset int32) int32
+	Sha256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
 	ManagedSha256(inputHandle int32, outputHandle int32) int32
-	Keccak256(dataOffset MemPtr, length MemLength, resultOffset int32) int32
+	Keccak256(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
 	ManagedKeccak256(inputHandle int32, outputHandle int32) int32
-	Ripemd160(dataOffset MemPtr, length MemLength, resultOffset int32) int32
+	Ripemd160(dataOffset MemPtr, length MemLength, resultOffset MemPtr) int32
 	ManagedRipemd160(inputHandle int32, outputHandle int32) int32
 	VerifyBLS(keyOffset MemPtr, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32
 	ManagedVerifyBLS(keyHandle int32, messageHandle int32, sigHandle int32) int32
@@ -259,7 +259,7 @@ type CryptoVMHooks interface {
 	ManagedVerifyCustomSecp256k1(keyHandle int32, messageHandle int32, sigHandle int32, hashType int32) int32
 	VerifySecp256k1(keyOffset MemPtr, keyLength MemLength, messageOffset MemPtr, messageLength MemLength, sigOffset MemPtr) int32
 	ManagedVerifySecp256k1(keyHandle int32, messageHandle int32, sigHandle int32) int32
-	EncodeSecp256k1DerSignature(rOffset MemPtr, rLength MemLength, sOffset MemPtr, sLength MemLength, sigOffset int32) int32
+	EncodeSecp256k1DerSignature(rOffset MemPtr, rLength MemLength, sOffset MemPtr, sLength MemLength, sigOffset MemPtr) int32
 	ManagedEncodeSecp256k1DerSignature(rHandle int32, sHandle int32, sigHandle int32) int32
 	AddEC(xResultHandle int32, yResultHandle int32, ecHandle int32, fstPointXHandle int32, fstPointYHandle int32, sndPointXHandle int32, sndPointYHandle int32)
 	DoubleEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32)
@@ -268,15 +268,15 @@ type CryptoVMHooks interface {
 	ManagedScalarBaseMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
 	ScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset MemPtr, length MemLength) int32
 	ManagedScalarMultEC(xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataHandle int32) int32
-	MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32
+	MarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) int32
 	ManagedMarshalEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32
-	MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32
+	MarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset MemPtr) int32
 	ManagedMarshalCompressedEC(xPairHandle int32, yPairHandle int32, ecHandle int32, resultHandle int32) int32
 	UnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32
 	ManagedUnmarshalEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
 	UnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset MemPtr, length MemLength) int32
 	ManagedUnmarshalCompressedEC(xResultHandle int32, yResultHandle int32, ecHandle int32, dataHandle int32) int32
-	GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) int32
+	GenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset MemPtr) int32
 	ManagedGenerateKeyEC(xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultHandle int32) int32
 	CreateEC(dataOffset MemPtr, dataLength MemLength) int32
 	ManagedCreateEC(dataHandle int32) int32

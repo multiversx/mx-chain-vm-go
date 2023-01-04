@@ -88,8 +88,6 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetPointsUsedFunc func(gasPoints uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemStoreFunc func(offset int32, data []byte) error
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondSyncExecAPIErrorShouldFailExecutionFunc func() bool
@@ -258,10 +256,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.SetPointsUsedFunc = func(gasPoints uint64) {
 		runtimeWrapper.runtimeContext.SetPointsUsed(gasPoints)
-	}
-
-	runtimeWrapper.MemStoreFunc = func(offset int32, data []byte) error {
-		return runtimeWrapper.runtimeContext.MemStore(offset, data)
 	}
 
 	runtimeWrapper.ElrondAPIErrorShouldFailExecutionFunc = func() bool {
@@ -495,11 +489,6 @@ func (contextWrapper *RuntimeContextWrapper) GetPointsUsed() uint64 {
 // SetPointsUsed calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) SetPointsUsed(gasPoints uint64) {
 	contextWrapper.SetPointsUsedFunc(gasPoints)
-}
-
-// MemStore calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemStore(offset int32, data []byte) error {
-	return contextWrapper.MemStoreFunc(offset, data)
 }
 
 // ElrondAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

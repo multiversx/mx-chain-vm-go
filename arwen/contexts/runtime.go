@@ -816,16 +816,6 @@ func (context *runtimeContext) IsFunctionImported(name string) bool {
 	return context.instance.IsFunctionImported(name)
 }
 
-// MemLoad returns the contents from the given offset of the WASM memory.
-func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
-	return context.instance.MemLoad(executor.MemPtr(offset), length)
-}
-
-// MemStore stores the given data in the WASM memory at the given offset.
-func (context *runtimeContext) MemStore(offset int32, data []byte) error {
-	return context.instance.MemStore(offset, data)
-}
-
 // AddError adds an error to the global error list on runtime context
 func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 	if err == nil {

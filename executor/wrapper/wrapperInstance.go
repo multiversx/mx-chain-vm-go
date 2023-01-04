@@ -92,8 +92,8 @@ func (inst *WrapperInstance) MemLoad(memPtr executor.MemPtr, length executor.Mem
 }
 
 // MemStore stores the given data in the WASM memory at the given offset.
-func (inst *WrapperInstance) MemStore(offset int32, data []byte) error {
-	return inst.wrappedInstance.MemStore(offset, data)
+func (inst *WrapperInstance) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return inst.wrappedInstance.MemStore(memPtr, data)
 }
 
 // MemLength returns the length of the allocated memory. Only called directly in tests.

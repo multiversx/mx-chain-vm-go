@@ -43,7 +43,11 @@ const (
 
 // Sha256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Sha256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset int32) int32 {
+func (context *ElrondApi) Sha256(
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
+	resultOffset executor.MemPtr) int32 {
+
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -63,7 +67,7 @@ func (context *ElrondApi) Sha256(dataOffset executor.MemPtr, length executor.Mem
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -100,7 +104,7 @@ func (context *ElrondApi) ManagedSha256(inputHandle, outputHandle int32) int32 {
 
 // Keccak256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset int32) int32 {
+func (context *ElrondApi) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -120,7 +124,7 @@ func (context *ElrondApi) Keccak256(dataOffset executor.MemPtr, length executor.
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -157,7 +161,7 @@ func (context *ElrondApi) ManagedKeccak256(inputHandle, outputHandle int32) int3
 
 // Ripemd160 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset int32) int32 {
+func (context *ElrondApi) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -177,7 +181,7 @@ func (context *ElrondApi) Ripemd160(dataOffset executor.MemPtr, length executor.
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -573,7 +577,7 @@ func (context *ElrondApi) EncodeSecp256k1DerSignature(
 	rLength executor.MemLength,
 	sOffset executor.MemPtr,
 	sLength executor.MemLength,
-	sigOffset int32,
+	sigOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -593,7 +597,7 @@ func (context *ElrondApi) EncodeSecp256k1DerSignature(
 	}
 
 	derSig := crypto.EncodeSecp256k1DERSignature(r, s)
-	err = runtime.MemStore(sigOffset, derSig)
+	err = context.MemStore(sigOffset, derSig)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1040,7 +1044,7 @@ func (context *ElrondApi) MarshalEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	host := context.GetVMHost()
@@ -1050,7 +1054,7 @@ func (context *ElrondApi) MarshalEC(
 		return -1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1139,7 +1143,7 @@ func (context *ElrondApi) MarshalCompressedEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	host := context.GetVMHost()
@@ -1149,7 +1153,7 @@ func (context *ElrondApi) MarshalCompressedEC(
 		return -1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1469,7 +1473,7 @@ func (context *ElrondApi) GenerateKeyEC(
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	host := context.GetVMHost()
@@ -1478,7 +1482,7 @@ func (context *ElrondApi) GenerateKeyEC(
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return int32(len(result))
 	}

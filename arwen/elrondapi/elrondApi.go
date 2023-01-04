@@ -47,6 +47,11 @@ func (context *ElrondApi) MemLoadMultiple(memPtr executor.MemPtr, lengths []int3
 	return results, nil
 }
 
+// MemStore stores the given data in the WASM memory at the given offset.
+func (context *ElrondApi) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return context.host.Runtime().GetInstance().MemStore(memPtr, data)
+}
+
 // GetVMHost returns the vm Context from the vm context map
 func (context *ElrondApi) GetVMHost() arwen.VMHost {
 	return context.host

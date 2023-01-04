@@ -129,12 +129,12 @@ func (instance *InstanceMock) HasMemory() bool {
 
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (instance *InstanceMock) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
-	return executor.MemLoad(instance.Memory, memPtr, length)
+	return executor.MemLoadFromMemory(instance.Memory, memPtr, length)
 }
 
 // MemStore stores the given data in the WASM memory at the given offset.
-func (instance *InstanceMock) MemStore(offset int32, data []byte) error {
-	return executor.MemStore(instance.Memory, offset, data)
+func (instance *InstanceMock) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return executor.MemStoreToMemory(instance.Memory, memPtr, data)
 }
 
 // MemLength returns the length of the allocated memory. Only called directly in tests.

@@ -467,6 +467,14 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 	require.Equal(t, runtimeError.Error(), mockOutput.ReturnMessage())
 }
 
+func memLoad(runtimeCtx *runtimeContext, offset int32, length int32) ([]byte, error) {
+	return runtimeCtx.GetInstance().MemLoad(executor.MemPtr(offset), length)
+}
+
+func memStore(runtimeCtx *runtimeContext, offset int32, data []byte) error {
+	return runtimeCtx.GetInstance().MemStore(executor.MemPtr(offset), data)
+}
+
 func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	host := InitializeArwenAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
@@ -480,7 +488,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	memContents, err := runtimeCtx.MemLoad(10, 10)
+	memContents, err := memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, memContents)
 
@@ -488,11 +496,11 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
 
 	memContents = []byte("test data")
-	err = runtimeCtx.MemStore(10, memContents)
+	err = memStore(runtimeCtx, 10, memContents)
 	require.Nil(t, err)
 	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
 
-	memContents, err = runtimeCtx.MemLoad(10, 10)
+	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte{'t', 'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
 }
@@ -544,46 +552,46 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	// Offset too small
 	offset = -3
 	length = 10
-	memContents, err := runtimeCtx.MemLoad(offset, length)
+	memContents, err := memLoad(runtimeCtx, offset, length)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 	require.Nil(t, memContents)
 
 	// Offset too larget
 	offset = int32(runtimeCtx.instance.MemLength() + 1)
 	length = 10
-	memContents, err = runtimeCtx.MemLoad(offset, length)
+	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 	require.Nil(t, memContents)
 
 	// Negative length
 	offset = 10
 	length = -2
-	memContents, err = runtimeCtx.MemLoad(offset, length)
+	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.True(t, errors.Is(err, executor.ErrMemoryNegativeLength))
 	require.Nil(t, memContents)
 
 	// Requested end too large
 	memContents = []byte("test data")
 	offset = int32(runtimeCtx.instance.MemLength() - 9)
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
 	offset = int32(runtimeCtx.instance.MemLength() - 9)
 	length = 9
-	memContents, err = runtimeCtx.MemLoad(offset, length)
+	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data"), memContents)
 
 	offset = int32(runtimeCtx.instance.MemLength() - 8)
 	length = 9
-	memContents, err = runtimeCtx.MemLoad(offset, length)
+	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte{'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
 
 	// Zero length
 	offset = int32(runtimeCtx.instance.MemLength() - 8)
 	length = 0
-	memContents, err = runtimeCtx.MemLoad(offset, length)
+	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte{}, memContents)
 }
@@ -607,13 +615,13 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	// Bad lower bounds
 	memContents := []byte("test data")
 	offset := int32(-2)
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 
 	// Memory growth
 	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
 	offset = int32(runtimeCtx.instance.MemLength() - 4)
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 	require.Equal(t, 3*pageSize, runtimeCtx.instance.MemLength())
 
@@ -621,33 +629,33 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	// time is not allowed
 	memContents = make([]byte, pageSize+100)
 	offset = int32(runtimeCtx.instance.MemLength() - 50)
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 	require.Equal(t, 4*pageSize, runtimeCtx.instance.MemLength())
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
 	offset = int32(runtimeCtx.instance.MemLength() - 100)
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
-	memContents, err = runtimeCtx.MemLoad(offset, 17)
+	memContents, err = memLoad(runtimeCtx, offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is a message"), memContents)
 
 	memContents = []byte("this is something")
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
-	memContents, err = runtimeCtx.MemLoad(offset, 17)
+	memContents, err = memLoad(runtimeCtx, offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
 
 	memContents = []byte{}
-	err = runtimeCtx.MemStore(offset, memContents)
+	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
-	memContents, err = runtimeCtx.MemLoad(offset, 17)
+	memContents, err = memLoad(runtimeCtx, offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
 }
@@ -667,10 +675,10 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Write "test data1" to the WASM memory of the current instance
 	memContents := []byte("test data1")
-	err = runtimeCtx.MemStore(10, memContents)
+	err = memStore(runtimeCtx, 10, memContents)
 	require.Nil(t, err)
 
-	memContents, err = runtimeCtx.MemLoad(10, 10)
+	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data1"), memContents)
 
@@ -685,10 +693,10 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Write "test data2" to the WASM memory of the new instance
 	memContents = []byte("test data2")
-	err = runtimeCtx.MemStore(10, memContents)
+	err = memStore(runtimeCtx, 10, memContents)
 	require.Nil(t, err)
 
-	memContents, err = runtimeCtx.MemLoad(10, 10)
+	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data2"), memContents)
 
@@ -698,16 +706,16 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Check whether the previously-written string "test data1" is still in the
 	// memory of the initial instance
-	memContents, err = runtimeCtx.MemLoad(10, 10)
+	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data1"), memContents)
 
 	// Write "test data3" to the WASM memory of the initial instance (now current)
 	memContents = []byte("test data3")
-	err = runtimeCtx.MemStore(10, memContents)
+	err = memStore(runtimeCtx, 10, memContents)
 	require.Nil(t, err)
 
-	memContents, err = runtimeCtx.MemLoad(10, 10)
+	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data3"), memContents)
 }

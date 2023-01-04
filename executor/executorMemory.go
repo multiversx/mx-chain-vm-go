@@ -27,8 +27,9 @@ type Memory interface {
 	IsInterfaceNil() bool
 }
 
-// MemLoad returns the contents from the given offset of the WASM memory.
-func MemLoad(memory Memory, memPtr MemPtr, length MemLength) ([]byte, error) {
+// MemLoadFromMemory is a bridge to the old Memory interface.
+// We are moving away from that, this is to ease the transition.
+func MemLoadFromMemory(memory Memory, memPtr MemPtr, length MemLength) ([]byte, error) {
 	if length == 0 {
 		return []byte{}, nil
 	}
@@ -59,8 +60,9 @@ func MemLoad(memory Memory, memPtr MemPtr, length MemLength) ([]byte, error) {
 	return result, nil
 }
 
-// MemStore stores the given data in the WASM memory at the given offset.
-func MemStore(memory Memory, offset int32, data []byte) error {
+// MemStoreToMemory is a bridge to the old Memory interface.
+// We are moving away from that, this is to ease the transition.
+func MemStoreToMemory(memory Memory, memPtr MemPtr, data []byte) error {
 	dataLength := int32(len(data))
 	if dataLength == 0 {
 		return nil
@@ -68,9 +70,9 @@ func MemStore(memory Memory, offset int32, data []byte) error {
 
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := math.AddInt32(offset, dataLength)
+	requestedEnd := memPtr.Offset(dataLength)
 
-	isOffsetTooSmall := offset < 0
+	isOffsetTooSmall := memPtr < 0
 	isNewPageNecessary := uint32(requestedEnd) > memoryLength
 
 	if isOffsetTooSmall {
@@ -91,6 +93,6 @@ func MemStore(memory Memory, offset int32, data []byte) error {
 		return ErrMemoryBadBoundsUpper
 	}
 
-	copy(memoryView[offset:requestedEnd], data)
+	copy(memoryView[memPtr:requestedEnd], data)
 	return nil
 }

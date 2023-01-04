@@ -134,7 +134,7 @@ func (context *ElrondApi) GetGasLeft() int64 {
 
 // GetSCAddress VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetSCAddress(resultOffset int32) {
+func (context *ElrondApi) GetSCAddress(resultOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -142,7 +142,7 @@ func (context *ElrondApi) GetSCAddress(resultOffset int32) {
 	metering.UseGasAndAddTracedGas(getSCAddressName, gasToUse)
 
 	owner := runtime.GetContextAddress()
-	err := runtime.MemStore(resultOffset, owner)
+	err := context.MemStore(resultOffset, owner)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -150,7 +150,7 @@ func (context *ElrondApi) GetSCAddress(resultOffset int32) {
 
 // GetOwnerAddress VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetOwnerAddress(resultOffset int32) {
+func (context *ElrondApi) GetOwnerAddress(resultOffset executor.MemPtr) {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -163,7 +163,7 @@ func (context *ElrondApi) GetOwnerAddress(resultOffset int32) {
 		return
 	}
 
-	err = runtime.MemStore(resultOffset, owner)
+	err = context.MemStore(resultOffset, owner)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -232,7 +232,7 @@ func (context *ElrondApi) SignalError(messageOffset executor.MemPtr, messageLeng
 
 // GetExternalBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resultOffset int32) {
+func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resultOffset executor.MemPtr) {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -247,7 +247,7 @@ func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resu
 
 	balance := blockchain.GetBalance(address)
 
-	err = runtime.MemStore(resultOffset, balance)
+	err = context.MemStore(resultOffset, balance)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -255,7 +255,7 @@ func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resu
 
 // GetBlockHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockHash(nonce int64, resultOffset int32) int32 {
+func (context *ElrondApi) GetBlockHash(nonce int64, resultOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -264,7 +264,7 @@ func (context *ElrondApi) GetBlockHash(nonce int64, resultOffset int32) int32 {
 	metering.UseGasAndAddTracedGas(blockHashName, gasToUse)
 
 	hash := blockchain.BlockHash(uint64(nonce))
-	err := runtime.MemStore(resultOffset, hash)
+	err := context.MemStore(resultOffset, hash)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -310,7 +310,7 @@ func (context *ElrondApi) GetESDTBalance(
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
 	nonce int64,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -321,7 +321,7 @@ func (context *ElrondApi) GetESDTBalance(
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
-	err = runtime.MemStore(resultOffset, esdtData.Value.Bytes())
+	err = context.MemStore(resultOffset, esdtData.Value.Bytes())
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -415,13 +415,13 @@ func (context *ElrondApi) GetESDTTokenData(
 	tokenIDLen executor.MemLength,
 	nonce int64,
 	valueHandle int32,
-	propertiesOffset int32,
-	hashOffset int32,
-	nameOffset int32,
-	attributesOffset int32,
-	creatorOffset int32,
+	propertiesOffset executor.MemPtr,
+	hashOffset executor.MemPtr,
+	nameOffset executor.MemPtr,
+	attributesOffset executor.MemPtr,
+	creatorOffset executor.MemPtr,
 	royaltiesHandle int32,
-	urisOffset int32,
+	urisOffset executor.MemPtr,
 ) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
@@ -437,25 +437,25 @@ func (context *ElrondApi) GetESDTTokenData(
 	value := managedType.GetBigIntOrCreate(valueHandle)
 	value.Set(esdtData.Value)
 
-	err = runtime.MemStore(propertiesOffset, esdtData.Properties)
+	err = context.MemStore(propertiesOffset, esdtData.Properties)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	if esdtData.TokenMetaData != nil {
-		err = runtime.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
+		err = context.MemStore(hashOffset, esdtData.TokenMetaData.Hash)
 		if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 			return -1
 		}
-		err = runtime.MemStore(nameOffset, esdtData.TokenMetaData.Name)
+		err = context.MemStore(nameOffset, esdtData.TokenMetaData.Name)
 		if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 			return -1
 		}
-		err = runtime.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
+		err = context.MemStore(attributesOffset, esdtData.TokenMetaData.Attributes)
 		if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 			return -1
 		}
-		err = runtime.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
+		err = context.MemStore(creatorOffset, esdtData.TokenMetaData.Creator)
 		if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 			return -1
 		}
@@ -464,7 +464,7 @@ func (context *ElrondApi) GetESDTTokenData(
 		royalties.SetUint64(uint64(esdtData.TokenMetaData.Royalties))
 
 		if len(esdtData.TokenMetaData.URIs) > 0 {
-			err = runtime.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
+			err = context.MemStore(urisOffset, esdtData.TokenMetaData.URIs[0])
 			if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 				return -1
 			}
@@ -1565,7 +1565,7 @@ func (context *ElrondApi) GetArgumentLength(id int32) int32 {
 
 // GetArgument VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetArgument(id int32, argOffset int32) int32 {
+func (context *ElrondApi) GetArgument(id int32, argOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1578,7 +1578,7 @@ func (context *ElrondApi) GetArgument(id int32, argOffset int32) int32 {
 		return -1
 	}
 
-	err := runtime.MemStore(argOffset, args[id])
+	err := context.MemStore(argOffset, args[id])
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1588,7 +1588,7 @@ func (context *ElrondApi) GetArgument(id int32, argOffset int32) int32 {
 
 // GetFunction VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetFunction(functionOffset int32) int32 {
+func (context *ElrondApi) GetFunction(functionOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1596,7 +1596,7 @@ func (context *ElrondApi) GetFunction(functionOffset int32) int32 {
 	metering.UseGasAndAddTracedGas(getFunctionName, gasToUse)
 
 	function := runtime.FunctionName()
-	err := runtime.MemStore(functionOffset, []byte(function))
+	err := context.MemStore(functionOffset, []byte(function))
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1699,7 +1699,7 @@ func (context *ElrondApi) StorageLoadFromAddress(
 	addressOffset executor.MemPtr,
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
-	dataOffset int32) int32 {
+	dataOffset executor.MemPtr) int32 {
 
 	host := context.GetVMHost()
 	return context.StorageLoadFromAddressWithHost(
@@ -1717,7 +1717,7 @@ func (context *ElrondApi) StorageLoadFromAddressWithHost(
 	addressOffset executor.MemPtr,
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
-	dataOffset int32) int32 {
+	dataOffset executor.MemPtr) int32 {
 
 	runtime := host.Runtime()
 
@@ -1733,7 +1733,7 @@ func (context *ElrondApi) StorageLoadFromAddressWithHost(
 
 	data := StorageLoadFromAddressWithTypedArgs(host, address, key)
 
-	err = runtime.MemStore(dataOffset, data)
+	err = context.MemStore(dataOffset, data)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1752,7 +1752,7 @@ func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key 
 
 // StorageLoad VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) StorageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset int32) int32 {
+func (context *ElrondApi) StorageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
 	host := context.GetVMHost()
 	return context.StorageLoadWithHost(
 		host,
@@ -1763,7 +1763,7 @@ func (context *ElrondApi) StorageLoad(keyOffset executor.MemPtr, keyLength execu
 }
 
 // StorageLoadWithHost - storageLoad with host instead of pointer context
-func (context *ElrondApi) StorageLoadWithHost(host arwen.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset int32) int32 {
+func (context *ElrondApi) StorageLoadWithHost(host arwen.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
 	runtime := host.Runtime()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
@@ -1773,7 +1773,7 @@ func (context *ElrondApi) StorageLoadWithHost(host arwen.VMHost, keyOffset execu
 
 	data := StorageLoadWithWithTypedArgs(host, key)
 
-	err = runtime.MemStore(dataOffset, data)
+	err = context.MemStore(dataOffset, data)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1883,7 +1883,7 @@ func (context *ElrondApi) ClearStorageLock(keyOffset executor.MemPtr, keyLength 
 
 // GetCaller VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCaller(resultOffset int32) {
+func (context *ElrondApi) GetCaller(resultOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1892,7 +1892,7 @@ func (context *ElrondApi) GetCaller(resultOffset int32) {
 
 	caller := runtime.GetVMInput().CallerAddr
 
-	err := runtime.MemStore(resultOffset, caller)
+	err := context.MemStore(resultOffset, caller)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1920,7 +1920,7 @@ func (context *ElrondApi) CheckNoPayment() {
 
 // GetCallValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCallValue(resultOffset int32) int32 {
+func (context *ElrondApi) GetCallValue(resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1930,7 +1930,7 @@ func (context *ElrondApi) GetCallValue(resultOffset int32) int32 {
 	value := runtime.GetVMInput().CallValue.Bytes()
 	value = arwen.PadBytesLeft(value, arwen.BalanceLen)
 
-	err := runtime.MemStore(resultOffset, value)
+	err := context.MemStore(resultOffset, value)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1940,7 +1940,7 @@ func (context *ElrondApi) GetCallValue(resultOffset int32) int32 {
 
 // GetESDTValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTValue(resultOffset int32) int32 {
+func (context *ElrondApi) GetESDTValue(resultOffset executor.MemPtr) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -1950,7 +1950,7 @@ func (context *ElrondApi) GetESDTValue(resultOffset int32) int32 {
 
 // GetESDTValueByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTValueByIndex(resultOffset int32, index int32) int32 {
+func (context *ElrondApi) GetESDTValueByIndex(resultOffset executor.MemPtr, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1965,7 +1965,7 @@ func (context *ElrondApi) GetESDTValueByIndex(resultOffset int32, index int32) i
 		value = arwen.PadBytesLeft(value, arwen.BalanceLen)
 	}
 
-	err := runtime.MemStore(resultOffset, value)
+	err := context.MemStore(resultOffset, value)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1975,7 +1975,7 @@ func (context *ElrondApi) GetESDTValueByIndex(resultOffset int32, index int32) i
 
 // GetESDTTokenName VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenName(resultOffset int32) int32 {
+func (context *ElrondApi) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -1985,7 +1985,7 @@ func (context *ElrondApi) GetESDTTokenName(resultOffset int32) int32 {
 
 // GetESDTTokenNameByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenNameByIndex(resultOffset int32, index int32) int32 {
+func (context *ElrondApi) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1998,7 +1998,7 @@ func (context *ElrondApi) GetESDTTokenNameByIndex(resultOffset int32, index int3
 		tokenName = esdtTransfer.ESDTTokenName
 	}
 
-	err := runtime.MemStore(resultOffset, tokenName)
+	err := context.MemStore(resultOffset, tokenName)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -2102,7 +2102,7 @@ func (context *ElrondApi) GetNumESDTTransfers() int32 {
 
 // GetCallValueTokenName VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCallValueTokenName(callValueOffset int32, tokenNameOffset int32) int32 {
+func (context *ElrondApi) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -2112,7 +2112,11 @@ func (context *ElrondApi) GetCallValueTokenName(callValueOffset int32, tokenName
 
 // GetCallValueTokenNameByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCallValueTokenNameByIndex(callValueOffset int32, tokenNameOffset int32, index int32) int32 {
+func (context *ElrondApi) GetCallValueTokenNameByIndex(
+	callValueOffset executor.MemPtr,
+	tokenNameOffset executor.MemPtr,
+	index int32) int32 {
+
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -2130,12 +2134,12 @@ func (context *ElrondApi) GetCallValueTokenNameByIndex(callValueOffset int32, to
 	}
 	callValue = arwen.PadBytesLeft(callValue, arwen.BalanceLen)
 
-	err := runtime.MemStore(tokenNameOffset, tokenName)
+	err := context.MemStore(tokenNameOffset, tokenName)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
-	err = runtime.MemStore(callValueOffset, callValue)
+	err = context.MemStore(callValueOffset, callValue)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -2273,7 +2277,7 @@ func (context *ElrondApi) GetBlockEpoch() int64 {
 
 // GetBlockRandomSeed VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockRandomSeed(pointer int32) {
+func (context *ElrondApi) GetBlockRandomSeed(pointer executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2282,13 +2286,13 @@ func (context *ElrondApi) GetBlockRandomSeed(pointer int32) {
 	metering.UseGasAndAddTracedGas(getBlockRandomSeedName, gasToUse)
 
 	randomSeed := blockchain.CurrentRandomSeed()
-	err := runtime.MemStore(pointer, randomSeed)
+	err := context.MemStore(pointer, randomSeed)
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
 // GetStateRootHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetStateRootHash(pointer int32) {
+func (context *ElrondApi) GetStateRootHash(pointer executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2297,7 +2301,7 @@ func (context *ElrondApi) GetStateRootHash(pointer int32) {
 	metering.UseGasAndAddTracedGas(getStateRootHashName, gasToUse)
 
 	stateRootHash := blockchain.GetStateRootHash()
-	err := runtime.MemStore(pointer, stateRootHash)
+	err := context.MemStore(pointer, stateRootHash)
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
@@ -2351,7 +2355,7 @@ func (context *ElrondApi) GetPrevBlockEpoch() int64 {
 
 // GetPrevBlockRandomSeed VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevBlockRandomSeed(pointer int32) {
+func (context *ElrondApi) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2360,7 +2364,7 @@ func (context *ElrondApi) GetPrevBlockRandomSeed(pointer int32) {
 	metering.UseGasAndAddTracedGas(getPrevBlockRandomSeedName, gasToUse)
 
 	randomSeed := blockchain.LastRandomSeed()
-	err := runtime.MemStore(pointer, randomSeed)
+	err := context.MemStore(pointer, randomSeed)
 	context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
@@ -2701,7 +2705,7 @@ func (context *ElrondApi) CreateContract(
 	codeOffset executor.MemPtr,
 	codeMetadataOffset executor.MemPtr,
 	length executor.MemLength,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -2728,7 +2732,7 @@ func (context *ElrondApi) createContractWithHost(
 	codeOffset executor.MemPtr,
 	codeMetadataOffset executor.MemPtr,
 	length executor.MemLength,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -2778,7 +2782,7 @@ func (context *ElrondApi) createContractWithHost(
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, newAddress)
+	err = context.MemStore(resultOffset, newAddress)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2793,7 +2797,7 @@ func (context *ElrondApi) DeployFromSourceContract(
 	valueOffset executor.MemPtr,
 	sourceContractAddressOffset executor.MemPtr,
 	codeMetadataOffset executor.MemPtr,
-	resultAddressOffset int32,
+	resultAddressOffset executor.MemPtr,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -2848,7 +2852,7 @@ func (context *ElrondApi) DeployFromSourceContract(
 		return 1
 	}
 
-	err = runtime.MemStore(resultAddressOffset, newAddress)
+	err = context.MemStore(resultAddressOffset, newAddress)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2938,7 +2942,7 @@ func (context *ElrondApi) GetReturnDataSize(resultID int32) int32 {
 
 // GetReturnData VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetReturnData(resultID int32, dataOffset int32) int32 {
+func (context *ElrondApi) GetReturnData(resultID int32, dataOffset executor.MemPtr) int32 {
 	host := context.GetVMHost()
 
 	result := GetReturnDataWithHostAndTypedArgs(host, resultID)
@@ -2947,7 +2951,7 @@ func (context *ElrondApi) GetReturnData(resultID int32, dataOffset int32) int32 
 	}
 
 	runtime := context.GetRuntimeContext()
-	err := runtime.MemStore(dataOffset, result)
+	err := context.MemStore(dataOffset, result)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
@@ -3012,40 +3016,40 @@ func DeleteFromReturnDataWithHost(host arwen.VMHost, resultID int32) {
 
 // GetOriginalTxHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetOriginalTxHash(dataOffset int32) {
+func (context *ElrondApi) GetOriginalTxHash(dataOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetOriginalTxHash
 	metering.UseGasAndAddTracedGas(getOriginalTxHashName, gasToUse)
 
-	err := runtime.MemStore(dataOffset, runtime.GetOriginalTxHash())
+	err := context.MemStore(dataOffset, runtime.GetOriginalTxHash())
 	_ = context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
 // GetCurrentTxHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCurrentTxHash(dataOffset int32) {
+func (context *ElrondApi) GetCurrentTxHash(dataOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetCurrentTxHash
 	metering.UseGasAndAddTracedGas(getCurrentTxHashName, gasToUse)
 
-	err := runtime.MemStore(dataOffset, runtime.GetCurrentTxHash())
+	err := context.MemStore(dataOffset, runtime.GetCurrentTxHash())
 	_ = context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 
 // GetPrevTxHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevTxHash(dataOffset int32) {
+func (context *ElrondApi) GetPrevTxHash(dataOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetPrevTxHash
 	metering.UseGasAndAddTracedGas(getPrevTxHashName, gasToUse)
 
-	err := runtime.MemStore(dataOffset, runtime.GetPrevTxHash())
+	err := context.MemStore(dataOffset, runtime.GetPrevTxHash())
 	_ = context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 }
 

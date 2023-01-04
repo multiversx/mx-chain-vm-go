@@ -85,7 +85,7 @@ func (context *ElrondApi) MBufferGetLength(mBufferHandle int32) int32 {
 
 // MBufferGetBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset int32) int32 {
+func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -100,7 +100,7 @@ func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset int3
 	}
 	managedType.ConsumeGasForBytes(mBufferBytes)
 
-	err = runtime.MemStore(resultOffset, mBufferBytes)
+	err = context.MemStore(resultOffset, mBufferBytes)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -110,7 +110,12 @@ func (context *ElrondApi) MBufferGetBytes(mBufferHandle int32, resultOffset int3
 
 // MBufferGetByteSlice VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MBufferGetByteSlice(sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
+func (context *ElrondApi) MBufferGetByteSlice(
+	sourceHandle int32,
+	startingPosition int32,
+	sliceLength int32,
+	resultOffset executor.MemPtr) int32 {
+
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -131,7 +136,7 @@ func (context *ElrondApi) MBufferGetByteSlice(sourceHandle int32, startingPositi
 	}
 
 	slice := sourceBytes[startingPosition : startingPosition+sliceLength]
-	err = runtime.MemStore(resultOffset, slice)
+	err = context.MemStore(resultOffset, slice)
 	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
 		return 1
 	}

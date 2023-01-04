@@ -288,7 +288,7 @@ func (context *ElrondApi) BigIntSignedByteLength(referenceHandle int32) int32 {
 
 // BigIntGetUnsignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset int32) int32 {
+func (context *ElrondApi) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -303,7 +303,7 @@ func (context *ElrondApi) BigIntGetUnsignedBytes(referenceHandle int32, byteOffs
 	}
 	bytes := value.Bytes()
 
-	err = runtime.MemStore(byteOffset, bytes)
+	err = context.MemStore(byteOffset, bytes)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -316,7 +316,7 @@ func (context *ElrondApi) BigIntGetUnsignedBytes(referenceHandle int32, byteOffs
 
 // BigIntGetSignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetSignedBytes(referenceHandle int32, byteOffset int32) int32 {
+func (context *ElrondApi) BigIntGetSignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -331,7 +331,7 @@ func (context *ElrondApi) BigIntGetSignedBytes(referenceHandle int32, byteOffset
 	}
 	bytes := twos.ToBytes(value)
 
-	err = runtime.MemStore(byteOffset, bytes)
+	err = context.MemStore(byteOffset, bytes)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
