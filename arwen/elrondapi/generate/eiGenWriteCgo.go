@@ -42,12 +42,12 @@ func cgoExportType(eiType EIType) string {
 }
 
 // Go types equvalent to the cgo C types
-func cgoExportConversion(argName string, eiType EIType) string {
-	switch eiType {
+func cgoExportConversion(arg *EIFunctionArg) string {
+	switch arg.Type {
 	case EITypeMemPtr:
-		return fmt.Sprintf("executor.MemPtr(%s)", argName)
+		return fmt.Sprintf("executor.MemPtr(%s)", arg.Name)
 	default:
-		return argName
+		return arg.Name
 	}
 }
 
@@ -214,7 +214,7 @@ func (writer *cgoWriter) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadata
 			if argIndex > 0 {
 				out.WriteString(", ")
 			}
-			out.WriteString(cgoExportConversion(arg.Name, arg.Type))
+			out.WriteString(cgoExportConversion(arg))
 		}
 		out.WriteString(")\n")
 
