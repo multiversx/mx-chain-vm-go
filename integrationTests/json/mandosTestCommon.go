@@ -1,7 +1,6 @@
 package vmjsonintegrationtest
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path"
@@ -17,8 +16,6 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
-
-var useWasmer2 = flag.Bool("wasmer2", false, "Test using Wasmer2")
 
 func init() {
 	_ = logger.SetLogLevel("*:NONE")
