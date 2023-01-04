@@ -262,6 +262,8 @@ import "C"
 
 import (
 	"unsafe"
+
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // populateWasmerImports populates imports with the ElrondEI API methods
@@ -2312,13 +2314,13 @@ func v1_5_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationH
 //export v1_5_bigIntStorageStoreUnsigned
 func v1_5_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
+	return vmHooks.BigIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, sourceHandle)
 }
 
 //export v1_5_bigIntStorageLoadUnsigned
 func v1_5_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
+	return vmHooks.BigIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength, destinationHandle)
 }
 
 //export v1_5_bigIntGetCallValue
@@ -2342,7 +2344,7 @@ func v1_5_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandl
 //export v1_5_bigIntGetExternalBalance
 func v1_5_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetExternalBalance(addressOffset, result)
+	vmHooks.BigIntGetExternalBalance(executor.MemPtr(addressOffset), result)
 }
 
 //export v1_5_bigIntGetESDTExternalBalance
@@ -2384,13 +2386,13 @@ func v1_5_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, by
 //export v1_5_bigIntSetUnsignedBytes
 func v1_5_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks.BigIntSetUnsignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 }
 
 //export v1_5_bigIntSetSignedBytes
 func v1_5_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks.BigIntSetSignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 }
 
 //export v1_5_bigIntIsInt64

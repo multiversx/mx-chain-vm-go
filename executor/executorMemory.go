@@ -6,6 +6,17 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
+// MemPtr indicates that an argument refers to a location in WASM memory.
+type MemPtr int32
+
+// MemLength indicates that an argument refers to the length of a data section in WASM memory.
+type MemLength = int32
+
+// Offset adds to a pointer to WASM memory.
+func (memPtr MemPtr) Offset(offset int32) MemPtr {
+	return MemPtr(math.AddInt32(int32(memPtr), offset))
+}
+
 // Memory defines the functionality of the memory of a Wasmer instance.
 // Now considered an implementation detail and will likely stop being a public interface.
 type Memory interface {
@@ -17,17 +28,17 @@ type Memory interface {
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.
-func MemLoad(memory Memory, offset int32, length int32) ([]byte, error) {
+func MemLoad(memory Memory, memPtr MemPtr, length MemLength) ([]byte, error) {
 	if length == 0 {
 		return []byte{}, nil
 	}
 
 	memoryView := memory.Data()
 	memoryLength := memory.Length()
-	requestedEnd := math.AddInt32(offset, length)
+	requestedEnd := memPtr.Offset(length)
 
-	isOffsetTooSmall := offset < 0
-	isOffsetTooLarge := uint32(offset) > memoryLength
+	isOffsetTooSmall := memPtr < 0
+	isOffsetTooLarge := uint32(memPtr) > memoryLength
 	isRequestedEndTooLarge := uint32(requestedEnd) > memoryLength
 	isLengthNegative := length < 0
 
@@ -40,16 +51,16 @@ func MemLoad(memory Memory, offset int32, length int32) ([]byte, error) {
 
 	result := make([]byte, length)
 	if isRequestedEndTooLarge {
-		copy(result, memoryView[offset:])
+		copy(result, memoryView[memPtr:])
 	} else {
-		copy(result, memoryView[offset:requestedEnd])
+		copy(result, memoryView[memPtr:requestedEnd])
 	}
 
 	return result, nil
 }
 
 // MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
-func MemLoadMultiple(memory Memory, offset int32, lengths []int32) ([][]byte, error) {
+func MemLoadMultiple(memory Memory, memPtr MemPtr, lengths []int32) ([][]byte, error) {
 	if len(lengths) == 0 {
 		return [][]byte{}, nil
 	}
@@ -57,13 +68,13 @@ func MemLoadMultiple(memory Memory, offset int32, lengths []int32) ([][]byte, er
 	results := make([][]byte, len(lengths))
 
 	for i, length := range lengths {
-		result, err := MemLoad(memory, offset, length)
+		result, err := MemLoad(memory, memPtr, length)
 		if err != nil {
 			return nil, err
 		}
 
 		results[i] = result
-		offset += length
+		memPtr = memPtr.Offset(length)
 	}
 
 	return results, nil

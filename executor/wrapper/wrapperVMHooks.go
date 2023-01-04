@@ -1167,7 +1167,7 @@ func (w *WrapperVMHooks) BigIntGetSignedArgument(id int32, destinationHandle int
 }
 
 // BigIntStorageStoreUnsigned VM hook wrapper
-func (w *WrapperVMHooks) BigIntStorageStoreUnsigned(keyOffset int32, keyLength int32, sourceHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) int32 {
 	callInfo := fmt.Sprintf("BigIntStorageStoreUnsigned(%d, %d, %d)", keyOffset, keyLength, sourceHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
@@ -1176,7 +1176,7 @@ func (w *WrapperVMHooks) BigIntStorageStoreUnsigned(keyOffset int32, keyLength i
 }
 
 // BigIntStorageLoadUnsigned VM hook wrapper
-func (w *WrapperVMHooks) BigIntStorageLoadUnsigned(keyOffset int32, keyLength int32, destinationHandle int32) int32 {
+func (w *WrapperVMHooks) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) int32 {
 	callInfo := fmt.Sprintf("BigIntStorageLoadUnsigned(%d, %d, %d)", keyOffset, keyLength, destinationHandle)
 	w.logger.LogVMHookCallBefore(callInfo)
 	result := w.wrappedVMHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
@@ -1209,7 +1209,7 @@ func (w *WrapperVMHooks) BigIntGetESDTCallValueByIndex(destinationHandle int32, 
 }
 
 // BigIntGetExternalBalance VM hook wrapper
-func (w *WrapperVMHooks) BigIntGetExternalBalance(addressOffset int32, result int32) {
+func (w *WrapperVMHooks) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) {
 	callInfo := fmt.Sprintf("BigIntGetExternalBalance(%d, %d)", addressOffset, result)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.BigIntGetExternalBalance(addressOffset, result)
@@ -1270,7 +1270,7 @@ func (w *WrapperVMHooks) BigIntGetSignedBytes(referenceHandle int32, byteOffset 
 }
 
 // BigIntSetUnsignedBytes VM hook wrapper
-func (w *WrapperVMHooks) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset int32, byteLength int32) {
+func (w *WrapperVMHooks) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	callInfo := fmt.Sprintf("BigIntSetUnsignedBytes(%d, %d, %d)", destinationHandle, byteOffset, byteLength)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
@@ -1278,7 +1278,7 @@ func (w *WrapperVMHooks) BigIntSetUnsignedBytes(destinationHandle int32, byteOff
 }
 
 // BigIntSetSignedBytes VM hook wrapper
-func (w *WrapperVMHooks) BigIntSetSignedBytes(destinationHandle int32, byteOffset int32, byteLength int32) {
+func (w *WrapperVMHooks) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	callInfo := fmt.Sprintf("BigIntSetSignedBytes(%d, %d, %d)", destinationHandle, byteOffset, byteLength)
 	w.logger.LogVMHookCallBefore(callInfo)
 	w.wrappedVMHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)

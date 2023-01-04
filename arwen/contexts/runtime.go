@@ -818,12 +818,12 @@ func (context *runtimeContext) IsFunctionImported(name string) bool {
 
 // MemLoad returns the contents from the given offset of the WASM memory.
 func (context *runtimeContext) MemLoad(offset int32, length int32) ([]byte, error) {
-	return context.instance.MemLoad(offset, length)
+	return context.instance.MemLoad(executor.MemPtr(offset), length)
 }
 
 // MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
 func (context *runtimeContext) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return context.instance.MemLoadMultiple(offset, lengths)
+	return context.instance.MemLoadMultiple(executor.MemPtr(offset), lengths)
 }
 
 // MemStore stores the given data in the WASM memory at the given offset.

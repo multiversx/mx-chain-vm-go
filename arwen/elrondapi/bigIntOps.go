@@ -5,6 +5,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -95,7 +96,7 @@ func (context *ElrondApi) BigIntGetSignedArgument(id int32, destinationHandle in
 
 // BigIntStorageStoreUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntStorageStoreUnsigned(keyOffset int32, keyLength int32, sourceHandle int32) int32 {
+func (context *ElrondApi) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -104,7 +105,7 @@ func (context *ElrondApi) BigIntStorageStoreUnsigned(keyOffset int32, keyLength 
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntStorageStoreUnsigned
 	metering.UseGasAndAddTracedGas(bigIntStorageStoreUnsignedName, gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -122,13 +123,13 @@ func (context *ElrondApi) BigIntStorageStoreUnsigned(keyOffset int32, keyLength 
 
 // BigIntStorageLoadUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntStorageLoadUnsigned(keyOffset int32, keyLength int32, destinationHandle int32) int32 {
+func (context *ElrondApi) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -186,7 +187,7 @@ func (context *ElrondApi) BigIntGetESDTCallValueByIndex(destinationHandle int32,
 
 // BigIntGetExternalBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetExternalBalance(addressOffset int32, result int32) {
+func (context *ElrondApi) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
@@ -195,7 +196,7 @@ func (context *ElrondApi) BigIntGetExternalBalance(addressOffset int32, result i
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
 	metering.UseGasAndAddTracedGas(bigIntGetExternalBalanceName, gasToUse)
 
-	address, err := runtime.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -337,7 +338,7 @@ func (context *ElrondApi) BigIntGetSignedBytes(referenceHandle int32, byteOffset
 
 // BigIntSetUnsignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset int32, byteLength int32) {
+func (context *ElrondApi) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -346,7 +347,7 @@ func (context *ElrondApi) BigIntSetUnsignedBytes(destinationHandle int32, byteOf
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetUnsignedBytes
 	metering.UseAndTraceGas(gasToUse)
 
-	bytes, err := runtime.MemLoad(byteOffset, byteLength)
+	bytes, err := context.MemLoad(byteOffset, byteLength)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -359,7 +360,7 @@ func (context *ElrondApi) BigIntSetUnsignedBytes(destinationHandle int32, byteOf
 
 // BigIntSetSignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSetSignedBytes(destinationHandle int32, byteOffset int32, byteLength int32) {
+func (context *ElrondApi) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -368,7 +369,7 @@ func (context *ElrondApi) BigIntSetSignedBytes(destinationHandle int32, byteOffs
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntSetSignedBytes
 	metering.UseAndTraceGas(gasToUse)
 
-	bytes, err := runtime.MemLoad(byteOffset, byteLength)
+	bytes, err := context.MemLoad(byteOffset, byteLength)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}

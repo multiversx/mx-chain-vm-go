@@ -5,14 +5,19 @@ import (
 	"strings"
 )
 
-func rustType(goType string) string {
-	if goType == "int32" {
+func rustType(goType EIType) string {
+	switch goType {
+	case EITypeMemPtr:
+		fallthrough
+	case EITypeMemLength:
+		fallthrough
+	case EITypeInt32:
 		return "i32"
-	}
-	if goType == "int64" {
+	case EITypeInt64:
 		return "i64"
+	default:
+		panic("invalid type")
 	}
-	return goType
 }
 
 func wasmerImportAdapterFunctionName(name string) string {

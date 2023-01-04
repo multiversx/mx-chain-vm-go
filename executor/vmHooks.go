@@ -161,20 +161,20 @@ type BigFloatVMHooks interface {
 type BigIntVMHooks interface {
 	BigIntGetUnsignedArgument(id int32, destinationHandle int32)
 	BigIntGetSignedArgument(id int32, destinationHandle int32)
-	BigIntStorageStoreUnsigned(keyOffset int32, keyLength int32, sourceHandle int32) int32
-	BigIntStorageLoadUnsigned(keyOffset int32, keyLength int32, destinationHandle int32) int32
+	BigIntStorageStoreUnsigned(keyOffset MemPtr, keyLength MemLength, sourceHandle int32) int32
+	BigIntStorageLoadUnsigned(keyOffset MemPtr, keyLength MemLength, destinationHandle int32) int32
 	BigIntGetCallValue(destinationHandle int32)
 	BigIntGetESDTCallValue(destination int32)
 	BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32)
-	BigIntGetExternalBalance(addressOffset int32, result int32)
+	BigIntGetExternalBalance(addressOffset MemPtr, result int32)
 	BigIntGetESDTExternalBalance(addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32)
 	BigIntNew(smallValue int64) int32
 	BigIntUnsignedByteLength(referenceHandle int32) int32
 	BigIntSignedByteLength(referenceHandle int32) int32
 	BigIntGetUnsignedBytes(referenceHandle int32, byteOffset int32) int32
 	BigIntGetSignedBytes(referenceHandle int32, byteOffset int32) int32
-	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset int32, byteLength int32)
-	BigIntSetSignedBytes(destinationHandle int32, byteOffset int32, byteLength int32)
+	BigIntSetUnsignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength)
+	BigIntSetSignedBytes(destinationHandle int32, byteOffset MemPtr, byteLength MemLength)
 	BigIntIsInt64(destinationHandle int32) int32
 	BigIntGetInt64(destinationHandle int32) int64
 	BigIntSetInt64(destinationHandle int32, value int64)

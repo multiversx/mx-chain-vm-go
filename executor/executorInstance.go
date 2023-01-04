@@ -14,8 +14,8 @@ type Instance interface {
 	GetFunctionNames() []string
 	ValidateVoidFunction(functionName string) error
 	HasMemory() bool
-	MemLoad(offset int32, length int32) ([]byte, error)
-	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
+	MemLoad(memPtr MemPtr, length MemLength) ([]byte, error)
+	MemLoadMultiple(memPtr MemPtr, lengths []int32) ([][]byte, error)
 	MemStore(offset int32, data []byte) error
 	MemLength() uint32
 	MemGrow(pages uint32) error

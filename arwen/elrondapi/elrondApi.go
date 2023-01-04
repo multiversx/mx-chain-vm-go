@@ -3,6 +3,7 @@ package elrondapi
 import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 //go:generate go run generate/cmd/eiGenMain.go
@@ -18,6 +19,11 @@ func NewElrondApi(host arwen.VMHost) *ElrondApi {
 	return &ElrondApi{
 		host: host,
 	}
+}
+
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (context *ElrondApi) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return context.host.Runtime().MemLoad(int32(memPtr), length)
 }
 
 // GetVMHost returns the vm Context from the vm context map

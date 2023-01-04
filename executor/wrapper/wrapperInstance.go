@@ -87,13 +87,13 @@ func (inst *WrapperInstance) HasMemory() bool {
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.
-func (inst *WrapperInstance) MemLoad(offset int32, length int32) ([]byte, error) {
-	return inst.wrappedInstance.MemLoad(offset, length)
+func (inst *WrapperInstance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return inst.wrappedInstance.MemLoad(memPtr, length)
 }
 
 // MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
-func (inst *WrapperInstance) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return inst.wrappedInstance.MemLoadMultiple(offset, lengths)
+func (inst *WrapperInstance) MemLoadMultiple(memPtr executor.MemPtr, lengths []int32) ([][]byte, error) {
+	return inst.wrappedInstance.MemLoadMultiple(memPtr, lengths)
 }
 
 // MemStore stores the given data in the WASM memory at the given offset.

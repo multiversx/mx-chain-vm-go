@@ -29,11 +29,11 @@ type VMHooks interface {`)
 				if argIndex > 0 {
 					out.WriteString(", ")
 				}
-				out.WriteString(fmt.Sprintf("%s %s", arg.Name, arg.Type))
+				out.WriteString(fmt.Sprintf("%s %s", arg.Name, vmHooksType(arg.Type)))
 			}
 			out.WriteString(")")
 			if funcMetadata.Result != nil {
-				out.WriteString(fmt.Sprintf(" %s", funcMetadata.Result.Type))
+				out.WriteString(fmt.Sprintf(" %s", vmHooksType(funcMetadata.Result.Type)))
 			}
 
 			out.WriteString("\n")
