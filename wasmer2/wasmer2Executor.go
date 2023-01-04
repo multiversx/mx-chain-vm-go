@@ -35,8 +35,7 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 	)
 
 	if result != cWasmerOk {
-		var emptyInstance = &Wasmer2Executor{cgoExecutor: nil}
-		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
 	executor := &Wasmer2Executor{
@@ -78,8 +77,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	var c_instance *cWasmerInstanceT
 
 	if len(contractCode) == 0 {
-		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
-		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+		return nil, newWrappedError(ErrInvalidBytecode)
 	}
 
 	cOptions := unsafe.Pointer(&options)
@@ -92,12 +90,10 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	)
 
 	if compileResult != cWasmerOk {
-		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
-		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
-	return instance, err
+	return newInstance(c_instance)
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -109,8 +105,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	var c_instance *cWasmerInstanceT
 
 	if len(compiledCode) == 0 {
-		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
-		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+		return nil, newWrappedError(ErrInvalidBytecode)
 	}
 
 	cOptions := unsafe.Pointer(&options)
@@ -123,12 +118,10 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	)
 
 	if compileResult != cWasmerOk {
-		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
-		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
-	return instance, err
+	return newInstance(c_instance)
 }
 
 // InitVMHooks inits the VM hooks

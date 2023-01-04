@@ -25,11 +25,6 @@ type cWasmerResultT C.vm_exec_result_t
 type cWasmerCompilationOptions C.vm_exec_compilation_options_t
 type cWasmerVmHookPointers = C.vm_exec_vm_hook_c_func_pointers
 
-// type cWasmerByteArray C.vm_exec_byte_array
-// type cWasmerInstanceContextT C.vm_exec_instance_context_t
-// type cWasmerMemoryT C.vm_exec_memory_t
-// type cFuncGetGasLeft = C.get_gas_left_func
-
 const cWasmerOk = C.VM_EXEC_OK
 
 func cWasmerExecutorSetOpcodeCost(
@@ -218,46 +213,6 @@ func cWasmerMemoryGrow(instance *cWasmerInstanceT, numberOfPages cUint32T) cWasm
 	))
 }
 
-// func cWasmerInstanceIsFunctionImported(instance *cWasmerInstanceT, name string) bool {
-// 	var functionName = cCString(name)
-// 	return bool(C.vm_exec_instance_is_function_imported(
-// 		(*C.vm_exec_instance_t)(instance),
-// 		(*C.char)(unsafe.Pointer(functionName)),
-// 	))
-// }
-
-// func cWasmerExportToMemory(export *cWasmerExportT, memory **cWasmerMemoryT) cWasmerResultT {
-// 	return (cWasmerResultT)(C.vm_exec_export_to_memory(
-// 		(*C.vm_exec_export_t)(export),
-// 		(**C.vm_exec_memory_t)(unsafe.Pointer(memory)),
-// 	))
-// }
-
-// func cWasmerMemoryDestroy(memory *cWasmerMemoryT) {
-// 	C.vm_exec_memory_destroy(
-// 		(*C.vm_exec_memory_t)(memory),
-// 	)
-// }
-
-// func cWasmerInstanceContextGet(instance *cWasmerInstanceT) *cWasmerInstanceContextT {
-// 	return (*cWasmerInstanceContextT)(C.vm_exec_instance_context_get(
-// 		(*C.vm_exec_instance_t)(instance),
-// 	))
-// }
-
-// func cWasmerInstanceContextDataGet(instanceContext *cWasmerInstanceContextT) unsafe.Pointer {
-// 	return unsafe.Pointer(C.vm_exec_instance_context_data_get(
-// 		(*C.vm_exec_instance_context_t)(instanceContext),
-// 	))
-// }
-
-// func cWasmerInstanceContextMemory(instanceContext *cWasmerInstanceContextT) *cWasmerMemoryT {
-// 	return (*cWasmerMemoryT)(C.vm_exec_instance_context_memory(
-// 		(*C.vm_exec_instance_context_t)(instanceContext),
-// 		0,
-// 	))
-// }
-
 func cCString(string string) *cChar {
 	return (*cChar)(C.CString(string))
 }
@@ -273,13 +228,3 @@ func cGoString(string *cChar) string {
 func cGoStringN(string *cChar, length cInt) string {
 	return C.GoStringN((*C.char)(string), (C.int)(length))
 }
-
-// func cGoStringToWasmerByteArray(string string) cWasmerByteArray {
-// 	var cString = cCString(string)
-
-// 	var byteArray cWasmerByteArray
-// 	byteArray.bytes = (*C.uchar)(unsafe.Pointer(cString))
-// 	byteArray.bytes_len = (C.uint)(len(string))
-
-// 	return byteArray
-// }
