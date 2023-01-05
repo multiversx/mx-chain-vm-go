@@ -4,6 +4,7 @@
 # Binaries for programs and plugins
 *.exe
 *.exe~
+bin/golangci-lint
 
 # Test binary, build with `go test -c`
 *.test
