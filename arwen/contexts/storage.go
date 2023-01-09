@@ -15,8 +15,6 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
-const minimumStorageLoadCost = 10000
-
 type storageContext struct {
 	host                          arwen.VMHost
 	blockChainHook                vmcommon.BlockchainHook
@@ -434,12 +432,13 @@ func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients conf
 			coefficients.Quadratic, coefficients.Linear, coefficients.Constant, trieDepth)
 	}
 
-	if fx < minimumStorageLoadCost {
+	if fx < int64(coefficients.MinGasCost) {
 		log.Error("invalid value for gas cost",
 			"quadratic coefficient", coefficients.Quadratic,
 			"linear coefficient", coefficients.Linear,
 			"constant coefficient", coefficients.Constant,
 			"trie depth", trieDepth,
+			"min gas cost", coefficients.MinGasCost,
 		)
 		return staticGasCost, nil
 	}

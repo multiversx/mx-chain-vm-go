@@ -89,12 +89,12 @@ func Test_getSignedCoefficient(t *testing.T) {
 	C := uint64(15883)
 
 	gasMap := make(map[string]uint64)
-	gasMap["A"] = A
-	gasMap["SignOfA"] = 0
-	gasMap["B"] = B
-	gasMap["SignOfB"] = 0
-	gasMap["C"] = C
-	gasMap["SignOfC"] = 1
+	gasMap["QuadraticCoefficient"] = A
+	gasMap["SignOfQuadratic"] = 0
+	gasMap["LinearCoefficient"] = B
+	gasMap["SignOfLinear"] = 0
+	gasMap["ConstantCoefficient"] = C
+	gasMap["SignOfConstant"] = 1
 	gasScheduleMap["DynamicStorageLoad"] = gasMap
 
 	gasCost, err := CreateGasConfig(gasScheduleMap)

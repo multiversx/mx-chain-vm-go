@@ -75,17 +75,20 @@ type DynamicStorageLoadCostCoefficients struct {
 	Quadratic int64
 	Linear    int64
 	Constant  int64
+
+	MinGasCost uint64
 }
 
 // DynamicStorageLoadUnsigned is used to store the coefficients for the func that will compute the gas cost
 // based on the trie depth. The coefficients are unsigned.
 type DynamicStorageLoadUnsigned struct {
-	A       uint64
-	SignOfA uint64
-	B       uint64
-	SignOfB uint64
-	C       uint64
-	SignOfC uint64
+	QuadraticCoefficient uint64
+	SignOfQuadratic      uint64
+	LinearCoefficient    uint64
+	SignOfLinear         uint64
+	ConstantCoefficient  uint64
+	SignOfConstant       uint64
+	MinimumGasCost       uint64
 }
 
 type EthAPICost struct {

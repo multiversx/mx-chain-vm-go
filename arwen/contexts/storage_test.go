@@ -614,9 +614,10 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
 				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
-					Quadratic: 2,
-					Linear:    5,
-					Constant:  6,
+					Quadratic:  2,
+					Linear:     5,
+					Constant:   6,
+					MinGasCost: 100,
 				},
 			},
 		}

@@ -128,14 +128,15 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 }
 
 func convertFromUnsignedToSigned(dynamicStorageLoadUnsigned *DynamicStorageLoadUnsigned) *DynamicStorageLoadCostCoefficients {
-	quadratic := getSignedCoefficient(dynamicStorageLoadUnsigned.A, dynamicStorageLoadUnsigned.SignOfA)
-	linear := getSignedCoefficient(dynamicStorageLoadUnsigned.B, dynamicStorageLoadUnsigned.SignOfB)
-	constant := getSignedCoefficient(dynamicStorageLoadUnsigned.C, dynamicStorageLoadUnsigned.SignOfC)
+	quadratic := getSignedCoefficient(dynamicStorageLoadUnsigned.QuadraticCoefficient, dynamicStorageLoadUnsigned.SignOfQuadratic)
+	linear := getSignedCoefficient(dynamicStorageLoadUnsigned.LinearCoefficient, dynamicStorageLoadUnsigned.SignOfLinear)
+	constant := getSignedCoefficient(dynamicStorageLoadUnsigned.ConstantCoefficient, dynamicStorageLoadUnsigned.SignOfConstant)
 
 	return &DynamicStorageLoadCostCoefficients{
-		Quadratic: quadratic,
-		Linear:    linear,
-		Constant:  constant,
+		Quadratic:  quadratic,
+		Linear:     linear,
+		Constant:   constant,
+		MinGasCost: dynamicStorageLoadUnsigned.MinimumGasCost,
 	}
 }
 
