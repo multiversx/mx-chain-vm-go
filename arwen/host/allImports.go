@@ -1,9 +1,9 @@
 package host
 
 import (
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/cryptoapi"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/cryptoapi"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapi"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapimeta"
 )
 
 // PopulateAllImports fills a function container with all existing EI functions.

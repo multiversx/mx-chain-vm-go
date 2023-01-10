@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
-	mc "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/controller"
+	am "github.com/multiversx/mx-chain-vm-v1_4-go/arwenmandos"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
 )
 
 func resolveArgument(exeDir string, arg string) (string, bool, error) {

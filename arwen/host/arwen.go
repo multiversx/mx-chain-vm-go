@@ -6,16 +6,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/contexts"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/factory"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
+	"github.com/multiversx/mx-chain-core-go/core/check"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/contexts"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapimeta"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/factory"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
 var log = logger.GetOrCreate("arwen/host")
@@ -149,7 +149,7 @@ func NewArwenVM(
 	host.storageContext, err = contexts.NewStorageContext(
 		host,
 		blockChainHook,
-		hostParameters.ElrondProtectedKeyPrefix,
+		hostParameters.ProtectedKeyPrefix,
 	)
 	if err != nil {
 		return nil, err

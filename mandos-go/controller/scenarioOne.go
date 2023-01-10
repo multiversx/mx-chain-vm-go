@@ -1,7 +1,7 @@
 package mandoscontroller
 
 import (
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
 )
 
 type RunScenarioOptions struct {

@@ -3,7 +3,7 @@ package mandosjsonmodel
 import (
 	"math/big"
 
-	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
 )
 
 // JSONBytesFromString stores a byte slice

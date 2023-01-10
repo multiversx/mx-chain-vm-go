@@ -3,10 +3,10 @@ package esdtconvert
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
 )
 
 func MakeESDTUserMetadataBytes(frozen bool) []byte {

@@ -6,14 +6,14 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/esdtconvert"
-	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/esdtconvert"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
 // ExecuteCheckStateStep executes a CheckStateStep defined by the current scenario.
@@ -153,7 +153,7 @@ func (ae *ArwenTestExecutor) checkAccountStorage(baseErrMsg string, expectedAcct
 	storageError := ""
 	for k := range allKeys {
 		// ignore all reserved "ELROND..." keys
-		if strings.HasPrefix(k, core.ElrondProtectedKeyPrefix) {
+		if strings.HasPrefix(k, core.ProtectedKeyPrefix) {
 			continue
 		}
 

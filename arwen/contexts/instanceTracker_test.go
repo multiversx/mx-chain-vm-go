@@ -3,7 +3,7 @@ package contexts
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
 

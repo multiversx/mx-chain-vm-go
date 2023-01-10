@@ -3,12 +3,12 @@ package hosttest
 import (
 	"testing"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	arwenMock "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/mock/contracts"
-	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	arwenMock "github.com/multiversx/mx-chain-vm-v1_4-go/arwen/mock"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 )
 
 var smallKey = []byte("testKey")

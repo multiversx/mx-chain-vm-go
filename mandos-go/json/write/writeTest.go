@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
 )
 
 // TestToJSONString converts a test object to its JSON representation.

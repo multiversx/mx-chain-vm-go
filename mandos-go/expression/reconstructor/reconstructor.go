@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	ei "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/interpreter"
+	ei "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/interpreter"
 )
 
 type ExprReconstructorHint uint64

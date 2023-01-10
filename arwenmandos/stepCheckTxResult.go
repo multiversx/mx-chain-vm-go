@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"math/big"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
-	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
+	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/json/write"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
 )
 
 func (ae *ArwenTestExecutor) checkTxResults(

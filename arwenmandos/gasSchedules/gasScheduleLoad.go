@@ -3,7 +3,7 @@ package gasschedules
 import (
 	"fmt"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	"github.com/pelletier/go-toml"
 )
 

@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
-	mc "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/controller"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	am "github.com/multiversx/mx-chain-vm-v1_4-go/arwenmandos"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
 

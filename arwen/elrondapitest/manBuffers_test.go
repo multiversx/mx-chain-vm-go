@@ -5,12 +5,12 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	arwenMath "github.com/ElrondNetwork/wasm-vm-v1_4/math"
-	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	arwenMath "github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 
-	twoscomplement "github.com/ElrondNetwork/big-int-util/twos-complement"
+	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 var mBufferKey = []byte("mBuffer")

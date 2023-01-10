@@ -46,11 +46,11 @@ import (
 	"errors"
 	"unsafe"
 
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapimeta"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
 )
 
 const (

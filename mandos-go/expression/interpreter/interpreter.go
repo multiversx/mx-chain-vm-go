@@ -7,9 +7,9 @@ import (
 	"math/big"
 	"strings"
 
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
-	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
-	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 var strPrefixes = []string{"str:", "``", "''"}

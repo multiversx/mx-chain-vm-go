@@ -50,10 +50,10 @@ import (
 	"crypto/elliptic"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing/secp256k1"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/math"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapimeta"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing/secp256k1"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
 )
 
 const blsPublicKeyLength = 96

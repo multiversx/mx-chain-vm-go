@@ -3,19 +3,19 @@ package arwenmandos
 import (
 	"fmt"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
-	gasSchedules "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos/gasSchedules"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	mc "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/controller"
-	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/arwen/host"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/mock"
+	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/arwenmandos/gasSchedules"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -71,13 +71,13 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 	blockGasLimit := uint64(10000000)
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
 	vm, err := arwenHost.NewArwenVM(ae.World, &arwen.VMHostParameters{
-		VMType:                   TestVMType,
-		BlockGasLimit:            blockGasLimit,
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
-		ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
+		VMType:               TestVMType,
+		BlockGasLimit:        blockGasLimit,
+		GasSchedule:          gasSchedule,
+		BuiltInFuncContainer: ae.World.BuiltinFuncs.Container,
+		ProtectedKeyPrefix:   []byte(ProtectedKeyPrefix),
+		ESDTTransferParser:   esdtTransferParser,
+		EpochNotifier:        &mock.EpochNotifierStub{},
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,

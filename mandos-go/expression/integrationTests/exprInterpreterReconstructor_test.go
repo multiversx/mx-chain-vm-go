@@ -4,10 +4,10 @@ import (
 	"encoding/hex"
 	"testing"
 
-	mei "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/interpreter"
-	mer "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
-	oj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/orderedjson"
+	mei "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/interpreter"
+	mer "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
 	"github.com/stretchr/testify/require"
 )
 

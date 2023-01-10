@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
 var log = logger.GetOrCreate("arwendebug")

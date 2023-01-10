@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
 )
 
 // MockESDTData groups together all instances of a token (same token name, different nonces).

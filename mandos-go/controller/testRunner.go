@@ -1,9 +1,9 @@
 package mandoscontroller
 
 import (
-	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/parse"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/json/parse"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
 )
 
 // TestExecutor describes a component that can run a VM test.

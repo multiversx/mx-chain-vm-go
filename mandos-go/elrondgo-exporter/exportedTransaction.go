@@ -3,9 +3,9 @@ package elrondgo_exporter
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
 )
 
 const vmTypeHex = "0500"

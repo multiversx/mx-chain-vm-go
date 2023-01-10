@@ -3,9 +3,9 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	"github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
