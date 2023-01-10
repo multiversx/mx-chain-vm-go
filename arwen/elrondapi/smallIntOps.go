@@ -156,7 +156,10 @@ func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
@@ -180,7 +183,10 @@ func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset int32, keyLength i
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
