@@ -313,7 +313,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
+	host, err := arwenHost.NewVMHost(world, &arwen.VMHostParameters{
 		VMType:               DefaultVMType,
 		BlockGasLimit:        uint64(1000),
 		GasSchedule:          gasSchedule,
@@ -363,7 +363,7 @@ func DefaultTestArwenWithGasSchedule(
 	}
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(blockchain, &arwen.VMHostParameters{
+	host, err := arwenHost.NewVMHost(blockchain, &arwen.VMHostParameters{
 		VMType:               DefaultVMType,
 		BlockGasLimit:        uint64(1000),
 		GasSchedule:          gasSchedule,

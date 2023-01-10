@@ -53,8 +53,8 @@ type vmHost struct {
 	activationEpochMap   map[uint32]struct{}
 }
 
-// NewArwenVM creates a new Arwen vmHost
-func NewArwenVM(
+// NewVMHost creates a new Arwen vmHost
+func NewVMHost(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *arwen.VMHostParameters,
 ) (arwen.VMHost, error) {
