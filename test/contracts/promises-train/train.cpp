@@ -1,4 +1,4 @@
-#include "../elrond/types.h"
+#include "../mxvm/types.h"
 extern "C"
 {
     extern void createAsyncCall(

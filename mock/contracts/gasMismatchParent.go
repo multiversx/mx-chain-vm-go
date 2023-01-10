@@ -3,7 +3,7 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapi"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 )
@@ -21,7 +21,7 @@ func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, _ interface
 		argumentsHandle := managedTypes.NewManagedBuffer()
 		managedTypes.WriteManagedVecOfManagedBuffers([][]byte{}, argumentsHandle)
 
-		elrondapi.ManagedAsyncCallWithHost(
+		vmhooks.ManagedAsyncCallWithHost(
 			host,
 			destHandle,
 			valueHandle,

@@ -6,7 +6,7 @@ import (
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapi"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 )
@@ -79,7 +79,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			ESDTTokenNonce: 0,
 		}
 
-		elrondapi.TransferESDTNFTExecuteWithTypedArgs(
+		vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
 			input.RecipientAddr,
 			[]*vmcommon.ESDTTransfer{transfer},
@@ -169,7 +169,7 @@ func EvilCallback(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		retVal := elrondapi.ExecuteOnDestContextByCallerWithTypedArgs(
+		retVal := vmhooks.ExecuteOnDestContextByCallerWithTypedArgs(
 			host,
 			int64(host.Metering().GasLeft()),
 			big.NewInt(0),

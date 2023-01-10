@@ -6,7 +6,7 @@ import (
 
 	mge "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/elrondgo-exporter"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
 	"github.com/stretchr/testify/require"
 )
