@@ -1,4 +1,4 @@
-package arwendebug
+package vmserver
 
 // UpgradeRequest is a CLI / REST request message
 type UpgradeRequest struct {

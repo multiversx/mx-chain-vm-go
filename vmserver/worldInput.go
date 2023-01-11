@@ -1,4 +1,4 @@
-package arwendebug
+package vmserver
 
 import (
 	"github.com/multiversx/mx-chain-vm-common-go"

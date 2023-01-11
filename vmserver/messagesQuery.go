@@ -1,4 +1,4 @@
-package arwendebug
+package vmserver
 
 // QueryRequest is a CLI / REST request message
 type QueryRequest struct {

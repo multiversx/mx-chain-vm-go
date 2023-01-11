@@ -1,4 +1,4 @@
-package arwendebug
+package vmserver
 
 // RunRequest is a CLI / REST request message
 type RunRequest struct {

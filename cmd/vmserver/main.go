@@ -4,10 +4,10 @@ import (
 	"os"
 
 	logger "github.com/multiversx/mx-chain-logger-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwendebug"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmserver"
 )
 
-var log = logger.GetOrCreate("arwendebug")
+var log = logger.GetOrCreate("vmserver")
 
 const (
 	// ErrCodeSuccess signals success
@@ -20,7 +20,7 @@ func main() {
 	logger.ToggleLoggerName(true)
 	_ = logger.SetLogLevel("*:TRACE")
 
-	facade := arwendebug.NewDebugFacade()
+	facade := vmserver.NewDebugFacade()
 	app := initializeCLI(facade)
 
 	err := app.Run(os.Args)

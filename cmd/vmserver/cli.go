@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwendebug"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmserver"
 	"github.com/urfave/cli"
 )
 
-func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
+func initializeCLI(facade *vmserver.DebugFacade) *cli.App {
 	app := cli.NewApp()
 	app.Name = "Arwen Debug"
 	app.Usage = ""
@@ -128,7 +128,7 @@ func initializeCLI(facade *arwendebug.DebugFacade) *cli.App {
 			Name:        "server",
 			Description: "start debug server",
 			Action: func(context *cli.Context) error {
-				server := arwendebug.NewDebugServer(facade, args.ServerAddress)
+				server := vmserver.NewDebugServer(facade, args.ServerAddress)
 				return server.Start()
 			},
 			Flags: []cli.Flag{
