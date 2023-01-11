@@ -29,19 +29,19 @@ test-short-v:
 
 print-api-costs:
 	@echo "bigIntOps.go:"
-	@grep "func v1_4\|GasSchedule" arwen/elrondapi/bigIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_4\|GasSchedule" vmhost/vmhooks/bigIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
-	@echo "vmhooks.go:"
-	@grep "func v1_4\|GasSchedule" arwen/elrondapi/vmhooks.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@echo "baseOps.go:"
+	@grep "func v1_4\|GasSchedule" vmhost/vmhooks/baseOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
 	@echo "managedei.go:"
-	@grep "func v1_4\|GasSchedule" arwen/elrondapi/managedei.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_4\|GasSchedule" vmhost/vmhooks/managedei.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
 	@echo "manBufOps.go:"
-	@grep "func v1_4\|GasSchedule" arwen/elrondapi/manBufOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_4\|GasSchedule" vmhost/vmhooks/manBufOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
 	@echo "smallIntOps.go:"
-	@grep "func v1_4\|GasSchedule" arwen/elrondapi/smallIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_4\|GasSchedule" vmhost/vmhooks/smallIntOps.go | sed -e "/func/ s:func v1_4_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 
 
 build-test-contracts: build-test-contracts-erdpy build-test-contracts-wat
