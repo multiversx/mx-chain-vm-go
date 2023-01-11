@@ -49,6 +49,10 @@ func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 	return nil
 }
 
+// ReplaceVMExecutor mocked method
+func (r *RuntimeContextMock) ReplaceVMExecutor(exec executor.Executor) {
+}
+
 // StartWasmerInstance mocked method
 func (r *RuntimeContextMock) StartWasmerInstance(_ []byte, _ uint64, _ bool) error {
 	if r.Err != nil {
