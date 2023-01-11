@@ -7,9 +7,9 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/esdtconvert"
-	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
-	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/esdtconvert"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 

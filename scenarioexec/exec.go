@@ -11,14 +11,14 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
-	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
-	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
-	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
-	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/fileresolver"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
-var log = logger.GetOrCreate("arwen/mandos")
+var log = logger.GetOrCreate("arwen/scenarios")
 
 // TestVMType is the VM type argument we use in tests.
 var TestVMType = []byte{0, 0}

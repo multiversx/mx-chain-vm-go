@@ -7,11 +7,11 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/esdtconvert"
-	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
-	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/json/write"
-	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
-	oj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/orderedjson"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/esdtconvert"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
+	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	oj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/orderedjson"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 

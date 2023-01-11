@@ -9,7 +9,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {

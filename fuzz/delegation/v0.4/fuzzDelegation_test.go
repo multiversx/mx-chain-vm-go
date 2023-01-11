@@ -10,7 +10,7 @@ import (
 	"time"
 
 	fuzzutil "github.com/multiversx/mx-chain-vm-v1_4-go/fuzz/util"
-	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 
