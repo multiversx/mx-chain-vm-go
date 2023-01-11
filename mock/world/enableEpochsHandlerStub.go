@@ -43,6 +43,9 @@ type EnableEpochsHandlerStub struct {
 	RefactorContextEnableEpochField                      uint32
 	RemoveNonUpdatedStorageEnableEpochField              uint32
 	StorageAPICostOptimizationEnableEpochField           uint32
+	IsRuntimeMemStoreLimitEnabledField                   bool
+	IsMaxBlockchainHookCountersFlagEnabledField          bool
+	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
 }
 
 // IsGlobalMintBurnFlagEnabled -
@@ -228,6 +231,21 @@ func (stub *EnableEpochsHandlerStub) CheckExecuteReadOnlyEnableEpoch() uint32 {
 // StorageAPICostOptimizationEnableEpoch -
 func (stub *EnableEpochsHandlerStub) StorageAPICostOptimizationEnableEpoch() uint32 {
 	return stub.StorageAPICostOptimizationEnableEpochField
+}
+
+// IsRuntimeMemStoreLimitEnabled -
+func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
+	return stub.IsRuntimeMemStoreLimitEnabledField
+}
+
+// IsMaxBlockchainHookCountersFlagEnabled -
+func (stub *EnableEpochsHandlerStub) IsMaxBlockchainHookCountersFlagEnabled() bool {
+	return stub.IsMaxBlockchainHookCountersFlagEnabledField
+}
+
+// IsWipeSingleNFTLiquidityDecreaseEnabled -
+func (stub *EnableEpochsHandlerStub) IsWipeSingleNFTLiquidityDecreaseEnabled() bool {
+	return stub.IsWipeSingleNFTLiquidityDecreaseEnabledField
 }
 
 // IsInterfaceNil -
