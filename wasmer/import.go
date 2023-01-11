@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/elrondapimeta"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
 )
 
 // Import represents an WebAssembly instance imported function.
@@ -76,18 +76,18 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType elrondapimeta.EIFunctionValue) cWasmerValueTag {
+func convertArgType(argType vmhooksmeta.EIFunctionValue) cWasmerValueTag {
 	switch argType {
-	case elrondapimeta.EIFunctionValueInt32:
+	case vmhooksmeta.EIFunctionValueInt32:
 		return cWasmI32
-	case elrondapimeta.EIFunctionValueInt64:
+	case vmhooksmeta.EIFunctionValueInt64:
 		return cWasmI64
 	}
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
 // ConvertImports creates an Imports object from an EIFunctions struct
-func ConvertImports(eiFunctions *elrondapimeta.EIFunctions) *Imports {
+func ConvertImports(eiFunctions *vmhooksmeta.EIFunctions) *Imports {
 	imports := NewImports()
 
 	for funcName, funcData := range eiFunctions.FunctionMap {

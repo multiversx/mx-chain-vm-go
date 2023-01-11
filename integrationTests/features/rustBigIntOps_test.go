@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/require"
 )

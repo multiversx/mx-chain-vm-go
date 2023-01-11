@@ -6,9 +6,9 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
-	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/arwen/host"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/mock"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/arwenmandos/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
@@ -70,7 +70,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 
 	blockGasLimit := uint64(10000000)
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(ae.World, &arwen.VMHostParameters{
+	vm, err := arwenHost.NewVMHost(ae.World, &arwen.VMHostParameters{
 		VMType:               TestVMType,
 		BlockGasLimit:        blockGasLimit,
 		GasSchedule:          gasSchedule,

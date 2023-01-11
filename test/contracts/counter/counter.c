@@ -1,5 +1,5 @@
-#include "../elrond/context.h"
-#include "../elrond/util.h"
+#include "../mxvm/context.h"
+#include "../mxvm/util.h"
 
 STORAGE_KEY(COUNTER);
 

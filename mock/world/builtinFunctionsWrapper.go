@@ -7,7 +7,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/mock"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 )
 

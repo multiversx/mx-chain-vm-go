@@ -5,7 +5,7 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
 	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"

@@ -2,6 +2,6 @@
     "language": "clang",
     "source_files": [
         "managed-buffers.c",
-        "../elrond/cbuiltins.c"
+        "../mxvm/cbuiltins.c"
     ]
 }

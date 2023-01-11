@@ -10,9 +10,9 @@ import (
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
-	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/arwen/host"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/mock"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	er "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/expression/reconstructor"
 	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
@@ -45,7 +45,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
+	vm, err := arwenHost.NewVMHost(world, &arwen.VMHostParameters{
 		VMType:                   testVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 // ErrTrieHandlingNotImplemented indicates that no trie-related operations are

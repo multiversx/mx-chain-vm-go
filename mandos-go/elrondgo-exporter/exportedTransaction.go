@@ -4,7 +4,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/model"
 )
 

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	am "github.com/multiversx/mx-chain-vm-v1_4-go/arwenmandos"
 	fr "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/fileresolver"
 	mjparse "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/json/parse"

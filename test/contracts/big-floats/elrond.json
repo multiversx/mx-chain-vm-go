@@ -2,6 +2,6 @@
     "language": "clang",
     "source_files": [
         "big-floats.c",
-        "../elrond/cbuiltins.c"
+        "../mxvm/cbuiltins.c"
     ]
 }

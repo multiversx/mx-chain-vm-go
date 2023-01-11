@@ -14,9 +14,9 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen"
-	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/arwen/host"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/arwen/mock"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/hashing"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
@@ -313,7 +313,7 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
+	host, err := arwenHost.NewVMHost(world, &arwen.VMHostParameters{
 		VMType:               DefaultVMType,
 		BlockGasLimit:        uint64(1000),
 		GasSchedule:          gasSchedule,
@@ -363,7 +363,7 @@ func DefaultTestArwenWithGasSchedule(
 	}
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(blockchain, &arwen.VMHostParameters{
+	host, err := arwenHost.NewVMHost(blockchain, &arwen.VMHostParameters{
 		VMType:               DefaultVMType,
 		BlockGasLimit:        uint64(1000),
 		GasSchedule:          gasSchedule,
