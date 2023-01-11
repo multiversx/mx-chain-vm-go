@@ -1,4 +1,4 @@
-package arwenmandos
+package scenarioexec
 
 import (
 	"fmt"

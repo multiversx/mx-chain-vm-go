@@ -1,4 +1,4 @@
-package arwenmandos
+package scenarioexec
 
 // ProtectedKeyPrefix prefixes all Elrond reserved storage. Only the protocol can write to keys starting with this.
 const ProtectedKeyPrefix = "ELROND"

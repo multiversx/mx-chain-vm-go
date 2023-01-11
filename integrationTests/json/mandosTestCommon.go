@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	logger "github.com/multiversx/mx-chain-logger-go"
-	am "github.com/multiversx/mx-chain-vm-v1_4-go/arwenmandos"
+	am "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec"
 	mc "github.com/multiversx/mx-chain-vm-v1_4-go/mandos-go/controller"
 	"github.com/stretchr/testify/require"
 )
