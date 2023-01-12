@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	mge "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/elrondgo-exporter"
+	mge "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/scenario-exporter"
 
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
