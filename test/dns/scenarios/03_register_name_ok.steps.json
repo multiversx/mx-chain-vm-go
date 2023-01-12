@@ -114,7 +114,7 @@
                         "''feat:register": "1",
                         "''value_state|keccak256:str:coolname0001.elrond": "u8:2|address:cool_address"
                     },
-                    "code": "file:../output/elrond-wasm-sc-dns.wasm"
+                    "code": "file:../output/dns.wasm"
                 },
                 "+": ""
             }
