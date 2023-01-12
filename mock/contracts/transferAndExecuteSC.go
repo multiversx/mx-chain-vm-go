@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
+	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 )
 
 // TransferAndExecuteFuncName -
@@ -28,7 +28,7 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 		noOfTransfers := int(big.NewInt(0).SetBytes(arguments[0]).Int64())
 
 		for transfer := 0; transfer < noOfTransfers; transfer++ {
-			elrondapi.TransferValueExecuteWithTypedArgs(host,
+			vmhooks.TransferValueExecuteWithTypedArgs(host,
 				GetChildAddressForTransfer(transfer),
 				big.NewInt(testConfig.TransferFromParentToChild),
 				int64(testConfig.GasTransferToChild),

@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/require"
 )
 

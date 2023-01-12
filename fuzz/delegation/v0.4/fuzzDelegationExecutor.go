@@ -8,14 +8,14 @@ import (
 	"math/big"
 	"strings"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	am "github.com/ElrondNetwork/wasm-vm-v1_4/arwenmandos"
-	fr "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	am "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec"
+	fr "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
 type fuzzDelegationExecutor struct {

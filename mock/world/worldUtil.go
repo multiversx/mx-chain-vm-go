@@ -1,6 +1,6 @@
 package worldmock
 
-import "github.com/ElrondNetwork/elrond-go-core/hashing/blake2b"
+import "github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 
 // DefaultHasher is an exposed value to use in tests
 var DefaultHasher = blake2b.NewBlake2b()

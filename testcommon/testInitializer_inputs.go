@@ -10,17 +10,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
-	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/hashing"
+	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
@@ -313,14 +313,14 @@ func DefaultTestArwenWithWorldMockWithGasSchedule(tb testing.TB, customGasSchedu
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
-		VMType:                   DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     world.BuiltinFuncs.Container,
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
+	host, err := arwenHost.NewVMHost(world, &arwen.VMHostParameters{
+		VMType:               DefaultVMType,
+		BlockGasLimit:        uint64(1000),
+		GasSchedule:          gasSchedule,
+		BuiltInFuncContainer: world.BuiltinFuncs.Container,
+		ProtectedKeyPrefix:   []byte("ELROND"),
+		ESDTTransferParser:   esdtTransferParser,
+		EpochNotifier:        &mock.EpochNotifierStub{},
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:     true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField: true,
@@ -363,14 +363,14 @@ func DefaultTestArwenWithGasSchedule(
 	}
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewArwenVM(blockchain, &arwen.VMHostParameters{
-		VMType:                   DefaultVMType,
-		BlockGasLimit:            uint64(1000),
-		GasSchedule:              gasSchedule,
-		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
-		ESDTTransferParser:       esdtTransferParser,
-		EpochNotifier:            &mock.EpochNotifierStub{},
+	host, err := arwenHost.NewVMHost(blockchain, &arwen.VMHostParameters{
+		VMType:               DefaultVMType,
+		BlockGasLimit:        uint64(1000),
+		GasSchedule:          gasSchedule,
+		BuiltInFuncContainer: builtInFunctions.NewBuiltInFunctionContainer(),
+		ProtectedKeyPrefix:   []byte("ELROND"),
+		ESDTTransferParser:   esdtTransferParser,
+		EpochNotifier:        &mock.EpochNotifierStub{},
 		EnableEpochsHandler: &mock.EnableEpochsHandlerStub{
 			IsStorageAPICostOptimizationFlagEnabledField:         true,
 			IsMultiESDTTransferFixOnCallBackFlagEnabledField:     true,

@@ -4,10 +4,10 @@ package testcommon
 import (
 	"testing"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/stretchr/testify/require"
 )
 
