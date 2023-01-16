@@ -1,7 +1,6 @@
 package scenarioexec
 
-// ProtectedKeyPrefix prefixes all Elrond reserved storage. Only the protocol can write to keys starting with this.
-const ProtectedKeyPrefix = "ELROND"
+import "github.com/multiversx/mx-chain-core-go/core"
 
-// ElrondRewardKey is the storage key where the protocol writes when sending out rewards.
-const ElrondRewardKey = ProtectedKeyPrefix + "reward"
+// RewardKey is the storage key where the protocol writes when sending out rewards.
+const RewardKey = core.ProtectedKeyPrefix + "reward"

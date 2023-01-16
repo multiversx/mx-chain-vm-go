@@ -146,7 +146,7 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmcommo
 		return nil, fmt.Errorf("tx recipient (address: %s) does not exist", hex.EncodeToString(tx.To.Value))
 	}
 	recipient.BalanceDelta = reward
-	storageElrondReward := recipient.StorageValue(ElrondRewardKey)
+	storageElrondReward := recipient.StorageValue(RewardKey)
 	storageElrondReward = big.NewInt(0).Add(
 		big.NewInt(0).SetBytes(storageElrondReward),
 		reward).Bytes()
@@ -156,8 +156,8 @@ func (ae *ArwenTestExecutor) validatorRewardOutput(tx *mj.Transaction) (*vmcommo
 		Address:      tx.To.Value,
 		BalanceDelta: tx.EGLDValue.Value,
 		StorageUpdates: map[string]*vmcommon.StorageUpdate{
-			ElrondRewardKey: {
-				Offset: []byte(ElrondRewardKey),
+			RewardKey: {
+				Offset: []byte(RewardKey),
 				Data:   storageElrondReward,
 			},
 		},
