@@ -542,7 +542,7 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 
 		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
 		require.Nil(t, err)
-		require.Equal(t, uint64(0), cost)
+		require.Equal(t, uint64(5), cost)
 	})
 
 	t.Run("fx < 0", func(t *testing.T) {
@@ -584,9 +584,9 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 		mockMetering := &contextmock.MeteringContextMock{
 			GasCost: &config.GasCost{
 				DynamicStorageLoad: config.DynamicStorageLoadCostCoefficients{
-					Quadratic: 687,
-					Linear:    30483,
-					Constant:  -15883,
+					Quadratic: 688,
+					Linear:    31858,
+					Constant:  15287,
 				},
 			},
 		}
@@ -602,7 +602,7 @@ func TestStorageContext_GetStorageLoadCost(t *testing.T) {
 
 		cost, err := storageContext.GetStorageLoadCost(trieDepth, staticCost)
 		require.Nil(t, err)
-		require.Equal(t, uint64(153707), cost)
+		require.Equal(t, uint64(191777), cost)
 	})
 
 	t.Run("less than minimum gas cost returns static gas cost", func(t *testing.T) {

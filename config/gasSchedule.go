@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -12,6 +13,8 @@ const GasValueForTests = 1
 const isNegativeNumber = 1
 
 var AsyncCallbackGasLockForTests = uint64(100_000)
+
+var log = logger.GetOrCreate("arwen/config")
 
 // GasScheduleMap (alias) is the map for gas schedule
 type GasScheduleMap = map[string]map[string]uint64
@@ -112,6 +115,13 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	}
 	dynamicStorageLoadParams := convertFromUnsignedToSigned(dynamicStorageLoadUnsigned)
 
+	isCorrectlyDefined := isDynamicGasComputationFuncCorrectlyDefined(dynamicStorageLoadParams)
+	if !isCorrectlyDefined {
+		return nil, fmt.Errorf("dynamic gas computation func incorrectly defined, "+
+			"quadratic parameter = %d, linear parameter = %d, constant parameter = %d",
+			dynamicStorageLoadParams.Quadratic, dynamicStorageLoadParams.Linear, dynamicStorageLoadParams.Constant)
+	}
+
 	gasCost := &GasCost{
 		BaseOperationCost:    *baseOps,
 		BigIntAPICost:        *bigIntOps,
@@ -125,6 +135,27 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	}
 
 	return gasCost, nil
+}
+
+func isDynamicGasComputationFuncCorrectlyDefined(parameters *DynamicStorageLoadCostCoefficients) bool {
+	inflectionPoint := float64(-1*parameters.Linear) / float64(2*parameters.Quadratic) // -b/2a
+	if inflectionPoint > 0 {
+		// the inflection point should be <= 0 because the func needs to be strictly increasing for x = [0,n)
+		log.Error("invalid parameters for dynamic gas computation func, the x of the inflection point is > 0")
+		return false
+	}
+	if parameters.Quadratic <= 0 {
+		// the "a" from ax^2+bx+c needs to be > 0 in order for the func to be convex
+		log.Error("invalid parameters for dynamic gas computation func, the quadratic parameter is not > 0")
+		return false
+	}
+	if parameters.Constant < 0 {
+		// f(x) = ax^2+bx+c. f(0) >= 0 only if c >= 0
+		log.Error("invalid parameters for dynamic gas computation func, f(x) is not >= 0 for x = [0,n) ")
+		return false
+	}
+
+	return true
 }
 
 func convertFromUnsignedToSigned(dynamicStorageLoadUnsigned *DynamicStorageLoadUnsigned) *DynamicStorageLoadCostCoefficients {
@@ -180,6 +211,7 @@ func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasSc
 	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
 	gasMap["ManagedBufferAPICost"] = FillGasMapManagedBufferAPICosts(value)
 	gasMap["WASMOpcodeCost"] = FillGasMapWASMOpcodeValues(value)
+	gasMap["DynamicStorageLoad"] = FillGasMapDynamicStorageLoad()
 
 	return gasMap
 }
@@ -877,6 +909,19 @@ func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap["LocalsUnmetered"] = 100
 	gasMap["MaxMemoryGrow"] = 8
 	gasMap["MaxMemoryGrowDelta"] = 10
+
+	return gasMap
+}
+
+func FillGasMapDynamicStorageLoad() map[string]uint64 {
+	gasMap := make(map[string]uint64)
+
+	gasMap["QuadraticCoefficient"] = 688
+	gasMap["SignOfQuadratic"] = 0
+	gasMap["LinearCoefficient"] = 31858
+	gasMap["SignOfLinear"] = 0
+	gasMap["ConstantCoefficient"] = 15287
+	gasMap["SignOfConstant"] = 0
 
 	return gasMap
 }

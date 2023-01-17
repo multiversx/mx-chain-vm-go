@@ -694,6 +694,16 @@ const (
     LocalsUnmetered = 100
     MaxMemoryGrow = 8
     MaxMemoryGrowDelta = 10
+
+[DynamicStorageLoad]
+    QuadraticCoefficient = 688
+    SignOfQuadratic = 0
+    LinearCoefficient = 31858
+    SignOfLinear = 0
+    ConstantCoefficient = 15287
+    SignOfConstant = 0
+    MinimumGasCost = 10000
+
 `
 	gasScheduleV4 = `[BuiltInCost]
     ChangeOwnerAddress       = 5000000
@@ -1383,5 +1393,14 @@ const (
     LocalsUnmetered = 100
     MaxMemoryGrowDelta = 1
     MaxMemoryGrow = 100
+
+[DynamicStorageLoad]
+    QuadraticCoefficient = 688
+    SignOfQuadratic = 0
+    LinearCoefficient = 31858
+    SignOfLinear = 0
+    ConstantCoefficient = 15287
+    SignOfConstant = 0
+    MinimumGasCost = 10000
 `
 )

@@ -383,21 +383,21 @@ func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint
 
 // UseGasForStorageLoad - single spot of gas consumption for storage load
 func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, trieDepth int64, staticGasCost uint64, usedCache bool) error {
-	var blockchainLoadCost uint64
-	var err error
-
-	metering := context.host.Metering()
-	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
-		blockchainLoadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
-	} else {
-		blockchainLoadCost, err = context.GetStorageLoadCost(trieDepth, staticGasCost)
-		if err != nil {
-			return err
-		}
+	blockchainLoadCost, err := context.getBlockchainLoadCost(trieDepth, staticGasCost, usedCache)
+	if err != nil {
+		return err
 	}
 
-	return metering.UseGasBoundedAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
+	return context.host.Metering().UseGasBoundedAndAddTracedGas(tracedFunctionName, blockchainLoadCost)
+}
+
+func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
+	enableEpochsHandler := context.host.EnableEpochsHandler()
+	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
+		return context.host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad, nil
+	}
+
+	return context.GetStorageLoadCost(trieDepth, staticGasCost)
 }
 
 // IsUseDifferentGasCostFlagSet - getter for flag
@@ -421,10 +421,6 @@ func (context *storageContext) GetStorageLoadCost(trieDepth int64, staticGasCost
 }
 
 func computeGasForStorageLoadBasedOnTrieDepth(trieDepth int64, coefficients config.DynamicStorageLoadCostCoefficients, staticGasCost uint64) (uint64, error) {
-	if trieDepth == 0 {
-		return 0, nil
-	}
-
 	fx := coefficients.Quadratic*trieDepth*trieDepth + coefficients.Linear*trieDepth + coefficients.Constant
 
 	if fx < 0 {
