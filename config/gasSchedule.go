@@ -138,15 +138,15 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 }
 
 func isDynamicGasComputationFuncCorrectlyDefined(parameters *DynamicStorageLoadCostCoefficients) bool {
+	if parameters.Quadratic <= 0 {
+		// the "a" from ax^2+bx+c needs to be > 0 in order for the func to be convex
+		log.Error("invalid parameters for dynamic gas computation func, the quadratic parameter is not > 0")
+		return false
+	}
 	inflectionPoint := float64(-1*parameters.Linear) / float64(2*parameters.Quadratic) // -b/2a
 	if inflectionPoint > 0 {
 		// the inflection point should be <= 0 because the func needs to be strictly increasing for x = [0,n)
 		log.Error("invalid parameters for dynamic gas computation func, the x of the inflection point is > 0")
-		return false
-	}
-	if parameters.Quadratic <= 0 {
-		// the "a" from ax^2+bx+c needs to be > 0 in order for the func to be convex
-		log.Error("invalid parameters for dynamic gas computation func, the quadratic parameter is not > 0")
 		return false
 	}
 	if parameters.Constant < 0 {
@@ -913,6 +913,7 @@ func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	return gasMap
 }
 
+// FillGasMapDynamicStorageLoad populates the gas map with the coefficients needed for dynamic storage load
 func FillGasMapDynamicStorageLoad() map[string]uint64 {
 	gasMap := make(map[string]uint64)
 

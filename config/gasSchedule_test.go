@@ -135,7 +135,7 @@ func Test_isDynamicGasComputationFuncCorrectlyDefined(t *testing.T) {
 		assert.False(t, ok)
 	})
 
-	t.Run("constant parameter is positive", func(t *testing.T) {
+	t.Run("constant parameter is negative", func(t *testing.T) {
 		t.Parallel()
 
 		params := &DynamicStorageLoadCostCoefficients{
@@ -150,6 +150,20 @@ func Test_isDynamicGasComputationFuncCorrectlyDefined(t *testing.T) {
 	})
 
 	t.Run("ok params", func(t *testing.T) {
+		t.Parallel()
+
+		params := &DynamicStorageLoadCostCoefficients{
+			Quadratic:  5,
+			Linear:     5,
+			Constant:   1,
+			MinGasCost: 0,
+		}
+
+		ok := isDynamicGasComputationFuncCorrectlyDefined(params)
+		assert.True(t, ok)
+	})
+
+	t.Run("benchmarked params", func(t *testing.T) {
 		t.Parallel()
 
 		params := &DynamicStorageLoadCostCoefficients{
