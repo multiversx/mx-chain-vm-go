@@ -1,0 +1,222 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.61.0-nightly",
+            "commitHash": "4ce3749235fc31d15ebd444b038a9877e8c700d7",
+            "commitDate": "2022-02-28",
+            "channel": "Nightly",
+            "short": "rustc 1.61.0-nightly (4ce374923 2022-02-28)"
+        },
+        "contractCrate": {
+            "name": "dns",
+            "version": "1.1.0"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.29.2"
+        }
+    },
+    "name": "Dns",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "registration_cost",
+                "type": "BigUint"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "canRegister",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "register",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "resolve",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "resolveFromHash",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name_hash",
+                    "type": "array32<u8>"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "checkPending",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "resetPending",
+            "onlyOwner": true,
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "claim",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getRegistrationCost",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getContractOwner",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getOwnShardId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "nameHash",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "array32<u8>"
+                }
+            ]
+        },
+        {
+            "name": "nameShard",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "validateName",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "name",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "version",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "setFeatureFlag",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "feature_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "value",
+                    "type": "bool"
+                }
+            ],
+            "outputs": []
+        }
+    ],
+    "hasCallback": true,
+    "types": {}
+}
