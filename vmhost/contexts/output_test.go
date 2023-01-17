@@ -44,7 +44,7 @@ func TestOutputContext_PushPopState(t *testing.T) {
 	t.Parallel()
 
 	host := &contextmock.VMHostStub{}
-	host.RuntimeCalled = func() arwen.RuntimeContext {
+	host.RuntimeCalled = func() vmhost.RuntimeContext {
 		return &contextmock.RuntimeContextMock{VMInput: &vmcommon.ContractCallInput{}}
 	}
 	outputContext, _ := NewOutputContext(host)
@@ -119,7 +119,7 @@ func TestOutputContext_GetOutputAccount(t *testing.T) {
 	require.True(t, isNew)
 	require.Equal(t, []byte("account"), account.Address)
 	require.Zero(t, account.Nonce)
-	require.Equal(t, arwen.Zero, account.BalanceDelta)
+	require.Equal(t, vmhost.Zero, account.BalanceDelta)
 	require.Nil(t, account.Balance)
 	require.Zero(t, len(account.StorageUpdates))
 
@@ -380,7 +380,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 	outputContext, _ := NewOutputContext(host)
 
 	returnCode := vmcommon.ContractNotFound
-	returnMessage := arwen.ErrContractNotFound.Error()
+	returnMessage := vmhost.ErrContractNotFound.Error()
 
 	expected := &vmcommon.VMOutput{
 		GasRemaining:  0,
@@ -388,7 +388,7 @@ func TestOutputContext_VMOutputError(t *testing.T) {
 		ReturnCode:    returnCode,
 		ReturnMessage: returnMessage,
 	}
-	vmOutput := outputContext.CreateVMOutputInCaseOfError(arwen.ErrContractNotFound)
+	vmOutput := outputContext.CreateVMOutputInCaseOfError(vmhost.ErrContractNotFound)
 	require.Equal(t, expected, vmOutput)
 }
 
@@ -452,21 +452,21 @@ func TestOutputContext_Transfer_Errors_And_Checks(t *testing.T) {
 
 	senderOutputAccount, _ := outputContext.GetOutputAccount(sender)
 	require.Nil(t, senderOutputAccount.Balance)
-	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, vmhost.Zero, senderOutputAccount.BalanceDelta)
 
 	// negative transfers are disallowed
 	valueToTransfer := big.NewInt(-1000)
 	err := outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
-	require.Equal(t, arwen.ErrTransferNegativeValue, err)
+	require.Equal(t, vmhost.ErrTransferNegativeValue, err)
 	require.Nil(t, senderOutputAccount.Balance)
-	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, vmhost.Zero, senderOutputAccount.BalanceDelta)
 
 	// account must have enough money to transfer
 	valueToTransfer = big.NewInt(5000)
 	err = outputContext.Transfer(receiver, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
-	require.Equal(t, arwen.ErrTransferInsufficientFunds, err)
+	require.Equal(t, vmhost.ErrTransferInsufficientFunds, err)
 	require.Equal(t, big.NewInt(2000), senderOutputAccount.Balance)
-	require.Equal(t, arwen.Zero, senderOutputAccount.BalanceDelta)
+	require.Equal(t, vmhost.Zero, senderOutputAccount.BalanceDelta)
 
 	senderOutputAccount.BalanceDelta = big.NewInt(4000)
 	valueToTransfer = big.NewInt(5000)
@@ -520,7 +520,7 @@ func TestOutputContext_Transfer_IsAccountPayable(t *testing.T) {
 	valueToTransfer := big.NewInt(10)
 	err := oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)
 
-	require.Equal(t, arwen.ErrAccountNotPayable, err)
+	require.Equal(t, vmhost.ErrAccountNotPayable, err)
 
 	valueToTransfer = big.NewInt(0)
 	err = oc.Transfer(receiverNonPayable, sender, 54, 0, valueToTransfer, []byte("txdata"), 0)

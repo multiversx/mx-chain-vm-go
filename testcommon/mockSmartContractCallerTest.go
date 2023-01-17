@@ -20,7 +20,7 @@ type testTemplateConfig struct {
 type MockInstancesTestTemplate struct {
 	testTemplateConfig
 	contracts     *[]MockTestSmartContract
-	setup         func(arwen.VMHost, *worldmock.MockWorld)
+	setup         func(vmhost.VMHost, *worldmock.MockWorld)
 	assertResults func(*worldmock.MockWorld, *VMOutputVerifier)
 }
 
@@ -32,7 +32,7 @@ func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 			useMocks:                 true,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
+		setup: func(vmhost.VMHost, *worldmock.MockWorld) {},
 	}
 }
 
@@ -49,7 +49,7 @@ func (callerTest *MockInstancesTestTemplate) WithInput(input *vmcommon.ContractC
 }
 
 // WithSetup provides the setup function to be used by the mock contract call test
-func (callerTest *MockInstancesTestTemplate) WithSetup(setup func(arwen.VMHost, *worldmock.MockWorld)) *MockInstancesTestTemplate {
+func (callerTest *MockInstancesTestTemplate) WithSetup(setup func(vmhost.VMHost, *worldmock.MockWorld)) *MockInstancesTestTemplate {
 	callerTest.setup = setup
 	return callerTest
 }
