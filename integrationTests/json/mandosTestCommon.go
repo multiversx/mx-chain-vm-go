@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	executorwrapper "github.com/ElrondNetwork/wasm-vm/executor/wrapper"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	am "github.com/multiversx/wasm-vm/scenarioexec"
+	executorwrapper "github.com/multiversx/wasm-vm/executor/wrapper"
+	mc "github.com/multiversx/wasm-vm/scenarios/controller"
+	"github.com/multiversx/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
 

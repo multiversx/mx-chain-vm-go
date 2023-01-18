@@ -3,8 +3,8 @@ package worldmock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
+	"github.com/multiversx/wasm-vm/scenarios/esdtconvert"
 )
 
 // GetTokenBalance returns the ESDT balance of the account, specified by the

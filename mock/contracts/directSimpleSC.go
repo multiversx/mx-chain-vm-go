@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/wasm-vm/arwen"
+	"github.com/multiversx/wasm-vm/executor"
+	mock "github.com/multiversx/wasm-vm/mock/context"
+	test "github.com/multiversx/wasm-vm/testcommon"
 )
 
 // WasteGasChildMock is an exposed mock contract method

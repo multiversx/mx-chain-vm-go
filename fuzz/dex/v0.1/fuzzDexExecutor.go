@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/wasm-vm/arwen"
+	am "github.com/multiversx/wasm-vm/scenarioexec"
+	fr "github.com/multiversx/wasm-vm/scenarios/fileresolver"
+	mjparse "github.com/multiversx/wasm-vm/scenarios/json/parse"
+	mjwrite "github.com/multiversx/wasm-vm/scenarios/json/write"
+	mj "github.com/multiversx/wasm-vm/scenarios/model"
+	worldhook "github.com/multiversx/wasm-vm/mock/world"
 )
 
 type fuzzDexExecutorInitArgs struct {

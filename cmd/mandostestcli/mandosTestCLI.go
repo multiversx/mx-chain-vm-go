@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	am "github.com/multiversx/wasm-vm/scenarioexec"
+	mc "github.com/multiversx/wasm-vm/scenarios/controller"
 )
 
 func resolveArgument(exeDir string, arg string) (string, bool, error) {
@@ -33,7 +33,7 @@ func parseOptionFlags() *mc.RunScenarioOptions {
 	}
 }
 
-// MandosTestCLI provides the functionality for any mandos-go test executor.
+// MandosTestCLI provides the functionality for any scenarios test executor.
 func MandosTestCLI() {
 	options := parseOptionFlags()
 

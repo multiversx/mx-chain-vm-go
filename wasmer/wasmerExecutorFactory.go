@@ -1,6 +1,6 @@
 package wasmer
 
-import "github.com/ElrondNetwork/wasm-vm/executor"
+import "github.com/multiversx/wasm-vm/executor"
 
 // WasmerExecutorFactory builds Wasmer Executors.
 type WasmerExecutorFactory struct{}

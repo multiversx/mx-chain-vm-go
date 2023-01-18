@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/wasm-vm/executor"
 )
 
 // ExecutorLogger defines a logging interface for the WrapperExecutor.

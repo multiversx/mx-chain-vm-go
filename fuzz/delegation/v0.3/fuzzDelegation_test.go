@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	fuzzutil "github.com/multiversx/wasm-vm/fuzz/util"
+	mc "github.com/multiversx/wasm-vm/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 

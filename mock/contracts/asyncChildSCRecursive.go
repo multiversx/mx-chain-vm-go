@@ -3,10 +3,10 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/wasm-vm/arwen"
+	mock "github.com/multiversx/wasm-vm/mock/context"
+	test "github.com/multiversx/wasm-vm/testcommon"
 )
 
 // RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method

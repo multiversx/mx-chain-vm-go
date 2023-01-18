@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/wasm-vm/executor"
 )
 
 // GasCost defines the gas cost config structure

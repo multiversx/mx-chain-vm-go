@@ -4,10 +4,10 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	"github.com/multiversx/wasm-vm/arwen"
+	mock "github.com/multiversx/wasm-vm/mock/context"
+	test "github.com/multiversx/wasm-vm/testcommon"
 )
 
 // TransferToAsyncParentOnCallbackChildMock -

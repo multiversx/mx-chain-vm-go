@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/wasm-vm/executor"
 )
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It

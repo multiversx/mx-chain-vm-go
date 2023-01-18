@@ -3,10 +3,10 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/wasm-vm/arwen"
+	worldmock "github.com/multiversx/wasm-vm/mock/world"
 )
 
 var _ arwen.OutputContext = (*OutputContextMock)(nil)

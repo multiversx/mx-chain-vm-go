@@ -3,11 +3,11 @@ package testcommon
 import (
 	"testing"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/wasm-vm/arwen"
+	mock "github.com/multiversx/wasm-vm/mock/context"
+	worldmock "github.com/multiversx/wasm-vm/mock/world"
 )
 
 var logMock = logger.GetOrCreate("arwen/mock")

@@ -3,11 +3,11 @@ package mock
 import (
 	"testing"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/wasm-vm/arwen"
+	"github.com/multiversx/wasm-vm/executor"
+	worldmock "github.com/multiversx/wasm-vm/mock/world"
+	"github.com/multiversx/wasm-vm/wasmer"
 )
 
 // ExecutorMockFactory is the factory for the ExecutorRecorderMock.

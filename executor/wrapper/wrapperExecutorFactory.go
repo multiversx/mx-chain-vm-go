@@ -1,7 +1,7 @@
 package executorwrapper
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/wasm-vm/executor"
 )
 
 // WrapperExecutorFactory is the factory for the WrapperExecutor.

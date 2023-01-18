@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/wasm-vm/executor"
 )
 
 // WrapperInstance is a wrapper around an executor instance, which adds the possibility of logging operations.

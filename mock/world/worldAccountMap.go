@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/wasm-vm/crypto/hashing"
 )
 
 // AccountMap is a map from address to Account, also implementing the
