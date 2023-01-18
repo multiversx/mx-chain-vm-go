@@ -1,4 +1,4 @@
-package host
+package hostCore
 
 import (
 	"testing"
@@ -20,8 +20,8 @@ func TestNewVMHost(t *testing.T) {
 	esdtTransferParser, err := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	require.Nil(t, err)
 
-	makeHostParameters := func() *arwen.VMHostParameters {
-		return &arwen.VMHostParameters{
+	makeHostParameters := func() *vmhost.VMHostParameters {
+		return &vmhost.VMHostParameters{
 			VMType:               vmType,
 			ESDTTransferParser:   esdtTransferParser,
 			BuiltInFuncContainer: bfc,
@@ -34,53 +34,53 @@ func TestNewVMHost(t *testing.T) {
 	t.Run("NilBlockchainHook", func(t *testing.T) {
 		host, err := NewVMHost(nil, makeHostParameters())
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilBlockChainHook)
+		require.ErrorIs(t, err, vmhost.ErrNilBlockChainHook)
 	})
 	t.Run("NilHostParameters", func(t *testing.T) {
 		host, err := NewVMHost(blockchainHook, nil)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilHostParameters)
+		require.ErrorIs(t, err, vmhost.ErrNilHostParameters)
 	})
 	t.Run("NilESDTTransferParser", func(t *testing.T) {
 		hostParameters := makeHostParameters()
 		hostParameters.ESDTTransferParser = nil
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilESDTTransferParser)
+		require.ErrorIs(t, err, vmhost.ErrNilESDTTransferParser)
 	})
 	t.Run("NilBuiltInFunctionsContainer", func(t *testing.T) {
 		hostParameters := makeHostParameters()
 		hostParameters.BuiltInFuncContainer = nil
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilBuiltInFunctionsContainer)
+		require.ErrorIs(t, err, vmhost.ErrNilBuiltInFunctionsContainer)
 	})
 	t.Run("NilEpochNotifier", func(t *testing.T) {
 		hostParameters := makeHostParameters()
 		hostParameters.EpochNotifier = nil
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilEpochNotifier)
+		require.ErrorIs(t, err, vmhost.ErrNilEpochNotifier)
 	})
 	t.Run("NilEnableEpochsHandler", func(t *testing.T) {
 		hostParameters := makeHostParameters()
 		hostParameters.EnableEpochsHandler = nil
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilEnableEpochsHandler)
+		require.ErrorIs(t, err, vmhost.ErrNilEnableEpochsHandler)
 	})
 	t.Run("NilHasher", func(t *testing.T) {
 		hostParameters := makeHostParameters()
 		hostParameters.Hasher = nil
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilHasher)
+		require.ErrorIs(t, err, vmhost.ErrNilHasher)
 	})
 	t.Run("NilVMType", func(t *testing.T) {
 		hostParameters := makeHostParameters()
 		hostParameters.VMType = nil
 		host, err := NewVMHost(blockchainHook, hostParameters)
 		require.Nil(t, host)
-		require.ErrorIs(t, err, arwen.ErrNilVMType)
+		require.ErrorIs(t, err, vmhost.ErrNilVMType)
 	})
 }

@@ -49,9 +49,9 @@ type InstancesTestTemplate struct {
 	testTemplateConfig
 	contracts          []*InstanceTestSmartContract
 	gasSchedule        config.GasScheduleMap
-	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
-	assertResults      func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host               arwen.VMHost
+	setup              func(vmhost.VMHost, *contextmock.BlockchainHookStub)
+	assertResults      func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host               vmhost.VMHost
 	blockchainHookStub *contextmock.BlockchainHookStub
 }
 
@@ -63,7 +63,7 @@ func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
 			useMocks:                 false,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
+		setup: func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 	}
 }
 
@@ -80,7 +80,7 @@ func (callerTest *InstancesTestTemplate) WithInput(input *vmcommon.ContractCallI
 }
 
 // WithSetup provides the setup function to be used by the contract call test
-func (callerTest *InstancesTestTemplate) WithSetup(setup func(arwen.VMHost, *contextmock.BlockchainHookStub)) *InstancesTestTemplate {
+func (callerTest *InstancesTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstancesTestTemplate {
 	callerTest.setup = setup
 	return callerTest
 }
@@ -98,19 +98,19 @@ func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGS
 }
 
 // AndAssertResults starts the test and asserts the results
-func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
 	runTestWithInstances(callerTest, true)
 }
 
 // AndAssertResultsWithoutReset starts the test and asserts the results
-func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
 	runTestWithInstances(callerTest, false)
 }
 
 // GetVMHost returns the host instantiated in this test template
-func (callerTest *InstancesTestTemplate) GetVMHost() arwen.VMHost {
+func (callerTest *InstancesTestTemplate) GetVMHost() vmhost.VMHost {
 	return callerTest.host
 }
 

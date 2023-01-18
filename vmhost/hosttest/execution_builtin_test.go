@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"encoding/hex"
@@ -64,11 +64,11 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Claim(t *testing.T)
 			WithGasProvided(test.GasProvided).
 			WithFunction("callBuiltinClaim").
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
 				BalanceDelta(test.ParentAddress, 42).
@@ -90,14 +90,14 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_DoSomething(t *test
 			WithGasProvided(test.GasProvided).
 			WithFunction("callBuiltinDoSomething").
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(arwen.One, arwen.One).Int64()).
+				BalanceDelta(test.ParentAddress, big.NewInt(0).Sub(vmhost.One, vmhost.One).Int64()).
 				GasUsed(test.ParentAddress, parentGasUsed).
 				GasRemaining(test.GasProvided - parentGasUsed).
 				ReturnData([]byte("succ"))
@@ -115,14 +115,14 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			WithGasProvided(test.GasProvided).
 			WithFunction("callNonexistingBuiltin").
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
-				ReturnMessage(arwen.ErrFuncNotFound.Error()).
+				ReturnMessage(vmhost.ErrFuncNotFound.Error()).
 				GasRemaining(0)
 		})
 }
@@ -138,11 +138,11 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Fail(t *testing.T) 
 			WithGasProvided(test.GasProvided).
 			WithFunction("callBuiltinFail").
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(vmcommon.ExecutionFailed).
 				ReturnMessage("whatdidyoudo").
@@ -162,11 +162,11 @@ func TestExecution_AsyncCall_MockBuiltinFails(t *testing.T) {
 			WithFunction("performAsyncCallToBuiltin").
 			WithArguments([]byte{1}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
 				ReturnData([]byte("hello"), []byte{10})
@@ -186,11 +186,11 @@ func TestESDT_GettersAPI(t *testing.T) {
 			WithESDTValue(big.NewInt(5)).
 			WithESDTTokenName([]byte("TT")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
+		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())
 		}).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok()
 		})
@@ -298,7 +298,7 @@ func dummyProcessBuiltInFunction(input *vmcommon.ContractCallInput) (*vmcommon.V
 		return vmOutput, nil
 	}
 
-	return nil, arwen.ErrFuncNotFound
+	return nil, vmhost.ErrFuncNotFound
 }
 
 func getDummyBuiltinFunctionsContainer() vmcommon.BuiltInFunctionContainer {

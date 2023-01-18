@@ -72,7 +72,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	mockWorld.Err = errTestError
 	balanceBytes := blockchainContext.GetBalance([]byte("account_new_with_money"))
 	value := big.NewInt(0).SetBytes(balanceBytes)
-	require.Equal(t, arwen.Zero, value)
+	require.Equal(t, vmhost.Zero, value)
 	mockWorld.Err = nil
 
 	// Test that an account that doesn't exist will not be updated with any kind
@@ -80,7 +80,7 @@ func TestBlockchainContext_GetBalance(t *testing.T) {
 	account.Balance = big.NewInt(15)
 	balanceBytes = blockchainContext.GetBalance([]byte("account_missing"))
 	value = big.NewInt(0).SetBytes(balanceBytes)
-	require.Equal(t, arwen.Zero, value)
+	require.Equal(t, vmhost.Zero, value)
 	require.Equal(t, big.NewInt(15), account.Balance)
 
 	// Act as if the OutputContext has the requested OutputAccount cached

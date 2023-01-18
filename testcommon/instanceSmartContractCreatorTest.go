@@ -13,9 +13,9 @@ type TestCreateTemplateConfig struct {
 	t                  *testing.T
 	address            []byte
 	input              *vmcommon.ContractCreateInput
-	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
+	setup              func(vmhost.VMHost, *contextmock.BlockchainHookStub)
 	assertResults      func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host               arwen.VMHost
+	host               vmhost.VMHost
 	blockchainHookStub *contextmock.BlockchainHookStub
 }
 
@@ -23,7 +23,7 @@ type TestCreateTemplateConfig struct {
 func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 	return &TestCreateTemplateConfig{
 		t:     t,
-		setup: func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
+		setup: func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 	}
 }
 
@@ -40,7 +40,7 @@ func (callerTest *TestCreateTemplateConfig) WithAddress(address []byte) *TestCre
 }
 
 // WithSetup provides the setup function for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(arwen.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
+func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
 	callerTest.setup = setup
 	return callerTest
 }

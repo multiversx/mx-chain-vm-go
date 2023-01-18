@@ -121,7 +121,7 @@ func (tx *Transaction) WithDeployData(scCodePath string, args [][]byte) *Transac
 }
 
 func createDeployTxData(scCodePath string, args [][]byte) []byte {
-	scCode := arwen.GetSCCode(scCodePath[contractCodePrefixLength:])
+	scCode := vmhost.GetSCCode(scCodePath[contractCodePrefixLength:])
 	tdb := txDataBuilder.NewBuilder()
 	tdb.Bytes(scCode)
 	tdb.Bytes([]byte(vmTypeHex))

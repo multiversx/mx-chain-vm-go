@@ -1,4 +1,4 @@
-package host
+package hostCore
 
 import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/cryptoapi"

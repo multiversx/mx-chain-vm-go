@@ -9,7 +9,7 @@ import (
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
-var _ arwen.OutputContext = (*OutputContextMock)(nil)
+var _ vmhost.OutputContext = (*OutputContextMock)(nil)
 
 // OutputContextMock is used in tests to check the OutputContext interface method calls
 type OutputContextMock struct {
@@ -199,7 +199,7 @@ func (o *OutputContextMock) RemoveNonUpdatedStorage() {
 }
 
 // DeployCode mocked method
-func (o *OutputContextMock) DeployCode(_ arwen.CodeDeployInput) {
+func (o *OutputContextMock) DeployCode(_ vmhost.CodeDeployInput) {
 }
 
 // CreateVMOutputInCaseOfError mocked method

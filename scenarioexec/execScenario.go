@@ -147,7 +147,7 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 	}
 
 	if step.DisplayLogs {
-		arwen.SetLoggingForTests()
+		vmhost.SetLoggingForTests()
 	}
 
 	output, err := ae.executeTx(step.TxIdent, step.Tx)
@@ -156,7 +156,7 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 	}
 
 	if step.DisplayLogs {
-		arwen.DisableLoggingForTests()
+		vmhost.DisableLoggingForTests()
 	}
 
 	// check results

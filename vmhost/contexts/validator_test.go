@@ -51,7 +51,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/output/signatures.wasm"
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		OpcodeTrace:        false,
