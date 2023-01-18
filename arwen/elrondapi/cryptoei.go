@@ -5,6 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/crypto/signing/secp256k1"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -42,7 +43,11 @@ const (
 
 // Sha256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Sha256(dataOffset int32, length int32, resultOffset int32) int32 {
+func (context *ElrondApi) Sha256(
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
+	resultOffset executor.MemPtr) int32 {
+
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -51,7 +56,7 @@ func (context *ElrondApi) Sha256(dataOffset int32, length int32, resultOffset in
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.SHA256, memLoadGas)
 	metering.UseGasAndAddTracedGas(sha256Name, gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -62,7 +67,7 @@ func (context *ElrondApi) Sha256(dataOffset int32, length int32, resultOffset in
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -99,7 +104,7 @@ func (context *ElrondApi) ManagedSha256(inputHandle, outputHandle int32) int32 {
 
 // Keccak256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Keccak256(dataOffset int32, length int32, resultOffset int32) int32 {
+func (context *ElrondApi) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -108,7 +113,7 @@ func (context *ElrondApi) Keccak256(dataOffset int32, length int32, resultOffset
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Keccak256, memLoadGas)
 	metering.UseGasAndAddTracedGas(keccak256Name, gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -119,7 +124,7 @@ func (context *ElrondApi) Keccak256(dataOffset int32, length int32, resultOffset
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -156,7 +161,7 @@ func (context *ElrondApi) ManagedKeccak256(inputHandle, outputHandle int32) int3
 
 // Ripemd160 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Ripemd160(dataOffset int32, length int32, resultOffset int32) int32 {
+func (context *ElrondApi) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -165,7 +170,7 @@ func (context *ElrondApi) Ripemd160(dataOffset int32, length int32, resultOffset
 	gasToUse := math.AddUint64(metering.GasSchedule().CryptoAPICost.Ripemd160, memLoadGas)
 	metering.UseGasAndAddTracedGas(ripemd160Name, gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -176,7 +181,7 @@ func (context *ElrondApi) Ripemd160(dataOffset int32, length int32, resultOffset
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -220,10 +225,10 @@ func ManagedRipemd160WithHost(host arwen.VMHost, inputHandle int32, outputHandle
 // VerifyBLS VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifyBLS(
-	keyOffset int32,
-	messageOffset int32,
-	messageLength int32,
-	sigOffset int32,
+	keyOffset executor.MemPtr,
+	messageOffset executor.MemPtr,
+	messageLength executor.MemLength,
+	sigOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -233,7 +238,7 @@ func (context *ElrondApi) VerifyBLS(
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyBLS
 	metering.UseAndTraceGas(gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, blsPublicKeyLength)
+	key, err := context.MemLoad(keyOffset, blsPublicKeyLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -241,12 +246,12 @@ func (context *ElrondApi) VerifyBLS(
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseAndTraceGas(gasToUse)
 
-	message, err := runtime.MemLoad(messageOffset, messageLength)
+	message, err := context.MemLoad(messageOffset, messageLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	sig, err := runtime.MemLoad(sigOffset, blsSignatureLength)
+	sig, err := context.MemLoad(sigOffset, blsSignatureLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -317,10 +322,10 @@ func ManagedVerifyBLSWithHost(
 // VerifyEd25519 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifyEd25519(
-	keyOffset int32,
-	messageOffset int32,
-	messageLength int32,
-	sigOffset int32,
+	keyOffset executor.MemPtr,
+	messageOffset executor.MemPtr,
+	messageLength executor.MemLength,
+	sigOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -330,7 +335,7 @@ func (context *ElrondApi) VerifyEd25519(
 	gasToUse := metering.GasSchedule().CryptoAPICost.VerifyEd25519
 	metering.UseAndTraceGas(gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, ed25519PublicKeyLength)
+	key, err := context.MemLoad(keyOffset, ed25519PublicKeyLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -338,12 +343,12 @@ func (context *ElrondApi) VerifyEd25519(
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseAndTraceGas(gasToUse)
 
-	message, err := runtime.MemLoad(messageOffset, messageLength)
+	message, err := context.MemLoad(messageOffset, messageLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	sig, err := runtime.MemLoad(sigOffset, ed25519SignatureLength)
+	sig, err := context.MemLoad(sigOffset, ed25519SignatureLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -410,11 +415,11 @@ func ManagedVerifyEd25519WithHost(
 // VerifyCustomSecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifyCustomSecp256k1(
-	keyOffset int32,
-	keyLength int32,
-	messageOffset int32,
-	messageLength int32,
-	sigOffset int32,
+	keyOffset executor.MemPtr,
+	keyLength executor.MemLength,
+	messageOffset executor.MemPtr,
+	messageLength executor.MemLength,
+	sigOffset executor.MemPtr,
 	hashType int32,
 ) int32 {
 	runtime := context.GetRuntimeContext()
@@ -430,7 +435,7 @@ func (context *ElrondApi) VerifyCustomSecp256k1(
 		return 1
 	}
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -438,7 +443,7 @@ func (context *ElrondApi) VerifyCustomSecp256k1(
 	gasToUse = math.MulUint64(metering.GasSchedule().BaseOperationCost.DataCopyPerByte, uint64(messageLength))
 	metering.UseAndTraceGas(gasToUse)
 
-	message, err := runtime.MemLoad(messageOffset, messageLength)
+	message, err := context.MemLoad(messageOffset, messageLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -447,12 +452,12 @@ func (context *ElrondApi) VerifyCustomSecp256k1(
 	// byte1: 0x30, header
 	// byte2: the remaining buffer length
 	const sigHeaderLength = 2
-	sigHeader, err := runtime.MemLoad(sigOffset, sigHeaderLength)
+	sigHeader, err := context.MemLoad(sigOffset, sigHeaderLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 	sigLength := int32(sigHeader[1]) + sigHeaderLength
-	sig, err := runtime.MemLoad(sigOffset, sigLength)
+	sig, err := context.MemLoad(sigOffset, sigLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -526,11 +531,11 @@ func ManagedVerifyCustomSecp256k1WithHost(
 // VerifySecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) VerifySecp256k1(
-	keyOffset int32,
-	keyLength int32,
-	messageOffset int32,
-	messageLength int32,
-	sigOffset int32,
+	keyOffset executor.MemPtr,
+	keyLength executor.MemLength,
+	messageOffset executor.MemPtr,
+	messageLength executor.MemLength,
+	sigOffset executor.MemPtr,
 ) int32 {
 	return context.VerifyCustomSecp256k1(
 		keyOffset,
@@ -568,11 +573,11 @@ func ManagedVerifySecp256k1WithHost(
 // EncodeSecp256k1DerSignature VMHooks implementation.
 // @autogenerate(VMHooks)
 func (context *ElrondApi) EncodeSecp256k1DerSignature(
-	rOffset int32,
-	rLength int32,
-	sOffset int32,
-	sLength int32,
-	sigOffset int32,
+	rOffset executor.MemPtr,
+	rLength executor.MemLength,
+	sOffset executor.MemPtr,
+	sLength executor.MemLength,
+	sigOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -581,18 +586,18 @@ func (context *ElrondApi) EncodeSecp256k1DerSignature(
 	gasToUse := metering.GasSchedule().CryptoAPICost.EncodeDERSig
 	metering.UseGasAndAddTracedGas(encodeSecp256k1DerSignatureName, gasToUse)
 
-	r, err := runtime.MemLoad(rOffset, rLength)
+	r, err := context.MemLoad(rOffset, rLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	s, err := runtime.MemLoad(sOffset, sLength)
+	s, err := context.MemLoad(sOffset, sLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
 	derSig := crypto.EncodeSecp256k1DERSignature(r, s)
-	err = runtime.MemStore(sigOffset, derSig)
+	err = context.MemStore(sigOffset, derSig)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -784,8 +789,8 @@ func (context *ElrondApi) ScalarBaseMultEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
-	dataOffset int32,
-	length int32,
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -806,7 +811,7 @@ func (context *ElrondApi) ScalarBaseMultEC(
 	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -905,8 +910,8 @@ func (context *ElrondApi) ScalarMultEC(
 	ecHandle int32,
 	pointXHandle int32,
 	pointYHandle int32,
-	dataOffset int32,
-	length int32,
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -927,7 +932,7 @@ func (context *ElrondApi) ScalarMultEC(
 	gasToUse := oneByteScalarGasCost + uint64(length)*oneByteScalarGasCost
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1039,7 +1044,7 @@ func (context *ElrondApi) MarshalEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	host := context.GetVMHost()
@@ -1049,7 +1054,7 @@ func (context *ElrondApi) MarshalEC(
 		return -1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1138,7 +1143,7 @@ func (context *ElrondApi) MarshalCompressedEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	host := context.GetVMHost()
@@ -1148,7 +1153,7 @@ func (context *ElrondApi) MarshalCompressedEC(
 		return -1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1237,8 +1242,8 @@ func (context *ElrondApi) UnmarshalEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
-	dataOffset int32,
-	length int32,
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1253,7 +1258,7 @@ func (context *ElrondApi) UnmarshalEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalECC * uint64(curveMultiplier) / 100
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1353,8 +1358,8 @@ func (context *ElrondApi) UnmarshalCompressedEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
-	dataOffset int32,
-	length int32,
+	dataOffset executor.MemPtr,
+	length executor.MemLength,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1369,7 +1374,7 @@ func (context *ElrondApi) UnmarshalCompressedEC(
 	gasToUse := metering.GasSchedule().CryptoAPICost.UnmarshalCompressedECC * uint64(curveMultiplier) / 100
 	metering.UseAndTraceGas(gasToUse)
 
-	data, err := runtime.MemLoad(dataOffset, length)
+	data, err := context.MemLoad(dataOffset, length)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return int32(len(data))
 	}
@@ -1468,7 +1473,7 @@ func (context *ElrondApi) GenerateKeyEC(
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,
-	resultOffset int32,
+	resultOffset executor.MemPtr,
 ) int32 {
 	runtime := context.GetRuntimeContext()
 	host := context.GetVMHost()
@@ -1477,7 +1482,7 @@ func (context *ElrondApi) GenerateKeyEC(
 		return 1
 	}
 
-	err = runtime.MemStore(resultOffset, result)
+	err = context.MemStore(resultOffset, result)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return int32(len(result))
 	}
@@ -1567,7 +1572,7 @@ func commonGenerateEC(
 
 // CreateEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) CreateEC(dataOffset int32, dataLength int32) int32 {
+func (context *ElrondApi) CreateEC(dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1579,7 +1584,7 @@ func (context *ElrondApi) CreateEC(dataOffset int32, dataLength int32) int32 {
 		_ = context.WithFault(arwen.ErrBadBounds, runtime.CryptoAPIErrorShouldFailExecution())
 		return -1
 	}
-	data, err := runtime.MemLoad(dataOffset, dataLength)
+	data, err := context.MemLoad(dataOffset, dataLength)
 	if context.WithFault(err, runtime.CryptoAPIErrorShouldFailExecution()) {
 		return -1
 	}

@@ -9,14 +9,78 @@ type cgoWriter struct {
 	cgoPrefix string
 }
 
-func cgoType(goType string) string {
-	if goType == "int32" {
+// C types
+func cgoType(eiType EIType) string {
+	switch eiType {
+	case EITypeMemPtr:
+		fallthrough
+	case EITypeMemLength:
+		fallthrough
+	case EITypeInt32:
 		return "int32_t"
-	}
-	if goType == "int64" {
+	case EITypeInt64:
 		return "long long"
+	default:
+		panic("invalid type")
 	}
-	return goType
+}
+
+// Go types equvalent to the cgo C types
+func cgoExportType(eiType EIType) string {
+	switch eiType {
+	case EITypeMemPtr:
+		fallthrough
+	case EITypeMemLength:
+		fallthrough
+	case EITypeInt32:
+		return "int32"
+	case EITypeInt64:
+		return "int64"
+	default:
+		panic("invalid type")
+	}
+}
+
+// Go types equvalent to the cgo C types
+func cgoExportConversion(arg *EIFunctionArg) string {
+	switch arg.Type {
+	case EITypeMemPtr:
+		return fmt.Sprintf("executor.MemPtr(%s)", arg.Name)
+	default:
+		return arg.Name
+	}
+}
+
+// Go types present in the VMHooks interface
+func vmHooksType(eiType EIType) string {
+	switch eiType {
+	case EITypeMemPtr:
+		return "MemPtr"
+	case EITypeMemLength:
+		return "MemLength"
+	case EITypeInt32:
+		return "int32"
+	case EITypeInt64:
+		return "int64"
+	default:
+		panic("invalid type")
+	}
+}
+
+// Go types present in the VMHooksWrapper
+func vmHooksWrapperType(eiType EIType) string {
+	switch eiType {
+	case EITypeMemPtr:
+		return "executor.MemPtr"
+	case EITypeMemLength:
+		return "executor.MemLength"
+	case EITypeInt32:
+		return "int32"
+	case EITypeInt64:
+		return "int64"
+	default:
+		panic("invalid type")
+	}
 }
 
 func (writer *cgoWriter) cgoFuncName(funcMetadata *EIFunction) string {
@@ -78,6 +142,8 @@ func (writer *cgoWriter) writeCgoFunctions(out *eiGenWriter, eiMetadata *EIMetad
 
 import (
 	"unsafe"
+
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 `)
@@ -129,11 +195,11 @@ func (writer *cgoWriter) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadata
 			writer.cgoFuncName(funcMetadata),
 		))
 		for _, arg := range funcMetadata.Arguments {
-			out.WriteString(fmt.Sprintf(", %s %s", arg.Name, arg.Type))
+			out.WriteString(fmt.Sprintf(", %s %s", arg.Name, cgoExportType(arg.Type)))
 		}
 		out.WriteString(")")
 		if funcMetadata.Result != nil {
-			out.WriteString(fmt.Sprintf(" %s", funcMetadata.Result.Type))
+			out.WriteString(fmt.Sprintf(" %s", cgoExportType(funcMetadata.Result.Type)))
 		}
 		out.WriteString(" {\n")
 		out.WriteString("\tvmHooks := getVMHooksFromContextRawPtr(context)\n")
@@ -148,7 +214,7 @@ func (writer *cgoWriter) writeGoExports(out *eiGenWriter, eiMetadata *EIMetadata
 			if argIndex > 0 {
 				out.WriteString(", ")
 			}
-			out.WriteString(arg.Name)
+			out.WriteString(cgoExportConversion(arg))
 		}
 		out.WriteString(")\n")
 
