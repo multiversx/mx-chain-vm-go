@@ -526,6 +526,10 @@ func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()
 }
 
+// ReplaceVMExecutor mocked method
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(exec executor.Executor) {
+}
+
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) AddError(err error, otherInfo ...string) {
 	contextWrapper.AddErrorFunc(err, otherInfo...)

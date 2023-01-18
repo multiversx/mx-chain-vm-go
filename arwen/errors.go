@@ -271,3 +271,6 @@ var ErrInvalidBuiltInFunctionCall = errors.New("invalid built in function call")
 
 // ErrCannotWriteOnReadOnly signals that write operation on read only is not allowed
 var ErrCannotWriteOnReadOnly = errors.New("cannot write on read only mode")
+
+// ErrEmptyProtectedKeyPrefix signals that the protected key prefix is empty or nil
+var ErrEmptyProtectedKeyPrefix = errors.New("protectedKeyPrefix is empty or nil")

@@ -209,7 +209,7 @@ const (
     BigFloatSetBigInt    = 3000
     BigFloatSetInt64     = 1000
     BigFloatGetConst     = 1000
-    
+
 [CryptoAPICost]
     SHA256                 = 1000000
     Keccak256              = 1000000

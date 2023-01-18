@@ -542,7 +542,10 @@ func (context *ElrondApi) MBufferStorageLoad(keyHandle int32, destinationHandle 
 		return 1
 	}
 
-	storageBytes, usedCache := storage.GetStorage(key)
+	storageBytes, usedCache, err := storage.GetStorage(key)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(mBufferStorageLoadName, metering.GasSchedule().ManagedBufferAPICost.MBufferStorageLoad, usedCache)
 
 	managedType.SetBytes(destinationHandle, storageBytes)
@@ -568,7 +571,10 @@ func (context *ElrondApi) MBufferStorageLoadFromAddress(addressHandle, keyHandle
 		return
 	}
 
-	storageBytes := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	storageBytes, err := StorageLoadFromAddressWithTypedArgs(host, address, key)
+	if context.WithFault(err, runtime.ManagedBufferAPIErrorShouldFailExecution()) {
+		return
+	}
 
 	managedType.SetBytes(destinationHandle, storageBytes)
 }

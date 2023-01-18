@@ -134,7 +134,10 @@ func (context *ElrondApi) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, k
 		return -1
 	}
 
-	bytes, usedCache := storage.GetStorage(key)
+	bytes, usedCache, err := storage.GetStorage(key)
+	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
+		return -1
+	}
 	storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
 
 	value := managedType.GetBigIntOrCreate(destinationHandle)
