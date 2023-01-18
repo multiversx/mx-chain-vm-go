@@ -34,6 +34,10 @@ typedef struct {
 } vm_exec_executor_t;
 
 typedef struct {
+
+} vm_exec_compilation_options_t;
+
+typedef struct {
   int64_t (*get_gas_left_func_ptr)(void *context);
   void (*get_sc_address_func_ptr)(void *context, int32_t result_offset);
   void (*get_owner_address_func_ptr)(void *context, int32_t result_offset);
@@ -285,10 +289,6 @@ typedef struct {
 
 typedef struct {
 
-} vm_exec_compilation_options_t;
-
-typedef struct {
-
 } vm_exec_opcode_cost_t;
 
 /**
@@ -329,6 +329,17 @@ vm_exec_result_t vm_exec_executor_set_vm_hooks_ptr(vm_exec_executor_t *executor_
                                                    void *vm_hooks_ptr);
 
 /**
+ * Caches an instance.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_result_t vm_exec_instance_cache(const vm_exec_instance_t *instance_ptr,
+                                        const uint8_t **cache_bytes_ptr,
+                                        uint32_t *cache_bytes_len);
+
+/**
  * Calls an exported function of a WebAssembly instance by `name`
  * with the provided parameters. The exported function results are
  * stored on the provided `results` pointer.
@@ -363,8 +374,37 @@ vm_exec_result_t vm_exec_instance_call(vm_exec_instance_t *instance_ptr, const c
  */
 void vm_exec_instance_destroy(vm_exec_instance_t *instance);
 
+/**
+ * Creates a new VM executor instance from cache.
+ *
+ * All of the context comes from the provided VM executor.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_result_t vm_exec_instance_from_cache(vm_exec_executor_t *executor_ptr,
+                                             vm_exec_instance_t **instance_ptr_ptr,
+                                             uint8_t *cache_bytes_ptr,
+                                             uint32_t cache_bytes_len,
+                                             const vm_exec_compilation_options_t *options_ptr);
+
+/**
+ * Returns the runtime breakpoint value from the given instance.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 uint64_t vm_exec_instance_get_breakpoint_value(const vm_exec_instance_t *instance_ptr);
 
+/**
+ * Returns the number of points(gas) used by the given instance.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 uint64_t vm_exec_instance_get_points_used(const vm_exec_instance_t *instance_ptr);
 
 /**
@@ -417,12 +457,54 @@ uint64_t vm_exec_instance_memory_data_length(vm_exec_instance_t *instance_ptr);
 vm_exec_result_t vm_exec_instance_memory_grow(vm_exec_instance_t *instance_ptr,
                                               uint32_t by_num_pages);
 
+/**
+ * Resets an instance, cleaning memories and globals.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_result_t vm_exec_instance_reset(vm_exec_instance_t *instance_ptr);
+
+/**
+ * Sets the runtime breakpoint value for the given instance.
+ *
+ * This function returns `vm_exec_result_t::WASMER_OK` upon success,
+ * `vm_exec_result_t::WASMER_ERROR` otherwise. You can use
+ * `wasmer_last_error_message()` to get the generated error message.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_exec_instance_set_breakpoint_value(const vm_exec_instance_t *instance_ptr,
                                                        uint64_t value);
 
+/**
+ * Sets the number of points(gas) limit for the given instance.
+ *
+ * This function returns `vm_exec_result_t::WASMER_OK` upon success,
+ * `vm_exec_result_t::WASMER_ERROR` otherwise. You can use
+ * `wasmer_last_error_message()` to get the generated error message.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_exec_instance_set_points_limit(const vm_exec_instance_t *instance_ptr,
                                                    uint64_t limit);
 
+/**
+ * Sets the number of points(gas) for the given instance.
+ *
+ * This function returns `vm_exec_result_t::WASMER_OK` upon success,
+ * `vm_exec_result_t::WASMER_ERROR` otherwise. You can use
+ * `wasmer_last_error_message()` to get the generated error message.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_exec_instance_set_points_used(const vm_exec_instance_t *instance_ptr,
                                                   uint64_t points);
 
@@ -481,6 +563,17 @@ vm_exec_result_t vm_exec_new_instance(vm_exec_executor_t *executor_ptr,
                                       uint32_t wasm_bytes_len,
                                       const vm_exec_compilation_options_t *options_ptr);
 
+/**
+ * Sets the opcode costs for the given executor.
+ *
+ * This function returns `vm_exec_result_t::WASMER_OK` upon success,
+ * `vm_exec_result_t::WASMER_ERROR` otherwise. You can use
+ * `wasmer_last_error_message()` to get the generated error message.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
 vm_exec_result_t vm_exec_set_opcode_costs(vm_exec_executor_t *executor_ptr,
                                           const vm_exec_opcode_cost_t *opcode_cost_ptr);
 

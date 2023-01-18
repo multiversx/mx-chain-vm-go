@@ -1,7 +1,6 @@
 package wasmer2
 
 import (
-	"errors"
 	"unsafe"
 
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
@@ -36,8 +35,7 @@ func CreateExecutor() (*Wasmer2Executor, error) {
 	)
 
 	if result != cWasmerOk {
-		var emptyInstance = &Wasmer2Executor{cgoExecutor: nil}
-		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
 	executor := &Wasmer2Executor{
@@ -79,8 +77,7 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	var c_instance *cWasmerInstanceT
 
 	if len(contractCode) == 0 {
-		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
-		return emptyInstance, newWrappedError(ErrInvalidBytecode)
+		return nil, newWrappedError(ErrInvalidBytecode)
 	}
 
 	cOptions := unsafe.Pointer(&options)
@@ -93,17 +90,10 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceWithOptions(
 	)
 
 	if compileResult != cWasmerOk {
-		var emptyInstance = &Wasmer2Instance{cgoInstance: nil}
-		return emptyInstance, newWrappedError(ErrFailedInstantiation)
+		return nil, newWrappedError(ErrFailedInstantiation)
 	}
 
-	instance, err := newInstance(c_instance)
-	// if instance != nil && instance.Memory != nil {
-	// 	c_instance_context := cWasmerInstanceContextGet(c_instance)
-	// 	instance.InstanceCtx = IntoInstanceContextDirect(c_instance_context)
-	// }
-
-	return instance, err
+	return newInstance(c_instance)
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -112,8 +102,26 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options executor.CompilationOptions,
 ) (executor.Instance, error) {
-	// return NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
-	return nil, errors.New("NewInstanceFromCompiledCodeWithOptions not implemented")
+	var c_instance *cWasmerInstanceT
+
+	if len(compiledCode) == 0 {
+		return nil, newWrappedError(ErrInvalidBytecode)
+	}
+
+	cOptions := unsafe.Pointer(&options)
+	var compileResult = cWasmerInstanceFromCache(
+		wasmerExecutor.cgoExecutor,
+		&c_instance,
+		(*cUchar)(unsafe.Pointer(&compiledCode[0])),
+		cUint32T(len(compiledCode)),
+		(*cWasmerCompilationOptions)(cOptions),
+	)
+
+	if compileResult != cWasmerOk {
+		return nil, newWrappedError(ErrFailedInstantiation)
+	}
+
+	return newInstance(c_instance)
 }
 
 // InitVMHooks inits the VM hooks
