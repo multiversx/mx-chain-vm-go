@@ -6,7 +6,7 @@ import (
 )
 
 func (pfe *fuzzDelegationExecutor) interpretExpr(expression string) []byte {
-	bytes, err := pfe.mandosParser.ExprInterpreter.InterpretString(expression)
+	bytes, err := pfe.parser.ExprInterpreter.InterpretString(expression)
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +22,7 @@ func (pfe *fuzzDelegationExecutor) delegatorAddress(delegIndex int) string {
 }
 
 func (pfe *fuzzDelegationExecutor) getAuctionBalance() *big.Int {
-	// pfe.mandosParser.ExprInterpreter.InterpretString()
+	// pfe.parser.ExprInterpreter.InterpretString()
 	acct := pfe.world.AcctMap.GetAccount(pfe.interpretExpr(pfe.auctionMockAddress))
 	return acct.Balance
 }

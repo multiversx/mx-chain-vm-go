@@ -710,7 +710,7 @@ func v1_4_mBufferStorageLoadFromAddress(context unsafe.Pointer, addressHandle, k
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -733,7 +733,7 @@ func v1_4_mBufferGetArgument(context unsafe.Pointer, id int32, destinationHandle
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		vmhost.WithFaultAndHostIfFailAlwaysActive(vmhost.ErrArgOutOfRange, vmhost.GetVMHost(context), runtime.ElrondAPIErrorShouldFailExecution())
+		vmhost.WithFaultAndHostIfFailAlwaysActive(vmhost.ErrArgOutOfRange, vmhost.GetVMHost(context), runtime.BaseOpsErrorShouldFailExecution())
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])

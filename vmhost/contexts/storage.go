@@ -10,7 +10,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
 )
 
-var logStorage = logger.GetOrCreate("arwen/storage")
+var logStorage = logger.GetOrCreate("vm/storage")
 
 type storageContext struct {
 	host                          vmhost.VMHost
@@ -18,7 +18,7 @@ type storageContext struct {
 	address                       []byte
 	stateStack                    [][]byte
 	protectedKeyPrefix            []byte
-	arwenStorageProtectionEnabled bool
+	vmStorageProtectionEnabled bool
 }
 
 // NewStorageContext creates a new storageContext
@@ -42,7 +42,7 @@ func NewStorageContext(
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
 		protectedKeyPrefix:            protectedKeyPrefix,
-		arwenStorageProtectionEnabled: true,
+		vmStorageProtectionEnabled: true,
 	}
 
 	return context, nil
@@ -170,7 +170,7 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	var err error
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
-	if context.isElrondReservedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
+	if context.isProtocolProtectedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
 		value, err = context.readFromBlockchain(address, key)
 		return value, false, err
 	}
@@ -207,19 +207,19 @@ func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool, er
 
 // enableStorageProtection will prevent writing to protected keys
 func (context *storageContext) enableStorageProtection() {
-	context.arwenStorageProtectionEnabled = true
+	context.vmStorageProtectionEnabled = true
 }
 
 // disableStorageProtection will prevent writing to protected keys
 func (context *storageContext) disableStorageProtection() {
-	context.arwenStorageProtectionEnabled = false
+	context.vmStorageProtectionEnabled = false
 }
 
-func (context *storageContext) isArwenProtectedKey(key []byte) bool {
+func (context *storageContext) isVMProtectedKey(key []byte) bool {
 	return bytes.HasPrefix(key, []byte(vmhost.ProtectedStoragePrefix))
 }
 
-func (context *storageContext) isElrondReservedKey(key []byte) bool {
+func (context *storageContext) isProtocolProtectedKey(key []byte) bool {
 	return bytes.HasPrefix(key, context.protectedKeyPrefix)
 }
 
@@ -241,11 +241,11 @@ func (context *storageContext) SetStorage(key []byte, value []byte) (vmhost.Stor
 
 		return vmhost.StorageUnchanged, nil
 	}
-	if context.isElrondReservedKey(key) {
-		logStorage.Trace("storage set", "error", vmhost.ErrStoreElrondReservedKey, "key", key)
-		return vmhost.StorageUnchanged, vmhost.ErrStoreElrondReservedKey
+	if context.isProtocolProtectedKey(key) {
+		logStorage.Trace("storage set", "error", vmhost.ErrStoreReservedKey, "key", key)
+		return vmhost.StorageUnchanged, vmhost.ErrStoreReservedKey
 	}
-	if context.isArwenProtectedKey(key) && context.arwenStorageProtectionEnabled {
+	if context.isVMProtectedKey(key) && context.vmStorageProtectionEnabled {
 		logStorage.Trace("storage set", "error", vmhost.ErrCannotWriteProtectedKey, "key", key)
 		return vmhost.StorageUnchanged, vmhost.ErrCannotWriteProtectedKey
 	}
@@ -409,7 +409,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, l
 	metering := context.host.Metering()
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
-		loadCost = metering.GasSchedule().ElrondAPICost.CachedStorageLoad
+		loadCost = metering.GasSchedule().BaseOpsAPICost.CachedStorageLoad
 	}
 
 	metering.UseGasAndAddTracedGas(tracedFunctionName, loadCost)

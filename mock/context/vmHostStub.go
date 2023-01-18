@@ -116,13 +116,13 @@ func (vhs *VMHostStub) ManagedTypes() vmhost.ManagedTypesContext {
 	return nil
 }
 
-// IsArwenV2Enabled mocked method
-func (vhs *VMHostStub) IsArwenV2Enabled() bool {
+// IsVMV2Enabled mocked method
+func (vhs *VMHostStub) IsVMV2Enabled() bool {
 	return true
 }
 
-// IsArwenV3Enabled mocked method
-func (vhs *VMHostStub) IsArwenV3Enabled() bool {
+// IsVMV3Enabled mocked method
+func (vhs *VMHostStub) IsVMV3Enabled() bool {
 	return true
 }
 

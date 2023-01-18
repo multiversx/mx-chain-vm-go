@@ -98,9 +98,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	MemLoadMultipleFunc func(offset int32, lengths []int32) ([][]byte, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ElrondAPIErrorShouldFailExecutionFunc func() bool
+	BaseOpsErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ElrondSyncExecAPIErrorShouldFailExecutionFunc func() bool
+	SyncExecAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CryptoAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -308,12 +308,12 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		return runtimeWrapper.runtimeContext.MemLoadMultiple(offset, lengths)
 	}
 
-	runtimeWrapper.ElrondAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.ElrondAPIErrorShouldFailExecution()
+	runtimeWrapper.BaseOpsErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.BaseOpsErrorShouldFailExecution()
 	}
 
-	runtimeWrapper.ElrondSyncExecAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.ElrondSyncExecAPIErrorShouldFailExecution()
+	runtimeWrapper.SyncExecAPIErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.SyncExecAPIErrorShouldFailExecution()
 	}
 
 	runtimeWrapper.CryptoAPIErrorShouldFailExecutionFunc = func() bool {
@@ -590,14 +590,14 @@ func (contextWrapper *RuntimeContextWrapper) MemLoadMultiple(offset int32, lengt
 	return contextWrapper.MemLoadMultipleFunc(offset, lengths)
 }
 
-// ElrondAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ElrondAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ElrondAPIErrorShouldFailExecutionFunc()
+// BaseOpsErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) BaseOpsErrorShouldFailExecution() bool {
+	return contextWrapper.BaseOpsErrorShouldFailExecutionFunc()
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ElrondSyncExecAPIErrorShouldFailExecutionFunc()
+// SyncExecAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SyncExecAPIErrorShouldFailExecution() bool {
+	return contextWrapper.SyncExecAPIErrorShouldFailExecutionFunc()
 }
 
 // CryptoAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

@@ -13,7 +13,7 @@ import (
 
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
-func (ae *ArwenTestExecutor) Reset() {
+func (ae *VMTestExecutor) Reset() {
 	if !check.IfNil(ae.vmHost) {
 		ae.vmHost.Reset()
 	}
@@ -21,14 +21,14 @@ func (ae *ArwenTestExecutor) Reset() {
 }
 
 // Close will simply close the VM
-func (ae *ArwenTestExecutor) Close() {
+func (ae *VMTestExecutor) Close() {
 	if !check.IfNil(ae.vmHost) {
 		ae.vmHost.Reset()
 	}
 }
 
 // ExecuteScenario executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
+func (ae *VMTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 	resetGasTracesIfNewTest(ae, scenario)
@@ -53,7 +53,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 }
 
 // ExecuteStep executes an individual step from a scenario.
-func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
+func (ae *VMTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	err := error(nil)
 
 	switch step := generalStep.(type) {
@@ -78,7 +78,7 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 }
 
 // ExecuteExternalStep executes an external step referenced by the scenario.
-func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error {
+func (ae *VMTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error {
 	log.Trace("ExternalStepsStep", "path", step.Path)
 	if len(step.Comment) > 0 {
 		log.Trace("ExternalStepsStep", "comment", step.Comment)
@@ -102,7 +102,7 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 }
 
 // ExecuteSetStateStep executes a SetStateStep.
-func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
+func (ae *VMTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	if len(step.Comment) > 0 {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
@@ -140,7 +140,7 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 }
 
 // ExecuteTxStep executes a TxStep.
-func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, error) {
+func (ae *VMTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, error) {
 	log.Trace("ExecuteTxStep", "id", step.TxIdent)
 	if len(step.Comment) > 0 {
 		log.Trace("ExecuteTxStep", "comment", step.Comment)
@@ -171,7 +171,7 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 }
 
 // PutNewAccount Puts a new account in world account map. Overwrites.
-func (ae *ArwenTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
+func (ae *VMTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
 	worldAccount, err := convertAccount(mandosAccount, ae.World)
 	if err != nil {
 		return err
@@ -186,7 +186,7 @@ func (ae *ArwenTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
 }
 
 // UpdateAccount Updates an account in world account map.
-func (ae *ArwenTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
+func (ae *VMTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
 	worldAccount, err := convertAccount(mandosAccount, ae.World)
 	if err != nil {
 		return err

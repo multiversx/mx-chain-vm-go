@@ -17,7 +17,7 @@ import (
 
 const includeElrondProtectedStorage = false
 
-func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Account) (*mj.Account, error) {
+func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Account) (*mj.Account, error) {
 	var storageKeys []string
 	for storageKey := range account.Storage {
 		storageKeys = append(storageKeys, storageKey)
@@ -161,7 +161,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 }
 
 // DumpWorld prints the state of the MockWorld to stdout.
-func (ae *ArwenTestExecutor) DumpWorld() error {
+func (ae *VMTestExecutor) DumpWorld() error {
 	fmt.Print("world state dump:\n")
 	var mandosAccounts []*mj.Account
 

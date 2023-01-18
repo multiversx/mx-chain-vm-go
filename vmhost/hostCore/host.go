@@ -18,7 +18,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
-var log = logger.GetOrCreate("arwen/host")
+var log = logger.GetOrCreate("vm/host")
 var logGasTrace = logger.GetOrCreate("gasTrace")
 
 // MaximumWasmerInstanceCount represents the maximum number of Wasmer instances that can be active at the same time
@@ -53,7 +53,7 @@ type vmHost struct {
 	activationEpochMap   map[uint32]struct{}
 }
 
-// NewVMHost creates a new Arwen vmHost
+// NewVMHost creates a new VM vmHost
 func NewVMHost(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *vmhost.VMHostParameters,
@@ -198,9 +198,9 @@ func createActivationMap(hostParameters *vmhost.VMHostParameters) map[uint32]str
 	return activationMap
 }
 
-// GetVersion returns the Arwen version string
+// GetVersion returns the VM version string
 func (host *vmHost) GetVersion() string {
-	return vmhost.ArwenVersion
+	return vmhost.VMVersion
 }
 
 // Crypto returns the VMCrypto instance of the host

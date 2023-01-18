@@ -26,7 +26,7 @@ const (
 
 var _ vmhost.StateStack = (*instanceTracker)(nil)
 
-var logTracker = logger.GetOrCreate("arwen/tracker")
+var logTracker = logger.GetOrCreate("vm/tracker")
 
 type instanceTracker struct {
 	codeHash            []byte

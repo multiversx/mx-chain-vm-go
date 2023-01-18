@@ -117,7 +117,7 @@ func (callerTest *InstancesTestTemplate) GetVMHost() vmhost.VMHost {
 func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
 		callerTest.host, callerTest.blockchainHookStub =
-			defaultTestArwenForContracts(
+			defaultTestVMForContracts(
 				callerTest.tb,
 				callerTest.contracts,
 				callerTest.gasSchedule,

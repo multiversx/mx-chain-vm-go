@@ -130,7 +130,7 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo, currentInfo *worldmock.BlockI
 }
 
 // this is a small hack, so we can reuse mandos's JSON printing in error messages
-func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
+func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	topics := mj.JSONCheckValueList{
 		Values: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
 	}
@@ -186,7 +186,7 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	}
 }
 
-func logGasTrace(ae *ArwenTestExecutor) {
+func logGasTrace(ae *VMTestExecutor) {
 	if ae.PeekTraceGas() {
 		metering := ae.GetVMHost().Metering()
 		scGasTrace := metering.GetGasTrace()
@@ -206,7 +206,7 @@ func logGasTrace(ae *ArwenTestExecutor) {
 	}
 }
 
-func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
+func setGasTraceInMetering(ae *VMTestExecutor, enable bool) {
 	metering := ae.GetVMHost().Metering()
 	if enable && ae.PeekTraceGas() {
 		metering.SetGasTracing(true)
@@ -215,7 +215,7 @@ func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
 	}
 }
 
-func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep) {
+func setExternalStepGasTracing(ae *VMTestExecutor, step *mj.ExternalStepsStep) {
 	switch step.TraceGas.ToInt() {
 	case mj.Undefined.ToInt():
 		ae.scenarioTraceGas = append(ae.scenarioTraceGas, ae.PeekTraceGas())
@@ -226,7 +226,7 @@ func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep
 	}
 }
 
-func resetGasTracesIfNewTest(ae *ArwenTestExecutor, scenario *mj.Scenario) {
+func resetGasTracesIfNewTest(ae *VMTestExecutor, scenario *mj.Scenario) {
 	if ae.vm == nil || scenario.IsNewTest {
 		ae.scenarioTraceGas = make([]bool, 0)
 		ae.scenarioTraceGas = append(ae.scenarioTraceGas, scenario.TraceGas)
