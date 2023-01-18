@@ -258,15 +258,6 @@ func (r *RuntimeContextMock) CallSCFunction(_ string) error {
 	return r.Err
 }
 
-// MemLoad mocked method
-func (r *RuntimeContextMock) MemLoad(_ int32, _ int32) ([]byte, error) {
-	if r.Err != nil {
-		return nil, r.Err
-	}
-
-	return r.MemLoadResult, nil
-}
-
 // ElrondAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
 	return r.FailElrondAPI
