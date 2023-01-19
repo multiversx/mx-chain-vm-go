@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 )
 
 // TransferAndExecuteFuncName -

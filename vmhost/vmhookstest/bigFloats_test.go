@@ -5,9 +5,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 

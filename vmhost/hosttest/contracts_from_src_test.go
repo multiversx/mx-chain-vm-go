@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	vmMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	vmMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 

@@ -50,10 +50,10 @@ import (
 	"crypto/elliptic"
 	"unsafe"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing/secp256k1"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
 )
 
 const blsPublicKeyLength = 96

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test

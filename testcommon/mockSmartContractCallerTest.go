@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 type testTemplateConfig struct {

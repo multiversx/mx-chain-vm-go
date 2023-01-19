@@ -1,4 +1,4 @@
-package mandosTests
+package scenTests
 
 import (
 	"math/big"
@@ -6,8 +6,8 @@ import (
 
 	mge "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/scenario-exporter"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +27,7 @@ var addressBob = []byte("bob_____________________________")
 var addressDeployedAdder = []byte("deployedAdder___________________")
 
 func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
-	sbi, err := mge.GetAccountsAndTransactionsFromMandos("adder.scen.json")
+	sbi, err := mge.GetAccountsAndTransactionsFromScenarios("adder.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedDeployedAccs := make([]*mge.TestAccount, 0)
@@ -53,7 +53,7 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 }
 
 func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
-	sbi, err := mge.GetAccountsAndTransactionsFromMandos("adder_with_external_steps.scen.json")
+	sbi, err := mge.GetAccountsAndTransactionsFromScenarios("adder_with_external_steps.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedTxs := make([]*mge.Transaction, 0)

@@ -3,9 +3,9 @@ package hostCoretest
 import (
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 func TestBadContract_NoPanic_Memoryfault(t *testing.T) {

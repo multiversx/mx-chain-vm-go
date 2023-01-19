@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 

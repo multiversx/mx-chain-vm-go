@@ -4,15 +4,15 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 const vmTypeHex = "0500"
 
 const dummyCodeMetadataHex = "0102"
 
-// length of "file:" in the mandos test
+// length of "file:" in the scenario test
 const contractCodePrefixLength = 5
 
 type Transaction struct {

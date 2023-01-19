@@ -1,4 +1,4 @@
-package mandosjsonmodel
+package scenjsonmodel
 
 // Test is a json object representing a test.
 type Test struct {

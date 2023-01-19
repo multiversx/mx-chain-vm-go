@@ -5,10 +5,10 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	vmMath "github.com/multiversx/mx-chain-vm-v1_4-go/math"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 
 	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 )

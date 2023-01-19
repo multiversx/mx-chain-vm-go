@@ -12,13 +12,13 @@ import (
 	"testing"
 
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	am "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec"
 	fr "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/fileresolver"
 	mjparse "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/parse"
 	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/write"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
-	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,10 +44,10 @@ type fuzzDelegationExecutorInitArgs struct {
 
 type fuzzDelegationExecutor struct {
 	vmTestExecutor *am.VMTestExecutor
-	world             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	parser      mjparse.Parser
-	txIndex           int
+	world          *worldhook.MockWorld
+	vm             vmi.VMExecutionHandler
+	parser         mjparse.Parser
+	txIndex        int
 
 	serviceFee                  int
 	numBlocksBeforeForceUnstake int
@@ -73,8 +73,8 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		return nil, err
 	}
 
-	mandosGasSchedule := mj.GasScheduleV3
-	err = vmTestExecutor.InitVM(mandosGasSchedule)
+	scenGasSchedule := mj.GasScheduleV3
+	err = vmTestExecutor.InitVM(scenGasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +82,10 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	parser := mjparse.NewParser(fileResolver)
 
 	return &fuzzDelegationExecutor{
-		vmTestExecutor:   vmTestExecutor,
+		vmTestExecutor:      vmTestExecutor,
 		world:               vmTestExecutor.World,
 		vm:                  vmTestExecutor.GetVM(),
-		parser:        parser,
+		parser:              parser,
 		txIndex:             0,
 		numNodes:            0,
 		totalStakeAdded:     big.NewInt(0),
@@ -93,7 +93,7 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		totalRewards:        big.NewInt(0),
 		generatedScenario: &mj.Scenario{
 			Name:        "fuzz generated",
-			GasSchedule: mandosGasSchedule,
+			GasSchedule: scenGasSchedule,
 		},
 	}, nil
 }

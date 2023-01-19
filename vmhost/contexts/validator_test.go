@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 	"github.com/stretchr/testify/require"
 )

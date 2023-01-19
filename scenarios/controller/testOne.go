@@ -1,4 +1,4 @@
-package mandoscontroller
+package scencontroller
 
 import (
 	"io/ioutil"
