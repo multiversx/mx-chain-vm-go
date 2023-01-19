@@ -67,7 +67,7 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults func
 }
 
 func (callerTest *MockInstancesTestTemplate) runTest() {
-	host, world, imb := DefaultTestArwenForCallWithInstanceMocks(callerTest.tb)
+	host, world, imb := DefaultTestVMForCallWithInstanceMocks(callerTest.tb)
 	defer func() {
 		host.Reset()
 	}()

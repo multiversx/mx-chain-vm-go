@@ -59,7 +59,7 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertR
 
 func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 	if callerTest.host == nil {
-		callerTest.host, callerTest.blockchainHookStub = DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+		callerTest.host, callerTest.blockchainHookStub = DefaultTestVMForDeployment(callerTest.t, 24, callerTest.address)
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 	defer func() {

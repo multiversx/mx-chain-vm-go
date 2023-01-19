@@ -8,7 +8,7 @@ import (
 
 // PopulateAllImports fills a function container with all existing EI functions.
 func PopulateAllImports(imports vmhooksmeta.EIFunctionReceiver) error {
-	err := vmhooks.ElrondEIImports(imports)
+	err := vmhooks.BaseOpsAPIImports(imports)
 	if err != nil {
 		return err
 	}

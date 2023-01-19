@@ -23,7 +23,7 @@ var One = big.NewInt(1)
 
 const logVMHookCalls = false
 
-var log = logger.GetOrCreate("arwen/host")
+var log = logger.GetOrCreate("vm/host")
 
 // CustomStorageKey appends the given key type to the given associated key
 func CustomStorageKey(keyType string, associatedKey []byte) []byte {

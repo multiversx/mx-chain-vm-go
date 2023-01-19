@@ -41,7 +41,7 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
-	arwenMath "github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	vmMath "github.com/multiversx/mx-chain-vm-v1_4-go/math"
 )
 
 const (
@@ -237,7 +237,7 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 	} else {
 		bigFractionalPart := big.NewFloat(float64(fractionalPart))
 		bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
-		bigFractional, err = arwenMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
+		bigFractional, err = vmMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
 		if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return -1
 		}
@@ -245,12 +245,12 @@ func v1_4_bigFloatNewFromParts(context unsafe.Pointer, integralPart, fractionalP
 
 	var value *big.Float
 	if integralPart >= 0 {
-		value, err = arwenMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
+		value, err = vmMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return -1
 		}
 	} else {
-		value, err = arwenMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
+		value, err = vmMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return -1
 		}
@@ -278,7 +278,7 @@ func v1_4_bigFloatNewFromFrac(context unsafe.Pointer, numerator, denominator int
 
 	bigNumerator := big.NewFloat(float64(numerator))
 	bigDenominator := big.NewFloat(float64(denominator))
-	value, err := arwenMath.QuoBigFloat(bigNumerator, bigDenominator)
+	value, err := vmMath.QuoBigFloat(bigNumerator, bigDenominator)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -312,7 +312,7 @@ func v1_4_bigFloatNewFromSci(context unsafe.Pointer, significand, exponent int64
 
 	bigSignificand := big.NewFloat(float64(significand))
 	bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
-	value, err := arwenMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
+	value, err := vmMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -338,7 +338,7 @@ func v1_4_bigFloatAdd(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultAdd, err := arwenMath.AddBigFloat(op1, op2)
+	resultAdd, err := vmMath.AddBigFloat(op1, op2)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -361,7 +361,7 @@ func v1_4_bigFloatSub(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultSub, err := arwenMath.SubBigFloat(op1, op2)
+	resultSub, err := vmMath.SubBigFloat(op1, op2)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -384,7 +384,7 @@ func v1_4_bigFloatMul(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultMul, err := arwenMath.MulBigFloat(op1, op2)
+	resultMul, err := vmMath.MulBigFloat(op1, op2)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -411,7 +411,7 @@ func v1_4_bigFloatDiv(context unsafe.Pointer, destinationHandle, op1Handle, op2H
 		return
 	}
 
-	resultDiv, err := arwenMath.QuoBigFloat(op1, op2)
+	resultDiv, err := vmMath.QuoBigFloat(op1, op2)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -541,7 +541,7 @@ func v1_4_bigFloatSqrt(context unsafe.Pointer, destinationHandle, opHandle int32
 		_ = vmhost.WithFault(vmhost.ErrBadLowerBounds, context, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	resultSqrt, err := arwenMath.SqrtBigFloat(op)
+	resultSqrt, err := vmMath.SqrtBigFloat(op)
 	if vmhost.WithFault(err, context, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -587,7 +587,7 @@ func pow(context unsafe.Pointer, base *big.Float, exp int32) (*big.Float, error)
 	managedType := vmhost.GetManagedTypesContext(context)
 
 	for i := 0; i < int(exp); i++ {
-		resultMul, err := arwenMath.MulBigFloat(result, base)
+		resultMul, err := vmMath.MulBigFloat(result, base)
 		if err != nil {
 			return nil, err
 		}

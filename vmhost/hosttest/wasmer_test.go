@@ -333,7 +333,7 @@ func TestWASMCreateAndCall(t *testing.T) {
 		WithCallerAddr(test.UserAddress).
 		Build()
 
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	host, world := test.DefaultTestVMWithWorldMock(t)
 	world.NewAddressMocks = append(world.NewAddressMocks, &worldmock.NewAddressMock{
 		CreatorAddress: test.UserAddress,
 		CreatorNonce:   0,

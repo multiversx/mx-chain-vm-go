@@ -16,7 +16,7 @@ const increment = "increment"
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 
 	defer func() {
 		host.Reset()
@@ -47,7 +47,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 	defer func() {
 		host.Reset()
 	}()
@@ -80,7 +80,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 	defer func() {
 		host.Reset()
 	}()
@@ -107,7 +107,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 
 	defer func() {
 		host.Reset()
@@ -143,7 +143,7 @@ func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *t
 	blockchains := make([]*mock.BlockchainHookStub, numParallel)
 	for k := 0; k < numParallel; k++ {
 		code := test.GetTestSCCode("counter", "../../../")
-		hosts[k], blockchains[k] = test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+		hosts[k], blockchains[k] = test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 			var i *int
 

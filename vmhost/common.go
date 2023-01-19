@@ -1,4 +1,4 @@
-// Package arwen contains the top-level components and definitions of the VM
+// Package vm contains the top-level components and definitions of the VM
 package vmhost
 
 import (
@@ -6,8 +6,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 )
 
-// ArwenVersion returns the current arwen version
-const ArwenVersion = "v1.4"
+// VMVersion returns the current vm version
+const VMVersion = "v1.4"
 
 // WASMPageSize size in bytes of a WASM Linear Memory Page
 const WASMPageSize = 65536
@@ -20,7 +20,7 @@ const (
 	BreakpointNone BreakpointValue = iota
 
 	// BreakpointExecutionFailed means that Wasmer must stop immediately
-	// due to failure indicated by Arwen
+	// due to failure indicated by VM
 	BreakpointExecutionFailed
 
 	// BreakpointAsyncCall means that Wasmer must stop immediately
@@ -68,7 +68,7 @@ const (
 const CallbackFunctionName = "callBack"
 
 // ProtectedStoragePrefix is the storage key prefix that will be protected by
-// Arwen explicitly, and implicitly by the Elrond node due to '@'; the
+// VM explicitly, and implicitly by the Elrond node due to '@'; the
 // protection can be disabled temporarily by the StorageContext
 const ProtectedStoragePrefix = "A"+"R"+"W"+"E"+"N@"
 

@@ -237,7 +237,7 @@ func v1_4_managedSCAddress(context unsafe.Pointer, destinationHandle int32) {
 	runtime := vmhost.GetRuntimeContext(context)
 	metering := vmhost.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetSCAddress
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetSCAddress
 	metering.UseGasAndAddTracedGas(managedSCAddressName, gasToUse)
 
 	scAddress := runtime.GetContextAddress()
@@ -252,11 +252,11 @@ func v1_4_managedOwnerAddress(context unsafe.Pointer, destinationHandle int32) {
 	runtime := vmhost.GetRuntimeContext(context)
 	metering := vmhost.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetOwnerAddress
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetOwnerAddress
 	metering.UseGasAndAddTracedGas(managedOwnerAddressName, gasToUse)
 
 	owner, err := blockchain.GetOwnerAddress()
-	if vmhost.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
@@ -269,7 +269,7 @@ func v1_4_managedCaller(context unsafe.Pointer, destinationHandle int32) {
 	runtime := vmhost.GetRuntimeContext(context)
 	metering := vmhost.GetMeteringContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetCaller
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCaller
 	metering.UseGasAndAddTracedGas(managedCallerName, gasToUse)
 
 	caller := runtime.GetVMInput().CallerAddr
@@ -283,7 +283,7 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	metering := vmhost.GetMeteringContext(context)
 	metering.StartGasTracing(managedSignalErrorName)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.SignalError
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.SignalError
 	metering.UseAndTraceGas(gasToUse)
 
 	errBytes, err := managedType.GetBytes(errHandle)
@@ -295,7 +295,7 @@ func v1_4_managedSignalError(context unsafe.Pointer, errHandle int32) {
 	gasToUse = metering.GasSchedule().BaseOperationCost.PersistPerByte * uint64(len(errBytes))
 	err = metering.UseGasBounded(gasToUse)
 	if err != nil {
-		_ = vmhost.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -315,7 +315,7 @@ func v1_4_managedWriteLog(
 	metering.StartGasTracing(managedWriteLogName)
 
 	topics, sumOfTopicByteLengths, err := managedType.ReadManagedVecOfManagedBuffers(topicsHandle)
-	if vmhost.WithFault(err, context, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
@@ -326,7 +326,7 @@ func v1_4_managedWriteLog(
 	managedType.ConsumeGasForBytes(dataBytes)
 	dataByteLen := uint64(len(dataBytes))
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Log
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Log
 	gasForData := math.MulUint64(
 		metering.GasSchedule().BaseOperationCost.DataCopyPerByte,
 		sumOfTopicByteLengths+dataByteLen)
@@ -342,7 +342,7 @@ func v1_4_managedGetOriginalTxHash(context unsafe.Pointer, resultHandle int32) {
 	metering := vmhost.GetMeteringContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetOriginalTxHash
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetOriginalTxHash
 	metering.UseGasAndAddTracedGas(managedGetOriginalTxHashName, gasToUse)
 
 	managedType.SetBytes(resultHandle, runtime.GetOriginalTxHash())
@@ -354,7 +354,7 @@ func v1_4_managedGetStateRootHash(context unsafe.Pointer, resultHandle int32) {
 	metering := vmhost.GetMeteringContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetStateRootHash
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetStateRootHash
 	metering.UseGasAndAddTracedGas(managedGetStateRootHashName, gasToUse)
 
 	managedType.SetBytes(resultHandle, blockchain.GetStateRootHash())
@@ -366,7 +366,7 @@ func v1_4_managedGetBlockRandomSeed(context unsafe.Pointer, resultHandle int32) 
 	metering := vmhost.GetMeteringContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockRandomSeed
 	metering.UseGasAndAddTracedGas(managedGetBlockRandomSeedName, gasToUse)
 
 	managedType.SetBytes(resultHandle, blockchain.CurrentRandomSeed())
@@ -378,7 +378,7 @@ func v1_4_managedGetPrevBlockRandomSeed(context unsafe.Pointer, resultHandle int
 	metering := vmhost.GetMeteringContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetBlockRandomSeed
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetBlockRandomSeed
 	metering.UseGasAndAddTracedGas(managedGetPrevBlockRandomSeedName, gasToUse)
 
 	managedType.SetBytes(resultHandle, blockchain.LastRandomSeed())
@@ -391,12 +391,12 @@ func v1_4_managedGetReturnData(context unsafe.Pointer, resultID int32, resultHan
 	metering := vmhost.GetMeteringContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetReturnData
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetReturnData
 	metering.UseGasAndAddTracedGas(managedGetReturnDataName, gasToUse)
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -409,7 +409,7 @@ func v1_4_managedGetMultiESDTCallValue(context unsafe.Pointer, multiCallValueHan
 	metering := vmhost.GetMeteringContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetCallValue
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
 	metering.UseGasAndAddTracedGas(managedGetMultiESDTCallValueName, gasToUse)
 
 	esdtTransfers := runtime.GetVMInput().ESDTTransfers
@@ -426,23 +426,23 @@ func v1_4_managedGetESDTBalance(context unsafe.Pointer, addressHandle int32, tok
 	blockchain := vmhost.GetBlockchainContext(context)
 	managedType := vmhost.GetManagedTypesContext(context)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(managedGetESDTBalanceName, gasToUse)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -459,23 +459,23 @@ func v1_4_managedGetESDTTokenData(context unsafe.Pointer, addressHandle int32, t
 	managedType := vmhost.GetManagedTypesContext(context)
 	metering.StartGasTracing(managedGetESDTTokenDataName)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
 	metering.UseAndTraceGas(gasToUse)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFault(vmhost.ErrArgOutOfRange, context, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -528,11 +528,11 @@ func ManagedAsyncCallWithHost(
 	metering.StartGasTracing(managedAsyncCallName)
 
 	gasSchedule := metering.GasSchedule()
-	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
+	gasToUse := gasSchedule.BaseOpsAPICost.AsyncCallStep
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationFunctionArguments(host, destHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
@@ -540,7 +540,7 @@ func ManagedAsyncCallWithHost(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		_ = vmhost.WithFaultAndHost(host, vmhost.ErrArgOutOfRange, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFaultAndHost(host, vmhost.ErrArgOutOfRange, host.Runtime().BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -552,7 +552,7 @@ func ManagedAsyncCallWithHost(
 		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 }
@@ -574,21 +574,21 @@ func v1_4_managedUpgradeFromSourceContract(
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedUpgradeFromSourceContractName)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
 	sourceContractAddress, err := managedType.GetBytes(addressHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
@@ -623,25 +623,25 @@ func v1_4_managedUpgradeContract(
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedUpgradeContractName)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(host, destHandle, valueHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return
 	}
 
@@ -668,16 +668,16 @@ func v1_4_managedDeployFromSourceContract(
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedDeployFromSourceContractName)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
 	vmInput, err := readDestinationValueArguments(host, addressHandle, valueHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -691,7 +691,7 @@ func v1_4_managedDeployFromSourceContract(
 		vmInput.arguments,
 		gas,
 	)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -718,17 +718,17 @@ func v1_4_managedCreateContract(
 	managedType := host.ManagedTypes()
 	metering.StartGasTracing(managedCreateContractName)
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
 	value, err := managedType.GetBigInt(valueHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
 	data, actualLen, err := managedType.ReadManagedVecOfManagedBuffers(argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -736,18 +736,18 @@ func v1_4_managedCreateContract(
 	metering.UseAndTraceGas(gasToUse)
 
 	codeMetadata, err := managedType.GetBytes(codeMetadataHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
 	code, err := managedType.GetBytes(codeHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
 	lenReturnData := len(host.Output().ReturnData())
 	newAddress, err := createContract(sender, data, value, metering, gas, code, codeMetadata, host, runtime)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 1
 	}
 
@@ -784,7 +784,7 @@ func v1_4_managedExecuteReadOnly(
 	metering.StartGasTracing(managedExecuteReadOnlyName)
 
 	vmInput, err := readDestinationFunctionArguments(host, addressHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -815,7 +815,7 @@ func v1_4_managedExecuteOnSameContext(
 	metering.StartGasTracing(managedExecuteOnSameContextName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -847,7 +847,7 @@ func v1_4_managedExecuteOnDestContextByCaller(
 	metering.StartGasTracing(managedExecuteOnDestContextByCallerName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -879,7 +879,7 @@ func v1_4_managedExecuteOnDestContext(
 	metering.StartGasTracing(managedExecuteOnDestContextName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, addressHandle, valueHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -912,12 +912,12 @@ func v1_4_managedMultiTransferESDTNFTExecute(
 	metering.StartGasTracing(managedMultiTransferESDTNFTExecuteName)
 
 	vmInput, err := readDestinationFunctionArguments(host, dstHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
 	transfers, err := readESDTTransfers(managedType, tokenTransfersHandle)
-	if vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -945,7 +945,7 @@ func v1_4_managedTransferValueExecute(
 	metering.StartGasTracing(managedTransferValueExecuteName)
 
 	vmInput, err := readDestinationValueFunctionArguments(host, dstHandle, valueHandle, functionHandle, argumentsHandle)
-	if vmhost.WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
+	if vmhost.WithFaultAndHost(host, err, host.Runtime().BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -979,23 +979,23 @@ func ManagedIsESDTFrozenWithHost(
 	blockchain := host.Blockchain()
 	managedType := host.ManagedTypes()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(managedIsESDTFrozenName, gasToUse)
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return -1
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return -1
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1018,12 +1018,12 @@ func ManagedIsESDTLimitedTransferWithHost(host vmhost.VMHost, tokenIDHandle int3
 	blockchain := host.Blockchain()
 	managedType := host.ManagedTypes()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(managedIsESDTLimitedTransferName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1046,12 +1046,12 @@ func ManagedIsESDTPausedWithHost(host vmhost.VMHost, tokenIDHandle int32) int32 
 	blockchain := host.Blockchain()
 	managedType := host.ManagedTypes()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(managedIsESDTPausedName, gasToUse)
 
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1078,7 +1078,7 @@ func ManagedBufferToHexWithHost(host vmhost.VMHost, sourceHandle int32, destHand
 
 	mBuff, err := managedType.GetBytes(sourceHandle)
 	if err != nil {
-		vmhost.WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution())
+		vmhost.WithFaultAndHost(host, err, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 

@@ -16,7 +16,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
-var logRuntime = logger.GetOrCreate("arwen/runtime")
+var logRuntime = logger.GetOrCreate("vm/runtime")
 
 var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
@@ -834,13 +834,13 @@ func (context *runtimeContext) checkIfContainsNewManagedCryptoAPI() error {
 	return nil
 }
 
-// ElrondAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
+// BaseOpsErrorShouldFailExecution returns true
+func (context *runtimeContext) BaseOpsErrorShouldFailExecution() bool {
 	return true
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+// SyncExecAPIErrorShouldFailExecution returns true
+func (context *runtimeContext) SyncExecAPIErrorShouldFailExecution() bool {
 	return true
 }
 

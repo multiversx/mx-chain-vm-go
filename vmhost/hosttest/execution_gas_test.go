@@ -1606,15 +1606,15 @@ func setZeroCodeCosts(host vmhost.VMHost) {
 	host.Metering().GasSchedule().BaseOperationCost.GetCode = 0
 	host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
-	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
-	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
-	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
-	host.Metering().GasSchedule().ElrondAPICost.TransferValue = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.SignalError = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnSameContext = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnDestContext = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.TransferValue = 0
 }
 
 func setAsyncCosts(host vmhost.VMHost, gasLock uint64) {
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
+	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = gasLock
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {

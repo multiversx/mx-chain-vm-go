@@ -6,7 +6,7 @@ import (
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	arwenMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
+	vmMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
@@ -455,13 +455,13 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *updateFromSourceTestConfi
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			gasSchedule := host.Metering().GasSchedule()
-			gasSchedule.ElrondAPICost.AsyncCallStep = testConfig.asyncCallStepCost
+			gasSchedule.BaseOpsAPICost.AsyncCallStep = testConfig.asyncCallStepCost
 			gasSchedule.BaseOperationCost.AoTPreparePerByte = testConfig.aoTPreparePerByteCost
 			gasSchedule.BaseOperationCost.CompilePerByte = testConfig.compilePerByteCost
-			gasSchedule.ElrondAPICost.AsyncCallbackGasLock = 0
+			gasSchedule.BaseOpsAPICost.AsyncCallbackGasLock = 0
 
 			if !testConfig.isFlagEnabled {
-				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
 				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).

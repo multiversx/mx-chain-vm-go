@@ -7,7 +7,7 @@ import (
 )
 
 func (pfe *fuzzDexExecutor) interpretExpr(expression string) []byte {
-	bytes, err := pfe.mandosParser.ExprInterpreter.InterpretString(expression)
+	bytes, err := pfe.parser.ExprInterpreter.InterpretString(expression)
 	if err != nil {
 		panic(err)
 	}

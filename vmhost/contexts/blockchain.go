@@ -9,7 +9,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
-var log = logger.GetOrCreate("arwen/blockchainContext")
+var log = logger.GetOrCreate("vm/blockchainContext")
 
 type blockchainContext struct {
 	host           vmhost.VMHost

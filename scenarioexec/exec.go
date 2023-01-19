@@ -18,13 +18,13 @@ import (
 	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
-var log = logger.GetOrCreate("arwen/scenarios")
+var log = logger.GetOrCreate("vm/scenarios")
 
 // TestVMType is the VM type argument we use in tests.
 var TestVMType = []byte{0, 0}
 
-// ArwenTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with Arwen.
-type ArwenTestExecutor struct {
+// VMTestExecutor parses, interprets and executes both .test.json tests and .scen.json scenarios with VM.
+type VMTestExecutor struct {
 	World             *worldhook.MockWorld
 	vm                vmi.VMExecutionHandler
 	vmHost            vmhost.VMHost
@@ -34,14 +34,14 @@ type ArwenTestExecutor struct {
 	exprReconstructor er.ExprReconstructor
 }
 
-var _ mc.TestExecutor = (*ArwenTestExecutor)(nil)
-var _ mc.ScenarioExecutor = (*ArwenTestExecutor)(nil)
+var _ mc.TestExecutor = (*VMTestExecutor)(nil)
+var _ mc.ScenarioExecutor = (*VMTestExecutor)(nil)
 
-// NewArwenTestExecutor prepares a new ArwenTestExecutor instance.
-func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
+// NewVMTestExecutor prepares a new VMTestExecutor instance.
+func NewVMTestExecutor() (*VMTestExecutor, error) {
 	world := worldhook.NewMockWorld()
 
-	return &ArwenTestExecutor{
+	return &VMTestExecutor{
 		World:             world,
 		vm:                nil,
 		checkGas:          true,
@@ -53,7 +53,7 @@ func NewArwenTestExecutor() (*ArwenTestExecutor, error) {
 
 // InitVM will initialize the VM and the builtin function container.
 // Does nothing if the VM is already initialized.
-func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
+func (ae *VMTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 	if ae.vm != nil {
 		return nil
 	}
@@ -116,16 +116,16 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 }
 
 // GetVM yields a reference to the VMExecutionHandler used.
-func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
+func (ae *VMTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
 }
 
 // GetVMHost returns the VM host instance in the test executor.
-func (ae *ArwenTestExecutor) GetVMHost() vmhost.VMHost {
+func (ae *VMTestExecutor) GetVMHost() vmhost.VMHost {
 	return ae.vmHost
 }
 
-func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
+func (ae *VMTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
 	switch mandosGasSchedule {
 	case mj.GasScheduleDefault:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
@@ -141,7 +141,7 @@ func (ae *ArwenTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSc
 }
 
 // PeekTraceGas -
-func (ae *ArwenTestExecutor) PeekTraceGas() bool {
+func (ae *VMTestExecutor) PeekTraceGas() bool {
 	length := len(ae.scenarioTraceGas)
 	if length != 0 {
 		return ae.scenarioTraceGas[length-1]

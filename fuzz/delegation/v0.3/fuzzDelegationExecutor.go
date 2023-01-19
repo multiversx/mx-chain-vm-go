@@ -18,10 +18,10 @@ import (
 )
 
 type fuzzDelegationExecutor struct {
-	arwenTestExecutor *am.ArwenTestExecutor
+	vmTestExecutor *am.VMTestExecutor
 	world             *worldhook.MockWorld
 	vm                vmi.VMExecutionHandler
-	mandosParser      mjparse.Parser
+	parser      mjparse.Parser
 	txIndex           int
 
 	serviceFee                  int
@@ -43,16 +43,16 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	vmTestExecutor, err := am.NewVMTestExecutor()
 	if err != nil {
 		return nil, err
 	}
 	parser := mjparse.NewParser(fileResolver)
 	return &fuzzDelegationExecutor{
-		arwenTestExecutor:   arwenTestExecutor,
-		world:               arwenTestExecutor.World,
-		vm:                  arwenTestExecutor.GetVM(),
-		mandosParser:        parser,
+		vmTestExecutor:   vmTestExecutor,
+		world:               vmTestExecutor.World,
+		vm:                  vmTestExecutor.GetVM(),
+		parser:        parser,
 		txIndex:             0,
 		numNodes:            0,
 		totalStakeAdded:     big.NewInt(0),
@@ -129,16 +129,16 @@ func (pfe *fuzzDelegationExecutor) getWithdrawTargetBalance() *big.Int {
 }
 
 func (pfe *fuzzDelegationExecutor) executeStep(stepSnippet string) error {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return err
 	}
 	pfe.addStep(step)
-	return pfe.arwenTestExecutor.ExecuteStep(step)
+	return pfe.vmTestExecutor.ExecuteStep(step)
 }
 
 func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 	if !isTx {
 		return nil, errors.New("tx step expected")
 	}
-	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
+	return pfe.vmTestExecutor.ExecuteTxStep(txStep)
 }
 
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {

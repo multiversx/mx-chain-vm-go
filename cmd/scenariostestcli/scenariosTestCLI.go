@@ -56,9 +56,9 @@ func MandosTestCLI() {
 	}
 
 	// init
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewVMTestExecutor()
 	if err != nil {
-		panic("Could not instantiate Arwen VM")
+		panic("Could not instantiate VM VM")
 	}
 
 	// execute
