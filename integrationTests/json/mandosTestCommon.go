@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	executorwrapper "github.com/ElrondNetwork/wasm-vm/executor/wrapper"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
+	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
+	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,8 +25,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../test")
+	return vmTestRoot
 }
 
 // MandosTestBuilder defines the Mandos builder component

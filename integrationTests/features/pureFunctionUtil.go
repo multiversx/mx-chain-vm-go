@@ -7,15 +7,15 @@ import (
 	"strings"
 	"testing"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,15 +45,15 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(
+	vm, err := hostCore.NewArwenVM(
 		world,
-		&arwen.VMHostParameters{
+		&vmhost.VMHostParameters{
 			VMType:                   testVMType,
 			OverrideVMExecutor:       nil,
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubNoFlags(),
@@ -166,7 +166,7 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
 
-		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost := pfe.vm.(vmhost.VMHost)
 		vmHost.Reset()
 	}
 }

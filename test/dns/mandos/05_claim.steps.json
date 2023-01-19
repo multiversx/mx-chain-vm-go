@@ -46,7 +46,7 @@
                     "nonce": "*",
                     "balance": "0",
                     "storage": "*",
-                    "code": "file:../output/elrond-wasm-sc-dns.wasm"
+                    "code": "file:../output/dns.wasm"
                 },
                 "+": ""
             }

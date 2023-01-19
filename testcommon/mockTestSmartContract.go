@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // TestConfig is configuration for async call tests
@@ -160,7 +160,7 @@ func (mockSC *MockTestSmartContract) GetShardID() uint32 {
 // Initialize -
 func (mockSC *MockTestSmartContract) Initialize(
 	t testing.TB,
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	imb *mock.ExecutorMock,
 	createContractAccounts bool,
 ) {

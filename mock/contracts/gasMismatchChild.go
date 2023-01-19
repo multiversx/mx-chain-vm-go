@@ -3,7 +3,7 @@ package contracts
 import (
 	"math/big"
 
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 )
 
 // GasMismatchAsyncCallChildMock is an exposed mock contract method

@@ -3,8 +3,8 @@
 #![allow(unused_attributes)]
 #![feature(lang_items)]
 
-use elrond_wasm::api::{EndpointArgumentApi, EndpointFinishApi, StorageReadApi, StorageWriteApi};
-use elrond_wasm_node::ArwenApiImpl;
+
+
 
 use promises_common::*;
 

@@ -1,4 +1,4 @@
-#include "../elrond/types.h"
+#include "../mxvm/types.h"
 
 // No imports provided on purpose.
 // We are using it in a wasmer instance test, in isolation, with no access to the elrondapi package.

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/mitchellh/mapstructure"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // GasValueForTests defines the gas value for tests
