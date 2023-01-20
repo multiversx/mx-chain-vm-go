@@ -145,9 +145,9 @@ func writeRustWasmerImports(eiMetadata *eapigen.EIMetadata) {
 }
 
 func writeExecutorOpcodeCosts() {
-	out := eapigen.NewEIGenWriter(pathToElrondApiPackage, "../../executor/opcodeCosts.go")
+	out := eapigen.NewEIGenWriter(pathToElrondApiPackage, "../../executor/gasCostWASM.go")
 	defer out.Close()
-	eapigen.WriteOpcodeCost(out)
+	eapigen.WriteExecutorOpcodeCost(out)
 }
 
 func writeWASMOpcodeCostFuncHelpers() {
@@ -165,7 +165,7 @@ func writeWASMOpcodeCostConfigHelpers() {
 func writeWasmer2OpcodeCost() {
 	out := eapigen.NewEIGenWriter(pathToElrondApiPackage, "../../wasmer2/opcodeCost.go")
 	defer out.Close()
-	eapigen.WriteOpcodeCost(out)
+	eapigen.WriteWasmer2OpcodeCost(out)
 }
 
 func writeOpcodeCostFuncHelpers() {
