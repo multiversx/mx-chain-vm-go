@@ -312,6 +312,19 @@ vm_exec_result_t vm_check_signatures(vm_exec_instance_t *instance_ptr);
 void vm_exec_executor_destroy(vm_exec_executor_t *executor);
 
 /**
+ * Sets the log level for the given executor.
+ *
+ * This function returns `vm_exec_result_t::WASMER_OK` upon success,
+ * `vm_exec_result_t::WASMER_ERROR` otherwise. You can use
+ * `wasmer_last_error_message()` to get the generated error message.
+ *
+ * # Safety
+ *
+ * C API function, works with raw object pointers.
+ */
+vm_exec_result_t vm_exec_executor_set_log_level(vm_exec_executor_t *executor_ptr, uint64_t value);
+
+/**
  * Sets the data that can be hold by an instance context.
  *
  * An instance context (represented by the opaque
