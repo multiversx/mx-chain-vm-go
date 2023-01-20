@@ -23,6 +23,7 @@ import (
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	"github.com/ElrondNetwork/wasm-vm/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,7 +55,7 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 		expectedFrozen = 1
 	}
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -65,7 +66,7 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 
 						managedTypes := host.ManagedTypes()
 						addressHandle = managedTypes.NewManagedBufferFromBytes(test.ParentAddress)
-						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
+						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
 						retValue := elrondapi.ManagedIsESDTFrozenWithHost(
 							host,
@@ -101,17 +102,18 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 				Ok().
 				ReturnData(big.NewInt(expectedFrozen).Bytes())
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedIsESDTFrozen_IsPaused(t *testing.T) {
-	testManagedIsESDTFrozen_IsPaused(t, true)
+	testManagedIsESDTFrozenIsPaused(t, true)
 }
 
 func Test_ManagedIsESDTFrozen_IsNotPaused(t *testing.T) {
-	testManagedIsESDTFrozen_IsPaused(t, false)
+	testManagedIsESDTFrozenIsPaused(t, false)
 }
 
-func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
+func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 	testConfig := baseTestConfig
 
 	var tokenIDHandle int32
@@ -121,7 +123,7 @@ func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
 		expectedPaused = 1
 	}
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -131,7 +133,7 @@ func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
-						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
+						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
 						retValue := elrondapi.ManagedIsESDTPausedWithHost(
 							host,
@@ -155,17 +157,18 @@ func testManagedIsESDTFrozen_IsPaused(t *testing.T, isPaused bool) {
 				Ok().
 				ReturnData(big.NewInt(expectedPaused).Bytes())
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T) {
-	testManagedIsESDTFrozen_IsLimitedTransfer(t, true)
+	testManagedIsESDTFrozenIsLimitedTransfer(t, true)
 }
 
 func Test_ManagedIsESDTFrozen_IsNotLimitedTransfer(t *testing.T) {
-	testManagedIsESDTFrozen_IsLimitedTransfer(t, false)
+	testManagedIsESDTFrozenIsLimitedTransfer(t, false)
 }
 
-func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer bool) {
+func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bool) {
 	testConfig := baseTestConfig
 
 	var tokenIDHandle int32
@@ -175,7 +178,7 @@ func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer b
 		expectedLimitedTransfer = 1
 	}
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -185,7 +188,7 @@ func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer b
 						host := parentInstance.Host
 
 						managedTypes := host.ManagedTypes()
-						tokenIDHandle = managedTypes.NewManagedBufferFromBytes([]byte(test.ESDTTestTokenName))
+						tokenIDHandle = managedTypes.NewManagedBufferFromBytes(test.ESDTTestTokenName)
 
 						retValue := elrondapi.ManagedIsESDTLimitedTransferWithHost(
 							host,
@@ -209,6 +212,7 @@ func testManagedIsESDTFrozen_IsLimitedTransfer(t *testing.T, isLimitedTransfer b
 				Ok().
 				ReturnData(big.NewInt(expectedLimitedTransfer).Bytes())
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedBufferToHex(t *testing.T) {
@@ -217,7 +221,7 @@ func Test_ManagedBufferToHex(t *testing.T) {
 	asBytes := []byte{1, 2, 3}
 	asString := "010203"
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -254,6 +258,7 @@ func Test_ManagedBufferToHex(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_BigIntToString(t *testing.T) {
@@ -262,7 +267,7 @@ func Test_BigIntToString(t *testing.T) {
 	asBigInt := big.NewInt(1234567890)
 	asString := "1234567890"
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -299,6 +304,7 @@ func Test_BigIntToString(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedRipemd160(t *testing.T) {
@@ -307,7 +313,7 @@ func Test_ManagedRipemd160(t *testing.T) {
 	asBytes := []byte{1, 2, 3}
 	asRipemd160, _ := hashing.NewHasher().Ripemd160(asBytes)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -344,6 +350,7 @@ func Test_ManagedRipemd160(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 const blsCheckOK = "3e886a4c6e109a151f4105aee65a5192d150ef1fa68d3cd76964a0b086006dbe4324c989deb0e4416c6d6706db1b1910eb2732f08842fb4886067b9ed191109ac2188d76002d2e11da80a3f0ea89fee6b59c834cc478a6bd49cb8a193b1abb16@e96bd0f36b70c5ccc0c4396343bd7d8255b8a526c55fa1e218511fafe6539b8e@04725db195e37aa237cdbbda76270d4a229b6e7a3651104dc58c4349c0388e8546976fe54a04240530b99064e434c90f"
@@ -365,7 +372,7 @@ func blsSplitString(t testing.TB, str string) ([]byte, []byte, []byte) {
 func Test_ManagedVerifyBLS(t *testing.T) {
 	testConfig := baseTestConfig
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -404,6 +411,7 @@ func Test_ManagedVerifyBLS(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedVerifyEd25519(t *testing.T) {
@@ -415,7 +423,7 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 	message := []byte("test message!")
 	sig := ed25519.Sign(privateKey, message)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -453,6 +461,7 @@ func Test_ManagedVerifyEd25519(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_VerifySecp256k1(t *testing.T) {
@@ -466,7 +475,7 @@ func Test_VerifySecp256k1(t *testing.T) {
 	verifier := secp256k1.NewSecp256k1()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -504,6 +513,7 @@ func Test_VerifySecp256k1(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_VerifyCustomSecp256k1(t *testing.T) {
@@ -517,7 +527,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 	verifier := secp256k1.NewSecp256k1()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -556,6 +566,7 @@ func Test_VerifyCustomSecp256k1(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
@@ -567,7 +578,7 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 	verifier := secp256k1.NewSecp256k1()
 	sig := verifier.EncodeSecp256k1DERSignature(r, s)
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -606,6 +617,7 @@ func Test_ManagedEncodeSecp256k1DerSignature(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedScalarBaseMultEC(t *testing.T) {
@@ -613,7 +625,7 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 
 	dataBytes, _ := hex.DecodeString("11839296a789a3bc0045c8a5fb42c7d1bd998f54449579b446817afbd17273e662c97ee72995ef42640c550b9013fad0761353c7086a272c24088be94769fd16650")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -655,6 +667,7 @@ func Test_ManagedScalarBaseMultEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedScalarMultEC(t *testing.T) {
@@ -664,7 +677,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 	pointYBytes, _ := hex.DecodeString("016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 	dataBytes, _ := hex.DecodeString("f93e4ae433cc12cf2a43fc0ef26400c0e125508224cdb649380f25479148a4ad")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -710,6 +723,7 @@ func Test_ManagedScalarMultEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedMarshalEC(t *testing.T) {
@@ -719,7 +733,7 @@ func Test_ManagedMarshalEC(t *testing.T) {
 	pointYBytes, _ := hex.DecodeString("016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 	marshalled, _ := hex.DecodeString("04010ba38127b62997b313aa2990a13fce55c46fc3ae751a7a7b91c41341719b57f13b9185edd96a0211acf922adb13aa9d7c64925664a9419ae6f5bc9cc4d25f91f50016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -763,6 +777,7 @@ func Test_ManagedMarshalEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedUnmarshalEC(t *testing.T) {
@@ -772,7 +787,7 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 	pointYBytes, _ := hex.DecodeString("016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 	dataBytes, _ := hex.DecodeString("04010ba38127b62997b313aa2990a13fce55c46fc3ae751a7a7b91c41341719b57f13b9185edd96a0211acf922adb13aa9d7c64925664a9419ae6f5bc9cc4d25f91f50016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -819,6 +834,7 @@ func Test_ManagedUnmarshalEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedMarshalCompressedEC(t *testing.T) {
@@ -828,7 +844,7 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 	pointYBytes, _ := hex.DecodeString("016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 	marshalled, _ := hex.DecodeString("03010ba38127b62997b313aa2990a13fce55c46fc3ae751a7a7b91c41341719b57f13b9185edd96a0211acf922adb13aa9d7c64925664a9419ae6f5bc9cc4d25f91f50")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -872,6 +888,7 @@ func Test_ManagedMarshalCompressedEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
@@ -881,7 +898,7 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 	pointYBytes, _ := hex.DecodeString("016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 	dataBytes, _ := hex.DecodeString("03010ba38127b62997b313aa2990a13fce55c46fc3ae751a7a7b91c41341719b57f13b9185edd96a0211acf922adb13aa9d7c64925664a9419ae6f5bc9cc4d25f91f50")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -928,6 +945,7 @@ func Test_ManagedUnmarshalCompressedEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedGenerateKeyEC(t *testing.T) {
@@ -937,7 +955,7 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 	pointYBytes, _ := hex.DecodeString("016967055bf964609b6fd853e0aa9b90d6e1e942066278a18e8604f9fcef5b64370412f20836767829ee7e0d3fc8e2e204e2a8ec4f9257a552d66647b2d1b9856223")
 	expectedResultBytes, _ := hex.DecodeString("00ddb81d205713945e203848e2f5c312067649f9a40727ca26b672b164cd1f9108f564958b20312146bb9750b74757d97cfbbba2aedebaba3a68fe3f2d669a992fab")
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -981,12 +999,13 @@ func Test_ManagedGenerateKeyEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedCreateEC(t *testing.T) {
 	testConfig := baseTestConfig
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -1028,6 +1047,7 @@ func Test_ManagedCreateEC(t *testing.T) {
 			verify.
 				Ok()
 		})
+	assert.Nil(t, err)
 }
 
 func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.CurveParams) bool {
@@ -1050,7 +1070,7 @@ func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.Cur
 func Test_ManagedDeleteContract(t *testing.T) {
 	testConfig := baseTestConfig
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -1091,12 +1111,13 @@ func Test_ManagedDeleteContract(t *testing.T) {
 				Ok().
 				DeletedAccounts(test.ParentAddress)
 		})
+	assert.Nil(t, err)
 }
 
 func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 	testConfig := makeTestConfig()
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContractOnShard(test.ChildAddress, 1).
 				WithBalance(testConfig.ChildBalance).
@@ -1132,6 +1153,7 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 			verify.Ok().
 				DeletedAccounts(test.ChildAddress)
 		})
+	assert.Nil(t, err)
 }
 
 func TestElrondEI_NFTNonceOverflow(t *testing.T) {
@@ -1143,7 +1165,7 @@ func TestElrondEI_NFTNonceOverflow(t *testing.T) {
 	OverflowedMaxInt := uint64(MaxInt) + 1
 
 	tokenValue := int64(100)
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			test.CreateMockContract(test.ParentAddress).
 				WithBalance(testConfig.ParentBalance).
@@ -1192,7 +1214,7 @@ func TestElrondEI_NFTNonceOverflow(t *testing.T) {
 		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
-			world.BuiltinFuncs.SetTokenData(
+			err := world.BuiltinFuncs.SetTokenData(
 				test.ParentAddress,
 				test.ESDTTestTokenName,
 				OverflowedMaxInt,
@@ -1201,10 +1223,12 @@ func TestElrondEI_NFTNonceOverflow(t *testing.T) {
 					Type:       uint32(core.Fungible),
 					Properties: esdtconvert.MakeESDTUserMetadataBytes(false),
 				})
+			assert.Nil(t, err)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
 				ReturnData(big.NewInt(tokenValue).Bytes())
 		})
+	assert.Nil(t, err)
 }

@@ -149,7 +149,7 @@ func (p *Parser) processScenarioStep(stepObj oj.OJsonObject) (mj.Step, error) {
 				if !isBool {
 					return nil, errors.New("scenario traceGas flag is not boolean")
 				}
-				if bool(*traceGasOJ) {
+				if *traceGasOJ {
 					step.TraceGas = 1
 				} else {
 					step.TraceGas = 0

@@ -16,11 +16,6 @@ func NewRequestError(message string) *RequestError {
 	return &RequestError{Message: message}
 }
 
-// NewRequestErrorInner -
-func NewRequestErrorInner(err error) *RequestError {
-	return &RequestError{InnerErr: err}
-}
-
 // NewRequestErrorMessageInner -
 func NewRequestErrorMessageInner(message string, err error) *RequestError {
 	return &RequestError{Message: message, InnerErr: err}
@@ -41,6 +36,3 @@ func (err *RequestError) Unwrap() error {
 
 // ErrInvalidArgumentEncoding signals an error
 var ErrInvalidArgumentEncoding = errors.New("invalid contract argument encoding")
-
-// ErrAccountDoesntExist signals an error
-var ErrAccountDoesntExist = errors.New("account does not exist")

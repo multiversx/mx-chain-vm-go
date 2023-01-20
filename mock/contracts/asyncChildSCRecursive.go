@@ -3,10 +3,10 @@ package contracts
 import (
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
 // RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method
@@ -40,7 +40,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 		}
 
 		destination := host.Runtime().GetContextAddress()
-		function := string("recursiveAsyncCall")
+		function := "recursiveAsyncCall"
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
 		callData := txDataBuilder.NewBuilder()

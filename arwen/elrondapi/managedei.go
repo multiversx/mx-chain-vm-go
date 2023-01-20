@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
@@ -408,10 +409,10 @@ func (context *ElrondApi) ManagedCreateAsyncCall(
 	valueHandle int32,
 	functionHandle int32,
 	argumentsHandle int32,
-	successOffset int32,
-	successLength int32,
-	errorOffset int32,
-	errorLength int32,
+	successOffset executor.MemPtr,
+	successLength executor.MemLength,
+	errorOffset executor.MemPtr,
+	errorLength executor.MemLength,
 	gas int64,
 	extraGasForCallback int64,
 	callbackClosureHandle int32,
@@ -434,12 +435,12 @@ func (context *ElrondApi) ManagedCreateAsyncCall(
 		return 1
 	}
 
-	successFunc, err := runtime.MemLoad(successOffset, successLength)
+	successFunc, err := context.MemLoad(successOffset, successLength)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	errorFunc, err := runtime.MemLoad(errorOffset, errorLength)
+	errorFunc, err := context.MemLoad(errorOffset, errorLength)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}

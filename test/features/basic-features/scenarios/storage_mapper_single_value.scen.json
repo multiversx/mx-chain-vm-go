@@ -1,0 +1,439 @@
+{
+    "name": "storage",
+    "gasSchedule": "v3",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "sc:extra-instance": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "0",
+                    "balance": "0"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "before",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "map_my_single_value_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "0"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "increment-1",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "my_single_value_mapper_increment_1",
+                "arguments": [
+                    "123"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "after-1",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "map_my_single_value_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "123"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "increment-2",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "my_single_value_mapper_increment_2",
+                "arguments": [
+                    "121"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "subtract-too-much",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "my_single_value_mapper_subtract_with_require",
+                "arguments": [
+                    "10,000"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "str:not enough funds",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "subtract-ok",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "my_single_value_mapper_subtract_with_require",
+                "arguments": [
+                    "10"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "after-2",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "map_my_single_value_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "+234"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:my_single_value_mapper": "+234"
+                    },
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "sc:extra-instance": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "is-empty-before-clear",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "is_empty_single_value_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "false"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "is-empty-at-address-before-clear",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:extra-instance",
+                "function": "is_empty_at_address_single_value_mapper",
+                "arguments": [
+                    "sc:basic-features"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "false"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "clear-single-value-mapper",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "clear_single_value_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "is-empty-after-clear",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "is_empty_single_value_mapper",
+                "arguments": [],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "is-empty-at-address-after-clear",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:extra-instance",
+                "function": "is_empty_at_address_single_value_mapper",
+                "arguments": [
+                    "sc:basic-features"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [
+                    "true"
+                ],
+                "status": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "sc:extra-instance": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "set-empty-entry",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "my_single_value_mapper_set_if_empty",
+                "arguments": [
+                    "42"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "message": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:my_single_value_mapper": "42"
+                    },
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "sc:extra-instance": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "call-set-if-empty-on-non-empty-entry",
+            "tx": {
+                "from": "address:an_account",
+                "to": "sc:basic-features",
+                "function": "my_single_value_mapper_set_if_empty",
+                "arguments": [
+                    "100"
+                ],
+                "gasLimit": "50,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "message": "",
+                "logs": "*",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "sc:basic-features": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {
+                        "str:my_single_value_mapper": "42"
+                    },
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "sc:extra-instance": {
+                    "nonce": "0",
+                    "balance": "0",
+                    "storage": {},
+                    "code": "file:../output/basic-features.wasm"
+                },
+                "address:an_account": {
+                    "nonce": "*",
+                    "balance": "*",
+                    "storage": {},
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "scQuery",
+            "id": "query-raw-byte-length",
+            "tx": {
+                "to": "sc:basic-features",
+                "function": "raw_byte_length_single_value_mapper",
+                "arguments": []
+            },
+            "expect": {
+                "out": [
+                    "1"
+                ],
+                "status": "",
+                "message": "",
+                "logs": []
+            }
+        }
+    ]
+}

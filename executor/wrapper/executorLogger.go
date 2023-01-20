@@ -49,7 +49,7 @@ func (sl *StringLogger) LogVMHookCallBefore(callInfo string) {
 	sl.sb.WriteRune('\n')
 }
 
-// LogVMHookCallBefore is called after processing a wrapped VM hook.
+// LogVMHookCallAfter is called after processing a wrapped VM hook.
 func (sl *StringLogger) LogVMHookCallAfter(callInfo string) {
 	sl.sb.WriteString("VM hook end:   ")
 	sl.sb.WriteString(callInfo)
@@ -67,7 +67,14 @@ func (sl *StringLogger) String() string {
 // NoLogger is an ExecutorLogger implementation that does nothing.
 type NoLogger struct{}
 
-func (*NoLogger) SetCurrentInstance(instance executor.Instance) {}
-func (*NoLogger) LogExecutorEvent(description string)           {}
-func (*NoLogger) LogVMHookCallBefore(callInfo string)           {}
-func (*NoLogger) LogVMHookCallAfter(callInfo string)            {}
+// SetCurrentInstance does nothing
+func (*NoLogger) SetCurrentInstance(_ executor.Instance) {}
+
+// LogExecutorEvent does nothing
+func (*NoLogger) LogExecutorEvent(_ string) {}
+
+// LogVMHookCallBefore does nothing
+func (*NoLogger) LogVMHookCallBefore(_ string) {}
+
+// LogVMHookCallAfter does nothing
+func (*NoLogger) LogVMHookCallAfter(_ string) {}

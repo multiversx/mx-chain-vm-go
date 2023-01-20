@@ -64,7 +64,7 @@ func TestDecode_ArwenGas(t *testing.T) {
 }
 
 func TestDecode_ZeroGasCostError(t *testing.T) {
-	gasMap := FillGasMap_WASMOpcodeCosts(1)
+	gasMap := FillGasMapWASMOpcodeValues(1)
 
 	wasmCosts := &executor.WASMOpcodeCost{}
 	err := mapstructure.Decode(gasMap, wasmCosts)

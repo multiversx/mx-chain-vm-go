@@ -3,10 +3,10 @@ package contexts
 import (
 	"errors"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 )
 
 // Save serializes and saves the AsyncContext to the storage of the contract, under a protected key.
@@ -46,7 +46,7 @@ func (context *asyncContext) LoadParentContext() error {
 	}
 }
 
-// Delete deletes the persisted state of the AsyncContext from the contract storage.
+// DeleteFromAddress deletes the persisted state of the AsyncContext from the contract storage.
 func (context *asyncContext) DeleteFromAddress(address []byte) error {
 	storage := context.host.Storage()
 	storageKey := getAsyncContextStorageKey(context.asyncStorageDataPrefix, context.callID)
@@ -54,6 +54,7 @@ func (context *asyncContext) DeleteFromAddress(address []byte) error {
 	return err
 }
 
+// LoadParentContextFromStackOrStorage loads the parent async comtext
 func (context *asyncContext) LoadParentContextFromStackOrStorage() (arwen.AsyncContext, error) {
 	if context.callType != vm.AsynchronousCallBack {
 		return context.loadFromStackOrStorage(context.callerAddr, context.callerCallID)
@@ -104,7 +105,7 @@ func readAsyncContextFromStorage(
 	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	storageKey := getAsyncContextStorageKey(storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix), callID)
-	data, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
+	data, _, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
 		return nil, arwen.ErrNoStoredAsyncContextFound
 	}

@@ -32,6 +32,7 @@ func getTestRoot() string {
 	return arwenTestRoot
 }
 
+// MandosTestBuilder defines the Mandos builder component
 type MandosTestBuilder struct {
 	t              *testing.T
 	folder         string
@@ -41,6 +42,7 @@ type MandosTestBuilder struct {
 	currentError   error
 }
 
+// MandosTest will create a new MandosTestBuilder instance
 func MandosTest(t *testing.T) *MandosTestBuilder {
 	return &MandosTestBuilder{
 		t:              t,
@@ -50,26 +52,31 @@ func MandosTest(t *testing.T) *MandosTestBuilder {
 	}
 }
 
+// Folder sets the folder
 func (mtb *MandosTestBuilder) Folder(folder string) *MandosTestBuilder {
 	mtb.folder = folder
 	return mtb
 }
 
+// File sets the file
 func (mtb *MandosTestBuilder) File(fileName string) *MandosTestBuilder {
 	mtb.singleFile = fileName
 	return mtb
 }
 
+// Exclude sets the exclusion path
 func (mtb *MandosTestBuilder) Exclude(path string) *MandosTestBuilder {
 	mtb.exclusions = append(mtb.exclusions, path)
 	return mtb
 }
 
+// WithExecutorLogs sets a StringLogger
 func (mtb *MandosTestBuilder) WithExecutorLogs() *MandosTestBuilder {
 	mtb.executorLogger = executorwrapper.NewStringLogger()
 	return mtb
 }
 
+// Run will start the testing process
 func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(mtb.t, err)
@@ -105,6 +112,7 @@ func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 	return mtb
 }
 
+// CheckNoError does an assert for the containing error
 func (mtb *MandosTestBuilder) CheckNoError() *MandosTestBuilder {
 	if mtb.currentError != nil {
 		mtb.t.Error(mtb.currentError)
@@ -112,11 +120,13 @@ func (mtb *MandosTestBuilder) CheckNoError() *MandosTestBuilder {
 	return mtb
 }
 
+// RequireError does an assert for the containing error
 func (mtb *MandosTestBuilder) RequireError(expectedErrorMsg string) *MandosTestBuilder {
 	require.EqualError(mtb.t, mtb.currentError, expectedErrorMsg)
 	return mtb
 }
 
+// CheckLog will check the containing error
 func (mtb *MandosTestBuilder) CheckLog(expectedLogs string) *MandosTestBuilder {
 	require.NotNil(mtb.t, mtb.executorLogger)
 	actualLog := mtb.executorLogger.String()
@@ -124,12 +134,12 @@ func (mtb *MandosTestBuilder) CheckLog(expectedLogs string) *MandosTestBuilder {
 		timestampStr := time.Now().Format("2006_01_02_15_04_05")
 		fileExpected, err := os.Create(fmt.Sprintf("executorLog_%s_expected.txt", timestampStr))
 		require.Nil(mtb.t, err)
-		fileExpected.WriteString(expectedLogs)
+		_, _ = fileExpected.WriteString(expectedLogs)
 		err = fileExpected.Close()
 		require.Nil(mtb.t, err)
 		fileActual, err := os.Create(fmt.Sprintf("executorLog_%s_actual.txt", timestampStr))
 		require.Nil(mtb.t, err)
-		fileActual.WriteString(actualLog)
+		_, _ = fileActual.WriteString(actualLog)
 		err = fileActual.Close()
 		require.Nil(mtb.t, err)
 		mtb.t.Error("log mismatch, see saved logs")

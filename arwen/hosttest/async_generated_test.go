@@ -1,3 +1,4 @@
+//nolint:all
 package hosttest
 
 import (
@@ -21,7 +22,9 @@ func TestGraph_Generated(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	lineNo := -1
 	var line string
@@ -199,8 +202,9 @@ func createGraphFromScenario(
 	traceStepsMap map[int][]traceStep,
 	traceStepsIndex map[int]traceStep,
 	usedGasMap map[string]map[int]int,
-	accumulatedGasValue int,
-	finalRemainingGasValue int) *testcommon.TestCallGraph {
+	_ int,
+	_ int,
+) *testcommon.TestCallGraph {
 
 	callGraph := testcommon.CreateTestCallGraph()
 

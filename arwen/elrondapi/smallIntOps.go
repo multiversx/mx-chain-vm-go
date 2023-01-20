@@ -5,6 +5,7 @@ import (
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 const (
@@ -98,7 +99,7 @@ func (context *ElrondApi) SmallIntFinishSigned(value int64) {
 
 // SmallIntStorageStoreUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLength int32, value int64) int32 {
+func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -106,7 +107,7 @@ func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLengt
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -122,7 +123,7 @@ func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset int32, keyLengt
 
 // SmallIntStorageStoreSigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength int32, value int64) int32 {
+func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -130,7 +131,7 @@ func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
 	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -146,17 +147,20 @@ func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset int32, keyLength 
 
 // SmallIntStorageLoadUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength int32) int64 {
+func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
@@ -170,17 +174,20 @@ func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset int32, keyLength
 
 // SmallIntStorageLoadSigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset int32, keyLength int32) int64 {
+func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	key, err := runtime.MemLoad(keyOffset, keyLength)
+	key, err := context.MemLoad(keyOffset, keyLength)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
 
-	data, usedCache := storage.GetStorage(key)
+	data, usedCache, err := storage.GetStorage(key)
+	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+		return 0
+	}
 	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
@@ -208,14 +215,14 @@ func (context *ElrondApi) Int64finish(value int64) {
 
 // Int64storageStore VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Int64storageStore(keyOffset int32, keyLength int32, value int64) int32 {
+func (context *ElrondApi) Int64storageStore(keyOffset executor.MemPtr, keyLength executor.MemLength, value int64) int32 {
 	// backwards compatibility
 	return context.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
 }
 
 // Int64storageLoad VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Int64storageLoad(keyOffset int32, keyLength int32) int64 {
+func (context *ElrondApi) Int64storageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
 	// backwards compatibility
 	return context.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
 }

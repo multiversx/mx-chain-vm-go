@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
+	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
 )
 
 type bigIntParseFormat int

@@ -8,13 +8,16 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// GasValueForTests defines the gas value for tests
 const GasValueForTests = 1
 
+// AsyncCallbackGasLockForTests defines the gas lock for tests
 var AsyncCallbackGasLockForTests = uint64(100_000)
 
 // GasScheduleMap (alias) is the map for gas schedule
 type GasScheduleMap = map[string]map[string]uint64
 
+// CreateGasConfig will create a gas cost instance
 func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 	baseOps := &BaseOperationCost{}
 	err := mapstructure.Decode(gasMap["BaseOperationCost"], baseOps)
@@ -134,29 +137,30 @@ func checkForZeroUint64Fields(arg interface{}) error {
 	return nil
 }
 
+// MakeGasMap creates a new GasScheduleMap instance
 func MakeGasMap(value, asyncCallbackGasLock uint64) GasScheduleMap {
 	gasMap := make(GasScheduleMap)
 	gasMap = FillGasMap(gasMap, value, asyncCallbackGasLock)
 	return gasMap
 }
 
+// FillGasMap will fill the gas map with the provided value
 func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasScheduleMap {
-	gasMap["BuiltInCost"] = FillGasMap_BuiltInCosts(value)
-	gasMap["BaseOperationCost"] = FillGasMap_BaseOperationCosts(value)
-	gasMap["ElrondAPICost"] = FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock)
-	gasMap["EthAPICost"] = FillGasMap_EthereumAPICosts(value)
-	gasMap["BigIntAPICost"] = FillGasMap_BigIntAPICosts(value)
-	gasMap["BigFloatAPICost"] = FillGasMap_BigFloatAPICosts(value)
-	gasMap["CryptoAPICost"] = FillGasMap_CryptoAPICosts(value)
-	gasMap["ManagedBufferAPICost"] = FillGasMap_ManagedBufferAPICosts(value)
-	gasMap["WASMOpcodeCost"] = FillGasMap_WASMOpcodeCosts(value)
-
-	customFillGasMap_WASMOpcodeCosts(gasMap["WASMOpcodeCost"])
+	gasMap["BuiltInCost"] = FillGasMapBuiltInCosts(value)
+	gasMap["BaseOperationCost"] = FillGasMapBaseOperationCosts(value)
+	gasMap["ElrondAPICost"] = FillGasMapElrondAPICosts(value, asyncCallbackGasLock)
+	gasMap["EthAPICost"] = FillGasMapEthereumAPICosts(value)
+	gasMap["BigIntAPICost"] = FillGasMapBigIntAPICosts(value)
+	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
+	gasMap["CryptoAPICost"] = FillGasMapCryptoAPICosts(value)
+	gasMap["ManagedBufferAPICost"] = FillGasMapManagedBufferAPICosts(value)
+	gasMap["WASMOpcodeCost"] = FillGasMapWASMOpcodeValues(value)
 
 	return gasMap
 }
 
-func FillGasMap_BuiltInCosts(value uint64) map[string]uint64 {
+// FillGasMapBuiltInCosts fills the builtin costs
+func FillGasMapBuiltInCosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["ChangeOwnerAddress"] = value
 	gasMap["ClaimDeveloperRewards"] = value
@@ -178,7 +182,8 @@ func FillGasMap_BuiltInCosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
+// FillGasMapBaseOperationCosts fills the base operation costs
+func FillGasMapBaseOperationCosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["StorePerByte"] = value
 	gasMap["DataCopyPerByte"] = value
@@ -191,7 +196,8 @@ func FillGasMap_BaseOperationCosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]uint64 {
+// FillGasMapElrondAPICosts fills the API calls costs
+func FillGasMapElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["GetSCAddress"] = value
 	gasMap["GetOwnerAddress"] = value
@@ -246,7 +252,8 @@ func FillGasMap_ElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]ui
 	return gasMap
 }
 
-func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
+// FillGasMapEthereumAPICosts fills the Ethereum API calls costs
+func FillGasMapEthereumAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["UseGas"] = value
 	gasMap["GetAddress"] = value
@@ -285,7 +292,8 @@ func FillGasMap_EthereumAPICosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
+// FillGasMapBigIntAPICosts fills the big int costs
+func FillGasMapBigIntAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["BigIntNew"] = value
 	gasMap["BigIntUnsignedByteLength"] = value
@@ -330,7 +338,8 @@ func FillGasMap_BigIntAPICosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
+// FillGasMapBigFloatAPICosts fills the big floats costs
+func FillGasMapBigFloatAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["BigFloatNewFromParts"] = value
 	gasMap["BigFloatAdd"] = value
@@ -354,7 +363,8 @@ func FillGasMap_BigFloatAPICosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
+// FillGasMapCryptoAPICosts fills the crypto costs
+func FillGasMapCryptoAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["SHA256"] = value
 	gasMap["Keccak256"] = value
@@ -377,7 +387,8 @@ func FillGasMap_CryptoAPICosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
+// FillGasMapManagedBufferAPICosts fills the managed buffer costs
+func FillGasMapManagedBufferAPICosts(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["MBufferNew"] = value
 	gasMap["MBufferNewFromBytes"] = value
@@ -403,7 +414,8 @@ func FillGasMap_ManagedBufferAPICosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMap_WASMOpcodeCosts(value uint64) map[string]uint64 {
+// FillGasMapWASMOpcodeValues dills the wasm opcodes costs
+func FillGasMapWASMOpcodeValues(value uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 
 	gasMap["AtomicFence"] = value
@@ -967,6 +979,7 @@ func FillGasMap_WASMOpcodeCosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
+// MakeGasMapForTests creates a gas schedule map for tests
 func MakeGasMapForTests() GasScheduleMap {
 	return MakeGasMap(GasValueForTests, AsyncCallbackGasLockForTests)
 }

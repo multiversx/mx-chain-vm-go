@@ -17,8 +17,8 @@ VM hook begin: GetNumArguments() points used: 110
 VM hook end:   GetNumArguments() points used: 210
 VM hook begin: BigIntGetUnsignedArgument(0, -101) points used: 249
 VM hook end:   BigIntGetUnsignedArgument(0, -101) points used: 1249
-VM hook begin: MBufferSetBytes(-102, 1048601, 3) points used: 1289
-VM hook end:   MBufferSetBytes(-102, 1048601, 3) points used: 6289
+VM hook begin: MBufferSetBytes(-102, 1048576, 3) points used: 1289
+VM hook end:   MBufferSetBytes(-102, 1048576, 3) points used: 6289
 VM hook begin: MBufferFromBigIntUnsigned(-103, -101) points used: 6333
 VM hook end:   MBufferFromBigIntUnsigned(-103, -101) points used: 10333
 VM hook begin: MBufferStorageStore(-102, -103) points used: 10345
@@ -32,8 +32,8 @@ VM hook begin: CheckNoPayment() points used: 3
 VM hook end:   CheckNoPayment() points used: 103
 VM hook begin: GetNumArguments() points used: 110
 VM hook end:   GetNumArguments() points used: 210
-VM hook begin: MBufferSetBytes(-101, 1048601, 3) points used: 250
-VM hook end:   MBufferSetBytes(-101, 1048601, 3) points used: 5250
+VM hook begin: MBufferSetBytes(-101, 1048576, 3) points used: 250
+VM hook end:   MBufferSetBytes(-101, 1048576, 3) points used: 5250
 VM hook begin: MBufferStorageLoad(-101, -102) points used: 5291
 VM hook end:   MBufferStorageLoad(-101, -102) points used: 56291
 VM hook begin: MBufferToBigIntUnsigned(-102, -103) points used: 56324
@@ -51,8 +51,8 @@ VM hook begin: GetNumArguments() points used: 110
 VM hook end:   GetNumArguments() points used: 210
 VM hook begin: BigIntGetUnsignedArgument(0, -101) points used: 249
 VM hook end:   BigIntGetUnsignedArgument(0, -101) points used: 1249
-VM hook begin: MBufferSetBytes(-102, 1048601, 3) points used: 1289
-VM hook end:   MBufferSetBytes(-102, 1048601, 3) points used: 6289
+VM hook begin: MBufferSetBytes(-102, 1048576, 3) points used: 1289
+VM hook end:   MBufferSetBytes(-102, 1048576, 3) points used: 6289
 VM hook begin: MBufferStorageLoad(-102, -103) points used: 6333
 VM hook end:   MBufferStorageLoad(-102, -103) points used: 57333
 VM hook begin: MBufferToBigIntUnsigned(-103, -104) points used: 57366
@@ -67,7 +67,7 @@ VM hook end:   MBufferStorageStore(-102, -105) points used: 142437
 
 func TestRustAdderLog(t *testing.T) {
 	MandosTest(t).
-		Folder("adder/mandos").
+		Folder("adder/scenarios").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().

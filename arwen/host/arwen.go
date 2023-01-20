@@ -182,23 +182,6 @@ func (host *vmHost) createExecutor(hostParameters *arwen.VMHostParameters) (exec
 	return vmExecutorFactory.CreateExecutor(vmExecutorFactoryArgs)
 }
 
-func createActivationMap(hostParameters *arwen.VMHostParameters) map[uint32]struct{} {
-	activationMap := make(map[uint32]struct{})
-
-	activationMap[hostParameters.EnableEpochsHandler.CheckExecuteReadOnlyEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.DisableExecByCallerEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.RefactorContextEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.FixFailExecutionOnErrorEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.ManagedCryptoAPIEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.CreateNFTThroughExecByCallerEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.FixOOGReturnCodeEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.MultiESDTTransferAsyncCallBackEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.RemoveNonUpdatedStorageEnableEpoch()] = struct{}{}
-	activationMap[hostParameters.EnableEpochsHandler.StorageAPICostOptimizationEnableEpoch()] = struct{}{}
-
-	return activationMap
-}
-
 // GetVersion returns the Arwen version string
 func (host *vmHost) GetVersion() string {
 	return arwen.ArwenVersion

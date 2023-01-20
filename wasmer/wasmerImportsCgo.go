@@ -262,6 +262,8 @@ import "C"
 
 import (
 	"unsafe"
+
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 // populateWasmerImports populates imports with the ElrondEI API methods
@@ -1514,73 +1516,73 @@ func v1_5_getGasLeft(context unsafe.Pointer) int64 {
 //export v1_5_getSCAddress
 func v1_5_getSCAddress(context unsafe.Pointer, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetSCAddress(resultOffset)
+	vmHooks.GetSCAddress(executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getOwnerAddress
 func v1_5_getOwnerAddress(context unsafe.Pointer, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetOwnerAddress(resultOffset)
+	vmHooks.GetOwnerAddress(executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getShardOfAddress
 func v1_5_getShardOfAddress(context unsafe.Pointer, addressOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetShardOfAddress(addressOffset)
+	return vmHooks.GetShardOfAddress(executor.MemPtr(addressOffset))
 }
 
 //export v1_5_isSmartContract
 func v1_5_isSmartContract(context unsafe.Pointer, addressOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.IsSmartContract(addressOffset)
+	return vmHooks.IsSmartContract(executor.MemPtr(addressOffset))
 }
 
 //export v1_5_signalError
 func v1_5_signalError(context unsafe.Pointer, messageOffset int32, messageLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.SignalError(messageOffset, messageLength)
+	vmHooks.SignalError(executor.MemPtr(messageOffset), messageLength)
 }
 
 //export v1_5_getExternalBalance
 func v1_5_getExternalBalance(context unsafe.Pointer, addressOffset int32, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetExternalBalance(addressOffset, resultOffset)
+	vmHooks.GetExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getBlockHash
 func v1_5_getBlockHash(context unsafe.Pointer, nonce int64, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetBlockHash(nonce, resultOffset)
+	return vmHooks.GetBlockHash(nonce, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getESDTBalance
 func v1_5_getESDTBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultOffset)
+	return vmHooks.GetESDTBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getESDTNFTNameLength
 func v1_5_getESDTNFTNameLength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTNFTNameLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	return vmHooks.GetESDTNFTNameLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 }
 
 //export v1_5_getESDTNFTAttributeLength
 func v1_5_getESDTNFTAttributeLength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTNFTAttributeLength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	return vmHooks.GetESDTNFTAttributeLength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 }
 
 //export v1_5_getESDTNFTURILength
 func v1_5_getESDTNFTURILength(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTNFTURILength(addressOffset, tokenIDOffset, tokenIDLen, nonce)
+	return vmHooks.GetESDTNFTURILength(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce)
 }
 
 //export v1_5_getESDTTokenData
 func v1_5_getESDTTokenData(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, valueHandle int32, propertiesOffset int32, hashOffset int32, nameOffset int32, attributesOffset int32, creatorOffset int32, royaltiesHandle int32, urisOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTTokenData(addressOffset, tokenIDOffset, tokenIDLen, nonce, valueHandle, propertiesOffset, hashOffset, nameOffset, attributesOffset, creatorOffset, royaltiesHandle, urisOffset)
+	return vmHooks.GetESDTTokenData(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, valueHandle, executor.MemPtr(propertiesOffset), executor.MemPtr(hashOffset), executor.MemPtr(nameOffset), executor.MemPtr(attributesOffset), executor.MemPtr(creatorOffset), royaltiesHandle, executor.MemPtr(urisOffset))
 }
 
 //export v1_5_getESDTLocalRoles
@@ -1598,67 +1600,67 @@ func v1_5_validateTokenIdentifier(context unsafe.Pointer, tokenIdHandle int32) i
 //export v1_5_transferValue
 func v1_5_transferValue(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.TransferValue(destOffset, valueOffset, dataOffset, length)
+	return vmHooks.TransferValue(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
 }
 
 //export v1_5_transferValueExecute
 func v1_5_transferValueExecute(context unsafe.Pointer, destOffset int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.TransferValueExecute(destOffset, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.TransferValueExecute(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_transferESDTExecute
 func v1_5_transferESDTExecute(context unsafe.Pointer, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.TransferESDTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.TransferESDTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_transferESDTNFTExecute
 func v1_5_transferESDTNFTExecute(context unsafe.Pointer, destOffset int32, tokenIDOffset int32, tokenIDLen int32, valueOffset int32, nonce int64, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.TransferESDTNFTExecute(destOffset, tokenIDOffset, tokenIDLen, valueOffset, nonce, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.TransferESDTNFTExecute(executor.MemPtr(destOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, executor.MemPtr(valueOffset), nonce, gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_multiTransferESDTNFTExecute
 func v1_5_multiTransferESDTNFTExecute(context unsafe.Pointer, destOffset int32, numTokenTransfers int32, tokenTransfersArgsLengthOffset int32, tokenTransferDataOffset int32, gasLimit int64, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MultiTransferESDTNFTExecute(destOffset, numTokenTransfers, tokenTransfersArgsLengthOffset, tokenTransferDataOffset, gasLimit, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.MultiTransferESDTNFTExecute(executor.MemPtr(destOffset), numTokenTransfers, executor.MemPtr(tokenTransfersArgsLengthOffset), executor.MemPtr(tokenTransferDataOffset), gasLimit, executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_createAsyncCall
 func v1_5_createAsyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, dataLength int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.CreateAsyncCall(destOffset, valueOffset, dataOffset, dataLength, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback)
+	return vmHooks.CreateAsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), dataLength, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback)
 }
 
 //export v1_5_setAsyncContextCallback
 func v1_5_setAsyncContextCallback(context unsafe.Pointer, callback int32, callbackLength int32, data int32, dataLength int32, gas int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SetAsyncContextCallback(callback, callbackLength, data, dataLength, gas)
+	return vmHooks.SetAsyncContextCallback(executor.MemPtr(callback), callbackLength, executor.MemPtr(data), dataLength, gas)
 }
 
 //export v1_5_upgradeContract
 func v1_5_upgradeContract(context unsafe.Pointer, destOffset int32, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.UpgradeContract(destOffset, gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks.UpgradeContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_upgradeFromSourceContract
 func v1_5_upgradeFromSourceContract(context unsafe.Pointer, destOffset int32, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.UpgradeFromSourceContract(destOffset, gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks.UpgradeFromSourceContract(executor.MemPtr(destOffset), gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_deleteContract
 func v1_5_deleteContract(context unsafe.Pointer, destOffset int32, gasLimit int64, numArguments int32, argumentsLengthOffset int32, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.DeleteContract(destOffset, gasLimit, numArguments, argumentsLengthOffset, dataOffset)
+	vmHooks.DeleteContract(executor.MemPtr(destOffset), gasLimit, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_asyncCall
 func v1_5_asyncCall(context unsafe.Pointer, destOffset int32, valueOffset int32, dataOffset int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.AsyncCall(destOffset, valueOffset, dataOffset, length)
+	vmHooks.AsyncCall(executor.MemPtr(destOffset), executor.MemPtr(valueOffset), executor.MemPtr(dataOffset), length)
 }
 
 //export v1_5_getArgumentLength
@@ -1670,13 +1672,13 @@ func v1_5_getArgumentLength(context unsafe.Pointer, id int32) int32 {
 //export v1_5_getArgument
 func v1_5_getArgument(context unsafe.Pointer, id int32, argOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetArgument(id, argOffset)
+	return vmHooks.GetArgument(id, executor.MemPtr(argOffset))
 }
 
 //export v1_5_getFunction
 func v1_5_getFunction(context unsafe.Pointer, functionOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetFunction(functionOffset)
+	return vmHooks.GetFunction(executor.MemPtr(functionOffset))
 }
 
 //export v1_5_getNumArguments
@@ -1688,55 +1690,55 @@ func v1_5_getNumArguments(context unsafe.Pointer) int32 {
 //export v1_5_storageStore
 func v1_5_storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.StorageStore(keyOffset, keyLength, dataOffset, dataLength)
+	return vmHooks.StorageStore(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset), dataLength)
 }
 
 //export v1_5_storageLoadLength
 func v1_5_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.StorageLoadLength(keyOffset, keyLength)
+	return vmHooks.StorageLoadLength(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_storageLoadFromAddress
 func v1_5_storageLoadFromAddress(context unsafe.Pointer, addressOffset int32, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.StorageLoadFromAddress(addressOffset, keyOffset, keyLength, dataOffset)
+	return vmHooks.StorageLoadFromAddress(executor.MemPtr(addressOffset), executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
 }
 
 //export v1_5_storageLoad
 func v1_5_storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.StorageLoad(keyOffset, keyLength, dataOffset)
+	return vmHooks.StorageLoad(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(dataOffset))
 }
 
 //export v1_5_setStorageLock
 func v1_5_setStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32, lockTimestamp int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SetStorageLock(keyOffset, keyLength, lockTimestamp)
+	return vmHooks.SetStorageLock(executor.MemPtr(keyOffset), keyLength, lockTimestamp)
 }
 
 //export v1_5_getStorageLock
 func v1_5_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetStorageLock(keyOffset, keyLength)
+	return vmHooks.GetStorageLock(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_isStorageLocked
 func v1_5_isStorageLocked(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.IsStorageLocked(keyOffset, keyLength)
+	return vmHooks.IsStorageLocked(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_clearStorageLock
 func v1_5_clearStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ClearStorageLock(keyOffset, keyLength)
+	return vmHooks.ClearStorageLock(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_getCaller
 func v1_5_getCaller(context unsafe.Pointer, resultOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetCaller(resultOffset)
+	vmHooks.GetCaller(executor.MemPtr(resultOffset))
 }
 
 //export v1_5_checkNoPayment
@@ -1748,31 +1750,31 @@ func v1_5_checkNoPayment(context unsafe.Pointer) {
 //export v1_5_getCallValue
 func v1_5_getCallValue(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetCallValue(resultOffset)
+	return vmHooks.GetCallValue(executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getESDTValue
 func v1_5_getESDTValue(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTValue(resultOffset)
+	return vmHooks.GetESDTValue(executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getESDTValueByIndex
 func v1_5_getESDTValueByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTValueByIndex(resultOffset, index)
+	return vmHooks.GetESDTValueByIndex(executor.MemPtr(resultOffset), index)
 }
 
 //export v1_5_getESDTTokenName
 func v1_5_getESDTTokenName(context unsafe.Pointer, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTTokenName(resultOffset)
+	return vmHooks.GetESDTTokenName(executor.MemPtr(resultOffset))
 }
 
 //export v1_5_getESDTTokenNameByIndex
 func v1_5_getESDTTokenNameByIndex(context unsafe.Pointer, resultOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetESDTTokenNameByIndex(resultOffset, index)
+	return vmHooks.GetESDTTokenNameByIndex(executor.MemPtr(resultOffset), index)
 }
 
 //export v1_5_getESDTTokenNonce
@@ -1790,7 +1792,7 @@ func v1_5_getESDTTokenNonceByIndex(context unsafe.Pointer, index int32) int64 {
 //export v1_5_getCurrentESDTNFTNonce
 func v1_5_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetCurrentESDTNFTNonce(addressOffset, tokenIDOffset, tokenIDLen)
+	return vmHooks.GetCurrentESDTNFTNonce(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen)
 }
 
 //export v1_5_getESDTTokenType
@@ -1814,25 +1816,25 @@ func v1_5_getNumESDTTransfers(context unsafe.Pointer) int32 {
 //export v1_5_getCallValueTokenName
 func v1_5_getCallValueTokenName(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetCallValueTokenName(callValueOffset, tokenNameOffset)
+	return vmHooks.GetCallValueTokenName(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset))
 }
 
 //export v1_5_getCallValueTokenNameByIndex
 func v1_5_getCallValueTokenNameByIndex(context unsafe.Pointer, callValueOffset int32, tokenNameOffset int32, index int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetCallValueTokenNameByIndex(callValueOffset, tokenNameOffset, index)
+	return vmHooks.GetCallValueTokenNameByIndex(executor.MemPtr(callValueOffset), executor.MemPtr(tokenNameOffset), index)
 }
 
 //export v1_5_writeLog
 func v1_5_writeLog(context unsafe.Pointer, dataPointer int32, dataLength int32, topicPtr int32, numTopics int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.WriteLog(dataPointer, dataLength, topicPtr, numTopics)
+	vmHooks.WriteLog(executor.MemPtr(dataPointer), dataLength, executor.MemPtr(topicPtr), numTopics)
 }
 
 //export v1_5_writeEventLog
 func v1_5_writeEventLog(context unsafe.Pointer, numTopics int32, topicLengthsOffset int32, topicOffset int32, dataOffset int32, dataLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.WriteEventLog(numTopics, topicLengthsOffset, topicOffset, dataOffset, dataLength)
+	vmHooks.WriteEventLog(numTopics, executor.MemPtr(topicLengthsOffset), executor.MemPtr(topicOffset), executor.MemPtr(dataOffset), dataLength)
 }
 
 //export v1_5_getBlockTimestamp
@@ -1862,13 +1864,13 @@ func v1_5_getBlockEpoch(context unsafe.Pointer) int64 {
 //export v1_5_getBlockRandomSeed
 func v1_5_getBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetBlockRandomSeed(pointer)
+	vmHooks.GetBlockRandomSeed(executor.MemPtr(pointer))
 }
 
 //export v1_5_getStateRootHash
 func v1_5_getStateRootHash(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetStateRootHash(pointer)
+	vmHooks.GetStateRootHash(executor.MemPtr(pointer))
 }
 
 //export v1_5_getPrevBlockTimestamp
@@ -1898,43 +1900,43 @@ func v1_5_getPrevBlockEpoch(context unsafe.Pointer) int64 {
 //export v1_5_getPrevBlockRandomSeed
 func v1_5_getPrevBlockRandomSeed(context unsafe.Pointer, pointer int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetPrevBlockRandomSeed(pointer)
+	vmHooks.GetPrevBlockRandomSeed(executor.MemPtr(pointer))
 }
 
 //export v1_5_finish
 func v1_5_finish(context unsafe.Pointer, pointer int32, length int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.Finish(pointer, length)
+	vmHooks.Finish(executor.MemPtr(pointer), length)
 }
 
 //export v1_5_executeOnSameContext
 func v1_5_executeOnSameContext(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ExecuteOnSameContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.ExecuteOnSameContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_executeOnDestContext
 func v1_5_executeOnDestContext(context unsafe.Pointer, gasLimit int64, addressOffset int32, valueOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ExecuteOnDestContext(gasLimit, addressOffset, valueOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.ExecuteOnDestContext(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(valueOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_executeReadOnly
 func v1_5_executeReadOnly(context unsafe.Pointer, gasLimit int64, addressOffset int32, functionOffset int32, functionLength int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ExecuteReadOnly(gasLimit, addressOffset, functionOffset, functionLength, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.ExecuteReadOnly(gasLimit, executor.MemPtr(addressOffset), executor.MemPtr(functionOffset), functionLength, numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_createContract
 func v1_5_createContract(context unsafe.Pointer, gasLimit int64, valueOffset int32, codeOffset int32, codeMetadataOffset int32, length int32, resultOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.CreateContract(gasLimit, valueOffset, codeOffset, codeMetadataOffset, length, resultOffset, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.CreateContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(codeOffset), executor.MemPtr(codeMetadataOffset), length, executor.MemPtr(resultOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_deployFromSourceContract
 func v1_5_deployFromSourceContract(context unsafe.Pointer, gasLimit int64, valueOffset int32, sourceContractAddressOffset int32, codeMetadataOffset int32, resultAddressOffset int32, numArguments int32, argumentsLengthOffset int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.DeployFromSourceContract(gasLimit, valueOffset, sourceContractAddressOffset, codeMetadataOffset, resultAddressOffset, numArguments, argumentsLengthOffset, dataOffset)
+	return vmHooks.DeployFromSourceContract(gasLimit, executor.MemPtr(valueOffset), executor.MemPtr(sourceContractAddressOffset), executor.MemPtr(codeMetadataOffset), executor.MemPtr(resultAddressOffset), numArguments, executor.MemPtr(argumentsLengthOffset), executor.MemPtr(dataOffset))
 }
 
 //export v1_5_getNumReturnData
@@ -1952,7 +1954,7 @@ func v1_5_getReturnDataSize(context unsafe.Pointer, resultID int32) int32 {
 //export v1_5_getReturnData
 func v1_5_getReturnData(context unsafe.Pointer, resultID int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GetReturnData(resultID, dataOffset)
+	return vmHooks.GetReturnData(resultID, executor.MemPtr(dataOffset))
 }
 
 //export v1_5_cleanReturnData
@@ -1970,19 +1972,19 @@ func v1_5_deleteFromReturnData(context unsafe.Pointer, resultID int32) {
 //export v1_5_getOriginalTxHash
 func v1_5_getOriginalTxHash(context unsafe.Pointer, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetOriginalTxHash(dataOffset)
+	vmHooks.GetOriginalTxHash(executor.MemPtr(dataOffset))
 }
 
 //export v1_5_getCurrentTxHash
 func v1_5_getCurrentTxHash(context unsafe.Pointer, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetCurrentTxHash(dataOffset)
+	vmHooks.GetCurrentTxHash(executor.MemPtr(dataOffset))
 }
 
 //export v1_5_getPrevTxHash
 func v1_5_getPrevTxHash(context unsafe.Pointer, dataOffset int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.GetPrevTxHash(dataOffset)
+	vmHooks.GetPrevTxHash(executor.MemPtr(dataOffset))
 }
 
 //export v1_5_managedSCAddress
@@ -2072,7 +2074,7 @@ func v1_5_managedAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle
 //export v1_5_managedCreateAsyncCall
 func v1_5_managedCreateAsyncCall(context unsafe.Pointer, destHandle int32, valueHandle int32, functionHandle int32, argumentsHandle int32, successOffset int32, successLength int32, errorOffset int32, errorLength int32, gas int64, extraGasForCallback int64, callbackClosureHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, successOffset, successLength, errorOffset, errorLength, gas, extraGasForCallback, callbackClosureHandle)
+	return vmHooks.ManagedCreateAsyncCall(destHandle, valueHandle, functionHandle, argumentsHandle, executor.MemPtr(successOffset), successLength, executor.MemPtr(errorOffset), errorLength, gas, extraGasForCallback, callbackClosureHandle)
 }
 
 //export v1_5_managedGetCallbackClosure
@@ -2312,13 +2314,13 @@ func v1_5_bigIntGetSignedArgument(context unsafe.Pointer, id int32, destinationH
 //export v1_5_bigIntStorageStoreUnsigned
 func v1_5_bigIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, sourceHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntStorageStoreUnsigned(keyOffset, keyLength, sourceHandle)
+	return vmHooks.BigIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, sourceHandle)
 }
 
 //export v1_5_bigIntStorageLoadUnsigned
 func v1_5_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, destinationHandle int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntStorageLoadUnsigned(keyOffset, keyLength, destinationHandle)
+	return vmHooks.BigIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength, destinationHandle)
 }
 
 //export v1_5_bigIntGetCallValue
@@ -2342,13 +2344,13 @@ func v1_5_bigIntGetESDTCallValueByIndex(context unsafe.Pointer, destinationHandl
 //export v1_5_bigIntGetExternalBalance
 func v1_5_bigIntGetExternalBalance(context unsafe.Pointer, addressOffset int32, result int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetExternalBalance(addressOffset, result)
+	vmHooks.BigIntGetExternalBalance(executor.MemPtr(addressOffset), result)
 }
 
 //export v1_5_bigIntGetESDTExternalBalance
 func v1_5_bigIntGetESDTExternalBalance(context unsafe.Pointer, addressOffset int32, tokenIDOffset int32, tokenIDLen int32, nonce int64, resultHandle int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntGetESDTExternalBalance(addressOffset, tokenIDOffset, tokenIDLen, nonce, resultHandle)
+	vmHooks.BigIntGetESDTExternalBalance(executor.MemPtr(addressOffset), executor.MemPtr(tokenIDOffset), tokenIDLen, nonce, resultHandle)
 }
 
 //export v1_5_bigIntNew
@@ -2372,25 +2374,25 @@ func v1_5_bigIntSignedByteLength(context unsafe.Pointer, referenceHandle int32) 
 //export v1_5_bigIntGetUnsignedBytes
 func v1_5_bigIntGetUnsignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntGetUnsignedBytes(referenceHandle, byteOffset)
+	return vmHooks.BigIntGetUnsignedBytes(referenceHandle, executor.MemPtr(byteOffset))
 }
 
 //export v1_5_bigIntGetSignedBytes
 func v1_5_bigIntGetSignedBytes(context unsafe.Pointer, referenceHandle int32, byteOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.BigIntGetSignedBytes(referenceHandle, byteOffset)
+	return vmHooks.BigIntGetSignedBytes(referenceHandle, executor.MemPtr(byteOffset))
 }
 
 //export v1_5_bigIntSetUnsignedBytes
 func v1_5_bigIntSetUnsignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetUnsignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks.BigIntSetUnsignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 }
 
 //export v1_5_bigIntSetSignedBytes
 func v1_5_bigIntSetSignedBytes(context unsafe.Pointer, destinationHandle int32, byteOffset int32, byteLength int32) {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	vmHooks.BigIntSetSignedBytes(destinationHandle, byteOffset, byteLength)
+	vmHooks.BigIntSetSignedBytes(destinationHandle, executor.MemPtr(byteOffset), byteLength)
 }
 
 //export v1_5_bigIntIsInt64
@@ -2558,7 +2560,7 @@ func v1_5_mBufferNew(context unsafe.Pointer) int32 {
 //export v1_5_mBufferNewFromBytes
 func v1_5_mBufferNewFromBytes(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferNewFromBytes(dataOffset, dataLength)
+	return vmHooks.MBufferNewFromBytes(executor.MemPtr(dataOffset), dataLength)
 }
 
 //export v1_5_mBufferGetLength
@@ -2570,13 +2572,13 @@ func v1_5_mBufferGetLength(context unsafe.Pointer, mBufferHandle int32) int32 {
 //export v1_5_mBufferGetBytes
 func v1_5_mBufferGetBytes(context unsafe.Pointer, mBufferHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferGetBytes(mBufferHandle, resultOffset)
+	return vmHooks.MBufferGetBytes(mBufferHandle, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_mBufferGetByteSlice
 func v1_5_mBufferGetByteSlice(context unsafe.Pointer, sourceHandle int32, startingPosition int32, sliceLength int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, resultOffset)
+	return vmHooks.MBufferGetByteSlice(sourceHandle, startingPosition, sliceLength, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_mBufferCopyByteSlice
@@ -2594,13 +2596,13 @@ func v1_5_mBufferEq(context unsafe.Pointer, mBufferHandle1 int32, mBufferHandle2
 //export v1_5_mBufferSetBytes
 func v1_5_mBufferSetBytes(context unsafe.Pointer, mBufferHandle int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferSetBytes(mBufferHandle, dataOffset, dataLength)
+	return vmHooks.MBufferSetBytes(mBufferHandle, executor.MemPtr(dataOffset), dataLength)
 }
 
 //export v1_5_mBufferSetByteSlice
 func v1_5_mBufferSetByteSlice(context unsafe.Pointer, mBufferHandle int32, startingPosition int32, dataLength int32, dataOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, dataOffset)
+	return vmHooks.MBufferSetByteSlice(mBufferHandle, startingPosition, dataLength, executor.MemPtr(dataOffset))
 }
 
 //export v1_5_mBufferAppend
@@ -2612,7 +2614,7 @@ func v1_5_mBufferAppend(context unsafe.Pointer, accumulatorHandle int32, dataHan
 //export v1_5_mBufferAppendBytes
 func v1_5_mBufferAppendBytes(context unsafe.Pointer, accumulatorHandle int32, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MBufferAppendBytes(accumulatorHandle, dataOffset, dataLength)
+	return vmHooks.MBufferAppendBytes(accumulatorHandle, executor.MemPtr(dataOffset), dataLength)
 }
 
 //export v1_5_mBufferToBigIntUnsigned
@@ -2714,25 +2716,25 @@ func v1_5_smallIntFinishSigned(context unsafe.Pointer, value int64) {
 //export v1_5_smallIntStorageStoreUnsigned
 func v1_5_smallIntStorageStoreUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageStoreUnsigned(keyOffset, keyLength, value)
+	return vmHooks.SmallIntStorageStoreUnsigned(executor.MemPtr(keyOffset), keyLength, value)
 }
 
 //export v1_5_smallIntStorageStoreSigned
 func v1_5_smallIntStorageStoreSigned(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageStoreSigned(keyOffset, keyLength, value)
+	return vmHooks.SmallIntStorageStoreSigned(executor.MemPtr(keyOffset), keyLength, value)
 }
 
 //export v1_5_smallIntStorageLoadUnsigned
 func v1_5_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageLoadUnsigned(keyOffset, keyLength)
+	return vmHooks.SmallIntStorageLoadUnsigned(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_smallIntStorageLoadSigned
 func v1_5_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.SmallIntStorageLoadSigned(keyOffset, keyLength)
+	return vmHooks.SmallIntStorageLoadSigned(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_int64getArgument
@@ -2750,19 +2752,19 @@ func v1_5_int64finish(context unsafe.Pointer, value int64) {
 //export v1_5_int64storageStore
 func v1_5_int64storageStore(context unsafe.Pointer, keyOffset int32, keyLength int32, value int64) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Int64storageStore(keyOffset, keyLength, value)
+	return vmHooks.Int64storageStore(executor.MemPtr(keyOffset), keyLength, value)
 }
 
 //export v1_5_int64storageLoad
 func v1_5_int64storageLoad(context unsafe.Pointer, keyOffset int32, keyLength int32) int64 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Int64storageLoad(keyOffset, keyLength)
+	return vmHooks.Int64storageLoad(executor.MemPtr(keyOffset), keyLength)
 }
 
 //export v1_5_sha256
 func v1_5_sha256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Sha256(dataOffset, length, resultOffset)
+	return vmHooks.Sha256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_managedSha256
@@ -2774,7 +2776,7 @@ func v1_5_managedSha256(context unsafe.Pointer, inputHandle int32, outputHandle 
 //export v1_5_keccak256
 func v1_5_keccak256(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Keccak256(dataOffset, length, resultOffset)
+	return vmHooks.Keccak256(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_managedKeccak256
@@ -2786,7 +2788,7 @@ func v1_5_managedKeccak256(context unsafe.Pointer, inputHandle int32, outputHand
 //export v1_5_ripemd160
 func v1_5_ripemd160(context unsafe.Pointer, dataOffset int32, length int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.Ripemd160(dataOffset, length, resultOffset)
+	return vmHooks.Ripemd160(executor.MemPtr(dataOffset), length, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_managedRipemd160
@@ -2798,7 +2800,7 @@ func v1_5_managedRipemd160(context unsafe.Pointer, inputHandle int32, outputHand
 //export v1_5_verifyBLS
 func v1_5_verifyBLS(context unsafe.Pointer, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.VerifyBLS(keyOffset, messageOffset, messageLength, sigOffset)
+	return vmHooks.VerifyBLS(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 }
 
 //export v1_5_managedVerifyBLS
@@ -2810,7 +2812,7 @@ func v1_5_managedVerifyBLS(context unsafe.Pointer, keyHandle int32, messageHandl
 //export v1_5_verifyEd25519
 func v1_5_verifyEd25519(context unsafe.Pointer, keyOffset int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.VerifyEd25519(keyOffset, messageOffset, messageLength, sigOffset)
+	return vmHooks.VerifyEd25519(executor.MemPtr(keyOffset), executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 }
 
 //export v1_5_managedVerifyEd25519
@@ -2822,7 +2824,7 @@ func v1_5_managedVerifyEd25519(context unsafe.Pointer, keyHandle int32, messageH
 //export v1_5_verifyCustomSecp256k1
 func v1_5_verifyCustomSecp256k1(context unsafe.Pointer, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32, hashType int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.VerifyCustomSecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset, hashType)
+	return vmHooks.VerifyCustomSecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset), hashType)
 }
 
 //export v1_5_managedVerifyCustomSecp256k1
@@ -2834,7 +2836,7 @@ func v1_5_managedVerifyCustomSecp256k1(context unsafe.Pointer, keyHandle int32, 
 //export v1_5_verifySecp256k1
 func v1_5_verifySecp256k1(context unsafe.Pointer, keyOffset int32, keyLength int32, messageOffset int32, messageLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.VerifySecp256k1(keyOffset, keyLength, messageOffset, messageLength, sigOffset)
+	return vmHooks.VerifySecp256k1(executor.MemPtr(keyOffset), keyLength, executor.MemPtr(messageOffset), messageLength, executor.MemPtr(sigOffset))
 }
 
 //export v1_5_managedVerifySecp256k1
@@ -2846,7 +2848,7 @@ func v1_5_managedVerifySecp256k1(context unsafe.Pointer, keyHandle int32, messag
 //export v1_5_encodeSecp256k1DerSignature
 func v1_5_encodeSecp256k1DerSignature(context unsafe.Pointer, rOffset int32, rLength int32, sOffset int32, sLength int32, sigOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.EncodeSecp256k1DerSignature(rOffset, rLength, sOffset, sLength, sigOffset)
+	return vmHooks.EncodeSecp256k1DerSignature(executor.MemPtr(rOffset), rLength, executor.MemPtr(sOffset), sLength, executor.MemPtr(sigOffset))
 }
 
 //export v1_5_managedEncodeSecp256k1DerSignature
@@ -2876,7 +2878,7 @@ func v1_5_isOnCurveEC(context unsafe.Pointer, ecHandle int32, pointXHandle int32
 //export v1_5_scalarBaseMultEC
 func v1_5_scalarBaseMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	return vmHooks.ScalarBaseMultEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export v1_5_managedScalarBaseMultEC
@@ -2888,7 +2890,7 @@ func v1_5_managedScalarBaseMultEC(context unsafe.Pointer, xResultHandle int32, y
 //export v1_5_scalarMultEC
 func v1_5_scalarMultEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, pointXHandle int32, pointYHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, dataOffset, length)
+	return vmHooks.ScalarMultEC(xResultHandle, yResultHandle, ecHandle, pointXHandle, pointYHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export v1_5_managedScalarMultEC
@@ -2900,7 +2902,7 @@ func v1_5_managedScalarMultEC(context unsafe.Pointer, xResultHandle int32, yResu
 //export v1_5_marshalEC
 func v1_5_marshalEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	return vmHooks.MarshalEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_managedMarshalEC
@@ -2912,7 +2914,7 @@ func v1_5_managedMarshalEC(context unsafe.Pointer, xPairHandle int32, yPairHandl
 //export v1_5_marshalCompressedEC
 func v1_5_marshalCompressedEC(context unsafe.Pointer, xPairHandle int32, yPairHandle int32, ecHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, resultOffset)
+	return vmHooks.MarshalCompressedEC(xPairHandle, yPairHandle, ecHandle, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_managedMarshalCompressedEC
@@ -2924,7 +2926,7 @@ func v1_5_managedMarshalCompressedEC(context unsafe.Pointer, xPairHandle int32, 
 //export v1_5_unmarshalEC
 func v1_5_unmarshalEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	return vmHooks.UnmarshalEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export v1_5_managedUnmarshalEC
@@ -2936,7 +2938,7 @@ func v1_5_managedUnmarshalEC(context unsafe.Pointer, xResultHandle int32, yResul
 //export v1_5_unmarshalCompressedEC
 func v1_5_unmarshalCompressedEC(context unsafe.Pointer, xResultHandle int32, yResultHandle int32, ecHandle int32, dataOffset int32, length int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, dataOffset, length)
+	return vmHooks.UnmarshalCompressedEC(xResultHandle, yResultHandle, ecHandle, executor.MemPtr(dataOffset), length)
 }
 
 //export v1_5_managedUnmarshalCompressedEC
@@ -2948,7 +2950,7 @@ func v1_5_managedUnmarshalCompressedEC(context unsafe.Pointer, xResultHandle int
 //export v1_5_generateKeyEC
 func v1_5_generateKeyEC(context unsafe.Pointer, xPubKeyHandle int32, yPubKeyHandle int32, ecHandle int32, resultOffset int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, resultOffset)
+	return vmHooks.GenerateKeyEC(xPubKeyHandle, yPubKeyHandle, ecHandle, executor.MemPtr(resultOffset))
 }
 
 //export v1_5_managedGenerateKeyEC
@@ -2960,7 +2962,7 @@ func v1_5_managedGenerateKeyEC(context unsafe.Pointer, xPubKeyHandle int32, yPub
 //export v1_5_createEC
 func v1_5_createEC(context unsafe.Pointer, dataOffset int32, dataLength int32) int32 {
 	vmHooks := getVMHooksFromContextRawPtr(context)
-	return vmHooks.CreateEC(dataOffset, dataLength)
+	return vmHooks.CreateEC(executor.MemPtr(dataOffset), dataLength)
 }
 
 //export v1_5_managedCreateEC

@@ -2,7 +2,6 @@ package contexts
 
 import (
 	"bytes"
-	"errors"
 
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -13,6 +12,7 @@ import (
 
 var logStorage = logger.GetOrCreate("arwen/storage")
 
+// VMStoragePrefix defines the VM prefix
 const VMStoragePrefix = "VM@"
 
 type storageContext struct {
@@ -20,7 +20,7 @@ type storageContext struct {
 	blockChainHook                vmcommon.BlockchainHook
 	address                       []byte
 	stateStack                    [][]byte
-	elrondProtectedKeyPrefix      []byte
+	protectedKeyPrefix            []byte
 	vmProtectedKeyPrefix          []byte
 	arwenStorageProtectionEnabled bool
 }
@@ -29,10 +29,16 @@ type storageContext struct {
 func NewStorageContext(
 	host arwen.VMHost,
 	blockChainHook vmcommon.BlockchainHook,
-	elrondProtectedKeyPrefix []byte,
+	protectedKeyPrefix []byte,
 ) (*storageContext, error) {
-	if len(elrondProtectedKeyPrefix) == 0 {
-		return nil, errors.New("elrondProtectedKeyPrefix cannot be empty")
+	if len(protectedKeyPrefix) == 0 {
+		return nil, arwen.ErrEmptyProtectedKeyPrefix
+	}
+	if check.IfNil(host) {
+		return nil, arwen.ErrNilVMHost
+	}
+	if check.IfNil(blockChainHook) {
+		return nil, arwen.ErrNilBlockChainHook
 	}
 
 	if check.IfNil(host) {
@@ -43,8 +49,8 @@ func NewStorageContext(
 		host:                          host,
 		blockChainHook:                blockChainHook,
 		stateStack:                    make([][]byte, 0),
-		elrondProtectedKeyPrefix:      elrondProtectedKeyPrefix,
-		vmProtectedKeyPrefix:          append(elrondProtectedKeyPrefix, []byte(VMStoragePrefix)...),
+		protectedKeyPrefix:            protectedKeyPrefix,
+		vmProtectedKeyPrefix:          append(protectedKeyPrefix, []byte(VMStoragePrefix)...),
 		arwenStorageProtectionEnabled: true,
 	}
 
@@ -101,13 +107,16 @@ func (context *storageContext) GetStorageUpdates(address []byte) map[string]*vmc
 }
 
 // GetStorage returns the storage data mapped to the given key.
-func (context *storageContext) GetStorage(key []byte) ([]byte, bool) {
-	value, usedCache := context.GetStorageUnmetered(key)
+func (context *storageContext) GetStorage(key []byte) ([]byte, bool, error) {
+	value, usedCache, err := context.GetStorageUnmetered(key)
+	if err != nil {
+		return nil, false, err
+	}
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 	logStorage.Trace("get", "key", key, "value", value)
 
-	return value, usedCache
+	return value, usedCache, nil
 }
 
 func (context *storageContext) useGasForValueIfNeeded(value []byte, usedCache bool) {
@@ -138,18 +147,18 @@ func (context *storageContext) useExtraGasForKeyIfNeeded(key []byte, usedCache b
 }
 
 // GetStorageFromAddress returns the data under the given key from the account mapped to the given address.
-func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageFromAddress(address []byte, key []byte) ([]byte, bool, error) {
 	if !bytes.Equal(address, context.address) {
 		userAcc, err := context.blockChainHook.GetUserAccount(address)
 		if err != nil || check.IfNil(userAcc) {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false
+			return nil, false, nil
 		}
 
 		metadata := vmcommon.CodeMetadataFromBytes(userAcc.GetCodeMetadata())
 		if !metadata.Readable {
 			context.useExtraGasForKeyIfNeeded(key, false)
-			return nil, false
+			return nil, false, nil
 		}
 	}
 
@@ -157,28 +166,29 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 }
 
 // GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by arwen, so no permissions checks are necessary
-func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool, error) {
 	// If the requested key is protected by the Elrond node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
 	// contracts themselves cannot change protected values. Values stored under
 	// protected keys must always be retrieved from the node, not from the cached
 	// StorageUpdates.
-	value, usedCache := context.getStorageFromAddressUnmetered(address, key)
+	value, usedCache, err := context.getStorageFromAddressUnmetered(address, key)
 
 	context.useExtraGasForKeyIfNeeded(key, usedCache)
 	context.useGasForValueIfNeeded(value, usedCache)
 
 	logStorage.Trace("get from address", "address", address, "key", key, "value", value)
-	return value, usedCache
+	return value, usedCache, err
 }
 
-func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool) {
+func (context *storageContext) getStorageFromAddressUnmetered(address []byte, key []byte) ([]byte, bool, error) {
 	var value []byte
+	var err error
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if context.isElrondReservedKey(key) && enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() {
-		value, _, _ = context.blockChainHook.GetStorageData(address, key)
-		return value, false
+		value, err = context.readFromBlockchain(address, key)
+		return value, false, err
 	}
 
 	storageUpdates := context.GetStorageUpdates(address)
@@ -186,7 +196,10 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 	if storageUpdate, ok := storageUpdates[string(key)]; ok {
 		value = storageUpdate.Data
 	} else {
-		value, _, _ = context.blockChainHook.GetStorageData(address, key)
+		value, err = context.readFromBlockchain(address, key)
+		if err != nil {
+			return nil, false, err
+		}
 		storageUpdates[string(key)] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   value,
@@ -194,11 +207,17 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 		usedCache = false
 	}
 
-	return value, usedCache
+	return value, usedCache, nil
+}
+
+func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, error) {
+	value, _, err := context.blockChainHook.GetStorageData(address, key)
+
+	return value, err
 }
 
 // GetStorageUnmetered returns the data under the given key.
-func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool) {
+func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, bool, error) {
 	return context.getStorageFromAddressUnmetered(context.address, key)
 }
 
@@ -217,7 +236,7 @@ func (context *storageContext) isArwenProtectedKey(key []byte) bool {
 }
 
 func (context *storageContext) isElrondReservedKey(key []byte) bool {
-	return bytes.HasPrefix(key, context.elrondProtectedKeyPrefix)
+	return bytes.HasPrefix(key, context.protectedKeyPrefix)
 }
 
 // SetProtectedStorage sets storage for timelocks and promises
@@ -257,7 +276,10 @@ func (context *storageContext) setStorageToAddress(address []byte, key []byte, v
 	length := len(value)
 
 	storageUpdates := context.GetStorageUpdates(address)
-	oldValue, usedCache := context.getOldValue(storageUpdates, key)
+	oldValue, usedCache, err := context.getOldValue(storageUpdates, key)
+	if err != nil {
+		return arwen.StorageUnchanged, err
+	}
 
 	gasForKey := context.computeGasForKey(key, usedCache)
 	err = metering.UseGasBounded(gasForKey)
@@ -413,13 +435,18 @@ func (context *storageContext) computeGasForUnchangedValue(length int, usedCache
 	return useGas
 }
 
-func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.StorageUpdate, key []byte) ([]byte, bool) {
+func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.StorageUpdate, key []byte) ([]byte, bool, error) {
 	var oldValue []byte
+	var err error
+
 	usedCache := true
 	strKey := string(key)
 	if update, ok := storageUpdates[strKey]; !ok {
 		// if it's not in storageUpdates, GetStorageUnmetered() will use blockchain hook for sure
-		oldValue, _ = context.GetStorageUnmetered(key)
+		oldValue, _, err = context.GetStorageUnmetered(key)
+		if err != nil {
+			return nil, false, err
+		}
 		storageUpdates[strKey] = &vmcommon.StorageUpdate{
 			Offset: key,
 			Data:   oldValue,
@@ -428,7 +455,7 @@ func (context *storageContext) getOldValue(storageUpdates map[string]*vmcommon.S
 	} else {
 		oldValue = update.Data
 	}
-	return oldValue, usedCache
+	return oldValue, usedCache, nil
 }
 
 func (context *storageContext) computeGasForKey(key []byte, usedCache bool) uint64 {
@@ -465,6 +492,7 @@ func (context *storageContext) IsInterfaceNil() bool {
 	return context == nil
 }
 
+// GetVmProtectedPrefix returns the VM protected prefix as byte slice
 func (context *storageContext) GetVmProtectedPrefix(prefix string) []byte {
 	return append(context.vmProtectedKeyPrefix, []byte(prefix)...)
 }

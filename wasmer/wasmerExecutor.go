@@ -32,6 +32,7 @@ func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMO
 	SetOpcodeCosts(opcodeCosts)
 }
 
+// FunctionNames returns the function names
 func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
 	return wasmerExecutor.eiFunctionNames
 }

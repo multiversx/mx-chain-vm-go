@@ -111,7 +111,7 @@ func (vhs *VMHostStub) Runtime() arwen.RuntimeContext {
 	return nil
 }
 
-// BigInt mocked method
+// ManagedTypes mocked method
 func (vhs *VMHostStub) ManagedTypes() arwen.ManagedTypesContext {
 	if vhs.ManagedTypesCalled != nil {
 		return vhs.ManagedTypesCalled()
@@ -222,7 +222,7 @@ func (vhs *VMHostStub) IsBuiltinFunctionName(functionName string) bool {
 	return false
 }
 
-// IsBuiltinFunctionName mocked method
+// IsBuiltinFunctionCall mocked method
 func (vhs *VMHostStub) IsBuiltinFunctionCall(data []byte) bool {
 	if vhs.IsBuiltinFunctionCallCalled != nil {
 		return vhs.IsBuiltinFunctionCallCalled(data)
