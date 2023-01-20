@@ -205,3 +205,8 @@ func (b *BlockchainContextMock) IsPaused(_ []byte) bool {
 // ClearCompiledCodes -
 func (b *BlockchainContextMock) ClearCompiledCodes() {
 }
+
+// ExecuteSmartContractCallOnOtherVM -
+func (b *BlockchainContextMock) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return nil, nil
+}

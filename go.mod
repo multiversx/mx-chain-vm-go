@@ -8,7 +8,7 @@ require (
 	github.com/ElrondNetwork/elrond-go-crypto v1.2.2
 	github.com/ElrondNetwork/elrond-go-logger v1.0.10
 	github.com/ElrondNetwork/elrond-go-storage v1.0.5
-	github.com/ElrondNetwork/elrond-vm-common v1.3.25-0.20221027135829-abf3f6b8b9f2
+	github.com/ElrondNetwork/elrond-vm-common v1.3.25-0.20221116113837-c7ddf1c3baee
 	github.com/awalterschulze/gographviz v2.0.3+incompatible
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1

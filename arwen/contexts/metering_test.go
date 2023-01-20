@@ -519,7 +519,7 @@ func TestMeteringContext_TrackGasUsedByBuiltinFunction_GasRemaining(t *testing.T
 		},
 	}
 
-	metering.TrackGasUsedByBuiltinFunction(input, vmOutput, postBuiltinInput)
+	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, postBuiltinInput)
 	require.Equal(t, vmOutput.GasRemaining+postBuiltinInput.GasProvided, metering.GasLeft())
 }
 
