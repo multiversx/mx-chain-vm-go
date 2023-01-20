@@ -1,14 +1,14 @@
-package hosttest
+package hostCoretest
 
 import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	arwenMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	vmMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 )
 
 var smallKey = []byte("testKey")
@@ -51,15 +51,15 @@ func loadStorage(t *testing.T, key []byte, flagEnabled bool) {
 			WithFunction("loadStore").
 			WithArguments(key).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().ElrondAPICost.StorageLoad = storageLoadGas
-			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
 			if !flagEnabled {
-				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
 				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 
@@ -112,10 +112,10 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 			WithFunction("loadStoreFromAddress").
 			WithArguments(test.UserAddress, key).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().ElrondAPICost.StorageLoad = storageLoadGas
-			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
@@ -124,7 +124,7 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
 
 			if !flagEnabled {
-				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
 				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
@@ -138,7 +138,7 @@ func loadStorageFromAddress(t *testing.T, key []byte, flagEnabled bool) {
 }
 
 func computeExpectedGasForGetStorage(key []byte, value []byte, flagEnabled bool) uint64 {
-	extraBytesForKey := len(key) - arwen.AddressLen
+	extraBytesForKey := len(key) - vmhost.AddressLen
 	if extraBytesForKey < 0 {
 		extraBytesForKey = 0
 	}
@@ -176,13 +176,13 @@ func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 	var expectedUsedGas uint64
 	if flagEnabled {
 		expectedUsedGas = 2 * storageStoreGas
-		if len(key) > arwen.AddressLen {
-			expectedUsedGas += uint64(len(key) - arwen.AddressLen)
+		if len(key) > vmhost.AddressLen {
+			expectedUsedGas += uint64(len(key) - vmhost.AddressLen)
 		}
 	} else {
 		expectedUsedGas = 2*storageStoreGas + uint64(len(value))*dataCopyGas
-		if len(key) > arwen.AddressLen {
-			expectedUsedGas += 2 * uint64(len(key)-arwen.AddressLen)
+		if len(key) > vmhost.AddressLen {
+			expectedUsedGas += 2 * uint64(len(key)-vmhost.AddressLen)
 		}
 	}
 
@@ -202,9 +202,9 @@ func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 			WithFunction("setStore").
 			WithArguments(key, value).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().ElrondAPICost.StorageStore = storageStoreGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageStore = storageStoreGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
@@ -213,7 +213,7 @@ func setStorage(t *testing.T, key []byte, flagEnabled bool) {
 			account.CodeMetadata = []byte{vmcommon.MetadataReadable, 0}
 
 			if !flagEnabled {
-				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
 				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).
@@ -255,7 +255,7 @@ func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
 			WithFunction("parentSetStorage").
 			WithArguments([]byte{0}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -290,7 +290,7 @@ func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
 			WithFunction("parentSetStorage").
 			WithArguments([]byte{1}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {

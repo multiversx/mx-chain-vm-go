@@ -1,4 +1,4 @@
-package mandosjsonwrite
+package scenjsonwrite
 
 import (
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"

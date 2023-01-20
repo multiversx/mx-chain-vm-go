@@ -18,8 +18,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../test")
+	return vmTestRoot
 }
 
 func getFeaturesContractPath() string {
@@ -133,7 +133,7 @@ func TestBigIntArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"div", true,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, arwen.ErrDivZero.Error())
+					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				divBytes := twos.ToBytes(big.NewInt(0).Quo(num1, num2))
 				testCases = appendBinaryOpTestCase(testCases,
@@ -147,7 +147,7 @@ func TestBigIntArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"rem", true,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, arwen.ErrDivZero.Error())
+					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				remBytes := twos.ToBytes(big.NewInt(0).Rem(num1, num2))
 				testCases = appendBinaryOpTestCase(testCases,
@@ -167,7 +167,7 @@ func TestBigIntArith(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost := pfe.vm.(vmhost.VMHost)
 		vmHost.Reset()
 	}()
 
@@ -231,7 +231,7 @@ func TestBigUintArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"div", false,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, arwen.ErrDivZero.Error())
+					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				divBytes := big.NewInt(0).Quo(num1, num2).Bytes()
 				testCases = appendBinaryOpTestCase(testCases,
@@ -245,7 +245,7 @@ func TestBigUintArith(t *testing.T) {
 				testCases = appendBinaryOpTestCase(testCases,
 					"rem", false,
 					bytes1, bytes2, nil,
-					vmi.ExecutionFailed, arwen.ErrDivZero.Error())
+					vmi.ExecutionFailed, vmhost.ErrDivZero.Error())
 			} else {
 				remBytes := big.NewInt(0).Rem(num1, num2).Bytes()
 				testCases = appendBinaryOpTestCase(testCases,
@@ -265,7 +265,7 @@ func TestBigUintArith(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost := pfe.vm.(vmhost.VMHost)
 		vmHost.Reset()
 	}()
 
@@ -328,7 +328,7 @@ func TestBigUintBitwise(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost := pfe.vm.(vmhost.VMHost)
 		vmHost.Reset()
 	}()
 
@@ -389,7 +389,7 @@ func TestBigUintShift(t *testing.T) {
 	pfe, err := newPureFunctionExecutor()
 	require.Nil(t, err)
 	defer func() {
-		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost := pfe.vm.(vmhost.VMHost)
 		vmHost.Reset()
 	}()
 

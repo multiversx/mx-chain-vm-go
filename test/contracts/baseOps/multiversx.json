@@ -1,6 +1,6 @@
 {
     "language": "clang",
     "source_files": [
-        "./elrondei.c"
+        "./baseOps.c"
     ]
 }

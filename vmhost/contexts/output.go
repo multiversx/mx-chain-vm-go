@@ -12,19 +12,19 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
-var _ arwen.OutputContext = (*outputContext)(nil)
+var _ vmhost.OutputContext = (*outputContext)(nil)
 
-var logOutput = logger.GetOrCreate("arwen/output")
+var logOutput = logger.GetOrCreate("vm/output")
 
 type outputContext struct {
-	host        arwen.VMHost
+	host        vmhost.VMHost
 	outputState *vmcommon.VMOutput
 	stateStack  []*vmcommon.VMOutput
 	codeUpdates map[string]struct{}
 }
 
 // NewOutputContext creates a new outputContext
-func NewOutputContext(host arwen.VMHost) (*outputContext, error) {
+func NewOutputContext(host vmhost.VMHost) (*outputContext, error) {
 	context := &outputContext{
 		host:       host,
 		stateStack: make([]*vmcommon.VMOutput, 0),
@@ -268,14 +268,14 @@ func (context *outputContext) WriteLog(address []byte, topics [][]byte, data []b
 func (context *outputContext) TransferValueOnly(destination []byte, sender []byte, value *big.Int, checkPayable bool) error {
 	logOutput.Trace("transfer value", "sender", sender, "dest", destination, "value", value)
 
-	if value.Cmp(arwen.Zero) < 0 {
-		logOutput.Trace("transfer value", "error", arwen.ErrTransferNegativeValue)
-		return arwen.ErrTransferNegativeValue
+	if value.Cmp(vmhost.Zero) < 0 {
+		logOutput.Trace("transfer value", "error", vmhost.ErrTransferNegativeValue)
+		return vmhost.ErrTransferNegativeValue
 	}
 
 	if !context.hasSufficientBalance(sender, value) {
-		logOutput.Trace("transfer value", "error", arwen.ErrTransferInsufficientFunds)
-		return arwen.ErrTransferInsufficientFunds
+		logOutput.Trace("transfer value", "error", vmhost.ErrTransferInsufficientFunds)
+		return vmhost.ErrTransferInsufficientFunds
 	}
 
 	payable, err := context.host.Blockchain().IsPayable(sender, destination)
@@ -285,10 +285,10 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	}
 
 	isAsyncCall := context.host.Runtime().GetVMInput().CallType == vm.AsynchronousCall
-	hasValue := value.Cmp(arwen.Zero) > 0
+	hasValue := value.Cmp(vmhost.Zero) > 0
 	if checkPayable && !payable && hasValue && !isAsyncCall {
-		logOutput.Trace("transfer value", "error", arwen.ErrAccountNotPayable)
-		return arwen.ErrAccountNotPayable
+		logOutput.Trace("transfer value", "error", vmhost.ErrAccountNotPayable)
+		return vmhost.ErrAccountNotPayable
 	}
 
 	senderAcc, _ := context.GetOutputAccount(sender)
@@ -297,9 +297,9 @@ func (context *outputContext) TransferValueOnly(destination []byte, sender []byt
 	senderAcc.BalanceDelta = big.NewInt(0).Sub(senderAcc.BalanceDelta, value)
 	destAcc.BalanceDelta = big.NewInt(0).Add(destAcc.BalanceDelta, value)
 
-	if value.Cmp(arwen.Zero) > 0 {
+	if value.Cmp(vmhost.Zero) > 0 {
 		if context.host.Runtime().ReadOnly() && context.host.CheckExecuteReadOnly() {
-			return arwen.ErrInvalidCallOnReadOnlyMode
+			return vmhost.ErrInvalidCallOnReadOnlyMode
 		}
 
 		context.WriteLogWithIdentifier(
@@ -346,7 +346,7 @@ func (context *outputContext) TransferESDT(
 	callInput *vmcommon.ContractCallInput,
 ) (uint64, error) {
 	if len(transfers) == 0 {
-		return 0, arwen.ErrTransferValueOnESDTCall
+		return 0, vmhost.ErrTransferValueOnESDTCall
 	}
 
 	isSmartContract := context.host.Blockchain().IsSmartContract(destination)
@@ -366,16 +366,16 @@ func (context *outputContext) TransferESDT(
 
 	if callInput != nil && isSmartContract {
 		if gasConsumedByTransfer > callInput.GasProvided {
-			logOutput.Trace("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
-			return 0, arwen.ErrNotEnoughGas
+			logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
+			return 0, vmhost.ErrNotEnoughGas
 		}
 		gasRemaining = callInput.GasProvided - gasConsumedByTransfer
 	}
 
 	if isExecution {
 		if gasRemaining > context.host.Metering().GasLeft() {
-			logOutput.Trace("ESDT post-transfer execution", "error", arwen.ErrNotEnoughGas)
-			return 0, arwen.ErrNotEnoughGas
+			logOutput.Trace("ESDT post-transfer execution", "error", vmhost.ErrNotEnoughGas)
+			return 0, vmhost.ErrNotEnoughGas
 		}
 
 		if !sameShard {
@@ -486,7 +486,7 @@ func (context *outputContext) GetVMOutput() *vmcommon.VMOutput {
 }
 
 // DeployCode sets the given code to a an account, and creates a new codeUpdates entry at the accounts address.
-func (context *outputContext) DeployCode(input arwen.CodeDeployInput) {
+func (context *outputContext) DeployCode(input vmhost.CodeDeployInput) {
 	newSCAccount, _ := context.GetOutputAccount(input.ContractAddress)
 	newSCAccount.Code = input.ContractCode
 	newSCAccount.CodeMetadata = input.ContractCodeMetadata
@@ -528,12 +528,12 @@ func (context *outputContext) removeNonUpdatedCode() {
 }
 
 func (context *outputContext) resolveReturnMessageFromError(err error) string {
-	if errors.Is(err, arwen.ErrSignalError) {
+	if errors.Is(err, vmhost.ErrSignalError) {
 		return context.ReturnMessage()
 	}
-	if errors.Is(err, arwen.ErrMemoryLimit) {
+	if errors.Is(err, vmhost.ErrMemoryLimit) {
 		// ErrMemoryLimit will still produce the 'execution failed' message.
-		return arwen.ErrExecutionFailed.Error()
+		return vmhost.ErrExecutionFailed.Error()
 	}
 	if len(context.outputState.ReturnMessage) > 0 {
 		// Another return message was already set.
@@ -548,31 +548,31 @@ func (context *outputContext) resolveReturnCodeFromError(err error) vmcommon.Ret
 		return vmcommon.Ok
 	}
 
-	if errors.Is(err, arwen.ErrSignalError) {
+	if errors.Is(err, vmhost.ErrSignalError) {
 		return vmcommon.UserError
 	}
-	if errors.Is(err, arwen.ErrFuncNotFound) {
+	if errors.Is(err, vmhost.ErrFuncNotFound) {
 		return vmcommon.FunctionNotFound
 	}
-	if errors.Is(err, arwen.ErrFunctionNonvoidSignature) {
+	if errors.Is(err, vmhost.ErrFunctionNonvoidSignature) {
 		return vmcommon.FunctionWrongSignature
 	}
-	if errors.Is(err, arwen.ErrInvalidFunction) {
+	if errors.Is(err, vmhost.ErrInvalidFunction) {
 		return vmcommon.UserError
 	}
-	if errors.Is(err, arwen.ErrNotEnoughGas) {
+	if errors.Is(err, vmhost.ErrNotEnoughGas) {
 		return vmcommon.OutOfGas
 	}
-	if errors.Is(err, arwen.ErrContractNotFound) {
+	if errors.Is(err, vmhost.ErrContractNotFound) {
 		return vmcommon.ContractNotFound
 	}
-	if errors.Is(err, arwen.ErrContractInvalid) {
+	if errors.Is(err, vmhost.ErrContractInvalid) {
 		return vmcommon.ContractInvalid
 	}
-	if errors.Is(err, arwen.ErrUpgradeFailed) {
+	if errors.Is(err, vmhost.ErrUpgradeFailed) {
 		return vmcommon.UpgradeFailed
 	}
-	if errors.Is(err, arwen.ErrTransferInsufficientFunds) {
+	if errors.Is(err, vmhost.ErrTransferInsufficientFunds) {
 		return vmcommon.OutOfFunds
 	}
 

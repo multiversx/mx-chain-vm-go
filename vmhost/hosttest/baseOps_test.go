@@ -1,21 +1,21 @@
-package hosttest
+package hostCoretest
 
 import (
 	"math/big"
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestElrondEI_CallValue(t *testing.T) {
+func TestBaseOpsAPI_CallValue(t *testing.T) {
 	code := testcommon.GetTestSCCode("baseOps", "../../")
 
 	// 1-byte call value
-	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
+	host, _ := testcommon.DefaultTestVMForCall(t, code, nil)
 	defer func() {
 		host.Reset()
 	}()
@@ -43,7 +43,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// 4-byte call value
-	host, _ = testcommon.DefaultTestArwenForCall(t, code, nil)
+	host, _ = testcommon.DefaultTestVMForCall(t, code, nil)
 	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_4bytes"
@@ -66,7 +66,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 		data[2])
 
 	// BigInt call value
-	host, _ = testcommon.DefaultTestArwenForCall(t, code, nil)
+	host, _ = testcommon.DefaultTestVMForCall(t, code, nil)
 	input = testcommon.DefaultTestContractCallInput()
 	input.GasProvided = 100000
 	input.Function = "test_getCallValue_bigInt_to_Bytes"
@@ -92,9 +92,9 @@ func TestElrondEI_CallValue(t *testing.T) {
 	assert.Equal(t, big.NewInt(12345), val12345)
 }
 
-func TestElrondEI_int64getArgument(t *testing.T) {
+func TestBaseOpsAPI_int64getArgument(t *testing.T) {
 	code := testcommon.GetTestSCCode("baseOps", "../../")
-	host, _ := testcommon.DefaultTestArwenForCall(t, code, nil)
+	host, _ := testcommon.DefaultTestVMForCall(t, code, nil)
 	defer func() {
 		host.Reset()
 	}()
@@ -112,7 +112,7 @@ func TestElrondEI_int64getArgument(t *testing.T) {
 	assert.Equal(t, []byte("ok"), data[0])
 	assert.Equal(t, []byte{57, 48, 0, 0}, data[1])
 
-	invBytes := arwen.InverseBytes(data[1])
+	invBytes := vmhost.InverseBytes(data[1])
 	val12345 := big.NewInt(0).SetBytes(invBytes)
 	assert.Equal(t, big.NewInt(12345), val12345)
 
@@ -131,7 +131,7 @@ func TestElrondEI_int64getArgument(t *testing.T) {
 	assert.Equal(t, []byte("ok"), data[0])
 	assert.Equal(t, []byte{57, 48, 0, 0}, data[1])
 
-	invBytes = arwen.InverseBytes(data[1])
+	invBytes = vmhost.InverseBytes(data[1])
 	val12345 = big.NewInt(0).SetBytes(invBytes)
 	assert.Equal(t, big.NewInt(12345), val12345)
 

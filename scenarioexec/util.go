@@ -7,10 +7,10 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/esdtconvert"
 	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
-	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
@@ -20,7 +20,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		storage[key] = stkvp.Value.Value
 	}
 
-	err := esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+	err := esdtconvert.WriteScenariosESDTToStorage(testAcct.ESDTData, storage)
 	if err != nil {
 		return nil, err
 	}
@@ -46,19 +46,19 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 			Payable:     true,
 			Upgradeable: true,
 			Readable:    true,
-		}).ToBytes(), // TODO: add explicit fields in mandos json
+		}).ToBytes(), // TODO: add explicit fields in scenario JSON
 		MockWorld: world,
 	}
 
 	return account, nil
 }
 
-func validateSetStateAccount(mandosAccount *mj.Account, converted *worldmock.Account) error {
+func validateSetStateAccount(scenAccount *mj.Account, converted *worldmock.Account) error {
 	err := converted.Validate()
 	if err != nil {
 		return fmt.Errorf(
 			`"setState" step validation failed for account "%s": %w`,
-			mandosAccount.Address.Original,
+			scenAccount.Address.Original,
 			err)
 	}
 	return nil
@@ -129,8 +129,8 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo, currentInfo *worldmock.BlockI
 	return currentInfo
 }
 
-// this is a small hack, so we can reuse mandos's JSON printing in error messages
-func (ae *ArwenTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
+// this is a small hack, so we can reuse JSON printing in error messages
+func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	topics := mj.JSONCheckValueList{
 		Values: make([]mj.JSONCheckBytes, len(outputLog.Topics)),
 	}
@@ -186,7 +186,7 @@ func addESDTToVMInput(esdtData []*mj.ESDTTxData, vmInput *vmcommon.VMInput) {
 	}
 }
 
-func logGasTrace(ae *ArwenTestExecutor) {
+func logGasTrace(ae *VMTestExecutor) {
 	if ae.PeekTraceGas() {
 		metering := ae.GetVMHost().Metering()
 		scGasTrace := metering.GetGasTrace()
@@ -206,7 +206,7 @@ func logGasTrace(ae *ArwenTestExecutor) {
 	}
 }
 
-func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
+func setGasTraceInMetering(ae *VMTestExecutor, enable bool) {
 	metering := ae.GetVMHost().Metering()
 	if enable && ae.PeekTraceGas() {
 		metering.SetGasTracing(true)
@@ -215,7 +215,7 @@ func setGasTraceInMetering(ae *ArwenTestExecutor, enable bool) {
 	}
 }
 
-func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep) {
+func setExternalStepGasTracing(ae *VMTestExecutor, step *mj.ExternalStepsStep) {
 	switch step.TraceGas.ToInt() {
 	case mj.Undefined.ToInt():
 		ae.scenarioTraceGas = append(ae.scenarioTraceGas, ae.PeekTraceGas())
@@ -226,7 +226,7 @@ func setExternalStepGasTracing(ae *ArwenTestExecutor, step *mj.ExternalStepsStep
 	}
 }
 
-func resetGasTracesIfNewTest(ae *ArwenTestExecutor, scenario *mj.Scenario) {
+func resetGasTracesIfNewTest(ae *VMTestExecutor, scenario *mj.Scenario) {
 	if ae.vm == nil || scenario.IsNewTest {
 		ae.scenarioTraceGas = make([]bool, 0)
 		ae.scenarioTraceGas = append(ae.scenarioTraceGas, scenario.TraceGas)

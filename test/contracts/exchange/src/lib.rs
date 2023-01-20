@@ -4,7 +4,7 @@ imports!();
 
 const TOKEN_NAME: &[u8] = b"TT";
 
-#[elrond_wasm_derive::contract(ExchangeImpl)]
+
 pub trait Exchange {
 
     #[endpoint(validateGetters)]

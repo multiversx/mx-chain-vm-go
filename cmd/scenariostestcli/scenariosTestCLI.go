@@ -1,4 +1,4 @@
-package mandostestcli
+package scentestcli
 
 import (
 	"flag"
@@ -33,8 +33,8 @@ func parseOptionFlags() *mc.RunScenarioOptions {
 	}
 }
 
-// MandosTestCLI provides the functionality for any scenarios test executor.
-func MandosTestCLI() {
+// ScenariosTestCLI provides the functionality for any scenarios test executor.
+func ScenariosTestCLI() {
 	options := parseOptionFlags()
 
 	// directory of this executable
@@ -56,9 +56,9 @@ func MandosTestCLI() {
 	}
 
 	// init
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewVMTestExecutor()
 	if err != nil {
-		panic("Could not instantiate Arwen VM")
+		panic("Could not instantiate VM VM")
 	}
 
 	// execute

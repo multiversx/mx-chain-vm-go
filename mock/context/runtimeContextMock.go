@@ -6,7 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
-var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
+var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
@@ -19,18 +19,18 @@ type RuntimeContextMock struct {
 	VMType                 []byte
 	ReadOnlyFlag           bool
 	VerifyCode             bool
-	CurrentBreakpointValue arwen.BreakpointValue
+	CurrentBreakpointValue vmhost.BreakpointValue
 	PointsUsed             uint64
 	InstanceCtxID          int
 	MemLoadResult          []byte
 	MemLoadMultipleResult  [][]byte
 	FailCryptoAPI          bool
-	FailElrondAPI          bool
-	FailElrondSyncExecAPI  bool
+	FailBaseOpsAPI         bool
+	FailSyncExecAPI        bool
 	FailBigIntAPI          bool
 	FailBigFloatAPI        bool
 	FailManagedBuffersAPI  bool
-	AsyncCallInfo          *arwen.AsyncCallInfo
+	AsyncCallInfo          *vmhost.AsyncCallInfo
 	RunningInstances       uint64
 	CurrentTxHash          []byte
 	OriginalTxHash         []byte
@@ -43,7 +43,7 @@ func (r *RuntimeContextMock) InitState() {
 }
 
 // ReplaceInstanceBuilder mocked method()
-func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ arwen.InstanceBuilder) {
+func (r *RuntimeContextMock) ReplaceInstanceBuilder(_ vmhost.InstanceBuilder) {
 }
 
 // StartWasmerInstance mocked method
@@ -186,11 +186,11 @@ func (r *RuntimeContextMock) SignalUserError(_ string) {
 }
 
 // SetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ arwen.BreakpointValue) {
+func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ vmhost.BreakpointValue) {
 }
 
 // GetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+func (r *RuntimeContextMock) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
@@ -279,14 +279,14 @@ func (r *RuntimeContextMock) MemStore(_ int32, _ []byte) error {
 	return r.Err
 }
 
-// ElrondAPIErrorShouldFailExecution mocked method
-func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
-	return r.FailElrondAPI
+// BaseOpsErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) BaseOpsErrorShouldFailExecution() bool {
+	return r.FailBaseOpsAPI
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution mocked method
-func (r *RuntimeContextMock) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return r.FailElrondSyncExecAPI
+// SyncExecAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) SyncExecAPIErrorShouldFailExecution() bool {
+	return r.FailSyncExecAPI
 }
 
 // CryptoAPIErrorShouldFailExecution mocked method
@@ -314,27 +314,27 @@ func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
 // GetAsyncCallInfo mocked method
-func (r *RuntimeContextMock) GetAsyncCallInfo() *arwen.AsyncCallInfo {
+func (r *RuntimeContextMock) GetAsyncCallInfo() *vmhost.AsyncCallInfo {
 	return r.AsyncCallInfo
 }
 
 // SetAsyncCallInfo mocked method
-func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *arwen.AsyncCallInfo) {
+func (r *RuntimeContextMock) SetAsyncCallInfo(asyncCallInfo *vmhost.AsyncCallInfo) {
 	r.AsyncCallInfo = asyncCallInfo
 }
 
 // AddAsyncContextCall mocked method
-func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
+func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *vmhost.AsyncGeneratedCall) error {
 	return r.Err
 }
 
 // GetAsyncContextInfo mocked method
-func (r *RuntimeContextMock) GetAsyncContextInfo() *arwen.AsyncContextInfo {
+func (r *RuntimeContextMock) GetAsyncContextInfo() *vmhost.AsyncContextInfo {
 	return nil
 }
 
 // GetAsyncContext mocked method
-func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*arwen.AsyncContext, error) {
+func (r *RuntimeContextMock) GetAsyncContext(_ []byte) (*vmhost.AsyncContext, error) {
 	return nil, nil
 }
 

@@ -17,9 +17,9 @@ type InstanceMock struct {
 	Points          uint64
 	Data            uintptr
 	GasLimit        uint64
-	BreakpointValue arwen.BreakpointValue
+	BreakpointValue vmhost.BreakpointValue
 	Memory          wasmer.MemoryHandler
-	Host            arwen.VMHost
+	Host            vmhost.VMHost
 	T               testing.TB
 	Address         []byte
 	AlreadyClean    bool
@@ -53,9 +53,9 @@ func (instance *InstanceMock) AddMockMethod(name string, method func() *Instance
 func (instance *InstanceMock) AddMockMethodWithError(name string, method func() *InstanceMock, err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		instance := method()
-		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
+		if vmhost.BreakpointValue(instance.GetBreakpointValue()) != vmhost.BreakpointNone {
 			var errMsg string
-			if arwen.BreakpointValue(instance.GetBreakpointValue()) == arwen.BreakpointAsyncCall {
+			if vmhost.BreakpointValue(instance.GetBreakpointValue()) == vmhost.BreakpointAsyncCall {
 				errMsg = "breakpoint"
 			} else {
 				errMsg = instance.Host.Output().GetVMOutput().ReturnMessage
@@ -95,7 +95,7 @@ func (instance *InstanceMock) SetGasLimit(gasLimit uint64) {
 
 // SetBreakpointValue mocked method
 func (instance *InstanceMock) SetBreakpointValue(value uint64) {
-	instance.BreakpointValue = arwen.BreakpointValue(value)
+	instance.BreakpointValue = vmhost.BreakpointValue(value)
 }
 
 // GetBreakpointValue mocked method
@@ -165,7 +165,7 @@ func (instance *InstanceMock) IsFunctionImported(name string) bool {
 }
 
 // GetMockInstance gets the mock instance from the runtime of the provided host
-func GetMockInstance(host arwen.VMHost) *InstanceMock {
+func GetMockInstance(host vmhost.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
 }

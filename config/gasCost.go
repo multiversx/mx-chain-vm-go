@@ -7,7 +7,7 @@ type GasCost struct {
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
 	EthAPICost           EthAPICost
-	ElrondAPICost        ElrondAPICost
+	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       WASMOpcodeCost
@@ -23,7 +23,7 @@ type BaseOperationCost struct {
 	GetCode           uint64
 }
 
-type ElrondAPICost struct {
+type BaseOpsAPICost struct {
 	GetSCAddress         uint64
 	GetOwnerAddress      uint64
 	IsSmartContract      uint64

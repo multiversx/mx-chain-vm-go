@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +16,7 @@ const increment = "increment"
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 
 	defer func() {
 		host.Reset()
@@ -42,12 +42,12 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, arwen.ErrExecutionPanicked, err)
+	require.Equal(t, vmhost.ErrExecutionPanicked, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 	defer func() {
 		host.Reset()
 	}()
@@ -75,12 +75,12 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, arwen.ErrExecutionPanicked, err)
+	require.Equal(t, vmhost.ErrExecutionPanicked, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 	defer func() {
 		host.Reset()
 	}()
@@ -102,12 +102,12 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, arwen.ErrExecutionFailedWithTimeout, err)
+	require.Equal(t, vmhost.ErrExecutionFailedWithTimeout, err)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../../")
-	host, blockchain := test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+	host, blockchain := test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 
 	defer func() {
 		host.Reset()
@@ -139,11 +139,11 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 
 func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	numParallel := 100
-	hosts := make([]arwen.VMHost, numParallel)
+	hosts := make([]vmhost.VMHost, numParallel)
 	blockchains := make([]*mock.BlockchainHookStub, numParallel)
 	for k := 0; k < numParallel; k++ {
 		code := test.GetTestSCCode("counter", "../../../")
-		hosts[k], blockchains[k] = test.DefaultTestArwenForCallSigSegv(t, code, big.NewInt(1))
+		hosts[k], blockchains[k] = test.DefaultTestVMForCallSigSegv(t, code, big.NewInt(1))
 		blockchains[k].GetStorageDataCalled = func(_ []byte, _ []byte) ([]byte, uint32, error) {
 			var i *int
 
