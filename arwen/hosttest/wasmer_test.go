@@ -254,7 +254,7 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 		verify.Ok().ReturnData([]byte(keyword))
 		instance := host.Runtime().GetInstance()
 		require.NotNil(verify.T, instance)
-		memory := instance.GetMemory().Data()
+		memory := instance.MemDump()
 		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
@@ -280,7 +280,7 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 		verify.Ok().ReturnData([]byte(keyword))
 		instance := host.Runtime().GetInstance()
 		require.NotNil(verify.T, instance)
-		memory := instance.GetMemory().Data()
+		memory := instance.MemDump()
 		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}

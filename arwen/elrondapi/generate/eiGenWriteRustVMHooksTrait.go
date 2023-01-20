@@ -10,6 +10,8 @@ func WriteRustVMHooksTrait(out *eiGenWriter, eiMetadata *EIMetadata) {
 	out.WriteString(`
 use std::ffi::c_void;
 
+use crate::{MemLength, MemPtr};
+
 #[rustfmt::skip]
 #[allow(clippy::too_many_arguments)]
 pub trait VMHooks: core::fmt::Debug + 'static {
@@ -24,6 +26,7 @@ pub trait VMHooks: core::fmt::Debug + 'static {
 			writeRustFnDeclarationArguments(
 				"&self",
 				funcMetadata,
+				rustVMHooksType,
 			),
 		))
 	}
@@ -53,6 +56,7 @@ impl VMHooks for VMHooksDefault {
 			writeRustFnDeclarationArguments(
 				"&self",
 				funcMetadata,
+				rustVMHooksType,
 			),
 		))
 

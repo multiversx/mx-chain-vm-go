@@ -21,6 +21,7 @@ pub struct vm_exec_vm_hook_c_func_pointers {`)
 			writeRustFnDeclarationArguments(
 				"context: *mut c_void",
 				funcMetadata,
+				rustCapiType,
 			),
 		))
 
