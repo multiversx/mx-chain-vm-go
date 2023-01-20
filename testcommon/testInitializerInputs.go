@@ -6,15 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
@@ -29,8 +26,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var log = logger.GetOrCreate("arwen/host")
-
 // DefaultVMType is an exposed value to use in tests
 var DefaultVMType = []byte{0xF, 0xF}
 
@@ -39,7 +34,9 @@ var ErrAccountNotFound = errors.New("account not found")
 
 // UserAddress is an exposed value to use in tests
 var UserAddress = MakeTestSCAddressWithDefaultVM("userAccount")
-var UserAddress2 = MakeTestSCAddressWithDefaultVM("userAccount2")
+
+// UserAddress2 is an exposed value to use in tests
+var UserAddress2 = []byte("userAccount2....................")
 
 // AddressSize is the size of an account address, in bytes.
 const AddressSize = 32
@@ -55,8 +52,6 @@ var ChildAddress = MakeTestSCAddressWithDefaultVM("childSC")
 
 // NephewAddress is an exposed value to use in tests
 var NephewAddress = MakeTestSCAddressWithDefaultVM("NephewAddress")
-
-var customGasSchedule = config.GasScheduleMap(nil)
 
 // ESDTTransferGasCost is an exposed value to use in tests
 var ESDTTransferGasCost = uint64(1)
@@ -119,18 +114,6 @@ func GetTestSCCode(scName string, prefixToTestSCs ...string) []byte {
 func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
 	return GetSCCode(pathToSC)
-}
-
-// BuildSCModule invokes erdpy to build the contract into a WASM module
-func BuildSCModule(scName string, prefixToTestSCs string) {
-	pathToSCDir := prefixToTestSCs + "test/contracts/" + scName
-	out, err := exec.Command("erdpy", "contract", "build", "--no-optimization", pathToSCDir).Output()
-	if err != nil {
-		log.Error("error building contract", "err", err, "contract", pathToSCDir)
-		return
-	}
-
-	log.Info("contract built", "output", fmt.Sprintf("\n%s", out))
 }
 
 // TestHostBuilder allows tests to configure and initialize the VM host and blockhain mock on which they operate.
@@ -236,6 +219,7 @@ func (thb *TestHostBuilder) newHost() arwen.VMHost {
 	return host
 }
 
+// BlockchainHookStubForCallSigSegv -
 func BlockchainHookStubForCallSigSegv(code []byte, balance *big.Int) *contextmock.BlockchainHookStub {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(scAddress []byte) (vmcommon.UserAccountHandler, error) {
@@ -316,6 +300,7 @@ func BlockchainHookStubForTwoSCs(
 	return stubBlockchainHook
 }
 
+// BlockchainHookStubForContracts -
 func BlockchainHookStubForContracts(
 	contracts []*InstanceTestSmartContract,
 ) *contextmock.BlockchainHookStub {
@@ -360,58 +345,6 @@ func BlockchainHookStubForContracts(
 func AddTestSmartContractToWorld(world *worldmock.MockWorld, identifier string, code []byte) *worldmock.Account {
 	address := MakeTestSCAddress(identifier)
 	return world.AcctMap.CreateSmartContractAccount(UserAddress, address, code, world)
-}
-
-// MakeEmptyContractCallInput instantiates an empty ContractCallInput
-func MakeEmptyContractCallInput() *vmcommon.ContractCallInput {
-	return &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:           nil,
-			Arguments:            make([][]byte, 0),
-			CallValue:            big.NewInt(0),
-			CallType:             vm.DirectCall,
-			GasPrice:             1,
-			GasProvided:          0,
-			ReturnCallAfterError: false,
-		},
-		RecipientAddr: nil,
-		Function:      "",
-	}
-}
-
-// MakeContractCallInput creates a ContractCallInput and sets the provided arguments
-func MakeContractCallInput(
-	caller []byte,
-	recipient []byte,
-	function string,
-	value int,
-) *vmcommon.ContractCallInput {
-	input := MakeEmptyContractCallInput()
-	SetCallParties(input, caller, recipient)
-	input.Function = function
-	input.CallValue = big.NewInt(int64(value))
-	return input
-}
-
-// SetCallParties sets the caller and recipient of the given ContractCallInput
-func SetCallParties(input *vmcommon.ContractCallInput, caller []byte, recipient []byte) {
-	input.CallerAddr = caller
-	input.RecipientAddr = recipient
-}
-
-// AddArgument adds the provided argument to the ContractCallInput
-func AddArgument(input *vmcommon.ContractCallInput, argument []byte) {
-	if input.Arguments == nil {
-		input.Arguments = make([][]byte, 0)
-	}
-	input.Arguments = append(input.Arguments, argument)
-}
-
-// CopyTxHashes copies the tx hashes from a source ContractCallInput into another
-func CopyTxHashes(input *vmcommon.ContractCallInput, sourceInput *vmcommon.ContractCallInput) {
-	input.CurrentTxHash = sourceInput.CurrentTxHash
-	input.PrevTxHash = sourceInput.PrevTxHash
-	input.OriginalTxHash = sourceInput.OriginalTxHash
 }
 
 // DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct
@@ -599,19 +532,4 @@ func (contractInput *ContractCreateInputBuilder) WithArguments(arguments ...[]by
 // Build completes the build of a ContractCreateInput
 func (contractInput *ContractCreateInputBuilder) Build() *vmcommon.ContractCreateInput {
 	return &contractInput.ContractCreateInput
-}
-
-// OpenFile method opens the file from given path - does not close the file
-func OpenFile(relativePath string) (*os.File, error) {
-	path, err := filepath.Abs(relativePath)
-	if err != nil {
-		fmt.Printf("cannot create absolute path for the provided file: %s", err.Error())
-		return nil, err
-	}
-	f, err := os.Open(filepath.Clean(path))
-	if err != nil {
-		return nil, err
-	}
-
-	return f, nil
 }

@@ -2,20 +2,22 @@ package contracts
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"math/big"
 
+	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
 )
 
-var AsyncChildFunction = "transferToThirdParty"
-var AsyncChildData = " there"
-var ExpectedClosure = []byte{4, 5, 6}
+// test variables
+var (
+	AsyncChildFunction = "transferToThirdParty"
+	AsyncChildData     = " there"
+	ExpectedClosure    = []byte{4, 5, 6}
+)
 
 // PerformAsyncCallParentMock is an exposed mock contract method
 func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interface{}) {
@@ -30,8 +32,8 @@ func PerformAsyncCallParentMock(instanceMock *mock.InstanceMock, config interfac
 			return instance
 		}
 
-		host.Storage().SetStorage(test.ParentKeyA, test.ParentDataA)
-		host.Storage().SetStorage(test.ParentKeyB, test.ParentDataB)
+		_, _ = host.Storage().SetStorage(test.ParentKeyA, test.ParentDataA)
+		_, _ = host.Storage().SetStorage(test.ParentKeyB, test.ParentDataB)
 		host.Output().Finish(test.ParentFinishA)
 		host.Output().Finish(test.ParentFinishB)
 
@@ -67,7 +69,7 @@ func RegisterAsyncCallToChild(host arwen.VMHost, config interface{}, arguments [
 	callData.Func(AsyncChildFunction)
 	callData.Int64(testConfig.TransferToThirdParty)
 	callData.Str(AsyncChildData)
-	callData.Bytes(append(arguments[0]))
+	callData.Bytes(arguments[0])
 
 	value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 	async := host.Async()
@@ -167,7 +169,11 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData, _ := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _, err := host.Storage().GetStorage(test.ParentKeyB)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+			return instance
+		}
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {
@@ -188,7 +194,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 
 		finishResult(host, status)
 
-		host.Storage().SetStorage(test.CallbackKey, test.CallbackData)
+		_, _ = host.Storage().SetStorage(test.CallbackKey, test.CallbackData)
 
 		return instance
 	}
@@ -198,7 +204,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // CallbackWithOnSameContext is an exposed mock contract method
-func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, config interface{}) {
+func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -279,14 +285,4 @@ func finishResult(host arwen.VMHost, result int) {
 	if result != 0 && result != 1 {
 		outputContext.Finish([]byte("unkn"))
 	}
-}
-
-func argumentsToHexString(functionName string, args ...[]byte) []byte {
-	separator := byte('@')
-	output := append([]byte(functionName))
-	for _, arg := range args {
-		output = append(output, separator)
-		output = append(output, hex.EncodeToString(arg)...)
-	}
-	return output
 }

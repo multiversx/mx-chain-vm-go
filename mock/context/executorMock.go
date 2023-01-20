@@ -18,7 +18,7 @@ type ExecutorMockFactory struct {
 	LastCreatedExecutor *ExecutorMock
 }
 
-// ExecutorFactory returns the Wasmer executor factory.
+// NewExecutorMockFactory returns the Wasmer executor factory.
 func NewExecutorMockFactory(world *worldmock.MockWorld) *ExecutorMockFactory {
 	return &ExecutorMockFactory{
 		World: world,
@@ -26,7 +26,7 @@ func NewExecutorMockFactory(world *worldmock.MockWorld) *ExecutorMockFactory {
 }
 
 // CreateExecutor creates a new Executor instance.
-func (emf *ExecutorMockFactory) CreateExecutor(args executor.ExecutorFactoryArgs) (executor.Executor, error) {
+func (emf *ExecutorMockFactory) CreateExecutor(_ executor.ExecutorFactoryArgs) (executor.Executor, error) {
 	executorMock := NewExecutorMock(emf.World)
 	emf.LastCreatedExecutor = executorMock
 	return executorMock, nil
@@ -48,7 +48,7 @@ func NewExecutorMock(world *worldmock.MockWorld) *ExecutorMock {
 }
 
 // SetOpcodeCosts should set gas costs, but it does nothing in the case of this mock.
-func (executorMock *ExecutorMock) SetOpcodeCosts(opcodeCosts *executor.WASMOpcodeCost) {
+func (executorMock *ExecutorMock) SetOpcodeCosts(_ *executor.WASMOpcodeCost) {
 }
 
 // FunctionNames mocked method

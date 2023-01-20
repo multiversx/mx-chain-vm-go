@@ -22,7 +22,9 @@ func loadExampleFile(path string) ([]byte, error) {
 	}
 
 	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
+	defer func() {
+		_ = jsonFile.Close()
+	}()
 
 	return ioutil.ReadAll(jsonFile)
 }

@@ -140,9 +140,6 @@ type RuntimeContext interface {
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
-	MemStore(offset int32, data []byte) error
-	MemLoad(offset int32, length int32) ([]byte, error)
-	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
 	ElrondAPIErrorShouldFailExecution() bool
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
@@ -296,10 +293,10 @@ type StorageContext interface {
 
 	SetAddress(address []byte)
 	GetStorageUpdates(address []byte) map[string]*vmcommon.StorageUpdate
-	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool)
-	GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool)
-	GetStorage(key []byte) ([]byte, bool)
-	GetStorageUnmetered(key []byte) ([]byte, bool)
+	GetStorageFromAddress(address []byte, key []byte) ([]byte, bool, error)
+	GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool, error)
+	GetStorage(key []byte) ([]byte, bool, error)
+	GetStorageUnmetered(key []byte) ([]byte, bool, error)
 	SetStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorage(key []byte, value []byte) (StorageStatus, error)
 	SetProtectedStorageToAddress(address []byte, key []byte, value []byte) (StorageStatus, error)
@@ -389,6 +386,7 @@ type AsyncContext interface {
 	SetCallIDForCallInGroup(groupIndex int, callIndex int, callID []byte)
 }
 
+// AsyncCallLocation defines the functionality for async calls
 type AsyncCallLocation interface {
 	GetAsyncCall() *AsyncCall
 	GetGroupIndex() int

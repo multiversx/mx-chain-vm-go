@@ -1,8 +1,8 @@
 package arwen
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/math"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 // AsyncCall holds the information about an individual async call
@@ -94,10 +94,8 @@ func (ac *AsyncCall) IsRemote() bool {
 // HasCallback returns true if there is a callback to execute, depending on the status of the async call
 func (ac *AsyncCall) HasCallback() bool {
 	callback := ac.GetCallbackName()
-	if len(callback) == 0 {
-		return false
-	}
-	return true
+
+	return len(callback) != 0
 }
 
 // HasDefinedAnyCallback returns true if this AsyncCall defines at least one non-empty callback name

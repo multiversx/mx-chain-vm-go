@@ -8,6 +8,7 @@ import (
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -253,7 +254,7 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 		verify.Ok().ReturnData([]byte(keyword))
 		instance := host.Runtime().GetInstance()
 		require.NotNil(verify.T, instance)
-		memory := instance.GetMemory().Data()
+		memory := instance.MemDump()
 		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
@@ -279,7 +280,7 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 		verify.Ok().ReturnData([]byte(keyword))
 		instance := host.Runtime().GetInstance()
 		require.NotNil(verify.T, instance)
-		memory := instance.GetMemory().Data()
+		memory := instance.MemDump()
 		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
@@ -330,7 +331,8 @@ func TestWASMCreateAndCall(t *testing.T) {
 	vmOutput, err := host.RunSmartContractCreate(deployInput)
 	verify := test.NewVMOutputVerifier(t, vmOutput, err)
 	verify.Ok()
-	world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	err = world.UpdateAccounts(vmOutput.OutputAccounts, nil)
+	assert.Nil(t, err)
 
 	input := test.CreateTestContractCallInputBuilder().
 		WithGasProvided(100000).

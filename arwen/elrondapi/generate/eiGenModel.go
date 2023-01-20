@@ -1,14 +1,24 @@
 package elrondapigenerate
 
+type EIType int32
+
+const (
+	EITypeInt32 EIType = iota
+	EITypeInt64
+	EITypeMemPtr
+	EITypeMemLength
+	EITypeInvalid
+)
+
 // EIFunctionArg models an executor callback method arg.
 type EIFunctionArg struct {
 	Name string
-	Type string
+	Type EIType
 }
 
-// EIFunctionArg models the executor callback method result.
+// EIFunctionResult models the executor callback method result.
 type EIFunctionResult struct {
-	Type string
+	Type EIType
 }
 
 // EIFunction holds data about one function in the VM EI.

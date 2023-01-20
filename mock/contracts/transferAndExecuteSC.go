@@ -38,7 +38,7 @@ func TransferAndExecute(instanceMock *mock.InstanceMock, config interface{}) {
 			)
 		}
 
-		host.Output().Finish([]byte(TransferAndExecuteReturnData))
+		host.Output().Finish(TransferAndExecuteReturnData)
 
 		return instance
 	})

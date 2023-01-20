@@ -91,13 +91,6 @@ type JSONValueList struct {
 	Values []JSONBytesFromString
 }
 
-// JSONValueListEmpty provides an empty list.
-func JSONValueListEmpty() JSONValueList {
-	return JSONValueList{
-		Values: nil,
-	}
-}
-
 // IsUnspecified yields true if the field was originally unspecified.
 func (jvl JSONValueList) IsUnspecified() bool {
 	return len(jvl.Values) == 0

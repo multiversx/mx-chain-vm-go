@@ -141,7 +141,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 	return &mj.Account{
 		Address: mj.JSONBytesFromString{
 			Value:    account.Address,
-			Original: ae.exprReconstructor.Reconstruct([]byte(account.Address), er.AddressHint),
+			Original: ae.exprReconstructor.Reconstruct(account.Address, er.AddressHint),
 		},
 		Nonce: mj.JSONUint64{
 			Value:    account.Nonce,

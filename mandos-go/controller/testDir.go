@@ -58,7 +58,7 @@ func (r *TestRunner) RunAllJSONTestsInDirectory(
 	}
 	fmt.Printf("Done. Passed: %d. Failed: %d. Skipped: %d.\n", nrPassed, nrFailed, nrSkipped)
 	if nrFailed > 0 {
-		return errors.New("Some tests failed")
+		return errors.New("some tests failed")
 	}
 
 	return nil

@@ -7,7 +7,7 @@ import (
 )
 
 // ArwenVersion returns the current arwen version
-const ArwenVersion = "v1.4"
+const ArwenVersion = "v1.5"
 
 // WASMPageSize in bytes of a WASM Linear Memory Page
 const WASMPageSize = 65536

@@ -352,7 +352,7 @@ func (context *meteringContext) UseAndTraceGas(gas uint64) {
 	context.traceGas(gas)
 }
 
-// UseAndTraceGas sets in the runtime context the given gas as gas used and adds to current trace
+// UseGasAndAddTracedGas sets in the runtime context the given gas as gas used and adds to current trace
 func (context *meteringContext) UseGasAndAddTracedGas(functionName string, gas uint64) {
 	context.UseGas(gas)
 	context.addToGasTrace(functionName, gas)
@@ -602,7 +602,7 @@ func (context *meteringContext) PrintState() {
 	logMetering.Trace("              ", "|      gas used by others", gasUsedByOthers)
 	logMetering.Trace("              ", "| adjusted gas used by sc", gasUsed)
 	for key, gas := range context.gasUsedByAccounts {
-		logMetering.Trace("              ", "| gas per acct", gas, "key", string(key))
+		logMetering.Trace("              ", "| gas per acct", gas, "key", key)
 	}
 	logMetering.Trace("              ", "└ stack size", len(context.stateStack))
 }

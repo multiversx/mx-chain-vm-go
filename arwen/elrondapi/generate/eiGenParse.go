@@ -9,13 +9,40 @@ import (
 	"strings"
 )
 
+func processType(ty ast.Expr) (EIType, error) {
+	switch v := ty.(type) {
+	case *ast.Ident:
+		switch v.Name {
+		case "int32":
+			return EITypeInt32, nil
+		case "int64":
+			return EITypeInt64, nil
+		}
+	case *ast.SelectorExpr:
+		if module, ok := v.X.(*ast.Ident); ok && module.Name == "executor" {
+			switch v.Sel.Name {
+			case "MemPtr":
+				return EITypeMemPtr, nil
+			case "MemLength":
+				return EITypeMemLength, nil
+			}
+		}
+	}
+
+	return EITypeInvalid, fmt.Errorf("invalid EI type: %s", ty)
+}
+
 func extractEIFunctionArguments(decl *ast.FuncDecl) ([]*EIFunctionArg, error) {
 	var arguments []*EIFunctionArg
 	for _, param := range decl.Type.Params.List {
 		for _, name := range param.Names {
+			eiType, err := processType(param.Type)
+			if err != nil {
+				return nil, err
+			}
 			arguments = append(arguments, &EIFunctionArg{
 				Name: name.String(),
-				Type: fmt.Sprintf("%s", param.Type),
+				Type: eiType,
 			})
 		}
 
@@ -31,8 +58,12 @@ func extractEIFunctionResult(decl *ast.FuncDecl) (*EIFunctionResult, error) {
 	case 0:
 		return nil, nil
 	case 1:
+		eiType, err := processType(decl.Type.Results.List[0].Type)
+		if err != nil {
+			return nil, err
+		}
 		return &EIFunctionResult{
-			Type: fmt.Sprintf("%s", decl.Type.Results.List[0].Type),
+			Type: eiType,
 		}, nil
 	default:
 		return nil, fmt.Errorf("too many results in function %s, no more than 1 accepted", decl.Name.Name)
@@ -109,6 +140,7 @@ func extractEIFunctions(f *ast.File) ([]*EIFunction, error) {
 	return result, nil
 }
 
+// ReadAndParseEIMetadata will read and parse EI metadata
 func ReadAndParseEIMetadata(fset *token.FileSet, pathToSources string, eiMetadata *EIMetadata) error {
 	for _, group := range eiMetadata.Groups {
 		f, err := parser.ParseFile(fset, pathToSources+group.SourcePath, nil, parser.ParseComments)

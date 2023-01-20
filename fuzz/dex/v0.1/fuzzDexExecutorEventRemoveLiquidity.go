@@ -3,9 +3,10 @@ package dex
 import (
 	"errors"
 	"fmt"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
 	"math/big"
 	"math/rand"
+
+	vmi "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 func (pfe *fuzzDexExecutor) removeLiquidity(r *rand.Rand, statistics *eventsStatistics) error {

@@ -31,7 +31,7 @@ func retrieveExportedMemory(wasmExports *cWasmerExportsT) (Memory, bool, error) 
 	return memory, hasMemory, nil
 }
 
-func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (ExportsMap, ExportSignaturesMap, error) {
+func retrieveExportedFunctions(cInstance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (ExportsMap, ExportSignaturesMap, error) {
 	var exports = make(ExportsMap)
 	var signatures = make(ExportSignaturesMap)
 
@@ -49,7 +49,7 @@ func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasme
 		var wasmFunction = cWasmerExportToFunc(wasmExport)
 		var exportedFunctionName = cGoStringN((*cChar)(unsafe.Pointer(wasmExportName.bytes)), (cInt)(wasmExportName.bytes_len))
 
-		wrappedWasmFunction, signature, err := createExportedFunctionWrapper(c_instance, wasmFunction, exportedFunctionName)
+		wrappedWasmFunction, signature, err := createExportedFunctionWrapper(cInstance, wasmFunction, exportedFunctionName)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -62,7 +62,7 @@ func retrieveExportedFunctions(c_instance *cWasmerInstanceT, wasmExports *cWasme
 }
 
 func createExportedFunctionWrapper(
-	c_instance *cWasmerInstanceT,
+	cInstance *cWasmerInstanceT,
 	wasmFunction *cWasmerExportFuncT,
 	exportedFunctionName string,
 ) (func(...interface{}) (Value, error), *ExportedFunctionSignature, error) {
@@ -82,18 +82,18 @@ func createExportedFunctionWrapper(
 	}
 
 	wrapper := func(arguments ...interface{}) (Value, error) {
-		err := validateGivenArguments(exportedFunctionName, arguments, wasmFunctionInputsArity)
-		if err != nil {
-			return Void(), err
+		errValidate := validateGivenArguments(exportedFunctionName, arguments, wasmFunctionInputsArity)
+		if errValidate != nil {
+			return Void(), errValidate
 		}
 
-		wasmInputs, err := createWasmInputsFromArguments(arguments, wasmFunctionInputsArity, wasmFunctionInputSignatures, exportedFunctionName)
-		if err != nil {
-			return Void(), err
+		wasmInputs, errCreate := createWasmInputsFromArguments(arguments, wasmFunctionInputsArity, wasmFunctionInputSignatures, exportedFunctionName)
+		if errCreate != nil {
+			return Void(), errCreate
 		}
 
 		wasmOutputs, callResult := callWasmFunction(
-			c_instance,
+			cInstance,
 			exportedFunctionName,
 			wasmFunctionInputsArity,
 			wasmFunctionOutputsArity,
@@ -101,12 +101,12 @@ func createExportedFunctionWrapper(
 		)
 
 		if callResult != cWasmerOk {
-			err := fmt.Errorf("Failed to call the `%s` exported function.", exportedFunctionName)
+			err = fmt.Errorf("failed to call the `%s` exported function", exportedFunctionName)
 			return Void(), newWrappedError(err)
 		}
 
-		value, err := convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)
-		return value, err
+		value, errConvert := convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)
+		return value, errConvert
 	}
 	return wrapper, signature, nil
 }

@@ -7,9 +7,10 @@ import (
 
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
 )
+
+// DefaultVMType is an exposed value to use in tests
+var DefaultVMType = []byte{0xF, 0xF}
 
 // ErrAccountNotFound is an exposed value to use in tests
 var ErrAccountNotFound = errors.New("account not found")
@@ -23,25 +24,8 @@ const AddressSize = 32
 // SCAddressPrefix is the prefix of any smart contract address used for testing.
 var SCAddressPrefix = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0f")
 
-// WalletAddressPrefix is the prefix of any smart contract address used for testing.
-var WalletAddressPrefix = []byte("..........")
-
 // ParentAddress is an exposed value to use in tests
 var ParentAddress = MakeTestSCAddress("parentSC")
-
-// ChildAddress is an exposed value to use in tests
-var ChildAddress = MakeTestSCAddress("childSC")
-
-var customGasSchedule = config.GasScheduleMap(nil)
-
-// ESDTTransferGasCost is an exposed value to use in tests
-var ESDTTransferGasCost = uint64(1)
-
-// ESDTTestTokenName is an exposed value to use in tests
-var ESDTTestTokenName = []byte("TT")
-
-// DefaultCodeMetadata is an exposed value to use in tests
-var DefaultCodeMetadata = []byte{3, 0}
 
 // MakeTestSCAddress generates a new smart contract address to be used for
 // testing based on the given identifier.
@@ -49,24 +33,11 @@ func MakeTestSCAddress(identifier string) []byte {
 	return makeTestAddress(SCAddressPrefix, identifier)
 }
 
-// MakeTestWalletAddress generates a new wallet address to be used for
-// testing based on the given identifier.
-func MakeTestWalletAddress(identifier string) []byte {
-	return makeTestAddress(WalletAddressPrefix, identifier)
-}
-
-func makeTestAddress(prefix []byte, identifier string) []byte {
+func makeTestAddress(_ []byte, identifier string) []byte {
 	numberOfTrailingDots := AddressSize - len(SCAddressPrefix) - len(identifier)
 	leftBytes := SCAddressPrefix
 	rightBytes := []byte(identifier + strings.Repeat(".", numberOfTrailingDots))
 	return append(leftBytes, rightBytes...)
-}
-
-// AddTestSmartContractToWorld directly deploys the provided code into the
-// given MockWorld under a SC address built with the given identifier.
-func AddTestSmartContractToWorld(world *worldmock.MockWorld, identifier string, code []byte) *worldmock.Account {
-	address := MakeTestSCAddress(identifier)
-	return world.AcctMap.CreateSmartContractAccount(UserAddress, address, code, world)
 }
 
 // MakeEmptyContractCallInput instantiates an empty ContractCallInput
@@ -119,25 +90,6 @@ func CopyTxHashes(input *vmcommon.ContractCallInput, sourceInput *vmcommon.Contr
 	input.CurrentTxHash = sourceInput.CurrentTxHash
 	input.PrevTxHash = sourceInput.PrevTxHash
 	input.OriginalTxHash = sourceInput.OriginalTxHash
-}
-
-// DefaultTestContractCreateInput creates a vmcommon.ContractCreateInput struct
-// with default values.
-func DefaultTestContractCreateInput() *vmcommon.ContractCreateInput {
-	return &vmcommon.ContractCreateInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr: []byte("caller"),
-			Arguments: [][]byte{
-				[]byte("argument 1"),
-				[]byte("argument 2"),
-			},
-			CallValue:   big.NewInt(0),
-			CallType:    vm.DirectCall,
-			GasPrice:    0,
-			GasProvided: 0,
-		},
-		ContractCode: []byte("contract"),
-	}
 }
 
 // DefaultTestContractCallInput creates a vmcommon.ContractCallInput struct
@@ -240,13 +192,6 @@ func (contractInput *ContractCallInputBuilder) Build() *vmcommon.ContractCallInp
 // ContractCreateInputBuilder extends a ContractCreateInput for extra building functionality during testing
 type ContractCreateInputBuilder struct {
 	vmcommon.ContractCreateInput
-}
-
-// CreateTestContractCreateInputBuilder is a builder for ContractCreateInputBuilder
-func CreateTestContractCreateInputBuilder() *ContractCreateInputBuilder {
-	return &ContractCreateInputBuilder{
-		ContractCreateInput: *DefaultTestContractCreateInput(),
-	}
 }
 
 // WithGasProvided provides the GasProvided for a ContractCreateInputBuilder

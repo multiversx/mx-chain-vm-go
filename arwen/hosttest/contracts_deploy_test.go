@@ -9,8 +9,9 @@ import (
 	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	"github.com/ElrondNetwork/wasm-vm/mock/contracts"
 	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/ElrondNetwork/wasm-vm/testcommon"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	testcommon "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -100,7 +101,7 @@ func runDeployFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 			WithConfig(testConfig).
 			WithMethods(contracts.InitMockMethod)
 	}
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			deployedContract,
 			test.CreateMockContract(test.ParentAddress).
@@ -118,6 +119,7 @@ func runDeployFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 			host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = testConfig.CompilePerByteCost
 		}).
 		AndAssertResults(asserts)
+	assert.Nil(t, err)
 }
 
 func TestUpdateFromSource_Success_EpochFlag_Callback(t *testing.T) {
@@ -401,7 +403,7 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 		methods = append(methods, contracts.CallbackMockMethodThatCouldFail)
 	}
 
-	test.BuildMockInstanceCallTest(t).
+	_, err := test.BuildMockInstanceCallTest(t).
 		WithContracts(
 			deployedContract,
 			contractToUpdate,
@@ -425,4 +427,5 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 			gasSchedule.ElrondAPICost.AsyncCallbackGasLock = 0
 		}).
 		AndAssertResults(asserts)
+	assert.Nil(t, err)
 }
