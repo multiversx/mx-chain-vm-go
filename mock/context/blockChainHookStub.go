@@ -4,40 +4,41 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
-	"github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 var _ vmcommon.BlockchainHook = (*BlockchainHookStub)(nil)
 
 // BlockchainHookStub is used in tests to check that interface methods were called
 type BlockchainHookStub struct {
-	NewAddressCalled              func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
-	GetStorageDataCalled          func(accountsAddress []byte, index []byte) ([]byte, uint32, error)
-	GetBlockHashCalled            func(nonce uint64) ([]byte, error)
-	LastNonceCalled               func() uint64
-	LastRoundCalled               func() uint64
-	LastTimeStampCalled           func() uint64
-	LastRandomSeedCalled          func() []byte
-	LastEpochCalled               func() uint32
-	GetStateRootHashCalled        func() []byte
-	CurrentNonceCalled            func() uint64
-	CurrentRoundCalled            func() uint64
-	CurrentTimeStampCalled        func() uint64
-	CurrentRandomSeedCalled       func() []byte
-	CurrentEpochCalled            func() uint32
-	ProcessBuiltInFunctionCalled  func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
-	GetBuiltinFunctionNamesCalled func() vmcommon.FunctionNames
-	GetAllStateCalled             func(address []byte) (map[string][]byte, error)
-	GetUserAccountCalled          func(address []byte) (vmcommon.UserAccountHandler, error)
-	GetShardOfAddressCalled       func(address []byte) uint32
-	IsSmartContractCalled         func(address []byte) bool
-	IsPayableCalled               func(address []byte) (bool, error)
-	GetCompiledCodeCalled         func(codeHash []byte) (bool, []byte)
-	SaveCompiledCodeCalled        func(codeHash []byte, code []byte)
-	GetCodeCalled                 func(account vmcommon.UserAccountHandler) []byte
-	GetESDTTokenCalled            func(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
-	GetSnapshotCalled             func() int
-	RevertToSnapshotCalled        func(snapshot int) error
+	NewAddressCalled                        func(creatorAddress []byte, creatorNonce uint64, vmType []byte) ([]byte, error)
+	GetStorageDataCalled                    func(accountsAddress []byte, index []byte) ([]byte, uint32, error)
+	GetBlockHashCalled                      func(nonce uint64) ([]byte, error)
+	LastNonceCalled                         func() uint64
+	LastRoundCalled                         func() uint64
+	LastTimeStampCalled                     func() uint64
+	LastRandomSeedCalled                    func() []byte
+	LastEpochCalled                         func() uint32
+	GetStateRootHashCalled                  func() []byte
+	CurrentNonceCalled                      func() uint64
+	CurrentRoundCalled                      func() uint64
+	CurrentTimeStampCalled                  func() uint64
+	CurrentRandomSeedCalled                 func() []byte
+	CurrentEpochCalled                      func() uint32
+	ProcessBuiltInFunctionCalled            func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
+	GetBuiltinFunctionNamesCalled           func() vmcommon.FunctionNames
+	GetAllStateCalled                       func(address []byte) (map[string][]byte, error)
+	GetUserAccountCalled                    func(address []byte) (vmcommon.UserAccountHandler, error)
+	GetShardOfAddressCalled                 func(address []byte) uint32
+	IsSmartContractCalled                   func(address []byte) bool
+	IsPayableCalled                         func(address []byte) (bool, error)
+	GetCompiledCodeCalled                   func(codeHash []byte) (bool, []byte)
+	SaveCompiledCodeCalled                  func(codeHash []byte, code []byte)
+	GetCodeCalled                           func(account vmcommon.UserAccountHandler) []byte
+	GetESDTTokenCalled                      func(address []byte, tokenID []byte, nonce uint64) (*esdt.ESDigitalToken, error)
+	GetSnapshotCalled                       func() int
+	RevertToSnapshotCalled                  func(snapshot int) error
+	ExecuteSmartContractCallOnOtherVMCalled func(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }
 
 // NewAddress mocked method
@@ -267,6 +268,14 @@ func (b *BlockchainHookStub) IsPaused(_ []byte) bool {
 // IsLimitedTransfer -
 func (b *BlockchainHookStub) IsLimitedTransfer(_ []byte) bool {
 	return false
+}
+
+// ExecuteSmartContractCallOnOtherVM -
+func (b *BlockchainHookStub) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	if b.ExecuteSmartContractCallOnOtherVMCalled != nil {
+		return b.ExecuteSmartContractCallOnOtherVMCalled(input)
+	}
+	return nil, nil
 }
 
 // IsInterfaceNil mocked method

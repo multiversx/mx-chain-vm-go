@@ -286,7 +286,21 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	scExecutionInput := input
 
 	blockchain := host.Blockchain()
+
 	blockchain.PushState()
+
+	if host.IsOutOfVMFunctionExecution(input) {
+		vmOutput, err = host.handleFunctionCallOnOtherVM(input)
+		if err != nil {
+			blockchain.PopSetActiveState()
+			host.Runtime().AddError(err, input.Function)
+			vmOutput = host.Output().CreateVMOutputInCaseOfError(err)
+			isChildComplete = true
+		} else {
+			blockchain.PopDiscard()
+		}
+		return
+	}
 
 	if host.IsBuiltinFunctionName(input.Function) {
 		scExecutionInput, vmOutput, err = host.handleBuiltinFunctionCall(input)
@@ -311,6 +325,20 @@ func (host *vmHost) ExecuteOnDestContext(input *vmcommon.ContractCallInput) (vmO
 	}
 
 	return
+}
+
+func (host *vmHost) handleFunctionCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	output := host.Output()
+
+	vmOutput, err := host.callFunctionOnOtherVM(input)
+	if err != nil {
+		log.Trace("ExecuteOnDestContext function on other VM", "error", err)
+		return nil, err
+	}
+
+	output.AddToActiveState(vmOutput)
+
+	return vmOutput, nil
 }
 
 func (host *vmHost) handleBuiltinFunctionCall(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
@@ -531,6 +559,21 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 func (host *vmHost) isInitFunctionBeingCalled() bool {
 	functionName := host.Runtime().FunctionName()
 	return functionName == arwen.InitFunctionName || functionName == arwen.InitFunctionNameEth
+}
+
+// IsOutOfVMFunctionExecution returns true if the call should be executed on ahother VM
+func (host *vmHost) IsOutOfVMFunctionExecution(input *vmcommon.ContractCallInput) bool {
+	isSmartContract := host.Blockchain().IsSmartContract(input.RecipientAddr)
+	if isSmartContract {
+		vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
+		if err != nil {
+			return false
+		}
+		if !bytes.Equal(host.Runtime().GetVMType(), vmType) {
+			return true
+		}
+	}
+	return false
 }
 
 // IsBuiltinFunctionName returns true if the given function name is the same as any protocol builtin function
@@ -859,6 +902,22 @@ func (host *vmHost) ExecuteESDTTransfer(destination []byte, sender []byte, trans
 	return vmOutput, gasConsumed, nil
 }
 
+func (host *vmHost) callFunctionOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	metering := host.Metering()
+
+	vmOutput, err := host.Blockchain().ExecuteSmartContractCallOnOtherVM(input)
+	if err != nil {
+		metering.UseGas(input.GasProvided)
+		return nil, err
+	}
+
+	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, nil)
+
+	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
+
+	return vmOutput, nil
+}
+
 func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmcommon.ContractCallInput, *vmcommon.VMOutput, error) {
 	metering := host.Metering()
 
@@ -884,7 +943,7 @@ func (host *vmHost) callBuiltinFunction(input *vmcommon.ContractCallInput) (*vmc
 		}
 	}
 
-	metering.TrackGasUsedByBuiltinFunction(input, vmOutput, newVMInput)
+	metering.TrackGasUsedByOutOfVMFunction(input, vmOutput, newVMInput)
 
 	host.addESDTTransferToVMOutputSCIntraShardCall(input, vmOutput)
 

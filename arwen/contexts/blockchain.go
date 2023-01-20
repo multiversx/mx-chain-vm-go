@@ -360,3 +360,8 @@ func (context *blockchainContext) IsPaused(tokenID []byte) bool {
 func (context *blockchainContext) ClearCompiledCodes() {
 	context.blockChainHook.ClearCompiledCodes()
 }
+
+// ExecuteSmartContractCallOnOtherVM runs contract on another VM
+func (context *blockchainContext) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	return context.blockChainHook.ExecuteSmartContractCallOnOtherVM(input)
+}

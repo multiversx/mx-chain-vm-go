@@ -50,7 +50,7 @@ func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 }
 
 // ReplaceVMExecutor mocked method
-func (r *RuntimeContextMock) ReplaceVMExecutor(exec executor.Executor) {
+func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.Executor) {
 }
 
 // StartWasmerInstance mocked method
@@ -255,29 +255,6 @@ func (r *RuntimeContextMock) FunctionNameChecked() (string, error) {
 
 // CallSCFunction mocked method
 func (r *RuntimeContextMock) CallSCFunction(_ string) error {
-	return r.Err
-}
-
-// MemLoad mocked method
-func (r *RuntimeContextMock) MemLoad(_ int32, _ int32) ([]byte, error) {
-	if r.Err != nil {
-		return nil, r.Err
-	}
-
-	return r.MemLoadResult, nil
-}
-
-// MemLoadMultiple mocked method
-func (r *RuntimeContextMock) MemLoadMultiple(_ int32, _ []int32) ([][]byte, error) {
-	if r.Err != nil {
-		return nil, r.Err
-	}
-
-	return r.MemLoadMultipleResult, nil
-}
-
-// MemStore mocked method
-func (r *RuntimeContextMock) MemStore(_ int32, _ []byte) error {
 	return r.Err
 }
 

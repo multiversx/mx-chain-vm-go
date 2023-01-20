@@ -1,12 +1,19 @@
 package arwen
 
 import (
+	"errors"
 	"math/big"
 	"strings"
 
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+// DefaultVMType is an exposed value to use in tests
+var DefaultVMType = []byte{0xF, 0xF}
+
+// ErrAccountNotFound is an exposed value to use in tests
+var ErrAccountNotFound = errors.New("account not found")
 
 // UserAddress is an exposed value to use in tests
 var UserAddress = []byte("userAccount.....................")

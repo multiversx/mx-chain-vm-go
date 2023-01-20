@@ -3,6 +3,7 @@ package elrondapi
 import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/crypto"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 )
 
 //go:generate go run generate/cmd/eiGenMain.go
@@ -18,6 +19,37 @@ func NewElrondApi(host arwen.VMHost) *ElrondApi {
 	return &ElrondApi{
 		host: host,
 	}
+}
+
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (context *ElrondApi) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return context.host.Runtime().GetInstance().MemLoad(memPtr, length)
+}
+
+// MemLoadMultiple returns multiple byte slices loaded from the WASM memory, starting at the given offset and having the provided lengths.
+func (context *ElrondApi) MemLoadMultiple(memPtr executor.MemPtr, lengths []int32) ([][]byte, error) {
+	if len(lengths) == 0 {
+		return [][]byte{}, nil
+	}
+
+	results := make([][]byte, len(lengths))
+
+	for i, length := range lengths {
+		result, err := context.MemLoad(memPtr, length)
+		if err != nil {
+			return nil, err
+		}
+
+		results[i] = result
+		memPtr = memPtr.Offset(length)
+	}
+
+	return results, nil
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
+func (context *ElrondApi) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return context.host.Runtime().GetInstance().MemStore(memPtr, data)
 }
 
 // GetVMHost returns the vm Context from the vm context map

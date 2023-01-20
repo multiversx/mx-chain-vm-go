@@ -310,14 +310,29 @@ func (instance *WasmerInstance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *WasmerInstance) Id() string {
-	return fmt.Sprintf("%p", instance.instance)
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (instance *WasmerInstance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return executor.MemLoadFromMemory(instance.Memory, memPtr, length)
 }
 
-// GetMemory returns the memory for the instance
-func (instance *WasmerInstance) GetMemory() executor.Memory {
-	return instance.Memory
+// MemStore stores the given data in the WASM memory at the given offset.
+func (instance *WasmerInstance) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return executor.MemStoreToMemory(instance.Memory, memPtr, data)
+}
+
+// MemLength returns the length of the allocated memory. Only called directly in tests.
+func (instance *WasmerInstance) MemLength() uint32 {
+	return instance.Memory.Length()
+}
+
+// MemGrow allocates more pages to the current memory. Only called directly in tests.
+func (instance *WasmerInstance) MemGrow(pages uint32) error {
+	return instance.Memory.Grow(pages)
+}
+
+// MemDump yields the entire contents of the memory. Only used in tests.
+func (instance *WasmerInstance) MemDump() []byte {
+	return instance.Memory.Data()
 }
 
 // Reset resets the instance memories and globals
@@ -349,4 +364,9 @@ func (instance *WasmerInstance) SetVMHooksPtr(vmHooksPtr uintptr) {
 // GetVMHooksPtr returns the VM hooks pointer
 func (instance *WasmerInstance) GetVMHooksPtr() uintptr {
 	return *(*uintptr)(instance.vmHooksPtr)
+}
+
+// Id returns an identifier for the instance, unique at runtime
+func (instance *WasmerInstance) Id() string {
+	return fmt.Sprintf("%p", instance.instance)
 }

@@ -98,6 +98,7 @@ type BlockchainContext interface {
 	GetSnapshot() int
 	RevertToSnapshot(snapshot int)
 	ClearCompiledCodes()
+	ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error)
 }
 
 // RuntimeContext defines the functionality needed for interacting with the runtime context
@@ -105,7 +106,7 @@ type RuntimeContext interface {
 	StateStack
 
 	GetVMExecutor() executor.Executor
-	ReplaceVMExecutor(exec executor.Executor)
+	ReplaceVMExecutor(vmExecutor executor.Executor)
 	InitStateFromContractCallInput(input *vmcommon.ContractCallInput)
 	SetCustomCallFunction(callFunction string)
 	GetVMInput() *vmcommon.ContractCallInput
@@ -139,9 +140,6 @@ type RuntimeContext interface {
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
-	MemStore(offset int32, data []byte) error
-	MemLoad(offset int32, length int32) ([]byte, error)
-	MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error)
 	ElrondAPIErrorShouldFailExecution() bool
 	ElrondSyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
@@ -264,7 +262,7 @@ type MeteringContext interface {
 	GetGasLocked() uint64
 	UpdateGasStateOnSuccess(vmOutput *vmcommon.VMOutput) error
 	UpdateGasStateOnFailure(vmOutput *vmcommon.VMOutput)
-	TrackGasUsedByBuiltinFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
+	TrackGasUsedByOutOfVMFunction(builtinInput *vmcommon.ContractCallInput, builtinOutput *vmcommon.VMOutput, postBuiltinInput *vmcommon.ContractCallInput)
 	DisableRestoreGas()
 	EnableRestoreGas()
 	StartGasTracing(functionName string)

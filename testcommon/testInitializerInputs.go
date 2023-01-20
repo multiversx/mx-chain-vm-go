@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
@@ -32,7 +33,7 @@ var DefaultVMType = []byte{0xF, 0xF}
 var ErrAccountNotFound = errors.New("account not found")
 
 // UserAddress is an exposed value to use in tests
-var UserAddress = []byte("userAccount.....................")
+var UserAddress = MakeTestSCAddressWithDefaultVM("userAccount")
 
 // UserAddress2 is an exposed value to use in tests
 var UserAddress2 = []byte("userAccount2....................")
@@ -44,13 +45,13 @@ const AddressSize = 32
 var SCAddressPrefix = []byte("\x00\x00\x00\x00\x00\x00\x00\x00\x0f\x0f")
 
 // ParentAddress is an exposed value to use in tests
-var ParentAddress = MakeTestSCAddress("parentSC")
+var ParentAddress = MakeTestSCAddressWithDefaultVM("parentSC")
 
 // ChildAddress is an exposed value to use in tests
-var ChildAddress = MakeTestSCAddress("childSC")
+var ChildAddress = MakeTestSCAddressWithDefaultVM("childSC")
 
 // NephewAddress is an exposed value to use in tests
-var NephewAddress = MakeTestSCAddress("NephewAddress")
+var NephewAddress = MakeTestSCAddressWithDefaultVM("NephewAddress")
 
 // ESDTTransferGasCost is an exposed value to use in tests
 var ESDTTransferGasCost = uint64(1)
@@ -68,6 +69,20 @@ func MakeTestSCAddress(identifier string) []byte {
 	leftBytes := SCAddressPrefix
 	rightBytes := []byte(identifier + strings.Repeat(".", numberOfTrailingDots))
 	return append(leftBytes, rightBytes...)
+}
+
+// MakeTestSCAddressWithDefaultVM generates a new smart contract address to be used for
+// testing based on the given identifier.
+func MakeTestSCAddressWithDefaultVM(identifier string) []byte {
+	return MakeTestSCAddressWithVmType(identifier, worldmock.DefaultVMType)
+}
+
+// MakeTestSCAddressWithVmType generates a new smart contract address to be used for
+// testing based on the given identifier.
+func MakeTestSCAddressWithVmType(identifier string, vmType []byte) []byte {
+	address := MakeTestSCAddress(identifier)
+	copy(address[vmcommon.NumInitCharactersForScAddress-core.VMTypeLen:], vmType)
+	return address
 }
 
 // GetSCCode retrieves the bytecode of a WASM module from a file

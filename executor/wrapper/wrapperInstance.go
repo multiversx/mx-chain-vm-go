@@ -86,9 +86,29 @@ func (inst *WrapperInstance) HasMemory() bool {
 	return inst.wrappedInstance.HasMemory()
 }
 
-// GetMemory wraps the call to the underlying instance.
-func (inst *WrapperInstance) GetMemory() executor.Memory {
-	return inst.wrappedInstance.GetMemory()
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (inst *WrapperInstance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return inst.wrappedInstance.MemLoad(memPtr, length)
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
+func (inst *WrapperInstance) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return inst.wrappedInstance.MemStore(memPtr, data)
+}
+
+// MemLength returns the length of the allocated memory. Only called directly in tests.
+func (inst *WrapperInstance) MemLength() uint32 {
+	return inst.wrappedInstance.MemLength()
+}
+
+// MemGrow allocates more pages to the current memory
+func (inst *WrapperInstance) MemGrow(pages uint32) error {
+	return inst.wrappedInstance.MemGrow(pages)
+}
+
+// MemDump yields the entire contents of the memory. Only used in tests.
+func (inst *WrapperInstance) MemDump() []byte {
+	return inst.wrappedInstance.MemDump()
 }
 
 // IsFunctionImported wraps the call to the underlying instance.
