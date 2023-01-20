@@ -331,7 +331,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 
 	// Store new value
 	value := []byte("value")
-	storageStatus, err := storageCtx.SetStorage(key, value)
+	storageStatus, _ := storageCtx.SetStorage(key, value)
 	gasLeft := gasProvided - storeCost*len(value)
 	storedValue, _, err := storageCtx.GetStorage(key)
 	require.Nil(t, err)
