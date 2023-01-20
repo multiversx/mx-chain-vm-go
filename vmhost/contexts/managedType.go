@@ -10,8 +10,8 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 const bigFloatPrecision = 53

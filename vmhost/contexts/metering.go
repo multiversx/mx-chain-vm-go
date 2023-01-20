@@ -6,9 +6,9 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 var logMetering = logger.GetOrCreate("vm/metering")

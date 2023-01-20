@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 type testSmartContract struct {

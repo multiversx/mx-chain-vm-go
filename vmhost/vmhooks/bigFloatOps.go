@@ -39,9 +39,9 @@ import (
 	"math/big"
 	"unsafe"
 
+	vmMath "github.com/multiversx/mx-chain-vm-v1_4-go/math"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
-	vmMath "github.com/multiversx/mx-chain-vm-v1_4-go/math"
 )
 
 const (

@@ -40,9 +40,9 @@ import (
 	"math/big"
 	"unsafe"
 
+	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 

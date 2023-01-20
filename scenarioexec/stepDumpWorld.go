@@ -7,17 +7,17 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/esdtconvert"
 	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
 	mjwrite "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/json/write"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 	oj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/orderedjson"
-	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 )
 
-const includeElrondProtectedStorage = false
+const includeProtectedStorage = false
 
-func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Account) (*mj.Account, error) {
+func (ae *VMTestExecutor) convertMockAccountToScenarioFormat(account *worldmock.Account) (*mj.Account, error) {
 	var storageKeys []string
 	for storageKey := range account.Storage {
 		storageKeys = append(storageKeys, storageKey)
@@ -27,7 +27,7 @@ func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Ac
 	var storageKvps []*mj.StorageKeyValuePair
 	for _, storageKey := range storageKeys {
 		storageValue := account.Storage[storageKey]
-		includeKey := includeElrondProtectedStorage || !strings.HasPrefix(storageKey, core.ProtectedKeyPrefix)
+		includeKey := includeProtectedStorage || !strings.HasPrefix(storageKey, core.ProtectedKeyPrefix)
 		if includeKey && len(storageValue) > 0 {
 			storageKvps = append(storageKvps, &mj.StorageKeyValuePair{
 				Key: mj.JSONBytesFromString{
@@ -56,16 +56,16 @@ func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Ac
 		esdtNames = append(esdtNames, esdtName)
 	}
 	sort.Strings(esdtNames)
-	var mandosESDT []*mj.ESDTData
+	var scenESDT []*mj.ESDTData
 	for _, esdtName := range esdtNames {
 		esdtObj := tokenData[esdtName]
 
-		var mandosRoles []string
+		var scenRoles []string
 		for _, mockRoles := range esdtObj.Roles {
-			mandosRoles = append(mandosRoles, string(mockRoles))
+			scenRoles = append(scenRoles, string(mockRoles))
 		}
 
-		var mandosInstances []*mj.ESDTInstance
+		var scenInstances []*mj.ESDTInstance
 		for _, mockInstance := range esdtObj.Instances {
 			var creator mj.JSONBytesFromString
 			if len(mockInstance.TokenMetaData.Creator) > 0 {
@@ -107,7 +107,7 @@ func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Ac
 				}
 			}
 
-			mandosInstances = append(mandosInstances, &mj.ESDTInstance{
+			scenInstances = append(scenInstances, &mj.ESDTInstance{
 				Nonce: mj.JSONUint64{
 					Value:    mockInstance.TokenMetaData.Nonce,
 					Original: ae.exprReconstructor.ReconstructFromUint64(mockInstance.TokenMetaData.Nonce),
@@ -124,17 +124,17 @@ func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Ac
 			})
 		}
 
-		mandosESDT = append(mandosESDT, &mj.ESDTData{
+		scenESDT = append(scenESDT, &mj.ESDTData{
 			TokenIdentifier: mj.JSONBytesFromString{
 				Value:    esdtObj.TokenIdentifier,
 				Original: ae.exprReconstructor.Reconstruct(esdtObj.TokenIdentifier, er.StrHint),
 			},
-			Instances: mandosInstances,
+			Instances: scenInstances,
 			LastNonce: mj.JSONUint64{
 				Value:    esdtObj.LastNonce,
 				Original: ae.exprReconstructor.ReconstructFromUint64(esdtObj.LastNonce),
 			},
-			Roles: mandosRoles,
+			Roles: scenRoles,
 		})
 	}
 
@@ -152,7 +152,7 @@ func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Ac
 			Original: ae.exprReconstructor.ReconstructFromBigInt(account.Balance),
 		},
 		Storage:  storageKvps,
-		ESDTData: mandosESDT,
+		ESDTData: scenESDT,
 		Owner: mj.JSONBytesFromString{
 			Value:    account.OwnerAddress,
 			Original: ae.exprReconstructor.Reconstruct(account.OwnerAddress, er.AddressHint),
@@ -163,17 +163,17 @@ func (ae *VMTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Ac
 // DumpWorld prints the state of the MockWorld to stdout.
 func (ae *VMTestExecutor) DumpWorld() error {
 	fmt.Print("world state dump:\n")
-	var mandosAccounts []*mj.Account
+	var scenAccounts []*mj.Account
 
 	for _, account := range ae.World.AcctMap {
-		mandosAccount, err := ae.convertMockAccountToMandosFormat(account)
+		scenAccount, err := ae.convertMockAccountToScenarioFormat(account)
 		if err != nil {
 			return err
 		}
-		mandosAccounts = append(mandosAccounts, mandosAccount)
+		scenAccounts = append(scenAccounts, scenAccount)
 	}
 
-	ojAccount := mjwrite.AccountsToOJ(mandosAccounts)
+	ojAccount := mjwrite.AccountsToOJ(scenAccounts)
 	s := oj.JSONString(ojAccount)
 	fmt.Println(s)
 

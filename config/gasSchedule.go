@@ -108,7 +108,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		BigIntAPICost:        *bigIntOps,
 		BigFloatAPICost:      *bigFloatOps,
 		EthAPICost:           *ethOps,
-		BaseOpsAPICost:        *baseOpsAPI,
+		BaseOpsAPICost:       *baseOpsAPI,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       *opcodeCosts,

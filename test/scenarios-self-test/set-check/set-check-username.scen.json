@@ -5,7 +5,7 @@
             "step": "setState",
             "accounts": {
                 "address:the-address": {
-                    "username": "str:theusername.elrond"
+                    "username": "str:theusername.|0x656C726F6E64"
                 }
             }
         },
@@ -14,7 +14,7 @@
             "id": "check-1",
             "accounts": {
                 "address:the-address": {
-                    "username": "str:theusername.elrond"
+                    "username": "str:theusername.|0x656C726F6E64"
                 }
             }
         },

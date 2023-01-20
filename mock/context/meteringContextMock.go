@@ -2,8 +2,8 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 var _ vmhost.MeteringContext = (*MeteringContextMock)(nil)

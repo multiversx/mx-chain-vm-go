@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
+	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
-	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

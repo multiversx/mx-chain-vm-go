@@ -68,9 +68,9 @@ const (
 const CallbackFunctionName = "callBack"
 
 // ProtectedStoragePrefix is the storage key prefix that will be protected by
-// VM explicitly, and implicitly by the Elrond node due to '@'; the
+// VM explicitly, and implicitly by the node due to '@'; the
 // protection can be disabled temporarily by the StorageContext
-const ProtectedStoragePrefix = "A"+"R"+"W"+"E"+"N@"
+const ProtectedStoragePrefix = "A" + "R" + "W" + "E" + "N@"
 
 // TimeLockKeyPrefix is the storage key prefix used for timelock-related storage.
 const TimeLockKeyPrefix = ProtectedStoragePrefix + "TIMELOCK"

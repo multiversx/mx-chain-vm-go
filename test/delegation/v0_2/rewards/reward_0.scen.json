@@ -1,6 +1,6 @@
 {
     "name": "reward",
-    "comment": "this is not really a test of the contract, just to see that the ELRONDreward mock works",
+    "comment": "this is not really a test of the contract, just to see that the protected reward key works",
     "gasSchedule": "dummy",
     "steps": [
         {
@@ -29,7 +29,7 @@
                         "''u_uncl|0x00000002": "0",
                         "''u_stak|0x00000002": "500,000,000,100",
                         "''u_sale|0x00000002": "0",
-                        "''ELRONDreward": "120"
+                        "0x454C524F4E44|str:reward": "120"
                     },
                     "code": "file:../delegation.wasm"
                 },
@@ -85,7 +85,7 @@
                         "''u_uncl|0x00000002": "0",
                         "''u_stak|0x00000002": "500,000,000,100",
                         "''u_sale|0x00000002": "0",
-                        "''ELRONDreward": "546,120"
+                        "0x454C524F4E44|str:reward": "546,120"
                     },
                     "code": "file:../delegation.wasm"
                 },
