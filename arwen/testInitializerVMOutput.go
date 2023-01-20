@@ -28,6 +28,11 @@ func AddFinishData(vmOutput *vmcommon.VMOutput, data []byte) {
 
 // AddNewOutputAccount creates a new vmcommon.OutputAccount from the provided arguments and adds it to OutputAccounts of the provided vmOutput
 func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDelta int64, data []byte) *vmcommon.OutputAccount {
+	return AddNewOutputAccountWithSender(vmOutput, address, nil, balanceDelta, data)
+}
+
+// AddNewOutputAccountWithSender creates a new vmcommon.OutputAccount from the provided arguments and adds it to OutputAccounts of the provided vmOutput
+func AddNewOutputAccountWithSender(vmOutput *vmcommon.VMOutput, address []byte, senderAddress []byte, balanceDelta int64, data []byte) *vmcommon.OutputAccount {
 	account := &vmcommon.OutputAccount{
 		Address:        address,
 		Nonce:          0,
@@ -39,8 +44,9 @@ func AddNewOutputAccount(vmOutput *vmcommon.VMOutput, address []byte, balanceDel
 	if data != nil {
 		account.OutputTransfers = []vmcommon.OutputTransfer{
 			{
-				Data:  data,
-				Value: big.NewInt(balanceDelta),
+				Data:          data,
+				Value:         big.NewInt(balanceDelta),
+				SenderAddress: senderAddress,
 			},
 		}
 	}
