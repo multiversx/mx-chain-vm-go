@@ -1,7 +1,6 @@
 package vmjsonintegrationtest
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"path"
@@ -11,13 +10,12 @@ import (
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
+	"github.com/ElrondNetwork/wasm-vm/executor"
 	executorwrapper "github.com/ElrondNetwork/wasm-vm/executor/wrapper"
 	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
 	"github.com/ElrondNetwork/wasm-vm/wasmer"
 	"github.com/stretchr/testify/require"
 )
-
-var useWasmer2 = flag.Bool("wasmer2", false, "Test using Wasmer2")
 
 func init() {
 	_ = logger.SetLogLevel("*:NONE")
@@ -33,20 +31,22 @@ func getTestRoot() string {
 }
 
 type MandosTestBuilder struct {
-	t              *testing.T
-	folder         string
-	singleFile     string
-	exclusions     []string
-	executorLogger *executorwrapper.StringLogger
-	currentError   error
+	t               *testing.T
+	folder          string
+	singleFile      string
+	exclusions      []string
+	executorLogger  *executorwrapper.StringLogger
+	executorFactory executor.ExecutorAbstractFactory
+	currentError    error
 }
 
 func MandosTest(t *testing.T) *MandosTestBuilder {
 	return &MandosTestBuilder{
-		t:              t,
-		folder:         "",
-		singleFile:     "",
-		executorLogger: nil,
+		t:               t,
+		folder:          "",
+		singleFile:      "",
+		executorLogger:  nil,
+		executorFactory: wasmer.ExecutorFactory(),
 	}
 }
 
@@ -70,6 +70,11 @@ func (mtb *MandosTestBuilder) WithExecutorLogs() *MandosTestBuilder {
 	return mtb
 }
 
+func (mtb *MandosTestBuilder) WithExecutorFactory(executorFactory executor.ExecutorAbstractFactory) *MandosTestBuilder {
+	mtb.executorFactory = executorFactory
+	return mtb
+}
+
 func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 	executor, err := am.NewArwenTestExecutor()
 	require.Nil(mtb.t, err)
@@ -78,7 +83,7 @@ func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 	if mtb.executorLogger != nil {
 		executor.OverrideVMExecutor = executorwrapper.NewWrappedExecutorFactory(
 			mtb.executorLogger,
-			wasmer.ExecutorFactory())
+			mtb.executorFactory)
 	}
 
 	runner := mc.NewScenarioRunner(
@@ -135,4 +140,8 @@ func (mtb *MandosTestBuilder) CheckLog(expectedLogs string) *MandosTestBuilder {
 		mtb.t.Error("log mismatch, see saved logs")
 	}
 	return mtb
+}
+
+func (mtb *MandosTestBuilder) ExtractLog() string {
+	return mtb.executorLogger.String()
 }
