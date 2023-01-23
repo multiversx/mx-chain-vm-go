@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 // ErrTrieHandlingNotImplemented indicates that no trie-related operations are
@@ -33,7 +33,7 @@ func NewMockAccountsAdapter(world *MockWorld) *MockAccountsAdapter {
 func (m *MockAccountsAdapter) GetExistingAccount(address []byte) (vmcommon.AccountHandler, error) {
 	account, exists := m.World.AcctMap[string(address)]
 	if !exists {
-		return nil, arwen.ErrInvalidAccount
+		return nil, vmhost.ErrInvalidAccount
 	}
 
 	return account, nil
@@ -64,7 +64,7 @@ func (m *MockAccountsAdapter) SaveAccount(account vmcommon.AccountHandler) error
 func (m *MockAccountsAdapter) RemoveAccount(address []byte) error {
 	_, exists := m.World.AcctMap[string(address)]
 	if !exists {
-		return arwen.ErrInvalidAccount
+		return vmhost.ErrInvalidAccount
 	}
 
 	m.World.AcctMap.DeleteAccount(address)

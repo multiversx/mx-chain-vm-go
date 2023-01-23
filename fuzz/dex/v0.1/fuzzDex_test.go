@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	roulette "github.com/ElrondNetwork/wasm-vm-v1_4/fuzz/weightedroulette"
-	mc "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/controller"
+	roulette "github.com/multiversx/mx-chain-vm-v1_4-go/fuzz/weightedroulette"
+	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,14 +27,14 @@ func newExecutorWithPaths() *fuzzDexExecutor {
 
 	fileResolver := mc.NewDefaultFileResolver().
 		ReplacePath(
-			"elrond_dex_router.wasm",
-			filepath.Join(pwd, "wasms/elrond_dex_router.wasm")).
+			"dex_router.wasm",
+			filepath.Join(pwd, "wasms/dex_router.wasm")).
 		ReplacePath(
-			"elrond_dex_pair.wasm",
-			filepath.Join(pwd, "wasms/elrond_dex_pair.wasm")).
+			"dex_pair.wasm",
+			filepath.Join(pwd, "wasms/dex_pair.wasm")).
 		ReplacePath(
-			"elrond_dex_farm.wasm",
-			filepath.Join(pwd, "wasms/elrond_dex_farm.wasm"))
+			"dex_farm.wasm",
+			filepath.Join(pwd, "wasms/dex_farm.wasm"))
 
 	pfe, err := newFuzzDexExecutor(fileResolver)
 	if err != nil {

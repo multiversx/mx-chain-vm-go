@@ -3,12 +3,13 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 	"github.com/stretchr/testify/require"
 )
 
+// DeployContractFromSourceMock creates a mock method which deploys a cotract from source
 func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("deployContractFromSource", func() *mock.InstanceMock {
 		host := instanceMock.Host
@@ -28,7 +29,7 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 		gasForInit := big.NewInt(0).SetBytes(arguments[2])
 
 		newAddress, err :=
-			elrondapi.DeployFromSourceContractWithTypedArgs(
+			vmhooks.DeployFromSourceContractWithTypedArgs(
 				host,
 				sourceContractAddress,
 				codeMetadata,
@@ -93,7 +94,7 @@ func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 		codeMetadata := arguments[2]
 		gasForInit := big.NewInt(0).SetBytes(arguments[3])
 
-		elrondapi.UpgradeFromSourceContractWithTypedArgs(
+		vmhooks.UpgradeFromSourceContractWithTypedArgs(
 			host,
 			sourceContractAddress,
 			destinationContractAddress,

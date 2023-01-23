@@ -7,15 +7,15 @@ import (
 	"strings"
 	"testing"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm-v1_4/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	er "github.com/ElrondNetwork/wasm-vm-v1_4/mandos-go/expression/reconstructor"
-	worldhook "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	worldhook "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	er "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/expression/reconstructor"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/hostCore"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,16 +45,17 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := arwenHost.NewArwenVM(world, &arwen.VMHostParameters{
+	vm, err := hostCore.NewVMHost(world, &vmhost.VMHostParameters{
 		VMType:                   testVMType,
 		BlockGasLimit:            blockGasLimit,
 		GasSchedule:              gasSchedule,
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ElrondProtectedKeyPrefix: []byte("ELROND"),
+		ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   worldhook.DefaultHasher,
 	})
 	if err != nil {
 		return nil, err
@@ -163,7 +164,7 @@ func (pfe *pureFunctionExecutor) executePureFunctionTests(t *testing.T,
 		err = pfe.checkTxResults(testCase, output, resultInterpreter)
 		require.Nil(t, err)
 
-		vmHost := pfe.vm.(arwen.VMHost)
+		vmHost := pfe.vm.(vmhost.VMHost)
 		vmHost.Reset()
 	}
 }

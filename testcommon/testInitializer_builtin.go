@@ -3,7 +3,7 @@ package testcommon
 import (
 	"errors"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // MockBuiltin defined the functions that can be replaced in order to mock a builtin

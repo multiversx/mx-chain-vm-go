@@ -1,11 +1,11 @@
 package factory
 
 import (
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing/bls"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing/ed25519"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing/secp256k1"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/hashing"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing/bls"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing/ed25519"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing/secp256k1"
 )
 
 // NewVMCrypto returns a composite struct containing VMCrypto functionality implementations

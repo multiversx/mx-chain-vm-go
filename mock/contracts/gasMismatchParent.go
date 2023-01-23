@@ -3,9 +3,9 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 )
 
 // GasMismatchAsyncCallParentMock is an exposed mock contract method
@@ -21,7 +21,7 @@ func GasMismatchAsyncCallParentMock(instanceMock *mock.InstanceMock, _ interface
 		argumentsHandle := managedTypes.NewManagedBuffer()
 		managedTypes.WriteManagedVecOfManagedBuffers([][]byte{}, argumentsHandle)
 
-		elrondapi.ManagedAsyncCallWithHost(
+		vmhooks.ManagedAsyncCallWithHost(
 			host,
 			destHandle,
 			valueHandle,

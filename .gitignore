@@ -15,9 +15,9 @@
 
 /arwen/debug
 /cmd/arwen/arwen
-/arwendebug/testdata/db
-/cmd/arwendebug/arwendebug
-/cmd/arwendebug/db
+/vmserver/testdata/db
+/cmd/vmserver/vmserver
+/cmd/vmserver/db
 /ipc/tests/testdata/streams
 /ipc/tests/arwen
 

@@ -3,9 +3,9 @@ package mock
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	worldmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/world"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
 // InstanceBuilderMock can be passed to RuntimeContext as an InstanceBuilder to
@@ -30,7 +30,7 @@ func (builder *InstanceBuilderMock) Id() string {
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
-func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64) *InstanceMock {
+func (builder *InstanceBuilderMock) CreateAndStoreInstanceMock(t testing.TB, host vmhost.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64) *InstanceMock {
 	instance := NewInstanceMock(code)
 	instance.Address = code
 	instance.T = t

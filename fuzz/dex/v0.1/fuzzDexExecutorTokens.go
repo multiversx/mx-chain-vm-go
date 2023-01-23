@@ -3,11 +3,11 @@ package dex
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
 )
 
 func (pfe *fuzzDexExecutor) interpretExpr(expression string) []byte {
-	bytes, err := pfe.mandosParser.ExprInterpreter.InterpretString(expression)
+	bytes, err := pfe.parser.ExprInterpreter.InterpretString(expression)
 	if err != nil {
 		panic(err)
 	}

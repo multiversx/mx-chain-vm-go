@@ -1,13 +1,13 @@
 package config
 
-import "github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
+import "github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 
 type GasCost struct {
 	BaseOperationCost    BaseOperationCost
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
 	EthAPICost           EthAPICost
-	ElrondAPICost        ElrondAPICost
+	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       WASMOpcodeCost
@@ -23,7 +23,7 @@ type BaseOperationCost struct {
 	GetCode           uint64
 }
 
-type ElrondAPICost struct {
+type BaseOpsAPICost struct {
 	GetSCAddress         uint64
 	GetOwnerAddress      uint64
 	IsSmartContract      uint64
@@ -664,8 +664,8 @@ type WASMOpcodeCost struct {
 	MaxMemoryGrowDelta     uint32
 }
 
-func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OPCODE_COUNT]uint32 {
-	opcode_costs := [wasmer.OPCODE_COUNT]uint32{}
+func (opcode_costs_struct *WASMOpcodeCost) ToOpcodeCostsArray() [wasmer.OpcodeCount]uint32 {
+	opcode_costs := [wasmer.OpcodeCount]uint32{}
 
 	opcode_costs[wasmer.OpcodeUnreachable] = opcode_costs_struct.Unreachable
 	opcode_costs[wasmer.OpcodeNop] = opcode_costs_struct.Nop

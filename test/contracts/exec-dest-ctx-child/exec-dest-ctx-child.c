@@ -1,6 +1,6 @@
-#include "../elrond/context.h"
-#include "../elrond/bigInt.h"
-#include "../elrond/test_utils.h"
+#include "../mxvm/context.h"
+#include "../mxvm/bigInt.h"
+#include "../mxvm/test_utils.h"
 
 byte dataA[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte dataB[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};

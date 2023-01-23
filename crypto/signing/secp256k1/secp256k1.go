@@ -1,11 +1,11 @@
 package secp256k1
 
 import (
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/hashing"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/crypto/signing"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/hashing"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/signing"
 )
 
 type MessageHashType uint8

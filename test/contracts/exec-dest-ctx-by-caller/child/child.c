@@ -1,5 +1,5 @@
-#include "../../elrond/context.h"
-#include "../../elrond/test_utils.h"
+#include "../../mxvm/context.h"
+#include "../../mxvm/test_utils.h"
 
 
 void give() {

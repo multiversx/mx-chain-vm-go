@@ -2,10 +2,11 @@ package mock
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/wasmer"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
@@ -16,11 +17,12 @@ type InstanceMock struct {
 	Points          uint64
 	Data            uintptr
 	GasLimit        uint64
-	BreakpointValue arwen.BreakpointValue
+	BreakpointValue vmhost.BreakpointValue
 	Memory          wasmer.MemoryHandler
-	Host            arwen.VMHost
+	Host            vmhost.VMHost
 	T               testing.TB
 	Address         []byte
+	AlreadyClean    bool
 }
 
 // NewInstanceMock creates a new InstanceMock
@@ -33,10 +35,14 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
+		AlreadyClean:    false,
 	}
 }
 
-func (instance *InstanceMock) Id() string { return "" }
+// ID -
+func (instance *InstanceMock) ID() string {
+	return fmt.Sprintf("%p", instance)
+}
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
 func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
@@ -47,9 +53,9 @@ func (instance *InstanceMock) AddMockMethod(name string, method func() *Instance
 func (instance *InstanceMock) AddMockMethodWithError(name string, method func() *InstanceMock, err error) {
 	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
 		instance := method()
-		if arwen.BreakpointValue(instance.GetBreakpointValue()) != arwen.BreakpointNone {
+		if vmhost.BreakpointValue(instance.GetBreakpointValue()) != vmhost.BreakpointNone {
 			var errMsg string
-			if arwen.BreakpointValue(instance.GetBreakpointValue()) == arwen.BreakpointAsyncCall {
+			if vmhost.BreakpointValue(instance.GetBreakpointValue()) == vmhost.BreakpointAsyncCall {
 				errMsg = "breakpoint"
 			} else {
 				errMsg = instance.Host.Output().GetVMOutput().ReturnMessage
@@ -89,7 +95,7 @@ func (instance *InstanceMock) SetGasLimit(gasLimit uint64) {
 
 // SetBreakpointValue mocked method
 func (instance *InstanceMock) SetBreakpointValue(value uint64) {
-	instance.BreakpointValue = arwen.BreakpointValue(value)
+	instance.BreakpointValue = vmhost.BreakpointValue(value)
 }
 
 // GetBreakpointValue mocked method
@@ -104,12 +110,13 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 
 // Clean mocked method
 func (instance *InstanceMock) Clean() bool {
+	instance.AlreadyClean = true
 	return true
 }
 
 // AlreadyCleaned mocked method
 func (instance *InstanceMock) AlreadyCleaned() bool {
-	return false
+	return instance.AlreadyClean
 }
 
 // Reset mocked method
@@ -158,7 +165,7 @@ func (instance *InstanceMock) IsFunctionImported(name string) bool {
 }
 
 // GetMockInstance gets the mock instance from the runtime of the provided host
-func GetMockInstance(host arwen.VMHost) *InstanceMock {
+func GetMockInstance(host vmhost.VMHost) *InstanceMock {
 	instance := host.Runtime().GetInstance().(*InstanceMock)
 	return instance
 }

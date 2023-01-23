@@ -4,10 +4,10 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -108,7 +108,7 @@ func ExecutedOnSameContextByCallback(instanceMock *mock.InstanceMock, _ interfac
 	})
 }
 
-func handleChildBehaviorArgument(host arwen.VMHost, behavior byte) error {
+func handleChildBehaviorArgument(host vmhost.VMHost, behavior byte) error {
 	if behavior == 1 {
 		host.Runtime().SignalUserError("child error")
 		return errors.New("behavior / child error")

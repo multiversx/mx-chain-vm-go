@@ -1,0 +1,31 @@
+{
+    "comment": "verifies that setState and checkState are consistent",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:the-address": {
+                    "username": "str:theusername.|0x656C726F6E64"
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "id": "check-1",
+            "accounts": {
+                "address:the-address": {
+                    "username": "str:theusername.|0x656C726F6E64"
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "id": "check-2",
+            "accounts": {
+                "address:the-address": {
+                    "username": "*"
+                }
+            }
+        }
+    ]
+}
