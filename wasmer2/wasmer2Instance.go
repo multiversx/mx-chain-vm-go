@@ -37,6 +37,7 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 	}, nil
 }
 
+// Clean cleans instance
 func (instance *Wasmer2Instance) Clean() {
 	if instance.alreadyCleaned {
 		return
