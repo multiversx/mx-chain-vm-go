@@ -100,7 +100,7 @@
                         "data": "1000"
                     },
                     {
-                        "address": "sc:auction",
+                        "address": "*",
                         "endpoint": "str:transferValueOnly",
                         "topics": [
                             "sc:auction",

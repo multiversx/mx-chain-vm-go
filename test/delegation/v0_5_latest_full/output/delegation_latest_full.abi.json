@@ -1,19 +1,19 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.61.0-nightly",
-            "commitHash": "4ce3749235fc31d15ebd444b038a9877e8c700d7",
-            "commitDate": "2022-02-28",
+            "version": "1.68.0-nightly",
+            "commitHash": "4781233a77e879e49cb5ce3c98d2abba6a6ade7a",
+            "commitDate": "2023-01-16",
             "channel": "Nightly",
-            "short": "rustc 1.61.0-nightly (4ce374923 2022-02-28)"
+            "short": "rustc 1.68.0-nightly (4781233a7 2023-01-16)"
         },
         "contractCrate": {
             "name": "delegation_latest_full",
             "version": "0.5.8"
         },
         "framework": {
-            "name": "elrond-wasm",
-            "version": "0.29.2"
+            "name": "multiversx-sc",
+            "version": "0.39.2"
         }
     },
     "name": "DelegationFull",
@@ -1148,16 +1148,6 @@
             "outputs": []
         },
         {
-            "name": "isPaused",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "bool"
-                }
-            ]
-        },
-        {
             "name": "pause",
             "onlyOwner": true,
             "mutability": "mutable",
@@ -1170,6 +1160,117 @@
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
+        },
+        {
+            "name": "isPaused",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "identifier": "userStake",
+            "inputs": [
+                {
+                    "name": "delegator",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "identifier": "userUnstake",
+            "inputs": [
+                {
+                    "name": "delegator",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "identifier": "nodeStakeOk",
+            "inputs": []
+        },
+        {
+            "identifier": "nodeStakeFail",
+            "inputs": [
+                {
+                    "name": "reason",
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "identifier": "nodeUnstakeOk",
+            "inputs": []
+        },
+        {
+            "identifier": "nodeUnstakeFail",
+            "inputs": [
+                {
+                    "name": "reason",
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "identifier": "nodeUnbondOk",
+            "inputs": []
+        },
+        {
+            "identifier": "nodeUnbondFail",
+            "inputs": [
+                {
+                    "name": "reason",
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "identifier": "tokensUnstake",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "identifier": "tokensUnbond",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "identifier": "userClaimRewards",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
         }
     ],
     "hasCallback": true,
