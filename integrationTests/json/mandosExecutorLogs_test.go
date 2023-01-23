@@ -151,8 +151,6 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 }
 
 func TestMultisigLog(t *testing.T) {
-	// t.Skip("not a working test")
-
 	expected := MandosTest(t).
 		Folder("multisig/scenarios").
 		WithExecutorLogs().
@@ -162,28 +160,6 @@ func TestMultisigLog(t *testing.T) {
 
 	MandosTest(t).
 		Folder("multisig/scenarios").
-		WithExecutorLogs().
-		WithExecutorFactory(wasmer2.ExecutorFactory()).
-		Run().
-		CheckNoError().
-		CheckLog(expected)
-}
-
-func TestDnsContractLog(t *testing.T) {
-	// t.Skip("not a working test")
-
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	expected := MandosTest(t).
-		Folder("dns").
-		Run().
-		CheckNoError().
-		ExtractLog()
-
-	MandosTest(t).
-		Folder("dns").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().
@@ -277,6 +253,26 @@ func TestCAttestationLog(t *testing.T) {
 
 	MandosTest(t).
 		Folder("attestation-c").
+		WithExecutorLogs().
+		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		Run().
+		CheckNoError().
+		CheckLog(expected)
+}
+
+func TestDnsContractLog(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	expected := MandosTest(t).
+		Folder("dns").
+		Run().
+		CheckNoError().
+		ExtractLog()
+
+	MandosTest(t).
+		Folder("dns").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().
