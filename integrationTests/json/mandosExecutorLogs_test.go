@@ -41,8 +41,6 @@ func TestRustFactorialLog(t *testing.T) {
 }
 
 func TestRustErc20Log(t *testing.T) {
-	t.Skip("not a working test")
-
 	expected := MandosTest(t).
 		Folder("erc20-rust/scenarios").
 		WithExecutorLogs().
