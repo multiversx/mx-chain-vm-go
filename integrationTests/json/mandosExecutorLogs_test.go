@@ -170,7 +170,7 @@ func TestMultisigLog(t *testing.T) {
 }
 
 func TestDnsContractLog(t *testing.T) {
-	t.Skip("not a working test")
+	// t.Skip("not a working test")
 
 	if testing.Short() {
 		t.Skip("not a short test")
