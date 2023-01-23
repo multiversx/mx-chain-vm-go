@@ -16,6 +16,7 @@ func IsSmartContractAddress(address []byte) bool {
 	return bytes.Equal(address[:SCAddressNumLeadingZeros], leadingZeros)
 }
 
+// Validate -
 func (a *Account) Validate() error {
 	if len(a.Address) != 32 {
 		return fmt.Errorf(

@@ -8,6 +8,7 @@ import (
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
 	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -344,7 +345,8 @@ func TestBigFloats_Neg(t *testing.T) {
 		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedFloatValue, _ := big.NewFloat(-1623).GobEncode()
 			floatValue := new(big.Float)
-			floatValue.GobDecode(encodedFloatValue)
+			err := floatValue.GobDecode(encodedFloatValue)
+			assert.Nil(t, err)
 			floatValue.Neg(floatValue)
 			encodedNegFloat, _ := floatValue.GobEncode()
 			verify.Ok().
@@ -557,7 +559,7 @@ func TestBigFloats_IsInt(t *testing.T) {
 	bigFloatArguments := make([][]byte, numberOfReps+1)
 	bigFloatArguments[0] = repsArgument
 	for i := 0; i < numberOfReps; i++ {
-		floatValue := big.NewFloat((float64(i) + 2))
+		floatValue := big.NewFloat(float64(i) + 2)
 		encodedFloat, _ := floatValue.GobEncode()
 		bigFloatArguments[i+1] = encodedFloat
 	}
@@ -575,14 +577,14 @@ func TestBigFloats_IsInt(t *testing.T) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
-			isInt := -2
+			var isInt byte
 			if lastFloat.IsInt() {
 				isInt = 1
 			} else {
 				isInt = 0
 			}
 			verify.Ok().
-				ReturnData([]byte{byte(isInt)})
+				ReturnData([]byte{isInt})
 		})
 }
 

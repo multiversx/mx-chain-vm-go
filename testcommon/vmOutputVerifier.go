@@ -8,11 +8,11 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/stretchr/testify/require"
 )
 
@@ -82,19 +82,19 @@ func (v *VMOutputVerifier) FunctionNotFound() *VMOutputVerifier {
 
 // ReturnCode verifies if ReturnCode of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnCode(code vmcommon.ReturnCode) *VMOutputVerifier {
-	require.Equal(v.T, code, v.VmOutput.ReturnCode, "ReturnCode")
+	require.Equal(v.T, code, v.VmOutput.ReturnCode, "returnCode")
 	return v
 }
 
 // ReturnMessage verifies if ReturnMessage of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnMessage(message string) *VMOutputVerifier {
-	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "ReturnMessage")
+	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "returnMessage")
 	return v
 }
 
 // ReturnMessageContains verifies if ReturnMessage of output contains the provided one
 func (v *VMOutputVerifier) ReturnMessageContains(message string) *VMOutputVerifier {
-	require.Contains(v.T, v.VmOutput.ReturnMessage, message, "ReturnMessage")
+	require.Contains(v.T, v.VmOutput.ReturnMessage, message, "returnMessage")
 	return v
 }
 
@@ -473,9 +473,9 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 			log.Trace("VMOutput", "└ OutputTransfers["+fmt.Sprint(i)+"].Data", transfer.Data)
 		}
 		for i, storage := range account.StorageUpdates {
-			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Offset", string(storage.Offset), "len", len(storage.Offset))
-			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Data", storage.Data, "len", len(storage.Data))
-			log.Trace("VMOutput", "└ StorageUpdate["+fmt.Sprintf(i)+"].Written", storage.Written)
+			log.Trace("VMOutput", "| StorageUpdate["+i+"].Offset", string(storage.Offset), "len", len(storage.Offset))
+			log.Trace("VMOutput", "| StorageUpdate["+i+"].Data", storage.Data, "len", len(storage.Data))
+			log.Trace("VMOutput", "└ StorageUpdate["+i+"].Written", storage.Written)
 		}
 	}
 	return v

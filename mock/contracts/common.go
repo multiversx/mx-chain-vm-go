@@ -1,9 +1,9 @@
 package contracts
 
 import (
+	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
 
 // DirectCallGasTestConfig is configuration for direct call tests

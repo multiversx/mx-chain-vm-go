@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, config interface{}) {
+// DeployContractFromSourceMock -
+func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("deployContractFromSource", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -50,17 +51,18 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, config interf
 	})
 }
 
-// InitMockMethod
+// InitMockMethod -
 func InitMockMethod(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*testcommon.TestConfig)
 	instanceMock.AddMockMethod("init", testcommon.SimpleWasteGasMockMethod(instanceMock, testConfig.GasUsedByInit))
 }
 
+// CallbackTestConfig -
 type CallbackTestConfig interface {
 	CallbackFails() bool
 }
 
-// CallbackMockMethodThatCouldFail
+// CallbackMockMethodThatCouldFail -
 func CallbackMockMethodThatCouldFail(instanceMock *mock.InstanceMock, config interface{}) {
 	testConfig := config.(*testcommon.TestConfig)
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
@@ -74,7 +76,8 @@ func CallbackMockMethodThatCouldFail(instanceMock *mock.InstanceMock, config int
 	})
 }
 
-func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, config interface{}) {
+// UpdateContractFromSourceMock -
+func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("updateContractFromSource", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

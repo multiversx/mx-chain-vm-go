@@ -4,12 +4,14 @@ on:
   push:
     branches: [ master, development, rc/*, feat/* ]
   pull_request:
+    branches: [ master, development, rc/*, feat/* ]
+  workflow_dispatch:
 
 jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.15.x]
+        go-version: [1.17.6]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:

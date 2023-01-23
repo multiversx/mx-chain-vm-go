@@ -62,9 +62,9 @@ func TestFunctionsProtected(t *testing.T) {
 	instance := imb.CreateAndStoreInstanceMock(t, host, []byte{}, []byte{}, []byte{}, []byte{}, 0, 0, false)
 
 	instance.AddMockMethod("transferValueOnly", func() *contextmock.InstanceMock {
-		host := instance.Host
-		instance := contextmock.GetMockInstance(host)
-		return instance
+		testHost := instance.Host
+		testInstance := contextmock.GetMockInstance(testHost)
+		return testInstance
 	})
 
 	err := validator.verifyProtectedFunctions(instance)

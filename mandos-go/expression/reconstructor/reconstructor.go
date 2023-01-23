@@ -11,6 +11,7 @@ import (
 	ei "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/interpreter"
 )
 
+// ExprReconstructorHint type definition
 type ExprReconstructorHint uint64
 
 const (
@@ -35,6 +36,7 @@ const maxBytesInterpretedAsNumber = 15
 // ExprReconstructor is a component that attempts to convert raw bytes to a human-readable format.
 type ExprReconstructor struct{}
 
+// Reconstruct will return the string representation of the provided value
 func (er *ExprReconstructor) Reconstruct(value []byte, hint ExprReconstructorHint) string {
 	switch hint {
 	case NumberHint:
@@ -50,14 +52,17 @@ func (er *ExprReconstructor) Reconstruct(value []byte, hint ExprReconstructorHin
 	}
 }
 
+// ReconstructFromBigInt will return the string of the provided big int
 func (er *ExprReconstructor) ReconstructFromBigInt(value *big.Int) string {
 	return er.Reconstruct(value.Bytes(), NumberHint)
 }
 
+// ReconstructFromUint64 will return the string of the provided uint64
 func (er *ExprReconstructor) ReconstructFromUint64(value uint64) string {
 	return er.Reconstruct(big.NewInt(0).SetUint64(value).Bytes(), NumberHint)
 }
 
+// ReconstructList will return the string of the provided values list
 func (er *ExprReconstructor) ReconstructList(values [][]byte, hint ExprReconstructorHint) string {
 	var strs []string
 	for _, value := range values {
@@ -103,8 +108,8 @@ func addressPretty(value []byte) string {
 			// last byte is the shard id and is explicit
 			addrStr := string(value[ei.SCAddressNumLeadingZeros:31])
 			addrStr = strings.TrimRight(addrStr, "_")
-			shard_id := value[31]
-			return fmt.Sprintf("sc:%s#%x", addrStr, shard_id)
+			shardID := value[31]
+			return fmt.Sprintf("sc:%s#%x", addrStr, shardID)
 		}
 	}
 
@@ -117,8 +122,8 @@ func addressPretty(value []byte) string {
 		// last byte is the shard id and is explicit
 		addrStr := string(value[:31])
 		addrStr = strings.TrimRight(addrStr, "_")
-		shard_id := value[31]
-		return fmt.Sprintf("address:%s#%02x", addrStr, shard_id)
+		shardID := value[31]
+		return fmt.Sprintf("address:%s#%02x", addrStr, shardID)
 	}
 }
 

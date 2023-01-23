@@ -88,12 +88,6 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetPointsUsedFunc func(gasPoints uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemStoreFunc func(offset int32, data []byte) error
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemLoadFunc func(offset int32, length int32) ([]byte, error)
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemLoadMultipleFunc func(offset int32, lengths []int32) ([][]byte, error)
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ElrondSyncExecAPIErrorShouldFailExecutionFunc func() bool
@@ -264,18 +258,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.SetPointsUsed(gasPoints)
 	}
 
-	runtimeWrapper.MemStoreFunc = func(offset int32, data []byte) error {
-		return runtimeWrapper.runtimeContext.MemStore(offset, data)
-	}
-
-	runtimeWrapper.MemLoadFunc = func(offset int32, length int32) ([]byte, error) {
-		return runtimeWrapper.runtimeContext.MemLoad(offset, length)
-	}
-
-	runtimeWrapper.MemLoadMultipleFunc = func(offset int32, lengths []int32) ([][]byte, error) {
-		return runtimeWrapper.runtimeContext.MemLoadMultiple(offset, lengths)
-	}
-
 	runtimeWrapper.ElrondAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ElrondAPIErrorShouldFailExecution()
 	}
@@ -444,7 +426,7 @@ func (contextWrapper *RuntimeContextWrapper) CountSameContractInstancesOnStack(a
 	return contextWrapper.CountSameContractInstancesOnStackFunc(address)
 }
 
-// RunningInstancesCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// GetInstanceStackSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetInstanceStackSize() uint64 {
 	return contextWrapper.GetInstanceStackSizeFunc()
 }
@@ -509,21 +491,6 @@ func (contextWrapper *RuntimeContextWrapper) SetPointsUsed(gasPoints uint64) {
 	contextWrapper.SetPointsUsedFunc(gasPoints)
 }
 
-// MemStore calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemStore(offset int32, data []byte) error {
-	return contextWrapper.MemStoreFunc(offset, data)
-}
-
-// MemLoad calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemLoad(offset int32, length int32) ([]byte, error) {
-	return contextWrapper.MemLoadFunc(offset, length)
-}
-
-// MemLoadMultiple calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return contextWrapper.MemLoadMultipleFunc(offset, lengths)
-}
-
 // ElrondAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) ElrondAPIErrorShouldFailExecution() bool {
 	return contextWrapper.ElrondAPIErrorShouldFailExecutionFunc()
@@ -544,7 +511,7 @@ func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution()
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
 }
 
-// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// BigFloatAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
 }
@@ -557,6 +524,10 @@ func (contextWrapper *RuntimeContextWrapper) ManagedBufferAPIErrorShouldFailExec
 // GetVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()
+}
+
+// ReplaceVMExecutor mocked method
+func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(exec executor.Executor) {
 }
 
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext

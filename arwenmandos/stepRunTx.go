@@ -7,9 +7,9 @@ import (
 	"math"
 	"math/big"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
 func (ae *ArwenTestExecutor) executeTx(txIndex string, tx *mj.Transaction) (*vmcommon.VMOutput, error) {

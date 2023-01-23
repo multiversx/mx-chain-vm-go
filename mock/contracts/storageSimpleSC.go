@@ -6,7 +6,7 @@ import (
 )
 
 // LoadStore is an exposed mock contract method
-func LoadStore(instanceMock *mock.InstanceMock, config interface{}) {
+func LoadStore(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("loadStore", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -18,8 +18,8 @@ func LoadStore(instanceMock *mock.InstanceMock, config interface{}) {
 		}
 
 		key := arguments[0]
-		elrondapi.StorageLoadWithWithTypedArgs(host, key)
-		value := elrondapi.StorageLoadWithWithTypedArgs(host, key)
+		_, _ = elrondapi.StorageLoadWithWithTypedArgs(host, key)
+		value, _ := elrondapi.StorageLoadWithWithTypedArgs(host, key)
 
 		host.Output().Finish(value)
 		return instance
@@ -27,7 +27,7 @@ func LoadStore(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // LoadStoreFromAddress is an exposed mock contract method
-func LoadStoreFromAddress(instanceMock *mock.InstanceMock, config interface{}) {
+func LoadStoreFromAddress(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("loadStoreFromAddress", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -41,8 +41,8 @@ func LoadStoreFromAddress(instanceMock *mock.InstanceMock, config interface{}) {
 		address := arguments[0]
 		key := arguments[1]
 
-		elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
-		value := elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
+		_, _ = elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
+		value, _ := elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
 
 		host.Output().Finish(value)
 		return instance
@@ -50,7 +50,7 @@ func LoadStoreFromAddress(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // SetStore is an exposed mock contract method
-func SetStore(instanceMock *mock.InstanceMock, config interface{}) {
+func SetStore(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("setStore", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)

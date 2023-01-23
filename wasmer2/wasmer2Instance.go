@@ -223,9 +223,29 @@ func (instance *Wasmer2Instance) HasMemory() bool {
 	return true
 }
 
-// GetMemory returns the memory for the instance
-func (instance *Wasmer2Instance) GetMemory() executor.Memory {
-	return &instance.memory
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (instance *Wasmer2Instance) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return executor.MemLoadFromMemory(&instance.memory, memPtr, length)
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
+func (instance *Wasmer2Instance) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return executor.MemStoreToMemory(&instance.memory, memPtr, data)
+}
+
+// MemLength returns the length of the allocated memory. Only called directly in tests.
+func (instance *Wasmer2Instance) MemLength() uint32 {
+	return instance.memory.Length()
+}
+
+// MemGrow allocates more pages to the current memory. Only called directly in tests.
+func (instance *Wasmer2Instance) MemGrow(pages uint32) error {
+	return instance.memory.Grow(pages)
+}
+
+// MemDump yields the entire contents of the memory. Only used in tests.
+func (instance *Wasmer2Instance) MemDump() []byte {
+	return instance.memory.Data()
 }
 
 // Id returns an identifier for the instance, unique at runtime

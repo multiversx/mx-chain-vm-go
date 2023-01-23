@@ -8,14 +8,14 @@ import (
 
 func TestRustAdderLog(t *testing.T) {
 	expected := MandosTest(t).
-		Folder("adder/mandos").
+		Folder("adder/scenarios").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("adder/mandos").
+		Folder("adder/scenarios").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().
@@ -25,14 +25,14 @@ func TestRustAdderLog(t *testing.T) {
 
 func TestRustFactorialLog(t *testing.T) {
 	expected := MandosTest(t).
-		Folder("factorial/mandos").
+		Folder("factorial/scenarios").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("factorial/mandos").
+		Folder("factorial/scenarios").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().
@@ -44,14 +44,14 @@ func TestRustErc20Log(t *testing.T) {
 	t.Skip("not a working test")
 
 	expected := MandosTest(t).
-		Folder("erc20-rust/mandos").
+		Folder("erc20-rust/scenarios").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("erc20-rust/mandos").
+		Folder("erc20-rust/scenarios").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().
@@ -95,7 +95,7 @@ func TestDigitalCashLog(t *testing.T) {
 
 func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 	expected := MandosTest(t).
-		Folder("features/composability/mandos").
+		Folder("features/composability/scenarios").
 		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
 		WithExecutorLogs().
 		Run().
@@ -103,7 +103,7 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("features/composability/mandos").
+		Folder("features/composability/scenarios").
 		File("forw_raw_call_async_retrieve_multi_transfer.scen.json").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
@@ -114,7 +114,7 @@ func TestESDTMultiTransferOnCallbackLog(t *testing.T) {
 
 func TestCreateAsyncCallLog(t *testing.T) {
 	expected := MandosTest(t).
-		Folder("features/composability/mandos-promises").
+		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
 		WithExecutorLogs().
 		Run().
@@ -122,7 +122,7 @@ func TestCreateAsyncCallLog(t *testing.T) {
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("features/composability/mandos-promises").
+		Folder("features/composability/scenarios-promises").
 		File("promises_single_transfer.scen.json").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
@@ -133,7 +133,7 @@ func TestCreateAsyncCallLog(t *testing.T) {
 
 func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 	expected := MandosTest(t).
-		Folder("features/composability/mandos").
+		Folder("features/composability/scenarios").
 		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
 		WithExecutorLogs().
 		Run().
@@ -141,7 +141,7 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("features/composability/mandos").
+		Folder("features/composability/scenarios").
 		File("forw_raw_async_send_and_retrieve_multi_transfer_funds.scen.json").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
@@ -154,14 +154,14 @@ func TestMultisigLog(t *testing.T) {
 	t.Skip("not a working test")
 
 	expected := MandosTest(t).
-		Folder("multisig/mandos").
+		Folder("multisig/scenarios").
 		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		ExtractLog()
 
 	MandosTest(t).
-		Folder("multisig/mandos").
+		Folder("multisig/scenarios").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().

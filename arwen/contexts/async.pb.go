@@ -6,8 +6,8 @@ package contexts
 import (
 	bytes "bytes"
 	fmt "fmt"
-	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
 	github_com_ElrondNetwork_elrond_go_core_data "github.com/ElrondNetwork/elrond-go-core/data"
+	arwen "github.com/ElrondNetwork/wasm-vm/arwen"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"

@@ -4,6 +4,7 @@ import (
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 )
 
+// RunScenarioOptions defines the scenario options component
 type RunScenarioOptions struct {
 	ForceTraceGas bool
 	UseWasmer2    bool
@@ -15,6 +16,7 @@ func applyScenarioOptions(scenario *mj.Scenario, options *RunScenarioOptions) {
 	}
 }
 
+// DefaultRunScenarioOptions creates a new RunScenarioOptions instance
 func DefaultRunScenarioOptions() *RunScenarioOptions {
 	return &RunScenarioOptions{
 		ForceTraceGas: false,

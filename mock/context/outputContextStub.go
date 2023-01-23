@@ -3,9 +3,9 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
 )
 
 var _ arwen.OutputContext = (*OutputContextStub)(nil)
@@ -138,7 +138,6 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 	if o.WriteLogCalled != nil {
 		o.WriteLogCalled(address, topics, data)
 	}
-	return
 }
 
 // TransferValueOnly mocked method
@@ -263,7 +262,7 @@ func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 	return nil
 }
 
-// GetVMOutput mocked method
+// RemoveNonUpdatedStorage mocked method
 func (o *OutputContextStub) RemoveNonUpdatedStorage() {
 	if o.RemoveNonUpdatedStorageCalled != nil {
 		o.RemoveNonUpdatedStorageCalled()

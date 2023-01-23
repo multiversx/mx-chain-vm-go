@@ -7,14 +7,8 @@ import (
 // ErrAdditionOverflow is raised when there is an overflow because of the addition of two numbers
 var ErrAdditionOverflow = errors.New("addition overflow")
 
-// ErrSubtractionUnderflow is raised when there is an underflow because of the subtraction of two numbers
-var ErrSubtractionUnderflow = errors.New("subtraction underflow")
-
 // ErrMultiplicationOverflow is raised when there is an overflow because of the multiplication of two numbers
 var ErrMultiplicationOverflow = errors.New("multiplication overflow")
-
-// ErrOperationCausingPanic signals that the operation tried would cause panic and so is not permitted
-var ErrOperationCausingPanic = errors.New("this big Float operation is not permitted")
 
 // ErrBigFloatSub is raised when sub of floats produces a panic
 var ErrBigFloatSub = errors.New("this big Float operation is not permitted while doing float.Sub")

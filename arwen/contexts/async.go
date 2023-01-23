@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/math"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/ElrondNetwork/wasm-vm/math"
 )
 
 var _ arwen.AsyncContext = (*asyncContext)(nil)
@@ -53,7 +53,7 @@ func NewAsyncContext(
 	host arwen.VMHost,
 	callArgsParser arwen.CallArgsParser,
 	esdtTransferParser vmcommon.ESDTTransferParser,
-	marshalizer *marshal.GogoProtoMarshalizer,
+	_ *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	if check.IfNil(host) {
 		return nil, arwen.ErrNilVMHost
@@ -342,7 +342,7 @@ func (context *asyncContext) SetAsyncArgumentsForCall(input *vmcommon.ContractCa
 	}
 }
 
-// SetAsyncArgumentsForCall sets standard async context arguments
+// SetAsyncArgumentsForCallback sets standard async context arguments
 func (context *asyncContext) SetAsyncArgumentsForCallback(
 	input *vmcommon.ContractCallInput,
 	asyncCall *arwen.AsyncCall,
@@ -363,18 +363,22 @@ type asyncCallLocation struct {
 	err        error
 }
 
+// GetAsyncCall returns the stored async call object
 func (callInfo *asyncCallLocation) GetAsyncCall() *arwen.AsyncCall {
 	return callInfo.asyncCall
 }
 
+// GetGroupIndex returns the stored group index
 func (callInfo *asyncCallLocation) GetGroupIndex() int {
 	return callInfo.groupIndex
 }
 
+// GetCallIndex returns the stored call index
 func (callInfo *asyncCallLocation) GetCallIndex() int {
 	return callInfo.callIndex
 }
 
+// GetError returns the stored error
 func (callInfo *asyncCallLocation) GetError() error {
 	return callInfo.err
 }
@@ -432,10 +436,12 @@ func (context *asyncContext) IsCrossShard() bool {
 	return len(context.stateStack) == 0 && (context.callType == vm.AsynchronousCall || context.callType == vm.AsynchronousCallBack)
 }
 
+// IsFirstCall returns true if the stored caller call ID is nil
 func (context *asyncContext) IsFirstCall() bool {
 	return context.callerCallID == nil
 }
 
+// HasCallback returns true if the stored callback value is empty
 func (context *asyncContext) HasCallback() bool {
 	return context.callback != ""
 }
@@ -752,11 +758,6 @@ func IsCallAsync(callType vm.CallType) bool {
 	return callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack
 }
 
-// IsCallback checks if the call is a callback async
-func IsCallback(callType vm.CallType) bool {
-	return callType == vm.AsynchronousCallBack
-}
-
 func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
 	// Cross-shard calls to built-in functions have two halves: an intra-shard
 	// half, followed by sending the call across shards.
@@ -871,11 +872,8 @@ func (context *asyncContext) isValidCallbackName(callback string) bool {
 	}
 
 	err := context.host.Runtime().ValidateCallbackName(callback)
-	if err != nil {
-		return false
-	}
 
-	return true
+	return err == nil
 }
 
 func (context *asyncContext) getContextFromStack(address []byte, callID []byte) *asyncContext {
@@ -939,6 +937,9 @@ func (context *asyncContext) determineDestinationForAsyncCall(destination []byte
 
 	argsParser := context.callArgsParser
 	functionName, args, err := argsParser.ParseData(string(data))
+	// TODO(check) what should do if we have a not nil err
+	_ = err
+
 	if !context.host.IsBuiltinFunctionName(functionName) {
 		return destination
 	}

@@ -35,7 +35,7 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
 	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
 		context.executeESDTTransferOnCallback(asyncCall)
-		context.completeChild(asyncCall.CallID, 0)
+		_ = context.completeChild(asyncCall.CallID, 0)
 		return nil
 	}
 
@@ -96,11 +96,12 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 	return nil
 }
 
-// TODO rename to executeLocalCallbackAndFinishOutput
+// ExecuteSyncCallbackAndFinishOutput executes the callback and finishes the output
+//TODO rename to executeLocalCallbackAndFinishOutput
 func (context *asyncContext) ExecuteSyncCallbackAndFinishOutput(
 	asyncCall *arwen.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
-	destinationCallInput *vmcommon.ContractCallInput,
+	_ *vmcommon.ContractCallInput,
 	gasAccumulated uint64,
 	err error) (bool, *vmcommon.VMOutput) {
 	callbackVMOutput, isComplete, callbackErr := context.executeSyncCallback(asyncCall, vmOutput, gasAccumulated, err)
@@ -203,17 +204,13 @@ func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.A
 	return nil
 }
 
+// TODO(fix) this function
+//nolint:all
 func (context *asyncContext) finishAsyncLocalCallbackExecution(
 	vmOutput *vmcommon.VMOutput,
 	err error,
-	destinationReturnCode vmcommon.ReturnCode) {
-	// output := context.host.Output()
-	// if err == nil {
-	// 	if setReturnCode {
-	// 		output.SetReturnCode(destinationReturnCode)
-	// 	}
-	// 	return
-	// }
+	destinationReturnCode vmcommon.ReturnCode,
+) {
 
 	runtime := context.host.Runtime()
 
@@ -365,6 +362,7 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	context.host.Output().DeleteFirstReturnData()
 }
 
+// ReturnCodeToBytes returns the provided returnCode as byte slice
 func ReturnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
 	if returnCode == vmcommon.Ok {
 		return []byte{0}
@@ -413,58 +411,6 @@ func (context *asyncContext) isSameShardNFTTransfer(contractCallInput *vmcommon.
 
 	return contractCallInput.Function == core.BuiltInFunctionMultiESDTNFTTransfer ||
 		contractCallInput.Function == core.BuiltInFunctionESDTNFTTransfer
-}
-
-func (context *asyncContext) createGroupCallbackInput(group *arwen.AsyncCallGroup) *vmcommon.ContractCallInput {
-	runtime := context.host.Runtime()
-
-	input := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallType:       vm.AsynchronousCallBack,
-			CallerAddr:     context.callerAddr,
-			Arguments:      [][]byte{group.CallbackData},
-			CallValue:      big.NewInt(0),
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    group.GasLocked + context.gasAccumulated,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-			PrevTxHash:     runtime.GetPrevTxHash(),
-		},
-		RecipientAddr: runtime.GetContextAddress(),
-		Function:      group.Callback,
-	}
-
-	logAsync.Trace("created group callback input", "group", group.Identifier, "function", input.Function)
-	logAsync.Trace("created group callback input gas", "provided", input.GasProvided, "locked", group.GasLocked, "accumulated", context.gasAccumulated)
-	return input
-}
-
-func (context *asyncContext) createContextCallbackInput() *vmcommon.ContractCallInput {
-	host := context.host
-	runtime := host.Runtime()
-
-	arguments := [][]byte{context.callbackData}
-
-	// TODO ensure a new value for VMInput.CurrentTxHash
-	input := &vmcommon.ContractCallInput{
-		VMInput: vmcommon.VMInput{
-			CallerAddr:     context.callerAddr,
-			Arguments:      arguments,
-			CallValue:      runtime.GetVMInput().CallValue,
-			CallType:       vm.AsynchronousCallBack,
-			GasPrice:       runtime.GetVMInput().GasPrice,
-			GasProvided:    context.gasAccumulated,
-			CurrentTxHash:  runtime.GetCurrentTxHash(),
-			OriginalTxHash: runtime.GetOriginalTxHash(),
-			PrevTxHash:     runtime.GetPrevTxHash(),
-		},
-		RecipientAddr: runtime.GetContextAddress(),
-		Function:      context.callback,
-	}
-
-	logAsync.Trace("created context callback input", "sc", runtime.GetContextAddress(), "function", input.Function)
-	logAsync.Trace("created context callback input gas", "provided", input.GasProvided, "accumulated", context.gasAccumulated)
-	return input
 }
 
 func (context *asyncContext) isESDTTransferOnReturnDataWithNoAdditionalData(

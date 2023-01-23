@@ -1,17 +1,19 @@
+//nolint:all
 package contexts
 
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/crypto"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/ElrondNetwork/wasm-vm/crypto"
 )
 
 /*
 	Called to process OutputTransfers created by a
 	direct call (on dest) builtin function call by the VM
+    TODO(fix) this function
 */
 func AddAsyncArgumentsToOutputTransfers(
 	address []byte,
@@ -87,6 +89,7 @@ func createDataFromAsyncParams(
 	A)	after an async call executed following a builtin function call,
 	B)	other cases where processing the output trasnfers of a VMOutput did
 		not produce a SCR of type AsynchronousCallBack
+    TODO(check): function not used?
 */
 func AppendAsyncArgumentsToCallbackCallData(
 	hasher crypto.Hasher,
@@ -105,6 +108,7 @@ func AppendAsyncArgumentsToCallbackCallData(
 	Called when a SCR is created from VMOutput in order to recompose
 	async data and call data into a transfer data ready for the SCR
 	(by preprocessOutTransferToSCR())
+    TODO(check): function not used?
 */
 func AppendTransferAsyncDataToCallData(
 	callData []byte,
@@ -155,7 +159,7 @@ func appendAsyncParamsToCallData(
 	callData := txDataBuilder.NewBuilder()
 
 	if functionName != "" {
-		callData.Func(string(functionName))
+		callData.Func(functionName)
 	}
 
 	if len(args) != 0 {
@@ -194,6 +198,7 @@ func CreateCallbackAsyncParams(hasher crypto.Hasher, asyncParams *vmcommon.Async
 	return newAsyncParams
 }
 
+// GenerateNewCallID will generate a new call ID as byte slice
 func GenerateNewCallID(hasher crypto.Hasher, parentCallID []byte, suffix []byte) []byte {
 	newCallID := append(parentCallID, suffix...)
 	newCallID, err := hasher.Sha256(newCallID)

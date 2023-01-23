@@ -117,6 +117,11 @@ func (instance *InstanceMock) GetFunctionNames() []string {
 	return functionNames
 }
 
+// ValidateVoidFunction mocked method
+func (instance *InstanceMock) ValidateVoidFunction(_ string) error {
+	return nil
+}
+
 // ValidateFunctionArities mocked method
 func (instance *InstanceMock) ValidateFunctionArities() error {
 	return nil
@@ -127,9 +132,29 @@ func (instance *InstanceMock) HasMemory() bool {
 	return true
 }
 
-// GetMemory mocked method
-func (instance *InstanceMock) GetMemory() executor.Memory {
-	return instance.Memory
+// MemLoad returns the contents from the given offset of the WASM memory.
+func (instance *InstanceMock) MemLoad(memPtr executor.MemPtr, length executor.MemLength) ([]byte, error) {
+	return executor.MemLoadFromMemory(instance.Memory, memPtr, length)
+}
+
+// MemStore stores the given data in the WASM memory at the given offset.
+func (instance *InstanceMock) MemStore(memPtr executor.MemPtr, data []byte) error {
+	return executor.MemStoreToMemory(instance.Memory, memPtr, data)
+}
+
+// MemLength returns the length of the allocated memory. Only called directly in tests.
+func (instance *InstanceMock) MemLength() uint32 {
+	return instance.Memory.Length()
+}
+
+// MemGrow allocates more pages to the current memory. Only called directly in tests.
+func (instance *InstanceMock) MemGrow(pages uint32) error {
+	return instance.Memory.Grow(pages)
+}
+
+// MemDump yields the entire contents of the memory. Only used in tests.
+func (instance *InstanceMock) MemDump() []byte {
+	return instance.Memory.Data()
 }
 
 // IsFunctionImported mocked method
@@ -155,7 +180,7 @@ func (instance *InstanceMock) IsInterfaceNil() bool {
 }
 
 // SetVMHooksPtr mocked method
-func (instance *InstanceMock) SetVMHooksPtr(vmHooksPtr uintptr) {
+func (instance *InstanceMock) SetVMHooksPtr(_ uintptr) {
 }
 
 // GetVMHooksPtr mocked method

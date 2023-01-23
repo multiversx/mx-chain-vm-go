@@ -61,14 +61,17 @@ func getAddressOrDefult(address []byte, defaultAddress []byte) []byte {
 	return address
 }
 
+// GetChildAddress -
 func (config *TestConfig) GetChildAddress() []byte {
 	return getAddressOrDefult(config.ChildAddress, ChildAddress)
 }
 
+// GetThirdPartyAddress -
 func (config *TestConfig) GetThirdPartyAddress() []byte {
 	return getAddressOrDefult(config.ThirdPartyAddress, ThirdPartyAddress)
 }
 
+// GetVaultAddress -
 func (config *TestConfig) GetVaultAddress() []byte {
 	return getAddressOrDefult(config.VaultAddress, VaultAddress)
 }
@@ -149,11 +152,13 @@ func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.Insta
 	return *mockSC
 }
 
+// GetShardID -
 func (mockSC *MockTestSmartContract) GetShardID() uint32 {
 	return mockSC.shardID
 }
 
-func (mockSC MockTestSmartContract) Initialize(
+// Initialize -
+func (mockSC *MockTestSmartContract) Initialize(
 	t testing.TB,
 	host arwen.VMHost,
 	imb *mock.ExecutorMock,

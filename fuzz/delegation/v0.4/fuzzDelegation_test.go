@@ -120,6 +120,8 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 
 	// all delegators (incl. owner) claim all rewards
 	err = pfe.computeAllRewards()
+	require.Nil(t, err)
+
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
 		err = pfe.claimRewards(delegatorIdx)
 		require.Nil(t, err)

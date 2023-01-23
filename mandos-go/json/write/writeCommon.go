@@ -2,7 +2,6 @@ package mandosjsonwrite
 
 import (
 	"encoding/hex"
-	"math/big"
 
 	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
 	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
@@ -64,29 +63,6 @@ func logsToOJ(logEntries mj.LogList) oj.OJsonObject {
 	}
 	logOJList := oj.OJsonList(logList)
 	return &logOJList
-}
-
-func intToString(i *big.Int) string {
-	if i == nil {
-		return ""
-	}
-	if i.Sign() == 0 {
-		return "0x00"
-	}
-
-	isNegative := i.Sign() == -1
-	str := i.Text(16)
-	if isNegative {
-		str = str[1:] // drop the minus in front
-	}
-	if len(str)%2 != 0 {
-		str = "0" + str
-	}
-	str = "0x" + str
-	if isNegative {
-		str = "-" + str
-	}
-	return str
 }
 
 func bigIntToOJ(i mj.JSONBigInt) oj.OJsonObject {

@@ -48,9 +48,10 @@ func CreateSvgWithLocation(folder string, file string, graphviz *gographviz.Grap
 		panic(err)
 	}
 
-	os.Remove(destDot)
+	_ = os.Remove(destDot)
 }
 
+// ToGraphviz -
 func ToGraphviz(graph *TestCallGraph, showGasEdgeLabels bool) *gographviz.Graph {
 	graphviz := gographviz.NewGraph()
 	graphviz.Directed = true
@@ -66,7 +67,7 @@ func ToGraphviz(graph *TestCallGraph, showGasEdgeLabels bool) *gographviz.Graph 
 		nodeAttrs := make(map[string]string)
 		setNodeAttributes(node, nodeAttrs)
 		from := node.Label
-		graphviz.AddNode(graphName, from, nodeAttrs)
+		_ = graphviz.AddNode(graphName, from, nodeAttrs)
 		for _, edge := range node.GetEdges() {
 			to := edge.To.Label
 			edgeAttrs := make(map[string]string)
@@ -74,7 +75,7 @@ func ToGraphviz(graph *TestCallGraph, showGasEdgeLabels bool) *gographviz.Graph 
 				setEdgeLabel(edgeAttrs, edge, showGasEdgeLabels)
 			}
 			setEdgeAttributes(edge, edgeAttrs)
-			graphviz.AddEdge(from, to, true, edgeAttrs)
+			_ = graphviz.AddEdge(from, to, true, edgeAttrs)
 		}
 	}
 

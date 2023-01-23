@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"os"
 	"path/filepath"
 
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/wasm-vm/math"
-	"github.com/pelletier/go-toml"
 )
 
 // Zero is the big integer 0
@@ -93,74 +91,6 @@ func GetSCCode(fileName string) []byte {
 func GetTestSCCode(scName string, prefixToTestSCs string) []byte {
 	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + scName + ".wasm"
 	return GetSCCode(pathToSC)
-}
-
-// GetTestSCCodeModule retrieves the bytecode of a WASM testing contract, given
-// a specific name of the WASM module
-func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs string) []byte {
-	pathToSC := prefixToTestSCs + "test/contracts/" + scName + "/output/" + moduleName + ".wasm"
-	return GetSCCode(pathToSC)
-}
-
-// OpenFile method opens the file from given path - does not close the file
-func OpenFile(relativePath string) (*os.File, error) {
-	path, err := filepath.Abs(relativePath)
-	if err != nil {
-		fmt.Printf("cannot create absolute path for the provided file: %s", err.Error())
-		return nil, err
-	}
-	f, err := os.Open(filepath.Clean(path))
-	if err != nil {
-		return nil, err
-	}
-
-	return f, nil
-}
-
-// LoadTomlFileToMap opens and decodes a toml file as a map[string]interface{}
-func LoadTomlFileToMap(relativePath string) (map[string]interface{}, error) {
-	f, err := OpenFile(relativePath)
-	if err != nil {
-		return nil, err
-	}
-
-	fileinfo, err := f.Stat()
-	if err != nil {
-		fmt.Printf("cannot stat file: %s", err.Error())
-		return nil, err
-	}
-
-	filesize := fileinfo.Size()
-	buffer := make([]byte, filesize)
-
-	_, err = f.Read(buffer)
-	if err != nil {
-		fmt.Printf("cannot read from file: %s", err.Error())
-		return nil, err
-	}
-
-	defer func() {
-		err = f.Close()
-		if err != nil {
-			fmt.Printf("cannot close file: %s", err.Error())
-		}
-	}()
-
-	loadedTree, err := toml.Load(string(buffer))
-	if err != nil {
-		fmt.Printf("cannot interpret file contents as toml: %s", err.Error())
-		return nil, err
-	}
-
-	loadedMap := loadedTree.ToMap()
-
-	return loadedMap, nil
-}
-
-// SetPlainLoggerFormatter configures the logger to output only ASCII characters
-func SetPlainLoggerFormatter() {
-	logger.ClearLogObservers()
-	_ = logger.AddLogObserver(os.Stdout, &logger.PlainFormatter{})
 }
 
 // SetLoggingForTests configures the logger package with *:TRACE and enabled logger names
