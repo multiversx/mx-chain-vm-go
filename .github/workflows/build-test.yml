@@ -2,8 +2,7 @@ name: Build and run tests
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master, development, rc/*, feat/* ]
   pull_request:
 
 jobs:
