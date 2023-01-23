@@ -11,8 +11,8 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
@@ -928,31 +928,43 @@ func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
 	return false
 }
 
+// CallFunction calls the specified instance function
+func (context *runtimeContext) CallFunction(funcName string) error {
+	instance := context.iTracker.Instance()
+	if !instance.HasFunction(funcName) {
+		return arwen.ErrFuncNotFound
+	}
+
+	_, err := instance.CallFunction(funcName)
+
+	return err
+}
+
 // GetFunctionToCall returns the function to call from the wasmer instance exports.
-func (context *runtimeContext) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
-	exports := context.iTracker.Instance().GetExports()
+func (context *runtimeContext) GetFunctionToCall() (string, error) {
+	instance := context.iTracker.Instance()
 	logRuntime.Trace("get function to call", "function", context.callFunction)
-	if function, ok := exports[context.callFunction]; ok {
-		return function, nil
+	if instance.HasFunction(context.callFunction) {
+		return context.callFunction, nil
 	}
 
 	if context.callFunction == arwen.CallbackFunctionName {
 		// TODO rewrite this condition, until the AsyncContext is merged
 		logRuntime.Trace("get function to call", "error", arwen.ErrNilCallbackFunction)
-		return nil, arwen.ErrNilCallbackFunction
+		return "", arwen.ErrNilCallbackFunction
 	}
 
-	return nil, arwen.ErrFuncNotFound
+	return "", arwen.ErrFuncNotFound
 }
 
 // GetInitFunction returns the init function from the current wasmer instance exports.
-func (context *runtimeContext) GetInitFunction() wasmer.ExportedFunctionCallback {
-	exports := context.iTracker.Instance().GetExports()
-	if init, ok := exports[arwen.InitFunctionName]; ok {
-		return init
+func (context *runtimeContext) GetInitFunction() string {
+	instance := context.iTracker.Instance()
+	if instance.HasFunction(arwen.InitFunctionName) {
+		return arwen.InitFunctionName
 	}
 
-	return nil
+	return ""
 }
 
 // ExecuteAsyncCall locks the necessary gas and sets the async call info and a runtime breakpoint value.

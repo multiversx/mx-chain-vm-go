@@ -3,6 +3,8 @@ package wasmer
 // InstanceHandler defines the functionality of a Wasmer instance
 type InstanceHandler interface {
 	HasMemory() bool
+	HasFunction(funcName string) bool
+	CallFunction(funcName string) (Value, error)
 	SetContextData(data uintptr)
 	GetPointsUsed() uint64
 	SetPointsUsed(points uint64)

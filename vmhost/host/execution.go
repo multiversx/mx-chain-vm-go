@@ -12,9 +12,9 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/contexts"
 )
 
 func (host *vmHost) doRunSmartContractCreate(input *vmcommon.ContractCreateInput) *vmcommon.VMOutput {
@@ -703,7 +703,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 		return err
 	}
 
-	_, err = function()
+	err = host.Runtime().CallFunction(function)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -889,11 +889,11 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 func (host *vmHost) callInitFunction() error {
 	runtime := host.Runtime()
 	init := runtime.GetInitFunction()
-	if init == nil {
+	if init == "" {
 		return nil
 	}
 
-	_, err := init()
+	err := runtime.CallFunction(init)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -935,7 +935,7 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	_, err = function()
+	err = runtime.CallFunction(function)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 		log.Trace("breakpoint detected and handled", "err", err)

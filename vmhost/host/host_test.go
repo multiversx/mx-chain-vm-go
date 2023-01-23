@@ -5,9 +5,9 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
-	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
