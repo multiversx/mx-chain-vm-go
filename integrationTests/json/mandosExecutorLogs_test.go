@@ -151,7 +151,7 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 }
 
 func TestMultisigLog(t *testing.T) {
-	t.Skip("not a working test")
+	// t.Skip("not a working test")
 
 	expected := MandosTest(t).
 		Folder("multisig/scenarios").
