@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	oj "github.com/multiversx/mx-chain-vm-go/mandos-go/orderedjson"
 	"github.com/stretchr/testify/require"
 )
 

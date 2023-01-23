@@ -3,12 +3,12 @@ package arwenmandos
 import (
 	"errors"
 
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	"github.com/multiversx/mx-chain-core-go/core/check"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	mc "github.com/multiversx/mx-chain-vm-go/mandos-go/controller"
+	fr "github.com/multiversx/mx-chain-vm-go/mandos-go/fileresolver"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
 )
 
 // Reset clears state/world.

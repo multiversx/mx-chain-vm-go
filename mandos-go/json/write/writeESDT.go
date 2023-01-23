@@ -1,8 +1,8 @@
 package mandosjsonwrite
 
 import (
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	oj "github.com/multiversx/mx-chain-vm-go/mandos-go/orderedjson"
 )
 
 func esdtTxDataToOJ(esdtItems []*mj.ESDTTxData) oj.OJsonObject {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"math/big"
 
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	oj "github.com/multiversx/mx-chain-vm-go/mandos-go/orderedjson"
 )
 
 // JSONCheckBytes holds a byte slice condition.

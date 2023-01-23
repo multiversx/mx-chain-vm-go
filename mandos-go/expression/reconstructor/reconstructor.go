@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	ei "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/interpreter"
+	ei "github.com/multiversx/mx-chain-vm-go/mandos-go/expression/interpreter"
 )
 
 // ExprReconstructorHint type definition

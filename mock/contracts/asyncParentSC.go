@@ -5,11 +5,11 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 )
 
 // test variables
@@ -146,7 +146,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 		if !testConfig.IsLegacyAsync {
 			managed := host.ManagedTypes()
 			closureHandle := managed.NewManagedBuffer()
-			elrondapi.GetCallbackClosureWithHost(host, closureHandle)
+			vmhooks.GetCallbackClosureWithHost(host, closureHandle)
 			closure, err := managed.GetBytes(closureHandle)
 			if err != nil {
 				host.Runtime().SignalUserError("can't get closure")
@@ -208,7 +208,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		retVal := elrondapi.ExecuteOnSameContextWithTypedArgs(
+		retVal := vmhooks.ExecuteOnSameContextWithTypedArgs(
 			host,
 			int64(host.Metering().GasLeft()),
 			big.NewInt(0),

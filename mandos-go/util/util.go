@@ -1,9 +1,9 @@
 package util
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	txDataBuilder "github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	"github.com/multiversx/mx-chain-core-go/core"
+	txDataBuilder "github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
 )
 
 // CreateMultiTransferData builds data for a multiTransferESDT

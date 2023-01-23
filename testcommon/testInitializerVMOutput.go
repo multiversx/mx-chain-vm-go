@@ -3,7 +3,7 @@ package testcommon
 import (
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // MakeEmptyVMOutput creates a vmcommon.VMOutput struct with default values

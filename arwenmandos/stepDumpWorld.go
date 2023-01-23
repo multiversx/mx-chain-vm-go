@@ -5,17 +5,17 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/multiversx/mx-chain-core-go/core"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/mandos-go/esdtconvert"
+	er "github.com/multiversx/mx-chain-vm-go/mandos-go/expression/reconstructor"
+	mjwrite "github.com/multiversx/mx-chain-vm-go/mandos-go/json/write"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	oj "github.com/multiversx/mx-chain-vm-go/mandos-go/orderedjson"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
-const includeElrondProtectedStorage = false
+const includeProtectedStorage = false
 
 func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock.Account) (*mj.Account, error) {
 	var storageKeys []string
@@ -27,7 +27,7 @@ func (ae *ArwenTestExecutor) convertMockAccountToMandosFormat(account *worldmock
 	var storageKvps []*mj.StorageKeyValuePair
 	for _, storageKey := range storageKeys {
 		storageValue := account.Storage[storageKey]
-		includeKey := includeElrondProtectedStorage || !strings.HasPrefix(storageKey, core.ElrondProtectedKeyPrefix)
+		includeKey := includeProtectedStorage || !strings.HasPrefix(storageKey, core.ProtectedKeyPrefix)
 		if includeKey && len(storageValue) > 0 {
 			storageKvps = append(storageKvps, &mj.StorageKeyValuePair{
 				Key: mj.JSONBytesFromString{

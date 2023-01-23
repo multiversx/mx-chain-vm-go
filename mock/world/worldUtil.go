@@ -1,8 +1,8 @@
 package worldmock
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/multiversx/mx-chain-core-go/core"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // DefaultVMType is an exposed value to use in tests

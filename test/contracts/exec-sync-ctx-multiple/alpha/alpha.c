@@ -1,6 +1,6 @@
-#include "../../elrond/context.h"
-#include "../../elrond/bigInt.h"
-#include "../../elrond/test_utils.h"
+#include "../../mxvm/context.h"
+#include "../../mxvm/bigInt.h"
+#include "../../mxvm/test_utils.h"
 
 byte betaSC[]  = "\0\0\0\0\0\0\0\0\x0F\x0F" "betaSC................";
 byte gammaSC[] = "\0\0\0\0\0\0\0\0\x0F\x0F" "gammaSC...............";

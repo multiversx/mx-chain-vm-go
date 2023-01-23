@@ -5,18 +5,18 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/marshal"
 )
 
 // esdtTokenKeyPrefix is the prefix of storage keys belonging to ESDT tokens.
-var esdtTokenKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTKeyIdentifier)
+var esdtTokenKeyPrefix = []byte(core.ProtectedKeyPrefix + core.ESDTKeyIdentifier)
 
 // esdtRoleKeyPrefix is the prefix of storage keys belonging to ESDT roles.
-var esdtRoleKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
+var esdtRoleKeyPrefix = []byte(core.ProtectedKeyPrefix + core.ESDTRoleIdentifier + core.ESDTKeyIdentifier)
 
 // esdtNonceKeyPrefix is the prefix of storage keys belonging to ESDT nonces.
-var esdtNonceKeyPrefix = []byte(core.ElrondProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
+var esdtNonceKeyPrefix = []byte(core.ProtectedKeyPrefix + core.ESDTNFTLatestNonceIdentifier)
 
 // esdtDataMarshalizer is the global marshalizer to be used for encoding/decoding ESDT data
 var esdtDataMarshalizer = &marshal.GogoProtoMarshalizer{}

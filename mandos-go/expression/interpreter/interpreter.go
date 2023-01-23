@@ -7,10 +7,10 @@ import (
 	"math/big"
 	"strings"
 
-	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
+	"github.com/multiversx/mx-chain-core-go/core"
+	fr "github.com/multiversx/mx-chain-vm-go/mandos-go/fileresolver"
+	oj "github.com/multiversx/mx-chain-vm-go/mandos-go/orderedjson"
 )
 
 var strPrefixes = []string{"str:", "``", "''"}

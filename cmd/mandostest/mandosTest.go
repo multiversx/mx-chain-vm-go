@@ -1,6 +1,6 @@
 package main
 
-import cli "github.com/ElrondNetwork/wasm-vm/cmd/mandostestcli"
+import cli "github.com/multiversx/mx-chain-vm-go/cmd/mandostestcli"
 
 func main() {
 	cli.MandosTestCLI()

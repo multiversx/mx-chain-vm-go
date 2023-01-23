@@ -3,7 +3,7 @@ package arwendebug
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // RequestBase is a CLI / REST request message

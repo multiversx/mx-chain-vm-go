@@ -10,19 +10,19 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	arwenHost "github.com/multiversx/mx-chain-vm-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
@@ -134,7 +134,7 @@ func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 			BlockGasLimit:            uint64(1000),
 			GasSchedule:              nil,
 			BuiltInFuncContainer:     nil,
-			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ProtectedKeyPrefix: []byte("ELROND"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubAllFlags(),

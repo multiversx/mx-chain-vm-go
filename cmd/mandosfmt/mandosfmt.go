@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	mc "github.com/multiversx/mx-chain-vm-go/mandos-go/controller"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package testcommon
 import (
 	"sort"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
 )
 
 // CrossShardCall -

@@ -3,7 +3,7 @@ package dex
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
 )
 
 func (pfe *fuzzDexExecutor) interpretExpr(expression string) []byte {

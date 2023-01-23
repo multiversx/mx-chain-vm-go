@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
@@ -89,7 +89,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			ESDTTokenNonce: 0,
 		}
 
-		elrondapi.TransferESDTNFTExecuteWithTypedArgs(
+		vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
 			input.RecipientAddr,
 			[]*vmcommon.ESDTTransfer{transfer},

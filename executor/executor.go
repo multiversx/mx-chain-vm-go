@@ -1,7 +1,7 @@
 package executor
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // CompilationOptions contains configurations for instantiating an executor instance.

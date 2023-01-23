@@ -4,10 +4,10 @@ import (
 	"math/big"
 	"testing"
 
-	mge "github.com/ElrondNetwork/wasm-vm/mandos-go/elrondgo-exporter"
+	mge "github.com/multiversx/mx-chain-vm-go/mandos-go/elrondgo-exporter"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
 	"github.com/stretchr/testify/require"
 )
 

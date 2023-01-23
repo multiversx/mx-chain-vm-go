@@ -3,7 +3,7 @@ package arwenmandos
 import (
 	"fmt"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
 )
 
 // ExecuteTest executes an individual test.

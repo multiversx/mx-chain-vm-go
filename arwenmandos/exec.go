@@ -3,20 +3,20 @@ package arwenmandos
 import (
 	"fmt"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	gasSchedules "github.com/ElrondNetwork/wasm-vm/arwenmandos/gasSchedules"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	er "github.com/ElrondNetwork/wasm-vm/mandos-go/expression/reconstructor"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	arwenHost "github.com/multiversx/mx-chain-vm-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
+	gasSchedules "github.com/multiversx/mx-chain-vm-go/arwenmandos/gasSchedules"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	mc "github.com/multiversx/mx-chain-vm-go/mandos-go/controller"
+	er "github.com/multiversx/mx-chain-vm-go/mandos-go/expression/reconstructor"
+	fr "github.com/multiversx/mx-chain-vm-go/mandos-go/fileresolver"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
 var log = logger.GetOrCreate("arwen/mandos")
@@ -81,7 +81,7 @@ func (ae *ArwenTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
-			ElrondProtectedKeyPrefix: []byte(ElrondProtectedKeyPrefix),
+			ProtectedKeyPrefix: []byte(ProtectedKeyPrefix),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),

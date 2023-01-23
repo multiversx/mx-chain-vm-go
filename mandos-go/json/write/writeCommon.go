@@ -3,8 +3,8 @@ package mandosjsonwrite
 import (
 	"encoding/hex"
 
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	oj "github.com/multiversx/mx-chain-vm-go/mandos-go/orderedjson"
 )
 
 func resultToOJ(res *mj.TransactionResult) oj.OJsonObject {

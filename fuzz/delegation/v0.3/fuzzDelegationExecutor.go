@@ -8,14 +8,14 @@ import (
 	"math/big"
 	"strings"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	am "github.com/multiversx/mx-chain-vm-go/arwenmandos"
+	fr "github.com/multiversx/mx-chain-vm-go/mandos-go/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-go/mandos-go/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-vm-go/mandos-go/json/write"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
 type fuzzDelegationExecutor struct {

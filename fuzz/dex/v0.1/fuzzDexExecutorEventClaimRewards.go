@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) claimRewards(r *rand.Rand, statistics *eventsStatistics) error {

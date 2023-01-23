@@ -1,9 +1,9 @@
 package mandoscontroller
 
 import (
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	fr "github.com/multiversx/mx-chain-vm-go/mandos-go/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-go/mandos-go/json/parse"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
 )
 
 // ScenarioExecutor describes a component that can run a VM scenario.

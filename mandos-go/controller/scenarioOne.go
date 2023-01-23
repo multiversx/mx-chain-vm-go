@@ -1,7 +1,7 @@
 package mandoscontroller
 
 import (
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
 )
 
 // RunScenarioOptions defines the scenario options component
