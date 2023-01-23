@@ -243,6 +243,7 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
 
+// CallFunction mocked method
 func (r *RuntimeContextMock) CallFunction(_ string) error {
 	return r.Err
 }
