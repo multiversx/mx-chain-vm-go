@@ -12,7 +12,7 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	gasSchedules "github.com/multiversx/mx-chain-vm-go/arwenmandos/gasSchedules"
+	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"

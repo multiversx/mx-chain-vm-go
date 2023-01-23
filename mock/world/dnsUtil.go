@@ -3,7 +3,7 @@ package worldmock
 import (
 	"fmt"
 
-	mei "github.com/multiversx/mx-chain-vm-go/mandos-go/expression/interpreter"
+	mei "github.com/multiversx/mx-chain-vm-go/scenarios/expression/interpreter"
 )
 
 var numDNSAddresses = uint8(0xFF)

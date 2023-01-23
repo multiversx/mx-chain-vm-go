@@ -14,7 +14,7 @@ import (
 	arwenHost "github.com/multiversx/mx-chain-vm-go/vmhost/host"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-go/config"
-	er "github.com/multiversx/mx-chain-vm-go/mandos-go/expression/reconstructor"
+	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
 	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/stretchr/testify/require"
 )

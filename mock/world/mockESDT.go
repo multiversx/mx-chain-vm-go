@@ -8,8 +8,8 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/esdt"
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/mandos-go/esdtconvert"
-	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
+	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 )
 
 // GetTokenBalance returns the ESDT balance of an account for the given token

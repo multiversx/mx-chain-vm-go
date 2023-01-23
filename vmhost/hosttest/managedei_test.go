@@ -17,7 +17,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
-	"github.com/multiversx/mx-chain-vm-go/mandos-go/esdtconvert"
+	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"

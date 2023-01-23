@@ -10,11 +10,11 @@ import (
 
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	am "github.com/multiversx/mx-chain-vm-go/arwenmandos"
-	fr "github.com/multiversx/mx-chain-vm-go/mandos-go/fileresolver"
-	mjparse "github.com/multiversx/mx-chain-vm-go/mandos-go/json/parse"
-	mjwrite "github.com/multiversx/mx-chain-vm-go/mandos-go/json/write"
-	mj "github.com/multiversx/mx-chain-vm-go/mandos-go/model"
+	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 

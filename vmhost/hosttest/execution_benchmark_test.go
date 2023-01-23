@@ -15,7 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	arwenHost "github.com/multiversx/mx-chain-vm-go/vmhost/host"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
-	gasSchedules "github.com/multiversx/mx-chain-vm-go/arwenmandos/gasSchedules"
+	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/stretchr/testify/assert"

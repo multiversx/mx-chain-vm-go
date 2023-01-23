@@ -10,7 +10,7 @@ import (
 	"time"
 
 	roulette "github.com/multiversx/mx-chain-vm-go/fuzz/weightedroulette"
-	mc "github.com/multiversx/mx-chain-vm-go/mandos-go/controller"
+	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

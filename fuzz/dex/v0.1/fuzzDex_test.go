@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	roulette "github.com/multiversx/mx-chain-vm-go/fuzz/weightedroulette"
-	mc "github.com/multiversx/mx-chain-vm-go/mandos-go/controller"
+	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 
