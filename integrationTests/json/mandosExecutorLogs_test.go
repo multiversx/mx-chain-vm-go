@@ -167,6 +167,27 @@ func TestMultisigLog(t *testing.T) {
 		CheckLog(expected)
 }
 
+func TestDnsContractLog(t *testing.T) {
+	if testing.Short() {
+		t.Skip("not a short test")
+	}
+
+	expected := MandosTest(t).
+		Folder("dns").
+		WithExecutorLogs().
+		Run().
+		CheckNoError().
+		ExtractLog()
+
+	MandosTest(t).
+		Folder("dns").
+		WithExecutorLogs().
+		WithExecutorFactory(wasmer2.ExecutorFactory()).
+		Run().
+		CheckNoError().
+		CheckLog(expected)
+}
+
 func TestCrowdfundingEsdtLog(t *testing.T) {
 	expected := MandosTest(t).
 		Folder("crowdfunding-esdt").
@@ -253,26 +274,6 @@ func TestCAttestationLog(t *testing.T) {
 
 	MandosTest(t).
 		Folder("attestation-c").
-		WithExecutorLogs().
-		WithExecutorFactory(wasmer2.ExecutorFactory()).
-		Run().
-		CheckNoError().
-		CheckLog(expected)
-}
-
-func TestDnsContractLog(t *testing.T) {
-	if testing.Short() {
-		t.Skip("not a short test")
-	}
-
-	expected := MandosTest(t).
-		Folder("dns").
-		Run().
-		CheckNoError().
-		ExtractLog()
-
-	MandosTest(t).
-		Folder("dns").
 		WithExecutorLogs().
 		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		Run().
