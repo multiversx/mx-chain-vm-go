@@ -50,7 +50,7 @@ func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 }
 
 // ReplaceVMExecutor mocked method
-func (r *RuntimeContextMock) ReplaceVMExecutor(exec executor.Executor) {
+func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.Executor) {
 }
 
 // StartWasmerInstance mocked method
