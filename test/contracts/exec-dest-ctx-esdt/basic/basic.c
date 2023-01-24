@@ -1,6 +1,6 @@
-#include "../../elrond/context.h"
-#include "../../elrond/test_utils.h"
-#include "../../elrond/args.h"
+#include "../../mxvm/context.h"
+#include "../../mxvm/test_utils.h"
+#include "../../mxvm/args.h"
 
 byte executeValue[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte self[32] = "\0\0\0\0\0\0\0\0\x0f\x0f" "parentSC..............";

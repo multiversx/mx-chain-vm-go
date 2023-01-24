@@ -3,9 +3,9 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	"github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,7 +29,7 @@ func DeployContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 		gasForInit := big.NewInt(0).SetBytes(arguments[2])
 
 		newAddress, err :=
-			elrondapi.DeployFromSourceContractWithTypedArgs(
+			vmhooks.DeployFromSourceContractWithTypedArgs(
 				host,
 				sourceContractAddress,
 				codeMetadata,
@@ -94,7 +94,7 @@ func UpdateContractFromSourceMock(instanceMock *mock.InstanceMock, _ interface{}
 		codeMetadata := arguments[2]
 		gasForInit := big.NewInt(0).SetBytes(arguments[3])
 
-		elrondapi.UpgradeFromSourceContractWithTypedArgs(
+		vmhooks.UpgradeFromSourceContractWithTypedArgs(
 			host,
 			sourceContractAddress,
 			destinationContractAddress,

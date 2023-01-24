@@ -6,13 +6,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 )
 
 const generateGraphs = false
@@ -249,7 +249,7 @@ func makeSyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Tes
 	setGraphCallArg(arguments, syncCallArgIndexes.gasUsedIdx, int(edge.GasUsed))
 
 	LogGraph.Trace("Sync call to ", string(destAddress), " func ", destFunctionName, " gas ", edge.GasLimit)
-	elrondapi.ExecuteOnDestContextWithTypedArgs(
+	vmhooks.ExecuteOnDestContextWithTypedArgs(
 		host,
 		int64(edge.GasLimit),
 		value,
@@ -298,7 +298,7 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		gasLocked = edge.GasLocked - DefaultCallGraphLockedGas
 	}
 
-	elrondapi.CreateAsyncCallWithTypedArgs(host,
+	vmhooks.CreateAsyncCallWithTypedArgs(host,
 		destAddress,
 		value.Bytes(),
 		callDataAsBytes,

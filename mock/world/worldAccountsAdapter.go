@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // ErrInvalidAccount signals that a certain account does not exist

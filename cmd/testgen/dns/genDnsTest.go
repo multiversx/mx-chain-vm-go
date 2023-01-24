@@ -7,10 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
+	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
+	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 )
 
 func getTestRoot() string {

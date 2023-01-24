@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/mitchellh/mapstructure"
 )
 

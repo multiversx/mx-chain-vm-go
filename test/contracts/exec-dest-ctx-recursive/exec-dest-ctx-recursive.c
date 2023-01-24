@@ -1,7 +1,7 @@
-#include "../elrond/context.h"
-#include "../elrond/bigInt.h"
-#include "../elrond/types.h"
-#include "../elrond/test_utils.h"
+#include "../mxvm/context.h"
+#include "../mxvm/bigInt.h"
+#include "../mxvm/types.h"
+#include "../mxvm/test_utils.h"
 
 u64 maxGasForCalls = 100000;
 

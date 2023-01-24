@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	"github.com/ElrondNetwork/wasm-vm/wasmer"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
