@@ -19,7 +19,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -50,7 +50,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 		async := host.Async()
 		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
 			return instance
 		}
 

@@ -11,11 +11,11 @@ import (
 // ElrondApi is the VM structure that implements VMHooks,
 // with all the hooks (callbacks) from the executor.
 type ElrondApi struct {
-	host arwen.VMHost
+	host vmhost.VMHost
 }
 
 // NewElrondApi creates a new ElrondApi instance.
-func NewElrondApi(host arwen.VMHost) *ElrondApi {
+func NewElrondApi(host vmhost.VMHost) *ElrondApi {
 	return &ElrondApi{
 		host: host,
 	}
@@ -53,17 +53,17 @@ func (context *ElrondApi) MemStore(memPtr executor.MemPtr, data []byte) error {
 }
 
 // GetVMHost returns the vm Context from the vm context map
-func (context *ElrondApi) GetVMHost() arwen.VMHost {
+func (context *ElrondApi) GetVMHost() vmhost.VMHost {
 	return context.host
 }
 
 // GetBlockchainContext returns the blockchain context
-func (context *ElrondApi) GetBlockchainContext() arwen.BlockchainContext {
+func (context *ElrondApi) GetBlockchainContext() vmhost.BlockchainContext {
 	return context.host.Blockchain()
 }
 
 // GetRuntimeContext returns the runtime context
-func (context *ElrondApi) GetRuntimeContext() arwen.RuntimeContext {
+func (context *ElrondApi) GetRuntimeContext() vmhost.RuntimeContext {
 	return context.host.Runtime()
 }
 
@@ -73,22 +73,22 @@ func (context *ElrondApi) GetCryptoContext() crypto.VMCrypto {
 }
 
 // GetManagedTypesContext returns the big int context
-func (context *ElrondApi) GetManagedTypesContext() arwen.ManagedTypesContext {
+func (context *ElrondApi) GetManagedTypesContext() vmhost.ManagedTypesContext {
 	return context.host.ManagedTypes()
 }
 
 // GetOutputContext returns the output context
-func (context *ElrondApi) GetOutputContext() arwen.OutputContext {
+func (context *ElrondApi) GetOutputContext() vmhost.OutputContext {
 	return context.host.Output()
 }
 
 // GetMeteringContext returns the metering context
-func (context *ElrondApi) GetMeteringContext() arwen.MeteringContext {
+func (context *ElrondApi) GetMeteringContext() vmhost.MeteringContext {
 	return context.host.Metering()
 }
 
 // GetStorageContext returns the storage context
-func (context *ElrondApi) GetStorageContext() arwen.StorageContext {
+func (context *ElrondApi) GetStorageContext() vmhost.StorageContext {
 	return context.host.Storage()
 }
 
@@ -99,7 +99,7 @@ func (context *ElrondApi) WithFault(err error, failExecution bool) bool {
 }
 
 // WithFaultAndHost fails the execution with the provided error
-func WithFaultAndHost(host arwen.VMHost, err error, failExecution bool) bool {
+func WithFaultAndHost(host vmhost.VMHost, err error, failExecution bool) bool {
 	if err == nil {
 		return false
 	}

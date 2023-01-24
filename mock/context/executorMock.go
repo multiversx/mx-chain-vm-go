@@ -58,7 +58,7 @@ func (executorMock *ExecutorMock) FunctionNames() vmcommon.FunctionNames {
 
 // CreateAndStoreInstanceMock creates a new InstanceMock and registers it as a
 // smart contract account in the World, using `code` as the address of the account
-func (executorMock *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host arwen.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
+func (executorMock *ExecutorMock) CreateAndStoreInstanceMock(t testing.TB, host vmhost.VMHost, code []byte, codeHash []byte, codeMetadata []byte, ownerAddress []byte, shardID uint32, balance int64, createAccount bool) *InstanceMock {
 	instance := NewInstanceMock(code)
 	instance.Address = code
 	instance.T = t

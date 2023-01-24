@@ -218,7 +218,7 @@ func (context *ElrondApi) ManagedGetReturnData(resultID int32, resultHandle int3
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -255,18 +255,18 @@ func (context *ElrondApi) ManagedGetESDTBalance(addressHandle int32, tokenIDHand
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -292,7 +292,7 @@ func (context *ElrondApi) ManagedGetESDTTokenData(
 }
 
 func ManagedGetESDTTokenDataWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	addressHandle int32,
 	tokenIDHandle int32,
 	nonce int64,
@@ -308,18 +308,18 @@ func ManagedGetESDTTokenDataWithHost(
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	tokenID, err := managedType.GetBytes(tokenIDHandle)
 	if err != nil {
-		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
 	esdtToken, err := blockchain.GetESDTToken(address, tokenID, uint64(nonce))
 	if err != nil {
-		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -361,7 +361,7 @@ func (context *ElrondApi) ManagedAsyncCall(
 }
 
 func ManagedAsyncCallWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destHandle int32,
 	valueHandle int32,
 	functionHandle int32,
@@ -385,7 +385,7 @@ func ManagedAsyncCallWithHost(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		_ = WithFaultAndHost(host, arwen.ErrArgOutOfRange, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrArgOutOfRange, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -393,8 +393,8 @@ func ManagedAsyncCallWithHost(
 	metering.UseAndTraceGas(gasToUse)
 
 	err = async.RegisterLegacyAsyncCall(vmInput.destination, []byte(data), value.Bytes())
-	if errors.Is(err, arwen.ErrNotEnoughGas) {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	if errors.Is(err, vmhost.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
 	if WithFaultAndHost(host, err, host.Runtime().ElrondAPIErrorShouldFailExecution()) {
@@ -431,7 +431,7 @@ func (context *ElrondApi) ManagedCreateAsyncCall(
 
 	value, err := managedType.GetBigInt(valueHandle)
 	if err != nil {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -471,7 +471,7 @@ func (context *ElrondApi) ManagedGetCallbackClosure(
 }
 
 func GetCallbackClosureWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	callbackClosureHandle int32,
 ) {
 	runtime := host.Runtime()
@@ -603,7 +603,7 @@ func (context *ElrondApi) ManagedDeleteContract(
 }
 
 func ManagedDeleteContractWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destHandle int32,
 	gasLimit int64,
 	argumentsHandle int32,
@@ -741,7 +741,7 @@ func (context *ElrondApi) ManagedCreateContract(
 }
 
 func setReturnDataIfExists(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	oldLen int,
 	resultHandle int32,
 ) {
@@ -921,7 +921,7 @@ func (context *ElrondApi) ManagedIsESDTFrozen(
 }
 
 func ManagedIsESDTFrozenWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	addressHandle int32,
 	tokenIDHandle int32,
 	nonce int64) int32 {
@@ -964,7 +964,7 @@ func (context *ElrondApi) ManagedIsESDTLimitedTransfer(tokenIDHandle int32) int3
 	return ManagedIsESDTLimitedTransferWithHost(host, tokenIDHandle)
 }
 
-func ManagedIsESDTLimitedTransferWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
+func ManagedIsESDTLimitedTransferWithHost(host vmhost.VMHost, tokenIDHandle int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
@@ -993,7 +993,7 @@ func (context *ElrondApi) ManagedIsESDTPaused(tokenIDHandle int32) int32 {
 	return ManagedIsESDTPausedWithHost(host, tokenIDHandle)
 }
 
-func ManagedIsESDTPausedWithHost(host arwen.VMHost, tokenIDHandle int32) int32 {
+func ManagedIsESDTPausedWithHost(host vmhost.VMHost, tokenIDHandle int32) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	blockchain := host.Blockchain()
@@ -1022,7 +1022,7 @@ func (context *ElrondApi) ManagedBufferToHex(sourceHandle int32, destHandle int3
 	ManagedBufferToHexWithHost(host, sourceHandle, destHandle)
 }
 
-func ManagedBufferToHexWithHost(host arwen.VMHost, sourceHandle int32, destHandle int32) {
+func ManagedBufferToHexWithHost(host vmhost.VMHost, sourceHandle int32, destHandle int32) {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()

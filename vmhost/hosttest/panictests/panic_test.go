@@ -45,7 +45,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	require.Equal(t, err, vmhost.ErrExecutionPanicked)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
@@ -82,7 +82,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionPanicked)
+	require.Equal(t, err, vmhost.ErrExecutionPanicked)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
@@ -113,7 +113,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 	}()
 
 	_, err := host.RunSmartContractCall(input)
-	require.Equal(t, err, arwen.ErrExecutionFailedWithTimeout)
+	require.Equal(t, err, vmhost.ErrExecutionFailedWithTimeout)
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
@@ -154,7 +154,7 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 
 func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 	numParallel := 100
-	hosts := make([]arwen.VMHost, numParallel)
+	hosts := make([]vmhost.VMHost, numParallel)
 	blockchains := make([]*mock.BlockchainHookStub, numParallel)
 	for k := 0; k < numParallel; k++ {
 		code := test.GetTestSCCode("counter", "../../../")

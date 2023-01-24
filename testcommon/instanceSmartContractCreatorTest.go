@@ -15,9 +15,9 @@ type TestCreateTemplateConfig struct {
 	t                        *testing.T
 	address                  []byte
 	input                    *vmcommon.ContractCreateInput
-	setup                    func(arwen.VMHost, *contextmock.BlockchainHookStub)
+	setup                    func(vmhost.VMHost, *contextmock.BlockchainHookStub)
 	assertResults            func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host                     arwen.VMHost
+	host                     vmhost.VMHost
 	gasSchedule              config.GasScheduleMap
 	wasmerSIGSEGVPassthrough bool
 	overrideExecutorFactory  executor.ExecutorAbstractFactory
@@ -29,7 +29,7 @@ type TestCreateTemplateConfig struct {
 func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 	return &TestCreateTemplateConfig{
 		t:                        t,
-		setup:                    func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
+		setup:                    func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 		gasSchedule:              config.MakeGasMapForTests(),
 		wasmerSIGSEGVPassthrough: true,
 		overrideExecutorFactory:  nil,
@@ -56,7 +56,7 @@ func (callerTest *TestCreateTemplateConfig) WithAddress(address []byte) *TestCre
 }
 
 // WithSetup provides the setup function for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(arwen.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
+func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
 	callerTest.setup = setup
 	return callerTest
 }
@@ -106,7 +106,7 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.
 	return stubBlockchainHook
 }
 
-func (callerTest *TestCreateTemplateConfig) createTestArwenVM() arwen.VMHost {
+func (callerTest *TestCreateTemplateConfig) createTestArwenVM() vmhost.VMHost {
 	return NewTestHostBuilder(callerTest.t).
 		WithExecutorFactory(callerTest.overrideExecutorFactory).
 		WithBlockchainHook(callerTest.blockchainHookStub).

@@ -51,7 +51,7 @@ func TransferToThirdPartyAsyncChildMock(instanceMock *mock.InstanceMock, config 
 		metering := host.Metering()
 		err := metering.UseGasBounded(testConfig.GasUsedByChild)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -123,7 +123,7 @@ func ExecutedOnSameContextByCallback(instanceMock *mock.InstanceMock, _ interfac
 	})
 }
 
-func handleChildBehaviorArgument(host arwen.VMHost, behavior byte) error {
+func handleChildBehaviorArgument(host vmhost.VMHost, behavior byte) error {
 	if behavior == 1 {
 		host.Runtime().SignalUserError("child error")
 		return errors.New("behavior / child error")

@@ -199,7 +199,7 @@ func (context *ElrondApi) BigIntGetExternalBalance(addressOffset executor.MemPtr
 	gasToUse := metering.GasSchedule().BigIntAPICost.BigIntGetExternalBalance
 	metering.UseGasAndAddTracedGas(bigIntGetExternalBalanceName, gasToUse)
 
-	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -514,7 +514,7 @@ func (context *ElrondApi) BigIntTDiv(destinationHandle, op1Handle, op2Handle int
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		_ = context.WithFault(arwen.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Quo(a, b) // Quo implements truncated division (like Go)
@@ -538,7 +538,7 @@ func (context *ElrondApi) BigIntTMod(destinationHandle, op1Handle, op2Handle int
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		_ = context.WithFault(arwen.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Rem(a, b) // Rem implements truncated modulus (like Go)
@@ -562,7 +562,7 @@ func (context *ElrondApi) BigIntEDiv(destinationHandle, op1Handle, op2Handle int
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		_ = context.WithFault(arwen.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Div(a, b) // Div implements Euclidean division (unlike Go)
@@ -586,7 +586,7 @@ func (context *ElrondApi) BigIntEMod(destinationHandle, op1Handle, op2Handle int
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a, b)
 	if b.Sign() == 0 {
-		_ = context.WithFault(arwen.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Mod(a, b) // Mod implements Euclidean division (unlike Go)
@@ -610,7 +610,7 @@ func (context *ElrondApi) BigIntSqrt(destinationHandle, opHandle int32) {
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	if a.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Sqrt(a)
@@ -640,7 +640,7 @@ func (context *ElrondApi) BigIntPow(destinationHandle, op1Handle, op2Handle int3
 	managedType.ConsumeGasForBigIntCopy(a, b)
 
 	if b.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -664,7 +664,7 @@ func (context *ElrondApi) BigIntLog2(op1Handle int32) int32 {
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigIntAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -767,7 +767,7 @@ func (context *ElrondApi) BigIntNot(destinationHandle, opHandle int32) {
 	}
 	managedType.ConsumeGasForBigIntCopy(dest, a)
 	if a.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Not(a)
@@ -791,7 +791,7 @@ func (context *ElrondApi) BigIntAnd(destinationHandle, op1Handle, op2Handle int3
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.And(a, b)
@@ -815,7 +815,7 @@ func (context *ElrondApi) BigIntOr(destinationHandle, op1Handle, op2Handle int32
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Or(a, b)
@@ -839,7 +839,7 @@ func (context *ElrondApi) BigIntXor(destinationHandle, op1Handle, op2Handle int3
 	}
 	managedType.ConsumeGasForBigIntCopy(a, b)
 	if a.Sign() < 0 || b.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBitwiseNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Xor(a, b)
@@ -863,7 +863,7 @@ func (context *ElrondApi) BigIntShr(destinationHandle, opHandle, bits int32) {
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 || bits < 0 {
-		_ = context.WithFault(arwen.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Rsh(a, uint(bits))
@@ -888,7 +888,7 @@ func (context *ElrondApi) BigIntShl(destinationHandle, opHandle, bits int32) {
 	}
 	managedType.ConsumeGasForBigIntCopy(a)
 	if a.Sign() < 0 || bits < 0 {
-		_ = context.WithFault(arwen.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrShiftNegative, runtime.BigIntAPIErrorShouldFailExecution())
 		return
 	}
 	dest.Lsh(a, uint(bits))
@@ -949,7 +949,7 @@ func (context *ElrondApi) BigIntToString(bigIntHandle int32, destinationHandle i
 	BigIntToStringWithHost(host, bigIntHandle, destinationHandle)
 }
 
-func BigIntToStringWithHost(host arwen.VMHost, bigIntHandle int32, destinationHandle int32) {
+func BigIntToStringWithHost(host vmhost.VMHost, bigIntHandle int32, destinationHandle int32) {
 	runtime := host.Runtime()
 	metering := host.Metering()
 	managedType := host.ManagedTypes()

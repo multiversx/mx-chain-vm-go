@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"testing"
@@ -30,7 +30,7 @@ func TestManaged_SetByteSlice(t *testing.T) {
 						result := vmhooks.ManagedBufferSetByteSliceWithTypedArgs(
 							host, mBuffer, int32(len(prefix)), int32(len(slice)), []byte(data))
 						if result != 0 {
-							vmhooks.WithFaultAndHost(host, arwen.ErrSignalError, true)
+							vmhooks.WithFaultAndHost(host, vmhost.ErrSignalError, true)
 						}
 						bufferBytes, err := managedType.GetBytes(mBuffer)
 						if err != nil {
@@ -77,7 +77,7 @@ func TestManaged_CopyByteSlice_DifferentBuffer(t *testing.T) {
 						result := vmhooks.ManagedBufferCopyByteSliceWithHost(
 							host, sourceMBuffer, int32(len(prefix)), int32(len(slice)), destMBuffer)
 						if result != 0 {
-							vmhooks.WithFaultAndHost(host, arwen.ErrSignalError, true)
+							vmhooks.WithFaultAndHost(host, vmhost.ErrSignalError, true)
 						}
 						destBytes, err := managedType.GetBytes(destMBuffer)
 						if err != nil {
@@ -119,7 +119,7 @@ func TestManaged_CopyByteSlice_SameBuffer(t *testing.T) {
 						result := vmhooks.ManagedBufferCopyByteSliceWithHost(
 							host, sourceMBuffer, int32(len(prefix))-deltaForSlice, int32(len(slice)), sourceMBuffer)
 						if result != 0 {
-							vmhooks.WithFaultAndHost(host, arwen.ErrSignalError, true)
+							vmhooks.WithFaultAndHost(host, vmhost.ErrSignalError, true)
 						}
 						destBytes, err := managedType.GetBytes(sourceMBuffer)
 						if err != nil {

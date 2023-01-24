@@ -7,7 +7,7 @@ import (
 	bytes "bytes"
 	fmt "fmt"
 	github_com_multiversx_elrond_go_core_data "github.com/multiversx/mx-chain-core-go/data"
-	arwen "github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
@@ -480,7 +480,7 @@ type SerializableAsyncContext struct {
 	CallbackData                 []byte                              `protobuf:"bytes,8,opt,name=CallbackData,proto3" json:"CallbackData,omitempty"`
 	GasAccumulated               uint64                              `protobuf:"varint,9,opt,name=GasAccumulated,proto3" json:"GasAccumulated,omitempty"`
 	ReturnData                   []byte                              `protobuf:"bytes,10,opt,name=ReturnData,proto3" json:"ReturnData,omitempty"`
-	AsyncCallGroups              []*arwen.SerializableAsyncCallGroup `protobuf:"bytes,11,rep,name=asyncCallGroups,proto3" json:"asyncCallGroups,omitempty"`
+	AsyncCallGroups              []*vmhost.SerializableAsyncCallGroup `protobuf:"bytes,11,rep,name=asyncCallGroups,proto3" json:"asyncCallGroups,omitempty"`
 	CallsCounter                 uint64                              `protobuf:"varint,12,opt,name=CallsCounter,proto3" json:"CallsCounter,omitempty"`
 	TotalCallsCounter            uint64                              `protobuf:"varint,13,opt,name=TotalCallsCounter,proto3" json:"TotalCallsCounter,omitempty"`
 	ChildResults                 *SerializableVMOutput               `protobuf:"bytes,14,opt,name=ChildResults,proto3" json:"ChildResults,omitempty"`
@@ -584,7 +584,7 @@ func (m *SerializableAsyncContext) GetReturnData() []byte {
 	return nil
 }
 
-func (m *SerializableAsyncContext) GetAsyncCallGroups() []*arwen.SerializableAsyncCallGroup {
+func (m *SerializableAsyncContext) GetAsyncCallGroups() []*vmhost.SerializableAsyncCallGroup {
 	if m != nil {
 		return m.AsyncCallGroups
 	}
@@ -2086,7 +2086,7 @@ func (this *SerializableAsyncContext) String() string {
 	}
 	repeatedStringForAsyncCallGroups := "[]*SerializableAsyncCallGroup{"
 	for _, f := range this.AsyncCallGroups {
-		repeatedStringForAsyncCallGroups += strings.Replace(fmt.Sprintf("%v", f), "SerializableAsyncCallGroup", "arwen.SerializableAsyncCallGroup", 1) + ","
+		repeatedStringForAsyncCallGroups += strings.Replace(fmt.Sprintf("%v", f), "SerializableAsyncCallGroup", "vmhost.SerializableAsyncCallGroup", 1) + ","
 	}
 	repeatedStringForAsyncCallGroups += "}"
 	s := strings.Join([]string{`&SerializableAsyncContext{`,
@@ -3914,7 +3914,7 @@ func (m *SerializableAsyncContext) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AsyncCallGroups = append(m.AsyncCallGroups, &arwen.SerializableAsyncCallGroup{})
+			m.AsyncCallGroups = append(m.AsyncCallGroups, &vmhost.SerializableAsyncCallGroup{})
 			if err := m.AsyncCallGroups[len(m.AsyncCallGroups)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}

@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"bytes"
@@ -868,7 +868,7 @@ func runGraphCallTestTemplateWithCustomAssertsConfig(t *testing.T, callGraph *te
 				WithPrevTxHash(big.NewInt(int64(crtTxNumber-1)).Bytes()).
 				WithCurrentTxHash(crtTxHash).
 				Build()).
-			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 				world.SelfShardID = world.GetShardOfAddress(startNode.Call.ContractAddress)
 				setZeroCodeCosts(host)
 				setAsyncCosts(host, testConfig.GasLockCost)

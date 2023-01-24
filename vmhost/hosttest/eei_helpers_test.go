@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"testing"

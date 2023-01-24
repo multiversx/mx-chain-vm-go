@@ -114,7 +114,7 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
-	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost := pfe.vm.(vmhost.VMHost)
 	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 

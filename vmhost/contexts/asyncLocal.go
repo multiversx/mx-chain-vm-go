@@ -11,7 +11,7 @@ import (
 )
 
 func (context *asyncContext) executeAsyncLocalCalls() error {
-	localCalls := make([]*arwen.AsyncCall, 0)
+	localCalls := make([]*vmhost.AsyncCall, 0)
 
 	for _, group := range context.asyncCallGroups {
 		for _, call := range group.AsyncCalls {
@@ -32,8 +32,8 @@ func (context *asyncContext) executeAsyncLocalCalls() error {
 }
 
 // TODO split this method into smaller ones
-func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) error {
-	if asyncCall.ExecutionMode == arwen.ESDTTransferOnCallBack {
+func (context *asyncContext) executeAsyncLocalCall(asyncCall *vmhost.AsyncCall) error {
+	if asyncCall.ExecutionMode == vmhost.ESDTTransferOnCallBack {
 		context.executeESDTTransferOnCallback(asyncCall)
 		_ = context.completeChild(asyncCall.CallID, 0)
 		return nil
@@ -62,7 +62,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 
 	vmOutput, isComplete, err := context.host.ExecuteOnDestContext(destinationCallInput)
 	if vmOutput == nil {
-		return arwen.ErrNilDestinationCallVMOutput
+		return vmhost.ErrNilDestinationCallVMOutput
 	}
 
 	logAsync.Trace("executeAsyncLocalCall",
@@ -80,7 +80,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 			// locked gas will appear to have been used twice by the caller instance.
 			isCallbackComplete, callbackVMOutput := context.ExecuteSyncCallbackAndFinishOutput(asyncCall, vmOutput, destinationCallInput, 0, err)
 			if callbackVMOutput == nil {
-				return arwen.ErrAsyncNoOutputFromCallback
+				return vmhost.ErrAsyncNoOutputFromCallback
 			}
 
 			if isCallbackComplete {
@@ -99,7 +99,7 @@ func (context *asyncContext) executeAsyncLocalCall(asyncCall *arwen.AsyncCall) e
 // ExecuteSyncCallbackAndFinishOutput executes the callback and finishes the output
 //TODO rename to executeLocalCallbackAndFinishOutput
 func (context *asyncContext) ExecuteSyncCallbackAndFinishOutput(
-	asyncCall *arwen.AsyncCall,
+	asyncCall *vmhost.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
 	_ *vmcommon.ContractCallInput,
 	gasAccumulated uint64,
@@ -111,7 +111,7 @@ func (context *asyncContext) ExecuteSyncCallbackAndFinishOutput(
 
 // TODO rename to executeLocalCallback
 func (context *asyncContext) executeSyncCallback(
-	asyncCall *arwen.AsyncCall,
+	asyncCall *vmhost.AsyncCall,
 	destinationVMOutput *vmcommon.VMOutput,
 	gasAccumulated uint64,
 	destinationErr error,
@@ -144,7 +144,7 @@ func (context *asyncContext) executeSyncCallback(
 	return callbackVMOutput, isComplete, callbackErr
 }
 
-func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.AsyncCall) {
+func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *vmhost.AsyncCall) {
 	context.host.Output().PrependFinish(asyncCall.Data)
 
 	// The contract has already paid the gas for GasLimit and
@@ -169,7 +169,7 @@ func (context *asyncContext) executeESDTTransferOnCallback(asyncCall *arwen.Asyn
 // output by the inner call to host.ExecuteOnDestContext(). Moreover, the
 // status of the AsyncCall is not updated here - it will be updated by
 // PostprocessCrossShardCallback(), when the cross-shard call returns.
-func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *arwen.AsyncCall) error {
+func (context *asyncContext) executeSyncHalfOfBuiltinFunction(asyncCall *vmhost.AsyncCall) error {
 	destinationCallInput, err := context.createContractCallInput(asyncCall)
 	if err != nil {
 		return err
@@ -233,7 +233,7 @@ func (context *asyncContext) finishAsyncLocalCallbackExecution(
 	// output.Finish(runtime.GetCurrentTxHash())
 }
 
-func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall) (*vmcommon.ContractCallInput, error) {
+func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall) (*vmcommon.ContractCallInput, error) {
 	host := context.host
 	runtime := host.Runtime()
 	sender := runtime.GetContextAddress()
@@ -246,7 +246,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 	gasLimit := asyncCall.GetGasLimit()
 	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
 	if gasLimit <= gasToUse {
-		return nil, arwen.ErrNotEnoughGas
+		return nil, vmhost.ErrNotEnoughGas
 	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -273,7 +273,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *arwen.AsyncCall)
 
 // TODO function too large; refactor needed
 func (context *asyncContext) createCallbackInput(
-	asyncCall *arwen.AsyncCall,
+	asyncCall *vmhost.AsyncCall,
 	vmOutput *vmcommon.VMOutput,
 	gasAccumulated uint64,
 	destinationErr error,
@@ -339,7 +339,7 @@ func (context *asyncContext) updateContractInputForESDTOnCallback(
 	esdtFunction string,
 	esdtArgs [][]byte,
 	vmOutput *vmcommon.VMOutput,
-	asyncCall *arwen.AsyncCall,
+	asyncCall *vmhost.AsyncCall,
 	gasAccumulated uint64) {
 
 	oldArgLen := len(contractCallInput.Arguments)
@@ -370,7 +370,7 @@ func ReturnCodeToBytes(returnCode vmcommon.ReturnCode) []byte {
 	return big.NewInt(int64(returnCode)).Bytes()
 }
 
-func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCall, vmOutput *vmcommon.VMOutput, dataLength int) (uint64, error) {
+func (context *asyncContext) computeGasLimitForCallback(asyncCall *vmhost.AsyncCall, vmOutput *vmcommon.VMOutput, dataLength int) (uint64, error) {
 	metering := context.host.Metering()
 	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
 
@@ -379,7 +379,7 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *arwen.AsyncCa
 	gas := math.MulUint64(copyPerByte, uint64(dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
 	if gasLimit <= gasToUse {
-		return 0, arwen.ErrNotEnoughGas
+		return 0, vmhost.ErrNotEnoughGas
 	}
 	gasLimit -= gasToUse
 

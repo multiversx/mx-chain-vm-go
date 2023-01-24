@@ -160,7 +160,7 @@ func (mockSC *MockTestSmartContract) GetShardID() uint32 {
 // Initialize -
 func (mockSC *MockTestSmartContract) Initialize(
 	t testing.TB,
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	imb *mock.ExecutorMock,
 	createContractAccounts bool,
 ) {

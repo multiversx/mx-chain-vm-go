@@ -1,4 +1,4 @@
-package arwen
+package vmhost
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"

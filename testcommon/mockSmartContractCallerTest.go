@@ -13,7 +13,7 @@ import (
 var logMock = logger.GetOrCreate("arwen/mock")
 
 // SetupFunction -
-type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
+type SetupFunction func(vmhost.VMHost, *worldmock.MockWorld)
 
 // AssertResultsFunc -
 type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
@@ -44,7 +44,7 @@ func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 			useMocks:                 true,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
+		setup: func(vmhost.VMHost, *worldmock.MockWorld) {},
 	}
 }
 
@@ -133,7 +133,7 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		}
 
 		return instance
@@ -149,7 +149,7 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetContextAddress()), "func", host.Runtime().FunctionName(), "gas", gas)
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 

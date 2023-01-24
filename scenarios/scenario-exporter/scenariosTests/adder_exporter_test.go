@@ -36,7 +36,7 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 	expectedBenchmarkTxPos := 1
 
 	ownerAccount := mge.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
-	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
+	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), vmhost.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
 	deployedScAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressDeployedAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), make([]byte, 0), addressOwner)
 	expectedAccs = append(expectedAccs, ownerAccount, scAccount)
 	expectedDeployedAccs = append(expectedDeployedAccs, deployedScAccount)
@@ -61,7 +61,7 @@ func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
 	expectedBenchmarkTxPos := 1
 
 	ownerAccount := mge.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
-	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
+	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), vmhost.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
 	aliceAccount := mge.SetNewAccount(5, addressAlice, big.NewInt(284), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	bobAccount := mge.SetNewAccount(3, addressBob, big.NewInt(11), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	expectedAccs = append(expectedAccs, aliceAccount, scAccount, bobAccount, ownerAccount)

@@ -25,7 +25,7 @@ var managedBuffer = []byte{0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf,
 var numberOfReps = 100
 var lengthOfBuffer = 64
 
-func buildRandomizer(host arwen.VMHost) io.Reader {
+func buildRandomizer(host vmhost.VMHost) io.Reader {
 	// building the randomizer
 	blockchainContext := host.Blockchain()
 	previousRandomSeed := blockchainContext.LastRandomSeed()
@@ -47,7 +47,7 @@ func TestManBuffers_MixedFunctions(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("mBufferMethod").
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			expectedStorageEntry := test.CreateStoreEntry(test.ParentAddress).WithKey(mBufferKey).WithValue(managedBuffer)
 			verify.Ok().
 				ReturnData(managedBuffer, []byte("succ")).
@@ -65,7 +65,7 @@ func TestManBuffers_New(t *testing.T) {
 			WithFunction("mBufferNewTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte{byte(numberOfReps - 1)})
 		})
@@ -81,7 +81,7 @@ func TestManBuffers_NewFromBytes(t *testing.T) {
 			WithFunction("mBufferNewFromBytesTest").
 			WithArguments([]byte{byte(numberOfReps)}, []byte{byte(lengthOfBuffer)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData(managedBuffer)
 		})
@@ -97,7 +97,7 @@ func TestManBuffers_SetRandom(t *testing.T) {
 			WithFunction("mBufferSetRandomTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			randomBuffer := make([]byte, numberOfReps)
@@ -119,7 +119,7 @@ func TestManBuffers_GetLength(t *testing.T) {
 			WithFunction("mBufferGetLengthTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte{byte(numberOfReps)})
 		})
@@ -135,7 +135,7 @@ func TestManBuffers_GetBytes(t *testing.T) {
 			WithFunction("mBufferGetBytesTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			randomBuffer := make([]byte, numberOfReps)
@@ -157,7 +157,7 @@ func TestManBuffers_AppendBytes(t *testing.T) {
 			WithFunction("mBufferAppendTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			finalBuffer := make([]byte, 0)
@@ -181,7 +181,7 @@ func TestManBuffers_mBufferToBigIntUnsigned(t *testing.T) {
 			WithFunction("mBufferToBigIntUnsignedTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			randomBuffer := make([]byte, numberOfReps)
@@ -203,7 +203,7 @@ func TestManBuffers_mBufferToBigIntSigned(t *testing.T) {
 			WithFunction("mBufferToBigIntSignedTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			randomBuffer := make([]byte, numberOfReps)
@@ -226,7 +226,7 @@ func TestManBuffers_mBufferFromBigIntUnsigned(t *testing.T) {
 			WithFunction("mBufferFromBigIntUnsignedTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			randomBuffer := make([]byte, numberOfReps)
@@ -248,7 +248,7 @@ func TestManBuffers_mBufferFromBigIntSigned(t *testing.T) {
 			WithFunction("mBufferFromBigIntSignedTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			randomBuffer := make([]byte, numberOfReps)
@@ -271,7 +271,7 @@ func TestManBuffers_StorageStore(t *testing.T) {
 			WithFunction("mBufferStorageStoreTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			lastRandomBuffer := make([]byte, numberOfReps)
@@ -305,7 +305,7 @@ func TestManBuffers_StorageLoad(t *testing.T) {
 			WithFunction("mBufferStorageLoadTest").
 			WithArguments([]byte{byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			randReader := buildRandomizer(host)
 
 			lastRandomBuffer := make([]byte, numberOfReps)

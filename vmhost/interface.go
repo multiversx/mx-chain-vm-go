@@ -1,4 +1,4 @@
-package arwen
+package vmhost
 
 import (
 	"crypto/elliptic"

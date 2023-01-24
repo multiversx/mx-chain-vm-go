@@ -8,7 +8,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.OutputContext = (*OutputContextStub)(nil)
+var _ vmhost.OutputContext = (*OutputContextStub)(nil)
 
 // OutputContextStub is used in tests to check the OutputContext interface method calls
 type OutputContextStub struct {
@@ -40,7 +40,7 @@ type OutputContextStub struct {
 	DeleteFirstReturnDataCalled       func()
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
-	DeployCodeCalled                  func(input arwen.CodeDeployInput)
+	DeployCodeCalled                  func(input vmhost.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
@@ -277,7 +277,7 @@ func (o *OutputContextStub) AddTxValueToAccount(address []byte, value *big.Int) 
 }
 
 // DeployCode mocked method
-func (o *OutputContextStub) DeployCode(input arwen.CodeDeployInput) {
+func (o *OutputContextStub) DeployCode(input vmhost.CodeDeployInput) {
 	if o.DeployCodeCalled != nil {
 		o.DeployCodeCalled(input)
 	}

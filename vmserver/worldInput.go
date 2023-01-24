@@ -23,7 +23,7 @@ func (w *world) prepareUpgradeInput(request UpgradeRequest) *vmcommon.ContractCa
 	callInput.RecipientAddr = request.ContractAddress
 	callInput.CallerAddr = request.Impersonated
 	callInput.CallValue = request.ValueAsBigInt
-	callInput.Function = arwen.UpgradeFunctionName
+	callInput.Function = vmhost.UpgradeFunctionName
 	allArguments := make([][]byte, 0)
 	allArguments = append(allArguments, request.Code, request.CodeMetadataBytes)
 	allArguments = append(allArguments, request.Arguments...)

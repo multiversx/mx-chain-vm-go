@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"testing"
@@ -44,7 +44,7 @@ func loadStorage(t *testing.T, key []byte) {
 			WithFunction("loadStore").
 			WithArguments(key).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			host.Metering().GasSchedule().ElrondAPICost.StorageLoad = storageLoadGas
 			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
@@ -94,7 +94,7 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 			WithFunction("loadStoreFromAddress").
 			WithArguments(test.UserAddress, key).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			host.Metering().GasSchedule().ElrondAPICost.StorageLoad = storageLoadGas
 			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
@@ -116,7 +116,7 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 }
 
 func computeExpectedGasForGetStorage(key []byte, value []byte) uint64 {
-	extraBytesForKey := len(key) - arwen.AddressLen
+	extraBytesForKey := len(key) - vmhost.AddressLen
 	if extraBytesForKey < 0 {
 		extraBytesForKey = 0
 	}
@@ -141,8 +141,8 @@ func setStorage(t *testing.T, key []byte) {
 	dataCopyGas := uint64(1)
 
 	expectedUsedGas := 2 * storageStoreGas
-	if len(key) > arwen.AddressLen {
-		expectedUsedGas += uint64(len(key) - arwen.AddressLen)
+	if len(key) > vmhost.AddressLen {
+		expectedUsedGas += uint64(len(key) - vmhost.AddressLen)
 	}
 
 	_, err := test.BuildMockInstanceCallTest(t).
@@ -161,7 +161,7 @@ func setStorage(t *testing.T, key []byte) {
 			WithFunction("setStore").
 			WithArguments(key, value).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			host.Metering().GasSchedule().ElrondAPICost.StorageStore = storageStoreGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
@@ -211,7 +211,7 @@ func TestBytesCount_SetStorage_ExecuteOnSameCtx(t *testing.T) {
 			WithFunction("parentSetStorage").
 			WithArguments([]byte{0}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -248,7 +248,7 @@ func TestBytesCount_SetStorage_ExecuteOnDestCtx(t *testing.T) {
 			WithFunction("parentSetStorage").
 			WithArguments([]byte{1}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {

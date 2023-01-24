@@ -6,7 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ arwen.RuntimeContext = (*RuntimeContextMock)(nil)
+var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
 
 // RuntimeContextMock is used in tests to check the RuntimeContextMock interface method calls
 type RuntimeContextMock struct {
@@ -19,7 +19,7 @@ type RuntimeContextMock struct {
 	VMType                   []byte
 	ReadOnlyFlag             bool
 	VerifyCode               bool
-	CurrentBreakpointValue   arwen.BreakpointValue
+	CurrentBreakpointValue   vmhost.BreakpointValue
 	PointsUsed               uint64
 	InstanceCtxID            int
 	MemLoadResult            []byte
@@ -30,7 +30,7 @@ type RuntimeContextMock struct {
 	FailBigIntAPI            bool
 	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
-	AsyncCallInfo            *arwen.AsyncCallInfo
+	AsyncCallInfo            *vmhost.AsyncCallInfo
 	InstanceStackSize        uint64
 	CurrentTxHash            []byte
 	OriginalTxHash           []byte
@@ -198,11 +198,11 @@ func (r *RuntimeContextMock) SignalUserError(_ string) {
 }
 
 // SetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ arwen.BreakpointValue) {
+func (r *RuntimeContextMock) SetRuntimeBreakpointValue(_ vmhost.BreakpointValue) {
 }
 
 // GetRuntimeBreakpointValue mocked method
-func (r *RuntimeContextMock) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+func (r *RuntimeContextMock) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
 	return r.CurrentBreakpointValue
 }
 
@@ -293,7 +293,7 @@ func (r *RuntimeContextMock) FailExecution(_ error) {
 }
 
 // AddAsyncContextCall mocked method
-func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *arwen.AsyncGeneratedCall) error {
+func (r *RuntimeContextMock) AddAsyncContextCall(_ []byte, _ *vmhost.AsyncGeneratedCall) error {
 	return r.Err
 }
 

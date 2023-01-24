@@ -51,7 +51,7 @@ type bigFloatMap map[int32]*big.Float
 type ellipticCurveMap map[int32]*elliptic.CurveParams
 
 type managedTypesContext struct {
-	host                arwen.VMHost
+	host                vmhost.VMHost
 	managedTypesValues  managedTypesState
 	managedTypesStack   []managedTypesState
 	randomnessGenerator math.RandomnessGenerator
@@ -65,9 +65,9 @@ type managedTypesState struct {
 }
 
 // NewManagedTypesContext creates a new managedTypesContext
-func NewManagedTypesContext(host arwen.VMHost) (*managedTypesContext, error) {
+func NewManagedTypesContext(host vmhost.VMHost) (*managedTypesContext, error) {
 	if check.IfNil(host) {
-		return nil, arwen.ErrNilVMHost
+		return nil, vmhost.ErrNilVMHost
 	}
 
 	context := &managedTypesContext{
@@ -245,7 +245,7 @@ func (context *managedTypesContext) GetBigInt(handle int32) (*big.Int, error) {
 	value, ok := context.managedTypesValues.bigIntValues[handle]
 	if !ok {
 		logMTypes.Trace("missing big int", "handle", handle)
-		return nil, arwen.ErrNoBigIntUnderThisHandle
+		return nil, vmhost.ErrNoBigIntUnderThisHandle
 	}
 	return value, nil
 }
@@ -256,12 +256,12 @@ func (context *managedTypesContext) GetTwoBigInt(handle1 int32, handle2 int32) (
 	value1, ok := bigIntValues[handle1]
 	if !ok {
 		logMTypes.Trace("missing big int", "handle", handle1)
-		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
+		return nil, nil, vmhost.ErrNoBigIntUnderThisHandle
 	}
 	value2, ok := bigIntValues[handle2]
 	if !ok {
 		logMTypes.Trace("missing big int", "handle", handle2)
-		return nil, nil, arwen.ErrNoBigIntUnderThisHandle
+		return nil, nil, vmhost.ErrNoBigIntUnderThisHandle
 	}
 	return value1, value2, nil
 }
@@ -311,11 +311,11 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Floa
 		context.managedTypesValues.bigFloatValues[handle] = value
 	}
 	if value.IsInf() {
-		return nil, arwen.ErrInfinityFloatOperation
+		return nil, vmhost.ErrInfinityFloatOperation
 	} else {
 		exponent := value.MantExp(nil)
 		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
-			return nil, arwen.ErrExponentTooBigOrTooSmall
+			return nil, vmhost.ErrExponentTooBigOrTooSmall
 		}
 	}
 	return value, nil
@@ -325,14 +325,14 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Floa
 func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error) {
 	value, ok := context.managedTypesValues.bigFloatValues[handle]
 	if !ok {
-		return nil, arwen.ErrNoBigFloatUnderThisHandle
+		return nil, vmhost.ErrNoBigFloatUnderThisHandle
 	}
 	if value.IsInf() {
-		return nil, arwen.ErrInfinityFloatOperation
+		return nil, vmhost.ErrInfinityFloatOperation
 	} else {
 		exponent := value.MantExp(nil)
 		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
-			return nil, arwen.ErrExponentTooBigOrTooSmall
+			return nil, vmhost.ErrExponentTooBigOrTooSmall
 		}
 	}
 	return value, nil
@@ -343,19 +343,19 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 	bigFloatValues := context.managedTypesValues.bigFloatValues
 	value1, ok := bigFloatValues[handle1]
 	if !ok {
-		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+		return nil, nil, vmhost.ErrNoBigFloatUnderThisHandle
 	}
 	value2, ok := bigFloatValues[handle2]
 	if !ok {
-		return nil, nil, arwen.ErrNoBigFloatUnderThisHandle
+		return nil, nil, vmhost.ErrNoBigFloatUnderThisHandle
 	}
 	if value1.IsInf() || value2.IsInf() {
-		return nil, nil, arwen.ErrInfinityFloatOperation
+		return nil, nil, vmhost.ErrInfinityFloatOperation
 	} else {
 		exponent1 := value1.MantExp(nil)
 		exponent2 := value2.MantExp(nil)
 		if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
-			return nil, nil, arwen.ErrExponentTooBigOrTooSmall
+			return nil, nil, vmhost.ErrExponentTooBigOrTooSmall
 
 		}
 	}
@@ -369,7 +369,7 @@ func (context *managedTypesContext) PutBigFloat(value *big.Float) (int32, error)
 	}
 	exponent := value.MantExp(nil)
 	if exponent > 65025 || exponent < -65025 {
-		return 0, arwen.ErrExponentTooBigOrTooSmall
+		return 0, vmhost.ErrExponentTooBigOrTooSmall
 	}
 	newHandle := int32(len(context.managedTypesValues.bigFloatValues))
 	for {
@@ -399,7 +399,7 @@ func (context *managedTypesContext) NewBigIntFromInt64(int64Value int64) int32 {
 func (context *managedTypesContext) GetEllipticCurve(handle int32) (*elliptic.CurveParams, error) {
 	curve, ok := context.managedTypesValues.ecValues[handle]
 	if !ok {
-		return nil, arwen.ErrNoEllipticCurveUnderThisHandle
+		return nil, vmhost.ErrNoEllipticCurveUnderThisHandle
 	}
 	return curve, nil
 }
@@ -534,7 +534,7 @@ func (context *managedTypesContext) SetBytes(mBufferHandle int32, bytes []byte) 
 func (context *managedTypesContext) GetBytes(mBufferHandle int32) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
-		return nil, arwen.ErrNoManagedBufferUnderThisHandle
+		return nil, vmhost.ErrNoManagedBufferUnderThisHandle
 	}
 	return mBuffer, nil
 }
@@ -562,10 +562,10 @@ func (context *managedTypesContext) GetLength(mBufferHandle int32) int32 {
 func (context *managedTypesContext) GetSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
-		return nil, arwen.ErrNoManagedBufferUnderThisHandle
+		return nil, vmhost.ErrNoManagedBufferUnderThisHandle
 	}
 	if int(lengthOfSlice) > len(mBuffer)-int(startPosition) || lengthOfSlice < 0 || startPosition < 0 {
-		return nil, arwen.ErrBadBounds
+		return nil, vmhost.ErrBadBounds
 	}
 	return mBuffer[startPosition:(startPosition + lengthOfSlice)], nil
 }
@@ -574,10 +574,10 @@ func (context *managedTypesContext) GetSlice(mBufferHandle int32, startPosition 
 func (context *managedTypesContext) DeleteSlice(mBufferHandle int32, startPosition int32, lengthOfSlice int32) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
-		return nil, arwen.ErrNoManagedBufferUnderThisHandle
+		return nil, vmhost.ErrNoManagedBufferUnderThisHandle
 	}
 	if lengthOfSlice < 0 || startPosition < 0 {
-		return nil, arwen.ErrBadBounds
+		return nil, vmhost.ErrBadBounds
 	}
 	if int(lengthOfSlice) > len(mBuffer)-int(startPosition) {
 		mBuffer = mBuffer[:startPosition]
@@ -592,10 +592,10 @@ func (context *managedTypesContext) DeleteSlice(mBufferHandle int32, startPositi
 func (context *managedTypesContext) InsertSlice(mBufferHandle int32, startPosition int32, slice []byte) ([]byte, error) {
 	mBuffer, ok := context.managedTypesValues.mBufferValues[mBufferHandle]
 	if !ok {
-		return nil, arwen.ErrNoManagedBufferUnderThisHandle
+		return nil, vmhost.ErrNoManagedBufferUnderThisHandle
 	}
 	if startPosition < 0 || startPosition > int32(len(mBuffer))-1 {
-		return nil, arwen.ErrBadBounds
+		return nil, vmhost.ErrBadBounds
 	}
 	mBuffer = append(mBuffer[:startPosition], append(slice, mBuffer[startPosition:]...)...)
 	context.managedTypesValues.mBufferValues[mBufferHandle] = mBuffer

@@ -14,12 +14,12 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 )
 
-var _ arwen.AsyncContext = (*asyncContext)(nil)
+var _ vmhost.AsyncContext = (*asyncContext)(nil)
 
 var logAsync = logger.GetOrCreate("arwen/async")
 
 type asyncContext struct {
-	host        arwen.VMHost
+	host        vmhost.VMHost
 	stateStack  []*asyncContext
 	marshalizer *marshal.GogoProtoMarshalizer
 
@@ -28,8 +28,8 @@ type asyncContext struct {
 	callbackData       []byte
 	gasAccumulated     uint64
 	returnData         []byte
-	asyncCallGroups    []*arwen.AsyncCallGroup
-	callArgsParser     arwen.CallArgsParser
+	asyncCallGroups    []*vmhost.AsyncCallGroup
+	callArgsParser     vmhost.CallArgsParser
 	esdtTransferParser vmcommon.ESDTTransferParser
 
 	callsCounter      uint64 // incremented and decremented during run
@@ -45,24 +45,24 @@ type asyncContext struct {
 	callbackAsyncInitiatorCallID []byte
 
 	asyncStorageDataPrefix []byte
-	callbackParentCall     *arwen.AsyncCall
+	callbackParentCall     *vmhost.AsyncCall
 }
 
 // NewAsyncContext creates a new asyncContext.
 func NewAsyncContext(
-	host arwen.VMHost,
-	callArgsParser arwen.CallArgsParser,
+	host vmhost.VMHost,
+	callArgsParser vmhost.CallArgsParser,
 	esdtTransferParser vmcommon.ESDTTransferParser,
 	_ *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
 	if check.IfNil(host) {
-		return nil, arwen.ErrNilVMHost
+		return nil, vmhost.ErrNilVMHost
 	}
 	if check.IfNil(callArgsParser) {
-		return nil, arwen.ErrNilCallArgsParser
+		return nil, vmhost.ErrNilCallArgsParser
 	}
 	if check.IfNil(esdtTransferParser) {
-		return nil, arwen.ErrNilESDTTransferParser
+		return nil, vmhost.ErrNilESDTTransferParser
 	}
 
 	storage := host.Storage()
@@ -75,11 +75,11 @@ func NewAsyncContext(
 		callbackData:           nil,
 		gasAccumulated:         0,
 		returnData:             nil,
-		asyncCallGroups:        make([]*arwen.AsyncCallGroup, 0),
+		asyncCallGroups:        make([]*vmhost.AsyncCallGroup, 0),
 		callArgsParser:         callArgsParser,
 		esdtTransferParser:     esdtTransferParser,
 		contextCallbackEnabled: false,
-		asyncStorageDataPrefix: storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix),
+		asyncStorageDataPrefix: storage.GetVmProtectedPrefix(vmhost.AsyncDataPrefix),
 		callbackParentCall:     nil,
 	}
 
@@ -94,7 +94,7 @@ func (context *asyncContext) InitState() {
 	context.callerAddr = make([]byte, 0)
 	context.gasAccumulated = 0
 	context.returnData = make([]byte, 0)
-	context.asyncCallGroups = make([]*arwen.AsyncCallGroup, 0)
+	context.asyncCallGroups = make([]*vmhost.AsyncCallGroup, 0)
 	context.callback = ""
 	context.callbackData = make([]byte, 0)
 	context.callbackAsyncInitiatorCallID = nil
@@ -170,9 +170,9 @@ func (context *asyncContext) PushState() {
 	context.stateStack = append(context.stateStack, newState)
 }
 
-func (context *asyncContext) cloneCallGroups() []*arwen.AsyncCallGroup {
+func (context *asyncContext) cloneCallGroups() []*vmhost.AsyncCallGroup {
 	groupCount := len(context.asyncCallGroups)
-	clonedGroups := make([]*arwen.AsyncCallGroup, groupCount)
+	clonedGroups := make([]*vmhost.AsyncCallGroup, groupCount)
 
 	for i := 0; i < groupCount; i++ {
 		clonedGroups[i] = context.asyncCallGroups[i].Clone()
@@ -214,7 +214,7 @@ func (context *asyncContext) PopSetActiveState() {
 }
 
 // Clone creates a clone of the given context
-func (context *asyncContext) Clone() arwen.AsyncContext {
+func (context *asyncContext) Clone() vmhost.AsyncContext {
 	return &asyncContext{
 		address:                      context.address,
 		callerAddr:                   context.callerAddr,
@@ -288,7 +288,7 @@ func (context *asyncContext) SetReturnData(data []byte) {
 }
 
 // GetCallGroup retrieves an AsyncCallGroup by its ID.
-func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup, bool) {
+func (context *asyncContext) GetCallGroup(groupID string) (*vmhost.AsyncCallGroup, bool) {
 	index, ok := context.findGroupByID(groupID)
 	if ok {
 		return context.asyncCallGroups[index], true
@@ -297,10 +297,10 @@ func (context *asyncContext) GetCallGroup(groupID string) (*arwen.AsyncCallGroup
 }
 
 // AddCallGroup adds the provided AsyncCallGroup to the AsyncContext, if it does not exist already.
-func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
+func (context *asyncContext) AddCallGroup(group *vmhost.AsyncCallGroup) error {
 	_, exists := context.findGroupByID(group.Identifier)
 	if exists {
-		return arwen.ErrAsyncCallGroupExistsAlready
+		return vmhost.ErrAsyncCallGroupExistsAlready
 	}
 
 	context.asyncCallGroups = append(context.asyncCallGroups, group)
@@ -310,7 +310,7 @@ func (context *asyncContext) AddCallGroup(group *arwen.AsyncCallGroup) error {
 // SetContextCallback registers the name of the callback method to be called upon the completion of all the groups
 func (context *asyncContext) SetContextCallback(callbackName string, data []byte, gas uint64) error {
 	if !context.contextCallbackEnabled {
-		return arwen.ErrContextCallbackDisabled
+		return vmhost.ErrContextCallbackDisabled
 	}
 
 	err := context.host.Runtime().ValidateCallbackName(callbackName)
@@ -345,7 +345,7 @@ func (context *asyncContext) SetAsyncArgumentsForCall(input *vmcommon.ContractCa
 // SetAsyncArgumentsForCallback sets standard async context arguments
 func (context *asyncContext) SetAsyncArgumentsForCallback(
 	input *vmcommon.ContractCallInput,
-	asyncCall *arwen.AsyncCall,
+	asyncCall *vmhost.AsyncCall,
 	gasAccumulated uint64) {
 	newCallID := context.generateNewCallID()
 	input.VMInput.AsyncArguments = &vmcommon.AsyncArguments{
@@ -357,14 +357,14 @@ func (context *asyncContext) SetAsyncArgumentsForCallback(
 }
 
 type asyncCallLocation struct {
-	asyncCall  *arwen.AsyncCall
+	asyncCall  *vmhost.AsyncCall
 	groupIndex int
 	callIndex  int
 	err        error
 }
 
 // GetAsyncCall returns the stored async call object
-func (callInfo *asyncCallLocation) GetAsyncCall() *arwen.AsyncCall {
+func (callInfo *asyncCallLocation) GetAsyncCall() *vmhost.AsyncCall {
 	return callInfo.asyncCall
 }
 
@@ -384,7 +384,7 @@ func (callInfo *asyncCallLocation) GetError() error {
 }
 
 // GetAsyncCallByCallID gets from the context the call with the given callID
-func (context *asyncContext) GetAsyncCallByCallID(callID []byte) arwen.AsyncCallLocation {
+func (context *asyncContext) GetAsyncCallByCallID(callID []byte) vmhost.AsyncCallLocation {
 	for groupIndex, group := range context.asyncCallGroups {
 		for callIndex, callInGroup := range group.AsyncCalls {
 			if bytes.Equal(callInGroup.CallID, callID) {
@@ -402,7 +402,7 @@ func (context *asyncContext) GetAsyncCallByCallID(callID []byte) arwen.AsyncCall
 		asyncCall:  nil,
 		groupIndex: -1,
 		callIndex:  -1,
-		err:        arwen.ErrAsyncCallNotFound,
+		err:        vmhost.ErrAsyncCallNotFound,
 	}
 }
 
@@ -459,7 +459,7 @@ func (context *asyncContext) IsComplete() bool {
 
 // RegisterAsyncCall validates the provided AsyncCall adds it to the specified
 // group (adding the AsyncCall consumes its gas entirely).
-func (context *asyncContext) RegisterAsyncCall(groupID string, call *arwen.AsyncCall) error {
+func (context *asyncContext) RegisterAsyncCall(groupID string, call *vmhost.AsyncCall) error {
 	runtime := context.host.Runtime()
 	metering := context.host.Metering()
 
@@ -507,13 +507,13 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	metering := context.host.Metering()
 	logAsync.Trace("RegisterLegacyAsyncCall", "gas left", metering.GasLeft())
 	if !context.canRegisterLegacyAsyncCall() {
-		return arwen.ErrLegacyAsyncCallInvalid
+		return vmhost.ErrLegacyAsyncCallInvalid
 	}
 
-	legacyGroupID := arwen.LegacyAsyncCallGroupID
+	legacyGroupID := vmhost.LegacyAsyncCallGroupID
 	_, exists := context.GetCallGroup(legacyGroupID)
 	if exists {
-		return arwen.ErrOnlyOneLegacyAsyncCallAllowed
+		return vmhost.ErrOnlyOneLegacyAsyncCallAllowed
 	}
 
 	gasToLock, err := context.computeGasLockForLegacyAsyncCall()
@@ -527,12 +527,12 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 	}
 
 	callbackFunction := ""
-	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
-		callbackFunction = arwen.CallbackFunctionName
+	if context.host.Runtime().HasFunction(vmhost.CallbackFunctionName) {
+		callbackFunction = vmhost.CallbackFunctionName
 	}
 
-	err = context.addAsyncCall(legacyGroupID, &arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
+	err = context.addAsyncCall(legacyGroupID, &vmhost.AsyncCall{
+		Status:          vmhost.AsyncCallPending,
 		Destination:     address,
 		Data:            data,
 		ValueBytes:      value,
@@ -545,7 +545,7 @@ func (context *asyncContext) RegisterLegacyAsyncCall(address []byte, data []byte
 		return err
 	}
 
-	context.host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointAsyncCall)
+	context.host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointAsyncCall)
 
 	return nil
 }
@@ -559,7 +559,7 @@ func (context *asyncContext) canRegisterLegacyAsyncCall() bool {
 }
 
 // addAsyncCall adds the provided AsyncCall to the specified AsyncCallGroup
-func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall) error {
+func (context *asyncContext) addAsyncCall(groupID string, call *vmhost.AsyncCall) error {
 	metering := context.host.Metering()
 
 	err := metering.UseGasBounded(call.GasLocked)
@@ -576,18 +576,18 @@ func (context *asyncContext) addAsyncCall(groupID string, call *arwen.AsyncCall)
 	}
 
 	call.ExecutionMode = execMode
-	if execMode == arwen.ESDTTransferOnCallBack {
+	if execMode == vmhost.ESDTTransferOnCallBack {
 		context.incrementCallsCounter()
 		call.CallID = context.generateNewCallID()
 	}
 
 	if context.isMultiLevelAsync(call) {
-		return arwen.ErrAsyncNoMultiLevel
+		return vmhost.ErrAsyncNoMultiLevel
 	}
 
 	group, ok := context.GetCallGroup(groupID)
 	if !ok {
-		group = arwen.NewAsyncCallGroup(groupID)
+		group = vmhost.NewAsyncCallGroup(groupID)
 		err := context.AddCallGroup(group)
 		if err != nil {
 			return err
@@ -650,7 +650,7 @@ func (context *asyncContext) Execute() error {
 		// Note that all async calls below this point are pending by definition.
 		for _, group := range context.asyncCallGroups {
 			for _, call := range group.AsyncCalls {
-				if call.Status != arwen.AsyncCallPending {
+				if call.Status != vmhost.AsyncCallPending {
 					continue
 				}
 				err = context.executeAsyncCall(call)
@@ -660,7 +660,7 @@ func (context *asyncContext) Execute() error {
 			}
 		}
 
-		context.deleteCallGroupByID(arwen.LegacyAsyncCallGroupID)
+		context.deleteCallGroupByID(vmhost.LegacyAsyncCallGroupID)
 	}
 
 	return nil
@@ -673,13 +673,13 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	address []byte,
 	callID []byte,
 	vmInput *vmcommon.VMInput,
-) (*arwen.AsyncCall, bool, error) {
+) (*vmhost.AsyncCall, bool, error) {
 	if vmInput.CallType != vm.AsynchronousCallBack {
 		return nil, false, nil
 	}
 
 	if len(vmInput.Arguments) == 0 {
-		return nil, false, arwen.ErrCannotInterpretCallbackArgs
+		return nil, false, vmhost.ErrCannotInterpretCallbackArgs
 	}
 
 	loadedContext, err := readAsyncContextFromStorage(
@@ -688,7 +688,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 		context.callbackAsyncInitiatorCallID,
 		context.marshalizer)
 	if err != nil {
-		if err == arwen.ErrNoStoredAsyncContextFound {
+		if err == vmhost.ErrNoStoredAsyncContextFound {
 			return getLegacyCallback(address, vmInput), true, nil
 		} else {
 			return nil, false, err
@@ -699,7 +699,7 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	call := asyncCallInfo.GetAsyncCall()
 	err = asyncCallInfo.GetError()
 	if err != nil {
-		if err == arwen.ErrAsyncCallNotFound {
+		if err == vmhost.ErrAsyncCallNotFound {
 			return getLegacyCallback(address, vmInput), true, nil
 		} else {
 			return nil, false, err
@@ -713,26 +713,26 @@ func (context *asyncContext) UpdateCurrentAsyncCallStatus(
 	return call, false, nil
 }
 
-func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *arwen.AsyncCall {
+func getLegacyCallback(address []byte, vmInput *vmcommon.VMInput) *vmhost.AsyncCall {
 	var valueBytes []byte = nil
 	if vmInput.CallValue != nil {
 		valueBytes = vmInput.CallValue.Bytes()
 	}
-	return &arwen.AsyncCall{
-		Status:          arwen.AsyncCallResolved,
+	return &vmhost.AsyncCall{
+		Status:          vmhost.AsyncCallResolved,
 		Destination:     address,
 		ValueBytes:      valueBytes,
-		SuccessCallback: arwen.CallbackFunctionName,
-		ErrorCallback:   arwen.CallbackFunctionName,
+		SuccessCallback: vmhost.CallbackFunctionName,
+		ErrorCallback:   vmhost.CallbackFunctionName,
 		GasLimit:        vmInput.GasProvided,
 		GasLocked:       vmInput.GasLocked,
 	}
 }
 
-func (context *asyncContext) isMultiLevelAsync(call *arwen.AsyncCall) bool {
+func (context *asyncContext) isMultiLevelAsync(call *vmhost.AsyncCall) bool {
 	// ESDTTransferOnCallback must be allowed as an exception, even if it appears
 	// to be a 2-level async call.
-	return context.isCallAsyncOnStack() && call.ExecutionMode != arwen.ESDTTransferOnCallBack
+	return context.isCallAsyncOnStack() && call.ExecutionMode != vmhost.ESDTTransferOnCallBack
 }
 
 func (context *asyncContext) isCallAsyncOnStack() bool {
@@ -758,12 +758,12 @@ func IsCallAsync(callType vm.CallType) bool {
 	return callType == vm.AsynchronousCall || callType == vm.AsynchronousCallBack
 }
 
-func (context *asyncContext) executeAsyncCall(asyncCall *arwen.AsyncCall) error {
+func (context *asyncContext) executeAsyncCall(asyncCall *vmhost.AsyncCall) error {
 	// Cross-shard calls to built-in functions have two halves: an intra-shard
 	// half, followed by sending the call across shards.
-	if asyncCall.ExecutionMode == arwen.AsyncBuiltinFuncCrossShard {
+	if asyncCall.ExecutionMode == vmhost.AsyncBuiltinFuncCrossShard {
 		err := context.executeSyncHalfOfBuiltinFunction(asyncCall)
-		if err != nil || asyncCall.Status == arwen.AsyncCallRejected {
+		if err != nil || asyncCall.Status == vmhost.AsyncCallRejected {
 			return err
 		}
 
@@ -781,7 +781,7 @@ func (context *asyncContext) computeGasLockForLegacyAsyncCall() (uint64, error) 
 	}
 
 	gasToLock := uint64(0)
-	if context.host.Runtime().HasFunction(arwen.CallbackFunctionName) {
+	if context.host.Runtime().HasFunction(vmhost.CallbackFunctionName) {
 		gasToLock = metering.ComputeExtraGasLockedForAsync()
 	}
 
@@ -864,7 +864,7 @@ func (context *asyncContext) deleteCallGroup(index int) {
 }
 
 func (context *asyncContext) isValidCallbackName(callback string) bool {
-	if callback == arwen.InitFunctionName {
+	if callback == vmhost.InitFunctionName {
 		return false
 	}
 	if context.host.IsBuiltinFunctionName(callback) {
@@ -888,7 +888,7 @@ func (context *asyncContext) getContextFromStack(address []byte, callID []byte) 
 	return loadedContext
 }
 
-func (context *asyncContext) determineExecutionMode(destination []byte, data []byte) (arwen.AsyncCallExecutionMode, error) {
+func (context *asyncContext) determineExecutionMode(destination []byte, data []byte) (vmhost.AsyncCallExecutionMode, error) {
 	runtime := context.host.Runtime()
 	blockchain := context.host.Blockchain()
 
@@ -896,7 +896,7 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 	// nor a built-in function call.
 	functionName, args, err := context.callArgsParser.ParseData(string(data))
 	if err != nil {
-		return arwen.AsyncUnknown, err
+		return vmhost.AsyncUnknown, err
 	}
 
 	actualDestination := context.determineDestinationForAsyncCall(destination, data)
@@ -913,21 +913,21 @@ func (context *asyncContext) determineExecutionMode(destination []byte, data []b
 			isReturningCall := bytes.Equal(vmInput.CallerAddr, actualDestination)
 
 			if isESDTTransfer && isAsyncCall && isReturningCall {
-				return arwen.ESDTTransferOnCallBack, nil
+				return vmhost.ESDTTransferOnCallBack, nil
 			}
 
-			return arwen.AsyncBuiltinFuncIntraShard, nil
+			return vmhost.AsyncBuiltinFuncIntraShard, nil
 		}
 
-		return arwen.AsyncBuiltinFuncCrossShard, nil
+		return vmhost.AsyncBuiltinFuncCrossShard, nil
 	}
 
 	code, err := blockchain.GetCode(actualDestination)
 	if len(code) > 0 && err == nil {
-		return arwen.SyncExecution, nil
+		return vmhost.SyncExecution, nil
 	}
 
-	return arwen.AsyncUnknown, nil
+	return vmhost.AsyncUnknown, nil
 }
 
 func (context *asyncContext) determineDestinationForAsyncCall(destination []byte, data []byte) []byte {
@@ -983,12 +983,12 @@ func (context *asyncContext) accumulateGas(gas uint64) {
 
 // HasLegacyGroup checks if the a legacy async group was created
 func (context *asyncContext) HasLegacyGroup() bool {
-	_, hasLegacyGroup := context.GetCallGroup(arwen.LegacyAsyncCallGroupID)
+	_, hasLegacyGroup := context.GetCallGroup(vmhost.LegacyAsyncCallGroupID)
 	return hasLegacyGroup
 }
 
 // SetCallbackParentCall sets the async call that triggered the callback (used for callback closure)
-func (context *asyncContext) SetCallbackParentCall(asyncCall *arwen.AsyncCall) {
+func (context *asyncContext) SetCallbackParentCall(asyncCall *vmhost.AsyncCall) {
 	context.callbackParentCall = asyncCall
 }
 
@@ -998,14 +998,14 @@ func (context *asyncContext) GetCallbackClosure() ([]byte, error) {
 		stackContext := context.Clone()
 		stackContext, err := stackContext.LoadParentContextFromStackOrStorage()
 		if err != nil {
-			return nil, arwen.ErrAsyncNoCallbackForClosure
+			return nil, vmhost.ErrAsyncNoCallbackForClosure
 		}
 		context.callbackParentCall = stackContext.
 			GetAsyncCallByCallID(context.callerCallID).
 			GetAsyncCall()
 	}
 	if context.callbackParentCall == nil {
-		return nil, arwen.ErrAsyncNoCallbackForClosure
+		return nil, vmhost.ErrAsyncNoCallbackForClosure
 	}
 	return context.callbackParentCall.CallbackClosure, nil
 }

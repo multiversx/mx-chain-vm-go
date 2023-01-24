@@ -41,7 +41,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	return host
 }
 
-func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
+func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
 	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: vmhooks.NewElrondApi(host),
 	})
@@ -106,10 +106,10 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	require.NotNil(t, err)
 
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err = runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
-	require.Equal(t, arwen.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
@@ -121,10 +121,10 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
-	require.Equal(t, arwen.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 
 	// These API functions exist, and are imported by 'counter'
 	require.True(t, runtimeCtx.IsFunctionImported("int64storageLoad"))
@@ -205,7 +205,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -371,7 +371,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -399,7 +399,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	require.Equal(t, executor.ErrFuncNotFound, err)
 	require.Empty(t, functionName)
 
-	hasInitFunction := runtimeCtx.HasFunction(arwen.InitFunctionName)
+	hasInitFunction := runtimeCtx.HasFunction(vmhost.InitFunctionName)
 	require.True(t, hasInitFunction)
 
 	runtimeCtx.ClearWarmInstanceCache()
@@ -423,46 +423,46 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	// Set and get curent breakpoint value
-	require.Equal(t, arwen.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
-	runtimeCtx.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
-	require.Equal(t, arwen.BreakpointOutOfGas, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
+	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+	require.Equal(t, vmhost.BreakpointOutOfGas, runtimeCtx.GetRuntimeBreakpointValue())
 
-	runtimeCtx.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	require.Equal(t, arwen.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
+	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
+	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 
 	// Signal user error
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeCtx.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	runtimeCtx.SignalUserError("something happened")
-	require.Equal(t, arwen.BreakpointSignalError, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointSignalError, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.UserError, mockOutput.ReturnCode())
 	require.Equal(t, "something happened", mockOutput.ReturnMessage())
 
 	// Fail execution
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeCtx.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	runtimeCtx.FailExecution(nil)
-	require.Equal(t, arwen.BreakpointExecutionFailed, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointExecutionFailed, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
 	require.Equal(t, "execution failed", mockOutput.ReturnMessage())
 
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeCtx.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	require.Equal(t, arwen.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
+	runtimeCtx.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
+	require.Equal(t, vmhost.BreakpointNone, runtimeCtx.GetRuntimeBreakpointValue())
 
 	runtimeError := errors.New("runtime error")
 	runtimeCtx.FailExecution(runtimeError)
-	require.Equal(t, arwen.BreakpointExecutionFailed, runtimeCtx.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointExecutionFailed, runtimeCtx.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
 	require.Equal(t, runtimeError.Error(), mockOutput.ReturnMessage())
 }
@@ -484,7 +484,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -514,7 +514,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/init-simple/output/init-simple.wasm"
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -524,7 +524,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	totalPages := 32
 	memoryContents := runtimeCtx.instance.MemDump()
 	require.Equal(t, runtimeCtx.instance.MemLength(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*vmhost.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {
@@ -543,7 +543,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -605,7 +605,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -669,7 +669,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -687,7 +687,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, 1, len(runtimeCtx.instanceStack))
 
 	// Create a new Wasmer instance
-	contractCode = arwen.GetSCCode(path)
+	contractCode = vmhost.GetSCCode(path)
 	err = runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 

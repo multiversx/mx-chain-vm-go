@@ -34,14 +34,14 @@ func (context *ElrondApi) SmallIntGetUnsignedArgument(id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = context.WithFault(arwen.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	return int64(argBigInt.Uint64())
@@ -58,14 +58,14 @@ func (context *ElrondApi) SmallIntGetSignedArgument(id int32) int64 {
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = context.WithFault(arwen.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	return argBigInt.Int64()
@@ -165,7 +165,7 @@ func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset executor.MemPtr,
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
-		_ = context.WithFault(arwen.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -192,7 +192,7 @@ func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset executor.MemPtr, k
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
-		_ = context.WithFault(arwen.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
