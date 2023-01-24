@@ -21,7 +21,7 @@ func main() {
 	_, _ = out.Write([]byte("// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"))
 	_, _ = out.Write([]byte("\n"))
 	_, _ = out.Write([]byte("// Please do not edit manually!\n"))
-	_, _ = out.Write([]byte("// Call `go generate` in `arwen-wasm-vm/scenarioexec/gasSchedules` to update it.\n"))
+	_, _ = out.Write([]byte("// Call `go generate` in `vm-wasm-vm/scenarioexec/gasSchedules` to update it.\n"))
 	_, _ = out.Write([]byte("\n"))
 	_, _ = out.Write([]byte("const (\n"))
 	for _, fileName := range fs {

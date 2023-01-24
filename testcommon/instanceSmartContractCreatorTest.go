@@ -78,7 +78,7 @@ func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 		callerTest.blockchainHookStub = callerTest.createBlockchainStub()
 	}
 	if callerTest.host == nil {
-		callerTest.host = callerTest.createTestArwenVM()
+		callerTest.host = callerTest.createTestVMVM()
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 	defer func() {
@@ -106,7 +106,7 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.
 	return stubBlockchainHook
 }
 
-func (callerTest *TestCreateTemplateConfig) createTestArwenVM() vmhost.VMHost {
+func (callerTest *TestCreateTemplateConfig) createTestVMVM() vmhost.VMHost {
 	return NewTestHostBuilder(callerTest.t).
 		WithExecutorFactory(callerTest.overrideExecutorFactory).
 		WithBlockchainHook(callerTest.blockchainHookStub).

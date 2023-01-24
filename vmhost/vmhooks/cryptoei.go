@@ -431,7 +431,7 @@ func (context *ElrondApi) VerifyCustomSecp256k1(
 	metering.UseAndTraceGas(gasToUse)
 
 	if keyLength != secp256k1CompressedPublicKeyLength && keyLength != secp256k1UncompressedPublicKeyLength {
-		_ = context.WithFault(vmhost.ErrInvalidPublicKeySize, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrInvalidPublicKeySize, runtime.BaseOpsErrorShouldFailExecution())
 		return 1
 	}
 

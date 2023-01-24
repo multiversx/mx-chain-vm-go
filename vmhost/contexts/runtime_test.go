@@ -25,7 +25,7 @@ const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
 var vmType = []byte("type")
 
-func InitializeArwenAndWasmer() *contextmock.VMHostMock {
+func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	gasSchedule := config.MakeGasMapForTests()
 	gasCostConfig, _ := config.CreateGasConfig(gasSchedule)
 	wasmer.SetOpcodeCosts(gasCostConfig.WASMOpcodeCost)
@@ -59,7 +59,7 @@ func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext
 }
 
 func TestNewRuntimeContext(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -70,7 +70,7 @@ func TestNewRuntimeContext(t *testing.T) {
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -88,7 +88,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -113,7 +113,7 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -197,7 +197,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -363,7 +363,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -407,7 +407,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 }
 
 func TestRuntimeContext_Breakpoints(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -476,7 +476,7 @@ func memStore(runtimeCtx *runtimeContext, offset int32, data []byte) error {
 }
 
 func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -506,7 +506,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 }
 
 func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -535,7 +535,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 }
 
 func TestRuntimeContext_MemLoadCases(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -597,7 +597,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 }
 
 func TestRuntimeContext_MemStoreCases(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -661,7 +661,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -723,7 +723,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -735,7 +735,7 @@ func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()
 
@@ -747,7 +747,7 @@ func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 
 	runtimeCtx := makeDefaultRuntimeContext(t, host)
 	defer runtimeCtx.ClearWarmInstanceCache()

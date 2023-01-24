@@ -85,8 +85,8 @@ var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", 
 // ErrMaxInstancesReached signals that the max number of Wasmer instances has been reached.
 var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)
 
-// ErrStoreElrondReservedKey signals that an attempt to write under an reserved key has been made
-var ErrStoreElrondReservedKey = errors.New("cannot write to storage under Elrond reserved key")
+// ErrStoreReservedKey signals that an attempt to write under an reserved key has been made
+var ErrStoreReservedKey = errors.New("cannot write to storage under Elrond reserved key")
 
 // ErrCannotWriteProtectedKey signals an attempt to write to a protected key, while storage protection is enforced
 var ErrCannotWriteProtectedKey = errors.New("cannot write to protected key")

@@ -15,7 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 )
 
-var logMTypes = logger.GetOrCreate("arwen/mtypes")
+var logMTypes = logger.GetOrCreate("vm/mtypes")
 
 const bigFloatPrecision = 53
 const encodedBigFloatMaxByteLen = 18

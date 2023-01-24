@@ -7,7 +7,7 @@ import (
 )
 
 // ExecuteTest executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteTest(test *mj.Test) error {
+func (ae *VMTestExecutor) ExecuteTest(test *mj.Test) error {
 	// reset world
 	ae.World.Clear()
 	ae.World.Blockhashes = test.BlockHashes.ToValues()

@@ -16,7 +16,7 @@ import (
 
 var _ vmhost.OutputContext = (*outputContext)(nil)
 
-var logOutput = logger.GetOrCreate("arwen/output")
+var logOutput = logger.GetOrCreate("vm/output")
 
 type outputContext struct {
 	host        vmhost.VMHost

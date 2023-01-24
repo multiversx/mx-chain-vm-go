@@ -32,7 +32,7 @@ import (
 		const graphsFolder = "/home/bogdan/graphs/"
 */
 
-var logAsync = logger.GetOrCreate("arwen/async")
+var logAsync = logger.GetOrCreate("vm/async")
 
 func TestGraph_SyncCalls_CallGraph(t *testing.T) {
 	callGraph := test.MakeGraphAndImage(test.CreateGraphTestSyncCalls())

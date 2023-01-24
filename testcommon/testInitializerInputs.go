@@ -209,7 +209,7 @@ func (thb *TestHostBuilder) initializeHost() {
 
 func (thb *TestHostBuilder) newHost() vmhost.VMHost {
 	thb.initializeBuiltInFuncContainer()
-	host, err := hostCore.NewArwenVM(
+	host, err := hostCore.NewVMHost(
 		thb.blockchainHook,
 		thb.vmHostParameters,
 	)

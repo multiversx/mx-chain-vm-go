@@ -150,7 +150,7 @@ import (
 }
 
 func (writer *cgoWriter) writePopulateImports(out *eiGenWriter, eiMetadata *EIMetadata) {
-	out.WriteString(`// populateWasmerImports populates imports with the ElrondEI API methods
+	out.WriteString(`// populateWasmerImports populates imports with the BaseOpsAPI API methods
 func populateWasmerImports(imports *wasmerImports) error {
 	var err error
 `)
@@ -170,7 +170,7 @@ func populateWasmerImports(imports *wasmerImports) error {
 }
 
 func (writer *cgoWriter) writePopulateFuncPointers(out *eiGenWriter, eiMetadata *EIMetadata) {
-	out.WriteString(`// populateCgoFunctionPointers populates imports with the ElrondEI API methods
+	out.WriteString(`// populateCgoFunctionPointers populates imports with the BaseOpsAPI API methods
 func populateCgoFunctionPointers() *cWasmerVmHookPointers {
 	return &cWasmerVmHookPointers{`)
 

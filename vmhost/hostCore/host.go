@@ -21,7 +21,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
-var log = logger.GetOrCreate("arwen/host")
+var log = logger.GetOrCreate("vm/host")
 var logGasTrace = logger.GetOrCreate("gasTrace")
 
 // MaximumRuntimeInstanceStackSize specifies the maximum number of allowed Wasmer
@@ -60,8 +60,8 @@ type vmHost struct {
 	activationEpochMap   map[uint32]struct{}
 }
 
-// NewArwenVM creates a new Arwen vmHost
-func NewArwenVM(
+// NewVMHost creates a new VM vmHost
+func NewVMHost(
 	blockChainHook vmcommon.BlockchainHook,
 	hostParameters *vmhost.VMHostParameters,
 ) (vmhost.VMHost, error) {
@@ -182,9 +182,9 @@ func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (exe
 	return vmExecutorFactory.CreateExecutor(vmExecutorFactoryArgs)
 }
 
-// GetVersion returns the Arwen version string
+// GetVersion returns the VM version string
 func (host *vmHost) GetVersion() string {
-	return vmhost.ArwenVersion
+	return vmhost.VMVersion
 }
 
 // Crypto returns the VMCrypto instance of the host

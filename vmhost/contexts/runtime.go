@@ -14,7 +14,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var logRuntime = logger.GetOrCreate("arwen/runtime")
+var logRuntime = logger.GetOrCreate("vm/runtime")
 
 var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
@@ -676,14 +676,14 @@ func (context *runtimeContext) VerifyContractCode() error {
 	return nil
 }
 
-// ElrondAPIErrorShouldFailExecution returns true
-func (context *runtimeContext) ElrondAPIErrorShouldFailExecution() bool {
+// BaseOpsErrorShouldFailExecution returns true
+func (context *runtimeContext) BaseOpsErrorShouldFailExecution() bool {
 	return true
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution specifies whether an error in the
+// SyncExecAPIErrorShouldFailExecution specifies whether an error in the
 // EEI functions for synchronous execution should abort contract execution.
-func (context *runtimeContext) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+func (context *runtimeContext) SyncExecAPIErrorShouldFailExecution() bool {
 	return true
 }
 

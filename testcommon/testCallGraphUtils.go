@@ -19,8 +19,8 @@ const generateGraphs = false
 const graphsFolder = "/home/bogdan/graphs/"
 
 // LogGraph -
-var LogGraph = logger.GetOrCreate("arwen/graph")
-var logAsync = logger.GetOrCreate("arwen/async")
+var LogGraph = logger.GetOrCreate("vm/graph")
+var logAsync = logger.GetOrCreate("vm/async")
 
 // TestReturnDataSuffix -
 var TestReturnDataSuffix = "_returnData"

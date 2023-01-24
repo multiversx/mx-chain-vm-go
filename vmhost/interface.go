@@ -140,8 +140,8 @@ type RuntimeContext interface {
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
 	SetPointsUsed(gasPoints uint64)
-	ElrondAPIErrorShouldFailExecution() bool
-	ElrondSyncExecAPIErrorShouldFailExecution() bool
+	BaseOpsErrorShouldFailExecution() bool
+	SyncExecAPIErrorShouldFailExecution() bool
 	CryptoAPIErrorShouldFailExecution() bool
 	BigIntAPIErrorShouldFailExecution() bool
 	BigFloatAPIErrorShouldFailExecution() bool

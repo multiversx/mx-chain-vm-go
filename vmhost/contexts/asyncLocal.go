@@ -244,7 +244,7 @@ func (context *asyncContext) createContractCallInput(asyncCall *vmhost.AsyncCall
 	}
 
 	gasLimit := asyncCall.GetGasLimit()
-	gasToUse := host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep
+	gasToUse := host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep
 	if gasLimit <= gasToUse {
 		return nil, vmhost.ErrNotEnoughGas
 	}
@@ -374,7 +374,7 @@ func (context *asyncContext) computeGasLimitForCallback(asyncCall *vmhost.AsyncC
 	metering := context.host.Metering()
 	gasLimit := math.AddUint64(vmOutput.GasRemaining, asyncCall.GetGasLocked())
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.AsyncCallStep
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.AsyncCallStep
 	copyPerByte := metering.GasSchedule().BaseOperationCost.DataCopyPerByte
 	gas := math.MulUint64(copyPerByte, uint64(dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)

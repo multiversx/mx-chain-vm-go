@@ -258,13 +258,13 @@ func (r *RuntimeContextMock) CallSCFunction(_ string) error {
 	return r.Err
 }
 
-// ElrondAPIErrorShouldFailExecution mocked method
-func (r *RuntimeContextMock) ElrondAPIErrorShouldFailExecution() bool {
+// BaseOpsErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) BaseOpsErrorShouldFailExecution() bool {
 	return r.FailElrondAPI
 }
 
-// ElrondSyncExecAPIErrorShouldFailExecution mocked method
-func (r *RuntimeContextMock) ElrondSyncExecAPIErrorShouldFailExecution() bool {
+// SyncExecAPIErrorShouldFailExecution mocked method
+func (r *RuntimeContextMock) SyncExecAPIErrorShouldFailExecution() bool {
 	return r.FailElrondSyncExecAPI
 }
 

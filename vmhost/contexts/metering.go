@@ -12,7 +12,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/math"
 )
 
-var logMetering = logger.GetOrCreate("arwen/metering")
+var logMetering = logger.GetOrCreate("vm/metering")
 
 type meteringContext struct {
 	host               vmhost.VMHost
@@ -452,7 +452,7 @@ func (context *meteringContext) BoundGasLimit(value int64) uint64 {
 // UseGasForAsyncStep consumes the AsyncCallStep gas cost on the currently
 // running Wasmer instance
 func (context *meteringContext) UseGasForAsyncStep() error {
-	gasSchedule := context.GasSchedule().ElrondAPICost
+	gasSchedule := context.GasSchedule().BaseOpsAPICost
 	gasToDeduct := gasSchedule.AsyncCallStep
 	return context.UseGasBounded(gasToDeduct)
 }
@@ -471,7 +471,7 @@ func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 // ComputeExtraGasLockedForAsync calculates the minimum amount of gas to lock for async callbacks
 func (context *meteringContext) ComputeExtraGasLockedForAsync() uint64 {
 	baseGasSchedule := context.GasSchedule().BaseOperationCost
-	apiGasSchedule := context.GasSchedule().ElrondAPICost
+	apiGasSchedule := context.GasSchedule().BaseOpsAPICost
 	codeSize := context.host.Runtime().GetSCCodeSize()
 	costPerByte := baseGasSchedule.AoTPreparePerByte
 
@@ -512,7 +512,7 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 func (context *meteringContext) DeductInitialGasForDirectDeployment(input vmhost.CodeDeployInput) error {
 	return context.deductInitialGas(
 		input.ContractCode,
-		context.gasSchedule.ElrondAPICost.CreateContract,
+		context.gasSchedule.BaseOpsAPICost.CreateContract,
 		context.gasSchedule.BaseOperationCost.CompilePerByte,
 	)
 }

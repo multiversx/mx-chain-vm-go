@@ -29,19 +29,19 @@ func (context *ElrondApi) SmallIntGetUnsignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
 	metering.UseGasAndAddTracedGas(smallIntGetUnsignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := big.NewInt(0).SetBytes(arg)
 	if !argBigInt.IsUint64() {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 	return int64(argBigInt.Uint64())
@@ -53,19 +53,19 @@ func (context *ElrondApi) SmallIntGetSignedArgument(id int32) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64GetArgument
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64GetArgument
 	metering.UseGasAndAddTracedGas(smallIntGetSignedArgumentName, gasToUse)
 
 	args := runtime.Arguments()
 	if id < 0 || id >= int32(len(args)) {
-		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgIndexOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
 	arg := args[id]
 	argBigInt := twos.SetBytes(big.NewInt(0), arg)
 	if !argBigInt.IsInt64() {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 	return argBigInt.Int64()
@@ -77,7 +77,7 @@ func (context *ElrondApi) SmallIntFinishUnsigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
 	metering.UseGasAndAddTracedGas(smallIntFinishUnsignedName, gasToUse)
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
@@ -90,7 +90,7 @@ func (context *ElrondApi) SmallIntFinishSigned(value int64) {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64Finish
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64Finish
 	metering.UseGasAndAddTracedGas(smallIntFinishSignedName, gasToUse)
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
@@ -104,17 +104,17 @@ func (context *ElrondApi) SmallIntStorageStoreUnsigned(keyOffset executor.MemPtr
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
 	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
 	valueBytes := big.NewInt(0).SetUint64(uint64(value)).Bytes()
 	storageStatus, err := storage.SetStorage(key, valueBytes)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -128,17 +128,17 @@ func (context *ElrondApi) SmallIntStorageStoreSigned(keyOffset executor.MemPtr, 
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
 
-	gasToUse := metering.GasSchedule().ElrondAPICost.Int64StorageStore
+	gasToUse := metering.GasSchedule().BaseOpsAPICost.Int64StorageStore
 	metering.UseGasAndAddTracedGas(smallIntStorageStoreSignedName, gasToUse)
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
 	valueBytes := twos.ToBytes(big.NewInt(value))
 	storageStatus, err := storage.SetStorage(key, valueBytes)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -153,19 +153,19 @@ func (context *ElrondApi) SmallIntStorageLoadUnsigned(keyOffset executor.MemPtr,
 	metering := context.GetMeteringContext()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}
 
 	data, usedCache, err := storage.GetStorage(key)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}
-	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := big.NewInt(0).SetBytes(data)
 	if !valueBigInt.IsUint64() {
-		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
@@ -180,19 +180,19 @@ func (context *ElrondApi) SmallIntStorageLoadSigned(keyOffset executor.MemPtr, k
 	metering := context.GetMeteringContext()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}
 
 	data, usedCache, err := storage.GetStorage(key)
-	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
+	if context.WithFault(err, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}
-	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().ElrondAPICost.Int64StorageLoad, usedCache)
+	storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad, usedCache)
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
-		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrStorageValueOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 

@@ -16,7 +16,7 @@ import (
 
 var _ vmhost.AsyncContext = (*asyncContext)(nil)
 
-var logAsync = logger.GetOrCreate("arwen/async")
+var logAsync = logger.GetOrCreate("vm/async")
 
 type asyncContext struct {
 	host        vmhost.VMHost

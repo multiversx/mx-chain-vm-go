@@ -567,7 +567,7 @@ func (context *ElrondApi) MBufferStorageLoadFromAddress(addressHandle, keyHandle
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return
 	}
 
@@ -591,7 +591,7 @@ func (context *ElrondApi) MBufferGetArgument(id int32, destinationHandle int32) 
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrArgOutOfRange, runtime.BaseOpsErrorShouldFailExecution())
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])

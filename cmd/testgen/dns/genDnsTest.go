@@ -18,17 +18,17 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../../test")
+	return vmTestRoot
 }
 
 type testGenerator struct {
-	mandosParser      mjparse.Parser
+	parser      mjparse.Parser
 	generatedScenario *mj.Scenario
 }
 
 func (tg *testGenerator) addStep(stepSnippet string) {
-	step, err := tg.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := tg.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +41,7 @@ func main() {
 			"dns.wasm",
 			filepath.Join(getTestRoot(), "dns/dns.wasm"))
 	tg := &testGenerator{
-		mandosParser: mjparse.NewParser(fileResolver),
+		parser: mjparse.NewParser(fileResolver),
 		generatedScenario: &mj.Scenario{
 			Name: "dns test",
 		},

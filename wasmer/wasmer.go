@@ -3,4 +3,4 @@ package wasmer
 
 import logger "github.com/multiversx/mx-chain-logger-go"
 
-var logWasmer = logger.GetOrCreate("arwen/wasmer")
+var logWasmer = logger.GetOrCreate("vm/wasmer")

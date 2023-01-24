@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestElrondEI_CallValue(t *testing.T) {
+func TestBaseOpsAPI_CallValue(t *testing.T) {
 	code := testcommon.GetTestSCCode("baseOps", "../../")
 
 	// 1-byte call value
@@ -98,7 +98,7 @@ func TestElrondEI_CallValue(t *testing.T) {
 	assert.Equal(t, big.NewInt(12345), val12345)
 }
 
-func TestElrondEI_int64getArgument(t *testing.T) {
+func TestBaseOpsAPI_int64getArgument(t *testing.T) {
 	code := testcommon.GetTestSCCode("baseOps", "../../")
 	host := testcommon.NewTestHostBuilder(t).
 		WithBlockchainHook(testcommon.BlockchainHookStubForCall(code, nil)).

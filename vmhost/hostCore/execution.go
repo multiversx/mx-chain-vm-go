@@ -1239,7 +1239,7 @@ func (host *vmHost) isSCExecutionAfterBuiltInFunc(
 		return nil, err
 	}
 
-	// TODO CurrentTxHash might equal PrevTxHash, because Arwen does not generate
+	// TODO CurrentTxHash might equal PrevTxHash, because VM does not generate
 	// SCRs between async steps; analyze and fix this (e.g. create dummy SCRs
 	// just for hashing, or hash the VMInput itself)
 	newVMInput := &vmcommon.ContractCallInput{
