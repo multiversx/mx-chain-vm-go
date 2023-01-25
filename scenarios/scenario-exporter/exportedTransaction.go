@@ -1,4 +1,4 @@
-package elrondgo_exporter
+package scenario_exporter
 
 import (
 	"math/big"
