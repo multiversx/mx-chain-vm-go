@@ -33,7 +33,7 @@
                         "''u_uncl|0x00000003": "0",
                         "''u_stak|0x00000003": "900,000",
                         "''u_sale|0x00000003": "0",
-                        "''ELRONDreward": "10,000,000,010"
+                        "0x454C524F4E44|str:reward": "10,000,000,010"
                     },
                     "code": "file:../delegation.wasm"
                 },

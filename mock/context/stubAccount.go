@@ -6,7 +6,7 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
-// StubAccount is used with the blockchain stub in arwen context tests.
+// StubAccount is used with the blockchain stub in vm context tests.
 // It has minimal functionality.
 type StubAccount struct {
 	Address      []byte

@@ -1,4 +1,4 @@
-package mandosjsonmodel
+package scenjsonmodel
 
 // TransactionType describes the type of simulate transaction
 type TransactionType int
@@ -18,7 +18,7 @@ const (
 	Transfer
 
 	// ValidatorReward is when the protocol sends a validator reward to the target account.
-	// It increases the balance, but also increments "ELROND_Reward" in storage.
+	// It increases the balance, but also increments the reward value in storage.
 	ValidatorReward
 )
 

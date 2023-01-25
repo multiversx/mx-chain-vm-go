@@ -1,4 +1,4 @@
-package mandoscontroller
+package scencontroller
 
 import (
 	"io/ioutil"
@@ -10,8 +10,8 @@ import (
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
 )
 
-// ParseMandosScenario reads and parses a Mandos scenario from a JSON file.
-func ParseMandosScenario(parser mjparse.Parser, scenFilePath string) (*mj.Scenario, error) {
+// ParseScenariosScenario reads and parses a Scenarios scenario from a JSON file.
+func ParseScenariosScenario(parser mjparse.Parser, scenFilePath string) (*mj.Scenario, error) {
 	var err error
 	scenFilePath, err = filepath.Abs(scenFilePath)
 	if err != nil {
@@ -40,15 +40,15 @@ func ParseMandosScenario(parser mjparse.Parser, scenFilePath string) (*mj.Scenar
 	return parser.ParseScenarioFile(byteValue)
 }
 
-// ParseMandosScenarioDefaultParser reads and parses a Mandos scenario from a JSON file.
-func ParseMandosScenarioDefaultParser(scenFilePath string) (*mj.Scenario, error) {
+// ParseScenariosScenarioDefaultParser reads and parses a Scenarios scenario from a JSON file.
+func ParseScenariosScenarioDefaultParser(scenFilePath string) (*mj.Scenario, error) {
 	parser := mjparse.NewParser(NewDefaultFileResolver())
 	parser.ExprInterpreter.FileResolver.SetContext(scenFilePath)
-	return ParseMandosScenario(parser, scenFilePath)
+	return ParseScenariosScenario(parser, scenFilePath)
 }
 
-// WriteMandosScenario exports a Mandos scenario to a file, using the default formatting.
-func WriteMandosScenario(scenario *mj.Scenario, toPath string) error {
+// WriteScenariosScenario exports a Scenarios scenario to a file, using the default formatting.
+func WriteScenariosScenario(scenario *mj.Scenario, toPath string) error {
 	jsonString := mjwrite.ScenarioToJSONString(scenario)
 
 	err := os.MkdirAll(filepath.Dir(toPath), os.ModePerm)

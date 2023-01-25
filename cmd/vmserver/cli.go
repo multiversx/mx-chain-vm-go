@@ -7,7 +7,7 @@ import (
 
 func initializeCLI(facade *vmserver.DebugFacade) *cli.App {
 	app := cli.NewApp()
-	app.Name = "Arwen Debug"
+	app.Name = "VM Debug"
 	app.Usage = ""
 
 	args := &cliArguments{}
@@ -118,8 +118,8 @@ func initializeCLI(facade *vmserver.DebugFacade) *cli.App {
 
 	app.Authors = []cli.Author{
 		{
-			Name:  "The Elrond Team",
-			Email: "contact@elrond.com",
+			Name:  "The MultiversX Team",
+			Email: "contact@multiversx.com",
 		},
 	}
 

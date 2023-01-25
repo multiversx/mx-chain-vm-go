@@ -1,4 +1,4 @@
-package mandosexpressioninterpreter
+package scenexpressioninterpreter
 
 import (
 	"encoding/hex"

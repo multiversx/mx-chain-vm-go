@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:9091
-@contractsFolder = {{$processEnv HOME}}/Desktop/workspaces/go/arwen-wasm-vm/test/contracts
+@contractsFolder = {{$processEnv HOME}}/Desktop/workspaces/go/mx-chain-vm-go/test/contracts
 @alice = AA000000000000000000000000000000000000000000000000000000000000AA
 @bob = BB000000000000000000000000000000000000000000000000000000000000BB
 @contractAddress = 636f6e74726163743000000000000000000000000000000000000000000000aa

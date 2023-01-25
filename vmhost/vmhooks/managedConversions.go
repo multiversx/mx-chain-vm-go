@@ -7,15 +7,15 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 const esdtTransferLen = 16
 
 // Deserializes a vmcommon.ESDTTransfer object.
 func readESDTTransfer(
-	managedType arwen.ManagedTypesContext,
+	managedType vmhost.ManagedTypesContext,
 	data []byte,
 ) (*vmcommon.ESDTTransfer, error) {
 	if len(data) != esdtTransferLen {
@@ -56,7 +56,7 @@ func readESDTTransfer(
 // - value handle - 4 bytes
 // Total: 16 bytes.
 func readESDTTransfers(
-	managedType arwen.ManagedTypesContext,
+	managedType vmhost.ManagedTypesContext,
 	managedVecHandle int32,
 ) ([]*vmcommon.ESDTTransfer, error) {
 	managedVecBytes, err := managedType.GetBytes(managedVecHandle)
@@ -84,7 +84,7 @@ func readESDTTransfers(
 
 // Serializes a vmcommon.ESDTTransfer object.
 func writeESDTTransfer(
-	managedType arwen.ManagedTypesContext,
+	managedType vmhost.ManagedTypesContext,
 	esdtTransfer *vmcommon.ESDTTransfer,
 	destinationBytes []byte,
 ) {
@@ -103,7 +103,7 @@ func writeESDTTransfer(
 // - value handle - 4 bytes
 // Total: 16 bytes.
 func writeESDTTransfersToBytes(
-	managedType arwen.ManagedTypesContext,
+	managedType vmhost.ManagedTypesContext,
 	esdtTransfers []*vmcommon.ESDTTransfer,
 ) []byte {
 	destinationBytes := make([]byte, esdtTransferLen*len(esdtTransfers))
@@ -124,7 +124,7 @@ type vmInputData struct {
 }
 
 func readDestinationValueFunctionArguments(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destHandle int32,
 	valueHandle int32,
 	functionHandle int32,
@@ -147,7 +147,7 @@ func readDestinationValueFunctionArguments(
 }
 
 func readDestinationValueArguments(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destHandle int32,
 	valueHandle int32,
 	argumentsHandle int32,
@@ -168,7 +168,7 @@ func readDestinationValueArguments(
 }
 
 func readDestinationFunctionArguments(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destHandle int32,
 	functionHandle int32,
 	argumentsHandle int32,
@@ -190,7 +190,7 @@ func readDestinationFunctionArguments(
 }
 
 func readDestinationArguments(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destHandle int32,
 	argumentsHandle int32,
 ) (*vmInputData, error) {

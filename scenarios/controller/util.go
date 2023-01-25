@@ -1,4 +1,4 @@
-package mandoscontroller
+package scencontroller
 
 import (
 	fr "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/fileresolver"

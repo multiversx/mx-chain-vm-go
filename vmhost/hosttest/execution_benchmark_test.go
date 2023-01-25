@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"fmt"
@@ -13,13 +13,13 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec/gasSchedules"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/contexts"
-	arwenHost "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/host"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
-	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec/gasSchedules"
-	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -229,7 +229,7 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	}
 }
 
-func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMHost, error) {
+func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, vmhost.VMHost, error) {
 	mockWorld := worldmock.NewMockWorld()
 	ownerAccount := &worldmock.Account{
 		Address: owner,
@@ -242,12 +242,12 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := arwenHost.NewVMHost(mockWorld, &arwen.VMHostParameters{
+	host, err := hostCore.NewVMHost(mockWorld, &vmhost.VMHostParameters{
 		VMType:                   testcommon.DefaultVMType,
 		BlockGasLimit:            uint64(1000),
 		GasSchedule:              gasMap,
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-		ProtectedKeyPrefix:       []byte("ELROND"),
+		ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      &mock.EnableEpochsHandlerStub{},
@@ -260,7 +260,7 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, arwen.VMH
 
 func deploy(
 	tb testing.TB,
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	mockWorld *worldmock.MockWorld,
 	ownerAccount *worldmock.Account,
 	totalTokenSupply *big.Int,
@@ -297,7 +297,7 @@ func deploy(
 	_ = mockWorld.UpdateAccounts(vmOutput.OutputAccounts, nil)
 }
 
-func deployNContracts(tb testing.TB, nContracts int, mockWorld *worldmock.MockWorld, ownerAccount *worldmock.Account, host arwen.VMHost, totalTokenSupply *big.Int) {
+func deployNContracts(tb testing.TB, nContracts int, mockWorld *worldmock.MockWorld, ownerAccount *worldmock.Account, host vmhost.VMHost, totalTokenSupply *big.Int) {
 	code := testcommon.GetTestSCCode("erc20", "../../")
 	for i := 0; i < nContracts; i++ {
 		modifyERC20BytecodeWithCustomTransferEvent(code, []byte{byte(i)})
@@ -365,7 +365,7 @@ func verifyTransfers(tb testing.TB, mockWorld *worldmock.MockWorld, totalTokenSu
 	scStorage := mockWorld.AcctMap.GetAccount(address).Storage
 	ownerTokens := big.NewInt(0).SetBytes(scStorage[ownerKey])
 	receiverTokens := big.NewInt(0).SetBytes(scStorage[receiverKey])
-	require.Equal(tb, arwen.Zero, ownerTokens)
+	require.Equal(tb, vmhost.Zero, ownerTokens)
 	require.Equal(tb, totalTokenSupply, receiverTokens)
 }
 

@@ -1,14 +1,14 @@
-package hosttest
+package hostCoretest
 
 import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/contexts"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/contexts"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +23,7 @@ func TestWASMGlobals_NoGlobals(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("getnumber").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData(
 				big.NewInt(value).Bytes(),
 			)
@@ -41,7 +41,7 @@ func TestWASMGlobals_SingleMutable(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("getglobal").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData(
 				big.NewInt(value).Bytes(),
 			)
@@ -57,7 +57,7 @@ func TestWASMGlobals_ImportedGlobal(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("get_imported_global").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
@@ -72,7 +72,7 @@ func TestWASMGlobals_MultipleMutables_WithReset(t *testing.T) {
 			WithFunction("increment_globals").
 			Build())
 
-	assertFunc := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+	assertFunc := func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData(
 			[]byte{},
 			[]byte{2},
@@ -94,7 +94,7 @@ func TestWASMGlobals_SingleImmutable(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("getglobal").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
@@ -120,7 +120,7 @@ func TestWASMMemories_NoPages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
@@ -134,7 +134,7 @@ func TestWASMMemories_NoMaxPages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
@@ -148,7 +148,7 @@ func TestWASMMemories_SinglePage(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
@@ -162,7 +162,7 @@ func TestWASMMemories_MultiplePages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
@@ -176,7 +176,7 @@ func TestWASMMemories_MultipleMaxPages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().ReturnData([]byte{42})
 		})
 }
@@ -190,7 +190,7 @@ func TestWASMMemories_ExceededPages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
@@ -204,7 +204,7 @@ func TestWASMMemories_ExceededMaxPages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
@@ -218,7 +218,7 @@ func TestWASMMemories_MinPagesGreaterThanMaxPages(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
@@ -232,7 +232,7 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 			WithGasProvided(100000).
 			WithFunction("main").
 			Build()).
-		AndAssertResults(func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
 }
@@ -254,7 +254,7 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 	keyword := "ok"
 	keywordOffset := 1024
 
-	assertFunc := func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+	assertFunc := func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData([]byte(keyword))
 
 		codeHash := host.Blockchain().GetCodeHash(test.ParentAddress)
@@ -263,7 +263,7 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 		require.NotNil(verify.T, instance)
 
 		memory := instance.GetMemory().Data()
-		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
+		require.Len(verify.T, memory, 1*vmhost.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
 
@@ -288,7 +288,7 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 	keyword := "ok"
 	keywordOffset := 1024
 
-	assertFunc := func(host arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+	assertFunc := func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData([]byte(keyword))
 
 		codeHash := host.Blockchain().GetCodeHash(test.ParentAddress)
@@ -297,7 +297,7 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 		require.NotNil(verify.T, instance)
 
 		memory := instance.GetMemory().Data()
-		require.Len(verify.T, memory, 1*arwen.WASMPageSize)
+		require.Len(verify.T, memory, 1*vmhost.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
 
@@ -315,7 +315,7 @@ func TestWASMMemories_WithGrow(t *testing.T) {
 			WithFunction("main").
 			Build())
 
-	assertFunc := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+	assertFunc := func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData(
 			big.NewInt(6).Bytes(),
 		)
@@ -333,7 +333,7 @@ func TestWASMCreateAndCall(t *testing.T) {
 		WithCallerAddr(test.UserAddress).
 		Build()
 
-	host, world := test.DefaultTestArwenWithWorldMock(t)
+	host, world := test.DefaultTestVMWithWorldMock(t)
 	world.NewAddressMocks = append(world.NewAddressMocks, &worldmock.NewAddressMock{
 		CreatorAddress: test.UserAddress,
 		CreatorNonce:   0,

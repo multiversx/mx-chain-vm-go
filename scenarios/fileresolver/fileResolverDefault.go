@@ -1,4 +1,4 @@
-package mandosfileresolver
+package scenfileresolver
 
 import (
 	"io/ioutil"

@@ -6,7 +6,7 @@
     ReleasePerByte    = 10
     AoTPreparePerByte = 10
 
-[ElrondAPICost]
+[BaseOpsAPICost]
     GetSCAddress       = 10
     GetOwnerAddress    = 10
     IsSmartContract    = 10

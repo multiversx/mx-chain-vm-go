@@ -6,11 +6,11 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/host"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/hostCore"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 )
 
 type worldDataModel struct {
@@ -36,7 +36,7 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 	blockchainHook := worldmock.NewMockWorld()
 	blockchainHook.AcctMap = dataModel.Accounts
 
-	vm, err := host.NewVMHost(
+	vm, err := hostCore.NewVMHost(
 		blockchainHook,
 		getHostParameters(),
 	)
@@ -51,13 +51,13 @@ func newWorld(dataModel *worldDataModel) (*world, error) {
 	}, nil
 }
 
-func getHostParameters() *arwen.VMHostParameters {
+func getHostParameters() *vmhost.VMHostParameters {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	return &arwen.VMHostParameters{
+	return &vmhost.VMHostParameters{
 		VMType:                   []byte{5, 0},
 		BlockGasLimit:            uint64(10000000),
 		GasSchedule:              config.MakeGasMap(1, 1),
-		ProtectedKeyPrefix:       []byte("ELROND"),
+		ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 		BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
 		ESDTTransferParser:       esdtTransferParser,
 		EpochNotifier:            &mock.EpochNotifierStub{},

@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
@@ -44,14 +44,14 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 }
 
 func TestFunctionsGuard_Arity(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	imports := host.SCAPIMethods
 
 	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/signatures/output/signatures.wasm"
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	options := wasmer.CompilationOptions{
 		GasLimit:           gasLimit,
 		OpcodeTrace:        false,
@@ -99,7 +99,7 @@ func TestFunctionsGuard_Arity(t *testing.T) {
 }
 
 func TestFunctionsProtected(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	imports := host.SCAPIMethods
 
 	validator := newWASMValidator(imports.Names(), builtInFunctions.NewBuiltInFunctionContainer())

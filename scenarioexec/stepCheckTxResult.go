@@ -11,7 +11,7 @@ import (
 	oj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/orderedjson"
 )
 
-func (ae *ArwenTestExecutor) checkTxResults(
+func (ae *VMTestExecutor) checkTxResults(
 	txIndex string,
 	blResult *mj.TransactionResult,
 	checkGas bool,
@@ -55,7 +55,7 @@ func (ae *ArwenTestExecutor) checkTxResults(
 	return ae.checkTxLogs(txIndex, blResult.Logs, output.Logs)
 }
 
-func (ae *ArwenTestExecutor) checkTxLogs(
+func (ae *VMTestExecutor) checkTxLogs(
 	txIndex string,
 	expectedLogs mj.LogList,
 	actualLogs []*vmi.LogEntry,
@@ -92,7 +92,7 @@ func (ae *ArwenTestExecutor) checkTxLogs(
 	return nil
 }
 
-func (ae *ArwenTestExecutor) checkTxLog(
+func (ae *VMTestExecutor) checkTxLog(
 	txIndex string,
 	logIndex int,
 	expectedLog *mj.LogEntry,

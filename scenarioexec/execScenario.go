@@ -5,15 +5,15 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mc "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/controller"
 	fr "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/fileresolver"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 // Reset clears state/world.
 // Is called in RunAllJSONScenariosInDirectory, but not in RunSingleJSONScenario.
-func (ae *ArwenTestExecutor) Reset() {
+func (ae *VMTestExecutor) Reset() {
 	if !check.IfNil(ae.vmHost) {
 		ae.vmHost.Reset()
 	}
@@ -21,14 +21,14 @@ func (ae *ArwenTestExecutor) Reset() {
 }
 
 // Close will simply close the VM
-func (ae *ArwenTestExecutor) Close() {
+func (ae *VMTestExecutor) Close() {
 	if !check.IfNil(ae.vmHost) {
 		ae.vmHost.Reset()
 	}
 }
 
 // ExecuteScenario executes an individual test.
-func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
+func (ae *VMTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver fr.FileResolver) error {
 	ae.fileResolver = fileResolver
 	ae.checkGas = scenario.CheckGas
 	resetGasTracesIfNewTest(ae, scenario)
@@ -53,7 +53,7 @@ func (ae *ArwenTestExecutor) ExecuteScenario(scenario *mj.Scenario, fileResolver
 }
 
 // ExecuteStep executes an individual step from a scenario.
-func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
+func (ae *VMTestExecutor) ExecuteStep(generalStep mj.Step) error {
 	err := error(nil)
 
 	switch step := generalStep.(type) {
@@ -78,7 +78,7 @@ func (ae *ArwenTestExecutor) ExecuteStep(generalStep mj.Step) error {
 }
 
 // ExecuteExternalStep executes an external step referenced by the scenario.
-func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error {
+func (ae *VMTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) error {
 	log.Trace("ExternalStepsStep", "path", step.Path)
 	if len(step.Comment) > 0 {
 		log.Trace("ExternalStepsStep", "comment", step.Comment)
@@ -102,20 +102,20 @@ func (ae *ArwenTestExecutor) ExecuteExternalStep(step *mj.ExternalStepsStep) err
 }
 
 // ExecuteSetStateStep executes a SetStateStep.
-func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
+func (ae *VMTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 	if len(step.Comment) > 0 {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
 
-	for _, mandosAccount := range step.Accounts {
-		if mandosAccount.Update {
-			err := ae.UpdateAccount(mandosAccount)
+	for _, scenAccount := range step.Accounts {
+		if scenAccount.Update {
+			err := ae.UpdateAccount(scenAccount)
 			if err != nil {
 				log.Debug("could not update account", err)
 				return err
 			}
 		} else {
-			err := ae.PutNewAccount(mandosAccount)
+			err := ae.PutNewAccount(scenAccount)
 			if err != nil {
 				log.Debug("could not put new account", err)
 				return err
@@ -140,14 +140,14 @@ func (ae *ArwenTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 }
 
 // ExecuteTxStep executes a TxStep.
-func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, error) {
+func (ae *VMTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, error) {
 	log.Trace("ExecuteTxStep", "id", step.TxIdent)
 	if len(step.Comment) > 0 {
 		log.Trace("ExecuteTxStep", "comment", step.Comment)
 	}
 
 	if step.DisplayLogs {
-		arwen.SetLoggingForTests()
+		vmhost.SetLoggingForTests()
 	}
 
 	output, err := ae.executeTx(step.TxIdent, step.Tx)
@@ -156,7 +156,7 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 	}
 
 	if step.DisplayLogs {
-		arwen.DisableLoggingForTests()
+		vmhost.DisableLoggingForTests()
 	}
 
 	// check results
@@ -171,12 +171,12 @@ func (ae *ArwenTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, erro
 }
 
 // PutNewAccount Puts a new account in world account map. Overwrites.
-func (ae *ArwenTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
-	worldAccount, err := convertAccount(mandosAccount, ae.World)
+func (ae *VMTestExecutor) PutNewAccount(scenAccount *mj.Account) error {
+	worldAccount, err := convertAccount(scenAccount, ae.World)
 	if err != nil {
 		return err
 	}
-	err = validateSetStateAccount(mandosAccount, worldAccount)
+	err = validateSetStateAccount(scenAccount, worldAccount)
 	if err != nil {
 		return err
 	}
@@ -186,17 +186,17 @@ func (ae *ArwenTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
 }
 
 // UpdateAccount Updates an account in world account map.
-func (ae *ArwenTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
-	worldAccount, err := convertAccount(mandosAccount, ae.World)
+func (ae *VMTestExecutor) UpdateAccount(scenAccount *mj.Account) error {
+	worldAccount, err := convertAccount(scenAccount, ae.World)
 	if err != nil {
 		return err
 	}
-	err = validateSetStateAccount(mandosAccount, worldAccount)
+	err = validateSetStateAccount(scenAccount, worldAccount)
 	if err != nil {
 		return err
 	}
 
-	existingAccount := ae.World.AcctMap.GetAccount(mandosAccount.Address.Value)
+	existingAccount := ae.World.AcctMap.GetAccount(scenAccount.Address.Value)
 	if existingAccount == nil {
 		return errors.New("account not found. could not update")
 	}
@@ -204,22 +204,22 @@ func (ae *ArwenTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
 	for k, v := range worldAccount.Storage {
 		existingAccount.Storage[k] = v
 	}
-	if !mandosAccount.Nonce.Unspecified {
+	if !scenAccount.Nonce.Unspecified {
 		existingAccount.Nonce = worldAccount.Nonce
 	}
-	if !mandosAccount.Balance.Unspecified {
+	if !scenAccount.Balance.Unspecified {
 		existingAccount.Balance = worldAccount.Balance
 	}
-	if !mandosAccount.Username.Unspecified {
+	if !scenAccount.Username.Unspecified {
 		existingAccount.Username = worldAccount.Username
 	}
-	if !mandosAccount.Owner.Unspecified {
+	if !scenAccount.Owner.Unspecified {
 		existingAccount.OwnerAddress = worldAccount.OwnerAddress
 	}
-	if !mandosAccount.Code.Unspecified {
+	if !scenAccount.Code.Unspecified {
 		existingAccount.Code = worldAccount.Code
 	}
-	if !mandosAccount.Shard.Unspecified {
+	if !scenAccount.Shard.Unspecified {
 		existingAccount.ShardID = worldAccount.ShardID
 	}
 	existingAccount.AsyncCallData = worldAccount.AsyncCallData
