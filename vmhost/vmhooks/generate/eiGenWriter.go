@@ -9,8 +9,8 @@ type eiGenWriter struct {
 	outFile *os.File
 }
 
-func NewEIGenWriter(pathToElrondApiPackage string, relativePath string) *eiGenWriter {
-	outFile, err := os.Create(filepath.Join(pathToElrondApiPackage, relativePath))
+func NewEIGenWriter(pathToApiPackage string, relativePath string) *eiGenWriter {
+	outFile, err := os.Create(filepath.Join(pathToApiPackage, relativePath))
 	if err != nil {
 		panic(err)
 	}
