@@ -1,6 +1,6 @@
 {
     "name": "crypto",
-    "comment": "does not currently work with mandos-rs, because verify_bls function is not yet mocked",
+    "comment": "does not currently work with multiversx-sc-scenarios, because verify_bls function is not yet mocked",
     "gasSchedule": "v3",
     "steps": [
         {

@@ -21,8 +21,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../test")
+	return vmTestRoot
 }
 
 func runAllTestsInFolder(t *testing.T, folder string) {
@@ -30,7 +30,7 @@ func runAllTestsInFolder(t *testing.T, folder string) {
 }
 
 func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewVMTestExecutor()
 	require.Nil(t, err)
 	defer executor.Close()
 
@@ -52,7 +52,7 @@ func runTestsInFolder(t *testing.T, folder string, exclusions []string) {
 }
 
 func runSingleTestReturnError(folder string, filename string) error {
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewVMTestExecutor()
 	if err != nil {
 		return err
 	}

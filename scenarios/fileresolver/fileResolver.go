@@ -1,6 +1,6 @@
-package mandosfileresolver
+package scenfileresolver
 
-// FileResolver resolves Mandos values starting with "file:"
+// FileResolver resolves scenario values starting with "file:"
 type FileResolver interface {
 	// Clone creates new instance of the same type.
 	Clone() FileResolver

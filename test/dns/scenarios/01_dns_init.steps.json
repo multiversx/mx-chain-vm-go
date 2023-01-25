@@ -1301,7 +1301,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1322,7 +1322,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1343,7 +1343,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1364,7 +1364,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1385,7 +1385,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1406,7 +1406,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1427,7 +1427,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1448,7 +1448,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1469,7 +1469,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1490,7 +1490,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1511,7 +1511,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1532,7 +1532,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1553,7 +1553,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1574,7 +1574,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1595,7 +1595,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1616,7 +1616,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1637,7 +1637,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1658,7 +1658,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1679,7 +1679,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1700,7 +1700,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1721,7 +1721,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1742,7 +1742,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1763,7 +1763,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1784,7 +1784,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1805,7 +1805,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1826,7 +1826,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1847,7 +1847,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1868,7 +1868,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1889,7 +1889,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1910,7 +1910,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1931,7 +1931,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1952,7 +1952,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1973,7 +1973,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -1994,7 +1994,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2015,7 +2015,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2036,7 +2036,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2057,7 +2057,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2078,7 +2078,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2099,7 +2099,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2120,7 +2120,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2141,7 +2141,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2162,7 +2162,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2183,7 +2183,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2204,7 +2204,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2225,7 +2225,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2246,7 +2246,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2267,7 +2267,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2288,7 +2288,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2309,7 +2309,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2330,7 +2330,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2351,7 +2351,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2372,7 +2372,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2393,7 +2393,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2414,7 +2414,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2435,7 +2435,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2456,7 +2456,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2477,7 +2477,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2498,7 +2498,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2519,7 +2519,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2540,7 +2540,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2561,7 +2561,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2582,7 +2582,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2603,7 +2603,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2624,7 +2624,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2645,7 +2645,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2666,7 +2666,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2687,7 +2687,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2708,7 +2708,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2729,7 +2729,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2750,7 +2750,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2771,7 +2771,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2792,7 +2792,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2813,7 +2813,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2834,7 +2834,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2855,7 +2855,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2876,7 +2876,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2897,7 +2897,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2918,7 +2918,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2939,7 +2939,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2960,7 +2960,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -2981,7 +2981,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3002,7 +3002,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3023,7 +3023,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3044,7 +3044,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3065,7 +3065,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3086,7 +3086,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3107,7 +3107,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3128,7 +3128,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3149,7 +3149,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3170,7 +3170,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3191,7 +3191,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3212,7 +3212,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3233,7 +3233,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3254,7 +3254,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3275,7 +3275,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3296,7 +3296,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3317,7 +3317,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3338,7 +3338,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3359,7 +3359,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3380,7 +3380,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3401,7 +3401,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3422,7 +3422,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3443,7 +3443,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3464,7 +3464,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3485,7 +3485,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3506,7 +3506,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3527,7 +3527,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3548,7 +3548,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3569,7 +3569,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3590,7 +3590,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3611,7 +3611,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3632,7 +3632,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3653,7 +3653,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3674,7 +3674,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3695,7 +3695,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3716,7 +3716,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3737,7 +3737,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3758,7 +3758,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3779,7 +3779,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3800,7 +3800,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3821,7 +3821,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3842,7 +3842,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3863,7 +3863,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3884,7 +3884,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3905,7 +3905,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3926,7 +3926,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3947,7 +3947,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3968,7 +3968,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -3989,7 +3989,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4010,7 +4010,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4031,7 +4031,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4052,7 +4052,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4073,7 +4073,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4094,7 +4094,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4115,7 +4115,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4136,7 +4136,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4157,7 +4157,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4178,7 +4178,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4199,7 +4199,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4220,7 +4220,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4241,7 +4241,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4262,7 +4262,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4283,7 +4283,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4304,7 +4304,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4325,7 +4325,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4346,7 +4346,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4367,7 +4367,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4388,7 +4388,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4409,7 +4409,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4430,7 +4430,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4451,7 +4451,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4472,7 +4472,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4493,7 +4493,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4514,7 +4514,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4535,7 +4535,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4556,7 +4556,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4577,7 +4577,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4598,7 +4598,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4619,7 +4619,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4640,7 +4640,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4661,7 +4661,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4682,7 +4682,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4703,7 +4703,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4724,7 +4724,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4745,7 +4745,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4766,7 +4766,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4787,7 +4787,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4808,7 +4808,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4829,7 +4829,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4850,7 +4850,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4871,7 +4871,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4892,7 +4892,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4913,7 +4913,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4934,7 +4934,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4955,7 +4955,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4976,7 +4976,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -4997,7 +4997,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5018,7 +5018,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5039,7 +5039,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5060,7 +5060,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5081,7 +5081,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5102,7 +5102,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5123,7 +5123,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5144,7 +5144,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5165,7 +5165,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5186,7 +5186,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5207,7 +5207,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5228,7 +5228,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5249,7 +5249,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5270,7 +5270,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5291,7 +5291,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5312,7 +5312,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5333,7 +5333,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5354,7 +5354,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5375,7 +5375,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5396,7 +5396,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5417,7 +5417,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5438,7 +5438,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5459,7 +5459,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5480,7 +5480,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5501,7 +5501,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5522,7 +5522,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5543,7 +5543,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5564,7 +5564,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5585,7 +5585,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5606,7 +5606,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5627,7 +5627,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5648,7 +5648,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5669,7 +5669,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5690,7 +5690,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5711,7 +5711,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5732,7 +5732,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5753,7 +5753,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5774,7 +5774,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5795,7 +5795,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5816,7 +5816,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5837,7 +5837,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5858,7 +5858,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5879,7 +5879,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5900,7 +5900,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5921,7 +5921,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5942,7 +5942,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5963,7 +5963,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -5984,7 +5984,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6005,7 +6005,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6026,7 +6026,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6047,7 +6047,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6068,7 +6068,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6089,7 +6089,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6110,7 +6110,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6131,7 +6131,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6152,7 +6152,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6173,7 +6173,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6194,7 +6194,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6215,7 +6215,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6236,7 +6236,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6257,7 +6257,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6278,7 +6278,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6299,7 +6299,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6320,7 +6320,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6341,7 +6341,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6362,7 +6362,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6383,7 +6383,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6404,7 +6404,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6425,7 +6425,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6446,7 +6446,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6467,7 +6467,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6488,7 +6488,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6509,7 +6509,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6530,7 +6530,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6551,7 +6551,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6572,7 +6572,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6593,7 +6593,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6614,7 +6614,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6635,7 +6635,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],
@@ -6656,7 +6656,7 @@
             "tx": {
                 "from": "address:dns_owner",
                 "value": "0",
-                "contractCode": "file:../output/elrond-wasm-sc-dns.wasm",
+                "contractCode": "file:../output/dns.wasm",
                 "arguments": [
                     "123,000"
                 ],

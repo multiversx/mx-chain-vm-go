@@ -31,7 +31,7 @@ func NewReservedFunctions(scAPINames vmcommon.FunctionNames, builtInFuncContaine
 	}
 
 	var empty struct{}
-	result.functionNames[arwen.UpgradeFunctionName] = empty
+	result.functionNames[vmhost.UpgradeFunctionName] = empty
 
 	return result
 }

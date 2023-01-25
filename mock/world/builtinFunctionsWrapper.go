@@ -7,8 +7,8 @@ import (
 	"github.com/multiversx/mx-chain-core-go/marshal"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 )
 
 // WorldMarshalizer is the global marshalizer to be used by the components of

@@ -1,17 +1,17 @@
-package hosttest
+package hostCoretest
 
 import (
 	"math/big"
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	arwenMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	vmMock "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -97,7 +97,7 @@ func TestDeployFromSource_NoGasForInit(t *testing.T) {
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			ExecutionFailed().
-			HasRuntimeErrors(arwen.ErrInputAndOutputGasDoesNotMatch.Error())
+			HasRuntimeErrors(vmhost.ErrInputAndOutputGasDoesNotMatch.Error())
 	})
 }
 
@@ -125,7 +125,7 @@ func TestDeployFromSource_NoContract(t *testing.T) {
 	runDeployFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			ExecutionFailed().
-			HasRuntimeErrors(arwen.ErrContractInvalid.Error())
+			HasRuntimeErrors(vmhost.ErrContractInvalid.Error())
 	})
 }
 
@@ -148,7 +148,7 @@ func runDeployFromSourceTest(t *testing.T, testConfig *deployFromSourceTestConfi
 			WithFunction("deployContractFromSource").
 			WithArguments(testConfig.deployedContractAddress, []byte{0, 0}, big.NewInt(int64(testConfig.gasProvidedForInit)).Bytes()).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = testConfig.aoTPreparePerByteCost
 			host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = testConfig.compilePerByteCost
@@ -196,7 +196,7 @@ func TestUpdateFromSource_CallbackFails_NoEpochFlag(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrSignalError.Error()).
+			HasRuntimeErrors(vmhost.ErrSignalError.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, updatedCode)
 	})
 }
@@ -230,7 +230,7 @@ func TestUpdateFromSource_NoPermission_EpochFlag_Callback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			ExecutionFailed().
-			HasRuntimeErrors(arwen.ErrUpgradeNotAllowed.Error()).
+			HasRuntimeErrors(vmhost.ErrUpgradeNotAllowed.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -242,7 +242,7 @@ func TestUpdateFromSource_NoPermission_EpochFlag_NoCallback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			OutOfGas(). // not enough gas to provide for callback execution
-			HasRuntimeErrors(arwen.ErrUpgradeNotAllowed.Error()).
+			HasRuntimeErrors(vmhost.ErrUpgradeNotAllowed.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -254,7 +254,7 @@ func TestUpdateFromSource_NoPermission_NoEpochFlag_Callback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrUpgradeNotAllowed.Error()).
+			HasRuntimeErrors(vmhost.ErrUpgradeNotAllowed.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -267,7 +267,7 @@ func TestUpdateFromSource_NoPermission_NoEpochFlag_NoCallback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrUpgradeNotAllowed.Error()).
+			HasRuntimeErrors(vmhost.ErrUpgradeNotAllowed.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -326,7 +326,7 @@ func TestUpdateFromSource_NoGasForInit_EpochFlag_Callback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			OutOfGas(). // not enough gas to provide for callback execution
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -338,7 +338,7 @@ func TestUpdateFromSource_NoGasForInit_EpochFlag_NoCallback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			OutOfGas(). // not enough gas to provide for callback execution
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -350,7 +350,7 @@ func TestUpdateFromSource_NoGasForInit_NoEpochFlag_Callback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -363,7 +363,7 @@ func TestUpdateFromSource_NoGasForInit_NoEpochFlag_NoCallback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -374,7 +374,7 @@ func TestUpdateFromSource_NoGasForCompile_EpochFlag_Callback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			OutOfGas(). // not enough gas to provide for callback execution
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -386,7 +386,7 @@ func TestUpdateFromSource_NoGasForCompile_EpochFlag_NoCallBack(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			OutOfGas(). // not enough gas to provide for callback execution
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -398,7 +398,7 @@ func TestUpdateFromSource_NoGasForCompile_NoEpochFlag_Callback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -411,7 +411,7 @@ func TestUpdateFromSource_NoGasForCompile_NoEpochFlag_NoCallback(t *testing.T) {
 	runUpdateFromSourceTest(t, &testConfig, func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 		verify.
 			Ok().
-			HasRuntimeErrors(arwen.ErrNotEnoughGas.Error()).
+			HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error()).
 			Code(testConfig.contractToBeUpdatedAddress, nil)
 	})
 }
@@ -452,16 +452,16 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *updateFromSourceTestConfi
 				nil,
 				big.NewInt(int64(testConfig.gasProvidedForInit)).Bytes()).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			gasSchedule := host.Metering().GasSchedule()
-			gasSchedule.ElrondAPICost.AsyncCallStep = testConfig.asyncCallStepCost
+			gasSchedule.BaseOpsAPICost.AsyncCallStep = testConfig.asyncCallStepCost
 			gasSchedule.BaseOperationCost.AoTPreparePerByte = testConfig.aoTPreparePerByteCost
 			gasSchedule.BaseOperationCost.CompilePerByte = testConfig.compilePerByteCost
-			gasSchedule.ElrondAPICost.AsyncCallbackGasLock = 0
+			gasSchedule.BaseOpsAPICost.AsyncCallbackGasLock = 0
 
 			if !testConfig.isFlagEnabled {
-				enableEpochsHandler, _ := host.EnableEpochsHandler().(*arwenMock.EnableEpochsHandlerStub)
+				enableEpochsHandler, _ := host.EnableEpochsHandler().(*vmMock.EnableEpochsHandlerStub)
 				enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabledField = false
 			}
 		}).

@@ -13,7 +13,7 @@ import (
 // OpcodeCount is the total number of WASM opcodes currently supported by Wasmer
 const OpcodeCount = 448
 
-var logWasmer = logger.GetOrCreate("arwen/wasmer")
+var logWasmer = logger.GetOrCreate("vm/wasmer")
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.

@@ -7,7 +7,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/storage/lrucache"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
@@ -24,9 +24,9 @@ const (
 	Bytecode
 )
 
-var _ arwen.StateStack = (*instanceTracker)(nil)
+var _ vmhost.StateStack = (*instanceTracker)(nil)
 
-var logTracker = logger.GetOrCreate("arwen/tracker")
+var logTracker = logger.GetOrCreate("vm/tracker")
 
 type instanceTracker struct {
 	codeHash            []byte

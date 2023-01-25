@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"encoding/hex"
@@ -10,12 +10,12 @@ import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec/gasSchedules"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	gasSchedules "github.com/multiversx/mx-chain-vm-v1_4-go/scenarioexec/gasSchedules"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +42,7 @@ func TestGasUsed_SingleContract(t *testing.T) {
 			WithGasProvided(simpleGasTestConfig.GasProvided).
 			WithFunction("wasteGas").
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -64,9 +64,9 @@ func TestGasUsed_SingleContract_BuiltinCall(t *testing.T) {
 			WithRecipientAddr(test.ParentAddress).
 			WithGasProvided(simpleGasTestConfig.GasProvided).
 			WithFunction("execOnDestCtx").
-			WithArguments(test.ParentAddress, []byte("builtinClaim"), arwen.One.Bytes()).
+			WithArguments(test.ParentAddress, []byte("builtinClaim"), vmhost.One.Bytes()).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -91,7 +91,7 @@ func TestGasUsed_SingleContract_BuiltinCallFail(t *testing.T) {
 			WithFunction("execOnDestCtxSingleCall").
 			WithArguments(test.ParentAddress, []byte("builtinFail")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 		}).
@@ -126,7 +126,7 @@ func TestGasUsed_TwoContracts_ExecuteOnSameCtx(t *testing.T) {
 				WithFunction("execOnSameCtx").
 				WithArguments(test.ChildAddress, []byte("wasteGas"), numCallsBytes).
 				Build()).
-			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 				setZeroCodeCosts(host)
 			}).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -163,7 +163,7 @@ func TestGasUsed_TwoContracts_ExecuteOnDestCtx(t *testing.T) {
 				WithFunction("execOnDestCtx").
 				WithArguments(test.ChildAddress, []byte("wasteGas"), numCallsBytes).
 				Build()).
-			WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+			WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 				setZeroCodeCosts(host)
 			}).
 			AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -215,10 +215,10 @@ func TestGasUsed_ThreeContracts_ExecuteOnDestCtx(t *testing.T) {
 			WithRecipientAddr(alphaAddress).
 			WithGasProvided(gasProvided).
 			WithFunction("execOnDestCtx").
-			WithArguments(betaAddress, []byte("wasteGas"), arwen.One.Bytes(),
-				gammaAddress, []byte("wasteGas"), arwen.One.Bytes()).
+			WithArguments(betaAddress, []byte("wasteGas"), vmhost.One.Bytes(),
+				gammaAddress, []byte("wasteGas"), vmhost.One.Bytes()).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -256,7 +256,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Success(t *testing.T) {
 			WithFunction("execESDTTransferAndCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -302,7 +302,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteCall_Fail(t *testing.T) {
 			WithFunction("execESDTTransferAndCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("fail")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -347,7 +347,7 @@ func TestGasUsed_ESDTTransferFailed(t *testing.T) {
 			WithFunction("execESDTTransferAndCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("fail")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -397,7 +397,7 @@ func TestGasUsed_ESDTTransferFromParent_ChildBurnsAndThenFails(t *testing.T) {
 			WithFunction("execESDTTransferWithAPICall").
 			WithArguments(test.ChildAddress, []byte("failAndBurn"), big.NewInt(int64(testConfig.ESDTTokensToTransfer)).Bytes()).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			childAccount := world.AcctMap.GetAccount(test.ChildAddress)
@@ -472,7 +472,7 @@ func TestGasUsed_AsyncCall(t *testing.T) {
 			WithFunction("performAsyncCall").
 			WithArguments([]byte{0}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -534,7 +534,7 @@ func TestGasUsed_AsyncCall_CrossShard_InitCall(t *testing.T) {
 			WithFunction("performAsyncCall").
 			WithArguments([]byte{0}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
 			if world.CurrentBlockInfo == nil {
 				world.CurrentBlockInfo = &worldmock.BlockInfo{}
@@ -595,7 +595,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall(t *testing.T) {
 				[]byte{0}).
 			WithCallType(vm.AsynchronousCall).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
 			if world.CurrentBlockInfo == nil {
 				world.CurrentBlockInfo = &worldmock.BlockInfo{}
@@ -650,7 +650,7 @@ func TestGasUsed_AsyncCall_CrossShard_ExecuteCall_WithTransfer(t *testing.T) {
 				big.NewInt(testConfig.TransferToThirdParty).Bytes()).
 			WithCallType(vm.AsynchronousCall).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
 			if world.CurrentBlockInfo == nil {
 				world.CurrentBlockInfo = &worldmock.BlockInfo{}
@@ -703,7 +703,7 @@ func TestGasUsed_AsyncCall_CrossShard_CallBack(t *testing.T) {
 			WithArguments([]byte{}, []byte{0}, []byte("thirdparty"), []byte("vault")).
 			WithCallType(vm.AsynchronousCallBack).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 0
 			if world.CurrentBlockInfo == nil {
 				world.CurrentBlockInfo = &worldmock.BlockInfo{}
@@ -744,7 +744,7 @@ func TestGasUsed_AsyncCall_BuiltinCall(t *testing.T) {
 			WithFunction("forwardAsyncCall").
 			WithArguments(test.UserAddress, []byte("builtinClaim")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
@@ -782,7 +782,7 @@ func TestGasUsed_AsyncCall_BuiltinCallFail(t *testing.T) {
 			WithFunction("forwardAsyncCall").
 			WithArguments(test.UserAddress, []byte("builtinFail")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
@@ -827,7 +827,7 @@ func TestGasUsed_AsyncCall_BuiltinMultiContractCall(t *testing.T) {
 			WithFunction("forwardAsyncCall").
 			WithArguments(test.UserAddress, test.ChildAddress, []byte("childFunction"), []byte("builtinClaim")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.AcctMap.CreateAccount(test.UserAddress, world)
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
@@ -866,7 +866,7 @@ func TestGasUsed_AsyncCall_ChildFails(t *testing.T) {
 			WithArguments([]byte{1}).
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -919,7 +919,7 @@ func TestGasUsed_AsyncCall_CallBackFails(t *testing.T) {
 			WithArguments([]byte{3}).
 			WithCurrentTxHash([]byte("txhash")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -983,7 +983,7 @@ func TestGasUsed_AsyncCall_Recursive(t *testing.T) {
 			WithFunction("forwardAsyncCall").
 			WithArguments(test.ChildAddress, []byte("recursiveAsyncCall"), big.NewInt(int64(testConfig.RecursiveChildCalls)).Bytes()).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -1032,7 +1032,7 @@ func TestGasUsed_AsyncCall_MultiChild(t *testing.T) {
 			WithFunction("forwardAsyncCall").
 			WithArguments(test.ChildAddress, []byte("recursiveAsyncCall")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -1076,7 +1076,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_Success(t *testing.T) {
 			WithFunction("execESDTTransferAndAsyncCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -1120,7 +1120,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 			WithFunction("execESDTTransferAndAsyncCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("fail")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -1130,7 +1130,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_ChildFails(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.
 				Ok().
-				HasRuntimeErrors(arwen.ErrNotEnoughGas.Error())
+				HasRuntimeErrors(vmhost.ErrNotEnoughGas.Error())
 
 			parentESDTBalance, _ := parentAccount.GetTokenBalanceUint64(test.ESDTTestTokenName, 0)
 			require.Equal(t, initialESDTTokenBalance, parentESDTBalance)
@@ -1165,7 +1165,7 @@ func TestGasUsed_ESDTTransfer_ThenExecuteAsyncCall_CallbackFails(t *testing.T) {
 			WithFunction("execESDTTransferAndAsyncCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("wasteGas")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -1211,7 +1211,7 @@ func TestGasUsed_ESDTTransferInCallback(t *testing.T) {
 			WithFunction("execESDTTransferAndAsyncCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("transferESDTToParent")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -1256,7 +1256,7 @@ func TestGasUsed_ESDTTransferWrongArgNumberForCallback(t *testing.T) {
 			WithFunction("execESDTTransferAndAsyncCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("transferESDTToParent")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -1301,7 +1301,7 @@ func TestGasUsed_ESDTTransfer_CallbackFail(t *testing.T) {
 			WithFunction("execESDTTransferAndAsyncCall").
 			WithArguments(test.ChildAddress, []byte("ESDTTransfer"), []byte("transferESDTToParent")).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			createMockBuiltinFunctions(t, host, world)
@@ -1377,7 +1377,7 @@ func TestGasUsed_TransferAndExecute_CrossShard(t *testing.T) {
 			WithArguments(big.NewInt(int64(noOfTransfers)).Bytes()).
 			WithCallType(vm.DirectCall).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -1409,7 +1409,7 @@ func TestGasUsed_AsyncCallManaged_Mocks(t *testing.T) {
 				WithConfig(testConfig).
 				WithMethods(contracts.GasMismatchAsyncCallChildMock),
 		).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		})
@@ -1460,7 +1460,7 @@ func TestGasUsed_AsyncCallManaged(t *testing.T) {
 			WithGasProvided(gasLimit).
 			WithArguments(test.ChildAddress).
 			Build()).
-			AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 				if gasLimit > outOfGasValue {
 					verify.
 						Ok()
@@ -1498,7 +1498,7 @@ func TestGasUsed_AsyncESDTTransfer(t *testing.T) {
 			WithFunction("esdtTransferInAsyncCall").
 			WithArguments(test.UserAddress2).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			parentAccount = world.AcctMap.GetAccount(test.ParentAddress)
 			_ = parentAccount.SetTokenBalanceUint64(test.ESDTTestTokenName, 0, initialESDTTokenBalance)
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -1544,7 +1544,7 @@ func TestGasUsed_Async_CallbackWithOnSameContext(t *testing.T) {
 			WithFunction("performAsyncCall").
 			WithArguments([]byte{0}).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 			world.AcctMap.CreateAccount(test.UserAddress, world)
@@ -1568,7 +1568,7 @@ type MockClaimBuiltin struct {
 	GasCost      uint64
 }
 
-func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmock.MockWorld) {
+func createMockBuiltinFunctions(tb testing.TB, host vmhost.VMHost, world *worldmock.MockWorld) {
 	err := world.InitBuiltinFunctions(host.GetGasScheduleMap())
 	require.Nil(tb, err)
 
@@ -1600,21 +1600,21 @@ func createMockBuiltinFunctions(tb testing.TB, host arwen.VMHost, world *worldmo
 	host.SetBuiltInFunctionsContainer(world.BuiltinFuncs.Container)
 }
 
-func setZeroCodeCosts(host arwen.VMHost) {
+func setZeroCodeCosts(host vmhost.VMHost) {
 	host.Metering().GasSchedule().BaseOperationCost.CompilePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.AoTPreparePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.GetCode = 0
 	host.Metering().GasSchedule().BaseOperationCost.StorePerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
-	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
-	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
-	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
-	host.Metering().GasSchedule().ElrondAPICost.TransferValue = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.SignalError = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnSameContext = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnDestContext = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.TransferValue = 0
 }
 
-func setAsyncCosts(host arwen.VMHost, gasLock uint64) {
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLock
+func setAsyncCosts(host vmhost.VMHost, gasLock uint64) {
+	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = gasLock
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {

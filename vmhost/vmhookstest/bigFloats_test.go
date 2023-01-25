@@ -5,9 +5,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ func TestBigFloats_NewFromParts(t *testing.T) {
 			WithFunction("BigFloatNewFromPartsTest").
 			WithArguments(repsArgument).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte{byte(numberOfReps - 1)})
 		})
@@ -41,7 +41,7 @@ func TestBigFloats_NewFromFrac(t *testing.T) {
 			WithFunction("BigFloatNewFromFracTest").
 			WithArguments(repsArgument).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				ReturnData([]byte{byte(numberOfReps - 1)})
 		})
@@ -58,7 +58,7 @@ func TestBigFloats_NewFromSci_Fail(t *testing.T) {
 			WithArguments(repsArgument,
 				[]byte{0, 0, 1, 100}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ReturnCode(10)
 		})
 }
@@ -74,7 +74,7 @@ func TestBigFloats_NewFromSci_Success(t *testing.T) {
 			WithArguments(repsArgument,
 				[]byte{255, 255, 255, 254}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			value := float64(-199) * math.Pow10(-2)
 			encodedValue, _ := big.NewFloat(value).GobEncode()
 			verify.Ok().
@@ -93,7 +93,7 @@ func TestBigFloats_Add(t *testing.T) {
 			WithArguments(repsArgument,
 				floatArgument1, floatArgument1).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			bigFloatValue := new(big.Float).Quo(big.NewFloat(0), big.NewFloat(1))
 			_ = bigFloatValue.GobDecode(floatArgument1)
 			initialValue := big.NewFloat(0).Set(bigFloatValue)
@@ -122,7 +122,7 @@ func TestBigFloats_Panic_FailExecution_Add(t *testing.T) {
 			WithArguments([]byte{0, 0, 0, byte(10)},
 				floatArgument1, floatArgument2).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(10).
 				ReturnMessage("this big Float operation is not permitted while doing float.Add")
@@ -140,7 +140,7 @@ func TestBigFloats_Sub(t *testing.T) {
 			WithArguments([]byte{0, 0, 0, byte(10)},
 				floatArgument1, floatArgument1).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			bigFloatValue := new(big.Float).Quo(big.NewFloat(0), big.NewFloat(1))
 			_ = bigFloatValue.GobDecode(floatArgument1)
 			initialValue := big.NewFloat(0).Set(bigFloatValue)
@@ -169,7 +169,7 @@ func TestBigFloats_Panic_FailExecution_Sub(t *testing.T) {
 			WithArguments([]byte{0, 0, 0, byte(10)},
 				floatArgument1, floatArgument2).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(10).
 				ReturnMessage("this big Float operation is not permitted while doing float.Sub")
@@ -189,7 +189,7 @@ func TestBigFloats_Success_Mul(t *testing.T) {
 			WithArguments(repsArgument,
 				floatArgument1).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			bigFloatValue := new(big.Float)
 			err := bigFloatValue.GobDecode(floatArgument1)
 			require.Nil(t, err)
@@ -216,7 +216,7 @@ func TestBigFloats_FailExponentTooBig_Mul(t *testing.T) {
 			WithArguments(repsArgument,
 				floatArgument1).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			bigFloatValue := new(big.Float)
 			err := bigFloatValue.GobDecode(floatArgument1)
 			require.Nil(t, err)
@@ -242,7 +242,7 @@ func TestBigFloats_FailExecution_Mul(t *testing.T) {
 			WithArguments(repsArgument,
 				floatArgument1).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ReturnCode(10)
 		})
@@ -260,7 +260,7 @@ func TestBigFloats_Div(t *testing.T) {
 				floatArgument1,
 				floatArgument2).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			numerator := new(big.Float)
 			_ = numerator.GobDecode(floatArgument1)
 			denominator := new(big.Float)
@@ -287,7 +287,7 @@ func TestBigFloats_Truncate(t *testing.T) {
 				floatArgument1,
 				floatArgument2).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			value1 := big.NewFloat(0)
 			_ = value1.GobDecode(floatArgument1)
 			value2 := big.NewFloat(0)
@@ -319,7 +319,7 @@ func TestBigFloats_Abs(t *testing.T) {
 			WithFunction("BigFloatAbsTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedAbsFloat, _ := big.NewFloat(1623).GobEncode()
 			verify.Ok().
 				ReturnData(encodedAbsFloat)
@@ -341,7 +341,7 @@ func TestBigFloats_Neg(t *testing.T) {
 			WithFunction("BigFloatNegTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedFloatValue, _ := big.NewFloat(-1623).GobEncode()
 			floatValue := new(big.Float)
 			_ = floatValue.GobDecode(encodedFloatValue)
@@ -375,7 +375,7 @@ func TestBigFloats_Cmp(t *testing.T) {
 			WithFunction("BigFloatCmpTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedLastFloat := bigFloatArguments[numberOfReps*2]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
@@ -403,7 +403,7 @@ func TestBigFloats_Sign(t *testing.T) {
 			WithFunction("BigFloatSignTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			negativeSignFloat := big.NewFloat(-1)
 			verify.Ok().
 				ReturnData([]byte{byte(negativeSignFloat.Sign())})
@@ -428,7 +428,7 @@ func TestBigFloats_Clone(t *testing.T) {
 			WithFunction("BigFloatCloneTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
@@ -455,7 +455,7 @@ func TestBigFloats_Sqrt(t *testing.T) {
 			WithFunction("BigFloatSqrtTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
@@ -484,7 +484,7 @@ func TestBigFloats_Pow(t *testing.T) {
 			WithFunction("BigFloatPowTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			resultFloat := big.NewFloat(1.6)
 			intermediaryFloat := new(big.Float).Mul(resultFloat, resultFloat)
 			resultFloat.Set(intermediaryFloat)
@@ -512,7 +512,7 @@ func TestBigFloats_Floor(t *testing.T) {
 			WithFunction("BigFloatFloorTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
@@ -541,7 +541,7 @@ func TestBigFloats_Ceil(t *testing.T) {
 			WithFunction("BigFloatCeilTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
@@ -571,7 +571,7 @@ func TestBigFloats_IsInt(t *testing.T) {
 			WithFunction("BigFloatIsIntTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			encodedLastFloat := bigFloatArguments[numberOfReps]
 			lastFloat := new(big.Float)
 			_ = lastFloat.GobDecode(encodedLastFloat)
@@ -602,7 +602,7 @@ func TestBigFloats_SetInt64(t *testing.T) {
 			WithFunction("BigFloatSetInt64Test").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			floatValue := big.NewFloat(0)
 			floatValue.SetInt64(int64(numberOfReps - 1))
 			encodedFloatValue, _ := floatValue.GobEncode()
@@ -628,7 +628,7 @@ func TestBigFloats_SetBigInt(t *testing.T) {
 			WithFunction("BigFloatSetBigIntTest").
 			WithArguments(bigFloatArguments...).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			floatValue := big.NewFloat(0)
 			floatValue.SetInt(big.NewInt(int64(numberOfReps) - 1))
 			encodedFloatValue, _ := floatValue.GobEncode()
@@ -647,7 +647,7 @@ func TestBigFloats_GetConstPi(t *testing.T) {
 			WithFunction("BigFloatGetConstPiTest").
 			WithArguments([]byte{0, 0, 0, byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			piValue := math.Pi
 			bigFloatValue := big.NewFloat(0).SetFloat64(piValue)
 			encodedFloat, _ := bigFloatValue.GobEncode()
@@ -666,7 +666,7 @@ func TestBigFloats_GetConstE(t *testing.T) {
 			WithFunction("BigFloatGetConstETest").
 			WithArguments([]byte{0, 0, 0, byte(numberOfReps)}).
 			Build()).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			piValue := math.E
 			bigFloatValue := big.NewFloat(0).SetFloat64(piValue)
 			encodedFloat, _ := bigFloatValue.GobEncode()
