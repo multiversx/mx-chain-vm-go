@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/mitchellh/mapstructure"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
 const GasValueForTests = 1

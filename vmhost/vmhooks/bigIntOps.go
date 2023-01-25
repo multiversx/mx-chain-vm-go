@@ -411,7 +411,7 @@ func v1_4_bigIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, key
 	}
 
 	err = storage.UseGasForStorageLoad(bigIntStorageLoadUnsignedName, int64(trieDepth), metering.GasSchedule().BigIntAPICost.BigIntStorageLoadUnsigned, usedCache)
-	if arwen.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BigIntAPIErrorShouldFailExecution()) {
 		return -1
 	}
 

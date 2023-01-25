@@ -198,11 +198,10 @@ func (context *storageContext) getStorageFromAddressUnmetered(address []byte, ke
 }
 
 func (context *storageContext) readFromBlockchain(address []byte, key []byte) ([]byte, uint32, error) {
-	value, trieDepth,  _, err := context.blockChainHook.GetStorageData(address, key)
+	value, trieDepth, err := context.blockChainHook.GetStorageData(address, key)
 
 	return value, trieDepth, err
 }
-
 
 // GetStorageUnmetered returns the data under the given key.
 func (context *storageContext) GetStorageUnmetered(key []byte) ([]byte, uint32, bool, error) {
@@ -421,7 +420,7 @@ func (context *storageContext) UseGasForStorageLoad(tracedFunctionName string, t
 func (context *storageContext) getBlockchainLoadCost(trieDepth int64, staticGasCost uint64, usedCache bool) (uint64, error) {
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if enableEpochsHandler.IsStorageAPICostOptimizationFlagEnabled() && usedCache {
-		loadCost = context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
+		return context.host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad, nil
 	}
 
 	return context.GetStorageLoadCost(trieDepth, staticGasCost)

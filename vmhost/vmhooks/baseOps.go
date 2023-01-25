@@ -965,7 +965,7 @@ func v1_4_getESDTLocalRoles(context unsafe.Pointer, tokenIdHandle int32) int64 {
 	}
 
 	err = storage.UseGasForStorageLoad(storageLoadName, int64(trieDepth), metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
-	if arwen.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -1989,7 +1989,7 @@ func v1_4_storageLoadLength(context unsafe.Pointer, keyOffset int32, keyLength i
 	}
 
 	err = storage.UseGasForStorageLoad(storageLoadLengthName, int64(trieDepth), metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
-	if arwen.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -2160,7 +2160,7 @@ func v1_4_getStorageLock(context unsafe.Pointer, keyOffset int32, keyLength int3
 	}
 
 	err = storage.UseGasForStorageLoad(getStorageLockName, int64(trieDepth), metering.GasSchedule().BaseOpsAPICost.StorageLoad, usedCache)
-	if arwen.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
 		return -1
 	}
 
@@ -2357,7 +2357,7 @@ func v1_4_getCurrentESDTNFTNonce(context unsafe.Pointer, addressOffset int32, to
 	}
 
 	err = storage.UseGasForStorageLoad(getCurrentESDTNFTNonceName, int64(trieDepth), metering.GasSchedule().BaseOpsAPICost.StorageLoad, false)
-	if arwen.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
+	if vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution()) {
 		return 0
 	}
 

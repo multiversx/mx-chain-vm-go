@@ -19,7 +19,7 @@ func LoadStore(instanceMock *mock.InstanceMock, _ interface{}) {
 
 		key := arguments[0]
 		_, _ = vmhooks.StorageLoadWithWithTypedArgs(host, key)
-		value, _, _ := vmhooks.StorageLoadWithWithTypedArgs(host, key)
+		value, _ := vmhooks.StorageLoadWithWithTypedArgs(host, key)
 
 		host.Output().Finish(value)
 		return instance
@@ -42,7 +42,7 @@ func LoadStoreFromAddress(instanceMock *mock.InstanceMock, _ interface{}) {
 		key := arguments[1]
 
 		_, _ = vmhooks.StorageLoadFromAddressWithTypedArgs(host, address, key)
-		value, _, _ := vmhooks.StorageLoadFromAddressWithTypedArgs(host, address, key)
+		value, _ := vmhooks.StorageLoadFromAddressWithTypedArgs(host, address, key)
 
 		host.Output().Finish(value)
 		return instance

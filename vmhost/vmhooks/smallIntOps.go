@@ -250,7 +250,7 @@ func v1_4_smallIntStorageLoadUnsigned(context unsafe.Pointer, keyOffset int32, k
 	}
 	err = storage.UseGasForStorageLoad(smallIntStorageLoadUnsignedName, int64(trieDepth), metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad, usedCache)
 	if err != nil {
-		_ = arwen.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution())
+		_ = vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
 
@@ -280,10 +280,9 @@ func v1_4_smallIntStorageLoadSigned(context unsafe.Pointer, keyOffset int32, key
 	}
 	err = storage.UseGasForStorageLoad(smallIntStorageLoadSignedName, int64(trieDepth), metering.GasSchedule().BaseOpsAPICost.Int64StorageLoad, usedCache)
 	if err != nil {
-		_ = arwen.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution())
+		_ = vmhost.WithFault(err, context, runtime.BaseOpsErrorShouldFailExecution())
 		return 0
 	}
-
 
 	valueBigInt := twos.SetBytes(big.NewInt(0), data)
 	if !valueBigInt.IsInt64() {
