@@ -7,7 +7,7 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	"github.com/multiversx/mx-chain-core-go/storage/lrucache"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
@@ -66,6 +66,7 @@ func NewInstanceTracker() (*instanceTracker, error) {
 func (tracker *instanceTracker) InitState() {
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
+	tracker.instances = make(map[string]wasmer.InstanceHandler)
 }
 
 // PushState pushes the active instance and codeHash on the state stacks

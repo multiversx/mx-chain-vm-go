@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
+	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -538,7 +538,7 @@ func TestOutputContext_WriteLog(t *testing.T) {
 
 	host := &contextmock.VMHostMock{
 		RuntimeContext: &contextmock.RuntimeContextMock{
-			CallFunction: "function",
+			CallFunctionName: "function",
 		},
 	}
 	outputContext, _ := NewOutputContext(host)

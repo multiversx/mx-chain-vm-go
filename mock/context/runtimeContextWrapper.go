@@ -2,7 +2,7 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
@@ -84,9 +84,11 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetInstanceExportsFunc func() wasmer.ExportsMap
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetInitFunctionFunc func() wasmer.ExportedFunctionCallback
+	CallFunctionFunc func(funcName string) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetFunctionToCallFunc func() (wasmer.ExportedFunctionCallback, error)
+	GetInitFunctionFunc func() string
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetFunctionToCallFunc func() (string, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetPointsUsedFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -280,11 +282,15 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		return runtimeWrapper.runtimeContext.GetInstanceExports()
 	}
 
-	runtimeWrapper.GetInitFunctionFunc = func() wasmer.ExportedFunctionCallback {
+	runtimeWrapper.CallFunctionFunc = func(funcName string) error {
+		return runtimeWrapper.runtimeContext.CallFunction(funcName)
+	}
+
+	runtimeWrapper.GetInitFunctionFunc = func() string {
 		return runtimeWrapper.runtimeContext.GetInitFunction()
 	}
 
-	runtimeWrapper.GetFunctionToCallFunc = func() (wasmer.ExportedFunctionCallback, error) {
+	runtimeWrapper.GetFunctionToCallFunc = func() (string, error) {
 		return runtimeWrapper.runtimeContext.GetFunctionToCall()
 	}
 
@@ -555,13 +561,18 @@ func (contextWrapper *RuntimeContextWrapper) GetWarmInstance(codeHash []byte) (w
 	return contextWrapper.GetWarmInstanceFunc(codeHash)
 }
 
+// CallFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) CallFunction(funcName string) error {
+	return contextWrapper.CallFunctionFunc(funcName)
+}
+
 // GetInitFunction calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetInitFunction() wasmer.ExportedFunctionCallback {
+func (contextWrapper *RuntimeContextWrapper) GetInitFunction() string {
 	return contextWrapper.GetInitFunctionFunc()
 }
 
 // GetFunctionToCall calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+func (contextWrapper *RuntimeContextWrapper) GetFunctionToCall() (string, error) {
 	return contextWrapper.GetFunctionToCallFunc()
 }
 

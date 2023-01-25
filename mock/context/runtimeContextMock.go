@@ -2,7 +2,7 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
@@ -15,7 +15,7 @@ type RuntimeContextMock struct {
 	SCAddress              []byte
 	SCCode                 []byte
 	SCCodeSize             uint64
-	CallFunction           string
+	CallFunctionName       string
 	VMType                 []byte
 	ReadOnlyFlag           bool
 	VerifyCode             bool
@@ -149,7 +149,7 @@ func (r *RuntimeContextMock) GetSCCodeSize() uint64 {
 
 // Function mocked method
 func (r *RuntimeContextMock) Function() string {
-	return r.CallFunction
+	return r.CallFunctionName
 }
 
 // Arguments mocked method
@@ -243,17 +243,22 @@ func (r *RuntimeContextMock) GetInstanceExports() wasmer.ExportsMap {
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
 
+// CallFunction mocked method
+func (r *RuntimeContextMock) CallFunction(_ string) error {
+	return r.Err
+}
+
 // GetFunctionToCall mocked method
-func (r *RuntimeContextMock) GetFunctionToCall() (wasmer.ExportedFunctionCallback, error) {
+func (r *RuntimeContextMock) GetFunctionToCall() (string, error) {
 	if r.Err != nil {
-		return nil, r.Err
+		return "", r.Err
 	}
-	return nil, nil
+	return "", nil
 }
 
 // GetInitFunction mocked method
-func (r *RuntimeContextMock) GetInitFunction() wasmer.ExportedFunctionCallback {
-	return nil
+func (r *RuntimeContextMock) GetInitFunction() string {
+	return ""
 }
 
 // MemLoad mocked method
