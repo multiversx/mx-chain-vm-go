@@ -42,17 +42,17 @@ func areAllZero(values ...*big.Float) bool {
 	return true
 }
 
-func setResultIfNotInfinity(host arwen.VMHost, result *big.Float, destinationHandle int32) {
+func setResultIfNotInfinity(host vmhost.VMHost, result *big.Float, destinationHandle int32) {
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
 	if result.IsInf() {
-		_ = WithFaultAndHost(host, arwen.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
 
 	exponent := result.MantExp(nil)
 	if managedType.BigFloatExpIsNotValid(exponent) {
-		_ = WithFaultAndHost(host, arwen.ErrExponentTooBigOrTooSmall, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrExponentTooBigOrTooSmall, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -75,7 +75,7 @@ func (context *ElrondApi) BigFloatNewFromParts(integralPart, fractionalPart, exp
 	metering.UseGasAndAddTracedGas(bigFloatNewFromPartsName, gasToUse)
 
 	if exponent > 0 {
-		_ = context.WithFault(arwen.ErrPositiveExponent, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrPositiveExponent, runtime.BigFloatAPIErrorShouldFailExecution())
 		return -1
 	}
 	var err error
@@ -121,7 +121,7 @@ func (context *ElrondApi) BigFloatNewFromFrac(numerator, denominator int64) int3
 	metering.UseGasAndAddTracedGas(bigFloatNewFromFracName, gasToUse)
 
 	if denominator == 0 {
-		_ = context.WithFault(arwen.ErrDivZero, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrDivZero, runtime.BigFloatAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -149,7 +149,7 @@ func (context *ElrondApi) BigFloatNewFromSci(significand, exponent int64) int32 
 	metering.UseGasAndAddTracedGas(bigFloatNewFromSciName, gasToUse)
 
 	if exponent > 0 {
-		_ = context.WithFault(arwen.ErrPositiveExponent, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrPositiveExponent, runtime.BigFloatAPIErrorShouldFailExecution())
 		return -1
 	}
 	if exponent < -322 {
@@ -261,7 +261,7 @@ func (context *ElrondApi) BigFloatDiv(destinationHandle, op1Handle, op2Handle in
 		return
 	}
 	if areAllZero(op1, op2) {
-		_ = context.WithFault(arwen.ErrAllOperandsAreEqualToZero, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrAllOperandsAreEqualToZero, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -398,7 +398,7 @@ func (context *ElrondApi) BigFloatSqrt(destinationHandle, opHandle int32) {
 		return
 	}
 	if op.Sign() < 0 {
-		_ = context.WithFault(arwen.ErrBadLowerBounds, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
 	resultSqrt, err := arwenMath.SqrtBigFloat(op)
@@ -454,7 +454,7 @@ func (context *ElrondApi) pow(base *big.Float, exp int32) (*big.Float, error) {
 		}
 		exponent := resultMul.MantExp(nil)
 		if managedType.BigFloatExpIsNotValid(exponent) {
-			return nil, arwen.ErrExponentTooBigOrTooSmall
+			return nil, vmhost.ErrExponentTooBigOrTooSmall
 		}
 		result.Set(resultMul)
 	}

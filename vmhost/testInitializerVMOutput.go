@@ -1,4 +1,4 @@
-package arwen
+package vmhost
 
 import (
 	"math/big"

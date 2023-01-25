@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"testing"
@@ -21,7 +21,7 @@ func TestForbiddenOps_BulkAndSIMD(t *testing.T) {
 				WithFunction("main").
 				Build())
 
-		assertResults := func(_ arwen.VMHost, _ *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
+		assertResults := func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *testcommon.VMOutputVerifier) {
 			verify.ContractInvalid()
 		}
 

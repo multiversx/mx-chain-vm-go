@@ -1,4 +1,4 @@
-package host
+package hostCore
 
 import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -7,17 +7,17 @@ import (
 func (host *vmHost) handleAsyncCallBreakpoint() error {
 	runtime := host.Runtime()
 	async := host.Async()
-	runtime.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	runtime.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
-	legacyGroupID := arwen.LegacyAsyncCallGroupID
+	legacyGroupID := vmhost.LegacyAsyncCallGroupID
 	legacyGroup, exists := async.GetCallGroup(legacyGroupID)
 	if !exists {
-		return arwen.ErrLegacyAsyncCallNotFound
+		return vmhost.ErrLegacyAsyncCallNotFound
 
 	}
 
 	if legacyGroup.IsComplete() {
-		return arwen.ErrLegacyAsyncCallInvalid
+		return vmhost.ErrLegacyAsyncCallInvalid
 	}
 
 	return nil

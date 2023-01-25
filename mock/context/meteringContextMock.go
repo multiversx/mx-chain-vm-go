@@ -6,7 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/config"
 )
 
-var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
+var _ vmhost.MeteringContext = (*MeteringContextMock)(nil)
 
 // MeteringContextMock is used in tests to check the MeteringContext interface method calls
 type MeteringContextMock struct {
@@ -152,7 +152,7 @@ func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
 		return m.Err
 	}
 	if m.GasLeft() <= gas {
-		return arwen.ErrNotEnoughGas
+		return vmhost.ErrNotEnoughGas
 	}
 	m.UseGas(gas)
 	return nil
@@ -185,12 +185,12 @@ func (m *MeteringContextMock) DeductInitialGasForExecution(_ []byte) error {
 }
 
 // DeductInitialGasForDirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDeployInput) error {
+func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ vmhost.CodeDeployInput) error {
 	return m.Err
 }
 
 // DeductInitialGasForIndirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
+func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ vmhost.CodeDeployInput) error {
 	return m.Err
 }
 

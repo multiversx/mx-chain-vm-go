@@ -1,4 +1,4 @@
-package host
+package hostCore
 
 import (
 	"context"
@@ -28,7 +28,7 @@ var logGasTrace = logger.GetOrCreate("gasTrace")
 // instances on the InstanceStack of the RuntimeContext
 var MaximumRuntimeInstanceStackSize = uint64(10)
 
-var _ arwen.VMHost = (*vmHost)(nil)
+var _ vmhost.VMHost = (*vmHost)(nil)
 
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
@@ -44,18 +44,18 @@ type vmHost struct {
 
 	ethInput []byte
 
-	blockchainContext   arwen.BlockchainContext
-	runtimeContext      arwen.RuntimeContext
-	asyncContext        arwen.AsyncContext
-	outputContext       arwen.OutputContext
-	meteringContext     arwen.MeteringContext
-	storageContext      arwen.StorageContext
-	managedTypesContext arwen.ManagedTypesContext
+	blockchainContext   vmhost.BlockchainContext
+	runtimeContext      vmhost.RuntimeContext
+	asyncContext        vmhost.AsyncContext
+	outputContext       vmhost.OutputContext
+	meteringContext     vmhost.MeteringContext
+	storageContext      vmhost.StorageContext
+	managedTypesContext vmhost.ManagedTypesContext
 
 	gasSchedule          config.GasScheduleMap
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer
 	esdtTransferParser   vmcommon.ESDTTransferParser
-	callArgsParser       arwen.CallArgsParser
+	callArgsParser       vmhost.CallArgsParser
 	enableEpochsHandler  vmcommon.EnableEpochsHandler
 	activationEpochMap   map[uint32]struct{}
 }
@@ -63,26 +63,26 @@ type vmHost struct {
 // NewArwenVM creates a new Arwen vmHost
 func NewArwenVM(
 	blockChainHook vmcommon.BlockchainHook,
-	hostParameters *arwen.VMHostParameters,
-) (arwen.VMHost, error) {
+	hostParameters *vmhost.VMHostParameters,
+) (vmhost.VMHost, error) {
 
 	if check.IfNil(blockChainHook) {
-		return nil, arwen.ErrNilBlockChainHook
+		return nil, vmhost.ErrNilBlockChainHook
 	}
 	if hostParameters == nil {
-		return nil, arwen.ErrNilHostParameters
+		return nil, vmhost.ErrNilHostParameters
 	}
 	if check.IfNil(hostParameters.ESDTTransferParser) {
-		return nil, arwen.ErrNilESDTTransferParser
+		return nil, vmhost.ErrNilESDTTransferParser
 	}
 	if check.IfNil(hostParameters.BuiltInFuncContainer) {
-		return nil, arwen.ErrNilBuiltInFunctionsContainer
+		return nil, vmhost.ErrNilBuiltInFunctionsContainer
 	}
 	if check.IfNil(hostParameters.EpochNotifier) {
-		return nil, arwen.ErrNilEpochNotifier
+		return nil, vmhost.ErrNilEpochNotifier
 	}
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
-		return nil, arwen.ErrNilEnableEpochsHandler
+		return nil, vmhost.ErrNilEnableEpochsHandler
 	}
 
 	cryptoHook := factory.NewVMCrypto()
@@ -163,7 +163,7 @@ func NewArwenVM(
 }
 
 // Creates a new executor instance. Should only be called once per VM host instantiation.
-func (host *vmHost) createExecutor(hostParameters *arwen.VMHostParameters) (executor.Executor, error) {
+func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.Executor, error) {
 	vmHooks := vmhooks.NewElrondApi(host)
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
@@ -184,7 +184,7 @@ func (host *vmHost) createExecutor(hostParameters *arwen.VMHostParameters) (exec
 
 // GetVersion returns the Arwen version string
 func (host *vmHost) GetVersion() string {
-	return arwen.ArwenVersion
+	return vmhost.ArwenVersion
 }
 
 // Crypto returns the VMCrypto instance of the host
@@ -193,32 +193,32 @@ func (host *vmHost) Crypto() crypto.VMCrypto {
 }
 
 // Blockchain returns the BlockchainContext instance of the host
-func (host *vmHost) Blockchain() arwen.BlockchainContext {
+func (host *vmHost) Blockchain() vmhost.BlockchainContext {
 	return host.blockchainContext
 }
 
 // Runtime returns the RuntimeContext instance of the host
-func (host *vmHost) Runtime() arwen.RuntimeContext {
+func (host *vmHost) Runtime() vmhost.RuntimeContext {
 	return host.runtimeContext
 }
 
 // Output returns the OutputContext instance of the host
-func (host *vmHost) Output() arwen.OutputContext {
+func (host *vmHost) Output() vmhost.OutputContext {
 	return host.outputContext
 }
 
 // Metering returns the MeteringContext instance of the host
-func (host *vmHost) Metering() arwen.MeteringContext {
+func (host *vmHost) Metering() vmhost.MeteringContext {
 	return host.meteringContext
 }
 
 // Async returns the AsyncContext instance of the host
-func (host *vmHost) Async() arwen.AsyncContext {
+func (host *vmHost) Async() vmhost.AsyncContext {
 	return host.asyncContext
 }
 
 // Storage returns the StorageContext instance of the host
-func (host *vmHost) Storage() arwen.StorageContext {
+func (host *vmHost) Storage() vmhost.StorageContext {
 	return host.storageContext
 }
 
@@ -228,19 +228,19 @@ func (host *vmHost) EnableEpochsHandler() vmcommon.EnableEpochsHandler {
 }
 
 // ManagedTypes returns the ManagedTypeContext instance of the host
-func (host *vmHost) ManagedTypes() arwen.ManagedTypesContext {
+func (host *vmHost) ManagedTypes() vmhost.ManagedTypesContext {
 	return host.managedTypesContext
 }
 
 // GetContexts returns the main contexts of the host
 func (host *vmHost) GetContexts() (
-	arwen.ManagedTypesContext,
-	arwen.BlockchainContext,
-	arwen.MeteringContext,
-	arwen.OutputContext,
-	arwen.RuntimeContext,
-	arwen.AsyncContext,
-	arwen.StorageContext,
+	vmhost.ManagedTypesContext,
+	vmhost.BlockchainContext,
+	vmhost.MeteringContext,
+	vmhost.OutputContext,
+	vmhost.RuntimeContext,
+	vmhost.AsyncContext,
+	vmhost.StorageContext,
 ) {
 	return host.managedTypesContext,
 		host.blockchainContext,
@@ -330,7 +330,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	defer host.mutExecution.RUnlock()
 
 	if host.closingInstance {
-		return nil, arwen.ErrVMIsClosing
+		return nil, vmhost.ErrVMIsClosing
 	}
 
 	host.setGasTracerEnabledIfLogIsTrace()
@@ -349,7 +349,7 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				err = arwen.ErrExecutionPanicked
+				err = vmhost.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
 			}
 
@@ -373,9 +373,9 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 	case <-done:
 		return
 	case <-ctx.Done():
-		host.Runtime().FailExecution(arwen.ErrExecutionFailedWithTimeout)
+		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
 		<-done
-		err = arwen.ErrExecutionFailedWithTimeout
+		err = vmhost.ErrExecutionFailedWithTimeout
 	}
 
 	return
@@ -387,7 +387,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 	defer host.mutExecution.RUnlock()
 
 	if host.closingInstance {
-		return nil, arwen.ErrVMIsClosing
+		return nil, vmhost.ErrVMIsClosing
 	}
 
 	host.setGasTracerEnabledIfLogIsTrace()
@@ -405,7 +405,7 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 			r := recover()
 			if r != nil {
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
-				err = arwen.ErrExecutionPanicked
+				err = vmhost.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
 			}
 
@@ -413,9 +413,9 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		}()
 
 		switch input.Function {
-		case arwen.UpgradeFunctionName:
+		case vmhost.UpgradeFunctionName:
 			vmOutput = host.doRunSmartContractUpgrade(input)
-		case arwen.DeleteFunctionName:
+		case vmhost.DeleteFunctionName:
 			vmOutput = host.doRunSmartContractDelete(input)
 		default:
 			vmOutput = host.doRunSmartContractCall(input)
@@ -444,9 +444,9 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 		// basic block in order to close the WASM instance cleanly. This is done by
 		// reading the `done` channel once more, awaiting the call to `close(done)`
 		// from above.
-		host.Runtime().FailExecution(arwen.ErrExecutionFailedWithTimeout)
+		host.Runtime().FailExecution(vmhost.ErrExecutionFailedWithTimeout)
 		<-done
-		err = arwen.ErrExecutionFailedWithTimeout
+		err = vmhost.ErrExecutionFailedWithTimeout
 	}
 
 	return
@@ -483,7 +483,7 @@ func (host *vmHost) IsInterfaceNil() bool {
 }
 
 // SetRuntimeContext sets the runtimeContext for this host, used in tests
-func (host *vmHost) SetRuntimeContext(runtime arwen.RuntimeContext) {
+func (host *vmHost) SetRuntimeContext(runtime vmhost.RuntimeContext) {
 	host.runtimeContext = runtime
 }
 

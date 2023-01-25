@@ -80,10 +80,10 @@ func TestManagedTypesContext_Randomness(t *testing.T) {
 func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	t.Parallel()
 	host := &contextmock.VMHostStub{
-		BlockchainCalled: func() arwen.BlockchainContext {
+		BlockchainCalled: func() vmhost.BlockchainContext {
 			return &mock.BlockchainContextMock{}
 		},
-		RuntimeCalled: func() arwen.RuntimeContext {
+		RuntimeCalled: func() vmhost.RuntimeContext {
 			return &contextmock.RuntimeContextMock{CurrentTxHash: bytes.Repeat([]byte{1}, 32)}
 		},
 	}
@@ -134,22 +134,22 @@ func TestManagedTypesContext_ClearStateStack(t *testing.T) {
 	managedTypesCtx.InitState()
 	bigInt1, err = managedTypesCtx.GetBigInt(bigIntHandle1)
 	require.Nil(t, bigInt1)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt2, err = managedTypesCtx.GetBigInt(bigIntHandle2)
 	require.Nil(t, bigInt2)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigFloat1, err = managedTypesCtx.GetBigFloat(bigFloatHandle1)
 	require.Nil(t, bigFloat1)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat2, err = managedTypesCtx.GetBigFloat(bigFloatHandle2)
 	require.Nil(t, bigFloat2)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	ec1, err = managedTypesCtx.GetEllipticCurve(ecHandle1)
 	require.Nil(t, ec1)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 	ec2, err = managedTypesCtx.GetEllipticCurve(ecHandle2)
 	require.Nil(t, ec2)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 }
 
 func TestManagedTypesContext_InitPushPopState(t *testing.T) {
@@ -224,34 +224,34 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 
 	bigInt1, err = managedTypesCtx.GetBigInt(bigIntHandle1)
 	require.Nil(t, bigInt1)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt2, err = managedTypesCtx.GetBigInt(bigIntHandle2)
 	require.Nil(t, bigInt2)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt1, bigInt2, err = managedTypesCtx.GetTwoBigInt(bigIntHandle1, bigIntHandle2)
 	require.Nil(t, bigInt1, bigInt2)
-	require.Equal(t, err, arwen.ErrNoBigIntUnderThisHandle)
+	require.Equal(t, err, vmhost.ErrNoBigIntUnderThisHandle)
 
 	bigFloat1, err = managedTypesCtx.GetBigFloat(bigFloatHandle1)
 	require.Nil(t, bigFloat1)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat2, err = managedTypesCtx.GetBigFloat(bigFloatHandle2)
 	require.Nil(t, bigFloat2)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat1, bigFloat2, err = managedTypesCtx.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle2)
 	require.Nil(t, bigFloat1, bigFloat2)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 
 	ec1, err = managedTypesCtx.GetEllipticCurve(ecHandle1)
 	require.Nil(t, ec1)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 	ec2, err = managedTypesCtx.GetEllipticCurve(ecHandle2)
 	require.Nil(t, ec2)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 
 	mBuffer, err = managedTypesCtx.GetBytes(mBufferHandle1)
 	require.Nil(t, mBuffer)
-	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoManagedBufferUnderThisHandle, err)
 
 	p224NormalGasCostMultiplier = managedTypesCtx.Get100xCurveGasCostMultiplier(ecHandle1)
 	require.Equal(t, int32(-1), p224NormalGasCostMultiplier)
@@ -300,33 +300,33 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 
 	bigInt1, err = managedTypesCtx.GetBigInt(bigIntHandle1)
 	require.Nil(t, bigInt1)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt2, err = managedTypesCtx.GetBigInt(bigIntHandle2)
 	require.Nil(t, bigInt2)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt3, err = managedTypesCtx.GetBigInt(bigIntHandle3)
 	require.Nil(t, bigInt3)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 
 	bigFloat1, err = managedTypesCtx.GetBigFloat(bigFloatHandle1)
 	require.Nil(t, bigFloat1)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat2, err = managedTypesCtx.GetBigFloat(bigFloatHandle2)
 	require.Nil(t, bigFloat2)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat3, err = managedTypesCtx.GetBigFloat(bigFloatHandle3)
 	require.Nil(t, bigFloat3)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 
 	ec1, err = managedTypesCtx.GetEllipticCurve(ecHandle1)
 	require.Nil(t, ec1)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 	ec2, err = managedTypesCtx.GetEllipticCurve(ecHandle2)
 	require.Nil(t, ec2)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 	ec3, err = managedTypesCtx.GetEllipticCurve(ecHandle3)
 	require.Nil(t, ec3)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 
 	intValue4 := int64(84)
 	bigIntHandle4 := managedTypesCtx.NewBigIntFromInt64(intValue4)
@@ -337,7 +337,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	bigInt4, bigInt3, err = managedTypesCtx.GetTwoBigInt(bigIntHandle4, int32(1))
 	require.Nil(t, bigInt3)
 	require.Nil(t, bigInt4)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 
 	floatValue4 := 89.3823
 	bigFloatHandle4, _ := managedTypesCtx.PutBigFloat(new(big.Float).SetFloat64(floatValue4))
@@ -348,7 +348,7 @@ func TestManagedTypesContext_InitPushPopState(t *testing.T) {
 	bigFloat4, bigFloat3, err = managedTypesCtx.GetTwoBigFloats(bigFloatHandle4, int32(1))
 	require.Nil(t, bigFloat3)
 	require.Nil(t, bigFloat4)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 
 	ecIndex4 := managedTypesCtx.PutEllipticCurve(p521ec)
 	require.Equal(t, int32(0), ecIndex4)
@@ -435,7 +435,7 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 	require.Nil(t, err)
 	bigInt4, err := managedTypesCtx.GetBigInt(int32(3))
 	require.Nil(t, bigInt4)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt4 = managedTypesCtx.GetBigIntOrCreate(3)
 	require.Equal(t, big.NewInt(0), bigInt4)
 
@@ -446,7 +446,7 @@ func TestManagedTypesContext_PutGetBigInt(t *testing.T) {
 
 	bigValue, err := managedTypesCtx.GetBigInt(123)
 	require.Nil(t, bigValue)
-	require.Equal(t, arwen.ErrNoBigIntUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigIntUnderThisHandle, err)
 	bigInt1, err = managedTypesCtx.GetBigInt(bigIntHandle1)
 	require.Equal(t, big.NewInt(intValue1), bigInt1)
 	require.Nil(t, err)
@@ -487,7 +487,7 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 	require.Nil(t, err)
 	bigFloat4, err := managedTypesCtx.GetBigFloat(int32(3))
 	require.Nil(t, bigFloat4)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat4, err = managedTypesCtx.GetBigFloatOrCreate(3)
 	require.Equal(t, big.NewFloat(0), bigFloat4)
 	require.Nil(t, err)
@@ -500,7 +500,7 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 
 	bigValue, err := managedTypesCtx.GetBigFloat(123)
 	require.Nil(t, bigValue)
-	require.Equal(t, arwen.ErrNoBigFloatUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoBigFloatUnderThisHandle, err)
 	bigFloat1, err = managedTypesCtx.GetBigFloat(bigFloatHandle1)
 	require.Equal(t, big.NewFloat(floatValue1), bigFloat1)
 	require.Nil(t, err)
@@ -523,29 +523,29 @@ func TestManagedTypesContext_PutGetBigFloat(t *testing.T) {
 
 	infFloat1, err := managedTypesCtx.GetBigFloat(bigFloatHandle1)
 	require.Nil(t, infFloat1)
-	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+	require.Equal(t, vmhost.ErrInfinityFloatOperation, err)
 
 	infFloat2, err := managedTypesCtx.GetBigFloat(bigFloatHandle2)
 	require.Nil(t, infFloat2)
-	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+	require.Equal(t, vmhost.ErrInfinityFloatOperation, err)
 
 	infFloat1, err = managedTypesCtx.GetBigFloatOrCreate(bigFloatHandle1)
 	require.Nil(t, infFloat1)
-	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+	require.Equal(t, vmhost.ErrInfinityFloatOperation, err)
 
 	infFloat2, err = managedTypesCtx.GetBigFloatOrCreate(bigFloatHandle2)
 	require.Nil(t, infFloat2)
-	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+	require.Equal(t, vmhost.ErrInfinityFloatOperation, err)
 
 	infFloat1, infFloat2, err = managedTypesCtx.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle2)
 	require.Nil(t, infFloat1)
 	require.Nil(t, infFloat2)
-	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+	require.Equal(t, vmhost.ErrInfinityFloatOperation, err)
 
 	infFloat1, nonInfFloat, err := managedTypesCtx.GetTwoBigFloats(bigFloatHandle1, bigFloatHandle3)
 	require.Nil(t, infFloat1)
 	require.Nil(t, nonInfFloat)
-	require.Equal(t, arwen.ErrInfinityFloatOperation, err)
+	require.Equal(t, vmhost.ErrInfinityFloatOperation, err)
 }
 func TestManagedTypesContext_NewBigIntCopied(t *testing.T) {
 	t.Parallel()
@@ -593,7 +593,7 @@ func TestManagedTypesContext_PutGetEllipticCurves(t *testing.T) {
 	require.Equal(t, p256ec, ec2)
 	ec4, err := managedTypesCtx.GetEllipticCurve(int32(3))
 	require.Nil(t, ec4)
-	require.Equal(t, arwen.ErrNoEllipticCurveUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoEllipticCurveUnderThisHandle, err)
 
 	ecHandle4 := managedTypesCtx.PutEllipticCurve(p521ec)
 	require.Equal(t, int32(3), ecHandle4)
@@ -613,20 +613,20 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	noBufHandle := int32(379)
 	byteArray, err := managedTypesCtx.GetBytes(noBufHandle)
 	require.Nil(t, byteArray)
-	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoManagedBufferUnderThisHandle, err)
 	newBuf, err := managedTypesCtx.DeleteSlice(noBufHandle, 0, 3)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoManagedBufferUnderThisHandle, err)
 	newBuf, err = managedTypesCtx.GetSlice(noBufHandle, -3, 2)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoManagedBufferUnderThisHandle, err)
 	lengthOfmBuffer := managedTypesCtx.GetLength(noBufHandle)
 	require.Equal(t, int32(-1), lengthOfmBuffer)
 	isSuccess := managedTypesCtx.AppendBytes(noBufHandle, mBytes)
 	require.False(t, isSuccess)
 	newBuf, err = managedTypesCtx.InsertSlice(noBufHandle, 0, mBytes)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoManagedBufferUnderThisHandle, err)
 
 	// New/Get/Set Buffer
 	mBufferHandle1 := managedTypesCtx.NewManagedBuffer()
@@ -645,13 +645,13 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	// Get Slice
 	bufSlice, err := managedTypesCtx.GetSlice(noBufHandle, int32(3), int32(0))
 	require.Nil(t, bufSlice)
-	require.Equal(t, arwen.ErrNoManagedBufferUnderThisHandle, err)
+	require.Equal(t, vmhost.ErrNoManagedBufferUnderThisHandle, err)
 	bufSlice, err = managedTypesCtx.GetSlice(mBufferHandle1, int32(1), int32(10))
 	require.Nil(t, bufSlice)
-	require.Equal(t, arwen.ErrBadBounds, err)
+	require.Equal(t, vmhost.ErrBadBounds, err)
 	bufSlice, err = managedTypesCtx.GetSlice(mBufferHandle1, int32(4), int32(-1))
 	require.Nil(t, bufSlice)
-	require.Equal(t, arwen.ErrBadBounds, err)
+	require.Equal(t, vmhost.ErrBadBounds, err)
 	bufSlice, err = managedTypesCtx.GetSlice(mBufferHandle1, int32(3), int32(0))
 	require.Nil(t, err)
 	require.Equal(t, emptyBuffer, bufSlice)
@@ -665,10 +665,10 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	require.Equal(t, mBytes[:3], newBuf)
 	newBuf, err = managedTypesCtx.DeleteSlice(mBufferHandle1, -1, 0)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrBadBounds, err)
+	require.Equal(t, vmhost.ErrBadBounds, err)
 	newBuf, err = managedTypesCtx.DeleteSlice(mBufferHandle1, 0, -1)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrBadBounds, err)
+	require.Equal(t, vmhost.ErrBadBounds, err)
 	newBuf, err = managedTypesCtx.DeleteSlice(mBufferHandle1, 0, 10)
 	require.Nil(t, err)
 	require.Equal(t, emptyBuffer, newBuf)
@@ -694,10 +694,10 @@ func TestManagedTypesContext_ManagedBuffersFunctionalities(t *testing.T) {
 	// Insert Slice
 	newBuf, err = managedTypesCtx.InsertSlice(mBufferHandle1, -1, mBytes)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrBadBounds, err)
+	require.Equal(t, vmhost.ErrBadBounds, err)
 	newBuf, err = managedTypesCtx.InsertSlice(mBufferHandle1, 4, mBytes)
 	require.Nil(t, newBuf)
-	require.Equal(t, arwen.ErrBadBounds, err)
+	require.Equal(t, vmhost.ErrBadBounds, err)
 	bytesWithNewSlice := []byte{2, 234, 64, 2, 234, 64, 255, 255}
 	newBuf, err = managedTypesCtx.InsertSlice(mBufferHandle1, 3, mBytes)
 	require.Nil(t, err)

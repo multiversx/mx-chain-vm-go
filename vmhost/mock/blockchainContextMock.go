@@ -9,7 +9,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.BlockchainContext = (*BlockchainContextMock)(nil)
+var _ vmhost.BlockchainContext = (*BlockchainContextMock)(nil)
 
 // BlockchainContextMock -
 type BlockchainContextMock struct {

@@ -16,12 +16,12 @@ import (
 
 var logRuntime = logger.GetOrCreate("arwen/runtime")
 
-var _ arwen.RuntimeContext = (*runtimeContext)(nil)
+var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 100
 
 type runtimeContext struct {
-	host                 arwen.VMHost
+	host                 vmhost.VMHost
 	instance             executor.Instance
 	vmInput              *vmcommon.ContractCallInput
 	codeAddress          []byte
@@ -42,18 +42,18 @@ type runtimeContext struct {
 
 	validator  *wasmValidator
 	vmExecutor executor.Executor
-	errors     arwen.WrappableError
+	errors     vmhost.WrappableError
 }
 
 // NewRuntimeContext creates a new runtimeContext
 func NewRuntimeContext(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	vmExecutor executor.Executor,
 ) (*runtimeContext, error) {
 	if check.IfNil(host) {
-		return nil, arwen.ErrNilVMHost
+		return nil, vmhost.ErrNilVMHost
 	}
 
 	scAPINames := vmExecutor.FunctionNames()
@@ -125,8 +125,8 @@ func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
 		context.instance = nil
-		logRuntime.Trace("create instance", "error", arwen.ErrMaxInstancesReached)
-		return arwen.ErrMaxInstancesReached
+		logRuntime.Trace("create instance", "error", vmhost.ErrMaxInstancesReached)
+		return vmhost.ErrMaxInstancesReached
 	}
 
 	blockchain := context.host.Blockchain()
@@ -264,7 +264,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.instance = instance
 	context.SetPointsUsed(0)
 	context.instance.SetGasLimit(gasLimit)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	context.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 	context.verifyCode = false
 	logRuntime.Trace("start instance", "from", "warm", "id", context.instance.Id())
 	return true
@@ -572,7 +572,7 @@ func (context *runtimeContext) ExtractCodeUpgradeFromArgs() ([]byte, []byte, err
 
 	arguments := context.vmInput.Arguments
 	if len(arguments) < numMinUpgradeArguments {
-		return nil, nil, arwen.ErrInvalidUpgradeArguments
+		return nil, nil, vmhost.ErrInvalidUpgradeArguments
 	}
 
 	code := arguments[0]
@@ -588,13 +588,13 @@ func (context *runtimeContext) FailExecution(err error) {
 	context.host.Output().SetReturnCode(vmcommon.ExecutionFailed)
 
 	var message string
-	breakpoint := arwen.BreakpointExecutionFailed
+	breakpoint := vmhost.BreakpointExecutionFailed
 
 	if err != nil {
 		message = err.Error()
 		context.AddError(err)
-		if errors.Is(err, arwen.ErrNotEnoughGas) {
-			breakpoint = arwen.BreakpointOutOfGas
+		if errors.Is(err, vmhost.ErrNotEnoughGas) {
+			breakpoint = vmhost.BreakpointOutOfGas
 		}
 	} else {
 		message = "execution failed"
@@ -618,22 +618,22 @@ func (context *runtimeContext) FailExecution(err error) {
 func (context *runtimeContext) SignalUserError(message string) {
 	context.host.Output().SetReturnCode(vmcommon.UserError)
 	context.host.Output().SetReturnMessage(message)
-	context.SetRuntimeBreakpointValue(arwen.BreakpointSignalError)
+	context.SetRuntimeBreakpointValue(vmhost.BreakpointSignalError)
 	context.AddError(errors.New(message))
 	logRuntime.Trace("user error signalled", "message", message)
 }
 
 // SetRuntimeBreakpointValue sets the specified runtime breakpoint in Wasmer,
 // immediately stopping the contract execution.
-func (context *runtimeContext) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
+func (context *runtimeContext) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
 	context.instance.SetBreakpointValue(uint64(value))
 	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
 // GetRuntimeBreakpointValue retrieves the value of the breakpoint that has
 // stopped the execution of the contract.
-func (context *runtimeContext) GetRuntimeBreakpointValue() arwen.BreakpointValue {
-	return arwen.BreakpointValue(context.instance.GetBreakpointValue())
+func (context *runtimeContext) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
+	return vmhost.BreakpointValue(context.instance.GetBreakpointValue())
 }
 
 // VerifyContractCode performs validation on the WASM bytecode (declaration of memory and legal functions).
@@ -802,11 +802,11 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	}
 
 	// If the requested function is missing from the contract exports, but is
-	// named like arwen.CallbackFunctionName, then a different error is returned
+	// named like vmhost.CallbackFunctionName, then a different error is returned
 	// to indicate that, not just a missing function.
-	if context.callFunction == arwen.CallbackFunctionName {
-		logRuntime.Trace("missing function " + arwen.CallbackFunctionName)
-		return "", arwen.ErrNilCallbackFunction
+	if context.callFunction == vmhost.CallbackFunctionName {
+		logRuntime.Trace("missing function " + vmhost.CallbackFunctionName)
+		return "", vmhost.ErrNilCallbackFunction
 	}
 
 	return "", executor.ErrFuncNotFound
@@ -828,7 +828,7 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 		return
 	}
 	if context.errors == nil {
-		context.errors = arwen.WrapError(err, otherInfo...)
+		context.errors = vmhost.WrapError(err, otherInfo...)
 		return
 	}
 	context.errors = context.errors.WrapWithError(err, otherInfo...)
@@ -843,13 +843,13 @@ func (context *runtimeContext) GetAllErrors() error {
 func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 	err := context.validator.verifyValidFunctionName(callbackName)
 	if err != nil {
-		return arwen.ErrInvalidFunctionName
+		return vmhost.ErrInvalidFunctionName
 	}
-	if callbackName == arwen.InitFunctionName {
-		return arwen.ErrInvalidFunctionName
+	if callbackName == vmhost.InitFunctionName {
+		return vmhost.ErrInvalidFunctionName
 	}
 	if context.host.IsBuiltinFunctionName(callbackName) {
-		return arwen.ErrCannotUseBuiltinAsCallback
+		return vmhost.ErrCannotUseBuiltinAsCallback
 	}
 	if !context.HasFunction(callbackName) {
 		return executor.ErrFuncNotFound

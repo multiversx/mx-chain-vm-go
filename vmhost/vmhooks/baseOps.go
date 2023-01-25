@@ -104,10 +104,10 @@ const (
 
 var logEEI = logger.GetOrCreate("arwen/eei")
 
-func getESDTTransferFromInputFailIfWrongIndex(host arwen.VMHost, index int32) *vmcommon.ESDTTransfer {
+func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *vmcommon.ESDTTransfer {
 	esdtTransfers := host.Runtime().GetVMInput().ESDTTransfers
 	if int32(len(esdtTransfers))-1 < index || index < 0 {
-		WithFaultAndHost(host, arwen.ErrInvalidTokenIndex, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidTokenIndex, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 	return esdtTransfers[index]
@@ -116,7 +116,7 @@ func getESDTTransferFromInputFailIfWrongIndex(host arwen.VMHost, index int32) *v
 func failIfMoreThanOneESDTTransfer(context *ElrondApi) bool {
 	runtime := context.GetRuntimeContext()
 	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
-		return context.WithFault(arwen.ErrTooManyESDTTransfers, true)
+		return context.WithFault(vmhost.ErrTooManyESDTTransfers, true)
 	}
 	return false
 }
@@ -179,7 +179,7 @@ func (context *ElrondApi) GetShardOfAddress(addressOffset executor.MemPtr) int32
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetShardOfAddress
 	metering.UseGasAndAddTracedGas(getShardOfAddressName, gasToUse)
 
-	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -197,14 +197,14 @@ func (context *ElrondApi) IsSmartContract(addressOffset executor.MemPtr) int32 {
 	gasToUse := metering.GasSchedule().ElrondAPICost.IsSmartContract
 	metering.UseGasAndAddTracedGas(isSmartContractName, gasToUse)
 
-	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
 
 	isSmartContract := blockchain.IsSmartContract(address)
 
-	return int32(arwen.BooleanToInt(isSmartContract))
+	return int32(vmhost.BooleanToInt(isSmartContract))
 }
 
 // SignalError VMHooks implementation.
@@ -240,7 +240,7 @@ func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resu
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseGasAndAddTracedGas(getExternalBalanceName, gasToUse)
 
-	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -285,7 +285,7 @@ func getESDTDataFromBlockchainHook(
 	gasToUse := metering.GasSchedule().ElrondAPICost.GetExternalBalance
 	metering.UseAndTraceGas(gasToUse)
 
-	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +347,7 @@ func (context *ElrondApi) GetESDTNFTNameLength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		context.WithFault(arwen.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -372,7 +372,7 @@ func (context *ElrondApi) GetESDTNFTAttributeLength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		context.WithFault(arwen.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -397,7 +397,7 @@ func (context *ElrondApi) GetESDTNFTURILength(
 		return -1
 	}
 	if esdtData == nil || esdtData.TokenMetaData == nil {
-		context.WithFault(arwen.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 	if len(esdtData.TokenMetaData.URIs) == 0 {
@@ -541,12 +541,12 @@ func (context *ElrondApi) TransferValue(
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
-	dest, err := context.MemLoad(destOffset, arwen.AddressLen)
+	dest, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	valueBytes, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	valueBytes, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -560,7 +560,7 @@ func (context *ElrondApi) TransferValue(
 	}
 
 	if host.IsBuiltinFunctionCall(data) {
-		context.WithFault(arwen.ErrTransferValueOnESDTCall, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrTransferValueOnESDTCall, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -581,7 +581,7 @@ type indirectContractCallArguments struct {
 }
 
 func (context *ElrondApi) extractIndirectContractCallArgumentsWithValue(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	functionOffset executor.MemPtr,
@@ -604,7 +604,7 @@ func (context *ElrondApi) extractIndirectContractCallArgumentsWithValue(
 }
 
 func (context *ElrondApi) extractIndirectContractCallArgumentsWithoutValue(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	functionOffset executor.MemPtr,
 	functionLength executor.MemLength,
@@ -626,7 +626,7 @@ func (context *ElrondApi) extractIndirectContractCallArgumentsWithoutValue(
 }
 
 func (context *ElrondApi) extractIndirectContractCallArguments(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	hasValueOffset bool,
@@ -638,7 +638,7 @@ func (context *ElrondApi) extractIndirectContractCallArguments(
 ) (*indirectContractCallArguments, error) {
 	metering := host.Metering()
 
-	dest, err := context.MemLoad(destOffset, arwen.AddressLen)
+	dest, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if err != nil {
 		return nil, err
 	}
@@ -646,7 +646,7 @@ func (context *ElrondApi) extractIndirectContractCallArguments(
 	var value *big.Int
 
 	if hasValueOffset {
-		valueBytes, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+		valueBytes, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 		if err != nil {
 			return nil, err
 		}
@@ -708,7 +708,7 @@ func (context *ElrondApi) TransferValueExecute(
 
 // TransferValueExecuteWithHost - transferValueExecute with host instead of pointer context
 func (context *ElrondApi) TransferValueExecuteWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	gasLimit int64,
@@ -743,7 +743,7 @@ func (context *ElrondApi) TransferValueExecuteWithHost(
 
 // TransferValueExecuteWithTypedArgs - transferValueExecute with args already read from memory
 func TransferValueExecuteWithTypedArgs(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	dest []byte,
 	value *big.Int,
 	gasLimit int64,
@@ -781,7 +781,7 @@ func TransferValueExecuteWithTypedArgs(
 
 	if contractCallInput != nil {
 		if host.IsBuiltinFunctionName(contractCallInput.Function) {
-			WithFaultAndHost(host, arwen.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
+			WithFaultAndHost(host, vmhost.ErrNilESDTData, runtime.ElrondAPIErrorShouldFailExecution())
 			return 1
 		}
 	}
@@ -893,7 +893,7 @@ func (context *ElrondApi) MultiTransferESDTNFTExecute(
 	metering.StartGasTracing(multiTransferESDTNFTExecuteName)
 
 	if numTokenTransfers == 0 {
-		_ = WithFaultAndHost(host, arwen.ErrFailedTransfer, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = WithFaultAndHost(host, vmhost.ErrFailedTransfer, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -947,7 +947,7 @@ func (context *ElrondApi) MultiTransferESDTNFTExecute(
 
 // TransferESDTNFTExecuteWithHost contains only memory reading of arguments
 func (context *ElrondApi) TransferESDTNFTExecuteWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -998,7 +998,7 @@ func (context *ElrondApi) TransferESDTNFTExecuteWithHost(
 
 // TransferESDTNFTExecuteWithTypedArgs defines the actual transfer ESDT execute logic
 func TransferESDTNFTExecuteWithTypedArgs(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	dest []byte,
 	transfers []*vmcommon.ESDTTransfer,
 	gasLimit int64,
@@ -1091,7 +1091,7 @@ func (context *ElrondApi) CreateAsyncCall(
 }
 
 // CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
-func (context *ElrondApi) CreateAsyncCallWithHost(host arwen.VMHost,
+func (context *ElrondApi) CreateAsyncCallWithHost(host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -1105,12 +1105,12 @@ func (context *ElrondApi) CreateAsyncCallWithHost(host arwen.VMHost,
 ) int32 {
 	runtime := host.Runtime()
 
-	calledSCAddress, err := context.MemLoad(destOffset, arwen.AddressLen)
+	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	value, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -1142,7 +1142,7 @@ func (context *ElrondApi) CreateAsyncCallWithHost(host arwen.VMHost,
 }
 
 // CreateAsyncCallWithTypedArgs - createAsyncCall with arguments already read from memory
-func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
+func CreateAsyncCallWithTypedArgs(host vmhost.VMHost,
 	calledSCAddress []byte,
 	value []byte,
 	data []byte,
@@ -1161,8 +1161,8 @@ func CreateAsyncCallWithTypedArgs(host arwen.VMHost,
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateAsyncCall
 	metering.UseAndTraceGas(gasToUse)
 
-	asyncCall := &arwen.AsyncCall{
-		Status:          arwen.AsyncCallPending,
+	asyncCall := &vmhost.AsyncCall{
+		Status:          vmhost.AsyncCallPending,
 		Destination:     calledSCAddress,
 		Data:            data,
 		ValueBytes:      value,
@@ -1247,7 +1247,7 @@ func (context *ElrondApi) UpgradeContract(
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
-	value, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1257,7 +1257,7 @@ func (context *ElrondApi) UpgradeContract(
 		return
 	}
 
-	codeMetadata, err := context.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1276,7 +1276,7 @@ func (context *ElrondApi) UpgradeContract(
 		return
 	}
 
-	calledSCAddress, err := context.MemLoad(destOffset, arwen.AddressLen)
+	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1308,17 +1308,17 @@ func (context *ElrondApi) UpgradeFromSourceContract(
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
-	value, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	sourceContractAddress, err := context.MemLoad(sourceContractAddressOffset, arwen.AddressLen)
+	sourceContractAddress, err := context.MemLoad(sourceContractAddressOffset, vmhost.AddressLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	codeMetadata, err := context.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1337,7 +1337,7 @@ func (context *ElrondApi) UpgradeFromSourceContract(
 		return
 	}
 
-	calledSCAddress, err := context.MemLoad(destOffset, arwen.AddressLen)
+	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1355,7 +1355,7 @@ func (context *ElrondApi) UpgradeFromSourceContract(
 
 // UpgradeFromSourceContractWithTypedArgs - upgradeFromSourceContract with args already read from memory
 func UpgradeFromSourceContractWithTypedArgs(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	sourceContractAddress []byte,
 	destContractAddress []byte,
 	value []byte,
@@ -1375,7 +1375,7 @@ func UpgradeFromSourceContractWithTypedArgs(
 }
 
 func upgradeContract(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	destContractAddress []byte,
 	code []byte,
 	codeMetadata []byte,
@@ -1390,14 +1390,14 @@ func upgradeContract(
 		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
 		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
 	if uint64(gasLimit) < minAsyncCallCost {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
 
 	// Set up the async call as if it is not known whether the called SC
 	// is in the same shard with the caller or not. This will be later resolved
 	// by runtime.ExecuteAsyncCall().
-	callData := arwen.UpgradeFunctionName + "@" + hex.EncodeToString(code) + "@" + hex.EncodeToString(codeMetadata)
+	callData := vmhost.UpgradeFunctionName + "@" + hex.EncodeToString(code) + "@" + hex.EncodeToString(codeMetadata)
 	for _, arg := range data {
 		callData += "@" + hex.EncodeToString(arg)
 	}
@@ -1410,8 +1410,8 @@ func upgradeContract(
 	)
 	logEEI.Trace("upgradeContract", "error", err)
 
-	if errors.Is(err, arwen.ErrNotEnoughGas) {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	if errors.Is(err, vmhost.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1450,7 +1450,7 @@ func (context *ElrondApi) DeleteContract(
 		return
 	}
 
-	calledSCAddress, err := context.MemLoad(destOffset, arwen.AddressLen)
+	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1464,7 +1464,7 @@ func (context *ElrondApi) DeleteContract(
 }
 
 func deleteContract(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	dest []byte,
 	data [][]byte,
 	gasLimit int64,
@@ -1476,11 +1476,11 @@ func deleteContract(
 		math.MulUint64(2, gasSchedule.ElrondAPICost.AsyncCallStep),
 		gasSchedule.ElrondAPICost.AsyncCallbackGasLock)
 	if uint64(gasLimit) < minAsyncCallCost {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
 
-	callData := arwen.DeleteFunctionName
+	callData := vmhost.DeleteFunctionName
 	for _, arg := range data {
 		callData += "@" + hex.EncodeToString(arg)
 	}
@@ -1493,8 +1493,8 @@ func deleteContract(
 	)
 	logEEI.Trace("deleteContract", "error", err)
 
-	if errors.Is(err, arwen.ErrNotEnoughGas) {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	if errors.Is(err, vmhost.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1520,12 +1520,12 @@ func (context *ElrondApi) AsyncCall(
 	gasToUse := gasSchedule.ElrondAPICost.AsyncCallStep
 	metering.UseAndTraceGas(gasToUse)
 
-	calledSCAddress, err := context.MemLoad(destOffset, arwen.AddressLen)
+	calledSCAddress, err := context.MemLoad(destOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
 
-	value, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -1539,8 +1539,8 @@ func (context *ElrondApi) AsyncCall(
 	}
 
 	err = async.RegisterLegacyAsyncCall(calledSCAddress, data, value)
-	if errors.Is(err, arwen.ErrNotEnoughGas) {
-		runtime.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+	if errors.Is(err, vmhost.ErrNotEnoughGas) {
+		runtime.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		return
 	}
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1559,7 +1559,7 @@ func (context *ElrondApi) GetArgumentLength(id int32) int32 {
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.WithFault(arwen.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1577,7 +1577,7 @@ func (context *ElrondApi) GetArgument(id int32, argOffset executor.MemPtr) int32
 
 	args := runtime.Arguments()
 	if id < 0 || int32(len(args)) <= id {
-		context.WithFault(arwen.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -1640,7 +1640,7 @@ func (context *ElrondApi) StorageStore(
 
 // StorageStoreWithHost - storageStore with host instead of pointer context
 func (context *ElrondApi) StorageStoreWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
 	dataOffset executor.MemPtr,
@@ -1662,7 +1662,7 @@ func (context *ElrondApi) StorageStoreWithHost(
 }
 
 // StorageStoreWithTypedArgs - storageStore with args already read from memory
-func StorageStoreWithTypedArgs(host arwen.VMHost, key []byte, data []byte) int32 {
+func StorageStoreWithTypedArgs(host vmhost.VMHost, key []byte, data []byte) int32 {
 	runtime := host.Runtime()
 	storage := host.Storage()
 	metering := host.Metering()
@@ -1719,7 +1719,7 @@ func (context *ElrondApi) StorageLoadFromAddress(
 
 // StorageLoadFromAddressWithHost - storageLoadFromAddress with host instead of pointer context
 func (context *ElrondApi) StorageLoadFromAddressWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	addressOffset executor.MemPtr,
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
@@ -1732,7 +1732,7 @@ func (context *ElrondApi) StorageLoadFromAddressWithHost(
 		return -1
 	}
 
-	address, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	address, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -1751,7 +1751,7 @@ func (context *ElrondApi) StorageLoadFromAddressWithHost(
 }
 
 // StorageLoadFromAddressWithTypedArgs - storageLoadFromAddress with args already read from memory
-func StorageLoadFromAddressWithTypedArgs(host arwen.VMHost, address []byte, key []byte) ([]byte, error) {
+func StorageLoadFromAddressWithTypedArgs(host vmhost.VMHost, address []byte, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
 	data, usedCache, err := storage.GetStorageFromAddress(address, key)
@@ -1775,7 +1775,7 @@ func (context *ElrondApi) StorageLoad(keyOffset executor.MemPtr, keyLength execu
 }
 
 // StorageLoadWithHost - storageLoad with host instead of pointer context
-func (context *ElrondApi) StorageLoadWithHost(host arwen.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+func (context *ElrondApi) StorageLoadWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
 	runtime := host.Runtime()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
@@ -1797,7 +1797,7 @@ func (context *ElrondApi) StorageLoadWithHost(host arwen.VMHost, keyOffset execu
 }
 
 // StorageLoadWithWithTypedArgs - storageLoad with args already read from memory
-func StorageLoadWithWithTypedArgs(host arwen.VMHost, key []byte) ([]byte, error) {
+func StorageLoadWithWithTypedArgs(host vmhost.VMHost, key []byte) ([]byte, error) {
 	storage := host.Storage()
 	metering := host.Metering()
 	data, usedCache, err := storage.GetStorage(key)
@@ -1821,7 +1821,7 @@ func (context *ElrondApi) SetStorageLock(keyOffset executor.MemPtr, keyLength ex
 }
 
 // SetStorageLockWithHost - setStorageLock with host instead of pointer context
-func (context *ElrondApi) SetStorageLockWithHost(host arwen.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
+func (context *ElrondApi) SetStorageLockWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1837,11 +1837,11 @@ func (context *ElrondApi) SetStorageLockWithHost(host arwen.VMHost, keyOffset ex
 }
 
 // SetStorageLockWithTypedArgs - setStorageLock with args already read from memory
-func SetStorageLockWithTypedArgs(host arwen.VMHost, key []byte, lockTimestamp int64) int32 {
+func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp int64) int32 {
 	runtime := host.Runtime()
 	storage := host.Storage()
-	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(arwen.TimeLockKeyPrefix))
-	timeLockKey := arwen.CustomStorageKey(timeLockKeyPrefix, key)
+	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(vmhost.TimeLockKeyPrefix))
+	timeLockKey := vmhost.CustomStorageKey(timeLockKeyPrefix, key)
 	bigTimestamp := big.NewInt(0).SetInt64(lockTimestamp)
 	storageStatus, err := storage.SetProtectedStorage(timeLockKey, bigTimestamp.Bytes())
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1865,8 +1865,8 @@ func (context *ElrondApi) GetStorageLock(keyOffset executor.MemPtr, keyLength ex
 		return -1
 	}
 
-	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(arwen.TimeLockKeyPrefix))
-	timeLockKey := arwen.CustomStorageKey(timeLockKeyPrefix, key)
+	timeLockKeyPrefix := string(storage.GetVmProtectedPrefix(vmhost.TimeLockKeyPrefix))
+	timeLockKey := vmhost.CustomStorageKey(timeLockKeyPrefix, key)
 
 	data, usedCache, err := storage.GetStorage(timeLockKey)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1931,11 +1931,11 @@ func (context *ElrondApi) CheckNoPayment() {
 
 	vmInput := runtime.GetVMInput()
 	if vmInput.CallValue.Sign() > 0 {
-		_ = context.WithFault(arwen.ErrNonPayableFunctionEgld, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrNonPayableFunctionEgld, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 	if len(vmInput.ESDTTransfers) > 0 {
-		_ = context.WithFault(arwen.ErrNonPayableFunctionEsdt, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrNonPayableFunctionEsdt, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 }
@@ -1950,7 +1950,7 @@ func (context *ElrondApi) GetCallValue(resultOffset executor.MemPtr) int32 {
 	metering.UseGasAndAddTracedGas(callValueName, gasToUse)
 
 	value := runtime.GetVMInput().CallValue.Bytes()
-	value = arwen.PadBytesLeft(value, arwen.BalanceLen)
+	value = vmhost.PadBytesLeft(value, vmhost.BalanceLen)
 
 	err := context.MemStore(resultOffset, value)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -1982,9 +1982,9 @@ func (context *ElrondApi) GetESDTValueByIndex(resultOffset executor.MemPtr, inde
 	var value []byte
 
 	esdtTransfer := getESDTTransferFromInputFailIfWrongIndex(context.GetVMHost(), index)
-	if esdtTransfer != nil && esdtTransfer.ESDTValue.Cmp(arwen.Zero) > 0 {
+	if esdtTransfer != nil && esdtTransfer.ESDTValue.Cmp(vmhost.Zero) > 0 {
 		value = esdtTransfer.ESDTValue.Bytes()
-		value = arwen.PadBytesLeft(value, arwen.BalanceLen)
+		value = vmhost.PadBytesLeft(value, vmhost.BalanceLen)
 	}
 
 	err := context.MemStore(resultOffset, value)
@@ -2068,7 +2068,7 @@ func (context *ElrondApi) GetCurrentESDTNFTNonce(
 	gasToUse := metering.GasSchedule().ElrondAPICost.StorageLoad
 	metering.UseGasAndAddTracedGas(getCurrentESDTNFTNonceName, gasToUse)
 
-	destination, err := context.MemLoad(addressOffset, arwen.AddressLen)
+	destination, err := context.MemLoad(addressOffset, vmhost.AddressLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 0
 	}
@@ -2157,7 +2157,7 @@ func (context *ElrondApi) GetCallValueTokenNameByIndex(
 		copy(tokenName, esdtTransfer.ESDTTokenName)
 		callValue = esdtTransfer.ESDTValue.Bytes()
 	}
-	callValue = arwen.PadBytesLeft(callValue, arwen.BalanceLen)
+	callValue = vmhost.PadBytesLeft(callValue, vmhost.BalanceLen)
 
 	err := context.MemStore(tokenNameOffset, tokenName)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
@@ -2186,12 +2186,12 @@ func (context *ElrondApi) WriteLog(
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().ElrondAPICost.Log
-	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*arwen.HashLen+dataLength))
+	gas := math.MulUint64(metering.GasSchedule().BaseOperationCost.PersistPerByte, uint64(numTopics*vmhost.HashLen+dataLength))
 	gasToUse = math.AddUint64(gasToUse, gas)
 	metering.UseGasAndAddTracedGas(writeLogName, gasToUse)
 
 	if numTopics < 0 || dataLength < 0 {
-		err := arwen.ErrNegativeLength
+		err := vmhost.ErrNegativeLength
 		context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
@@ -2203,7 +2203,7 @@ func (context *ElrondApi) WriteLog(
 
 	topics := make([][]byte, numTopics)
 	for i := int32(0); i < numTopics; i++ {
-		topics[i], err = context.MemLoad(topicPtr.Offset(i*arwen.HashLen), arwen.HashLen)
+		topics[i], err = context.MemLoad(topicPtr.Offset(i*vmhost.HashLen), vmhost.HashLen)
 		if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 			return
 		}
@@ -2450,7 +2450,7 @@ func (context *ElrondApi) ExecuteOnSameContext(
 
 // ExecuteOnSameContextWithHost - executeOnSameContext with host instead of pointer context
 func (context *ElrondApi) ExecuteOnSameContextWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	addressOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -2480,7 +2480,7 @@ func (context *ElrondApi) ExecuteOnSameContextWithHost(
 
 // ExecuteOnSameContextWithTypedArgs - executeOnSameContext with args already read from memory
 func ExecuteOnSameContextWithTypedArgs(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	value *big.Int,
 	function []byte,
@@ -2510,7 +2510,7 @@ func ExecuteOnSameContextWithTypedArgs(
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		WithFaultAndHost(host, arwen.ErrInvalidBuiltInFunctionCall, runtime.ElrondAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidBuiltInFunctionCall, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -2553,7 +2553,7 @@ func (context *ElrondApi) ExecuteOnDestContext(
 
 // ExecuteOnDestContextWithHost - executeOnDestContext with host instead of pointer context
 func (context *ElrondApi) ExecuteOnDestContextWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	addressOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -2583,7 +2583,7 @@ func (context *ElrondApi) ExecuteOnDestContextWithHost(
 
 // ExecuteOnDestContextWithTypedArgs - executeOnDestContext with args already read from memory
 func ExecuteOnDestContextWithTypedArgs(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	value *big.Int,
 	function []byte,
@@ -2649,7 +2649,7 @@ func (context *ElrondApi) ExecuteReadOnly(
 
 // ExecuteReadOnlyWithHost - executeReadOnly with host instead of pointer context
 func (context *ElrondApi) ExecuteReadOnlyWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	addressOffset executor.MemPtr,
 	functionOffset executor.MemPtr,
@@ -2677,7 +2677,7 @@ func (context *ElrondApi) ExecuteReadOnlyWithHost(
 
 // ExecuteReadOnlyWithTypedArguments - executeReadOnly with args already read from memory
 func ExecuteReadOnlyWithTypedArguments(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	function []byte,
 	dest []byte,
@@ -2706,7 +2706,7 @@ func ExecuteReadOnlyWithTypedArguments(
 	}
 
 	if host.IsBuiltinFunctionName(contractCallInput.Function) {
-		WithFaultAndHost(host, arwen.ErrInvalidBuiltInFunctionCall, runtime.ElrondAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidBuiltInFunctionCall, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -2751,7 +2751,7 @@ func (context *ElrondApi) CreateContract(
 }
 
 func (context *ElrondApi) createContractWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasLimit int64,
 	valueOffset executor.MemPtr,
 	codeOffset executor.MemPtr,
@@ -2771,7 +2771,7 @@ func (context *ElrondApi) createContractWithHost(
 	metering.UseAndTraceGas(gasToUse)
 
 	sender := runtime.GetContextAddress()
-	value, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2781,7 +2781,7 @@ func (context *ElrondApi) createContractWithHost(
 		return 1
 	}
 
-	codeMetadata, err := context.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2835,17 +2835,17 @@ func (context *ElrondApi) DeployFromSourceContract(
 	gasToUse := metering.GasSchedule().ElrondAPICost.CreateContract
 	metering.UseAndTraceGas(gasToUse)
 
-	value, err := context.MemLoad(valueOffset, arwen.BalanceLen)
+	value, err := context.MemLoad(valueOffset, vmhost.BalanceLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	sourceContractAddress, err := context.MemLoad(sourceContractAddressOffset, arwen.AddressLen)
+	sourceContractAddress, err := context.MemLoad(sourceContractAddressOffset, vmhost.AddressLen)
 	if WithFaultAndHost(host, err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
 
-	codeMetadata, err := context.MemLoad(codeMetadataOffset, arwen.CodeMetadataLen)
+	codeMetadata, err := context.MemLoad(codeMetadataOffset, vmhost.CodeMetadataLen)
 	if context.WithFault(err, runtime.ElrondAPIErrorShouldFailExecution()) {
 		return 1
 	}
@@ -2887,7 +2887,7 @@ func (context *ElrondApi) DeployFromSourceContract(
 
 // DeployFromSourceContractWithTypedArgs - deployFromSourceContract with args already read from memory
 func DeployFromSourceContractWithTypedArgs(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	sourceContractAddress []byte,
 	codeMetadata []byte,
 	value *big.Int,
@@ -2911,12 +2911,12 @@ func createContract(
 	sender []byte,
 	data [][]byte,
 	value *big.Int,
-	metering arwen.MeteringContext,
+	metering vmhost.MeteringContext,
 	gasLimit int64,
 	code []byte,
 	codeMetadata []byte,
-	host arwen.VMHost,
-	_ arwen.RuntimeContext,
+	host vmhost.VMHost,
+	_ vmhost.RuntimeContext,
 ) ([]byte, error) {
 	contractCreate := &vmcommon.ContractCreateInput{
 		VMInput: vmcommon.VMInput{
@@ -2958,7 +2958,7 @@ func (context *ElrondApi) GetReturnDataSize(resultID int32) int32 {
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		context.WithFault(arwen.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrInvalidArgument, runtime.ElrondAPIErrorShouldFailExecution())
 		return 0
 	}
 
@@ -2984,7 +2984,7 @@ func (context *ElrondApi) GetReturnData(resultID int32, dataOffset executor.MemP
 	return int32(len(result))
 }
 
-func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte {
+func GetReturnDataWithHostAndTypedArgs(host vmhost.VMHost, resultID int32) []byte {
 	output := host.Output()
 	metering := host.Metering()
 
@@ -2993,7 +2993,7 @@ func GetReturnDataWithHostAndTypedArgs(host arwen.VMHost, resultID int32) []byte
 
 	returnData := output.ReturnData()
 	if resultID >= int32(len(returnData)) || resultID < 0 {
-		WithFaultAndHost(host, arwen.ErrInvalidArgument, host.Runtime().ElrondAPIErrorShouldFailExecution())
+		WithFaultAndHost(host, vmhost.ErrInvalidArgument, host.Runtime().ElrondAPIErrorShouldFailExecution())
 		return nil
 	}
 
@@ -3008,7 +3008,7 @@ func (context *ElrondApi) CleanReturnData() {
 }
 
 // CleanReturnDataWithHost - exposed version of v1_5_deleteFromReturnData for tests
-func CleanReturnDataWithHost(host arwen.VMHost) {
+func CleanReturnDataWithHost(host vmhost.VMHost) {
 	output := host.Output()
 	metering := host.Metering()
 
@@ -3026,7 +3026,7 @@ func (context *ElrondApi) DeleteFromReturnData(resultID int32) {
 }
 
 // DeleteFromReturnDataWithHost - exposed version of v1_5_deleteFromReturnData for tests
-func DeleteFromReturnDataWithHost(host arwen.VMHost, resultID int32) {
+func DeleteFromReturnDataWithHost(host vmhost.VMHost, resultID int32) {
 	output := host.Output()
 	metering := host.Metering()
 
@@ -3079,7 +3079,7 @@ func (context *ElrondApi) GetPrevTxHash(dataOffset executor.MemPtr) {
 }
 
 func prepareIndirectContractCallInput(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	sender []byte,
 	value *big.Int,
 	gasLimit int64,
@@ -3093,7 +3093,7 @@ func prepareIndirectContractCallInput(
 	metering := host.Metering()
 
 	if syncExecutionRequired && !host.AreInSameShard(runtime.GetContextAddress(), destination) {
-		return nil, arwen.ErrSyncExecutionNotInSameShard
+		return nil, vmhost.ErrSyncExecutionNotInSameShard
 	}
 
 	contractCallInput := &vmcommon.ContractCallInput{
@@ -3113,7 +3113,7 @@ func prepareIndirectContractCallInput(
 }
 
 func (context *ElrondApi) getArgumentsFromMemory(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -3153,7 +3153,7 @@ func createInt32Array(rawData []byte, numIntegers int32) []int32 {
 	return integers
 }
 
-func executeOnDestContextFromAPI(host arwen.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
+func executeOnDestContextFromAPI(host vmhost.VMHost, input *vmcommon.ContractCallInput) (vmOutput *vmcommon.VMOutput, err error) {
 	host.Async().SetAsyncArgumentsForCall(input)
 	vmOutput, isChildComplete, err := host.ExecuteOnDestContext(input)
 	if err != nil {

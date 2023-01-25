@@ -21,7 +21,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -59,7 +59,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -109,7 +109,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -141,8 +141,8 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
 				callbackName = ""
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-				Status:          arwen.AsyncCallPending,
+			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+				Status:          vmhost.AsyncCallPending,
 				Destination:     receiver,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,

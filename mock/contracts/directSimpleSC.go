@@ -65,7 +65,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -105,7 +105,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -242,8 +242,8 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
 				callbackName = ""
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-				Status:          arwen.AsyncCallPending,
+			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+				Status:          vmhost.AsyncCallPending,
 				Destination:     test.ParentAddress,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,

@@ -23,7 +23,7 @@ func (context *asyncContext) SendCrossShardCallback(
 	return sendCrossShardCallback(context.host, sender, destination, asyncData, data)
 }
 
-func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *arwen.AsyncCall) error {
+func (context *asyncContext) sendAsyncCallCrossShard(asyncCall *vmhost.AsyncCall) error {
 	host := context.host
 	runtime := host.Runtime()
 	output := host.Output()
@@ -65,7 +65,7 @@ func createAsyncDataForAsyncCall(newCallID []byte, currentCallID []byte) []byte 
 	return asyncData.ToBytes()
 }
 
-func sendCrossShardCallback(host arwen.VMHost, sender []byte, destination []byte, asyncData []byte, data []byte) error {
+func sendCrossShardCallback(host vmhost.VMHost, sender []byte, destination []byte, asyncData []byte, data []byte) error {
 	runtime := host.Runtime()
 	output := host.Output()
 	metering := host.Metering()

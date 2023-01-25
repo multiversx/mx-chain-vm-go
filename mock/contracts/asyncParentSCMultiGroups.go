@@ -29,7 +29,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -43,8 +43,8 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 				// child will return this
 				callData.Str(functionName + testcommon.TestReturnDataSuffix)
 
-				err := async.RegisterAsyncCall(groupName, &arwen.AsyncCall{
-					Status:          arwen.AsyncCallPending,
+				err := async.RegisterAsyncCall(groupName, &vmhost.AsyncCall{
+					Status:          vmhost.AsyncCallPending,
 					Destination:     destination,
 					Data:            callData.ToBytes(),
 					ValueBytes:      value,

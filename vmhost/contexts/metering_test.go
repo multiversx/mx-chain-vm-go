@@ -144,7 +144,7 @@ func TestMeteringContext_DeductInitialGasForExecution(t *testing.T) {
 
 	vmInput.GasProvided = 1
 	err = meteringCtx.DeductInitialGasForExecution(contract)
-	require.Equal(t, arwen.ErrNotEnoughGas, err)
+	require.Equal(t, vmhost.ErrNotEnoughGas, err)
 }
 
 func TestDeductInitialGasForDirectDeployment(t *testing.T) {
@@ -169,15 +169,15 @@ func TestDeductInitialGasForDirectDeployment(t *testing.T) {
 	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	mockRuntime.SetPointsUsed(0)
-	err := meteringCtx.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
+	err := meteringCtx.DeductInitialGasForDirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
 	require.Nil(t, err)
 	remainingGas := meteringCtx.GasLeft()
 	require.Equal(t, gasProvided-uint64(len(contractCode))-1, remainingGas)
 
 	contractCallInput.GasProvided = 2
 	mockRuntime.SetPointsUsed(0)
-	err = meteringCtx.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
-	require.Equal(t, arwen.ErrNotEnoughGas, err)
+	err = meteringCtx.DeductInitialGasForDirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
+	require.Equal(t, vmhost.ErrNotEnoughGas, err)
 }
 
 func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
@@ -203,15 +203,15 @@ func TestDeductInitialGasForIndirectDeployment(t *testing.T) {
 	meteringCtx, _ := NewMeteringContext(host, config.MakeGasMapForTests(), uint64(15000))
 
 	mockRuntime.SetPointsUsed(0)
-	err := meteringCtx.DeductInitialGasForIndirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
+	err := meteringCtx.DeductInitialGasForIndirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
 	require.Nil(t, err)
 	remainingGas := meteringCtx.GasLeft()
 	require.Equal(t, gasProvided-uint64(len(contractCode)), remainingGas)
 
 	contractCallInput.GasProvided = 2
 	mockRuntime.SetPointsUsed(0)
-	err = meteringCtx.DeductInitialGasForDirectDeployment(arwen.CodeDeployInput{ContractCode: contractCode})
-	require.Equal(t, arwen.ErrNotEnoughGas, err)
+	err = meteringCtx.DeductInitialGasForDirectDeployment(vmhost.CodeDeployInput{ContractCode: contractCode})
+	require.Equal(t, vmhost.ErrNotEnoughGas, err)
 }
 
 func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
@@ -237,7 +237,7 @@ func TestMeteringContext_AsyncCallGasLocking(t *testing.T) {
 
 	input.GasProvided = 0
 	err := meteringCtx.UseGasForAsyncStep()
-	require.Equal(t, arwen.ErrNotEnoughGas, err)
+	require.Equal(t, vmhost.ErrNotEnoughGas, err)
 
 	mockRuntime.SetPointsUsed(0)
 	gasProvided := uint64(1_000_000)

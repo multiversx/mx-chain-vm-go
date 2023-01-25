@@ -76,7 +76,7 @@ func (context *ElrondApi) MBufferGetLength(mBufferHandle int32) int32 {
 
 	length := managedType.GetLength(mBufferHandle)
 	if length == -1 {
-		_ = context.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrNoManagedBufferUnderThisHandle, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return -1
 	}
 
@@ -152,7 +152,7 @@ func (context *ElrondApi) MBufferCopyByteSlice(sourceHandle int32, startingPosit
 }
 
 // ManagedBufferCopyByteSliceWithHost VMHooks implementation.
-func ManagedBufferCopyByteSliceWithHost(host arwen.VMHost, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
+func ManagedBufferCopyByteSliceWithHost(host vmhost.VMHost, sourceHandle int32, startingPosition int32, sliceLength int32, destinationHandle int32) int32 {
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -246,7 +246,7 @@ func (context *ElrondApi) MBufferSetByteSlice(
 
 // ManagedBufferSetByteSliceWithHost VMHooks implementation.
 func (context *ElrondApi) ManagedBufferSetByteSliceWithHost(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	mBufferHandle int32,
 	startingPosition int32,
 	dataLength executor.MemLength,
@@ -268,7 +268,7 @@ func (context *ElrondApi) ManagedBufferSetByteSliceWithHost(
 }
 
 // ManagedBufferSetByteSliceWithTypedArgs VMHooks implementation.
-func ManagedBufferSetByteSliceWithTypedArgs(host arwen.VMHost, mBufferHandle int32, startingPosition int32, dataLength int32, data []byte) int32 {
+func ManagedBufferSetByteSliceWithTypedArgs(host vmhost.VMHost, mBufferHandle int32, startingPosition int32, dataLength int32, data []byte) int32 {
 	managedType := host.ManagedTypes()
 	runtime := host.Runtime()
 	metering := host.Metering()
@@ -316,7 +316,7 @@ func (context *ElrondApi) MBufferAppend(accumulatorHandle int32, dataHandle int3
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, dataBufferBytes)
 	if !isSuccess {
-		_ = context.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrNoManagedBufferUnderThisHandle, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -341,7 +341,7 @@ func (context *ElrondApi) MBufferAppendBytes(accumulatorHandle int32, dataOffset
 
 	isSuccess := managedType.AppendBytes(accumulatorHandle, data)
 	if !isSuccess {
-		_ = context.WithFault(arwen.ErrNoManagedBufferUnderThisHandle, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrNoManagedBufferUnderThisHandle, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -450,7 +450,7 @@ func (context *ElrondApi) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32)
 
 	managedType.ConsumeGasForBytes(managedBuffer)
 	if managedType.EncodedBigFloatIsNotValid(managedBuffer) {
-		_ = context.WithFault(arwen.ErrBigFloatWrongPrecision, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrBigFloatWrongPrecision, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -465,7 +465,7 @@ func (context *ElrondApi) MBufferToBigFloat(mBufferHandle, bigFloatHandle int32)
 		return 1
 	}
 	if bigFloat.IsInf() {
-		_ = context.WithFault(arwen.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrInfinityFloatOperation, runtime.BigFloatAPIErrorShouldFailExecution())
 		return 1
 	}
 
@@ -567,7 +567,7 @@ func (context *ElrondApi) MBufferStorageLoadFromAddress(addressHandle, keyHandle
 
 	address, err := managedType.GetBytes(addressHandle)
 	if err != nil {
-		_ = context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return
 	}
 
@@ -591,7 +591,7 @@ func (context *ElrondApi) MBufferGetArgument(id int32, destinationHandle int32) 
 
 	args := runtime.Arguments()
 	if int32(len(args)) <= id || id < 0 {
-		context.WithFault(arwen.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
+		context.WithFault(vmhost.ErrArgOutOfRange, runtime.ElrondAPIErrorShouldFailExecution())
 		return 1
 	}
 	managedType.SetBytes(destinationHandle, args[id])
@@ -634,7 +634,7 @@ func (context *ElrondApi) MBufferSetRandom(destinationHandle int32, length int32
 	metering := context.GetMeteringContext()
 
 	if length < 1 {
-		_ = context.WithFault(arwen.ErrLengthOfBufferNotCorrect, runtime.ManagedBufferAPIErrorShouldFailExecution())
+		_ = context.WithFault(vmhost.ErrLengthOfBufferNotCorrect, runtime.ManagedBufferAPIErrorShouldFailExecution())
 		return -1
 	}
 

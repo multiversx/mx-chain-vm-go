@@ -1,5 +1,5 @@
 //nolint:all
-package hosttest
+package hostCoretest
 
 import (
 	"bufio"

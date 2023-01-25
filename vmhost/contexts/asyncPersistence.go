@@ -15,7 +15,7 @@ func (context *asyncContext) Save() error {
 	callID := context.callID
 	storage := context.host.Storage()
 
-	if len(callID) > arwen.AddressLen {
+	if len(callID) > vmhost.AddressLen {
 		return errors.New("callID must be 32 bytes")
 	}
 
@@ -42,7 +42,7 @@ func (context *asyncContext) LoadParentContext() error {
 		// parent is the same as the callback, and the id is callbackAsyncInitiatorCallID
 		return context.loadSpecificContext(context.address, context.callbackAsyncInitiatorCallID)
 	default:
-		return arwen.ErrNoAsyncParentContext
+		return vmhost.ErrNoAsyncParentContext
 	}
 }
 
@@ -55,7 +55,7 @@ func (context *asyncContext) DeleteFromAddress(address []byte) error {
 }
 
 // LoadParentContextFromStackOrStorage loads the parent async comtext
-func (context *asyncContext) LoadParentContextFromStackOrStorage() (arwen.AsyncContext, error) {
+func (context *asyncContext) LoadParentContextFromStackOrStorage() (vmhost.AsyncContext, error) {
 	if context.callType != vm.AsynchronousCallBack {
 		return context.loadFromStackOrStorage(context.callerAddr, context.callerCallID)
 	}
@@ -99,15 +99,15 @@ func (context *asyncContext) loadSpecificContext(address []byte, callID []byte) 
 }
 
 func readAsyncContextFromStorage(
-	storage arwen.StorageContext,
+	storage vmhost.StorageContext,
 	address []byte,
 	callID []byte,
 	marshalizer *marshal.GogoProtoMarshalizer,
 ) (*asyncContext, error) {
-	storageKey := getAsyncContextStorageKey(storage.GetVmProtectedPrefix(arwen.AsyncDataPrefix), callID)
+	storageKey := getAsyncContextStorageKey(storage.GetVmProtectedPrefix(vmhost.AsyncDataPrefix), callID)
 	data, _, _ := storage.GetStorageFromAddressNoChecks(address, storageKey)
 	if len(data) == 0 {
-		return nil, arwen.ErrNoStoredAsyncContextFound
+		return nil, vmhost.ErrNoStoredAsyncContextFound
 	}
 
 	return deserializeAsyncContext(data, marshalizer)
@@ -135,7 +135,7 @@ func (context *asyncContext) toSerializable() *SerializableAsyncContext {
 		CallbackData:                 context.callbackData,
 		GasAccumulated:               context.gasAccumulated,
 		ReturnData:                   context.returnData,
-		AsyncCallGroups:              arwen.ToSerializableAsyncCallGroups(context.asyncCallGroups),
+		AsyncCallGroups:              vmhost.ToSerializableAsyncCallGroups(context.asyncCallGroups),
 		CallsCounter:                 context.callsCounter,
 		TotalCallsCounter:            context.totalCallsCounter,
 		ChildResults:                 toSerializableVMOutput(context.childResults),
@@ -158,7 +158,7 @@ func fromSerializable(serializedContext *SerializableAsyncContext) *asyncContext
 		callbackData:                 serializedContext.CallbackData,
 		gasAccumulated:               serializedContext.GasAccumulated,
 		returnData:                   serializedContext.ReturnData,
-		asyncCallGroups:              arwen.FromSerializableAsyncCallGroups(serializedContext.AsyncCallGroups),
+		asyncCallGroups:              vmhost.FromSerializableAsyncCallGroups(serializedContext.AsyncCallGroups),
 		childResults:                 fromSerializableVMOutput(serializedContext.ChildResults),
 	}
 }
@@ -195,5 +195,5 @@ func fromSerializableVMOutput(serializedVMOutput *SerializableVMOutput) *vmcommo
 }
 
 func getAsyncContextStorageKey(prefix []byte, callID []byte) []byte {
-	return arwen.CustomStorageKey(string(prefix), callID)
+	return vmhost.CustomStorageKey(string(prefix), callID)
 }

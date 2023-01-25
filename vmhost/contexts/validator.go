@@ -25,7 +25,7 @@ func newWASMValidator(scAPINames vmcommon.FunctionNames, builtInFuncContainer vm
 
 func (validator *wasmValidator) verifyMemoryDeclaration(instance executor.Instance) error {
 	if !instance.HasMemory() {
-		return arwen.ErrMemoryDeclarationMissing
+		return vmhost.ErrMemoryDeclarationMissing
 	}
 
 	return nil
@@ -58,7 +58,7 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Insta
 	for _, functionName := range instance.GetFunctionNames() {
 		_, found := protectedFunctions[functionName]
 		if found {
-			return arwen.ErrContractInvalid
+			return vmhost.ErrContractInvalid
 		}
 
 	}
@@ -69,7 +69,7 @@ func (validator *wasmValidator) verifyProtectedFunctions(instance executor.Insta
 func (validator *wasmValidator) verifyValidFunctionName(functionName string) error {
 	const maxLengthOfFunctionName = 256
 
-	errInvalidName := fmt.Errorf("%w: %s", arwen.ErrInvalidFunctionName, functionName)
+	errInvalidName := fmt.Errorf("%w: %s", vmhost.ErrInvalidFunctionName, functionName)
 
 	if len(functionName) == 0 {
 		return errInvalidName

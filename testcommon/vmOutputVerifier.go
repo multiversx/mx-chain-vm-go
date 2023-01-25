@@ -19,7 +19,7 @@ import (
 // VMOutputVerifier holds the output to be verified
 type VMOutputVerifier struct {
 	VmOutput  *vmcommon.VMOutput
-	AllErrors arwen.WrappableError
+	AllErrors vmhost.WrappableError
 	T         testing.TB
 }
 
@@ -33,9 +33,9 @@ func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput,
 	require.Nil(t, err, "Error is not nil")
 	require.NotNil(t, vmOutput, "Provided VMOutput is nil")
 
-	var allErrorsAsWrappable arwen.WrappableError
+	var allErrorsAsWrappable vmhost.WrappableError
 	if allErrors != nil {
-		allErrorsAsWrappable = allErrors.(arwen.WrappableError)
+		allErrorsAsWrappable = allErrors.(vmhost.WrappableError)
 	}
 
 	return &VMOutputVerifier{

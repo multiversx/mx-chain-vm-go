@@ -1,4 +1,4 @@
-package hosttest
+package hostCoretest
 
 import (
 	"bytes"
@@ -84,7 +84,7 @@ func testManagedIsESDTFrozen(t *testing.T, isFrozen bool) {
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("testFunction").
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			createMockBuiltinFunctions(t, host, world)
 			err := world.BuiltinFuncs.SetTokenData(
 				test.ParentAddress,
@@ -149,7 +149,7 @@ func testManagedIsESDTFrozenIsPaused(t *testing.T, isPaused bool) {
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("testFunction").
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.IsPausedValue = isPaused
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -204,7 +204,7 @@ func testManagedIsESDTFrozenIsLimitedTransfer(t *testing.T, isLimitedTransfer bo
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("testFunction").
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.IsLimitedTransferValue = isLimitedTransfer
 		}).
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
@@ -1050,7 +1050,7 @@ func Test_ManagedCreateEC(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func checkCreateECSuccess(host arwen.VMHost, name string, ecParams *elliptic.CurveParams) bool {
+func checkCreateECSuccess(host vmhost.VMHost, name string, ecParams *elliptic.CurveParams) bool {
 	managedTypes := host.ManagedTypes()
 	dataHandle := managedTypes.NewManagedBufferFromBytes([]byte(name))
 
@@ -1102,7 +1102,7 @@ func Test_ManagedDeleteContract(t *testing.T) {
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("testFunction").
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			setAsyncCosts(host, testConfig.GasLockCost)
 		}).
@@ -1131,7 +1131,7 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 			WithRecipientAddr(test.ChildAddress).
 			WithCallValue(testConfig.TransferFromParentToChild).
 			WithGasProvided(testConfig.GasProvided).
-			WithFunction(arwen.DeleteFunctionName).
+			WithFunction(vmhost.DeleteFunctionName).
 			WithArguments(
 				[]byte{0}, // placeholder for data used by async framework
 				[]byte{0}, // placeholder for data used by async framework
@@ -1140,7 +1140,7 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 				[]byte{0}).
 			WithCallType(vm.AsynchronousCall).
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			world.SelfShardID = 1
 			if world.CurrentBlockInfo == nil {
 				world.CurrentBlockInfo = &worldmock.BlockInfo{}
@@ -1211,7 +1211,7 @@ func TestElrondEI_NFTNonceOverflow(t *testing.T) {
 			WithGasProvided(testConfig.GasProvided).
 			WithFunction("testFunction").
 			Build()).
-		WithSetup(func(host arwen.VMHost, world *worldmock.MockWorld) {
+		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			createMockBuiltinFunctions(t, host, world)
 			setZeroCodeCosts(host)
 			err := world.BuiltinFuncs.SetTokenData(

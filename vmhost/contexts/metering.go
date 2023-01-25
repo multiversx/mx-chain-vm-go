@@ -15,7 +15,7 @@ import (
 var logMetering = logger.GetOrCreate("arwen/metering")
 
 type meteringContext struct {
-	host               arwen.VMHost
+	host               vmhost.VMHost
 	stateStack         []*meteringContext
 	gasSchedule        *config.GasCost
 	blockGasLimit      uint64
@@ -25,18 +25,18 @@ type meteringContext struct {
 	gasUsedByAccounts  map[string]uint64
 	restoreGasEnabled  bool
 
-	gasTracer       arwen.GasTracing
+	gasTracer       vmhost.GasTracing
 	traceGasEnabled bool
 }
 
 // NewMeteringContext creates a new meteringContext
 func NewMeteringContext(
-	host arwen.VMHost,
+	host vmhost.VMHost,
 	gasMap config.GasScheduleMap,
 	blockGasLimit uint64,
 ) (*meteringContext, error) {
 	if check.IfNil(host) {
-		return nil, arwen.ErrNilVMHost
+		return nil, vmhost.ErrNilVMHost
 	}
 
 	gasSchedule, err := config.CreateGasConfig(gasMap)
@@ -67,7 +67,7 @@ func (context *meteringContext) InitState() {
 	context.gasUsedByAccounts = make(map[string]uint64)
 	context.restoreGasEnabled = true
 
-	var newGasTracer arwen.GasTracing
+	var newGasTracer vmhost.GasTracing
 	if context.traceGasEnabled {
 		newGasTracer = NewEnabledGasTracer()
 	} else {
@@ -243,7 +243,7 @@ func (context *meteringContext) checkGas(vmOutput *vmcommon.VMOutput) error {
 	context.PrintState()
 	if totalGas != gasProvided {
 		logOutput.Error("gas usage mismatch", "total gas", totalGas, "gas provided", gasProvided)
-		return arwen.ErrInputAndOutputGasDoesNotMatch
+		return vmhost.ErrInputAndOutputGasDoesNotMatch
 	}
 
 	return nil
@@ -461,7 +461,7 @@ func (context *meteringContext) UseGasForAsyncStep() error {
 // Wasmer instance, but returns an error if there is not enough gas left.
 func (context *meteringContext) UseGasBounded(gasToUse uint64) error {
 	if context.GasLeft() < gasToUse {
-		return arwen.ErrNotEnoughGas
+		return vmhost.ErrNotEnoughGas
 	}
 	context.UseGas(gasToUse)
 	context.traceGas(gasToUse)
@@ -509,7 +509,7 @@ func (context *meteringContext) DeductInitialGasForExecution(contract []byte) er
 }
 
 // DeductInitialGasForDirectDeployment deducts gas for the deployment of a contract initiated by a Transaction
-func (context *meteringContext) DeductInitialGasForDirectDeployment(input arwen.CodeDeployInput) error {
+func (context *meteringContext) DeductInitialGasForDirectDeployment(input vmhost.CodeDeployInput) error {
 	return context.deductInitialGas(
 		input.ContractCode,
 		context.gasSchedule.ElrondAPICost.CreateContract,
@@ -518,7 +518,7 @@ func (context *meteringContext) DeductInitialGasForDirectDeployment(input arwen.
 }
 
 // DeductInitialGasForIndirectDeployment deducts gas for the deployment of a contract initiated by another SmartContract
-func (context *meteringContext) DeductInitialGasForIndirectDeployment(input arwen.CodeDeployInput) error {
+func (context *meteringContext) DeductInitialGasForIndirectDeployment(input vmhost.CodeDeployInput) error {
 	return context.deductInitialGas(
 		input.ContractCode,
 		0,
@@ -537,7 +537,7 @@ func (context *meteringContext) deductInitialGas(
 	initialCost := math.AddUint64(baseCost, codeCost)
 
 	if initialCost > input.GasProvided {
-		return arwen.ErrNotEnoughGas
+		return vmhost.ErrNotEnoughGas
 	}
 
 	context.initialCost = initialCost
