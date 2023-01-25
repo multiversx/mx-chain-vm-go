@@ -41,8 +41,6 @@ func TestRustFactorialLog(t *testing.T) {
 }
 
 func TestRustErc20Log(t *testing.T) {
-	t.Skip("not a working test")
-
 	expected := MandosTest(t).
 		Folder("erc20-rust/scenarios").
 		WithExecutorLogs().
@@ -151,8 +149,6 @@ func TestESDTMultiTransferOnCallAndCallbackLog(t *testing.T) {
 }
 
 func TestMultisigLog(t *testing.T) {
-	t.Skip("not a working test")
-
 	expected := MandosTest(t).
 		Folder("multisig/scenarios").
 		WithExecutorLogs().
@@ -170,7 +166,7 @@ func TestMultisigLog(t *testing.T) {
 }
 
 func TestDnsContractLog(t *testing.T) {
-	t.Skip("not a working test")
+	t.Skip("unstable test")
 
 	if testing.Short() {
 		t.Skip("not a short test")
@@ -178,6 +174,7 @@ func TestDnsContractLog(t *testing.T) {
 
 	expected := MandosTest(t).
 		Folder("dns").
+		WithExecutorLogs().
 		Run().
 		CheckNoError().
 		ExtractLog()
