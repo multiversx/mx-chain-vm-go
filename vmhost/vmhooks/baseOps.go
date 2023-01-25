@@ -113,7 +113,7 @@ func getESDTTransferFromInputFailIfWrongIndex(host vmhost.VMHost, index int32) *
 	return esdtTransfers[index]
 }
 
-func failIfMoreThanOneESDTTransfer(context *ElrondApi) bool {
+func failIfMoreThanOneESDTTransfer(context *VMHooksImpl) bool {
 	runtime := context.GetRuntimeContext()
 	if len(runtime.GetVMInput().ESDTTransfers) > 1 {
 		return context.WithFault(vmhost.ErrTooManyESDTTransfers, true)
@@ -123,7 +123,7 @@ func failIfMoreThanOneESDTTransfer(context *ElrondApi) bool {
 
 // GetGasLeft VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetGasLeft() int64 {
+func (context *VMHooksImpl) GetGasLeft() int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetGasLeft
@@ -134,7 +134,7 @@ func (context *ElrondApi) GetGasLeft() int64 {
 
 // GetSCAddress VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetSCAddress(resultOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetSCAddress(resultOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -150,7 +150,7 @@ func (context *ElrondApi) GetSCAddress(resultOffset executor.MemPtr) {
 
 // GetOwnerAddress VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetOwnerAddress(resultOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetOwnerAddress(resultOffset executor.MemPtr) {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -171,7 +171,7 @@ func (context *ElrondApi) GetOwnerAddress(resultOffset executor.MemPtr) {
 
 // GetShardOfAddress VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetShardOfAddress(addressOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetShardOfAddress(addressOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -189,7 +189,7 @@ func (context *ElrondApi) GetShardOfAddress(addressOffset executor.MemPtr) int32
 
 // IsSmartContract VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) IsSmartContract(addressOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) IsSmartContract(addressOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -209,7 +209,7 @@ func (context *ElrondApi) IsSmartContract(addressOffset executor.MemPtr) int32 {
 
 // SignalError VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SignalError(messageOffset executor.MemPtr, messageLength executor.MemLength) {
+func (context *VMHooksImpl) SignalError(messageOffset executor.MemPtr, messageLength executor.MemLength) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	metering.StartGasTracing(signalErrorName)
@@ -232,7 +232,7 @@ func (context *ElrondApi) SignalError(messageOffset executor.MemPtr, messageLeng
 
 // GetExternalBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resultOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetExternalBalance(addressOffset executor.MemPtr, resultOffset executor.MemPtr) {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -255,7 +255,7 @@ func (context *ElrondApi) GetExternalBalance(addressOffset executor.MemPtr, resu
 
 // GetBlockHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockHash(nonce int64, resultOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetBlockHash(nonce int64, resultOffset executor.MemPtr) int32 {
 	blockchain := context.GetBlockchainContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -273,7 +273,7 @@ func (context *ElrondApi) GetBlockHash(nonce int64, resultOffset executor.MemPtr
 }
 
 func getESDTDataFromBlockchainHook(
-	context *ElrondApi,
+	context *VMHooksImpl,
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -305,7 +305,7 @@ func getESDTDataFromBlockchainHook(
 
 // GetESDTBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTBalance(
+func (context *VMHooksImpl) GetESDTBalance(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -331,7 +331,7 @@ func (context *ElrondApi) GetESDTBalance(
 
 // GetESDTNFTNameLength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTNFTNameLength(
+func (context *VMHooksImpl) GetESDTNFTNameLength(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -356,7 +356,7 @@ func (context *ElrondApi) GetESDTNFTNameLength(
 
 // GetESDTNFTAttributeLength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTNFTAttributeLength(
+func (context *VMHooksImpl) GetESDTNFTAttributeLength(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -381,7 +381,7 @@ func (context *ElrondApi) GetESDTNFTAttributeLength(
 
 // GetESDTNFTURILength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTNFTURILength(
+func (context *VMHooksImpl) GetESDTNFTURILength(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -409,7 +409,7 @@ func (context *ElrondApi) GetESDTNFTURILength(
 
 // GetESDTTokenData VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenData(
+func (context *VMHooksImpl) GetESDTTokenData(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -475,7 +475,7 @@ func (context *ElrondApi) GetESDTTokenData(
 
 // GetESDTLocalRoles VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTLocalRoles(tokenIdHandle int32) int64 {
+func (context *VMHooksImpl) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -500,7 +500,7 @@ func (context *ElrondApi) GetESDTLocalRoles(tokenIdHandle int32) int64 {
 
 // ValidateTokenIdentifier VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ValidateTokenIdentifier(
+func (context *VMHooksImpl) ValidateTokenIdentifier(
 	tokenIdHandle int32,
 ) int32 {
 	managedType := context.GetManagedTypesContext()
@@ -525,7 +525,7 @@ func (context *ElrondApi) ValidateTokenIdentifier(
 
 // TransferValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) TransferValue(
+func (context *VMHooksImpl) TransferValue(
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -580,7 +580,7 @@ type indirectContractCallArguments struct {
 	actualLen int32
 }
 
-func (context *ElrondApi) extractIndirectContractCallArgumentsWithValue(
+func (context *VMHooksImpl) extractIndirectContractCallArgumentsWithValue(
 	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -603,7 +603,7 @@ func (context *ElrondApi) extractIndirectContractCallArgumentsWithValue(
 	)
 }
 
-func (context *ElrondApi) extractIndirectContractCallArgumentsWithoutValue(
+func (context *VMHooksImpl) extractIndirectContractCallArgumentsWithoutValue(
 	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	functionOffset executor.MemPtr,
@@ -625,7 +625,7 @@ func (context *ElrondApi) extractIndirectContractCallArgumentsWithoutValue(
 	)
 }
 
-func (context *ElrondApi) extractIndirectContractCallArguments(
+func (context *VMHooksImpl) extractIndirectContractCallArguments(
 	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -682,7 +682,7 @@ func (context *ElrondApi) extractIndirectContractCallArguments(
 
 // TransferValueExecute VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) TransferValueExecute(
+func (context *VMHooksImpl) TransferValueExecute(
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	gasLimit int64,
@@ -707,7 +707,7 @@ func (context *ElrondApi) TransferValueExecute(
 }
 
 // TransferValueExecuteWithHost - transferValueExecute with host instead of pointer context
-func (context *ElrondApi) TransferValueExecuteWithHost(
+func (context *VMHooksImpl) TransferValueExecuteWithHost(
 	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -823,7 +823,7 @@ func makeCrossShardCallFromInput(function string, arguments [][]byte) string {
 
 // TransferESDTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) TransferESDTExecute(
+func (context *VMHooksImpl) TransferESDTExecute(
 	destOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -842,7 +842,7 @@ func (context *ElrondApi) TransferESDTExecute(
 
 // TransferESDTNFTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) TransferESDTNFTExecute(
+func (context *VMHooksImpl) TransferESDTNFTExecute(
 	destOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -875,7 +875,7 @@ func (context *ElrondApi) TransferESDTNFTExecute(
 
 // MultiTransferESDTNFTExecute VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MultiTransferESDTNFTExecute(
+func (context *VMHooksImpl) MultiTransferESDTNFTExecute(
 	destOffset executor.MemPtr,
 	numTokenTransfers int32,
 	tokenTransfersArgsLengthOffset executor.MemPtr,
@@ -946,7 +946,7 @@ func (context *ElrondApi) MultiTransferESDTNFTExecute(
 }
 
 // TransferESDTNFTExecuteWithHost contains only memory reading of arguments
-func (context *ElrondApi) TransferESDTNFTExecuteWithHost(
+func (context *VMHooksImpl) TransferESDTNFTExecuteWithHost(
 	host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
@@ -1063,7 +1063,7 @@ func TransferESDTNFTExecuteWithTypedArgs(
 
 // CreateAsyncCall VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) CreateAsyncCall(
+func (context *VMHooksImpl) CreateAsyncCall(
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -1091,7 +1091,7 @@ func (context *ElrondApi) CreateAsyncCall(
 }
 
 // CreateAsyncCallWithHost - createAsyncCall with host instead of pointer
-func (context *ElrondApi) CreateAsyncCallWithHost(host vmhost.VMHost,
+func (context *VMHooksImpl) CreateAsyncCallWithHost(host vmhost.VMHost,
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -1188,7 +1188,7 @@ func CreateAsyncCallWithTypedArgs(host vmhost.VMHost,
 
 // SetAsyncContextCallback VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SetAsyncContextCallback(
+func (context *VMHooksImpl) SetAsyncContextCallback(
 	callback executor.MemPtr,
 	callbackLength executor.MemLength,
 	data executor.MemPtr,
@@ -1228,7 +1228,7 @@ func (context *ElrondApi) SetAsyncContextCallback(
 // UpgradeContract VMHooks implementation.
 // @autogenerate(VMHooks)
 // @autogenerate(VMHooks)
-func (context *ElrondApi) UpgradeContract(
+func (context *VMHooksImpl) UpgradeContract(
 	destOffset executor.MemPtr,
 	gasLimit int64,
 	valueOffset executor.MemPtr,
@@ -1290,7 +1290,7 @@ func (context *ElrondApi) UpgradeContract(
 
 // UpgradeFromSourceContract VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) UpgradeFromSourceContract(
+func (context *VMHooksImpl) UpgradeFromSourceContract(
 	destOffset executor.MemPtr,
 	gasLimit int64,
 	valueOffset executor.MemPtr,
@@ -1421,7 +1421,7 @@ func upgradeContract(
 
 // DeleteContract VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) DeleteContract(
+func (context *VMHooksImpl) DeleteContract(
 	destOffset executor.MemPtr,
 	gasLimit int64,
 	numArguments int32,
@@ -1504,7 +1504,7 @@ func deleteContract(
 
 // AsyncCall VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) AsyncCall(
+func (context *VMHooksImpl) AsyncCall(
 	destOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
 	dataOffset executor.MemPtr,
@@ -1550,7 +1550,7 @@ func (context *ElrondApi) AsyncCall(
 
 // GetArgumentLength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetArgumentLength(id int32) int32 {
+func (context *VMHooksImpl) GetArgumentLength(id int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1568,7 +1568,7 @@ func (context *ElrondApi) GetArgumentLength(id int32) int32 {
 
 // GetArgument VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetArgument(id int32, argOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetArgument(id int32, argOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1591,7 +1591,7 @@ func (context *ElrondApi) GetArgument(id int32, argOffset executor.MemPtr) int32
 
 // GetFunction VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetFunction(functionOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetFunction(functionOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1609,7 +1609,7 @@ func (context *ElrondApi) GetFunction(functionOffset executor.MemPtr) int32 {
 
 // GetNumArguments VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetNumArguments() int32 {
+func (context *VMHooksImpl) GetNumArguments() int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1622,7 +1622,7 @@ func (context *ElrondApi) GetNumArguments() int32 {
 
 // StorageStore VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) StorageStore(
+func (context *VMHooksImpl) StorageStore(
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
 	dataOffset executor.MemPtr,
@@ -1639,7 +1639,7 @@ func (context *ElrondApi) StorageStore(
 }
 
 // StorageStoreWithHost - storageStore with host instead of pointer context
-func (context *ElrondApi) StorageStoreWithHost(
+func (context *VMHooksImpl) StorageStoreWithHost(
 	host vmhost.VMHost,
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
@@ -1680,7 +1680,7 @@ func StorageStoreWithTypedArgs(host vmhost.VMHost, key []byte, data []byte) int3
 
 // StorageLoadLength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) StorageLoadLength(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
+func (context *VMHooksImpl) StorageLoadLength(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
 	metering := context.GetMeteringContext()
@@ -1701,7 +1701,7 @@ func (context *ElrondApi) StorageLoadLength(keyOffset executor.MemPtr, keyLength
 
 // StorageLoadFromAddress VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) StorageLoadFromAddress(
+func (context *VMHooksImpl) StorageLoadFromAddress(
 	addressOffset executor.MemPtr,
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
@@ -1718,7 +1718,7 @@ func (context *ElrondApi) StorageLoadFromAddress(
 }
 
 // StorageLoadFromAddressWithHost - storageLoadFromAddress with host instead of pointer context
-func (context *ElrondApi) StorageLoadFromAddressWithHost(
+func (context *VMHooksImpl) StorageLoadFromAddressWithHost(
 	host vmhost.VMHost,
 	addressOffset executor.MemPtr,
 	keyOffset executor.MemPtr,
@@ -1764,7 +1764,7 @@ func StorageLoadFromAddressWithTypedArgs(host vmhost.VMHost, address []byte, key
 
 // StorageLoad VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) StorageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) StorageLoad(keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
 	host := context.GetVMHost()
 	return context.StorageLoadWithHost(
 		host,
@@ -1775,7 +1775,7 @@ func (context *ElrondApi) StorageLoad(keyOffset executor.MemPtr, keyLength execu
 }
 
 // StorageLoadWithHost - storageLoad with host instead of pointer context
-func (context *ElrondApi) StorageLoadWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) StorageLoadWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, dataOffset executor.MemPtr) int32 {
 	runtime := host.Runtime()
 
 	key, err := context.MemLoad(keyOffset, keyLength)
@@ -1810,7 +1810,7 @@ func StorageLoadWithWithTypedArgs(host vmhost.VMHost, key []byte) ([]byte, error
 
 // SetStorageLock VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) SetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
+func (context *VMHooksImpl) SetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
 	host := context.GetVMHost()
 	return context.SetStorageLockWithHost(
 		host,
@@ -1821,7 +1821,7 @@ func (context *ElrondApi) SetStorageLock(keyOffset executor.MemPtr, keyLength ex
 }
 
 // SetStorageLockWithHost - setStorageLock with host instead of pointer context
-func (context *ElrondApi) SetStorageLockWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
+func (context *VMHooksImpl) SetStorageLockWithHost(host vmhost.VMHost, keyOffset executor.MemPtr, keyLength executor.MemLength, lockTimestamp int64) int32 {
 	runtime := host.Runtime()
 	metering := host.Metering()
 
@@ -1852,7 +1852,7 @@ func SetStorageLockWithTypedArgs(host vmhost.VMHost, key []byte, lockTimestamp i
 
 // GetStorageLock VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
+func (context *VMHooksImpl) GetStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int64 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 	storage := context.GetStorageContext()
@@ -1883,7 +1883,7 @@ func (context *ElrondApi) GetStorageLock(keyOffset executor.MemPtr, keyLength ex
 
 // IsStorageLocked VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) IsStorageLocked(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
+func (context *VMHooksImpl) IsStorageLocked(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
 	timeLock := context.GetStorageLock(keyOffset, keyLength)
 	if timeLock < 0 {
 		return -1
@@ -1899,13 +1899,13 @@ func (context *ElrondApi) IsStorageLocked(keyOffset executor.MemPtr, keyLength e
 
 // ClearStorageLock VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ClearStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
+func (context *VMHooksImpl) ClearStorageLock(keyOffset executor.MemPtr, keyLength executor.MemLength) int32 {
 	return context.SetStorageLock(keyOffset, keyLength, 0)
 }
 
 // GetCaller VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCaller(resultOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetCaller(resultOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1922,7 +1922,7 @@ func (context *ElrondApi) GetCaller(resultOffset executor.MemPtr) {
 
 // CheckNoPayment VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) CheckNoPayment() {
+func (context *VMHooksImpl) CheckNoPayment() {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1942,7 +1942,7 @@ func (context *ElrondApi) CheckNoPayment() {
 
 // GetCallValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCallValue(resultOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetCallValue(resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1962,7 +1962,7 @@ func (context *ElrondApi) GetCallValue(resultOffset executor.MemPtr) int32 {
 
 // GetESDTValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTValue(resultOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetESDTValue(resultOffset executor.MemPtr) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -1972,7 +1972,7 @@ func (context *ElrondApi) GetESDTValue(resultOffset executor.MemPtr) int32 {
 
 // GetESDTValueByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTValueByIndex(resultOffset executor.MemPtr, index int32) int32 {
+func (context *VMHooksImpl) GetESDTValueByIndex(resultOffset executor.MemPtr, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -1997,7 +1997,7 @@ func (context *ElrondApi) GetESDTValueByIndex(resultOffset executor.MemPtr, inde
 
 // GetESDTTokenName VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -2007,7 +2007,7 @@ func (context *ElrondApi) GetESDTTokenName(resultOffset executor.MemPtr) int32 {
 
 // GetESDTTokenNameByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, index int32) int32 {
+func (context *VMHooksImpl) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, index int32) int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -2030,7 +2030,7 @@ func (context *ElrondApi) GetESDTTokenNameByIndex(resultOffset executor.MemPtr, 
 
 // GetESDTTokenNonce VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenNonce() int64 {
+func (context *VMHooksImpl) GetESDTTokenNonce() int64 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -2040,7 +2040,7 @@ func (context *ElrondApi) GetESDTTokenNonce() int64 {
 
 // GetESDTTokenNonceByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenNonceByIndex(index int32) int64 {
+func (context *VMHooksImpl) GetESDTTokenNonceByIndex(index int32) int64 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
@@ -2056,7 +2056,7 @@ func (context *ElrondApi) GetESDTTokenNonceByIndex(index int32) int64 {
 
 // GetCurrentESDTNFTNonce VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCurrentESDTNFTNonce(
+func (context *VMHooksImpl) GetCurrentESDTNFTNonce(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength) int64 {
@@ -2090,7 +2090,7 @@ func (context *ElrondApi) GetCurrentESDTNFTNonce(
 
 // GetESDTTokenType VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenType() int32 {
+func (context *VMHooksImpl) GetESDTTokenType() int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -2100,7 +2100,7 @@ func (context *ElrondApi) GetESDTTokenType() int32 {
 
 // GetESDTTokenTypeByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetESDTTokenTypeByIndex(index int32) int32 {
+func (context *VMHooksImpl) GetESDTTokenTypeByIndex(index int32) int32 {
 	metering := context.GetMeteringContext()
 
 	gasToUse := metering.GasSchedule().BaseOpsAPICost.GetCallValue
@@ -2115,7 +2115,7 @@ func (context *ElrondApi) GetESDTTokenTypeByIndex(index int32) int32 {
 
 // GetNumESDTTransfers VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetNumESDTTransfers() int32 {
+func (context *VMHooksImpl) GetNumESDTTransfers() int32 {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -2127,7 +2127,7 @@ func (context *ElrondApi) GetNumESDTTransfers() int32 {
 
 // GetCallValueTokenName VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetCallValueTokenName(callValueOffset executor.MemPtr, tokenNameOffset executor.MemPtr) int32 {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return -1
@@ -2137,7 +2137,7 @@ func (context *ElrondApi) GetCallValueTokenName(callValueOffset executor.MemPtr,
 
 // GetCallValueTokenNameByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCallValueTokenNameByIndex(
+func (context *VMHooksImpl) GetCallValueTokenNameByIndex(
 	callValueOffset executor.MemPtr,
 	tokenNameOffset executor.MemPtr,
 	index int32) int32 {
@@ -2174,7 +2174,7 @@ func (context *ElrondApi) GetCallValueTokenNameByIndex(
 
 // WriteLog VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) WriteLog(
+func (context *VMHooksImpl) WriteLog(
 	dataPointer executor.MemPtr,
 	dataLength executor.MemLength,
 	topicPtr executor.MemPtr,
@@ -2214,7 +2214,7 @@ func (context *ElrondApi) WriteLog(
 
 // WriteEventLog VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) WriteEventLog(
+func (context *VMHooksImpl) WriteEventLog(
 	numTopics int32,
 	topicLengthsOffset executor.MemPtr,
 	topicOffset executor.MemPtr,
@@ -2254,7 +2254,7 @@ func (context *ElrondApi) WriteEventLog(
 
 // GetBlockTimestamp VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockTimestamp() int64 {
+func (context *VMHooksImpl) GetBlockTimestamp() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2266,7 +2266,7 @@ func (context *ElrondApi) GetBlockTimestamp() int64 {
 
 // GetBlockNonce VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockNonce() int64 {
+func (context *VMHooksImpl) GetBlockNonce() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2278,7 +2278,7 @@ func (context *ElrondApi) GetBlockNonce() int64 {
 
 // GetBlockRound VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockRound() int64 {
+func (context *VMHooksImpl) GetBlockRound() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2290,7 +2290,7 @@ func (context *ElrondApi) GetBlockRound() int64 {
 
 // GetBlockEpoch VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockEpoch() int64 {
+func (context *VMHooksImpl) GetBlockEpoch() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2302,7 +2302,7 @@ func (context *ElrondApi) GetBlockEpoch() int64 {
 
 // GetBlockRandomSeed VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetBlockRandomSeed(pointer executor.MemPtr) {
+func (context *VMHooksImpl) GetBlockRandomSeed(pointer executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2317,7 +2317,7 @@ func (context *ElrondApi) GetBlockRandomSeed(pointer executor.MemPtr) {
 
 // GetStateRootHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetStateRootHash(pointer executor.MemPtr) {
+func (context *VMHooksImpl) GetStateRootHash(pointer executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2332,7 +2332,7 @@ func (context *ElrondApi) GetStateRootHash(pointer executor.MemPtr) {
 
 // GetPrevBlockTimestamp VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevBlockTimestamp() int64 {
+func (context *VMHooksImpl) GetPrevBlockTimestamp() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2344,7 +2344,7 @@ func (context *ElrondApi) GetPrevBlockTimestamp() int64 {
 
 // GetPrevBlockNonce VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevBlockNonce() int64 {
+func (context *VMHooksImpl) GetPrevBlockNonce() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2356,7 +2356,7 @@ func (context *ElrondApi) GetPrevBlockNonce() int64 {
 
 // GetPrevBlockRound VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevBlockRound() int64 {
+func (context *VMHooksImpl) GetPrevBlockRound() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2368,7 +2368,7 @@ func (context *ElrondApi) GetPrevBlockRound() int64 {
 
 // GetPrevBlockEpoch VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevBlockEpoch() int64 {
+func (context *VMHooksImpl) GetPrevBlockEpoch() int64 {
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
 
@@ -2380,7 +2380,7 @@ func (context *ElrondApi) GetPrevBlockEpoch() int64 {
 
 // GetPrevBlockRandomSeed VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
+func (context *VMHooksImpl) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
 	metering := context.GetMeteringContext()
@@ -2395,7 +2395,7 @@ func (context *ElrondApi) GetPrevBlockRandomSeed(pointer executor.MemPtr) {
 
 // Finish VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Finish(pointer executor.MemPtr, length executor.MemLength) {
+func (context *VMHooksImpl) Finish(pointer executor.MemPtr, length executor.MemLength) {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -2421,7 +2421,7 @@ func (context *ElrondApi) Finish(pointer executor.MemPtr, length executor.MemLen
 
 // ExecuteOnSameContext VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ExecuteOnSameContext(
+func (context *VMHooksImpl) ExecuteOnSameContext(
 	gasLimit int64,
 	addressOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -2449,7 +2449,7 @@ func (context *ElrondApi) ExecuteOnSameContext(
 }
 
 // ExecuteOnSameContextWithHost - executeOnSameContext with host instead of pointer context
-func (context *ElrondApi) ExecuteOnSameContextWithHost(
+func (context *VMHooksImpl) ExecuteOnSameContextWithHost(
 	host vmhost.VMHost,
 	gasLimit int64,
 	addressOffset executor.MemPtr,
@@ -2524,7 +2524,7 @@ func ExecuteOnSameContextWithTypedArgs(
 
 // ExecuteOnDestContext VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ExecuteOnDestContext(
+func (context *VMHooksImpl) ExecuteOnDestContext(
 	gasLimit int64,
 	addressOffset executor.MemPtr,
 	valueOffset executor.MemPtr,
@@ -2552,7 +2552,7 @@ func (context *ElrondApi) ExecuteOnDestContext(
 }
 
 // ExecuteOnDestContextWithHost - executeOnDestContext with host instead of pointer context
-func (context *ElrondApi) ExecuteOnDestContextWithHost(
+func (context *VMHooksImpl) ExecuteOnDestContextWithHost(
 	host vmhost.VMHost,
 	gasLimit int64,
 	addressOffset executor.MemPtr,
@@ -2622,7 +2622,7 @@ func ExecuteOnDestContextWithTypedArgs(
 
 // ExecuteReadOnly VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ExecuteReadOnly(
+func (context *VMHooksImpl) ExecuteReadOnly(
 	gasLimit int64,
 	addressOffset executor.MemPtr,
 	functionOffset executor.MemPtr,
@@ -2648,7 +2648,7 @@ func (context *ElrondApi) ExecuteReadOnly(
 }
 
 // ExecuteReadOnlyWithHost - executeReadOnly with host instead of pointer context
-func (context *ElrondApi) ExecuteReadOnlyWithHost(
+func (context *VMHooksImpl) ExecuteReadOnlyWithHost(
 	host vmhost.VMHost,
 	gasLimit int64,
 	addressOffset executor.MemPtr,
@@ -2724,7 +2724,7 @@ func ExecuteReadOnlyWithTypedArguments(
 
 // CreateContract VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) CreateContract(
+func (context *VMHooksImpl) CreateContract(
 	gasLimit int64,
 	valueOffset executor.MemPtr,
 	codeOffset executor.MemPtr,
@@ -2750,7 +2750,7 @@ func (context *ElrondApi) CreateContract(
 	)
 }
 
-func (context *ElrondApi) createContractWithHost(
+func (context *VMHooksImpl) createContractWithHost(
 	host vmhost.VMHost,
 	gasLimit int64,
 	valueOffset executor.MemPtr,
@@ -2817,7 +2817,7 @@ func (context *ElrondApi) createContractWithHost(
 
 // DeployFromSourceContract VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) DeployFromSourceContract(
+func (context *VMHooksImpl) DeployFromSourceContract(
 	gasLimit int64,
 	valueOffset executor.MemPtr,
 	sourceContractAddressOffset executor.MemPtr,
@@ -2935,7 +2935,7 @@ func createContract(
 
 // GetNumReturnData VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetNumReturnData() int32 {
+func (context *VMHooksImpl) GetNumReturnData() int32 {
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
 
@@ -2948,7 +2948,7 @@ func (context *ElrondApi) GetNumReturnData() int32 {
 
 // GetReturnDataSize VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetReturnDataSize(resultID int32) int32 {
+func (context *VMHooksImpl) GetReturnDataSize(resultID int32) int32 {
 	runtime := context.GetRuntimeContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -2967,7 +2967,7 @@ func (context *ElrondApi) GetReturnDataSize(resultID int32) int32 {
 
 // GetReturnData VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetReturnData(resultID int32, dataOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) GetReturnData(resultID int32, dataOffset executor.MemPtr) int32 {
 	host := context.GetVMHost()
 
 	result := GetReturnDataWithHostAndTypedArgs(host, resultID)
@@ -3002,7 +3002,7 @@ func GetReturnDataWithHostAndTypedArgs(host vmhost.VMHost, resultID int32) []byt
 
 // CleanReturnData VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) CleanReturnData() {
+func (context *VMHooksImpl) CleanReturnData() {
 	host := context.GetVMHost()
 	CleanReturnDataWithHost(host)
 }
@@ -3020,7 +3020,7 @@ func CleanReturnDataWithHost(host vmhost.VMHost) {
 
 // DeleteFromReturnData VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) DeleteFromReturnData(resultID int32) {
+func (context *VMHooksImpl) DeleteFromReturnData(resultID int32) {
 	host := context.GetVMHost()
 	DeleteFromReturnDataWithHost(host, resultID)
 }
@@ -3041,7 +3041,7 @@ func DeleteFromReturnDataWithHost(host vmhost.VMHost, resultID int32) {
 
 // GetOriginalTxHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetOriginalTxHash(dataOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetOriginalTxHash(dataOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -3054,7 +3054,7 @@ func (context *ElrondApi) GetOriginalTxHash(dataOffset executor.MemPtr) {
 
 // GetCurrentTxHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCurrentTxHash(dataOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetCurrentTxHash(dataOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -3067,7 +3067,7 @@ func (context *ElrondApi) GetCurrentTxHash(dataOffset executor.MemPtr) {
 
 // GetPrevTxHash VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrevTxHash(dataOffset executor.MemPtr) {
+func (context *VMHooksImpl) GetPrevTxHash(dataOffset executor.MemPtr) {
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
 
@@ -3112,7 +3112,7 @@ func prepareIndirectContractCallInput(
 	return contractCallInput, nil
 }
 
-func (context *ElrondApi) getArgumentsFromMemory(
+func (context *VMHooksImpl) getArgumentsFromMemory(
 	host vmhost.VMHost,
 	numArguments int32,
 	argumentsLengthOffset executor.MemPtr,

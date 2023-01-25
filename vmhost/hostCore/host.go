@@ -164,7 +164,7 @@ func NewVMHost(
 
 // Creates a new executor instance. Should only be called once per VM host instantiation.
 func (host *vmHost) createExecutor(hostParameters *vmhost.VMHostParameters) (executor.Executor, error) {
-	vmHooks := vmhooks.NewElrondApi(host)
+	vmHooks := vmhooks.NewVMHooksImpl(host)
 	gasCostConfig, err := config.CreateGasConfig(host.gasSchedule)
 	if err != nil {
 		return nil, err

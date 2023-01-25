@@ -43,7 +43,7 @@ const (
 
 // Sha256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Sha256(
+func (context *VMHooksImpl) Sha256(
 	dataOffset executor.MemPtr,
 	length executor.MemLength,
 	resultOffset executor.MemPtr) int32 {
@@ -77,7 +77,7 @@ func (context *ElrondApi) Sha256(
 
 // ManagedSha256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedSha256(inputHandle, outputHandle int32) int32 {
+func (context *VMHooksImpl) ManagedSha256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -104,7 +104,7 @@ func (context *ElrondApi) ManagedSha256(inputHandle, outputHandle int32) int32 {
 
 // Keccak256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) Keccak256(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -134,7 +134,7 @@ func (context *ElrondApi) Keccak256(dataOffset executor.MemPtr, length executor.
 
 // ManagedKeccak256 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedKeccak256(inputHandle, outputHandle int32) int32 {
+func (context *VMHooksImpl) ManagedKeccak256(inputHandle, outputHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
@@ -161,7 +161,7 @@ func (context *ElrondApi) ManagedKeccak256(inputHandle, outputHandle int32) int3
 
 // Ripemd160 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) Ripemd160(dataOffset executor.MemPtr, length executor.MemLength, resultOffset executor.MemPtr) int32 {
 	runtime := context.GetRuntimeContext()
 	crypto := context.GetCryptoContext()
 	metering := context.GetMeteringContext()
@@ -191,7 +191,7 @@ func (context *ElrondApi) Ripemd160(dataOffset executor.MemPtr, length executor.
 
 // ManagedRipemd160 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
+func (context *VMHooksImpl) ManagedRipemd160(inputHandle int32, outputHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedRipemd160WithHost(host, inputHandle, outputHandle)
 }
@@ -224,7 +224,7 @@ func ManagedRipemd160WithHost(host vmhost.VMHost, inputHandle int32, outputHandl
 
 // VerifyBLS VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) VerifyBLS(
+func (context *VMHooksImpl) VerifyBLS(
 	keyOffset executor.MemPtr,
 	messageOffset executor.MemPtr,
 	messageLength executor.MemLength,
@@ -267,7 +267,7 @@ func (context *ElrondApi) VerifyBLS(
 
 // ManagedVerifyBLS VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedVerifyBLS(
+func (context *VMHooksImpl) ManagedVerifyBLS(
 	keyHandle int32,
 	messageHandle int32,
 	sigHandle int32,
@@ -321,7 +321,7 @@ func ManagedVerifyBLSWithHost(
 
 // VerifyEd25519 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) VerifyEd25519(
+func (context *VMHooksImpl) VerifyEd25519(
 	keyOffset executor.MemPtr,
 	messageOffset executor.MemPtr,
 	messageLength executor.MemLength,
@@ -364,7 +364,7 @@ func (context *ElrondApi) VerifyEd25519(
 
 // ManagedVerifyEd25519 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedVerifyEd25519(
+func (context *VMHooksImpl) ManagedVerifyEd25519(
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -414,7 +414,7 @@ func ManagedVerifyEd25519WithHost(
 
 // VerifyCustomSecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) VerifyCustomSecp256k1(
+func (context *VMHooksImpl) VerifyCustomSecp256k1(
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
 	messageOffset executor.MemPtr,
@@ -473,7 +473,7 @@ func (context *ElrondApi) VerifyCustomSecp256k1(
 
 // ManagedVerifyCustomSecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedVerifyCustomSecp256k1(
+func (context *VMHooksImpl) ManagedVerifyCustomSecp256k1(
 	keyHandle, messageHandle, sigHandle int32,
 	hashType int32,
 ) int32 {
@@ -530,7 +530,7 @@ func ManagedVerifyCustomSecp256k1WithHost(
 
 // VerifySecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) VerifySecp256k1(
+func (context *VMHooksImpl) VerifySecp256k1(
 	keyOffset executor.MemPtr,
 	keyLength executor.MemLength,
 	messageOffset executor.MemPtr,
@@ -549,7 +549,7 @@ func (context *ElrondApi) VerifySecp256k1(
 
 // ManagedVerifySecp256k1 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedVerifySecp256k1(
+func (context *VMHooksImpl) ManagedVerifySecp256k1(
 	keyHandle, messageHandle, sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -572,7 +572,7 @@ func ManagedVerifySecp256k1WithHost(
 
 // EncodeSecp256k1DerSignature VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) EncodeSecp256k1DerSignature(
+func (context *VMHooksImpl) EncodeSecp256k1DerSignature(
 	rOffset executor.MemPtr,
 	rLength executor.MemLength,
 	sOffset executor.MemPtr,
@@ -607,7 +607,7 @@ func (context *ElrondApi) EncodeSecp256k1DerSignature(
 
 // ManagedEncodeSecp256k1DerSignature VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedEncodeSecp256k1DerSignature(
+func (context *VMHooksImpl) ManagedEncodeSecp256k1DerSignature(
 	rHandle, sHandle, sigHandle int32,
 ) int32 {
 	host := context.GetVMHost()
@@ -645,7 +645,7 @@ func ManagedEncodeSecp256k1DerSignatureWithHost(
 
 // AddEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) AddEC(
+func (context *VMHooksImpl) AddEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -701,7 +701,7 @@ func (context *ElrondApi) AddEC(
 
 // DoubleEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) DoubleEC(
+func (context *VMHooksImpl) DoubleEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -746,7 +746,7 @@ func (context *ElrondApi) DoubleEC(
 
 // IsOnCurveEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) IsOnCurveEC(
+func (context *VMHooksImpl) IsOnCurveEC(
 	ecHandle int32,
 	pointXHandle int32,
 	pointYHandle int32,
@@ -785,7 +785,7 @@ func (context *ElrondApi) IsOnCurveEC(
 
 // ScalarBaseMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ScalarBaseMultEC(
+func (context *VMHooksImpl) ScalarBaseMultEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -822,7 +822,7 @@ func (context *ElrondApi) ScalarBaseMultEC(
 
 // ManagedScalarBaseMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedScalarBaseMultEC(
+func (context *VMHooksImpl) ManagedScalarBaseMultEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -904,7 +904,7 @@ func commonScalarBaseMultEC(
 
 // ScalarMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ScalarMultEC(
+func (context *VMHooksImpl) ScalarMultEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -943,7 +943,7 @@ func (context *ElrondApi) ScalarMultEC(
 
 // ManagedScalarMultEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedScalarMultEC(
+func (context *VMHooksImpl) ManagedScalarMultEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1040,7 +1040,7 @@ func commonScalarMultEC(
 
 // MarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MarshalEC(
+func (context *VMHooksImpl) MarshalEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1063,7 +1063,7 @@ func (context *ElrondApi) MarshalEC(
 
 // ManagedMarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedMarshalEC(
+func (context *VMHooksImpl) ManagedMarshalEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1139,7 +1139,7 @@ func commonMarshalEC(
 
 // MarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) MarshalCompressedEC(
+func (context *VMHooksImpl) MarshalCompressedEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1162,7 +1162,7 @@ func (context *ElrondApi) MarshalCompressedEC(
 
 // ManagedMarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedMarshalCompressedEC(
+func (context *VMHooksImpl) ManagedMarshalCompressedEC(
 	xPairHandle int32,
 	yPairHandle int32,
 	ecHandle int32,
@@ -1238,7 +1238,7 @@ func commonMarshalCompressedEC(host vmhost.VMHost,
 
 // UnmarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) UnmarshalEC(
+func (context *VMHooksImpl) UnmarshalEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1269,7 +1269,7 @@ func (context *ElrondApi) UnmarshalEC(
 
 // ManagedUnmarshalEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedUnmarshalEC(
+func (context *VMHooksImpl) ManagedUnmarshalEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1354,7 +1354,7 @@ func commonUnmarshalEC(
 
 // UnmarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) UnmarshalCompressedEC(
+func (context *VMHooksImpl) UnmarshalCompressedEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1385,7 +1385,7 @@ func (context *ElrondApi) UnmarshalCompressedEC(
 
 // ManagedUnmarshalCompressedEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedUnmarshalCompressedEC(
+func (context *VMHooksImpl) ManagedUnmarshalCompressedEC(
 	xResultHandle int32,
 	yResultHandle int32,
 	ecHandle int32,
@@ -1469,7 +1469,7 @@ func commonUnmarshalCompressedEC(
 
 // GenerateKeyEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GenerateKeyEC(
+func (context *VMHooksImpl) GenerateKeyEC(
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,
@@ -1492,7 +1492,7 @@ func (context *ElrondApi) GenerateKeyEC(
 
 // ManagedGenerateKeyEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedGenerateKeyEC(
+func (context *VMHooksImpl) ManagedGenerateKeyEC(
 	xPubKeyHandle int32,
 	yPubKeyHandle int32,
 	ecHandle int32,
@@ -1572,7 +1572,7 @@ func commonGenerateEC(
 
 // CreateEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) CreateEC(dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
+func (context *VMHooksImpl) CreateEC(dataOffset executor.MemPtr, dataLength executor.MemLength) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -1608,7 +1608,7 @@ func (context *ElrondApi) CreateEC(dataOffset executor.MemPtr, dataLength execut
 
 // ManagedCreateEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) ManagedCreateEC(dataHandle int32) int32 {
+func (context *VMHooksImpl) ManagedCreateEC(dataHandle int32) int32 {
 	host := context.GetVMHost()
 	return ManagedCreateECWithHost(host, dataHandle)
 }
@@ -1648,7 +1648,7 @@ func ManagedCreateECWithHost(host vmhost.VMHost, dataHandle int32) int32 {
 
 // GetCurveLengthEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetCurveLengthEC(ecHandle int32) int32 {
+func (context *VMHooksImpl) GetCurveLengthEC(ecHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -1666,7 +1666,7 @@ func (context *ElrondApi) GetCurveLengthEC(ecHandle int32) int32 {
 
 // GetPrivKeyByteLengthEC VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
+func (context *VMHooksImpl) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -1684,7 +1684,7 @@ func (context *ElrondApi) GetPrivKeyByteLengthEC(ecHandle int32) int32 {
 
 // EllipticCurveGetValues VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
+func (context *VMHooksImpl) EllipticCurveGetValues(ecHandle int32, fieldOrderHandle int32, basePointOrderHandle int32, eqConstantHandle int32, xBasePointHandle int32, yBasePointHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()

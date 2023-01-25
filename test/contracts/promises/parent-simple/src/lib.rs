@@ -8,7 +8,7 @@
 
 use promises_common::*;
 
-pub static EEI: ArwenApiImpl = ArwenApiImpl{};
+pub static EEI: VMHooksImpl = VMHooksImpl{};
 
 const SUCCESS_CALLBACK_ARGUMENT_KEY: &[u8] = b"SuccessCallbackArg";
 const FAIL_CALLBACK_ARGUMENT_KEY: &[u8] = b"FailCallbackArg";

@@ -403,8 +403,8 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	require.Len(t, storageCtx.GetStorageUpdates(address), 0)
 
 	storageCtx.disableStorageProtection()
-	elrondProtectedKey := append(reservedTestPrefix, []byte("ABC")...)
-	storageStatus, err = storageCtx.SetStorage(elrondProtectedKey, value)
+	protectedKey := append(reservedTestPrefix, []byte("ABC")...)
+	storageStatus, err = storageCtx.SetStorage(protectedKey, value)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, vmhost.ErrStoreReservedKey))
 	require.Len(t, storageCtx.GetStorageUpdates(address), 0)

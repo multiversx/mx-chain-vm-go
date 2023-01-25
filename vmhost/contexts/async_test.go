@@ -67,7 +67,7 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 		Exports: make(wasmer.ExportsMap),
 	}
 	exec, _ := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks:     vmhooks.NewElrondApi(host),
+		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
 	})
 	runtimeCtx, _ := NewRuntimeContext(

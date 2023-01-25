@@ -6,7 +6,7 @@
 
 
 
-pub static EEI: ArwenApiImpl = ArwenApiImpl{};
+pub static EEI: VMHooksImpl = VMHooksImpl{};
 
 #[no_mangle]
 pub extern "C" fn answer() {

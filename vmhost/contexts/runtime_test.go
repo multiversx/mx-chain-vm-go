@@ -43,7 +43,7 @@ func InitializeVMAndWasmer() *contextmock.VMHostMock {
 
 func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
 	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewElrondApi(host),
+		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
 	runtimeCtx, err := NewRuntimeContext(
@@ -293,7 +293,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	testVmType := []byte("type")
 	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks: vmhooks.NewElrondApi(host),
+		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
 	runtime, _ := NewRuntimeContext(
