@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	twos "github.com/ElrondNetwork/big-int-util/twos-complement"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
 	oj "github.com/ElrondNetwork/wasm-vm/mandos-go/orderedjson"
 )
@@ -36,6 +37,7 @@ const nestedPrefix = "nested:"
 // ExprInterpreter provides context for computing Mandos values.
 type ExprInterpreter struct {
 	FileResolver fr.FileResolver
+	VMType       *[core.VMTypeLen]byte
 }
 
 // InterpretSubTree attempts to produce a value based on a JSON subtree.
@@ -165,7 +167,7 @@ func (ei *ExprInterpreter) InterpretString(strRaw string) ([]byte, error) {
 	// smart contract address (different format)
 	if strings.HasPrefix(strRaw, scAddrPrefix) {
 		addrArgument := strRaw[len(scAddrPrefix):]
-		return scExpression(addrArgument)
+		return ei.scExpression(addrArgument)
 	}
 
 	// fixed width numbers
@@ -179,6 +181,15 @@ func (ei *ExprInterpreter) InterpretString(strRaw string) ([]byte, error) {
 
 	// general numbers, arbitrary length
 	return ei.interpretNumber(strRaw, 0)
+}
+
+// GetVMType yields the configured VM type, which is used for generating SC addresses.
+// Will yield default value [0, 0] is not explicitly configured.
+func (ei *ExprInterpreter) GetVMType() *[core.VMTypeLen]byte {
+	if ei.VMType == nil {
+		ei.VMType = &[core.VMTypeLen]byte{0, 0}
+	}
+	return ei.VMType
 }
 
 func (ei *ExprInterpreter) interpretFloatingPointNumber(strRaw string) ([]byte, error) {

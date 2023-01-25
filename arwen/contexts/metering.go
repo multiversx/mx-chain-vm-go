@@ -211,9 +211,10 @@ func (context *meteringContext) updateSCGasUsed() {
 	context.gasUsedByAccounts[string(currentAccountAddress)] = gasUsed
 }
 
-// TrackGasUsedByBuiltinFunction computes the gas used by a builtin function
-// execution and consumes it on the current contract instance.
-func (context *meteringContext) TrackGasUsedByBuiltinFunction(
+// TrackGasUsedByOutOfVMFunction computes the gas used by a builtin function
+// execution or a function executed via blockchain on another VM  and consumes
+// it on the current contract instance.
+func (context *meteringContext) TrackGasUsedByOutOfVMFunction(
 	builtinInput *vmcommon.ContractCallInput,
 	builtinOutput *vmcommon.VMOutput,
 	postBuiltinInput *vmcommon.ContractCallInput,
