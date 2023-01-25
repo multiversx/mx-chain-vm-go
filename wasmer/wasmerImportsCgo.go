@@ -266,7 +266,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-// populateWasmerImports populates imports with the ElrondEI API methods
+// populateWasmerImports populates imports with the BaseOpsAPI API methods
 func populateWasmerImports(imports *wasmerImports) error {
 	var err error
 	err = imports.append("getGasLeft", v1_5_getGasLeft, C.v1_5_getGasLeft)

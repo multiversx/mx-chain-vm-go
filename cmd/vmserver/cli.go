@@ -7,7 +7,7 @@ import (
 
 func initializeCLI(facade *vmserver.DebugFacade) *cli.App {
 	app := cli.NewApp()
-	app.Name = "Arwen Debug"
+	app.Name = "VM Debug"
 	app.Usage = ""
 
 	args := &cliArguments{}

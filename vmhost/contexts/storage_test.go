@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var elrondReservedTestPrefix = []byte("RESERVED")
+var reservedTestPrefix = []byte("RESERVED")
 
 func TestNewStorageContext(t *testing.T) {
 	t.Parallel()
@@ -27,7 +27,7 @@ func TestNewStorageContext(t *testing.T) {
 	}
 	mockBlockchain := worldmock.NewMockWorld()
 
-	storageCtx, err := NewStorageContext(host, mockBlockchain, elrondReservedTestPrefix)
+	storageCtx, err := NewStorageContext(host, mockBlockchain, reservedTestPrefix)
 	require.Nil(t, err)
 	require.NotNil(t, storageCtx)
 }
@@ -79,7 +79,7 @@ func TestStorageContext_SetAddress(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 
 	keyA := []byte("keyA")
 	valueA := []byte("valueA")
@@ -137,7 +137,7 @@ func TestStorageContext_GetStorageUpdates(t *testing.T) {
 	}
 
 	mockBlockchainHook := worldmock.NewMockWorld()
-	storageCtx, _ := NewStorageContext(host, mockBlockchainHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, mockBlockchainHook, reservedTestPrefix)
 
 	storageUpdates := storageCtx.GetStorageUpdates([]byte("account"))
 	require.Equal(t, 1, len(storageUpdates))
@@ -171,7 +171,7 @@ func TestStorageContext_SetStorage(t *testing.T) {
 		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
-	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(address)
 
 	val1 := []byte("value")
@@ -281,13 +281,13 @@ func TestStorageContext_SetStorage(t *testing.T) {
 	value = []byte("doesn't matter")
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
-	require.Equal(t, vmhost.ErrStoreElrondReservedKey, err)
+	require.Equal(t, vmhost.ErrStoreReservedKey, err)
 
 	key = []byte("RESERVED")
 	value = []byte("doesn't matter")
 	storageStatus, err = storageCtx.SetStorage(key, value)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
-	require.Equal(t, vmhost.ErrStoreElrondReservedKey, err)
+	require.Equal(t, vmhost.ErrStoreReservedKey, err)
 }
 
 func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
@@ -322,7 +322,7 @@ func TestStorageContext_SetStorage_GasUsage(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(address)
 
 	gasProvided := 100
@@ -391,7 +391,7 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	}
 	bcHook := &contextmock.BlockchainHookStub{}
 
-	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(address)
 
 	key := storageCtx.GetVmProtectedPrefix("something")
@@ -403,10 +403,10 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	require.Len(t, storageCtx.GetStorageUpdates(address), 0)
 
 	storageCtx.disableStorageProtection()
-	elrondProtectedKey := append(elrondReservedTestPrefix, []byte("ABC")...)
+	elrondProtectedKey := append(reservedTestPrefix, []byte("ABC")...)
 	storageStatus, err = storageCtx.SetStorage(elrondProtectedKey, value)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
-	require.True(t, errors.Is(err, vmhost.ErrStoreElrondReservedKey))
+	require.True(t, errors.Is(err, vmhost.ErrStoreReservedKey))
 	require.Len(t, storageCtx.GetStorageUpdates(address), 0)
 
 	storageCtx.disableStorageProtection()
@@ -466,7 +466,7 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		},
 	}
 
-	storageCtx, _ := NewStorageContext(host, bcHook, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 	storageCtx.SetAddress(scAddress)
 
 	key := []byte("key")
@@ -493,7 +493,7 @@ func TestStorageContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
-	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
 	storageCtx.PopSetActiveState()
 
 	require.Equal(t, 0, len(storageCtx.stateStack))
@@ -509,7 +509,7 @@ func TestStorageContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
-	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, elrondReservedTestPrefix)
+	storageCtx, _ := NewStorageContext(host, &contextmock.BlockchainHookStub{}, reservedTestPrefix)
 	storageCtx.PopDiscard()
 
 	require.Equal(t, 0, len(storageCtx.stateStack))

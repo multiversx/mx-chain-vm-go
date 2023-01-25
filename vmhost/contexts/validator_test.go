@@ -53,7 +53,7 @@ func TestFunctionsGuard_isValidFunctionName(t *testing.T) {
 }
 
 func TestFunctionsProtected(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 
 	validator := newWASMValidator(testImportNames(), builtInFunctions.NewBuiltInFunctionContainer())
 

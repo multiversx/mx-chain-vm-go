@@ -46,8 +46,8 @@ func loadStorage(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().ElrondAPICost.StorageLoad = storageLoadGas
-			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
@@ -96,8 +96,8 @@ func loadStorageFromAddress(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().ElrondAPICost.StorageLoad = storageLoadGas
-			host.Metering().GasSchedule().ElrondAPICost.CachedStorageLoad = cachedStorageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = storageLoadGas
+			host.Metering().GasSchedule().BaseOpsAPICost.CachedStorageLoad = cachedStorageLoadGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 
@@ -163,7 +163,7 @@ func setStorage(t *testing.T, key []byte) {
 			Build()).
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
-			host.Metering().GasSchedule().ElrondAPICost.StorageStore = storageStoreGas
+			host.Metering().GasSchedule().BaseOpsAPICost.StorageStore = storageStoreGas
 			host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = dataCopyGas
 			host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 

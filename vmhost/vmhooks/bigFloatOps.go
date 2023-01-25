@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	arwenMath "github.com/multiversx/mx-chain-vm-go/math"
+	vmMath "github.com/multiversx/mx-chain-vm-go/math"
 )
 
 const (
@@ -85,7 +85,7 @@ func (context *ElrondApi) BigFloatNewFromParts(integralPart, fractionalPart, exp
 	} else {
 		bigFractionalPart := big.NewFloat(float64(fractionalPart))
 		bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
-		bigFractional, err = arwenMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
+		bigFractional, err = vmMath.MulBigFloat(bigFractionalPart, bigExponentMultiplier)
 		if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return -1
 		}
@@ -93,12 +93,12 @@ func (context *ElrondApi) BigFloatNewFromParts(integralPart, fractionalPart, exp
 
 	var value *big.Float
 	if integralPart >= 0 {
-		value, err = arwenMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
+		value, err = vmMath.AddBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return -1
 		}
 	} else {
-		value, err = arwenMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
+		value, err = vmMath.SubBigFloat(big.NewFloat(float64(integralPart)), bigFractional)
 		if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 			return -1
 		}
@@ -127,7 +127,7 @@ func (context *ElrondApi) BigFloatNewFromFrac(numerator, denominator int64) int3
 
 	bigNumerator := big.NewFloat(float64(numerator))
 	bigDenominator := big.NewFloat(float64(denominator))
-	value, err := arwenMath.QuoBigFloat(bigNumerator, bigDenominator)
+	value, err := vmMath.QuoBigFloat(bigNumerator, bigDenominator)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -162,7 +162,7 @@ func (context *ElrondApi) BigFloatNewFromSci(significand, exponent int64) int32 
 
 	bigSignificand := big.NewFloat(float64(significand))
 	bigExponentMultiplier := big.NewFloat(math.Pow10(int(exponent)))
-	value, err := arwenMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
+	value, err := vmMath.MulBigFloat(bigSignificand, bigExponentMultiplier)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return -1
 	}
@@ -189,7 +189,7 @@ func (context *ElrondApi) BigFloatAdd(destinationHandle, op1Handle, op2Handle in
 		return
 	}
 
-	resultAdd, err := arwenMath.AddBigFloat(op1, op2)
+	resultAdd, err := vmMath.AddBigFloat(op1, op2)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -213,7 +213,7 @@ func (context *ElrondApi) BigFloatSub(destinationHandle, op1Handle, op2Handle in
 		return
 	}
 
-	resultSub, err := arwenMath.SubBigFloat(op1, op2)
+	resultSub, err := vmMath.SubBigFloat(op1, op2)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -237,7 +237,7 @@ func (context *ElrondApi) BigFloatMul(destinationHandle, op1Handle, op2Handle in
 		return
 	}
 
-	resultMul, err := arwenMath.MulBigFloat(op1, op2)
+	resultMul, err := vmMath.MulBigFloat(op1, op2)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -265,7 +265,7 @@ func (context *ElrondApi) BigFloatDiv(destinationHandle, op1Handle, op2Handle in
 		return
 	}
 
-	resultDiv, err := arwenMath.QuoBigFloat(op1, op2)
+	resultDiv, err := vmMath.QuoBigFloat(op1, op2)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -401,7 +401,7 @@ func (context *ElrondApi) BigFloatSqrt(destinationHandle, opHandle int32) {
 		_ = context.WithFault(vmhost.ErrBadLowerBounds, runtime.BigFloatAPIErrorShouldFailExecution())
 		return
 	}
-	resultSqrt, err := arwenMath.SqrtBigFloat(op)
+	resultSqrt, err := vmMath.SqrtBigFloat(op)
 	if context.WithFault(err, runtime.BigFloatAPIErrorShouldFailExecution()) {
 		return
 	}
@@ -448,7 +448,7 @@ func (context *ElrondApi) pow(base *big.Float, exp int32) (*big.Float, error) {
 	managedType := context.GetManagedTypesContext()
 
 	for i := 0; i < int(exp); i++ {
-		resultMul, err := arwenMath.MulBigFloat(result, base)
+		resultMul, err := vmMath.MulBigFloat(result, base)
 		if err != nil {
 			return nil, err
 		}

@@ -25,8 +25,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../test")
+	return vmTestRoot
 }
 
 // MandosTestBuilder defines the Mandos builder component
@@ -75,7 +75,7 @@ func (mtb *MandosTestBuilder) WithExecutorLogs() *MandosTestBuilder {
 
 // Run will start the testing process
 func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
-	executor, err := am.NewArwenTestExecutor()
+	executor, err := am.NewVMTestExecutor()
 	require.Nil(mtb.t, err)
 	defer executor.Close()
 

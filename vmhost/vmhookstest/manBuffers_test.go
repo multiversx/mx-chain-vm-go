@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	arwenMath "github.com/multiversx/mx-chain-vm-go/math"
+	vmMath "github.com/multiversx/mx-chain-vm-go/math"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 
@@ -34,7 +34,7 @@ func buildRandomizer(host vmhost.VMHost) io.Reader {
 
 	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
 	randomSeed := append(blocksRandomSeed, txHash...)
-	randReader := arwenMath.NewSeedRandReader(randomSeed)
+	randReader := vmMath.NewSeedRandReader(randomSeed)
 	return randReader
 }
 

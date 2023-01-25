@@ -6,8 +6,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-// ArwenVersion returns the current arwen version
-const ArwenVersion = "v1.5"
+// VMVersion returns the current vm version
+const VMVersion = "v1.5"
 
 // WASMPageSize in bytes of a WASM Linear Memory Page
 const WASMPageSize = 65536
@@ -20,7 +20,7 @@ const (
 	BreakpointNone BreakpointValue = iota
 
 	// BreakpointExecutionFailed means that Wasmer must stop immediately
-	// due to failure indicated by Arwen
+	// due to failure indicated by VM
 	BreakpointExecutionFailed
 
 	// BreakpointAsyncCall means that Wasmer must stop immediately

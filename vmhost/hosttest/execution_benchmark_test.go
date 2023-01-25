@@ -30,7 +30,7 @@ var receiver = Address("receiver")
 var scAddress = Address("erc20")
 var gasProvided = uint64(5_000_000_000)
 
-var logBenchmark = logger.GetOrCreate("arwen/benchmark")
+var logBenchmark = logger.GetOrCreate("vm/benchmark")
 
 func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
@@ -231,7 +231,7 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, vmhost.VM
 	require.Nil(tb, err)
 
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
-	host, err := hostCore.NewArwenVM(
+	host, err := hostCore.NewVMHost(
 		mockWorld,
 		&vmhost.VMHostParameters{
 			VMType:                   testcommon.DefaultVMType,

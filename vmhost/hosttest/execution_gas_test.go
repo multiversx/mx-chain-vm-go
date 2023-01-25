@@ -2000,21 +2000,21 @@ func setZeroCodeCosts(host vmhost.VMHost) {
 	host.Metering().GasSchedule().BaseOperationCost.DataCopyPerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.PersistPerByte = 0
 	host.Metering().GasSchedule().BaseOperationCost.ReleasePerByte = 0
-	host.Metering().GasSchedule().ElrondAPICost.SignalError = 0
-	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnSameContext = 0
-	host.Metering().GasSchedule().ElrondAPICost.ExecuteOnDestContext = 0
-	host.Metering().GasSchedule().ElrondAPICost.StorageLoad = 0
-	host.Metering().GasSchedule().ElrondAPICost.StorageStore = 0
-	host.Metering().GasSchedule().ElrondAPICost.TransferValue = 0
-	host.Metering().GasSchedule().ElrondAPICost.CreateContract = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.SignalError = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnSameContext = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.ExecuteOnDestContext = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.StorageLoad = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.StorageStore = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.TransferValue = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.CreateContract = 0
 }
 
 func setAsyncCosts(host vmhost.VMHost, gasLockCost uint64) {
-	host.Metering().GasSchedule().ElrondAPICost.CreateAsyncCall = 0
-	host.Metering().GasSchedule().ElrondAPICost.SetAsyncCallback = 0
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallStep = 0
-	host.Metering().GasSchedule().ElrondAPICost.GetCallbackClosure = 0
-	host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = gasLockCost
+	host.Metering().GasSchedule().BaseOpsAPICost.CreateAsyncCall = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.SetAsyncCallback = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallStep = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.GetCallbackClosure = 0
+	host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = gasLockCost
 }
 
 func computeReturnDataForCallback(returnCode vmcommon.ReturnCode, returnData [][]byte) []byte {

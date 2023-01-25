@@ -18,8 +18,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../test")
+	return vmTestRoot
 }
 
 func getFeaturesContractPath() string {

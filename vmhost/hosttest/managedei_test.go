@@ -1156,7 +1156,7 @@ func Test_ManagedDeleteContract_CrossShard(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestElrondEI_NFTNonceOverflow(t *testing.T) {
+func TestBaseOpsAPI_NFTNonceOverflow(t *testing.T) {
 	testConfig := makeTestConfig()
 
 	MaxUint := ^uint64(0)

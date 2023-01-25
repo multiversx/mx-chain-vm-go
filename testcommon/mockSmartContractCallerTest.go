@@ -10,7 +10,7 @@ import (
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
-var logMock = logger.GetOrCreate("arwen/mock")
+var logMock = logger.GetOrCreate("vm/mock")
 
 // SetupFunction -
 type SetupFunction func(vmhost.VMHost, *worldmock.MockWorld)

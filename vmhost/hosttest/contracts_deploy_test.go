@@ -421,10 +421,10 @@ func runUpdateFromSourceTest(t *testing.T, testConfig *testcommon.TestConfig, as
 		WithSetup(func(host vmhost.VMHost, world *worldmock.MockWorld) {
 			setZeroCodeCosts(host)
 			gasSchedule := host.Metering().GasSchedule()
-			gasSchedule.ElrondAPICost.AsyncCallStep = testConfig.AsyncCallStepCost
+			gasSchedule.BaseOpsAPICost.AsyncCallStep = testConfig.AsyncCallStepCost
 			gasSchedule.BaseOperationCost.AoTPreparePerByte = testConfig.AoTPreparePerByteCost
 			gasSchedule.BaseOperationCost.CompilePerByte = testConfig.CompilePerByteCost
-			gasSchedule.ElrondAPICost.AsyncCallbackGasLock = 0
+			gasSchedule.BaseOpsAPICost.AsyncCallbackGasLock = 0
 		}).
 		AndAssertResults(asserts)
 	assert.Nil(t, err)

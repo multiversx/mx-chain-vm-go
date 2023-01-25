@@ -7,7 +7,7 @@ package gasschedules
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // Please do not edit manually!
-// Call `go generate` in `arwen-wasm-vm/scenarioexec/gasSchedules` to update it.
+// Call `go generate` in `vm-wasm-vm/scenarioexec/gasSchedules` to update it.
 
 const (
 	gasScheduleV3 = `[BuiltInCost]
@@ -59,7 +59,7 @@ const (
     AoTPreparePerByte = 300
     GetCode           = 1000000
 
-[ElrondAPICost]
+[BaseOpsAPICost]
     GetSCAddress       = 100
     GetOwnerAddress    = 5000
     IsSmartContract    = 5000
@@ -755,7 +755,7 @@ const (
     AoTPreparePerByte = 100
     GetCode           = 1000000
 
-[ElrondAPICost]
+[BaseOpsAPICost]
     GetSCAddress       = 100
     GetOwnerAddress    = 5000
     IsSmartContract    = 5000

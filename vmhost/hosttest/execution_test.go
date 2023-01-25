@@ -16,7 +16,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
-	arwenMath "github.com/multiversx/mx-chain-vm-go/math"
+	vmMath "github.com/multiversx/mx-chain-vm-go/math"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
@@ -314,7 +314,7 @@ func TestExecution_MultipleInstances_SameVMHooks(t *testing.T) {
 	require.False(t, len(vmHooksPtr) > 1)
 }
 
-func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
+func TestExecution_MultipleVMs_OverlappingDifferentVMHooks(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -359,7 +359,7 @@ func TestExecution_MultipleArwens_OverlappingDifferentVMHooks(t *testing.T) {
 	}
 }
 
-func TestExecution_MultipleArwens_CleanInstanceWhileOthersAreRunning(t *testing.T) {
+func TestExecution_MultipleVMs_CleanInstanceWhileOthersAreRunning(t *testing.T) {
 	code := test.GetTestSCCode("counter", "../../")
 
 	input := test.DefaultTestContractCallInput()
@@ -478,7 +478,7 @@ func TestExecution_CallWasmerError(t *testing.T) {
 func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 	contractCode := test.GetTestSCCode("misc", "../../")
 
-	log := logger.GetOrCreate("arwen/test")
+	log := logger.GetOrCreate("vm/test")
 
 	host := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
@@ -515,7 +515,7 @@ func TestExecution_ChangeWasmerOpcodeCosts(t *testing.T) {
 func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	contractCode := test.GetTestSCCode("misc", "../../")
 
-	log := logger.GetOrCreate("arwen/test")
+	log := logger.GetOrCreate("vm/test")
 
 	host := test.NewTestHostBuilder(t).
 		WithBlockchainHook(test.BlockchainHookStubForCall(contractCode, big.NewInt(0))).
@@ -536,7 +536,7 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	gasRemainingBeforeChange := vmOutput.GasRemaining
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
 
-	gasSchedule["ElrondAPICost"]["Finish"] += 1
+	gasSchedule["BaseOpsAPICost"]["Finish"] += 1
 	host.GasScheduleChange(gasSchedule)
 
 	vmOutput, err = host.RunSmartContractCall(input)
@@ -952,7 +952,7 @@ func buildRandomizer(host vmhost.VMHost) io.Reader {
 
 	blocksRandomSeed := append(previousRandomSeed, currentRandomSeed...)
 	randomSeed := append(blocksRandomSeed, txHash...)
-	randReader := arwenMath.NewSeedRandReader(randomSeed)
+	randReader := vmMath.NewSeedRandReader(randomSeed)
 	return randReader
 }
 
@@ -1213,7 +1213,7 @@ func TestExecution_ExecuteOnSameContext_Wrong(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if !host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() {
+			if !host.Runtime().SyncExecAPIErrorShouldFailExecution() {
 				verify.Ok().
 					GasUsed(test.ParentAddress, 3405).
 					Balance(test.ParentAddress, 1000).
@@ -1280,7 +1280,7 @@ func TestExecution_ExecuteOnSameContext_OutOfGas(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if !host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() {
+			if !host.Runtime().SyncExecAPIErrorShouldFailExecution() {
 				verify.Ok().
 					Balance(test.ParentAddress, 1000).
 					BalanceDelta(test.ParentAddress, 0).
@@ -1492,7 +1492,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Direct_ErrMaxInstances(t *test
 			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
 				verify.Ok().
 					Balance(test.ParentAddress, 1000).
 					BalanceDelta(test.ParentAddress, 0).
@@ -1690,7 +1690,7 @@ func TestExecution_ExecuteOnSameContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
 				verify.OutOfGas().
 					ReturnMessage(vmhost.ErrNotEnoughGas.Error()).
 					GasRemaining(0)
@@ -1762,7 +1762,7 @@ func TestExecution_ExecuteOnDestContext_Wrong(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
 				verify.Ok().
 					Balance(test.ParentAddress, 1000).
 					BalanceDelta(test.ParentAddress, -42).
@@ -1834,7 +1834,7 @@ func TestExecution_ExecuteOnDestContext_OutOfGas(t *testing.T) {
 			WithGasProvided(test.GasProvided).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
 				verify.Ok().
 					Balance(test.ParentAddress, 1000).
 					GasRemaining(test.GasProvided-
@@ -2300,7 +2300,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing
 			WithArguments([]byte{recursiveCalls}).
 			Build()).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
-			if host.Runtime().ElrondSyncExecAPIErrorShouldFailExecution() == false {
+			if host.Runtime().SyncExecAPIErrorShouldFailExecution() == false {
 				verify.OutOfGas().
 					ReturnMessage(vmhost.ErrNotEnoughGas.Error())
 			} else {
@@ -2623,7 +2623,7 @@ func TestExecution_AsyncCall_ChildFails(t *testing.T) {
 			WithCurrentTxHash(txHash).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
+			host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = 3000
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
@@ -2703,7 +2703,7 @@ func TestExecution_AsyncCall_Promises_ChildFails(t *testing.T) {
 			WithCurrentTxHash(txHash).
 			Build()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
-			host.Metering().GasSchedule().ElrondAPICost.AsyncCallbackGasLock = 3000
+			host.Metering().GasSchedule().BaseOpsAPICost.AsyncCallbackGasLock = 3000
 		}).
 		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().

@@ -45,7 +45,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 	blockGasLimit := uint64(10000000)
 	gasSchedule := config.MakeGasMapForTests()
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldhook.WorldMarshalizer)
-	vm, err := hostCore.NewArwenVM(
+	vm, err := hostCore.NewVMHost(
 		world,
 		&vmhost.VMHostParameters{
 			VMType:                   testVMType,
