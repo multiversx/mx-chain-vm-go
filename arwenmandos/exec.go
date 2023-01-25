@@ -101,8 +101,7 @@ func (ae *ArwenTestExecutor) GetVM() vmi.VMExecutionHandler {
 	return ae.vm
 }
 
-// GetVMHost returns de vm Context from the vm context map
-func (ae *ArwenTestExecutor) GetVMHost() arwen.VMHost {
+func (ae *ArwenTestExecutor) getVMHost() arwen.VMHost {
 	return ae.vmHost
 }
 

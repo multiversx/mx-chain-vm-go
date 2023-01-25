@@ -164,7 +164,8 @@ func (mockSC *MockTestSmartContract) Initialize(
 	imb *mock.ExecutorMock,
 	createContractAccounts bool,
 ) {
-	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.codeHash, mockSC.codeMetadata, mockSC.ownerAddress, mockSC.shardID, mockSC.balance, createContractAccounts)
+	instance := imb.CreateAndStoreInstanceMock(t, host, mockSC.address, mockSC.codeHash, mockSC.codeMetadata,
+		mockSC.ownerAddress, mockSC.shardID, mockSC.balance, createContractAccounts)
 	for _, initMethod := range mockSC.initMethods {
 		initMethod(instance, mockSC.config)
 	}

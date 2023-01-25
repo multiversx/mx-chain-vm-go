@@ -101,12 +101,12 @@ func addressPretty(value []byte) string {
 	leadingZeros := make([]byte, ei.SCAddressNumLeadingZeros)
 	if bytes.Equal(value[:ei.SCAddressNumLeadingZeros], leadingZeros) {
 		if value[31] == byte('_') {
-			addrStr := string(value[ei.SCAddressNumLeadingZeros:])
+			addrStr := string(value[ei.SCAddressReservedPrefixLength:])
 			addrStr = strings.TrimRight(addrStr, "_")
 			return fmt.Sprintf("sc:%s", addrStr)
 		} else {
 			// last byte is the shard id and is explicit
-			addrStr := string(value[ei.SCAddressNumLeadingZeros:31])
+			addrStr := string(value[ei.SCAddressReservedPrefixLength:31])
 			addrStr = strings.TrimRight(addrStr, "_")
 			shardID := value[31]
 			return fmt.Sprintf("sc:%s#%x", addrStr, shardID)
@@ -122,8 +122,12 @@ func addressPretty(value []byte) string {
 		// last byte is the shard id and is explicit
 		addrStr := string(value[:31])
 		addrStr = strings.TrimRight(addrStr, "_")
-		shardID := value[31]
-		return fmt.Sprintf("address:%s#%02x", addrStr, shardID)
+		shard_id := value[31]
+		address_expr := fmt.Sprintf("address:%s#%02x", addrStr, shard_id)
+		if !canInterpretAsString(value[:31]) {
+			return fmt.Sprintf("0x%s (%s)", hex.EncodeToString(value), address_expr)
+		}
+		return address_expr
 	}
 }
 
