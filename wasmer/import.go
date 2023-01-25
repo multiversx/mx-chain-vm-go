@@ -3,8 +3,8 @@ package wasmer
 import (
 	"unsafe"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapimeta"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooksmeta"
 )
 
 // Import represents an WebAssembly instance imported function.
@@ -55,6 +55,7 @@ func (imports *Imports) Namespace(namespace string) *Imports {
 	return imports
 }
 
+// Count returns the number of imports
 func (imports *Imports) Count() int {
 	count := 0
 	for _, namespacedImports := range imports.imports {
@@ -63,6 +64,7 @@ func (imports *Imports) Count() int {
 	return count
 }
 
+// Names returns a map of function names
 func (imports *Imports) Names() vmcommon.FunctionNames {
 	names := make(vmcommon.FunctionNames)
 	var empty struct{}
@@ -74,17 +76,18 @@ func (imports *Imports) Names() vmcommon.FunctionNames {
 	return names
 }
 
-func convertArgType(argType elrondapimeta.EIFunctionValue) cWasmerValueTag {
+func convertArgType(argType vmhooksmeta.EIFunctionValue) cWasmerValueTag {
 	switch argType {
-	case elrondapimeta.EIFunctionValueInt32:
+	case vmhooksmeta.EIFunctionValueInt32:
 		return cWasmI32
-	case elrondapimeta.EIFunctionValueInt64:
+	case vmhooksmeta.EIFunctionValueInt64:
 		return cWasmI64
 	}
 	return cWasmI32 // unreachable, but might consider adding an error
 }
 
-func ConvertImports(eiFunctions *elrondapimeta.EIFunctions) *Imports {
+// ConvertImports creates an Imports object from an EIFunctions struct
+func ConvertImports(eiFunctions *vmhooksmeta.EIFunctions) *Imports {
 	imports := NewImports()
 
 	for funcName, funcData := range eiFunctions.FunctionMap {

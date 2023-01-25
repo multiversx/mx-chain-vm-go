@@ -5,11 +5,11 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm-v1_4/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,7 +93,11 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 			return instance
 		}
 
-		loadedData, _, _ := host.Storage().GetStorage(test.ParentKeyB)
+		loadedData, _, err := host.Storage().GetStorage(test.ParentKeyB)
+		if err != nil {
+			host.Runtime().FailExecution(err)
+			return instance
+		}
 
 		status := bytes.Compare(loadedData, test.ParentDataB)
 		if status != 0 {
@@ -106,7 +110,7 @@ func CallBackParentMock(instanceMock *mock.InstanceMock, config interface{}) {
 				return instance
 			}
 		}
-		err := handleTransferToVault(host, arguments)
+		err = handleTransferToVault(host, arguments)
 		require.Nil(t, err)
 
 		finishResult(host, status)
@@ -120,7 +124,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("callBack", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		retVal := elrondapi.ExecuteOnSameContextWithTypedArgs(
+		retVal := vmhooks.ExecuteOnSameContextWithTypedArgs(
 			host,
 			int64(host.Metering().GasLeft()),
 			big.NewInt(0),
@@ -138,7 +142,7 @@ func CallbackWithOnSameContext(instanceMock *mock.InstanceMock, _ interface{}) {
 	})
 }
 
-func handleParentBehaviorArgument(host arwen.VMHost, behavior *big.Int) error {
+func handleParentBehaviorArgument(host vmhost.VMHost, behavior *big.Int) error {
 	if behavior.Cmp(big.NewInt(3)) == 0 {
 		host.Runtime().SignalUserError("callBack error")
 		return errors.New("behavior / parent error")
@@ -176,7 +180,7 @@ func mustTransferToVault(arguments [][]byte) bool {
 	return true
 }
 
-func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
+func handleTransferToVault(host vmhost.VMHost, arguments [][]byte) error {
 	err := error(nil)
 	if mustTransferToVault(arguments) {
 		valueToTransfer := big.NewInt(4)
@@ -186,7 +190,7 @@ func handleTransferToVault(host arwen.VMHost, arguments [][]byte) error {
 	return err
 }
 
-func finishResult(host arwen.VMHost, result int) {
+func finishResult(host vmhost.VMHost, result int) {
 	outputContext := host.Output()
 	if result == 0 {
 		outputContext.Finish([]byte("succ"))

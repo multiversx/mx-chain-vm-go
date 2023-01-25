@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/multiversx/mx-chain-core-go/core/check"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
-const OPCODE_COUNT = 448
+// OpcodeCount is the total number of WASM opcodes currently supported by Wasmer
+const OpcodeCount = 448
 
-var logWasmer = logger.GetOrCreate("arwen/wasmer")
+var logWasmer = logger.GetOrCreate("vm/wasmer")
 
 // InstanceError represents any kind of errors related to a WebAssembly instance. It
 // is returned by `Instance` functions only.
@@ -79,8 +80,13 @@ func (error *ExportedFunctionError) Error() string {
 	return error.message
 }
 
+// ExportedFunctionCallback is the type of an exported WASM function
 type ExportedFunctionCallback func(...interface{}) (Value, error)
+
+// ExportsMap is a map of names to ExportedFunctionCallback values
 type ExportsMap map[string]ExportedFunctionCallback
+
+// ExportSignaturesMap is a map of names to ExportedFunctionSignatures
 type ExportSignaturesMap map[string]*ExportedFunctionSignature
 
 // Instance represents a WebAssembly instance.
@@ -116,6 +122,7 @@ type Instance struct {
 	AlreadyClean bool
 }
 
+// CompilationOptions contains options for creating a Wasmer instance
 type CompilationOptions struct {
 	GasLimit           uint64
 	UnmeteredLocals    uint64
@@ -138,6 +145,7 @@ func newWrappedError(target error) error {
 	return fmt.Errorf("%w: %s", target, lastError)
 }
 
+// SetImports creates a static imports object and sets it into Wasmer
 func SetImports(imports *Imports) error {
 	wasmImportsCPointer, numberOfImports := generateWasmerImports(imports)
 
@@ -152,10 +160,13 @@ func SetImports(imports *Imports) error {
 	return nil
 }
 
-func SetOpcodeCosts(opcodeCosts *[OPCODE_COUNT]uint32) {
+// SetOpcodeCosts sets the opcode costs in Wasmer
+func SetOpcodeCosts(opcodeCosts *[OpcodeCount]uint32) {
 	cWasmerSetOpcodeCosts(opcodeCosts)
 }
 
+// NewInstanceWithOptions creates a new Wasmer instance from WASM bytecode with
+// the provided compilation options
 func NewInstanceWithOptions(
 	bytes []byte,
 	options CompilationOptions,
@@ -185,6 +196,8 @@ func NewInstanceWithOptions(
 		cInstanceContext := cWasmerInstanceContextGet(cInstance)
 		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
+
+	logWasmer.Trace("new instance created", "id", instance.ID())
 	return instance, err
 }
 
@@ -219,6 +232,8 @@ func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
 }
 
+// NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
+// precompiled code with the provided compilation options
 func NewInstanceFromCompiledCodeWithOptions(
 	compiledCode []byte,
 	options CompilationOptions,
@@ -266,9 +281,9 @@ func (instance *Instance) SetContextData(data uintptr) {
 
 // Clean cleans instance
 func (instance *Instance) Clean() bool {
-	logWasmer.Trace("cleaning instance", "id", instance.Id())
+	logWasmer.Trace("cleaning instance", "id", instance.ID())
 	if instance.AlreadyClean {
-		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
@@ -280,7 +295,7 @@ func (instance *Instance) Clean() bool {
 		}
 
 		instance.AlreadyClean = true
-		logWasmer.Trace("cleaned instance", "id", instance.Id())
+		logWasmer.Trace("cleaned instance", "id", instance.ID())
 
 		return true
 	}
@@ -366,8 +381,8 @@ func (instance *Instance) GetInstanceCtxMemory() MemoryHandler {
 	return instance.InstanceCtx.Memory()
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *Instance) Id() string {
+// ID returns an identifier for the instance, unique at runtime
+func (instance *Instance) ID() string {
 	return fmt.Sprintf("%p", instance.instance)
 }
 
@@ -379,12 +394,12 @@ func (instance *Instance) GetMemory() MemoryHandler {
 // Reset resets the instance memories and globals
 func (instance *Instance) Reset() bool {
 	if instance.AlreadyClean {
-		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.instance)
-	logWasmer.Trace("reset: warm instance", "id", instance.Id())
+	logWasmer.Trace("reset: warm instance", "id", instance.ID())
 	return result == cWasmerOk
 }
 

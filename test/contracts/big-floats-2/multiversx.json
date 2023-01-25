@@ -1,0 +1,7 @@
+{
+    "language": "clang",
+    "source_files": [
+        "big-floats-2.c",
+        "../mxvm/cbuiltins.c"
+    ]
+}

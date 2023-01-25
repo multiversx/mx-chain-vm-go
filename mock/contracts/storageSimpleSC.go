@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 )
 
 // LoadStore is an exposed mock contract method
@@ -18,8 +18,8 @@ func LoadStore(instanceMock *mock.InstanceMock, _ interface{}) {
 		}
 
 		key := arguments[0]
-		elrondapi.StorageLoadWithWithTypedArgs(host, key)
-		value, _ := elrondapi.StorageLoadWithWithTypedArgs(host, key)
+		_, _ = vmhooks.StorageLoadWithWithTypedArgs(host, key)
+		value, _, _ := vmhooks.StorageLoadWithWithTypedArgs(host, key)
 
 		host.Output().Finish(value)
 		return instance
@@ -41,8 +41,8 @@ func LoadStoreFromAddress(instanceMock *mock.InstanceMock, _ interface{}) {
 		address := arguments[0]
 		key := arguments[1]
 
-		elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
-		value, _ := elrondapi.StorageLoadFromAddressWithTypedArgs(host, address, key)
+		_, _ = vmhooks.StorageLoadFromAddressWithTypedArgs(host, address, key)
+		value, _, _ := vmhooks.StorageLoadFromAddressWithTypedArgs(host, address, key)
 
 		host.Output().Finish(value)
 		return instance
@@ -64,8 +64,8 @@ func SetStore(instanceMock *mock.InstanceMock, _ interface{}) {
 		key := arguments[0]
 		value := arguments[1]
 
-		elrondapi.StorageStoreWithTypedArgs(host, key, value)
-		elrondapi.StorageStoreWithTypedArgs(host, key, value)
+		vmhooks.StorageStoreWithTypedArgs(host, key, value)
+		vmhooks.StorageStoreWithTypedArgs(host, key, value)
 
 		return instance
 	})

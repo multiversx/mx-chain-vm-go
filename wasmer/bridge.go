@@ -9,7 +9,6 @@ package wasmer
 import "C"
 import "unsafe"
 
-type cBool C.bool
 type cChar C.char
 type cInt C.int
 type cUchar C.uchar
@@ -17,34 +16,24 @@ type cUint C.uint
 type cUint32T C.uint32_t
 type cUint8T C.uint8_t
 type cWasmerByteArray C.wasmer_byte_array
-type cWasmerExportDescriptorT C.wasmer_export_descriptor_t
-type cWasmerExportDescriptorsT C.wasmer_export_descriptors_t
 type cWasmerExportFuncT C.wasmer_export_func_t
 type cWasmerExportT C.wasmer_export_t
 type cWasmerExportsT C.wasmer_exports_t
-type cWasmerImportDescriptorT C.wasmer_import_descriptor_t
-type cWasmerImportDescriptorsT C.wasmer_import_descriptors_t
 type cWasmerImportExportKind C.wasmer_import_export_kind
-type cWasmerImportExportValue C.wasmer_import_export_value
 type cWasmerImportFuncT C.wasmer_import_func_t
 type cWasmerImportT C.wasmer_import_t
-type cWasmerImportObjectT C.wasmer_import_object_t
 type cWasmerInstanceContextT C.wasmer_instance_context_t
 type cWasmerInstanceT C.wasmer_instance_t
 type cWasmerMemoryT C.wasmer_memory_t
-type cWasmerModuleT C.wasmer_module_t
 type cWasmerResultT C.wasmer_result_t
-type cWasmerSerializedModuleT C.wasmer_serialized_module_t
 type cWasmerValueT C.wasmer_value_t
 type cWasmerValueTag C.wasmer_value_tag
 type cWasmerCompilationOptions C.wasmer_compilation_options_t
 
 const cWasmFunction = C.WASM_FUNCTION
-const cWasmGlobal = C.WASM_GLOBAL
 const cWasmI32 = C.WASM_I32
 const cWasmI64 = C.WASM_I64
 const cWasmMemory = C.WASM_MEMORY
-const cWasmTable = C.WASM_TABLE
 const cWasmerOk = C.WASMER_OK
 
 func cNewWasmerImportT(moduleName string, importName string, function *cWasmerImportFuncT) cWasmerImportT {
@@ -148,9 +137,9 @@ func cWasmerCacheImportObjectFromImports(
 	))
 }
 
-func cWasmerSetOpcodeCosts(opcode_costs *[OPCODE_COUNT]uint32) {
+func cWasmerSetOpcodeCosts(opcodeCosts *[OpcodeCount]uint32) {
 	C.wasmer_set_opcode_costs(
-		(*C.uint32_t)(unsafe.Pointer(opcode_costs)),
+		(*C.uint32_t)(unsafe.Pointer(opcodeCosts)),
 	)
 }
 
@@ -267,9 +256,9 @@ func cWasmerInstanceContextGet(instance *cWasmerInstanceT) *cWasmerInstanceConte
 }
 
 func cWasmerInstanceContextDataGet(instanceContext *cWasmerInstanceContextT) unsafe.Pointer {
-	return unsafe.Pointer(C.wasmer_instance_context_data_get(
+	return C.wasmer_instance_context_data_get(
 		(*C.wasmer_instance_context_t)(instanceContext),
-	))
+	)
 }
 
 func cWasmerInstanceContextDataSet(instance *cWasmerInstanceT, dataPointer unsafe.Pointer) {

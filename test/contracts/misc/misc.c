@@ -1,4 +1,4 @@
-#include "../elrond/context.h"
+#include "../mxvm/context.h"
 
 byte array[] = "this is some random string of bytes";
 i64 arrayLength = 35;

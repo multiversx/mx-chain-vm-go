@@ -1,0 +1,22 @@
+{
+    "comment": "verifies that setState and checkState are consistent",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:the-address": {
+                    "username": "str:theusername.domain"
+                }
+            }
+        },
+        {
+            "step": "checkState",
+            "id": "check-1",
+            "accounts": {
+                "address:the-address": {
+                    "username": "str:wrong.domain"
+                }
+            }
+        }
+    ]
+}

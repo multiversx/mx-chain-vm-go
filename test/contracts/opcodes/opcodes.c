@@ -1,4 +1,4 @@
-#include "../elrond/context.h"
+#include "../mxvm/context.h"
 
 void memSize() {
 	i64 count = int64getArgument(0);

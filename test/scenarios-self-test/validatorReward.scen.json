@@ -1,0 +1,58 @@
+{
+    "comment": "tests validatorReward, no SC",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:A": {
+                    "nonce": "0",
+                    "balance": "0"
+                }
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "1",
+            "tx": {
+                "to": "address:A",
+                "egldValue": "100"
+            }
+        },
+        {
+            "step": "checkState",
+            "id": "check-1",
+            "accounts": {
+                "address:A": {
+                    "nonce": "0",
+                    "balance": "100",
+                    "storage": {
+                        "0x454C524F4E44|str:reward": "100"
+                    },
+                    "code": ""
+                }
+            }
+        },
+        {
+            "step": "validatorReward",
+            "txId": "2",
+            "tx": {
+                "to": "address:A",
+                "egldValue": "50"
+            }
+        },
+        {
+            "step": "checkState",
+            "id": "check-2",
+            "accounts": {
+                "address:A": {
+                    "nonce": "0",
+                    "balance": "150",
+                    "storage": {
+                        "0x454C524F4E44|str:reward": "150"
+                    },
+                    "code": ""
+                }
+            }
+        }
+    ]
+}

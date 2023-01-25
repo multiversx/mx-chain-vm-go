@@ -1,12 +1,13 @@
+// Package testcommon contains utility code for writing tests
 package testcommon
 
 import (
 	"testing"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/arwen"
-	"github.com/ElrondNetwork/wasm-vm-v1_4/config"
-	contextmock "github.com/ElrondNetwork/wasm-vm-v1_4/mock/context"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/config"
+	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,9 +49,9 @@ type InstancesTestTemplate struct {
 	testTemplateConfig
 	contracts          []*InstanceTestSmartContract
 	gasSchedule        config.GasScheduleMap
-	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
-	assertResults      func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host               arwen.VMHost
+	setup              func(vmhost.VMHost, *contextmock.BlockchainHookStub)
+	assertResults      func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host               vmhost.VMHost
 	blockchainHookStub *contextmock.BlockchainHookStub
 }
 
@@ -62,7 +63,7 @@ func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
 			useMocks:                 false,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
+		setup: func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 	}
 }
 
@@ -79,7 +80,7 @@ func (callerTest *InstancesTestTemplate) WithInput(input *vmcommon.ContractCallI
 }
 
 // WithSetup provides the setup function to be used by the contract call test
-func (callerTest *InstancesTestTemplate) WithSetup(setup func(arwen.VMHost, *contextmock.BlockchainHookStub)) *InstancesTestTemplate {
+func (callerTest *InstancesTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstancesTestTemplate {
 	callerTest.setup = setup
 	return callerTest
 }
@@ -97,26 +98,26 @@ func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGS
 }
 
 // AndAssertResults starts the test and asserts the results
-func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
 	runTestWithInstances(callerTest, true)
 }
 
 // AndAssertResultsWithoutReset starts the test and asserts the results
-func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResults func(arwen.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
 	runTestWithInstances(callerTest, false)
 }
 
 // GetVMHost returns the host instantiated in this test template
-func (callerTest *InstancesTestTemplate) GetVMHost() arwen.VMHost {
+func (callerTest *InstancesTestTemplate) GetVMHost() vmhost.VMHost {
 	return callerTest.host
 }
 
 func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
 		callerTest.host, callerTest.blockchainHookStub =
-			defaultTestArwenForContracts(
+			defaultTestVMForContracts(
 				callerTest.tb,
 				callerTest.contracts,
 				callerTest.gasSchedule,
@@ -130,8 +131,8 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 		}
 
 		// Extra verification for instance leaks
-		_, numColdInstances := callerTest.host.Runtime().NumRunningInstances()
-		require.Zero(callerTest.tb, numColdInstances, "number of instances leaked")
+		err := callerTest.host.Runtime().ValidateInstances()
+		require.Nil(callerTest.tb, err)
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)

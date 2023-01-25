@@ -91,6 +91,7 @@ func (value Value) String() string {
 	}
 }
 
+// IsVoid returns true if the value is void
 func (value Value) IsVoid() bool {
 	return value.ty == TypeVoid
 }

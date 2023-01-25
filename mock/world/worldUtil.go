@@ -1,5 +1,10 @@
 package worldmock
 
+import "github.com/multiversx/mx-chain-core-go/hashing/blake2b"
+
+// DefaultHasher is an exposed value to use in tests
+var DefaultHasher = blake2b.NewBlake2b()
+
 // GenerateMockAddress simulates creation of a new address by the protocol.
 func GenerateMockAddress(creatorAddress []byte, creatorNonce uint64) []byte {
 	result := make([]byte, 32)
