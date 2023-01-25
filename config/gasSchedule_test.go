@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/mitchellh/mapstructure"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/stretchr/testify/assert"
 )
 

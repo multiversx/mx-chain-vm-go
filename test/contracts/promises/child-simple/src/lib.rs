@@ -3,8 +3,8 @@
 #![allow(unused_attributes)]
 #![feature(lang_items)]
 
-use elrond_wasm::api::{EndpointArgumentApi, EndpointFinishApi, ErrorApi};
-use elrond_wasm_node::ArwenApiImpl;
+
+
 
 pub static EEI: ArwenApiImpl = ArwenApiImpl{};
 

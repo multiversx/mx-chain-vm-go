@@ -5,10 +5,10 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // Reset clears state/world.
@@ -107,15 +107,15 @@ func (ae *VMTestExecutor) ExecuteSetStateStep(step *mj.SetStateStep) error {
 		log.Trace("SetStateStep", "comment", step.Comment)
 	}
 
-	for _, mandosAccount := range step.Accounts {
-		if mandosAccount.Update {
-			err := ae.UpdateAccount(mandosAccount)
+	for _, scenAccount := range step.Accounts {
+		if scenAccount.Update {
+			err := ae.UpdateAccount(scenAccount)
 			if err != nil {
 				log.Debug("could not update account", err)
 				return err
 			}
 		} else {
-			err := ae.PutNewAccount(mandosAccount)
+			err := ae.PutNewAccount(scenAccount)
 			if err != nil {
 				log.Debug("could not put new account", err)
 				return err
@@ -171,12 +171,12 @@ func (ae *VMTestExecutor) ExecuteTxStep(step *mj.TxStep) (*vmi.VMOutput, error) 
 }
 
 // PutNewAccount Puts a new account in world account map. Overwrites.
-func (ae *VMTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
-	worldAccount, err := convertAccount(mandosAccount, ae.World)
+func (ae *VMTestExecutor) PutNewAccount(scenAccount *mj.Account) error {
+	worldAccount, err := convertAccount(scenAccount, ae.World)
 	if err != nil {
 		return err
 	}
-	err = validateSetStateAccount(mandosAccount, worldAccount)
+	err = validateSetStateAccount(scenAccount, worldAccount)
 	if err != nil {
 		return err
 	}
@@ -186,17 +186,17 @@ func (ae *VMTestExecutor) PutNewAccount(mandosAccount *mj.Account) error {
 }
 
 // UpdateAccount Updates an account in world account map.
-func (ae *VMTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
-	worldAccount, err := convertAccount(mandosAccount, ae.World)
+func (ae *VMTestExecutor) UpdateAccount(scenAccount *mj.Account) error {
+	worldAccount, err := convertAccount(scenAccount, ae.World)
 	if err != nil {
 		return err
 	}
-	err = validateSetStateAccount(mandosAccount, worldAccount)
+	err = validateSetStateAccount(scenAccount, worldAccount)
 	if err != nil {
 		return err
 	}
 
-	existingAccount := ae.World.AcctMap.GetAccount(mandosAccount.Address.Value)
+	existingAccount := ae.World.AcctMap.GetAccount(scenAccount.Address.Value)
 	if existingAccount == nil {
 		return errors.New("account not found. could not update")
 	}
@@ -204,22 +204,22 @@ func (ae *VMTestExecutor) UpdateAccount(mandosAccount *mj.Account) error {
 	for k, v := range worldAccount.Storage {
 		existingAccount.Storage[k] = v
 	}
-	if !mandosAccount.Nonce.Unspecified {
+	if !scenAccount.Nonce.Unspecified {
 		existingAccount.Nonce = worldAccount.Nonce
 	}
-	if !mandosAccount.Balance.Unspecified {
+	if !scenAccount.Balance.Unspecified {
 		existingAccount.Balance = worldAccount.Balance
 	}
-	if !mandosAccount.Username.Unspecified {
+	if !scenAccount.Username.Unspecified {
 		existingAccount.Username = worldAccount.Username
 	}
-	if !mandosAccount.Owner.Unspecified {
+	if !scenAccount.Owner.Unspecified {
 		existingAccount.OwnerAddress = worldAccount.OwnerAddress
 	}
-	if !mandosAccount.Code.Unspecified {
+	if !scenAccount.Code.Unspecified {
 		existingAccount.Code = worldAccount.Code
 	}
-	if !mandosAccount.Shard.Unspecified {
+	if !scenAccount.Shard.Unspecified {
 		existingAccount.ShardID = worldAccount.ShardID
 	}
 	existingAccount.AsyncCallData = worldAccount.AsyncCallData

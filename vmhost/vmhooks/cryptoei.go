@@ -3,10 +3,10 @@ package vmhooks
 import (
 	"crypto/elliptic"
 
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/crypto/signing/secp256k1"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 const blsPublicKeyLength = 96

@@ -1,6 +1,6 @@
 #![no_std]
 
-pub use elrond_wasm::{Address, Vec};
+
 
 pub const PARENT_ADDRESS: [u8; 32] = [
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0F, b'p', b'a', b'r', b'e', b'n', b't',

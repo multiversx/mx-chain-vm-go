@@ -4,8 +4,8 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	vmMath "github.com/multiversx/mx-chain-vm-go/math"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 const (

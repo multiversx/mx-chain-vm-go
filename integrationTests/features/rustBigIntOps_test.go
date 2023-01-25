@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/require"
 )
 

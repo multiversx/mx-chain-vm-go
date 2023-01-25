@@ -3,10 +3,10 @@ package vmhooks
 import (
 	"math/big"
 
-	twos "github.com/multiversx/mx-components-big-int/twos-complement"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 const (

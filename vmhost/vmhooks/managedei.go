@@ -6,9 +6,9 @@ import (
 
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 const (

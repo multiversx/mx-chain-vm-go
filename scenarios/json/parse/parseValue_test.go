@@ -1,4 +1,4 @@
-package mandosjsonparse
+package scenjsonparse
 
 import (
 	"math/big"

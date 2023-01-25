@@ -82,7 +82,7 @@
                 }
             }
         ],
-        "network": "Arwen",
+        "network": "VM",
         "blockHashes": [
             "0x24a30e4305ac41674b26493c800c05f507e98d3b8bceb0a314f9b9bc43622736",
             "0x00"

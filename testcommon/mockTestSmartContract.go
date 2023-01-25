@@ -3,8 +3,8 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // TestConfig is configuration for async call tests

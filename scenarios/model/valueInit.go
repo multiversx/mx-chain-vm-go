@@ -1,4 +1,4 @@
-package mandosjsonmodel
+package scenjsonmodel
 
 import (
 	"math/big"

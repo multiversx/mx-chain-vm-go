@@ -1,7 +1,7 @@
 #![no_std]
 
-use elrond_wasm::api::{ContractHookApi, EndpointArgumentApi, EndpointFinishApi, StorageReadApi, StorageWriteApi};
-use elrond_wasm_node::ArwenApiImpl;
+
+
 
 use promises_common::*;
 

@@ -9,21 +9,21 @@ import (
 	"strings"
 
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
 	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
 	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
 	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 type fuzzDelegationExecutor struct {
 	vmTestExecutor *am.VMTestExecutor
-	world             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	parser      mjparse.Parser
-	txIndex           int
+	world          *worldhook.MockWorld
+	vm             vmi.VMExecutionHandler
+	parser         mjparse.Parser
+	txIndex        int
 
 	serviceFee                  int
 	numBlocksBeforeForceUnstake int
@@ -50,10 +50,10 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	}
 	parser := mjparse.NewParser(fileResolver)
 	return &fuzzDelegationExecutor{
-		vmTestExecutor:   vmTestExecutor,
+		vmTestExecutor:      vmTestExecutor,
 		world:               vmTestExecutor.World,
 		vm:                  vmTestExecutor.GetVM(),
-		parser:        parser,
+		parser:              parser,
 		txIndex:             0,
 		numNodes:            0,
 		totalStakeAdded:     big.NewInt(0),

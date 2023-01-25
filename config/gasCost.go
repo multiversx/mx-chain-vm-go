@@ -10,7 +10,7 @@ type GasCost struct {
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
 	EthAPICost           EthAPICost
-	BaseOpsAPICost        BaseOpsAPICost
+	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       *executor.WASMOpcodeCost

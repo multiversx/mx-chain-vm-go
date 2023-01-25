@@ -3,9 +3,9 @@ package mock
 import (
 	"github.com/multiversx/mx-chain-core-go/data/vm"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 var _ vmhost.VMHost = (*VMHostStub)(nil)

@@ -1,4 +1,4 @@
-package mandosexpressioninterpreter
+package scenexpressioninterpreter
 
 import (
 	"encoding/hex"
@@ -7,10 +7,10 @@ import (
 	"math/big"
 	"strings"
 
-	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/multiversx/mx-chain-core-go/core"
 	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
 	oj "github.com/multiversx/mx-chain-vm-go/scenarios/orderedjson"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 var strPrefixes = []string{"str:", "``", "''"}
@@ -34,7 +34,7 @@ const bigFloatPrefix = "bigfloat:"
 const biguintPrefix = "biguint:"
 const nestedPrefix = "nested:"
 
-// ExprInterpreter provides context for computing Mandos values.
+// ExprInterpreter provides context for computing scenario values.
 type ExprInterpreter struct {
 	FileResolver fr.FileResolver
 	VMType       *[core.VMTypeLen]byte
@@ -83,7 +83,7 @@ func (ei *ExprInterpreter) InterpretSubTree(obj oj.OJsonObject) ([]byte, error) 
 	return []byte{}, errors.New("cannot interpret given JSON subtree as value")
 }
 
-// InterpretString resolves a string to a byte slice according to the Mandos value format.
+// InterpretString resolves a string to a byte slice according to the scenario value format.
 // Supported rules are:
 // - numbers: decimal, hex, binary, signed/unsigned
 // - fixed length numbers: "u32:5", "i8:-3", etc.
@@ -205,11 +205,11 @@ func (ei *ExprInterpreter) interpretFloatingPointNumber(strRaw string) ([]byte, 
 		return hex.DecodeString(str)
 	} else {
 		returnFloatValue := big.NewFloat(0)
-		mandosBigFloatVal, ok := big.NewFloat(0).SetString(strRaw)
+		bigFloatVal, ok := big.NewFloat(0).SetString(strRaw)
 		if !ok {
 			return make([]byte, 0), fmt.Errorf("could not parse %s to big float", strRaw)
 		}
-		_ = returnFloatValue.Add(returnFloatValue, mandosBigFloatVal)
+		_ = returnFloatValue.Add(returnFloatValue, bigFloatVal)
 		encodedFloatValue, err := returnFloatValue.GobEncode()
 		if err != nil {
 			return make([]byte, 0), fmt.Errorf("could not parse %s to big float", strRaw)

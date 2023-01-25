@@ -169,7 +169,7 @@ type VMHostParameters struct {
 	GasSchedule                         config.GasScheduleMap
 	BuiltInFuncContainer                vmcommon.BuiltInFunctionContainer
 	ESDTTransferParser                  vmcommon.ESDTTransferParser
-	ProtectedKeyPrefix            []byte
+	ProtectedKeyPrefix                  []byte
 	WasmerSIGSEGVPassthrough            bool
 	EpochNotifier                       vmcommon.EpochNotifier
 	EnableEpochsHandler                 vmcommon.EnableEpochsHandler

@@ -46,9 +46,9 @@ func getInvalidScenarioWithBenchmark() ScenarioWithBenchmark {
 	}
 }
 
-// GetAccountsAndTransactionsFromMandos will retrieve the ScenarioWithBenchmark component
-func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
-	scenario, err := getScenario(mandosTestPath)
+// GetAccountsAndTransactionsFromScenarios will retrieve the ScenarioWithBenchmark component
+func GetAccountsAndTransactionsFromScenarios(testPath string) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
+	scenario, err := getScenario(testPath)
 	if err != nil {
 		return getInvalidScenarioWithBenchmark(), err
 	}
@@ -61,7 +61,7 @@ func GetAccountsAndTransactionsFromMandos(mandosTestPath string) (stateAndBenchm
 }
 
 func getScenario(testPath string) (scenario *mj.Scenario, err error) {
-	scenario, err = mc.ParseMandosScenarioDefaultParser(testPath)
+	scenario, err = mc.ParseScenariosScenarioDefaultParser(testPath)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (stateAndBenchmarkInfo
 				}
 			}
 		case *mj.ExternalStepsStep:
-			externalStateAndBenchmarkInfo, err := GetAccountsAndTransactionsFromMandos(step.Path)
+			externalStateAndBenchmarkInfo, err := GetAccountsAndTransactionsFromScenarios(step.Path)
 			if err != nil {
 				return getInvalidScenarioWithBenchmark(), err
 			}
@@ -154,8 +154,8 @@ func getAccountsAndTransactionsFromSteps(steps []mj.Step) (stateAndBenchmarkInfo
 func getAccountsFromSetStateStep(setStateStep *mj.SetStateStep) (accounts []*TestAccount, deployedAccounts []*TestAccount, err error) {
 	accounts = make([]*TestAccount, 0)
 	deployedAccounts = make([]*TestAccount, 0)
-	for _, mandosAccount := range setStateStep.Accounts {
-		account, err := convertMandosAccountToTestAccount(mandosAccount)
+	for _, scenAccount := range setStateStep.Accounts {
+		account, err := convertScenariosAccountToTestAccount(scenAccount)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -164,9 +164,9 @@ func getAccountsFromSetStateStep(setStateStep *mj.SetStateStep) (accounts []*Tes
 		}
 		accounts = append(accounts, account)
 	}
-	for _, newMandosAddressMock := range setStateStep.NewAddressMocks {
-		scAddress := append(ScAddressPrefix, newMandosAddressMock.NewAddress.Value[ScAddressPrefixLength:]...)
-		ownerAddress := newMandosAddressMock.CreatorAddress.Value
+	for _, newScenariosAddressMock := range setStateStep.NewAddressMocks {
+		scAddress := append(ScAddressPrefix, newScenariosAddressMock.NewAddress.Value[ScAddressPrefixLength:]...)
+		ownerAddress := newScenariosAddressMock.CreatorAddress.Value
 		account := SetNewAccount(0, scAddress, big.NewInt(0), make(map[string][]byte), make([]byte, 0), ownerAddress)
 		deployedAccounts = append(deployedAccounts, account)
 	}
@@ -174,17 +174,17 @@ func getAccountsFromSetStateStep(setStateStep *mj.SetStateStep) (accounts []*Tes
 	return accounts, deployedAccounts, nil
 }
 
-func convertMandosAccountToTestAccount(mandosAcc *mj.Account) (*TestAccount, error) {
-	if len(mandosAcc.Address.Value) != 32 {
+func convertScenariosAccountToTestAccount(scenAcc *mj.Account) (*TestAccount, error) {
+	if len(scenAcc.Address.Value) != 32 {
 		return nil, errors.New("bad test: account address should be 32 bytes long")
 	}
 	storage := make(map[string][]byte)
-	for _, stkvp := range mandosAcc.Storage {
+	for _, stkvp := range scenAcc.Storage {
 		key := string(stkvp.Key.Value)
 		storage[key] = stkvp.Value.Value
 	}
-	_ = esdtconvert.WriteMandosESDTToStorage(mandosAcc.ESDTData, storage)
-	account := SetNewAccount(mandosAcc.Nonce.Value, mandosAcc.Address.Value, mandosAcc.Balance.Value, storage, mandosAcc.Code.Value, mandosAcc.Owner.Value)
+	_ = esdtconvert.WriteScenariosESDTToStorage(scenAcc.ESDTData, storage)
+	account := SetNewAccount(scenAcc.Nonce.Value, scenAcc.Address.Value, scenAcc.Balance.Value, storage, scenAcc.Code.Value, scenAcc.Owner.Value)
 
 	if len(account.code) != 0 && len(account.ownerAddress) == 0 {
 		return nil, errScAccountMustHaveOwner

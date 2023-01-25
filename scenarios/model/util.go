@@ -1,4 +1,4 @@
-package mandosjsonmodel
+package scenjsonmodel
 
 // JSONBytesFromTreeValues extracts values from a slice of JSONBytesFromTree into a list
 func JSONBytesFromTreeValues(jbs []JSONBytesFromTree) [][]byte {

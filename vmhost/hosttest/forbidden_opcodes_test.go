@@ -3,9 +3,9 @@ package hostCoretest
 import (
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 func TestForbiddenOps_BulkAndSIMD(t *testing.T) {

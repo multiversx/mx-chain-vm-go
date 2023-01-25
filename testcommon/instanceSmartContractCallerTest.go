@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // InstanceTestSmartContract represents the config data for the smart contract instance to be tested

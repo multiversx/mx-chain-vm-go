@@ -2,8 +2,8 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 var _ vmhost.RuntimeContext = (*RuntimeContextMock)(nil)
@@ -25,8 +25,8 @@ type RuntimeContextMock struct {
 	MemLoadResult            []byte
 	MemLoadMultipleResult    [][]byte
 	FailCryptoAPI            bool
-	FailElrondAPI            bool
-	FailElrondSyncExecAPI    bool
+	FailBaseOpsAPI           bool
+	FailSyncExecAPI          bool
 	FailBigIntAPI            bool
 	FailBigFloatAPI          bool
 	FailManagedBuffersAPI    bool
@@ -260,12 +260,12 @@ func (r *RuntimeContextMock) CallSCFunction(_ string) error {
 
 // BaseOpsErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) BaseOpsErrorShouldFailExecution() bool {
-	return r.FailElrondAPI
+	return r.FailBaseOpsAPI
 }
 
 // SyncExecAPIErrorShouldFailExecution mocked method
 func (r *RuntimeContextMock) SyncExecAPIErrorShouldFailExecution() bool {
-	return r.FailElrondSyncExecAPI
+	return r.FailSyncExecAPI
 }
 
 // CryptoAPIErrorShouldFailExecution mocked method

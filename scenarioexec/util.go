@@ -7,10 +7,10 @@ import (
 
 	"github.com/multiversx/mx-chain-core-go/core"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
 	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
-	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 )
 
 func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmock.Account, error) {
@@ -20,7 +20,7 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 		storage[key] = stkvp.Value.Value
 	}
 
-	err := esdtconvert.WriteMandosESDTToStorage(testAcct.ESDTData, storage)
+	err := esdtconvert.WriteScenariosESDTToStorage(testAcct.ESDTData, storage)
 	if err != nil {
 		return nil, err
 	}
@@ -46,19 +46,19 @@ func convertAccount(testAcct *mj.Account, world *worldmock.MockWorld) (*worldmoc
 			Payable:     true,
 			Upgradeable: true,
 			Readable:    true,
-		}).ToBytes(), // TODO: add explicit fields in mandos json
+		}).ToBytes(), // TODO: add explicit fields in scenario JSON
 		MockWorld: world,
 	}
 
 	return account, nil
 }
 
-func validateSetStateAccount(mandosAccount *mj.Account, converted *worldmock.Account) error {
+func validateSetStateAccount(scenAccount *mj.Account, converted *worldmock.Account) error {
 	err := converted.Validate()
 	if err != nil {
 		return fmt.Errorf(
 			`"setState" step validation failed for account "%s": %w`,
-			mandosAccount.Address.Original,
+			scenAccount.Address.Original,
 			err)
 	}
 	return nil
@@ -129,7 +129,7 @@ func convertBlockInfo(testBlockInfo *mj.BlockInfo, currentInfo *worldmock.BlockI
 	return currentInfo
 }
 
-// this is a small hack, so we can reuse mandos's JSON printing in error messages
+// this is a small hack, so we can reuse JSON printing in error messages
 func (ae *VMTestExecutor) convertLogToTestFormat(outputLog *vmcommon.LogEntry) *mj.LogEntry {
 	topics := mj.JSONCheckValueList{
 		Values: make([]mj.JSONCheckBytes, len(outputLog.Topics)),

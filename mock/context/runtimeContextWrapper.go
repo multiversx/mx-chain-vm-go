@@ -2,8 +2,8 @@ package mock
 
 import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // making sure we implement all functions of RuntimeContext
