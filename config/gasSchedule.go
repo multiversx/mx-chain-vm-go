@@ -26,13 +26,13 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		return nil, err
 	}
 
-	elrondOps := &ElrondAPICost{}
-	err = mapstructure.Decode(gasMap["ElrondAPICost"], elrondOps)
+	baseOpsAPI := &BaseOpsAPICost{}
+	err = mapstructure.Decode(gasMap["BaseOpsAPICost"], baseOpsAPI)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkForZeroUint64Fields(*elrondOps)
+	err = checkForZeroUint64Fields(*baseOpsAPI)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		BigIntAPICost:        *bigIntOps,
 		BigFloatAPICost:      *bigFloatOps,
 		EthAPICost:           *ethOps,
-		ElrondAPICost:        *elrondOps,
+		BaseOpsAPICost:       *baseOpsAPI,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       *opcodeCosts,
@@ -142,7 +142,7 @@ func MakeGasMap(value, asyncCallbackGasLock uint64) GasScheduleMap {
 func FillGasMap(gasMap GasScheduleMap, value, asyncCallbackGasLock uint64) GasScheduleMap {
 	gasMap["BuiltInCost"] = FillGasMapBuiltInCosts(value)
 	gasMap["BaseOperationCost"] = FillGasMapBaseOperationCosts(value)
-	gasMap["ElrondAPICost"] = FillGasMapElrondAPICosts(value, asyncCallbackGasLock)
+	gasMap["BaseOpsAPICost"] = FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock)
 	gasMap["EthAPICost"] = FillGasMapEthereumAPICosts(value)
 	gasMap["BigIntAPICost"] = FillGasMapBigIntAPICosts(value)
 	gasMap["BigFloatAPICost"] = FillGasMapBigFloatAPICosts(value)
@@ -188,7 +188,7 @@ func FillGasMapBaseOperationCosts(value uint64) map[string]uint64 {
 	return gasMap
 }
 
-func FillGasMapElrondAPICosts(value, asyncCallbackGasLock uint64) map[string]uint64 {
+func FillGasMapBaseOpsAPICosts(value, asyncCallbackGasLock uint64) map[string]uint64 {
 	gasMap := make(map[string]uint64)
 	gasMap["GetSCAddress"] = value
 	gasMap["GetOwnerAddress"] = value

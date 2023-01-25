@@ -1,13 +1,13 @@
-package mandosTests
+package scenTests
 
 import (
 	"math/big"
 	"testing"
 
-	mge "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/elrondgo-exporter"
+	mge "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/scenario-exporter"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,7 +27,7 @@ var addressBob = []byte("bob_____________________________")
 var addressDeployedAdder = []byte("deployedAdder___________________")
 
 func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
-	sbi, err := mge.GetAccountsAndTransactionsFromMandos("adder.scen.json")
+	sbi, err := mge.GetAccountsAndTransactionsFromScenarios("adder.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedDeployedAccs := make([]*mge.TestAccount, 0)
@@ -36,7 +36,7 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 	expectedBenchmarkTxPos := 1
 
 	ownerAccount := mge.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
-	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
+	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), vmhost.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
 	deployedScAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressDeployedAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), make([]byte, 0), addressOwner)
 	expectedAccs = append(expectedAccs, ownerAccount, scAccount)
 	expectedDeployedAccs = append(expectedDeployedAccs, deployedScAccount)
@@ -53,7 +53,7 @@ func TestGetAccountsAndTransactionsFrom_Adder(t *testing.T) {
 }
 
 func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
-	sbi, err := mge.GetAccountsAndTransactionsFromMandos("adder_with_external_steps.scen.json")
+	sbi, err := mge.GetAccountsAndTransactionsFromScenarios("adder_with_external_steps.scen.json")
 	require.Nil(t, err)
 	expectedAccs := make([]*mge.TestAccount, 0)
 	expectedTxs := make([]*mge.Transaction, 0)
@@ -61,7 +61,7 @@ func TestGetAccountsAndTransactionsFrom_AdderWithExternalSteps(t *testing.T) {
 	expectedBenchmarkTxPos := 1
 
 	ownerAccount := mge.SetNewAccount(1, addressOwner, big.NewInt(48), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
-	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), arwen.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
+	scAccount := mge.SetNewAccount(0, append(mge.ScAddressPrefix, addressAdder[mge.ScAddressPrefixLength:]...), big.NewInt(0), make(map[string][]byte), vmhost.GetSCCode("../../../test/adder/output/adder.wasm"), addressOwner)
 	aliceAccount := mge.SetNewAccount(5, addressAlice, big.NewInt(284), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	bobAccount := mge.SetNewAccount(3, addressBob, big.NewInt(11), make(map[string][]byte), make([]byte, 0), make([]byte, 0))
 	expectedAccs = append(expectedAccs, aliceAccount, scAccount, bobAccount, ownerAccount)

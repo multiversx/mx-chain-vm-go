@@ -3,9 +3,9 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 	mock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
 )
 
 // GasMismatchAsyncCallParentMock is an exposed mock contract method

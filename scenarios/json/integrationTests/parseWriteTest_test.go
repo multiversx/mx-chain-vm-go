@@ -1,4 +1,4 @@
-package mandosjsontest
+package scenjsontest
 
 import (
 	"io/ioutil"

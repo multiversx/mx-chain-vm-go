@@ -1,6 +1,6 @@
 .PHONY: test test-short build vmserver clean
 
-ARWEN_VERSION := $(shell git describe --tags --long --dirty --always)
+VM_VERSION := $(shell git describe --tags --long --dirty --always)
 
 clean:
 	go clean -cache -testcache
@@ -149,7 +149,7 @@ endif
 
 	erdpy contract new --template=erc20-c --directory ${SANDBOX}/sc-examples erc20-c
 	erdpy contract build ${SANDBOX}/sc-examples/erc20-c
-	cp ${SANDBOX}/sc-examples/erc20-c/output/wrc20_arwen.wasm ./test/erc20/contracts/erc20-c.wasm
+	cp ${SANDBOX}/sc-examples/erc20-c/output/wrc20.wasm ./test/erc20/contracts/erc20-c.wasm
 
 
 build-sc-examples-rs:

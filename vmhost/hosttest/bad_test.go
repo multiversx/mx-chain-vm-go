@@ -1,11 +1,11 @@
-package hosttest
+package hostCoretest
 
 import (
 	"testing"
 
-	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	test "github.com/multiversx/mx-chain-vm-v1_4-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 )
 
 func TestBadContract_NoPanic_Memoryfault(t *testing.T) {
@@ -20,10 +20,10 @@ func TestBadContract_NoPanic_Memoryfault(t *testing.T) {
 			WithFunction("memoryFault").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrorAndInfo(arwen.ErrExecutionFailed.Error(), "memoryFault")
+				HasRuntimeErrorAndInfo(vmhost.ErrExecutionFailed.Error(), "memoryFault")
 		})
 }
 
@@ -39,7 +39,7 @@ func TestBadContract_NoPanic_DivideByZero(t *testing.T) {
 			WithFunction("divideByZero").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok()
 		})
@@ -57,10 +57,10 @@ func TestBadContract_NoPanic_BadGetOwner1(t *testing.T) {
 			WithFunction("badGetOwner1").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrors(arwen.ErrBadBounds.Error())
+				HasRuntimeErrors(vmhost.ErrBadBounds.Error())
 		})
 }
 
@@ -76,7 +76,7 @@ func TestBadContract_NoPanic_BadBigIntStorageStore1(t *testing.T) {
 			WithFunction("badBigIntStorageStore1").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok()
 		})
@@ -94,7 +94,7 @@ func TestBadContract_NoPanic_BadWriteLog1(t *testing.T) {
 			WithFunction("badWriteLog1").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
 				HasRuntimeErrors("GuardedMakeByteSlice2D")
@@ -113,7 +113,7 @@ func TestBadContract_NoPanic_BadWriteLog2(t *testing.T) {
 			WithFunction("badWriteLog2").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
 				HasRuntimeErrors("mem load: negative length")
@@ -132,7 +132,7 @@ func TestBadContract_NoPanic_BadWriteLog3(t *testing.T) {
 			WithFunction("badWriteLog3").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok()
 		})
@@ -150,7 +150,7 @@ func TestBadContract_NoPanic_BadWriteLog4(t *testing.T) {
 			WithFunction("badWriteLog4").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
 				HasRuntimeErrors("mem load: bad bounds")
@@ -169,10 +169,10 @@ func TestBadContract_NoPanic_BadGetBlockHash1(t *testing.T) {
 			WithFunction("badGetBlockHash1").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrors(arwen.ErrExecutionFailed.Error())
+				HasRuntimeErrors(vmhost.ErrExecutionFailed.Error())
 		})
 }
 
@@ -188,7 +188,7 @@ func TestBadContract_NoPanic_BadGetBlockHash2(t *testing.T) {
 			WithFunction("badGetBlockHash2").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				Ok()
 		})
@@ -206,10 +206,10 @@ func TestBadContract_NoPanic_BadGetBlockHash3(t *testing.T) {
 			WithFunction("badGetBlockHash3").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrors(arwen.ErrExecutionFailed.Error())
+				HasRuntimeErrors(vmhost.ErrExecutionFailed.Error())
 		})
 }
 
@@ -225,10 +225,10 @@ func TestBadContract_NoPanic_BadRecursive(t *testing.T) {
 			WithFunction("badRecursive").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				ExecutionFailed().
-				HasRuntimeErrors(arwen.ErrExecutionFailed.Error())
+				HasRuntimeErrors(vmhost.ErrExecutionFailed.Error())
 		})
 }
 
@@ -244,9 +244,9 @@ func TestBadContract_NoPanic_NonExistingFunction(t *testing.T) {
 			WithFunction("thisDoesNotExist").
 			Build()).
 		WithWasmerSIGSEGVPassthrough(false).
-		AndAssertResults(func(host arwen.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.
 				FunctionNotFound().
-				HasRuntimeErrorAndInfo(arwen.ErrInvalidFunction.Error(), "thisDoesNotExist")
+				HasRuntimeErrorAndInfo(vmhost.ErrInvalidFunction.Error(), "thisDoesNotExist")
 		})
 }

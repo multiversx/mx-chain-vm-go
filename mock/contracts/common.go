@@ -80,12 +80,12 @@ func (config DirectCallGasTestConfig) GetGasUsedByChild() uint64 {
 	return config.GasUsedByChild
 }
 
-// ExecuteOnSameContextInMockContracts - calls the corresponding method in elrond api
-func ExecuteOnSameContextInMockContracts(host arwen.VMHost, input *vmcommon.ContractCallInput) int32 {
+// ExecuteOnSameContextInMockContracts - calls the corresponding method in VM hooks
+func ExecuteOnSameContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
 	return vmhooks.ExecuteOnSameContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
 }
 
-// ExecuteOnDestContextInMockContracts - calls the corresponding method in elrond api
-func ExecuteOnDestContextInMockContracts(host arwen.VMHost, input *vmcommon.ContractCallInput) int32 {
+// ExecuteOnDestContextInMockContracts - calls the corresponding method in VM hooks
+func ExecuteOnDestContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
 	return vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
 }

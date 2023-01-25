@@ -1,5 +1,5 @@
 DENOMINATION="000000000000000000"
-PROXY="https://api.elrond.com"
+PROXY="https://api.multiversx.com"
 CHAIN="BoN"
 ALICE_PEM="~/wallet/alice.pem"
 CONTRACT_ADDRESS="erd1YourContractHere"

@@ -15,7 +15,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/crypto/factory"
 	contextmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-v1_4-go/mock/world"
-	arwen "github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/cryptoapi"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost/vmhooks"
@@ -32,7 +32,7 @@ var vmType = []byte("type")
 
 func MakeAPIImports() *wasmer.Imports {
 	imports := vmhooksmeta.NewEIFunctions()
-	_ = vmhooks.ElrondEIImports(imports)
+	_ = vmhooks.BaseOpsAPIImports(imports)
 	_ = vmhooks.BigIntImports(imports)
 	_ = vmhooks.BigFloatImports(imports)
 	_ = vmhooks.ManagedBufferImports(imports)
@@ -41,7 +41,7 @@ func MakeAPIImports() *wasmer.Imports {
 	return wasmer.ConvertImports(imports)
 }
 
-func InitializeArwenAndWasmer() *contextmock.VMHostMock {
+func InitializeVMAndWasmer() *contextmock.VMHostMock {
 	imports := MakeAPIImports()
 	_ = wasmer.SetImports(imports)
 
@@ -62,7 +62,7 @@ func InitializeArwenAndWasmer() *contextmock.VMHostMock {
 	return host
 }
 
-func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext {
+func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext {
 	runtimeContext, err := NewRuntimeContext(
 		host,
 		vmType,
@@ -76,34 +76,34 @@ func makeDefaultRuntimeContext(t *testing.T, host arwen.VMHost) *runtimeContext 
 }
 
 func TestNewRuntimeContextErrors(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	bfc := builtInFunctions.NewBuiltInFunctionContainer()
 	hasher := defaultHasher
 
 	t.Run("NilHost", func(t *testing.T) {
 		runtimeContext, err := NewRuntimeContext(nil, vmType, bfc, hasher)
 		require.Nil(t, runtimeContext)
-		require.ErrorIs(t, err, arwen.ErrNilHost)
+		require.ErrorIs(t, err, vmhost.ErrNilHost)
 	})
 	t.Run("NilVMType", func(t *testing.T) {
 		runtimeContext, err := NewRuntimeContext(host, nil, bfc, hasher)
 		require.Nil(t, runtimeContext)
-		require.ErrorIs(t, err, arwen.ErrNilVMType)
+		require.ErrorIs(t, err, vmhost.ErrNilVMType)
 	})
 	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
 		runtimeContext, err := NewRuntimeContext(host, vmType, nil, hasher)
 		require.Nil(t, runtimeContext)
-		require.ErrorIs(t, err, arwen.ErrNilBuiltInFunctionsContainer)
+		require.ErrorIs(t, err, vmhost.ErrNilBuiltInFunctionsContainer)
 	})
 	t.Run("NilHasher", func(t *testing.T) {
 		runtimeContext, err := NewRuntimeContext(host, vmType, bfc, nil)
 		require.Nil(t, runtimeContext)
-		require.ErrorIs(t, err, arwen.ErrNilHasher)
+		require.ErrorIs(t, err, vmhost.ErrNilHasher)
 	})
 }
 
 func TestNewRuntimeContext(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -115,7 +115,7 @@ func TestNewRuntimeContext(t *testing.T) {
 }
 
 func TestRuntimeContext_InitState(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -123,7 +123,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 	runtimeContext.codeAddress = []byte("some address")
 	runtimeContext.callFunction = "a function"
 	runtimeContext.readOnly = true
-	runtimeContext.asyncCallInfo = &arwen.AsyncCallInfo{}
+	runtimeContext.asyncCallInfo = &vmhost.AsyncCallInfo{}
 
 	runtimeContext.InitState()
 
@@ -135,7 +135,7 @@ func TestRuntimeContext_InitState(t *testing.T) {
 }
 
 func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -153,14 +153,14 @@ func TestRuntimeContext_NewWasmerInstance(t *testing.T) {
 	require.NotNil(t, err)
 
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
-	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 }
 
 func TestRuntimeContext_IsFunctionImported(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -168,10 +168,10 @@ func TestRuntimeContext_IsFunctionImported(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
-	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 
 	// These API functions exist, and are imported by 'counter'
 	require.True(t, runtimeContext.IsFunctionImported("int64storageLoad"))
@@ -246,7 +246,7 @@ func TestRuntimeContext_StateSettersAndGetters(t *testing.T) {
 }
 
 func TestRuntimeContext_PushPopInstance(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -254,7 +254,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -334,7 +334,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 }
 
 func TestRuntimeContext_Instance(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -342,7 +342,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -367,7 +367,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	input.Function = "func"
 	runtimeContext.InitStateFromContractCallInput(input)
 	f, err = runtimeContext.GetFunctionToCall()
-	require.Equal(t, arwen.ErrFuncNotFound, err)
+	require.Equal(t, vmhost.ErrFuncNotFound, err)
 	require.Equal(t, "", f)
 
 	initFunc := runtimeContext.GetInitFunction()
@@ -378,7 +378,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 }
 
 func TestRuntimeContext_Breakpoints(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -394,52 +394,52 @@ func TestRuntimeContext_Breakpoints(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	// Set and get curent breakpoint value
-	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
-	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
-	require.Equal(t, arwen.BreakpointOutOfGas, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+	runtimeContext.SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
+	require.Equal(t, vmhost.BreakpointOutOfGas, runtimeContext.GetRuntimeBreakpointValue())
 
-	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+	runtimeContext.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
+	require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 
 	// Signal user error
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	runtimeContext.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	runtimeContext.SignalUserError("something happened")
-	require.Equal(t, arwen.BreakpointSignalError, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointSignalError, runtimeContext.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.UserError, mockOutput.ReturnCode())
 	require.Equal(t, "something happened", mockOutput.ReturnMessage())
 
 	// Fail execution
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
+	runtimeContext.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 
 	runtimeContext.FailExecution(nil)
-	require.Equal(t, arwen.BreakpointExecutionFailed, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointExecutionFailed, runtimeContext.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
 	require.Equal(t, "execution failed", mockOutput.ReturnMessage())
 
 	mockOutput.SetReturnCode(vmcommon.Ok)
 	mockOutput.SetReturnMessage("")
-	runtimeContext.SetRuntimeBreakpointValue(arwen.BreakpointNone)
-	require.Equal(t, arwen.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
+	runtimeContext.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
+	require.Equal(t, vmhost.BreakpointNone, runtimeContext.GetRuntimeBreakpointValue())
 
 	runtimeError := errors.New("runtime error")
 	runtimeContext.FailExecution(runtimeError)
-	require.Equal(t, arwen.BreakpointExecutionFailed, runtimeContext.GetRuntimeBreakpointValue())
+	require.Equal(t, vmhost.BreakpointExecutionFailed, runtimeContext.GetRuntimeBreakpointValue())
 	require.Equal(t, vmcommon.ExecutionFailed, mockOutput.ReturnCode())
 	require.Equal(t, runtimeError.Error(), mockOutput.ReturnMessage())
 }
 
 func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -447,7 +447,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -471,7 +471,7 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 }
 
 func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -479,7 +479,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := "./../../test/contracts/answer/output/answer.wasm"
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -487,7 +487,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	totalPages := 2
 	memoryContents := memory.Data()
 	require.Equal(t, memory.Length(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*arwen.WASMPageSize, len(memoryContents))
+	require.Equal(t, totalPages*vmhost.WASMPageSize, len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {
@@ -498,7 +498,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 }
 
 func TestRuntimeContext_MemLoadCases(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -506,7 +506,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -518,21 +518,21 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	offset = -3
 	length = 10
 	memContents, err := runtimeContext.MemLoad(offset, length)
-	require.True(t, errors.Is(err, arwen.ErrBadBounds))
+	require.True(t, errors.Is(err, vmhost.ErrBadBounds))
 	require.Nil(t, memContents)
 
 	// Offset too larget
 	offset = int32(memory.Length() + 1)
 	length = 10
 	memContents, err = runtimeContext.MemLoad(offset, length)
-	require.True(t, errors.Is(err, arwen.ErrBadBounds))
+	require.True(t, errors.Is(err, vmhost.ErrBadBounds))
 	require.Nil(t, memContents)
 
 	// Negative length
 	offset = 10
 	length = -2
 	memContents, err = runtimeContext.MemLoad(offset, length)
-	require.True(t, errors.Is(err, arwen.ErrNegativeLength))
+	require.True(t, errors.Is(err, vmhost.ErrNegativeLength))
 	require.Nil(t, memContents)
 
 	// Requested end too large
@@ -562,7 +562,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 }
 
 func TestRuntimeContext_MemStoreCases(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -570,18 +570,18 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	memory := runtimeContext.iTracker.instance.GetMemory()
-	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+	require.Equal(t, 2*vmhost.WASMPageSize, int(memory.Length()))
 
 	// Bad lower bounds
 	memContents := []byte("test data")
 	offset := int32(-2)
 	err = runtimeContext.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadLowerBounds))
+	require.True(t, errors.Is(err, vmhost.ErrBadLowerBounds))
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
@@ -611,7 +611,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 }
 
 func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	enableEpochsHandler := &mock.EnableEpochsHandlerStub{
 		IsRuntimeMemStoreLimitEnabledField: true,
 	}
@@ -624,32 +624,32 @@ func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
 	memory := runtimeContext.iTracker.instance.GetMemory()
-	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+	require.Equal(t, 2*vmhost.WASMPageSize, int(memory.Length()))
 
 	memContents := []byte("test data")
 
 	// Memory growth via MemStore forbidden
 	offset := int32(memory.Length() - 4)
 	err = runtimeContext.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
-	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+	require.True(t, errors.Is(err, vmhost.ErrBadUpperBounds))
+	require.Equal(t, 2*vmhost.WASMPageSize, int(memory.Length()))
 
 	// Memory growth via MemStore forbidden
-	memContents = make([]byte, arwen.WASMPageSize+100)
+	memContents = make([]byte, vmhost.WASMPageSize+100)
 	offset = int32(memory.Length() - 50)
 	err = runtimeContext.MemStore(offset, memContents)
-	require.True(t, errors.Is(err, arwen.ErrBadUpperBounds))
-	require.Equal(t, 2*arwen.WASMPageSize, int(memory.Length()))
+	require.True(t, errors.Is(err, vmhost.ErrBadUpperBounds))
+	require.Equal(t, 2*vmhost.WASMPageSize, int(memory.Length()))
 
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -657,7 +657,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	gasLimit := uint64(100000000)
 	path := counterWasmCode
-	contractCode := arwen.GetSCCode(path)
+	contractCode := vmhost.GetSCCode(path)
 	err := runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -675,7 +675,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 	require.Equal(t, 1, len(runtimeContext.iTracker.instanceStack))
 
 	// Create a new Wasmer instance
-	contractCode = arwen.GetSCCode(path)
+	contractCode = vmhost.GetSCCode(path)
 	err = runtimeContext.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
@@ -711,7 +711,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -723,7 +723,7 @@ func TestRuntimeContext_PopSetActiveStateIfStackIsEmptyShouldNotPanic(t *testing
 func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()
 
@@ -735,7 +735,7 @@ func TestRuntimeContext_PopDiscardIfStackIsEmptyShouldNotPanic(t *testing.T) {
 func TestRuntimeContext_PopInstanceIfStackIsEmptyShouldNotPanic(t *testing.T) {
 	t.Parallel()
 
-	host := InitializeArwenAndWasmer()
+	host := InitializeVMAndWasmer()
 
 	runtimeContext := makeDefaultRuntimeContext(t, host)
 	defer runtimeContext.ClearWarmInstanceCache()

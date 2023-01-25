@@ -1,4 +1,4 @@
-package mandoscontroller
+package scencontroller
 
 import (
 	mj "github.com/multiversx/mx-chain-vm-v1_4-go/scenarios/model"
@@ -22,7 +22,7 @@ func DefaultRunScenarioOptions() *RunScenarioOptions {
 
 // RunSingleJSONScenario parses and prepares test, then calls testCallback.
 func (r *ScenarioRunner) RunSingleJSONScenario(contextPath string, options *RunScenarioOptions) error {
-	scenario, parseErr := ParseMandosScenario(r.Parser, contextPath)
+	scenario, parseErr := ParseScenariosScenario(r.Parser, contextPath)
 
 	if parseErr != nil {
 		return parseErr
