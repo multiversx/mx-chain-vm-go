@@ -538,7 +538,7 @@ func TestOutputContext_WriteLog(t *testing.T) {
 
 	host := &contextmock.VMHostMock{
 		RuntimeContext: &contextmock.RuntimeContextMock{
-			CallFunction: "function",
+			CallFunctionName: "function",
 		},
 	}
 	outputContext, _ := NewOutputContext(host)

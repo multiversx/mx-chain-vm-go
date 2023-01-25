@@ -8,6 +8,9 @@ import (
 // ErrFailedInstantiation indicates that a Wasmer instance could not be created
 var ErrFailedInstantiation = errors.New("could not create wasmer instance")
 
+// ErrExportNotFound indicates that the requested name was not found among the exports
+var ErrExportNotFound = errors.New("export not found")
+
 // ErrFailedCacheImports indicates that the imports could not be cached
 var ErrFailedCacheImports = errors.New("could not cache imports")
 

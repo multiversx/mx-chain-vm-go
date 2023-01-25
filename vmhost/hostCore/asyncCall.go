@@ -12,7 +12,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/math"
 	"github.com/multiversx/mx-chain-vm-v1_4-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
 func (host *vmHost) handleAsyncCallBreakpoint() error {
@@ -863,7 +862,7 @@ func (host *vmHost) setupAsyncCallsGas(asyncInfo *vmhost.AsyncContextInfo) error
 	return nil
 }
 
-func (host *vmHost) getFunctionByCallType(callType vm.CallType) (wasmer.ExportedFunctionCallback, error) {
+func (host *vmHost) getFunctionByCallType(callType vm.CallType) (string, error) {
 	runtime := host.Runtime()
 
 	if callType != vm.AsynchronousCallBack {
@@ -872,7 +871,7 @@ func (host *vmHost) getFunctionByCallType(callType vm.CallType) (wasmer.Exported
 
 	asyncInfo, err := host.getCurrentAsyncInfo()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	vmInput := runtime.GetVMInput()
@@ -895,7 +894,7 @@ func (host *vmHost) getFunctionByCallType(callType vm.CallType) (wasmer.Exported
 	function, err := runtime.GetFunctionToCall()
 	if err != nil && !customCallback {
 		log.Trace("get function by call type", "error", vmhost.ErrNilCallbackFunction)
-		return nil, vmhost.ErrNilCallbackFunction
+		return "", vmhost.ErrNilCallbackFunction
 	}
 
 	return function, nil
