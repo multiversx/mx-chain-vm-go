@@ -9,7 +9,7 @@ import (
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
-	github_com_multiversx_elrond_go_core_data "github.com/multiversx/mx-chain-core-go/data"
+	github_com_multiversx_mx_chain_core_go_data "github.com/multiversx/mx-chain-core-go/data"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	io "io"
 	math "math"
@@ -745,7 +745,7 @@ func (this *SerializableVMOutput) Equal(that interface{}) bool {
 		return false
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		if !__caster.Equal(this.GasRefund, that1.GasRefund) {
 			return false
 		}
@@ -799,7 +799,7 @@ func (this *SerializableOutputTransfer) Equal(that interface{}) bool {
 		return false
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		if !__caster.Equal(this.Value, that1.Value) {
 			return false
 		}
@@ -877,7 +877,7 @@ func (this *SerializableOutputAccount) Equal(that interface{}) bool {
 		return false
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		if !__caster.Equal(this.Balance, that1.Balance) {
 			return false
 		}
@@ -900,7 +900,7 @@ func (this *SerializableOutputAccount) Equal(that interface{}) bool {
 		return false
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		if !__caster.Equal(this.BalanceDelta, that1.BalanceDelta) {
 			return false
 		}
@@ -1246,7 +1246,7 @@ func (m *SerializableVMOutput) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		size := __caster.Size(m.GasRefund)
 		i -= size
 		if _, err := __caster.MarshalTo(m.GasRefund, dAtA[i:]); err != nil {
@@ -1335,7 +1335,7 @@ func (m *SerializableOutputTransfer) MarshalToSizedBuffer(dAtA []byte) (int, err
 		dAtA[i] = 0x10
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		size := __caster.Size(m.Value)
 		i -= size
 		if _, err := __caster.MarshalTo(m.Value, dAtA[i:]); err != nil {
@@ -1435,7 +1435,7 @@ func (m *SerializableOutputAccount) MarshalToSizedBuffer(dAtA []byte) (int, erro
 		}
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		size := __caster.Size(m.BalanceDelta)
 		i -= size
 		if _, err := __caster.MarshalTo(m.BalanceDelta, dAtA[i:]); err != nil {
@@ -1498,7 +1498,7 @@ func (m *SerializableOutputAccount) MarshalToSizedBuffer(dAtA []byte) (int, erro
 		}
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		size := __caster.Size(m.Balance)
 		i -= size
 		if _, err := __caster.MarshalTo(m.Balance, dAtA[i:]); err != nil {
@@ -1735,7 +1735,7 @@ func (m *SerializableVMOutput) Size() (n int) {
 		n += 1 + sovAsync(uint64(m.GasRemaining))
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		l = __caster.Size(m.GasRefund)
 		n += 1 + l + sovAsync(uint64(l))
 	}
@@ -1778,7 +1778,7 @@ func (m *SerializableOutputTransfer) Size() (n int) {
 	var l int
 	_ = l
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		l = __caster.Size(m.Value)
 		n += 1 + l + sovAsync(uint64(l))
 	}
@@ -1836,7 +1836,7 @@ func (m *SerializableOutputAccount) Size() (n int) {
 		n += 1 + sovAsync(uint64(m.Nonce))
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		l = __caster.Size(m.Balance)
 		n += 1 + l + sovAsync(uint64(l))
 	}
@@ -1866,7 +1866,7 @@ func (m *SerializableOutputAccount) Size() (n int) {
 		n += 1 + l + sovAsync(uint64(l))
 	}
 	{
-		__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+		__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 		l = __caster.Size(m.BalanceDelta)
 		n += 1 + l + sovAsync(uint64(l))
 	}
@@ -2277,7 +2277,7 @@ func (m *SerializableVMOutput) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			{
-				__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+				__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 				if tmp, err := __caster.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				} else {
@@ -2597,7 +2597,7 @@ func (m *SerializableOutputTransfer) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			{
-				__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+				__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 				if tmp, err := __caster.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				} else {
@@ -3007,7 +3007,7 @@ func (m *SerializableOutputAccount) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			{
-				__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+				__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 				if tmp, err := __caster.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				} else {
@@ -3276,7 +3276,7 @@ func (m *SerializableOutputAccount) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			{
-				__caster := &github_com_multiversx_elrond_go_core_data.BigIntCaster{}
+				__caster := &github_com_multiversx_mx_chain_core_go_data.BigIntCaster{}
 				if tmp, err := __caster.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				} else {
