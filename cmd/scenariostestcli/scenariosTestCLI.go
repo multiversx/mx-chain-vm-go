@@ -33,8 +33,8 @@ func parseOptionFlags() *mc.RunScenarioOptions {
 	}
 }
 
-// MandosTestCLI provides the functionality for any scenarios test executor.
-func MandosTestCLI() {
+// ScenariosTestCLI provides the functionality for any scenarios test executor.
+func ScenariosTestCLI() {
 	options := parseOptionFlags()
 
 	// directory of this executable

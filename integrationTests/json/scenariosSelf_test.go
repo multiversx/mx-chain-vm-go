@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-// Tests Mandos consistency, no smart contracts.
-func TestMandosSelfTest(t *testing.T) {
-	MandosTest(t).
+// Tests Scenarios consistency, no smart contracts.
+func TestScenariosSelfTest(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test").
 		Exclude("scenarios-self-test/builtin-func-esdt-transfer.scen.json").
 		Exclude("scenarios-self-test/esdt-zero-balance-check-err.scen.json").
@@ -15,8 +15,8 @@ func TestMandosSelfTest(t *testing.T) {
 		CheckNoError()
 }
 
-func TestMandoSetAccountAddressLengthErr1(t *testing.T) {
-	MandosTest(t).
+func TestSetAccountAddressLengthErr1(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-account-addr-len.err1.json").
 		Run().
@@ -24,8 +24,8 @@ func TestMandoSetAccountAddressLengthErr1(t *testing.T) {
 			"error processing steps: cannot parse set state step: account address is not 32 bytes in length")
 }
 
-func TestMandoSetAccountAddressLengthErr2(t *testing.T) {
-	MandosTest(t).
+func TestSetAccountAddressLengthErr2(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-account-addr-len.err2.json").
 		Run().
@@ -33,8 +33,8 @@ func TestMandoSetAccountAddressLengthErr2(t *testing.T) {
 			"error processing steps: error parsing new addresses: account address is not 32 bytes in length")
 }
 
-func TestMandoSetAccountSCAddressErr1(t *testing.T) {
-	MandosTest(t).
+func TestSetAccountSCAddressErr1(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-account-sc-addr.err1.json").
 		Run().
@@ -42,8 +42,8 @@ func TestMandoSetAccountSCAddressErr1(t *testing.T) {
 			"\"setState\" step validation failed for account \"address:not-a-sc-address\": account has a smart contract address, but has no code: 0x6e6f742d612d73632d616464726573735f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f")
 }
 
-func TestMandoSetAccountSCAddressErr2(t *testing.T) {
-	MandosTest(t).
+func TestSetAccountSCAddressErr2(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-account-sc-addr.err2.json").
 		Run().
@@ -51,8 +51,8 @@ func TestMandoSetAccountSCAddressErr2(t *testing.T) {
 			"\"setState\" step validation failed for account \"sc:should-be-sc\": account has code but not a smart contract address: 0000000000000000000073686f756c642d62652d73635f5f5f5f5f5f5f5f5f5f")
 }
 
-func TestMandoSetAccountSCAddressErr3(t *testing.T) {
-	MandosTest(t).
+func TestSetAccountSCAddressErr3(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-account-sc-addr.err3.json").
 		Run().
@@ -60,8 +60,8 @@ func TestMandoSetAccountSCAddressErr3(t *testing.T) {
 			"address in \"setState\" \"newAddresses\" field should have SC format: address:not-a-sc-address")
 }
 
-func TestMandosCheckNonceErr(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckNonceErr(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-nonce.err.json").
 		Run().
@@ -69,8 +69,8 @@ func TestMandosCheckNonceErr(t *testing.T) {
 			"Check state \"check-1\": bad account nonce. Account: address:the-address. Want: \"1002\". Have: \"1001\"")
 }
 
-func TestMandosCheckOwnerErr1(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckOwnerErr1(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-owner.err1.json").
 		Run().
@@ -78,8 +78,8 @@ func TestMandosCheckOwnerErr1(t *testing.T) {
 			"Check state \"check-1\": bad account owner. Account: address:child. Want: \"address:other\". Have: \"address:parent\"")
 }
 
-func TestMandosCheckOwnerErr2(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckOwnerErr2(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-owner.err2.json").
 		Run().
@@ -87,8 +87,8 @@ func TestMandosCheckOwnerErr2(t *testing.T) {
 			"Check state \"check-1\": bad account owner. Account: address:parent. Want: \"address:other\". Have: \"\"")
 }
 
-func TestMandosCheckBalanceErr(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckBalanceErr(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-balance.err.json").
 		Run().
@@ -96,17 +96,17 @@ func TestMandosCheckBalanceErr(t *testing.T) {
 			"Check state \"check-1\": bad account balance. Account: address:the-address. Want: \"1,000,002\". Have: \"1000001\"")
 }
 
-func TestMandosCheckUsernameErr(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckUsernameErr(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-username.err.json").
 		Run().
 		RequireError(
-			"Check state \"check-1\": bad account username. Account: address:the-address. Want: \"str:wrong.elrond\". Have: \"str:theusername.elrond\"")
+			"Check state \"check-1\": bad account username. Account: address:the-address. Want: \"str:wrong.domain\". Have: \"str:theusername.domain\"")
 }
 
-func TestMandosCheckCodeErr(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckCodeErr(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-code.err.json").
 		Run().
@@ -114,8 +114,8 @@ func TestMandosCheckCodeErr(t *testing.T) {
 			"Check state \"check-1\": bad account code. Account: sc:contract-address. Want: \"file:set-check-code.scen.json\". Have: \"0x7b0a2020202022636f6d...\"")
 }
 
-func TestMandosCheckStorageErr1(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckStorageErr1(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err1.json").
 		Run().
@@ -124,8 +124,8 @@ func TestMandosCheckStorageErr1(t *testing.T) {
 				"  for key 0x6b65792d63 (str:key-c): Want: \"str:another-value\". Have: \"0x76616c75652d63 (str:value-c)\"")
 }
 
-func TestMandosCheckStorageErr2(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckStorageErr2(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err2.json").
 		Run().
@@ -134,8 +134,8 @@ func TestMandosCheckStorageErr2(t *testing.T) {
 				"  for key 0x6b65792d63 (str:key-c): Want: \"\". Have: \"0x76616c75652d63 (str:value-c)\"")
 }
 
-func TestMandosCheckStorageErr3(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckStorageErr3(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err3.json").
 		Run().
@@ -144,8 +144,8 @@ func TestMandosCheckStorageErr3(t *testing.T) {
 				"  for key 0x6b65792d64 (str:key-d): Want: \"str:value-d\". Have: \"\"")
 }
 
-func TestMandosCheckStorageErr4(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckStorageErr4(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err4.json").
 		Run().
@@ -154,8 +154,8 @@ func TestMandosCheckStorageErr4(t *testing.T) {
 				"  for key 0x6b65792d63 (str:key-c): Want: \"\". Have: \"0x76616c75652d63 (str:value-c)\"")
 }
 
-func TestMandosCheckStorageErr5(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckStorageErr5(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-storage.err5.json").
 		Run().
@@ -164,8 +164,8 @@ func TestMandosCheckStorageErr5(t *testing.T) {
 				"  for key 0x6b65792d62 (str:key-b): Want: \"str:another-b\". Have: \"0x76616c75652d62 (str:value-b)\"")
 }
 
-func TestMandosCheckESDTErr1(t *testing.T) {
-	MandosTest(t).
+func TestScenariosCheckESDTErr1(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test/set-check").
 		File("set-check-esdt.err1.json").
 		Run().
@@ -179,8 +179,8 @@ func TestMandosCheckESDTErr1(t *testing.T) {
   for token: NFT-123456, nonce: 1: Bad attributes. Want: "str:other_attributes". Have: "str:serialized_attributes"`)
 }
 
-func TestMandosEsdtZeroBalance(t *testing.T) {
-	MandosTest(t).
+func TestScenariosEsdtZeroBalance(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test").
 		File("esdt-zero-balance-check-err.scen.json").
 		Run().
@@ -189,8 +189,8 @@ func TestMandosEsdtZeroBalance(t *testing.T) {
   for token: TOK-123456, nonce: 0: Bad balance. Want: "". Have: "150"`)
 }
 
-func TestMandosEsdtNonZeroBalance(t *testing.T) {
-	MandosTest(t).
+func TestScenariosEsdtNonZeroBalance(t *testing.T) {
+	ScenariosTest(t).
 		Folder("scenarios-self-test").
 		File("esdt-non-zero-balance-check-err.scen.json").
 		Run().

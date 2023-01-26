@@ -9,7 +9,7 @@ func TestRustAllocFeatures(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/alloc-features/scenarios").
 		Run().
 		CheckNoError()
@@ -20,7 +20,7 @@ func TestRustBasicFeaturesLatest(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/basic-features/scenarios").
 		Exclude("features/basic-features/scenarios/storage_mapper_fungible_token.scen.json").
 		Run().
@@ -32,7 +32,7 @@ func TestRustBasicFeaturesNoSmallIntApi(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/basic-features-no-small-int-api/scenarios").
 		Run().
 		CheckNoError()
@@ -44,7 +44,7 @@ func TestRustBasicFeaturesLegacy(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/basic-features-legacy/scenarios").
 		Run().
 		CheckNoError()
@@ -55,7 +55,7 @@ func TestRustBigFloatFeatures(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/big-float-features/scenarios").
 		Run().
 		CheckNoError()
@@ -66,7 +66,7 @@ func TestRustPayableFeaturesLatest(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/payable-features/scenarios").
 		Run().
 		CheckNoError()
@@ -77,7 +77,7 @@ func TestRustComposability(t *testing.T) {
 	// which are unsupported by the legacy async calls on which the forwarder is
 	// currently based. The new AsyncContext will block multi-level async calls
 	// anyway in its first release.
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		Exclude("features/composability/scenarios/forwarder_send_twice_egld.scen.json").
 		Exclude("features/composability/scenarios/forwarder_send_twice_esdt.scen.json").
@@ -86,7 +86,7 @@ func TestRustComposability(t *testing.T) {
 }
 
 func TestRustPromisesFeatures(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/composability/scenarios-promises").
 		Run().
 		CheckNoError()
@@ -94,14 +94,14 @@ func TestRustPromisesFeatures(t *testing.T) {
 
 // TODO: debug, then delete
 func TestRustPromisesFeaturesDebug(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/composability/scenarios-promises/promises_call_async_retrieve_egld.scen.json").
 		Run().
 		CheckNoError()
 }
 
 func TestRustFormattedMessageFeatures(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/formatted-message-features/scenarios").
 		Run().
 		CheckNoError()
@@ -112,7 +112,7 @@ func TestRustLegacyComposability(t *testing.T) {
 	// which are unsupported by the legacy async calls on which the forwarder is
 	// currently based. The new AsyncContext will block multi-level async calls
 	// anyway in its first release.
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/composability/scenarios-legacy").
 		Exclude("features/composability/scenarios-legacy/l_forwarder_send_twice_egld.scen.json").
 		Exclude("features/composability/scenarios-legacy/l_forwarder_send_twice_esdt.scen.json").
@@ -122,14 +122,14 @@ func TestRustLegacyComposability(t *testing.T) {
 }
 
 func TestTimelocks(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("timelocks").
 		Run().
 		CheckNoError()
 }
 
 func TestForwarderTransfExec(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forwarder_call_transf_exec_reject_nft.scen.json").
 		Run().
@@ -137,7 +137,7 @@ func TestForwarderTransfExec(t *testing.T) {
 }
 
 func TestForwarderTransfExecMultiReject(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("features/composability/scenarios").
 		File("forwarder_call_transf_exec_reject_multi_transfer.scen.json").
 		Run().

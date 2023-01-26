@@ -18,12 +18,12 @@ func MakeESDTUserMetadataBytes(frozen bool) []byte {
 	return metadata.ToBytes()
 }
 
-// WriteMandosESDTToStorage writes the Mandos ESDT data to the provided storage map
-func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
-	for _, mandosESDTData := range esdtData {
-		tokenIdentifier := mandosESDTData.TokenIdentifier.Value
-		isFrozen := mandosESDTData.Frozen.Value > 0
-		for _, instance := range mandosESDTData.Instances {
+// WriteScenariosESDTToStorage writes the Scenarios ESDT data to the provided storage map
+func WriteScenariosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]byte) error {
+	for _, scenESDTData := range esdtData {
+		tokenIdentifier := scenESDTData.TokenIdentifier.Value
+		isFrozen := scenESDTData.Frozen.Value > 0
+		for _, instance := range scenESDTData.Instances {
 			tokenNonce := instance.Nonce.Value
 			tokenKey := makeTokenKey(tokenIdentifier, tokenNonce)
 			tokenBalance := instance.Balance.Value
@@ -50,11 +50,11 @@ func WriteMandosESDTToStorage(esdtData []*mj.ESDTData, destination map[string][]
 				return err
 			}
 		}
-		err := SetLastNonce(tokenIdentifier, mandosESDTData.LastNonce.Value, destination)
+		err := SetLastNonce(tokenIdentifier, scenESDTData.LastNonce.Value, destination)
 		if err != nil {
 			return err
 		}
-		err = SetTokenRolesAsStrings(tokenIdentifier, mandosESDTData.Roles, destination)
+		err = SetTokenRolesAsStrings(tokenIdentifier, scenESDTData.Roles, destination)
 		if err != nil {
 			return err
 		}

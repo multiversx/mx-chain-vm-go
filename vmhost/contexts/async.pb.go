@@ -6,11 +6,11 @@ package contexts
 import (
 	bytes "bytes"
 	fmt "fmt"
-	github_com_multiversx_elrond_go_core_data "github.com/multiversx/mx-chain-core-go/data"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
+	github_com_multiversx_elrond_go_core_data "github.com/multiversx/mx-chain-core-go/data"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	io "io"
 	math "math"
 	math_big "math/big"
@@ -470,20 +470,20 @@ func (m *SerializableLogEntry) GetData() []byte {
 }
 
 type SerializableAsyncContext struct {
-	Address                      []byte                              `protobuf:"bytes,1,opt,name=Address,proto3" json:"Address,omitempty"`
-	CallID                       []byte                              `protobuf:"bytes,2,opt,name=CallID,proto3" json:"CallID,omitempty"`
-	CallType                     SerializableCallType                `protobuf:"varint,3,opt,name=CallType,proto3,enum=contexts.SerializableCallType" json:"CallType,omitempty"`
-	CallerAddr                   []byte                              `protobuf:"bytes,4,opt,name=CallerAddr,proto3" json:"CallerAddr,omitempty"`
-	CallerCallID                 []byte                              `protobuf:"bytes,5,opt,name=CallerCallID,proto3" json:"CallerCallID,omitempty"`
-	CallbackAsyncInitiatorCallID []byte                              `protobuf:"bytes,6,opt,name=CallbackAsyncInitiatorCallID,proto3" json:"CallbackAsyncInitiatorCallID,omitempty"`
-	Callback                     string                              `protobuf:"bytes,7,opt,name=Callback,proto3" json:"Callback,omitempty"`
-	CallbackData                 []byte                              `protobuf:"bytes,8,opt,name=CallbackData,proto3" json:"CallbackData,omitempty"`
-	GasAccumulated               uint64                              `protobuf:"varint,9,opt,name=GasAccumulated,proto3" json:"GasAccumulated,omitempty"`
-	ReturnData                   []byte                              `protobuf:"bytes,10,opt,name=ReturnData,proto3" json:"ReturnData,omitempty"`
+	Address                      []byte                               `protobuf:"bytes,1,opt,name=Address,proto3" json:"Address,omitempty"`
+	CallID                       []byte                               `protobuf:"bytes,2,opt,name=CallID,proto3" json:"CallID,omitempty"`
+	CallType                     SerializableCallType                 `protobuf:"varint,3,opt,name=CallType,proto3,enum=contexts.SerializableCallType" json:"CallType,omitempty"`
+	CallerAddr                   []byte                               `protobuf:"bytes,4,opt,name=CallerAddr,proto3" json:"CallerAddr,omitempty"`
+	CallerCallID                 []byte                               `protobuf:"bytes,5,opt,name=CallerCallID,proto3" json:"CallerCallID,omitempty"`
+	CallbackAsyncInitiatorCallID []byte                               `protobuf:"bytes,6,opt,name=CallbackAsyncInitiatorCallID,proto3" json:"CallbackAsyncInitiatorCallID,omitempty"`
+	Callback                     string                               `protobuf:"bytes,7,opt,name=Callback,proto3" json:"Callback,omitempty"`
+	CallbackData                 []byte                               `protobuf:"bytes,8,opt,name=CallbackData,proto3" json:"CallbackData,omitempty"`
+	GasAccumulated               uint64                               `protobuf:"varint,9,opt,name=GasAccumulated,proto3" json:"GasAccumulated,omitempty"`
+	ReturnData                   []byte                               `protobuf:"bytes,10,opt,name=ReturnData,proto3" json:"ReturnData,omitempty"`
 	AsyncCallGroups              []*vmhost.SerializableAsyncCallGroup `protobuf:"bytes,11,rep,name=asyncCallGroups,proto3" json:"asyncCallGroups,omitempty"`
-	CallsCounter                 uint64                              `protobuf:"varint,12,opt,name=CallsCounter,proto3" json:"CallsCounter,omitempty"`
-	TotalCallsCounter            uint64                              `protobuf:"varint,13,opt,name=TotalCallsCounter,proto3" json:"TotalCallsCounter,omitempty"`
-	ChildResults                 *SerializableVMOutput               `protobuf:"bytes,14,opt,name=ChildResults,proto3" json:"ChildResults,omitempty"`
+	CallsCounter                 uint64                               `protobuf:"varint,12,opt,name=CallsCounter,proto3" json:"CallsCounter,omitempty"`
+	TotalCallsCounter            uint64                               `protobuf:"varint,13,opt,name=TotalCallsCounter,proto3" json:"TotalCallsCounter,omitempty"`
+	ChildResults                 *SerializableVMOutput                `protobuf:"bytes,14,opt,name=ChildResults,proto3" json:"ChildResults,omitempty"`
 }
 
 func (m *SerializableAsyncContext) Reset()      { *m = SerializableAsyncContext{} }

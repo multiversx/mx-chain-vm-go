@@ -1,11 +1,11 @@
-package mandosjsonwrite
+package scenjsonwrite
 
 import (
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 	oj "github.com/multiversx/mx-chain-vm-go/scenarios/orderedjson"
 )
 
-// AccountsToOJ converts a mandos-format account to an ordered JSON representation.
+// AccountsToOJ converts a scenarios-format account to an ordered JSON representation.
 func AccountsToOJ(accounts []*mj.Account) oj.OJsonObject {
 	acctsOJ := oj.NewMap()
 	for _, account := range accounts {

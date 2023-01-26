@@ -1,4 +1,4 @@
-package mandosjsonmodel
+package scenjsonmodel
 
 // Scenario is a json object representing a test scenario with steps.
 type Scenario struct {

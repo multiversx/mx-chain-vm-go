@@ -9,8 +9,8 @@ import (
 	"time"
 
 	logger "github.com/multiversx/mx-chain-logger-go"
-	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
+	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
 	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
@@ -29,8 +29,8 @@ func getTestRoot() string {
 	return vmTestRoot
 }
 
-// MandosTestBuilder defines the Mandos builder component
-type MandosTestBuilder struct {
+// ScenariosTestBuilder defines the Scenarios builder component
+type ScenariosTestBuilder struct {
 	t              *testing.T
 	folder         string
 	singleFile     string
@@ -39,9 +39,9 @@ type MandosTestBuilder struct {
 	currentError   error
 }
 
-// MandosTest will create a new MandosTestBuilder instance
-func MandosTest(t *testing.T) *MandosTestBuilder {
-	return &MandosTestBuilder{
+// ScenariosTest will create a new ScenariosTestBuilder instance
+func ScenariosTest(t *testing.T) *ScenariosTestBuilder {
+	return &ScenariosTestBuilder{
 		t:              t,
 		folder:         "",
 		singleFile:     "",
@@ -50,31 +50,31 @@ func MandosTest(t *testing.T) *MandosTestBuilder {
 }
 
 // Folder sets the folder
-func (mtb *MandosTestBuilder) Folder(folder string) *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) Folder(folder string) *ScenariosTestBuilder {
 	mtb.folder = folder
 	return mtb
 }
 
 // File sets the file
-func (mtb *MandosTestBuilder) File(fileName string) *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) File(fileName string) *ScenariosTestBuilder {
 	mtb.singleFile = fileName
 	return mtb
 }
 
 // Exclude sets the exclusion path
-func (mtb *MandosTestBuilder) Exclude(path string) *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) Exclude(path string) *ScenariosTestBuilder {
 	mtb.exclusions = append(mtb.exclusions, path)
 	return mtb
 }
 
 // WithExecutorLogs sets a StringLogger
-func (mtb *MandosTestBuilder) WithExecutorLogs() *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) WithExecutorLogs() *ScenariosTestBuilder {
 	mtb.executorLogger = executorwrapper.NewStringLogger()
 	return mtb
 }
 
 // Run will start the testing process
-func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) Run() *ScenariosTestBuilder {
 	executor, err := am.NewVMTestExecutor()
 	require.Nil(mtb.t, err)
 	defer executor.Close()
@@ -110,7 +110,7 @@ func (mtb *MandosTestBuilder) Run() *MandosTestBuilder {
 }
 
 // CheckNoError does an assert for the containing error
-func (mtb *MandosTestBuilder) CheckNoError() *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) CheckNoError() *ScenariosTestBuilder {
 	if mtb.currentError != nil {
 		mtb.t.Error(mtb.currentError)
 	}
@@ -118,13 +118,13 @@ func (mtb *MandosTestBuilder) CheckNoError() *MandosTestBuilder {
 }
 
 // RequireError does an assert for the containing error
-func (mtb *MandosTestBuilder) RequireError(expectedErrorMsg string) *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) RequireError(expectedErrorMsg string) *ScenariosTestBuilder {
 	require.EqualError(mtb.t, mtb.currentError, expectedErrorMsg)
 	return mtb
 }
 
 // CheckLog will check the containing error
-func (mtb *MandosTestBuilder) CheckLog(expectedLogs string) *MandosTestBuilder {
+func (mtb *ScenariosTestBuilder) CheckLog(expectedLogs string) *ScenariosTestBuilder {
 	require.NotNil(mtb.t, mtb.executorLogger)
 	actualLog := mtb.executorLogger.String()
 	if actualLog != expectedLogs {

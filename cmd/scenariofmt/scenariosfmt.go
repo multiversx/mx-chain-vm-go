@@ -29,20 +29,20 @@ func shouldFormatFile(path string) bool {
 }
 
 func convertAllInFolder(path string) error {
-	err := filepath.Walk(path, func(mandosFilePath string, info os.FileInfo, err error) error {
-		if shouldFormatFile(mandosFilePath) {
-			fmt.Printf("Upgrade: %s\n ", mandosFilePath)
-			upgradeMandosFile(mandosFilePath)
+	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+		if shouldFormatFile(filePath) {
+			fmt.Printf("Upgrade: %s\n ", filePath)
+			upgradeScenariosFile(filePath)
 		}
 		return nil
 	})
 	return err
 }
 
-func upgradeMandosFile(mandosFilePath string) {
-	scenario, err := mc.ParseMandosScenarioDefaultParser(mandosFilePath)
+func upgradeScenariosFile(filePath string) {
+	scenario, err := mc.ParseScenariosScenarioDefaultParser(filePath)
 	if err == nil {
-		_ = mc.WriteMandosScenario(scenario, mandosFilePath)
+		_ = mc.WriteScenariosScenario(scenario, filePath)
 	} else {
 		fmt.Printf("Error upgrading: %s\n", err.Error())
 	}

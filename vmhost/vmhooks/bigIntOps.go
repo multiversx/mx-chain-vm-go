@@ -3,10 +3,10 @@ package vmhooks
 import (
 	"math/big"
 
-	twos "github.com/multiversx/mx-components-big-int/twos-complement"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/math"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 const (
@@ -56,7 +56,7 @@ const (
 
 // BigIntGetUnsignedArgument VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetUnsignedArgument(id int32, destinationHandle int32) {
+func (context *VMHooksImpl) BigIntGetUnsignedArgument(id int32, destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -76,7 +76,7 @@ func (context *ElrondApi) BigIntGetUnsignedArgument(id int32, destinationHandle 
 
 // BigIntGetSignedArgument VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetSignedArgument(id int32, destinationHandle int32) {
+func (context *VMHooksImpl) BigIntGetSignedArgument(id int32, destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -96,7 +96,7 @@ func (context *ElrondApi) BigIntGetSignedArgument(id int32, destinationHandle in
 
 // BigIntStorageStoreUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) int32 {
+func (context *VMHooksImpl) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, sourceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -123,7 +123,7 @@ func (context *ElrondApi) BigIntStorageStoreUnsigned(keyOffset executor.MemPtr, 
 
 // BigIntStorageLoadUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) int32 {
+func (context *VMHooksImpl) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, keyLength executor.MemLength, destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	storage := context.GetStorageContext()
@@ -148,7 +148,7 @@ func (context *ElrondApi) BigIntStorageLoadUnsigned(keyOffset executor.MemPtr, k
 
 // BigIntGetCallValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetCallValue(destinationHandle int32) {
+func (context *VMHooksImpl) BigIntGetCallValue(destinationHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -162,7 +162,7 @@ func (context *ElrondApi) BigIntGetCallValue(destinationHandle int32) {
 
 // BigIntGetESDTCallValue VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetESDTCallValue(destination int32) {
+func (context *VMHooksImpl) BigIntGetESDTCallValue(destination int32) {
 	isFail := failIfMoreThanOneESDTTransfer(context)
 	if isFail {
 		return
@@ -172,7 +172,7 @@ func (context *ElrondApi) BigIntGetESDTCallValue(destination int32) {
 
 // BigIntGetESDTCallValueByIndex VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) {
+func (context *VMHooksImpl) BigIntGetESDTCallValueByIndex(destinationHandle int32, index int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
@@ -190,7 +190,7 @@ func (context *ElrondApi) BigIntGetESDTCallValueByIndex(destinationHandle int32,
 
 // BigIntGetExternalBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) {
+func (context *VMHooksImpl) BigIntGetExternalBalance(addressOffset executor.MemPtr, result int32) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	blockchain := context.GetBlockchainContext()
@@ -212,7 +212,7 @@ func (context *ElrondApi) BigIntGetExternalBalance(addressOffset executor.MemPtr
 
 // BigIntGetESDTExternalBalance VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetESDTExternalBalance(
+func (context *VMHooksImpl) BigIntGetESDTExternalBalance(
 	addressOffset executor.MemPtr,
 	tokenIDOffset executor.MemPtr,
 	tokenIDLen executor.MemLength,
@@ -241,7 +241,7 @@ func (context *ElrondApi) BigIntGetESDTExternalBalance(
 
 // BigIntNew VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntNew(smallValue int64) int32 {
+func (context *VMHooksImpl) BigIntNew(smallValue int64) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
@@ -253,7 +253,7 @@ func (context *ElrondApi) BigIntNew(smallValue int64) int32 {
 
 // BigIntUnsignedByteLength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntUnsignedByteLength(referenceHandle int32) int32 {
+func (context *VMHooksImpl) BigIntUnsignedByteLength(referenceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -272,7 +272,7 @@ func (context *ElrondApi) BigIntUnsignedByteLength(referenceHandle int32) int32 
 
 // BigIntSignedByteLength VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSignedByteLength(referenceHandle int32) int32 {
+func (context *VMHooksImpl) BigIntSignedByteLength(referenceHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -291,7 +291,7 @@ func (context *ElrondApi) BigIntSignedByteLength(referenceHandle int32) int32 {
 
 // BigIntGetUnsignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) BigIntGetUnsignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -319,7 +319,7 @@ func (context *ElrondApi) BigIntGetUnsignedBytes(referenceHandle int32, byteOffs
 
 // BigIntGetSignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetSignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
+func (context *VMHooksImpl) BigIntGetSignedBytes(referenceHandle int32, byteOffset executor.MemPtr) int32 {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -347,7 +347,7 @@ func (context *ElrondApi) BigIntGetSignedBytes(referenceHandle int32, byteOffset
 
 // BigIntSetUnsignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
+func (context *VMHooksImpl) BigIntSetUnsignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -369,7 +369,7 @@ func (context *ElrondApi) BigIntSetUnsignedBytes(destinationHandle int32, byteOf
 
 // BigIntSetSignedBytes VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
+func (context *VMHooksImpl) BigIntSetSignedBytes(destinationHandle int32, byteOffset executor.MemPtr, byteLength executor.MemLength) {
 	managedType := context.GetManagedTypesContext()
 	runtime := context.GetRuntimeContext()
 	metering := context.GetMeteringContext()
@@ -391,7 +391,7 @@ func (context *ElrondApi) BigIntSetSignedBytes(destinationHandle int32, byteOffs
 
 // BigIntIsInt64 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntIsInt64(destinationHandle int32) int32 {
+func (context *VMHooksImpl) BigIntIsInt64(destinationHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -411,7 +411,7 @@ func (context *ElrondApi) BigIntIsInt64(destinationHandle int32) int32 {
 
 // BigIntGetInt64 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntGetInt64(destinationHandle int32) int64 {
+func (context *VMHooksImpl) BigIntGetInt64(destinationHandle int32) int64 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
@@ -424,7 +424,7 @@ func (context *ElrondApi) BigIntGetInt64(destinationHandle int32) int64 {
 
 // BigIntSetInt64 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSetInt64(destinationHandle int32, value int64) {
+func (context *VMHooksImpl) BigIntSetInt64(destinationHandle int32, value int64) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 
@@ -437,7 +437,7 @@ func (context *ElrondApi) BigIntSetInt64(destinationHandle int32, value int64) {
 
 // BigIntAdd VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntAdd(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntAdd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -457,7 +457,7 @@ func (context *ElrondApi) BigIntAdd(destinationHandle, op1Handle, op2Handle int3
 
 // BigIntSub VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSub(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntSub(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -477,7 +477,7 @@ func (context *ElrondApi) BigIntSub(destinationHandle, op1Handle, op2Handle int3
 
 // BigIntMul VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntMul(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntMul(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -498,7 +498,7 @@ func (context *ElrondApi) BigIntMul(destinationHandle, op1Handle, op2Handle int3
 
 // BigIntTDiv VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntTDiv(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntTDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -522,7 +522,7 @@ func (context *ElrondApi) BigIntTDiv(destinationHandle, op1Handle, op2Handle int
 
 // BigIntTMod VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntTMod(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntTMod(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -546,7 +546,7 @@ func (context *ElrondApi) BigIntTMod(destinationHandle, op1Handle, op2Handle int
 
 // BigIntEDiv VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntEDiv(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntEDiv(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -570,7 +570,7 @@ func (context *ElrondApi) BigIntEDiv(destinationHandle, op1Handle, op2Handle int
 
 // BigIntEMod VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntEMod(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntEMod(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -594,7 +594,7 @@ func (context *ElrondApi) BigIntEMod(destinationHandle, op1Handle, op2Handle int
 
 // BigIntSqrt VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSqrt(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigIntSqrt(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -618,7 +618,7 @@ func (context *ElrondApi) BigIntSqrt(destinationHandle, opHandle int32) {
 
 // BigIntPow VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntPow(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntPow(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -649,7 +649,7 @@ func (context *ElrondApi) BigIntPow(destinationHandle, op1Handle, op2Handle int3
 
 // BigIntLog2 VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntLog2(op1Handle int32) int32 {
+func (context *VMHooksImpl) BigIntLog2(op1Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -673,7 +673,7 @@ func (context *ElrondApi) BigIntLog2(op1Handle int32) int32 {
 
 // BigIntAbs VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntAbs(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigIntAbs(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -693,7 +693,7 @@ func (context *ElrondApi) BigIntAbs(destinationHandle, opHandle int32) {
 
 // BigIntNeg VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntNeg(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigIntNeg(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -713,7 +713,7 @@ func (context *ElrondApi) BigIntNeg(destinationHandle, opHandle int32) {
 
 // BigIntSign VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntSign(opHandle int32) int32 {
+func (context *VMHooksImpl) BigIntSign(opHandle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -732,7 +732,7 @@ func (context *ElrondApi) BigIntSign(opHandle int32) int32 {
 
 // BigIntCmp VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntCmp(op1Handle, op2Handle int32) int32 {
+func (context *VMHooksImpl) BigIntCmp(op1Handle, op2Handle int32) int32 {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -751,7 +751,7 @@ func (context *ElrondApi) BigIntCmp(op1Handle, op2Handle int32) int32 {
 
 // BigIntNot VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntNot(destinationHandle, opHandle int32) {
+func (context *VMHooksImpl) BigIntNot(destinationHandle, opHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -775,7 +775,7 @@ func (context *ElrondApi) BigIntNot(destinationHandle, opHandle int32) {
 
 // BigIntAnd VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntAnd(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntAnd(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -799,7 +799,7 @@ func (context *ElrondApi) BigIntAnd(destinationHandle, op1Handle, op2Handle int3
 
 // BigIntOr VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntOr(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntOr(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -823,7 +823,7 @@ func (context *ElrondApi) BigIntOr(destinationHandle, op1Handle, op2Handle int32
 
 // BigIntXor VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntXor(destinationHandle, op1Handle, op2Handle int32) {
+func (context *VMHooksImpl) BigIntXor(destinationHandle, op1Handle, op2Handle int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -847,7 +847,7 @@ func (context *ElrondApi) BigIntXor(destinationHandle, op1Handle, op2Handle int3
 
 // BigIntShr VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntShr(destinationHandle, opHandle, bits int32) {
+func (context *VMHooksImpl) BigIntShr(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -872,7 +872,7 @@ func (context *ElrondApi) BigIntShr(destinationHandle, opHandle, bits int32) {
 
 // BigIntShl VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntShl(destinationHandle, opHandle, bits int32) {
+func (context *VMHooksImpl) BigIntShl(destinationHandle, opHandle, bits int32) {
 	managedType := context.GetManagedTypesContext()
 	metering := context.GetMeteringContext()
 	runtime := context.GetRuntimeContext()
@@ -898,7 +898,7 @@ func (context *ElrondApi) BigIntShl(destinationHandle, opHandle, bits int32) {
 
 // BigIntFinishUnsigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntFinishUnsigned(referenceHandle int32) {
+func (context *VMHooksImpl) BigIntFinishUnsigned(referenceHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -921,7 +921,7 @@ func (context *ElrondApi) BigIntFinishUnsigned(referenceHandle int32) {
 
 // BigIntFinishSigned VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntFinishSigned(referenceHandle int32) {
+func (context *VMHooksImpl) BigIntFinishSigned(referenceHandle int32) {
 	managedType := context.GetManagedTypesContext()
 	output := context.GetOutputContext()
 	metering := context.GetMeteringContext()
@@ -944,7 +944,7 @@ func (context *ElrondApi) BigIntFinishSigned(referenceHandle int32) {
 
 // BigIntToString VMHooks implementation.
 // @autogenerate(VMHooks)
-func (context *ElrondApi) BigIntToString(bigIntHandle int32, destinationHandle int32) {
+func (context *VMHooksImpl) BigIntToString(bigIntHandle int32, destinationHandle int32) {
 	host := context.GetVMHost()
 	BigIntToStringWithHost(host, bigIntHandle, destinationHandle)
 }

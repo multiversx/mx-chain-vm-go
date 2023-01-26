@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 // LoadStore is an exposed mock contract method

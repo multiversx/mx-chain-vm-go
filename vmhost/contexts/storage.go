@@ -6,8 +6,8 @@ import (
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/math"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 var logStorage = logger.GetOrCreate("vm/storage")
@@ -16,12 +16,12 @@ var logStorage = logger.GetOrCreate("vm/storage")
 const VMStoragePrefix = "VM@"
 
 type storageContext struct {
-	host                          vmhost.VMHost
-	blockChainHook                vmcommon.BlockchainHook
-	address                       []byte
-	stateStack                    [][]byte
-	protectedKeyPrefix            []byte
-	vmProtectedKeyPrefix          []byte
+	host                       vmhost.VMHost
+	blockChainHook             vmcommon.BlockchainHook
+	address                    []byte
+	stateStack                 [][]byte
+	protectedKeyPrefix         []byte
+	vmProtectedKeyPrefix       []byte
 	vmStorageProtectionEnabled bool
 }
 
@@ -46,11 +46,11 @@ func NewStorageContext(
 	}
 
 	context := &storageContext{
-		host:                          host,
-		blockChainHook:                blockChainHook,
-		stateStack:                    make([][]byte, 0),
-		protectedKeyPrefix:            protectedKeyPrefix,
-		vmProtectedKeyPrefix:          append(protectedKeyPrefix, []byte(VMStoragePrefix)...),
+		host:                       host,
+		blockChainHook:             blockChainHook,
+		stateStack:                 make([][]byte, 0),
+		protectedKeyPrefix:         protectedKeyPrefix,
+		vmProtectedKeyPrefix:       append(protectedKeyPrefix, []byte(VMStoragePrefix)...),
 		vmStorageProtectionEnabled: true,
 	}
 
@@ -167,7 +167,7 @@ func (context *storageContext) GetStorageFromAddress(address []byte, key []byte)
 
 // GetStorageFromAddressNoChecks same as GetStorageFromAddress but used internaly by vm, so no permissions checks are necessary
 func (context *storageContext) GetStorageFromAddressNoChecks(address []byte, key []byte) ([]byte, bool, error) {
-	// If the requested key is protected by the Elrond node, the stored value
+	// If the requested key is protected by the node, the stored value
 	// could have been changed by a built-in function in the meantime, even if
 	// contracts themselves cannot change protected values. Values stored under
 	// protected keys must always be retrieved from the node, not from the cached

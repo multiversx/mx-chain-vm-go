@@ -69,7 +69,7 @@ VM hook end:   MBufferStorageStore(-102, -105) points used: 142437
 `
 
 func TestRustAdderLog(t *testing.T) {
-	MandosTest(t).
+	ScenariosTest(t).
 		Folder("adder/scenarios").
 		WithExecutorLogs().
 		Run().

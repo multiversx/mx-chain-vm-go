@@ -86,7 +86,7 @@ var ErrMemoryDeclarationMissing = fmt.Errorf("%w (missing memory declaration)", 
 var ErrMaxInstancesReached = fmt.Errorf("%w (max instances reached)", ErrExecutionFailed)
 
 // ErrStoreReservedKey signals that an attempt to write under an reserved key has been made
-var ErrStoreReservedKey = errors.New("cannot write to storage under Elrond reserved key")
+var ErrStoreReservedKey = errors.New("cannot write to storage under reserved key")
 
 // ErrCannotWriteProtectedKey signals an attempt to write to a protected key, while storage protection is enforced
 var ErrCannotWriteProtectedKey = errors.New("cannot write to protected key")

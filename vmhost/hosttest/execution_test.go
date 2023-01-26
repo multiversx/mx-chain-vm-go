@@ -9,11 +9,8 @@ import (
 	"math/big"
 	"testing"
 
-	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	vmMath "github.com/multiversx/mx-chain-vm-go/math"
@@ -21,7 +18,10 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/mock/contracts"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
+	twoscomplement "github.com/multiversx/mx-components-big-int/twos-complement"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

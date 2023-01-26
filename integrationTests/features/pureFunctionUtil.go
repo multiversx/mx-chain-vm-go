@@ -10,12 +10,12 @@ import (
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
-	"github.com/multiversx/mx-chain-vm-go/config"
-	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	"github.com/stretchr/testify/require"
 )
 
@@ -53,7 +53,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     builtInFunctions.NewBuiltInFunctionContainer(),
-			ProtectedKeyPrefix: []byte("E"+"L"+"R"+"O"+"N"+"D"),
+			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubNoFlags(),

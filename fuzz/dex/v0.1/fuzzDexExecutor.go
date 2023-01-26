@@ -7,13 +7,13 @@ import (
 	"io/ioutil"
 
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
 	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
 	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
 	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
 	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 type fuzzDexExecutorInitArgs struct {
@@ -72,10 +72,10 @@ type FarmerInfo struct {
 
 type fuzzDexExecutor struct {
 	vmTestExecutor *am.VMTestExecutor
-	world             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	parser      mjparse.Parser
-	txIndex           int
+	world          *worldhook.MockWorld
+	vm             vmi.VMExecutionHandler
+	parser         mjparse.Parser
+	txIndex        int
 
 	wegldTokenId            string
 	mexTokenId              string
@@ -159,8 +159,8 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 		return nil, err
 	}
 
-	mandosGasSchedule := mj.GasScheduleDummy
-	err = vmTestExecutor.InitVM(mandosGasSchedule)
+	scenGasSchedule := mj.GasScheduleDummy
+	err = vmTestExecutor.InitVM(scenGasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -169,13 +169,13 @@ func newFuzzDexExecutor(fileResolver fr.FileResolver) (*fuzzDexExecutor, error) 
 
 	return &fuzzDexExecutor{
 		vmTestExecutor: vmTestExecutor,
-		world:             vmTestExecutor.World,
-		vm:                vmTestExecutor.GetVM(),
-		parser:      parser,
-		txIndex:           0,
+		world:          vmTestExecutor.World,
+		vm:             vmTestExecutor.GetVM(),
+		parser:         parser,
+		txIndex:        0,
 		generatedScenario: &mj.Scenario{
 			Name:        "fuzz generated",
-			GasSchedule: mandosGasSchedule,
+			GasSchedule: scenGasSchedule,
 		},
 	}, nil
 }

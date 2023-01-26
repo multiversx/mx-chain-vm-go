@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -403,8 +403,8 @@ func TestStorageContext_StorageProtection(t *testing.T) {
 	require.Len(t, storageCtx.GetStorageUpdates(address), 0)
 
 	storageCtx.disableStorageProtection()
-	elrondProtectedKey := append(reservedTestPrefix, []byte("ABC")...)
-	storageStatus, err = storageCtx.SetStorage(elrondProtectedKey, value)
+	protectedKey := append(reservedTestPrefix, []byte("ABC")...)
+	storageStatus, err = storageCtx.SetStorage(protectedKey, value)
 	require.Equal(t, vmhost.StorageUnchanged, storageStatus)
 	require.True(t, errors.Is(err, vmhost.ErrStoreReservedKey))
 	require.Len(t, storageCtx.GetStorageUpdates(address), 0)

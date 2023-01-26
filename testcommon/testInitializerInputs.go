@@ -15,14 +15,14 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -134,7 +134,7 @@ func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 			BlockGasLimit:            uint64(1000),
 			GasSchedule:              nil,
 			BuiltInFuncContainer:     nil,
-			ProtectedKeyPrefix: []byte("E"+"L"+"R"+"O"+"N"+"D"),
+			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubAllFlags(),

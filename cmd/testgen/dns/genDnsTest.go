@@ -23,7 +23,7 @@ func getTestRoot() string {
 }
 
 type testGenerator struct {
-	parser      mjparse.Parser
+	parser            mjparse.Parser
 	generatedScenario *mj.Scenario
 }
 

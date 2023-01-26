@@ -1,4 +1,4 @@
-package mandosjsonwrite
+package scenjsonwrite
 
 import (
 	"encoding/hex"

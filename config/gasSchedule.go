@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/mitchellh/mapstructure"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // GasValueForTests defines the gas value for tests
@@ -112,7 +112,7 @@ func CreateGasConfig(gasMap GasScheduleMap) (*GasCost, error) {
 		BigIntAPICost:        *bigIntOps,
 		BigFloatAPICost:      *bigFloatOps,
 		EthAPICost:           *ethOps,
-		BaseOpsAPICost:        *baseOpsAPI,
+		BaseOpsAPICost:       *baseOpsAPI,
 		CryptoAPICost:        *cryptOps,
 		ManagedBufferAPICost: *MBufferOps,
 		WASMOpcodeCost:       opcodeCosts,

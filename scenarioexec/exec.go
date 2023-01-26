@@ -6,17 +6,17 @@ import (
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
-	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
 	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	er "github.com/multiversx/mx-chain-vm-go/scenarios/expression/reconstructor"
 	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
-	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 )
 
 var log = logger.GetOrCreate("vm/scenarios")
@@ -55,12 +55,12 @@ func NewVMTestExecutor() (*VMTestExecutor, error) {
 
 // InitVM will initialize the VM and the builtin function container.
 // Does nothing if the VM is already initialized.
-func (ae *VMTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
+func (ae *VMTestExecutor) InitVM(scenGasSchedule mj.GasSchedule) error {
 	if ae.vm != nil {
 		return nil
 	}
 
-	gasSchedule, err := ae.gasScheduleMapFromMandos(mandosGasSchedule)
+	gasSchedule, err := ae.gasScheduleMapFromScenarios(scenGasSchedule)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (ae *VMTestExecutor) InitVM(mandosGasSchedule mj.GasSchedule) error {
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
-			ProtectedKeyPrefix: []byte(ProtectedKeyPrefix),
+			ProtectedKeyPrefix:       []byte(ProtectedKeyPrefix),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),
@@ -105,8 +105,8 @@ func (ae *VMTestExecutor) getVMHost() vmhost.VMHost {
 	return ae.vmHost
 }
 
-func (ae *VMTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
-	switch mandosGasSchedule {
+func (ae *VMTestExecutor) gasScheduleMapFromScenarios(scenGasSchedule mj.GasSchedule) (config.GasScheduleMap, error) {
+	switch scenGasSchedule {
 	case mj.GasScheduleDefault:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	case mj.GasScheduleDummy:
@@ -116,7 +116,7 @@ func (ae *VMTestExecutor) gasScheduleMapFromMandos(mandosGasSchedule mj.GasSched
 	case mj.GasScheduleV4:
 		return gasSchedules.LoadGasScheduleConfig(gasSchedules.GetV4())
 	default:
-		return nil, fmt.Errorf("unknown mandos GasSchedule: %d", mandosGasSchedule)
+		return nil, fmt.Errorf("unknown scenario GasSchedule: %d", scenGasSchedule)
 	}
 }
 

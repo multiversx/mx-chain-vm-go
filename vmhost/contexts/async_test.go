@@ -10,13 +10,13 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
-	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/crypto/factory"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
@@ -67,7 +67,7 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 		Exports: make(wasmer.ExportsMap),
 	}
 	exec, _ := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
-		VMHooks:     vmhooks.NewElrondApi(host),
+		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
 	})
 	runtimeCtx, _ := NewRuntimeContext(

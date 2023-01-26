@@ -1,12 +1,12 @@
-package mandosjsonparse
+package scenjsonparse
 
 import (
 	"errors"
 	"math/big"
 
-	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
 	oj "github.com/multiversx/mx-chain-vm-go/scenarios/orderedjson"
+	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
 type bigIntParseFormat int
