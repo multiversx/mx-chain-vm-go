@@ -15,7 +15,7 @@ func WriteRustWasmerMeteringHelpers(out *eiGenWriter) {
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 `)
-	out.WriteString("use mx_vm_executor::OpcodeCost;\n")
+	out.WriteString("use multiversx_vm_executor::OpcodeCost;\n")
 	out.WriteString("use wasmer::wasmparser::Operator;\n\n")
 
 	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
