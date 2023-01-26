@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-option go_package = "arwen";
+option go_package = "vmhost";
 option (gogoproto.stable_marshaler_all) = true;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
-package arwen;
+package vmhost;
 
 enum SerializableAsyncCallStatus {
     SerializableAsyncCallPending = 0;
