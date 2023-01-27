@@ -10,11 +10,15 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
+type mockMethod func() *InstanceMock
+
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
 // contracts within tests, without needing actual WASM smart contracts.
 type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
+	DefaultErrors   map[string]error
+	Methods         map[string]mockMethod
 	Points          uint64
 	Data            executor.VMHooks
 	GasLimit        uint64
@@ -23,6 +27,7 @@ type InstanceMock struct {
 	Host            vmhost.VMHost
 	T               testing.TB
 	Address         []byte
+	AlreadyClean    bool
 }
 
 // NewInstanceMock creates a new InstanceMock
@@ -30,27 +35,54 @@ func NewInstanceMock(code []byte) *InstanceMock {
 	return &InstanceMock{
 		Code:            code,
 		Exports:         make(wasmer.ExportsMap),
+		DefaultErrors:   make(map[string]error),
+		Methods:         make(map[string]mockMethod),
 		Points:          0,
 		Data:            nil,
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
+		AlreadyClean:    false,
 	}
 }
 
-// AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
-func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
-	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
-		instance := method()
-		breakpoint := vmhost.BreakpointValue(instance.GetBreakpointValue())
-		var err error
-		if breakpoint != vmhost.BreakpointNone {
-			err = errors.New(breakpoint.String())
-		}
-		return wasmer.Void(), err
-	}
+// ID -
+func (instance *InstanceMock) ID() string {
+	return fmt.Sprintf("%p", instance)
+}
 
-	instance.Exports[name] = wrappedMethod
+// AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
+func (instance *InstanceMock) AddMockMethod(name string, method mockMethod) {
+	instance.AddMockMethodWithError(name, method, nil)
+}
+
+// AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
+func (instance *InstanceMock) AddMockMethodWithError(name string, method mockMethod, err error) {
+	instance.Methods[name] = method
+	instance.DefaultErrors[name] = err
+	instance.Exports[name] = &wasmer.ExportedFunctionCallInfo{}
+}
+
+// CallFunction mocked method
+func (instance *InstanceMock) CallFunction(funcName string) (wasmer.Value, error) {
+	err := instance.DefaultErrors[funcName]
+	method := instance.Methods[funcName]
+	newInstance := method()
+	if vmhost.BreakpointValue(instance.GetBreakpointValue()) != vmhost.BreakpointNone {
+		var errMsg string
+		if vmhost.BreakpointValue(instance.GetBreakpointValue()) == vmhost.BreakpointAsyncCall {
+			errMsg = "breakpoint"
+		} else {
+			errMsg = newInstance.Host.Output().GetVMOutput().ReturnMessage
+		}
+		err = errors.New(errMsg)
+	}
+	return wasmer.Void(), err
+}
+
+// HasMemory mocked method
+func (instance *InstanceMock) HasMemory() bool {
+	return true
 }
 
 // GetPointsUsed mocked method
@@ -84,7 +116,14 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 }
 
 // Clean mocked method
-func (instance *InstanceMock) Clean() {
+func (instance *InstanceMock) Clean() bool {
+	instance.AlreadyClean = true
+	return true
+}
+
+// AlreadyCleaned mocked method
+func (instance *InstanceMock) AlreadyCleaned() bool {
+	return instance.AlreadyClean
 }
 
 // Reset mocked method
@@ -92,20 +131,10 @@ func (instance *InstanceMock) Reset() bool {
 	return true
 }
 
-// CallFunction mocked method
-func (instance *InstanceMock) CallFunction(functionName string) error {
-	if function, ok := instance.Exports[functionName]; ok {
-		_, err := function()
-		return err
-	}
-
-	return executor.ErrFuncNotFound
-}
-
 // HasFunction mocked method
-func (instance *InstanceMock) HasFunction(functionName string) bool {
-	_, ok := instance.Exports[functionName]
-	return ok
+func (instance *InstanceMock) HasFunction(name string) bool {
+	_, has := instance.Methods[name]
+	return has
 }
 
 // GetFunctionNames mocked method
@@ -120,11 +149,6 @@ func (instance *InstanceMock) GetFunctionNames() []string {
 // ValidateVoidFunction mocked method
 func (instance *InstanceMock) ValidateVoidFunction(_ string) error {
 	return nil
-}
-
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.
