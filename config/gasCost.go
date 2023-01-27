@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // GasCost defines the gas cost config structure
@@ -10,7 +10,7 @@ type GasCost struct {
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
 	EthAPICost           EthAPICost
-	ElrondAPICost        ElrondAPICost
+	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
 	WASMOpcodeCost       *executor.WASMOpcodeCost
@@ -27,8 +27,8 @@ type BaseOperationCost struct {
 	GetCode           uint64
 }
 
-// ElrondAPICost defines the API operations gas cost config structure
-type ElrondAPICost struct {
+// BaseOpsAPICost defines the API operations gas cost config structure
+type BaseOpsAPICost struct {
 	GetSCAddress            uint64
 	GetOwnerAddress         uint64
 	IsSmartContract         uint64

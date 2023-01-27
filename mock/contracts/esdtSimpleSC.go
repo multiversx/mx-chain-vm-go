@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"math/big"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 // ExecESDTTransferAndCallChild is an exposed mock contract method
@@ -21,7 +21,7 @@ func ExecESDTTransferAndCallChild(instanceMock *mock.InstanceMock, config interf
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -59,7 +59,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -89,7 +89,7 @@ func ExecESDTTransferWithAPICall(instanceMock *mock.InstanceMock, config interfa
 			ESDTTokenNonce: 0,
 		}
 
-		elrondapi.TransferESDTNFTExecuteWithTypedArgs(
+		vmhooks.TransferESDTNFTExecuteWithTypedArgs(
 			host,
 			input.RecipientAddr,
 			[]*vmcommon.ESDTTransfer{transfer},
@@ -109,7 +109,7 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -141,8 +141,8 @@ func ExecESDTTransferAndAsyncCallChild(instanceMock *mock.InstanceMock, config i
 			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
 				callbackName = ""
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-				Status:          arwen.AsyncCallPending,
+			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+				Status:          vmhost.AsyncCallPending,
 				Destination:     receiver,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,

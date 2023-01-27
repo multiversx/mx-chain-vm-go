@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // ImportedFunctionError represents any kind of errors related to a

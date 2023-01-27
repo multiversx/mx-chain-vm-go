@@ -1,8 +1,8 @@
 package secp256k1
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
-	"github.com/ElrondNetwork/wasm-vm/crypto/signing"
+	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
+	"github.com/multiversx/mx-chain-vm-go/crypto/signing"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
