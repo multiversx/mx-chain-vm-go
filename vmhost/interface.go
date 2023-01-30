@@ -147,7 +147,6 @@ type RuntimeContext interface {
 	BigFloatAPIErrorShouldFailExecution() bool
 	ManagedBufferAPIErrorShouldFailExecution() bool
 	CleanInstance()
-	NumRunningInstances() (int, int)
 
 	AddError(err error, otherInfo ...string)
 	GetAllErrors() error
@@ -155,6 +154,8 @@ type RuntimeContext interface {
 	ValidateCallbackName(callbackName string) error
 	HasFunction(functionName string) bool
 	GetPrevTxHash() []byte
+	EndExecution()
+	ValidateInstances() error
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context
@@ -400,5 +401,12 @@ type GasTracing interface {
 	AddToCurrentTrace(usedGas uint64)
 	AddTracedGas(scAddress string, functionName string, usedGas uint64)
 	GetGasTrace() map[string]map[string][]uint64
+	IsInterfaceNil() bool
+}
+
+// HashComputer provides hash computation
+type HashComputer interface {
+	Compute(string) []byte
+	Size() int
 	IsInterfaceNil() bool
 }

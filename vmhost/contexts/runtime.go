@@ -3,12 +3,12 @@ package contexts
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	builtinMath "math"
 	"math/big"
 
 	"github.com/multiversx/mx-chain-core-go/core/check"
 	logger "github.com/multiversx/mx-chain-logger-go"
-	"github.com/multiversx/mx-chain-storage-go/lrucache"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
@@ -20,12 +20,13 @@ var _ vmhost.RuntimeContext = (*runtimeContext)(nil)
 
 const warmCacheSize = 100
 
+// WarmInstancesEnabled controls the usage of warm instances
+const WarmInstancesEnabled = true
+
 type runtimeContext struct {
 	host                 vmhost.VMHost
-	instance             executor.Instance
 	vmInput              *vmcommon.ContractCallInput
 	codeAddress          []byte
-	codeHash             []byte
 	codeSize             uint64
 	callFunction         string
 	vmType               []byte
@@ -33,16 +34,15 @@ type runtimeContext struct {
 	verifyCode           bool
 	maxInstanceStackSize uint64
 
-	numRunningInstances int
-
-	warmInstanceCache Cacher
-
-	stateStack    []*runtimeContext
-	instanceStack []executor.Instance
-
-	validator  *wasmValidator
 	vmExecutor executor.Executor
-	errors     vmhost.WrappableError
+
+	iTracker *instanceTracker
+
+	stateStack []*runtimeContext
+
+	validator *wasmValidator
+	errors    vmhost.WrappableError
+	hasher    vmhost.HashComputer
 }
 
 // NewRuntimeContext creates a new runtimeContext
@@ -51,28 +51,41 @@ func NewRuntimeContext(
 	vmType []byte,
 	builtInFuncContainer vmcommon.BuiltInFunctionContainer,
 	vmExecutor executor.Executor,
+	hasher vmhost.HashComputer,
 ) (*runtimeContext, error) {
+
 	if check.IfNil(host) {
 		return nil, vmhost.ErrNilVMHost
+	}
+	if check.IfNil(vmExecutor) {
+		return nil, vmhost.ErrNilExecutor
+	}
+	if len(vmType) == 0 {
+		return nil, vmhost.ErrNilVMType
+	}
+	if check.IfNil(builtInFuncContainer) {
+		return nil, vmhost.ErrNilBuiltInFunctionsContainer
+	}
+	if check.IfNil(hasher) {
+		return nil, vmhost.ErrNilHasher
 	}
 
 	scAPINames := vmExecutor.FunctionNames()
 
 	context := &runtimeContext{
-		host:                host,
-		vmType:              vmType,
-		stateStack:          make([]*runtimeContext, 0),
-		instanceStack:       make([]executor.Instance, 0),
-		validator:           newWASMValidator(scAPINames, builtInFuncContainer),
-		numRunningInstances: 0,
-		errors:              nil,
+		host:       host,
+		vmType:     vmType,
+		stateStack: make([]*runtimeContext, 0),
+		validator:  newWASMValidator(scAPINames, builtInFuncContainer),
+		hasher:     hasher,
+		errors:     nil,
 	}
 
-	var err error
-	context.warmInstanceCache, err = lrucache.NewCacheWithEviction(warmCacheSize, instanceEvicted)
+	iTracker, err := NewInstanceTracker()
 	if err != nil {
 		return nil, err
 	}
+	context.iTracker = iTracker
 
 	context.vmExecutor = vmExecutor
 	context.InitState()
@@ -80,25 +93,14 @@ func NewRuntimeContext(
 	return context, nil
 }
 
-func instanceEvicted(_ interface{}, value interface{}) {
-	instance, ok := value.(executor.Instance)
-	if !ok {
-		return
-	}
-
-	logRuntime.Trace("evicted instance", "id", instance.Id())
-	instance.Clean()
-}
-
 // InitState initializes all the contexts fields with default data.
 func (context *runtimeContext) InitState() {
 	context.vmInput = &vmcommon.ContractCallInput{}
 	context.codeAddress = make([]byte, 0)
-	context.codeHash = make([]byte, 0)
 	context.callFunction = ""
 	context.verifyCode = false
 	context.readOnly = false
-	context.numRunningInstances = 0
+	context.iTracker.InitState()
 	context.errors = nil
 
 	logRuntime.Trace("init state")
@@ -106,8 +108,8 @@ func (context *runtimeContext) InitState() {
 
 // ClearWarmInstanceCache clears all elements from warm instance cache
 func (context *runtimeContext) ClearWarmInstanceCache() {
-	context.warmInstanceCache.Clear()
-	context.instance = nil
+	context.iTracker.ClearWarmInstanceCache()
+	context.iTracker.UnsetInstance()
 }
 
 // GetVMExecutor yields the configured contract executor.
@@ -124,45 +126,46 @@ func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
 // StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
-		context.instance = nil
 		logRuntime.Trace("create instance", "error", vmhost.ErrMaxInstancesReached)
 		return vmhost.ErrMaxInstancesReached
 	}
 
-	blockchain := context.host.Blockchain()
-	codeHash := blockchain.GetCodeHash(context.codeAddress)
-	context.codeHash = codeHash
+	var codeHash []byte
+	if newCode {
+		codeHash = context.hasher.Compute(string(contract))
+	} else {
+		blockchain := context.host.Blockchain()
+		codeHash = blockchain.GetCodeHash(context.codeAddress)
+	}
+
+	context.iTracker.SetCodeHash(codeHash)
 
 	defer func() {
-		logRuntime.Trace("warm cache size after starting instance", "size", context.warmInstanceCache.Len())
+		context.iTracker.LogCounts()
+		logRuntime.Trace("code was new", "new", newCode)
 	}()
 
 	warmInstanceUsed := context.useWarmInstanceIfExists(gasLimit, newCode)
 	if warmInstanceUsed {
 		return nil
 	}
+
 	compiledCodeUsed := context.makeInstanceFromCompiledCode(gasLimit, newCode)
 	if compiledCodeUsed {
-		context.numRunningInstances++
 		return nil
 	}
 
-	err := context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
-	if err != nil {
-		return err
-	}
-
-	context.numRunningInstances++
-	return nil
+	return context.makeInstanceFromContractByteCode(contract, gasLimit, newCode)
 }
 
 func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, newCode bool) bool {
-	if newCode || len(context.codeHash) == 0 {
+	codeHash := context.iTracker.CodeHash()
+	if newCode || len(codeHash) == 0 {
 		return false
 	}
 
 	blockchain := context.host.Blockchain()
-	found, compiledCode := blockchain.GetCompiledCode(context.codeHash)
+	found, compiledCode := blockchain.GetCompiledCode(codeHash)
 	if !found {
 		logRuntime.Trace("instance creation", "code", "cached compilation", "error", "compiled code was not found")
 		return false
@@ -184,11 +187,14 @@ func (context *runtimeContext) makeInstanceFromCompiledCode(gasLimit uint64, new
 		return false
 	}
 
-	context.instance = newInstance
+	context.iTracker.SetNewInstance(newInstance, Precompiled)
 	context.verifyCode = false
 
 	context.saveWarmInstance()
-	logRuntime.Trace("start instance", "from", "cached compilation", "id", context.instance.Id())
+	logRuntime.Trace("start instance", "from", "cached compilation",
+		"id", context.iTracker.Instance().ID(),
+		"codeHash", context.iTracker.codeHash,
+	)
 	return true
 }
 
@@ -205,68 +211,61 @@ func (context *runtimeContext) makeInstanceFromContractByteCode(contract []byte,
 	}
 	newInstance, err := context.vmExecutor.NewInstanceWithOptions(contract, options)
 	if err != nil {
-		context.instance = nil
+		context.iTracker.UnsetInstance()
 		logRuntime.Trace("instance creation", "from", "bytecode", "error", err)
 		return err
 	}
 
-	context.instance = newInstance
+	context.iTracker.SetNewInstance(newInstance, Bytecode)
 
-	if newCode || len(context.codeHash) == 0 {
-		context.codeHash, err = context.host.Crypto().Sha256(contract)
-		if err != nil {
-			context.CleanInstance()
-			logRuntime.Error("instance creation", "from", "bytecode", "error", err)
-			return err
-		}
+	if newCode || len(context.iTracker.CodeHash()) == 0 {
+		codeHash := context.hasher.Compute(string(contract))
+		context.iTracker.SetCodeHash(codeHash)
 	}
 
 	if newCode {
 		err = context.VerifyContractCode()
 		if err != nil {
-			context.CleanInstance()
+			context.iTracker.ForceCleanInstance(true)
 			logRuntime.Trace("instance creation", "from", "bytecode", "error", err)
 			return err
 		}
 	}
 
-	logRuntime.Trace("start instance", "from", "bytecode", "id", context.instance.Id())
+	logRuntime.Trace("start instance",
+		"from", "bytecode",
+		"id", context.iTracker.Instance().ID(),
+		"codeHash", context.iTracker.CodeHash(),
+	)
 	context.saveCompiledCode()
 
 	return nil
 }
 
 func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode bool) bool {
-	if newCode || len(context.codeHash) == 0 {
+	if !WarmInstancesEnabled {
 		return false
 	}
+
+	codeHash := context.iTracker.CodeHash()
+	if newCode || len(codeHash) == 0 {
+		return false
+	}
+
 	if context.isContractOrCodeHashOnTheStack() {
 		return false
 	}
 
-	cachedObject, ok := context.warmInstanceCache.Get(context.codeHash)
+	ok := context.iTracker.UseWarmInstance(codeHash, newCode)
 	if !ok {
 		return false
 	}
 
-	instance, ok := cachedObject.(executor.Instance)
-	if !ok {
-		return false
-	}
-
-	ok = instance.Reset()
-	if !ok {
-		// we must remove instance, which cleans it to free the memory
-		context.warmInstanceCache.Remove(context.codeHash)
-		return false
-	}
-
-	context.instance = instance
 	context.SetPointsUsed(0)
-	context.instance.SetGasLimit(gasLimit)
+	context.iTracker.Instance().SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 	context.verifyCode = false
-	logRuntime.Trace("start instance", "from", "warm", "id", context.instance.Id())
+	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance.ID())
 	return true
 }
 
@@ -289,29 +288,36 @@ func (context *runtimeContext) GetSCCodeSize() uint64 {
 }
 
 func (context *runtimeContext) saveCompiledCode() {
-	compiledCode, err := context.instance.Cache()
+	compiledCode, err := context.iTracker.Instance().Cache()
 	if err != nil {
 		logRuntime.Error("getCompiledCode from instance", "error", err)
 		return
 	}
 
+	codeHash := context.iTracker.CodeHash()
 	blockchain := context.host.Blockchain()
-	blockchain.SaveCompiledCode(context.codeHash, compiledCode)
+	blockchain.SaveCompiledCode(codeHash, compiledCode)
+	logRuntime.Trace("save compiled code", "codeHash", codeHash)
+
+	found, _ := blockchain.GetCompiledCode(codeHash)
+	if !found {
+		logRuntime.Trace("save compiled code silent fail, code hash not found")
+	}
 
 	context.saveWarmInstance()
 }
 
 func (context *runtimeContext) saveWarmInstance() {
-	if context.isContractOrCodeHashOnTheStack() {
+	if !WarmInstancesEnabled {
 		return
 	}
 
-	context.warmInstanceCache.Put(
-		context.codeHash,
-		context.instance,
-		1,
-	)
-	logRuntime.Trace("save warm instance", "id", context.instance.Id())
+	codeHash := context.iTracker.CodeHash()
+	if context.iTracker.IsCodeHashOnTheStack(codeHash) {
+		return
+	}
+
+	context.iTracker.SaveAsWarmInstance()
 }
 
 // MustVerifyNextContractCode sets the verifyCode field to true
@@ -352,7 +358,6 @@ func (context *runtimeContext) SetCustomCallFunction(callFunction string) {
 func (context *runtimeContext) PushState() {
 	newState := &runtimeContext{
 		codeAddress:  context.codeAddress,
-		codeHash:     context.codeHash,
 		callFunction: context.callFunction,
 		readOnly:     context.readOnly,
 	}
@@ -381,7 +386,6 @@ func (context *runtimeContext) PopSetActiveState() {
 
 	context.SetVMInput(prevState.vmInput)
 	context.codeAddress = prevState.codeAddress
-	context.codeHash = prevState.codeHash
 	context.callFunction = prevState.callFunction
 	context.readOnly = prevState.readOnly
 }
@@ -393,7 +397,7 @@ func (context *runtimeContext) PopDiscard() {
 		return
 	}
 
-	context.popInstance()
+	context.iTracker.PopSetActiveState()
 
 	context.stateStack = context.stateStack[:stateStackLen-1]
 }
@@ -401,50 +405,23 @@ func (context *runtimeContext) PopDiscard() {
 // ClearStateStack discards the entire state state stack and initializes it anew.
 func (context *runtimeContext) ClearStateStack() {
 	context.stateStack = make([]*runtimeContext, 0)
+	context.iTracker.ClearStateStack()
 }
 
 // pushInstance pushes the current Wasmer instance on the instance stack (separate from the state stack).
 func (context *runtimeContext) pushInstance() {
-	context.instanceStack = append(context.instanceStack, context.instance)
-	logRuntime.Trace("pushing instance", "id", context.instance.Id(), "codeHash", context.codeHash)
-
+	context.iTracker.PushState()
 }
 
 // popInstance removes the latest entry from the wasmer instance stack and sets it
 // as the current wasmer instance
 func (context *runtimeContext) popInstance() {
-	instanceStackLen := len(context.instanceStack)
-	if instanceStackLen == 0 {
-		return
-	}
-
-	prevInstance := context.instanceStack[instanceStackLen-1]
-	context.instanceStack = context.instanceStack[:instanceStackLen-1]
-
-	if prevInstance == context.instance {
-		// The current Wasmer instance was previously pushed on the instance stack,
-		// but a new Wasmer instance has not been created in the meantime. This
-		// means that the instance at the top of the stack is the same as the
-		// current instance, so it cannot be cleaned, because the execution will
-		// resume on it. Popping will therefore only remove the top of the stack,
-		// without cleaning anything.
-		return
-	}
-
-	if !check.IfNil(context.instance) {
-		if context.isCodeHashOnTheStack(context.codeHash) {
-			context.instance.Clean()
-			context.numRunningInstances--
-		}
-	}
-
-	context.instance = prevInstance
-	logRuntime.Trace("pop instance", "id", context.instance.Id(), "codeHash", context.codeHash)
+	context.iTracker.PopSetActiveState()
 }
 
 // GetInstanceStackSize returns the number of the currently running Wasmer instances.
 func (context *runtimeContext) GetInstanceStackSize() uint64 {
-	return uint64(len(context.instanceStack))
+	return context.iTracker.StackSize()
 }
 
 // GetVMType returns the vm type for the current context.
@@ -602,7 +579,7 @@ func (context *runtimeContext) FailExecution(err error) {
 	}
 
 	context.host.Output().SetReturnMessage(message)
-	if !check.IfNil(context.instance) {
+	if !check.IfNil(context.iTracker.Instance()) {
 		context.SetRuntimeBreakpointValue(breakpoint)
 	}
 
@@ -626,14 +603,14 @@ func (context *runtimeContext) SignalUserError(message string) {
 // SetRuntimeBreakpointValue sets the specified runtime breakpoint in Wasmer,
 // immediately stopping the contract execution.
 func (context *runtimeContext) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
-	context.instance.SetBreakpointValue(uint64(value))
+	context.iTracker.Instance().SetBreakpointValue(uint64(value))
 	logRuntime.Trace("runtime breakpoint set", "breakpoint", value)
 }
 
 // GetRuntimeBreakpointValue retrieves the value of the breakpoint that has
 // stopped the execution of the contract.
 func (context *runtimeContext) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
-	return vmhost.BreakpointValue(context.instance.GetBreakpointValue())
+	return vmhost.BreakpointValue(context.iTracker.Instance().GetBreakpointValue())
 }
 
 // VerifyContractCode performs validation on the WASM bytecode (declaration of memory and legal functions).
@@ -644,13 +621,13 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	context.verifyCode = false
 
-	err := context.validator.verifyMemoryDeclaration(context.instance)
+	err := context.validator.verifyMemoryDeclaration(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
 	}
 
-	err = context.validator.verifyFunctions(context.instance)
+	err = context.validator.verifyFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
@@ -664,7 +641,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 
 	enableEpochsHandler := context.host.EnableEpochsHandler()
 	if enableEpochsHandler.IsManagedCryptoAPIsFlagEnabled() {
-		err = context.validator.verifyProtectedFunctions(context.instance)
+		err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
 		if err != nil {
 			logRuntime.Trace("verify contract code", "error", err)
 			return err
@@ -711,10 +688,10 @@ func (context *runtimeContext) ManagedBufferAPIErrorShouldFailExecution() bool {
 
 // GetPointsUsed returns the gas amount spent by the currently running Wasmer instance.
 func (context *runtimeContext) GetPointsUsed() uint64 {
-	if context.instance == nil {
+	if check.IfNil(context.iTracker.Instance()) {
 		return 0
 	}
-	return context.instance.GetPointsUsed()
+	return context.iTracker.Instance().GetPointsUsed()
 }
 
 // SetPointsUsed directly sets the gas amount already spent by the currently running Wasmer instance.
@@ -722,7 +699,7 @@ func (context *runtimeContext) SetPointsUsed(gasPoints uint64) {
 	if gasPoints > builtinMath.MaxInt64 {
 		gasPoints = builtinMath.MaxInt64
 	}
-	context.instance.SetPointsUsed(gasPoints)
+	context.iTracker.Instance().SetPointsUsed(gasPoints)
 }
 
 // ReadOnly verifies whether the read-only execution flag is set.
@@ -742,16 +719,7 @@ func (context *runtimeContext) GetInstance() executor.Instance {
 
 // CleanInstance cleans the current instance
 func (context *runtimeContext) CleanInstance() {
-	if check.IfNil(context.instance) {
-		logRuntime.Trace("cannot clean, instance already nil")
-		return
-	}
-
-	context.instance.Clean()
-	context.instance = nil
-	context.numRunningInstances--
-
-	logRuntime.Trace("instance cleaned")
+	context.iTracker.ForceCleanInstance(false)
 }
 
 // isContractOrCodeHashOnTheStack iterates over the state stack to find whether the
@@ -760,16 +728,7 @@ func (context *runtimeContext) isContractOrCodeHashOnTheStack() bool {
 	if context.isScAddressOnTheStack(context.codeAddress) {
 		return true
 	}
-	return context.isCodeHashOnTheStack(context.codeHash)
-}
-
-func (context *runtimeContext) isCodeHashOnTheStack(codeHash []byte) bool {
-	for _, state := range context.stateStack {
-		if bytes.Equal(codeHash, state.codeHash) {
-			return true
-		}
-	}
-	return false
+	return context.iTracker.IsCodeHashOnTheStack(context.iTracker.CodeHash())
 }
 
 func (context *runtimeContext) isScAddressOnTheStack(scAddress []byte) bool {
@@ -797,7 +756,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 // FunctionNameChecked returns the function name, after checking that it exists in the contract.
 func (context *runtimeContext) FunctionNameChecked() (string, error) {
 	functionName := context.FunctionName()
-	if context.instance.HasFunction(functionName) {
+	if context.HasFunction(functionName) {
 		return functionName, nil
 	}
 
@@ -814,12 +773,12 @@ func (context *runtimeContext) FunctionNameChecked() (string, error) {
 
 // CallSCFunction will execute the function with given name from the loaded contract.
 func (context *runtimeContext) CallSCFunction(functionName string) error {
-	return context.instance.CallFunction(functionName)
+	return context.iTracker.Instance().CallFunction(functionName)
 }
 
 // IsFunctionImported returns true if the WASM module imports the specified function.
 func (context *runtimeContext) IsFunctionImported(name string) bool {
-	return context.instance.IsFunctionImported(name)
+	return context.iTracker.Instance().IsFunctionImported(name)
 }
 
 // AddError adds an error to the global error list on runtime context
@@ -837,6 +796,39 @@ func (context *runtimeContext) AddError(err error, otherInfo ...string) {
 // GetAllErrors returns all the errors stored on the RuntimeContext
 func (context *runtimeContext) GetAllErrors() error {
 	return context.errors
+}
+
+// EndExecution performs final steps after execution ends
+func (context *runtimeContext) EndExecution() {
+	context.iTracker.UnsetInstance()
+}
+
+// ValidateInstances checks the state of the instances after execution
+func (context *runtimeContext) ValidateInstances() error {
+	if !WarmInstancesEnabled {
+		return nil
+	}
+
+	err := context.iTracker.CheckInstances()
+	if err != nil {
+		return err
+	}
+
+	err = context.checkNumRunningInstances()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (context *runtimeContext) checkNumRunningInstances() error {
+	_, cold := context.iTracker.NumRunningInstances()
+	if cold > 0 {
+		return fmt.Errorf("potentially leaked cold instances")
+	}
+
+	return nil
 }
 
 // ValidateCallbackName verifies whether the provided function name may be used as AsyncCall callback
@@ -860,18 +852,11 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (context *runtimeContext) HasFunction(functionName string) bool {
-	return context.instance.HasFunction(functionName)
+	return context.iTracker.Instance.HasFunction(functionName)
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
 func (context *runtimeContext) EpochConfirmed(_ uint32, _ uint64) {
-}
-
-// NumRunningInstances returns the number of currently running instances (cold and warm)
-func (context *runtimeContext) NumRunningInstances() (int, int) {
-	numWarmInstances := context.warmInstanceCache.Len()
-	numColdInstances := context.numRunningInstances - numWarmInstances
-	return numWarmInstances, numColdInstances
 }
 
 // IsInterfaceNil returns true if there is no value under the interface

@@ -24,5 +24,6 @@ type Instance interface {
 	Reset() bool
 	SetVMHooksPtr(vmHooksPtr uintptr)
 	GetVMHooksPtr() uintptr
-	Id() string
+	ID() string
+	AlreadyCleaned() bool
 }
