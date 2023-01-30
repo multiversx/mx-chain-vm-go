@@ -176,7 +176,7 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 	return nil
 }
 
-// doRunSmartContractDelete delete a contract directly
+// doRunSmartContractDelete deletes a contract directly
 func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	output := host.Output()
 	err := host.checkUpgradePermission(input)

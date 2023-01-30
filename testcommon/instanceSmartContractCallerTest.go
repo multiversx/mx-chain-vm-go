@@ -7,6 +7,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/config"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/stretchr/testify/require"
 )
 
 // InstanceTestSmartContract represents the config data for the smart contract instance to be tested
@@ -122,6 +123,10 @@ func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 		if reset {
 			callerTest.host.Reset()
 		}
+
+		// Extra verification for instance leaks
+		err := callerTest.host.Runtime().ValidateInstances()
+		require.Nil(callerTest.tb, err)
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCall(callerTest.input)

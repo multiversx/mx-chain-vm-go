@@ -125,6 +125,8 @@ func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
 
 // StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
+	context.iTracker.UnsetInstance()
+
 	if context.GetInstanceStackSize() >= context.maxInstanceStackSize {
 		logRuntime.Trace("create instance", "error", vmhost.ErrMaxInstancesReached)
 		return vmhost.ErrMaxInstancesReached
@@ -265,7 +267,7 @@ func (context *runtimeContext) useWarmInstanceIfExists(gasLimit uint64, newCode 
 	context.iTracker.Instance().SetGasLimit(gasLimit)
 	context.SetRuntimeBreakpointValue(vmhost.BreakpointNone)
 	context.verifyCode = false
-	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance.ID())
+	logRuntime.Trace("start instance", "from", "warm", "id", context.iTracker.Instance().ID())
 	return true
 }
 
@@ -633,7 +635,7 @@ func (context *runtimeContext) VerifyContractCode() error {
 		return err
 	}
 
-	err = context.validator.verifyProtectedFunctions(context.instance)
+	err = context.validator.verifyProtectedFunctions(context.iTracker.Instance())
 	if err != nil {
 		logRuntime.Trace("verify contract code", "error", err)
 		return err
@@ -714,7 +716,7 @@ func (context *runtimeContext) SetReadOnly(readOnly bool) {
 
 // GetInstance returns the current wasmer instance
 func (context *runtimeContext) GetInstance() executor.Instance {
-	return context.instance
+	return context.iTracker.Instance()
 }
 
 // CleanInstance cleans the current instance
@@ -852,7 +854,7 @@ func (context *runtimeContext) ValidateCallbackName(callbackName string) error {
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
 func (context *runtimeContext) HasFunction(functionName string) bool {
-	return context.iTracker.Instance.HasFunction(functionName)
+	return context.iTracker.Instance().HasFunction(functionName)
 }
 
 // EpochConfirmed is called whenever a new epoch is confirmed
