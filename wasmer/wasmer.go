@@ -1,6 +1,6 @@
 // Package wasmer is a Go library to run WebAssembly binaries.
 package wasmer
 
-import logger "github.com/ElrondNetwork/elrond-go-logger"
+import logger "github.com/multiversx/mx-chain-logger-go"
 
-var logWasmer = logger.GetOrCreate("arwen/wasmer")
+var logWasmer = logger.GetOrCreate("vm/wasmer")

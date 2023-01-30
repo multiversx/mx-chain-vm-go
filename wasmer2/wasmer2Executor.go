@@ -3,8 +3,8 @@ package wasmer2
 import (
 	"unsafe"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 var _ executor.Executor = (*Wasmer2Executor)(nil)

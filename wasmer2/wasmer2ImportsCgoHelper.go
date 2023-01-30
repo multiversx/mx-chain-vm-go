@@ -3,7 +3,7 @@ package wasmer2
 import (
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 func getVMHooksFromContextRawPtr(contextRawPtr unsafe.Pointer) executor.VMHooks {

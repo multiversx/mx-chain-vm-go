@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, development, rc/*, feat/* ]
   pull_request:
-    branches: [ master, development, rc/*, feat/* ]
+    branches: [ master, feat/*, rc/* ]
   workflow_dispatch:
 
 jobs:

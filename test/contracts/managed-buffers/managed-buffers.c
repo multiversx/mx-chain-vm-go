@@ -1,7 +1,7 @@
-#include "../elrond/context.h"
-#include "../elrond/bigInt.h"
-#include "../elrond/types.h"
-#include "../elrond/test_utils.h"
+#include "../mxvm/context.h"
+#include "../mxvm/bigInt.h"
+#include "../mxvm/types.h"
+#include "../mxvm/test_utils.h"
 byte mBuffer1[] = {
         0xff, 0x2a, 0x26, 0x5f, 0x8b, 0xcb, 0xdc, 0xaf, 
         0xd5, 0x85, 0x19, 0x14, 0x1e, 0x57, 0x81, 0x24, 
