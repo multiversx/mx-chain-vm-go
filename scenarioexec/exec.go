@@ -86,6 +86,7 @@ func (ae *VMTestExecutor) InitVM(scenGasSchedule mj.GasSchedule) error {
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),
 			WasmerSIGSEGVPassthrough: false,
+			Hasher:                   worldhook.DefaultHasher,
 		})
 	if err != nil {
 		return err

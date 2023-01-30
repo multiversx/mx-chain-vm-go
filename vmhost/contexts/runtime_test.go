@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -20,6 +21,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
+
+var defaultHasher = blake2b.NewBlake2b()
 
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
