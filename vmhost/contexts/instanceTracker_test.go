@@ -83,7 +83,7 @@ func TestInstanceTracker_GetWarmInstance(t *testing.T) {
 
 }
 
-func TestInstanceTracker_UserWarmInstance(t *testing.T) {
+func TestInstanceTracker_UseWarmInstance(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -112,8 +112,36 @@ func TestInstanceTracker_UserWarmInstance(t *testing.T) {
 	}
 }
 
+func TestInstanceTracker_IsCodeHashOnStack_OK(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	testData := []string{"alpha", "alpha", "active"}
+
+	for i, codeHash := range testData {
+		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
+		iTracker.codeHash = []byte(codeHash)
+		if i == 0 || codeHash == "active" {
+			iTracker.SaveAsWarmInstance()
+		}
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
+	}
+	require.Len(t, iTracker.codeHashStack, 2)
+	require.Len(t, iTracker.instanceStack, 2)
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 2, warm)
+	require.Equal(t, 1, cold)
+
+	iTracker.PopSetActiveState()
+
+	require.True(t, iTracker.IsCodeHashOnTheStack(iTracker.codeHash))
+}
+
 // stack: alpha<-alpha(cold)<-alpha(cold)<-alpha(cold)
-func TestInstancetracker_PopSetActiveSelfScenario(t *testing.T) {
+func TestInstanceTracker_PopSetActiveSelfScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -143,7 +171,7 @@ func TestInstancetracker_PopSetActiveSelfScenario(t *testing.T) {
 }
 
 // stack: alpha<-beta<-alpha(cold)<-beta(cold)
-func TestInstancetracker_PopSetActiveSimpleScenario(t *testing.T) {
+func TestInstanceTracker_PopSetActiveSimpleScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -173,7 +201,7 @@ func TestInstancetracker_PopSetActiveSimpleScenario(t *testing.T) {
 }
 
 // stack: alpha<-beta<-gamma<-beta(cold)<-gamma(cold)<-delta<-alpha(cold)
-func TestInstancetracker_PopSetActiveComplexScenario(t *testing.T) {
+func TestInstanceTracker_PopSetActiveComplexScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
