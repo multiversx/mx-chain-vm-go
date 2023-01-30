@@ -114,47 +114,182 @@ func TestInstanceTracker_UserWarmInstance(t *testing.T) {
 	}
 }
 
-// a->b->a(cold)->b(cold)
-// a->a(cold)->a(cold)
-// a->b->c->b(cold)->c(cold)->d->a(cold)
-
-func TestInstanceTracker_PopSetActiveWarmChain(t *testing.T) {
+// stack: alpha<-alpha(cold)<-alpha(cold)<-alpha(cold)
+func TestInstancetracker_PopSetActiveSelfScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-		testData := []string{"first", "second", "first", "second"}
+	testData := []string{"alpha", "alpha", "alpha", "alpha", "active"}
+
+	for i, codeHash := range testData {
+		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
+		iTracker.codeHash = []byte(codeHash)
+		if i == 0 || codeHash == "active" {
+			iTracker.SaveAsWarmInstance()
+		}
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
+	}
+
+	require.Equal(t, []byte("active"), iTracker.codeHash)
+	require.Len(t, iTracker.codeHashStack, 4)
+	require.Len(t, iTracker.instanceStack, 4)
+	require.Equal(t, 2, iTracker.warmInstanceCache.Len())
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 2, warm)
+	require.Equal(t, 3, cold)
+
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("alpha"), iTracker.codeHash)
+
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("alpha"), iTracker.codeHash)
+
+	require.Equal(t, 2, iTracker.numRunningInstances)
+
+	iTracker.ClearWarmInstanceCache()
+
+	require.Len(t, iTracker.instanceStack, 0)
+	require.Len(t, iTracker.codeHashStack, 0)
+	require.Equal(t, 0, iTracker.numRunningInstances)
+	require.Nil(t, iTracker.CheckInstances())
+}
+
+// stack: alpha<-beta<-alpha(cold)<-beta(cold)
+func TestInstancetracker_PopSetActiveSimpleScenario(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	testData := []string{"alpha", "beta", "alpha", "beta", "active"}
+
+	for i, codeHash := range testData {
+		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
+		iTracker.codeHash = []byte(codeHash)
+		if i < 2 || codeHash == "active" {
+			iTracker.SaveAsWarmInstance()
+		}
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
+	}
+
+	require.Equal(t, []byte("active"), iTracker.codeHash)
+	require.Len(t, iTracker.codeHashStack, 4)
+	require.Len(t, iTracker.instanceStack, 4)
+	require.Equal(t, 3, iTracker.warmInstanceCache.Len())
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 3, warm)
+	require.Equal(t, 2, cold)
+
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("beta"), iTracker.codeHash)
+
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("alpha"), iTracker.codeHash)
+
+	warm, cold = iTracker.NumRunningInstances()
+	require.Equal(t, 3, iTracker.numRunningInstances)
+	require.Equal(t, 3, warm)
+	require.Equal(t, 0, cold)
+
+	iTracker.ClearWarmInstanceCache()
+
+	require.Len(t, iTracker.instanceStack, 0)
+	require.Len(t, iTracker.codeHashStack, 0)
+	require.Equal(t, 0, iTracker.numRunningInstances)
+	require.Nil(t, iTracker.CheckInstances())
+}
+
+// stack: alpha<-beta<-gamma<-beta(cold)<-gamma(cold)<-delta<-alpha(cold)
+func TestInstancetracker_PopSetActiveComplexSecanario(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	testData := []string{"alpha", "beta", "gamma", "beta", "gamma", "delta", "alpha", "active"}
+
+	for i, codeHash := range testData {
+		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
+		iTracker.codeHash = []byte(codeHash)
+		if i < 3 || codeHash == "delta" || codeHash == "active" {
+			iTracker.SaveAsWarmInstance()
+		}
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
+	}
+
+	require.Equal(t, []byte("active"), iTracker.codeHash)
+	require.Len(t, iTracker.codeHashStack, 7)
+	require.Len(t, iTracker.instanceStack, 7)
+	require.Equal(t, 5, iTracker.warmInstanceCache.Len())
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 5, warm)
+	require.Equal(t, 3, cold)
+
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("alpha"), iTracker.codeHash)
+
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("alpha"), iTracker.codeHash)
+
+	warm, cold = iTracker.NumRunningInstances()
+	require.Equal(t, 5, iTracker.numRunningInstances)
+	require.Equal(t, 5, warm)
+	require.Equal(t, 0, cold)
+
+	iTracker.ClearWarmInstanceCache()
+
+	require.Len(t, iTracker.instanceStack, 0)
+	require.Len(t, iTracker.codeHashStack, 0)
+	require.Equal(t, 0, iTracker.numRunningInstances)
+	require.Nil(t, iTracker.CheckInstances())
+}
+
+func TestInstanceTracker_PopSetActiveWarmOnlyScenario(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	testData := []string{"alpha", "beta", "gamma", "delta", "active"}
 
 	for _, codeHash := range testData {
 		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
 		iTracker.codeHash = []byte(codeHash)
 		iTracker.SaveAsWarmInstance()
-		iTracker.PushState()
+
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
 	}
 
-	for _, codeHash := range testData {
-		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
-		iTracker.codeHash = []byte(codeHash)
-		iTracker.SaveAsWarmInstance()
-		iTracker.PushState()
-	}
-
+	require.Equal(t, []byte("active"), iTracker.codeHash)
 	require.Len(t, iTracker.codeHashStack, 4)
 	require.Len(t, iTracker.instanceStack, 4)
 
-	iTracker.SetNewInstance(mock.NewInstanceMock([]byte("active")), Bytecode)
-	iTracker.codeHash = []byte("active")
-	iTracker.SaveAsWarmInstance()
-	require.Equal(t, []byte("active"), iTracker.codeHash)
-
 	iTracker.PopSetActiveState()
-	require.Equal(t, []byte("last"), iTracker.codeHash)
+	require.Equal(t, []byte("delta"), iTracker.codeHash)
 
 	iTracker.PopSetActiveState()
 	iTracker.PopSetActiveState()
 	iTracker.PopSetActiveState()
-	require.Equal(t, []byte("first"), iTracker.codeHash)
+	require.Equal(t, []byte("alpha"), iTracker.codeHash)
 
+	warm, cold := iTracker.NumRunningInstances()
 	require.Equal(t, 5, iTracker.numRunningInstances)
+	require.Equal(t, 5, warm)
+	require.Equal(t, 0, cold)
 
 	iTracker.ClearWarmInstanceCache()
 
