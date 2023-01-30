@@ -112,7 +112,7 @@ func TestInstanceTracker_UseWarmInstance(t *testing.T) {
 	}
 }
 
-func TestInstanceTracker_IsCodeHashOnStack_OK(t *testing.T) {
+func TestInstanceTracker_IsCodeHashOnStack_True(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -138,6 +138,36 @@ func TestInstanceTracker_IsCodeHashOnStack_OK(t *testing.T) {
 	iTracker.PopSetActiveState()
 
 	require.True(t, iTracker.IsCodeHashOnTheStack(iTracker.codeHash))
+}
+
+func TestInstanceTracker_IsCodeHashOnStack_False(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	testData := []string{"alpha", "beta", "alpha", "active"}
+
+	for i, codeHash := range testData {
+		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
+		iTracker.codeHash = []byte(codeHash)
+		if i < 2 || codeHash == "active" {
+			iTracker.SaveAsWarmInstance()
+		}
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
+	}
+	require.Len(t, iTracker.codeHashStack, 3)
+	require.Len(t, iTracker.instanceStack, 3)
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 3, warm)
+	require.Equal(t, 1, cold)
+
+	iTracker.PopSetActiveState()
+	iTracker.PopSetActiveState()
+
+	require.Equal(t, []byte("beta"), iTracker.CodeHash())
+	require.False(t, iTracker.IsCodeHashOnTheStack(iTracker.codeHash))
 }
 
 // stack: alpha<-alpha(cold)<-alpha(cold)<-alpha(cold)
