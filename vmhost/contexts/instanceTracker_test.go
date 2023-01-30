@@ -173,7 +173,7 @@ func TestInstancetracker_PopSetActiveSimpleScenario(t *testing.T) {
 }
 
 // stack: alpha<-beta<-gamma<-beta(cold)<-gamma(cold)<-delta<-alpha(cold)
-func TestInstancetracker_PopSetActiveComplexSecanario(t *testing.T) {
+func TestInstancetracker_PopSetActiveComplexScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
