@@ -117,8 +117,6 @@ type RuntimeContextWrapper struct {
 	ClearStateStackFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CleanInstanceFunc func()
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	NumRunningInstancesFunc func() (int, int)
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
@@ -312,10 +310,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 
 	runtimeWrapper.CleanInstanceFunc = func() {
 		runtimeWrapper.runtimeContext.CleanInstance()
-	}
-
-	runtimeWrapper.NumRunningInstancesFunc = func() (int, int) {
-		return runtimeWrapper.runtimeContext.NumRunningInstances()
 	}
 
 	return runtimeWrapper
@@ -585,7 +579,11 @@ func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
 }
 
-// NumRunningInstances calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) NumRunningInstances() (int, int) {
-	return contextWrapper.NumRunningInstancesFunc()
+// EndExecution -
+func (contextWrapper *RuntimeContextWrapper) EndExecution() {
+}
+
+// ValidateInstances -
+func (contextWrapper *RuntimeContextWrapper) ValidateInstances() error {
+	return nil
 }

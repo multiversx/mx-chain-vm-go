@@ -96,6 +96,11 @@ func (callerTest *InstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmerSIGS
 	return callerTest
 }
 
+// GetVMHost returns the inner VMHost
+func (callerTest *InstancesTestTemplate) GetVMHost() vmhost.VMHost {
+	return callerTest.host
+}
+
 // AndAssertResults starts the test and asserts the results
 func (callerTest *InstancesTestTemplate) AndAssertResults(assertResults func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults

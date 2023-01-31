@@ -241,6 +241,11 @@ func (r *RuntimeContextMock) GetInstance() executor.Instance {
 	return nil
 }
 
+// GetWarmInstance mocked method
+func (r *RuntimeContextMock) GetWarmInstance(codeHash []byte) (executor.Instance, bool) {
+	return nil, false
+}
+
 // ClearWarmInstanceCache mocked method
 func (r *RuntimeContextMock) ClearWarmInstanceCache() {
 }
@@ -312,6 +317,15 @@ func (r *RuntimeContextMock) AddError(_ error, _ ...string) {
 
 // GetAllErrors mocked method
 func (r *RuntimeContextMock) GetAllErrors() error {
+	return nil
+}
+
+// EndExecution -
+func (r *RuntimeContextMock) EndExecution() {
+}
+
+// ValidateInstances -
+func (r *RuntimeContextMock) ValidateInstances() error {
 	return nil
 }
 

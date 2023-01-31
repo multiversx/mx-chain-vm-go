@@ -66,23 +66,33 @@ func TestNewRuntimeContextErrors(t *testing.T) {
 	bfc := builtInFunctions.NewBuiltInFunctionContainer()
 	hasher := defaultHasher
 
+	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+		VMHooks: vmhooks.NewVMHooksImpl(host),
+	})
+	require.Nil(t, err)
+
 	t.Run("NilHost", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(nil, vmType, bfc, hasher)
+		runtimeCtx, err := NewRuntimeContext(nil, vmType, bfc, exec, hasher)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilVMHost)
 	})
 	t.Run("NilVMType", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, nil, bfc, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, nil, bfc, exec, hasher)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilVMType)
 	})
 	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, hasher)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, exec, hasher)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilBuiltInFunctionsContainer)
 	})
+	t.Run("NilExecutor", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, nil, hasher)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilExecutor)
+	})
 	t.Run("NilHasher", func(t *testing.T) {
-		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, nil)
+		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, exec, nil)
 		require.Nil(t, runtimeCtx)
 		require.ErrorIs(t, err, vmhost.ErrNilHasher)
 	})
@@ -242,7 +252,7 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	instance := runtimeCtx.iTracker.instance
 
 	runtimeCtx.pushInstance()
-	runtimeCtx.iTracker.instance = &wasmer.Instance{}
+	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
 	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
 
 	runtimeCtx.popInstance()

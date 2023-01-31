@@ -13,7 +13,7 @@ func TestInstanceTracker_TrackInstance(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	newInstance := &wasmer.Instance{
+	newInstance := &wasmer.WasmerInstance{
 		AlreadyClean: false,
 	}
 
@@ -292,7 +292,7 @@ func TestInstanceTracker_UnsetInstance_Ok(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
-	iTracker.instance = &wasmer.Instance{
+	iTracker.instance = &wasmer.WasmerInstance{
 		AlreadyClean: true,
 	}
 	iTracker.UnsetInstance()
