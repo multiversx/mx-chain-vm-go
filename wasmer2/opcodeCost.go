@@ -460,6 +460,7 @@ type OpcodeCost struct {
 	LocalGet                      uint32
 	LocalSet                      uint32
 	LocalTee                      uint32
+	LocalAllocate                 uint32
 	Loop                          uint32
 	MemoryAtomicNotify            uint32
 	MemoryAtomicWait32            uint32
