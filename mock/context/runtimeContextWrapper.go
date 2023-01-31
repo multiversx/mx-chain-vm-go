@@ -117,6 +117,8 @@ type RuntimeContextWrapper struct {
 	ClearStateStackFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CleanInstanceFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetInstanceTrackerFunc func() vmhost.InstanceTracker
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
@@ -310,6 +312,10 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 
 	runtimeWrapper.CleanInstanceFunc = func() {
 		runtimeWrapper.runtimeContext.CleanInstance()
+	}
+
+	runtimeWrapper.GetInstanceTrackerFunc = func() vmhost.InstanceTracker {
+		return runtimeWrapper.runtimeContext.GetInstanceTracker()
 	}
 
 	return runtimeWrapper
@@ -586,4 +592,9 @@ func (contextWrapper *RuntimeContextWrapper) EndExecution() {
 // ValidateInstances -
 func (contextWrapper *RuntimeContextWrapper) ValidateInstances() error {
 	return nil
+}
+
+// GetInstanceTracker -
+func (contextWrapper *RuntimeContextWrapper) GetInstanceTracker() vmhost.InstanceTracker {
+	return contextWrapper.GetInstanceTrackerFunc()
 }

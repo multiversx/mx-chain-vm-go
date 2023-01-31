@@ -136,6 +136,7 @@ type RuntimeContext interface {
 	SetMaxInstanceStackSize(uint64)
 	VerifyContractCode() error
 	GetInstance() executor.Instance
+	GetInstanceTracker() InstanceTracker
 	FunctionNameChecked() (string, error)
 	CallSCFunction(functionName string) error
 	GetPointsUsed() uint64
@@ -156,6 +157,13 @@ type RuntimeContext interface {
 	GetPrevTxHash() []byte
 	EndExecution()
 	ValidateInstances() error
+}
+
+// InstanceTracker defines the functionality needed for interacting with the instance tracker
+type InstanceTracker interface {
+	StateStack
+
+	TrackedInstances() map[string]executor.Instance
 }
 
 // ManagedTypesContext defines the functionality needed for interacting with the big int context

@@ -11,6 +11,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
+var _ vmhost.InstanceTracker = (*instanceTracker)(nil)
+
 type instanceCacheLevel int
 
 const (
@@ -158,6 +160,11 @@ func (tracker *instanceTracker) ClearWarmInstanceCache() {
 	if WarmInstancesEnabled {
 		tracker.warmInstanceCache.Clear()
 	}
+}
+
+// TrackedInstances returns the internal map of tracked instances
+func (tracker *instanceTracker) TrackedInstances() map[string]executor.Instance {
+	return tracker.instances
 }
 
 // UseWarmInstance attempts to retrieve a warm instance for the given codeHash

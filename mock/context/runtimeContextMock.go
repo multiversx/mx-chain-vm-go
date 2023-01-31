@@ -53,6 +53,11 @@ func (r *RuntimeContextMock) GetVMExecutor() executor.Executor {
 func (context *RuntimeContextMock) ReplaceVMExecutor(vmExecutor executor.Executor) {
 }
 
+// GetInstanceTracker mocked method
+func (context *RuntimeContextMock) GetInstanceTracker() vmhost.InstanceTracker {
+	return nil
+}
+
 // StartWasmerInstance mocked method
 func (r *RuntimeContextMock) StartWasmerInstance(_ []byte, _ uint64, _ bool) error {
 	if r.Err != nil {

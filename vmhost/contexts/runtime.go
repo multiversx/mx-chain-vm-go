@@ -123,6 +123,11 @@ func (context *runtimeContext) ReplaceVMExecutor(vmExecutor executor.Executor) {
 	context.vmExecutor = vmExecutor
 }
 
+// GetInstanceTracker returns the internal instance tracker
+func (context *runtimeContext) GetInstanceTracker() vmhost.InstanceTracker {
+	return context.iTracker
+}
+
 // StartWasmerInstance creates a new wasmer instance if the maxInstanceStackSize has not been reached.
 func (context *runtimeContext) StartWasmerInstance(contract []byte, gasLimit uint64, newCode bool) error {
 	context.iTracker.UnsetInstance()
@@ -748,7 +753,7 @@ func (context *runtimeContext) CountSameContractInstancesOnStack(address []byte)
 	count := uint64(0)
 	for _, state := range context.stateStack {
 		if bytes.Equal(address, state.vmInput.RecipientAddr) {
-			count += 1
+			count++
 		}
 	}
 
