@@ -1,3 +1,4 @@
+// Package vmhost contains the top-level components and definitions of the VM
 package vmhost
 
 import (
@@ -9,7 +10,7 @@ import (
 // VMVersion returns the current vm version
 const VMVersion = "v1.5"
 
-// WASMPageSize in bytes of a WASM Linear Memory Page
+// WASMPageSize is the size in bytes of a WASM linear memory page
 const WASMPageSize = 65536
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
@@ -173,6 +174,7 @@ type VMHostParameters struct {
 	WasmerSIGSEGVPassthrough            bool
 	EpochNotifier                       vmcommon.EpochNotifier
 	EnableEpochsHandler                 vmcommon.EnableEpochsHandler
+	Hasher                              HashComputer
 	TimeOutForSCExecutionInMilliseconds uint32
 }
 
