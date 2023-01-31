@@ -84,6 +84,12 @@ func NewVMHost(
 	if check.IfNil(hostParameters.EnableEpochsHandler) {
 		return nil, vmhost.ErrNilEnableEpochsHandler
 	}
+	if check.IfNil(hostParameters.Hasher) {
+		return nil, vmhost.ErrNilHasher
+	}
+	if hostParameters.VMType == nil {
+		return nil, vmhost.ErrNilVMType
+	}
 
 	cryptoHook := factory.NewVMCrypto()
 	host := &vmHost{
@@ -111,15 +117,18 @@ func NewVMHost(
 	if err != nil {
 		return nil, err
 	}
+
 	vmExecutor, err := host.createExecutor(hostParameters)
 	if err != nil {
 		return nil, err
 	}
+
 	host.runtimeContext, err = contexts.NewRuntimeContext(
 		host,
 		hostParameters.VMType,
 		host.builtInFuncContainer,
 		vmExecutor,
+		hostParameters.Hasher,
 	)
 	if err != nil {
 		return nil, err
@@ -351,6 +360,8 @@ func (host *vmHost) RunSmartContractCreate(input *vmcommon.ContractCreateInput) 
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = vmhost.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
+			} else {
+				host.Runtime().EndExecution()
 			}
 
 			close(done)
@@ -407,6 +418,8 @@ func (host *vmHost) RunSmartContractCall(input *vmcommon.ContractCallInput) (vmO
 				log.Error("VM execution panicked", "error", r, "stack", "\n"+string(debug.Stack()))
 				err = vmhost.ErrExecutionPanicked
 				host.Runtime().CleanInstance()
+			} else {
+				host.Runtime().EndExecution()
 			}
 
 			close(done)

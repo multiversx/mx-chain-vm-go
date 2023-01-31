@@ -10,6 +10,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
+var _ executor.Instance = (*InstanceMock)(nil)
+
 type mockMethod func() *InstanceMock
 
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
@@ -44,11 +46,6 @@ func NewInstanceMock(code []byte) *InstanceMock {
 		Memory:          NewMemoryMock(),
 		AlreadyClean:    false,
 	}
-}
-
-// ID -
-func (instance *InstanceMock) ID() string {
-	return fmt.Sprintf("%p", instance)
 }
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
@@ -188,8 +185,8 @@ func GetMockInstance(host vmhost.VMHost) *InstanceMock {
 	return instance
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *InstanceMock) Id() string {
+// ID returns an identifier for the instance, unique at runtime
+func (instance *InstanceMock) ID() string {
 	return fmt.Sprintf("%p", instance)
 }
 

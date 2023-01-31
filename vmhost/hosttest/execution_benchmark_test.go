@@ -16,6 +16,7 @@ import (
 	gasSchedules "github.com/multiversx/mx-chain-vm-go/scenarioexec/gasSchedules"
 	"github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +37,7 @@ func Test_RunERC20Benchmark(t *testing.T) {
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
-	runERC20Benchmark(t, 1000, 100, false)
+	runERC20Benchmark(t, 100, 100, false)
 }
 
 func Test_RunERC20BenchmarkFail(t *testing.T) {
@@ -44,23 +45,29 @@ func Test_RunERC20BenchmarkFail(t *testing.T) {
 		t.Skip("not a short test")
 	}
 
-	runERC20Benchmark(t, 10, 1000, true)
+	runERC20Benchmark(t, 10, 100, true)
 }
 
 func Test_WarmInstancesMemoryUsage(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageBenchmark(t, 10_000, 1)
+	runMemoryUsageBenchmark(t, 100, 200)
 }
 
 func Test_WarmInstancesFuzzyMemoryUsage(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("this test is only relevant with warm instances")
+	}
 	if testing.Short() {
 		t.Skip("not a short test")
 	}
 
-	runMemoryUsageFuzzyBenchmark(t, 7593, 10)
+	runMemoryUsageFuzzyBenchmark(t, 100, 100)
 }
 
 func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction bool) {
@@ -130,6 +137,8 @@ func runERC20Benchmark(tb testing.TB, nTransfers int, nRuns int, failTransaction
 	}
 
 	defer func() {
+		err := host.Runtime().ValidateInstances()
+		require.Nil(tb, err)
 		host.Reset()
 	}()
 }
@@ -140,6 +149,8 @@ func runMemoryUsageFuzzyBenchmark(tb testing.TB, nContracts int, nTransfers int)
 	require.Nil(tb, err)
 
 	defer func() {
+		err := host.Runtime().ValidateInstances()
+		require.Nil(tb, err)
 		host.Reset()
 	}()
 
@@ -196,6 +207,8 @@ func runMemoryUsageBenchmark(tb testing.TB, nContracts int, nTransfers int) {
 	require.Nil(tb, err)
 
 	defer func() {
+		err := host.Runtime().ValidateInstances()
+		require.Nil(tb, err)
 		host.Reset()
 	}()
 
@@ -243,7 +256,9 @@ func prepare(tb testing.TB) (*worldmock.MockWorld, *worldmock.Account, vmhost.VM
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 			WasmerSIGSEGVPassthrough: false,
+			Hasher:                   worldmock.DefaultHasher,
 		})
+	require.Nil(tb, err)
 	return mockWorld, ownerAccount, host, err
 }
 

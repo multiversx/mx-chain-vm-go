@@ -7,6 +7,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
+var _ executor.Instance = (*WrapperInstance)(nil)
+
 // WrapperInstance is a wrapper around an executor instance, which adds the possibility of logging operations.
 type WrapperInstance struct {
 	logger          ExecutorLogger
@@ -49,8 +51,17 @@ func (inst *WrapperInstance) Cache() ([]byte, error) {
 }
 
 // Clean wraps the call to the underlying instance.
-func (inst *WrapperInstance) Clean() {
-	inst.wrappedInstance.Clean()
+func (inst *WrapperInstance) Clean() bool {
+	result := inst.wrappedInstance.Clean()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("Clean: %t", result))
+	return result
+}
+
+// AlreadyCleaned wraps the call to the underlying instance.
+func (inst *WrapperInstance) AlreadyCleaned() bool {
+	result := inst.wrappedInstance.AlreadyCleaned()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("AlreadyCleaned: %t", result))
+	return result
 }
 
 // CallFunction wraps the call to the underlying instance.
@@ -140,7 +151,7 @@ func (inst *WrapperInstance) GetVMHooksPtr() uintptr {
 	return inst.wrappedInstance.GetVMHooksPtr()
 }
 
-// Id wraps the call to the underlying instance.
-func (inst *WrapperInstance) Id() string {
-	return inst.wrappedInstance.Id()
+// ID wraps the call to the underlying instance.
+func (inst *WrapperInstance) ID() string {
+	return inst.wrappedInstance.ID()
 }
