@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
@@ -18,6 +19,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
+
+var defaultHasher = blake2b.NewBlake2b()
 
 type pureFunctionIO struct {
 	functionName    string
@@ -58,6 +61,7 @@ func newPureFunctionExecutor() (*pureFunctionExecutor, error) {
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubNoFlags(),
 			WasmerSIGSEGVPassthrough: false,
+			Hasher:                   defaultHasher,
 		})
 	if err != nil {
 		return nil, err

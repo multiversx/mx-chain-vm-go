@@ -17,7 +17,6 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
 	"github.com/multiversx/mx-chain-vm-go/config"
-	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
@@ -315,7 +314,7 @@ func BlockchainHookStubForContracts(
 	codeMap := make(map[string]*[]byte)
 
 	for _, contract := range contracts {
-		codeHash, _ := hashing.NewHasher().Sha256(contract.code)
+		codeHash := defaultHasher.Compute(string(contract.code))
 		contractsMap[string(contract.address)] = &contextmock.StubAccount{
 			Address:      contract.address,
 			Balance:      big.NewInt(contract.balance),
