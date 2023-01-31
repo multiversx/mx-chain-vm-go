@@ -77,11 +77,6 @@ func (instance *InstanceMock) CallFunction(funcName string) error {
 	return err
 }
 
-// HasMemory mocked method
-func (instance *InstanceMock) HasMemory() bool {
-	return true
-}
-
 // GetPointsUsed mocked method
 func (instance *InstanceMock) GetPointsUsed() uint64 {
 	return instance.Points
@@ -146,6 +141,11 @@ func (instance *InstanceMock) GetFunctionNames() []string {
 // ValidateVoidFunction mocked method
 func (instance *InstanceMock) ValidateVoidFunction(_ string) error {
 	return nil
+}
+
+// HasMemory mocked method
+func (instance *InstanceMock) HasMemory() bool {
+	return true
 }
 
 // MemLoad returns the contents from the given offset of the WASM memory.
