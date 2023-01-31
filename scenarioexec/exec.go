@@ -3,6 +3,7 @@ package scenarioexec
 import (
 	"fmt"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	logger "github.com/multiversx/mx-chain-logger-go"
 	vmi "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
@@ -81,7 +82,7 @@ func (ae *VMTestExecutor) InitVM(scenGasSchedule mj.GasSchedule) error {
 			BlockGasLimit:            blockGasLimit,
 			GasSchedule:              gasSchedule,
 			BuiltInFuncContainer:     ae.World.BuiltinFuncs.Container,
-			ProtectedKeyPrefix:       []byte(ProtectedKeyPrefix),
+			ProtectedKeyPrefix:       []byte(core.ProtectedKeyPrefix),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldhook.EnableEpochsHandlerStubAllFlags(),

@@ -203,7 +203,7 @@ func TestBlockchainContext_GetCodeHashAndSize(t *testing.T) {
 
 	address := []byte("account_with_code")
 	expectedCode := []byte("somecode")
-	expectedCodeHash, _ := defaultHasher.Compute(string(expectedCode))
+	expectedCodeHash := defaultHasher.Compute(string(expectedCode))
 
 	// GetCode: Test if error is propagated from blockchain hook
 	outputContext.OutputAccountIsNew = true
