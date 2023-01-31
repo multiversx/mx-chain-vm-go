@@ -61,7 +61,7 @@ func (instance *InstanceMock) AddMockMethodWithError(name string, method mockMet
 }
 
 // CallFunction mocked method
-func (instance *InstanceMock) CallFunction(funcName string) (wasmer.Value, error) {
+func (instance *InstanceMock) CallFunction(funcName string) error {
 	err := instance.DefaultErrors[funcName]
 	method := instance.Methods[funcName]
 	newInstance := method()
@@ -74,7 +74,7 @@ func (instance *InstanceMock) CallFunction(funcName string) (wasmer.Value, error
 		}
 		err = errors.New(errMsg)
 	}
-	return wasmer.Void(), err
+	return err
 }
 
 // HasMemory mocked method
