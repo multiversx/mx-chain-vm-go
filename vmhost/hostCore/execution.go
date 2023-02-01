@@ -703,7 +703,7 @@ func (host *vmHost) callSCMethodIndirect() error {
 		return err
 	}
 
-	_, err = function()
+	err = host.Runtime().CallFunction(function)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -889,11 +889,11 @@ func (host *vmHost) checkFinalGasAfterExit() error {
 func (host *vmHost) callInitFunction() error {
 	runtime := host.Runtime()
 	init := runtime.GetInitFunction()
-	if init == nil {
+	if init == "" {
 		return nil
 	}
 
-	_, err := init()
+	err := runtime.CallFunction(init)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 	}
@@ -935,7 +935,7 @@ func (host *vmHost) callSCMethod() error {
 		return err
 	}
 
-	_, err = function()
+	err = runtime.CallFunction(function)
 	if err != nil {
 		err = host.handleBreakpointIfAny(err)
 		log.Trace("breakpoint detected and handled", "err", err)
