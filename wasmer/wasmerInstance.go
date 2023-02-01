@@ -234,8 +234,8 @@ func (instance *WasmerInstance) Clean() bool {
 	return false
 }
 
-// AlreadyCleaned returns the internal field AlreadyClean
-func (instance *WasmerInstance) AlreadyCleaned() bool {
+// IsAlreadyCleaned returns the internal field AlreadyClean
+func (instance *WasmerInstance) IsAlreadyCleaned() bool {
 	return instance.AlreadyClean
 }
 

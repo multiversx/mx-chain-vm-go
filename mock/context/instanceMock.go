@@ -113,8 +113,8 @@ func (instance *InstanceMock) Clean() bool {
 	return true
 }
 
-// AlreadyCleaned mocked method
-func (instance *InstanceMock) AlreadyCleaned() bool {
+// IsAlreadyCleaned mocked method
+func (instance *InstanceMock) IsAlreadyCleaned() bool {
 	return instance.AlreadyClean
 }
 
