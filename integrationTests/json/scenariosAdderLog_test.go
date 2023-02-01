@@ -66,6 +66,7 @@ VM hook begin: MBufferFromBigIntUnsigned(-105, -104) points used: 63425
 VM hook end:   MBufferFromBigIntUnsigned(-105, -104) points used: 67425
 VM hook begin: MBufferStorageStore(-102, -105) points used: 67437
 VM hook end:   MBufferStorageStore(-102, -105) points used: 142437
+Clean: true
 `
 
 func TestRustAdderLog(t *testing.T) {

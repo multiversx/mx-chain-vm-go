@@ -1,6 +1,8 @@
+// Package executor contains the interfaces and definitions for the VM Executor
 package executor
 
 import (
+	"github.com/multiversx/mx-chain-core-go/core/check"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
@@ -17,6 +19,8 @@ type CompilationOptions struct {
 
 // Executor defines the functionality needed to create any executor instance.
 type Executor interface {
+	check.NilInterfaceChecker
+
 	// SetOpcodeCosts sets gas costs globally inside an executor.
 	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
 
