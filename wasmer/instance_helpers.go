@@ -80,7 +80,10 @@ func retrieveExportedMemory(wasmExports *cWasmerExportsT) (Memory, bool, error) 
 	return memory, hasMemory, nil
 }
 
-func retrieveExportedFunctions(cInstance *cWasmerInstanceT, wasmExports *cWasmerExportsT) (ExportsMap, ExportSignaturesMap, error) {
+func retrieveExportedFunctions(
+	cInstance *cWasmerInstanceT,
+	wasmExports *cWasmerExportsT,
+) (ExportsMap, ExportSignaturesMap, error) {
 	var exports = make(ExportsMap)
 	var signatures = make(ExportSignaturesMap)
 
@@ -98,66 +101,82 @@ func retrieveExportedFunctions(cInstance *cWasmerInstanceT, wasmExports *cWasmer
 		var wasmFunction = cWasmerExportToFunc(wasmExport)
 		var exportedFunctionName = cGoStringN((*cChar)(unsafe.Pointer(wasmExportName.bytes)), (cInt)(wasmExportName.bytes_len))
 
-		wrappedWasmFunction, signature, err := createExportedFunctionWrapper(cInstance, wasmFunction, exportedFunctionName)
+		callInfo, err := createExportedFunctionCallInfo(wasmFunction, exportedFunctionName)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		exports[exportedFunctionName] = wrappedWasmFunction
+		signature := &ExportedFunctionSignature{
+			InputArity:  int(callInfo.InputArity),
+			OutputArity: int(callInfo.OutputArity),
+		}
+
+		exports[exportedFunctionName] = callInfo
 		signatures[exportedFunctionName] = signature
 	}
 
 	return exports, signatures, nil
 }
 
-func createExportedFunctionWrapper(
-	cInstance *cWasmerInstanceT,
+func createExportedFunctionCallInfo(
 	wasmFunction *cWasmerExportFuncT,
 	exportedFunctionName string,
-) (func(...interface{}) (Value, error), *ExportedFunctionSignature, error) {
+) (*ExportedFunctionCallInfo, error) {
+
 	wasmFunctionInputSignatures, wasmFunctionInputsArity, err := getExportedFunctionSignature(wasmFunction, exportedFunctionName)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	wasmFunctionOutputsArity, err := getExportedFunctionOutputArity(wasmFunction, exportedFunctionName)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	signature := &ExportedFunctionSignature{
-		InputArity:  int(wasmFunctionInputsArity),
-		OutputArity: int(wasmFunctionOutputsArity),
+	callInfo := &ExportedFunctionCallInfo{
+		FuncName:       exportedFunctionName,
+		InputArity:     wasmFunctionInputsArity,
+		InputSignature: wasmFunctionInputSignatures,
+		OutputArity:    wasmFunctionOutputsArity,
 	}
 
-	wrapper := func(arguments ...interface{}) (Value, error) {
-		err = validateGivenArguments(exportedFunctionName, arguments, wasmFunctionInputsArity)
-		if err != nil {
-			return Void(), err
-		}
+	return callInfo, nil
+}
 
-		var wasmInputs []cWasmerValueT
-		wasmInputs, err = createWasmInputsFromArguments(arguments, wasmFunctionInputsArity, wasmFunctionInputSignatures, exportedFunctionName)
-		if err != nil {
-			return Void(), err
-		}
-
-		wasmOutputs, callResult := callWasmFunction(
-			cInstance,
-			exportedFunctionName,
-			wasmFunctionInputsArity,
-			wasmFunctionOutputsArity,
-			wasmInputs,
-		)
-
-		if callResult != cWasmerOk {
-			err = fmt.Errorf("failed to call the `%s` exported function", exportedFunctionName)
-			return Void(), newWrappedError(err)
-		}
-
-		var value Value
-		value, err = convertWasmOutputToValue(wasmFunctionOutputsArity, wasmOutputs, exportedFunctionName)
-		return value, err
+func callExportedFunction(
+	cInstance *cWasmerInstanceT,
+	callInfo *ExportedFunctionCallInfo,
+	arguments ...interface{},
+) (Value, error) {
+	err := validateGivenArguments(callInfo.FuncName, arguments, callInfo.InputArity)
+	if err != nil {
+		return Void(), err
 	}
-	return wrapper, signature, nil
+
+	var wasmInputs []cWasmerValueT
+	wasmInputs, err = createWasmInputsFromArguments(
+		arguments,
+		callInfo.InputArity,
+		callInfo.InputSignature,
+		callInfo.FuncName)
+	if err != nil {
+		return Void(), err
+	}
+
+	wasmOutputs, callResult := callWasmFunction(
+		cInstance,
+		callInfo.FuncName,
+		callInfo.InputArity,
+		callInfo.OutputArity,
+		wasmInputs,
+	)
+
+	if callResult != cWasmerOk {
+		err = fmt.Errorf("failed to call the `%s` exported function", callInfo.FuncName)
+		return Void(), newWrappedError(err)
+	}
+
+	var value Value
+	value, err = convertWasmOutputToValue(callInfo.OutputArity, wasmOutputs, callInfo.FuncName)
+	return value, err
 }

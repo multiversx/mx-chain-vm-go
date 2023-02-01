@@ -368,7 +368,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	runtimeContext.InitStateFromContractCallInput(input)
 	f, err = runtimeContext.GetFunctionToCall()
 	require.Equal(t, vmhost.ErrFuncNotFound, err)
-	require.Nil(t, f)
+	require.Equal(t, "", f)
 
 	initFunc := runtimeContext.GetInitFunction()
 	require.NotNil(t, initFunc)

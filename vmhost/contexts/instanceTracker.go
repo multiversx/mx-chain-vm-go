@@ -64,8 +64,10 @@ func NewInstanceTracker() (*instanceTracker, error) {
 
 // InitState initializes the internal instanceTracker state
 func (tracker *instanceTracker) InitState() {
+	tracker.numRunningInstances = 0
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
+	tracker.instances = make(map[string]wasmer.InstanceHandler)
 }
 
 // PushState pushes the active instance and codeHash on the state stacks
