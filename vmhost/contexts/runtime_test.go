@@ -331,14 +331,14 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	host := &contextmock.VMHostMock{}
 
-	testVmType := []byte("type")
+	testVMType := []byte("type")
 	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
 	runtime, _ := NewRuntimeContext(
 		host,
-		testVmType,
+		testVMType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
 		defaultHasher,
@@ -559,10 +559,7 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	err = runtimeCtx.iTracker.instance.MemGrow(30)
-	require.Nil(t, err)
-
-	totalPages := 32
+	totalPages := 2
 	memoryContents := runtimeCtx.iTracker.instance.MemDump()
 	require.Equal(t, runtimeCtx.iTracker.instance.MemLength(), uint32(len(memoryContents)))
 	require.Equal(t, totalPages*vmhost.WASMPageSize, len(memoryContents))
@@ -650,29 +647,13 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	pageSize := uint32(65536)
-	require.Equal(t, 2*pageSize, runtimeCtx.iTracker.instance.MemLength())
+	require.Equal(t, 2*vmhost.WASMPageSize, runtimeCtx.iTracker.instance.MemLength())
 
 	// Bad lower bounds
 	memContents := []byte("test data")
 	offset := int32(-2)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
-
-	// Memory growth
-	require.Equal(t, 2*pageSize, runtimeCtx.iTracker.instance.MemLength())
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 4)
-	err = memStore(runtimeCtx, offset, memContents)
-	require.Nil(t, err)
-	require.Equal(t, 3*pageSize, runtimeCtx.iTracker.instance.MemLength())
-
-	// Bad upper bounds - forcing the Wasmer memory to grow more than a page at a
-	// time is not allowed
-	memContents = make([]byte, pageSize+100)
-	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 50)
-	err = memStore(runtimeCtx, offset, memContents)
-	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
-	require.Equal(t, 4*pageSize, runtimeCtx.iTracker.instance.MemLength())
 
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
@@ -699,6 +680,38 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents, err = memLoad(runtimeCtx, offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
+}
+
+func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	runtimeCtx := makeDefaultRuntimeContext(t, host)
+	defer runtimeCtx.ClearWarmInstanceCache()
+
+	runtimeCtx.SetMaxInstanceStackSize(1)
+
+	gasLimit := uint64(100000000)
+	path := counterWasmCode
+	contractCode := vmhost.GetSCCode(path)
+	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
+	require.Nil(t, err)
+
+	instance := runtimeCtx.iTracker.instance
+	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+
+	memContents := []byte("test data")
+
+	// Memory growth via MemStore forbidden
+	offset := int32(instance.MemLength() - 4)
+	err = memStore(runtimeCtx, offset, memContents)
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBoundsUpper))
+	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+
+	// Memory growth via MemStore forbidden
+	memContents = make([]byte, vmhost.WASMPageSize+100)
+	offset = int32(instance.MemLength() - 50)
+	err = memStore(runtimeCtx, offset, memContents)
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBoundsUpper))
+	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
