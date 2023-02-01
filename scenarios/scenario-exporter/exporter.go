@@ -25,6 +25,8 @@ var ScAddressPrefixLength = 10
 
 var benchmarkTxIdent = "benchmark"
 
+var InvalidBenchmarkTxPos = -1
+
 var minimumAcceptedGasPrice = uint64(1)
 
 // ScenarioWithBenchmark defines the component used to hold scenario benchmark
@@ -42,7 +44,7 @@ func getInvalidScenarioWithBenchmark() ScenarioWithBenchmark {
 		DeployedAccs:   nil,
 		Txs:            nil,
 		DeployTxs:      nil,
-		BenchmarkTxPos: -1,
+		BenchmarkTxPos: InvalidBenchmarkTxPos,
 	}
 }
 
@@ -69,7 +71,7 @@ func getScenario(testPath string) (scenario *mj.Scenario, err error) {
 }
 
 func getAccountsAndTransactionsFromSteps(steps []mj.Step) (stateAndBenchmarkInfo ScenarioWithBenchmark, err error) {
-	stateAndBenchmarkInfo.BenchmarkTxPos = -1
+	stateAndBenchmarkInfo.BenchmarkTxPos = InvalidBenchmarkTxPos
 
 	if len(steps) == 0 {
 		return getInvalidScenarioWithBenchmark(), errNoStepsProvided
@@ -210,7 +212,7 @@ func stepIsExternalStep(step mj.Step) bool {
 }
 
 func benchmarkTxPosIsNotSet(benchmarkTxPos int) bool {
-	return benchmarkTxPos == -1
+	return benchmarkTxPos == InvalidBenchmarkTxPos
 }
 
 func txIdRequiresBenchmark(txIdent string) bool {

@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
@@ -253,7 +254,7 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 
 	assertFunc := func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData([]byte(keyword))
-		instance := host.Runtime().GetInstance()
+		instance := extractSingleTrackedInstanceFromHost(verify.T, host)
 		require.NotNil(verify.T, instance)
 		memory := instance.MemDump()
 		require.Len(verify.T, memory, 1*vmhost.WASMPageSize)
@@ -279,8 +280,10 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 
 	assertFunc := func(host vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 		verify.Ok().ReturnData([]byte(keyword))
-		instance := host.Runtime().GetInstance()
+
+		instance := extractSingleTrackedInstanceFromHost(verify.T, host)
 		require.NotNil(verify.T, instance)
+
 		memory := instance.MemDump()
 		require.Len(verify.T, memory, 1*vmhost.WASMPageSize)
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
@@ -362,4 +365,15 @@ func TestWASMMiddleware_GlobalsUnreachable(t *testing.T) {
 		AndAssertResults(func(_ vmhost.VMHost, _ *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.ContractInvalid()
 		})
+}
+
+func extractSingleTrackedInstanceFromHost(tb testing.TB, host vmhost.VMHost) executor.Instance {
+	trackedInstances := host.Runtime().GetInstanceTracker().TrackedInstances()
+	require.Len(tb, trackedInstances, 1)
+
+	for _, inst := range trackedInstances {
+		return inst
+	}
+
+	return nil
 }

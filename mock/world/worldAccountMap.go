@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
-	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
 )
 
 // AccountMap is a map from address to Account, also implementing the
@@ -71,7 +70,7 @@ func (am AccountMap) CreateSmartContractAccountWithCodeHash(owner []byte, addres
 // PutAccount inserts account based on address.
 func (am AccountMap) PutAccount(account *Account) {
 	if account.Code != nil && account.CodeHash == nil {
-		hash, _ := hashing.NewHasher().Sha256(account.Code)
+		hash := DefaultHasher.Compute(string(account.Code))
 		account.CodeHash = hash
 	}
 	am[string(account.Address)] = account

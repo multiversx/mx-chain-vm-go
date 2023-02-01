@@ -117,3 +117,8 @@ func (executorMock *ExecutorMock) NewInstanceFromCompiledCodeWithOptions(
 	}
 	return wasmer.NewInstanceFromCompiledCodeWithOptions(compiledCode, options)
 }
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (executorMock *ExecutorMock) IsInterfaceNil() bool {
+	return executorMock == nil
+}

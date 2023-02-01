@@ -8,6 +8,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/stretchr/testify/require"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
@@ -85,6 +86,10 @@ func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
 		if reset {
 			callerTest.host.Reset()
 		}
+
+		// Extra verification for instance leaks
+		err := callerTest.host.Runtime().ValidateInstances()
+		require.Nil(callerTest.t, err)
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)

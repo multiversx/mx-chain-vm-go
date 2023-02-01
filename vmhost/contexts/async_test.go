@@ -75,8 +75,9 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 		testVmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
+		defaultHasher,
 	)
-	runtimeCtx.instance = mockWasmerInstance
+	runtimeCtx.iTracker.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeCtx
 
 	storageCtx, _ := NewStorageContext(host, world, reservedTestPrefix)

@@ -8,7 +8,7 @@ type Instance interface {
 	SetBreakpointValue(value uint64)
 	GetBreakpointValue() uint64
 	Cache() ([]byte, error)
-	Clean()
+	Clean() bool
 	CallFunction(functionName string) error
 	HasFunction(functionName string) bool
 	GetFunctionNames() []string
@@ -24,5 +24,6 @@ type Instance interface {
 	Reset() bool
 	SetVMHooksPtr(vmHooksPtr uintptr)
 	GetVMHooksPtr() uintptr
-	Id() string
+	ID() string
+	AlreadyCleaned() bool
 }

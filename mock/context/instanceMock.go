@@ -10,6 +10,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 )
 
+var _ executor.Instance = (*InstanceMock)(nil)
+
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
 // contracts within tests, without needing actual WASM smart contracts.
 type InstanceMock struct {
@@ -23,6 +25,7 @@ type InstanceMock struct {
 	Host            vmhost.VMHost
 	T               testing.TB
 	Address         []byte
+	AlreadyClean    bool
 }
 
 // NewInstanceMock creates a new InstanceMock
@@ -84,7 +87,14 @@ func (instance *InstanceMock) Cache() ([]byte, error) {
 }
 
 // Clean mocked method
-func (instance *InstanceMock) Clean() {
+func (instance *InstanceMock) Clean() bool {
+	instance.AlreadyClean = true
+	return true
+}
+
+// AlreadyCleaned mocked method
+func (instance *InstanceMock) AlreadyCleaned() bool {
+	return instance.AlreadyClean
 }
 
 // Reset mocked method
@@ -169,8 +179,8 @@ func GetMockInstance(host vmhost.VMHost) *InstanceMock {
 	return instance
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *InstanceMock) Id() string {
+// ID returns an identifier for the instance, unique at runtime
+func (instance *InstanceMock) ID() string {
 	return fmt.Sprintf("%p", instance)
 }
 
