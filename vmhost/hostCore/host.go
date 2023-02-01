@@ -33,6 +33,7 @@ var _ vmhost.VMHost = (*vmHost)(nil)
 const minExecutionTimeout = time.Second
 const internalVMErrors = "internalVMErrors"
 
+// for test trigger
 var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer2.ExecutorFactory()
 
 // vmHost implements HostContext interface.
