@@ -38,16 +38,20 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 }
 
 // Clean cleans instance
-func (instance *Wasmer2Instance) Clean() {
+func (instance *Wasmer2Instance) Clean() bool{
 	if instance.alreadyCleaned {
-		return
+		return false
 	}
 
 	if instance.cgoInstance != nil {
 		cWasmerInstanceDestroy(instance.cgoInstance)
 
 		instance.alreadyCleaned = true
+
+		return true
 	}
+
+	return false
 }
 
 // SetGasLimit sets the gas limit for the instance
@@ -203,7 +207,7 @@ func (instance *Wasmer2Instance) MemDump() []byte {
 }
 
 // Id returns an identifier for the instance, unique at runtime
-func (instance *Wasmer2Instance) Id() string {
+func (instance *Wasmer2Instance) ID() string {
 	return fmt.Sprintf("%p", instance.cgoInstance)
 }
 
@@ -229,4 +233,9 @@ func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
 // GetVMHooksPtr returns the VM hooks pointer
 func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
 	return uintptr(0)
+}
+
+// AlreadyCleaned returns the internal field AlreadyClean
+func (instance *Wasmer2Instance) AlreadyCleaned() bool {
+	return instance.alreadyCleaned
 }
