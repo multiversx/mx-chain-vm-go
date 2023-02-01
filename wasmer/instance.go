@@ -84,10 +84,18 @@ func (error *ExportedFunctionError) Error() string {
 type ExportedFunctionCallback func(...interface{}) (Value, error)
 
 // ExportsMap is a map of names to ExportedFunctionCallback values
-type ExportsMap map[string]ExportedFunctionCallback
+type ExportsMap map[string]*ExportedFunctionCallInfo
 
 // ExportSignaturesMap is a map of names to ExportedFunctionSignatures
 type ExportSignaturesMap map[string]*ExportedFunctionSignature
+
+// ExportedFunctionCallInfo contains information required to call an exported WASM function
+type ExportedFunctionCallInfo struct {
+	FuncName       string
+	InputArity     cUint32T
+	InputSignature []cWasmerValueTag
+	OutputArity    cUint32T
+}
 
 // Instance represents a WebAssembly instance.
 type Instance struct {
@@ -230,6 +238,12 @@ func newInstance(cInstance *cWasmerInstanceT) (*Instance, error) {
 // HasMemory checks whether the instance has at least one exported memory.
 func (instance *Instance) HasMemory() bool {
 	return nil != instance.Memory
+}
+
+// HasFunction checks whether the instance has a specific exported function
+func (instance *Instance) HasFunction(funcName string) bool {
+	_, has := instance.Exports[funcName]
+	return has
 }
 
 // NewInstanceFromCompiledCodeWithOptions creates a new Wasmer instance from
@@ -389,6 +403,16 @@ func (instance *Instance) ID() string {
 // GetMemory returns the memory for the instance
 func (instance *Instance) GetMemory() MemoryHandler {
 	return instance.Memory
+}
+
+// CallFunction calls an exported function of the instance
+func (instance *Instance) CallFunction(funcName string) (Value, error) {
+	callInfo, found := instance.Exports[funcName]
+	if !found {
+		return Void(), ErrExportNotFound
+	}
+
+	return callExportedFunction(instance.instance, callInfo)
 }
 
 // Reset resets the instance memories and globals

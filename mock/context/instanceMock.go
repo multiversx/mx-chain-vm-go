@@ -9,11 +9,15 @@ import (
 	"github.com/multiversx/mx-chain-vm-v1_4-go/wasmer"
 )
 
+type mockMethod func() *InstanceMock
+
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
 // contracts within tests, without needing actual WASM smart contracts.
 type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
+	DefaultErrors   map[string]error
+	Methods         map[string]mockMethod
 	Points          uint64
 	Data            uintptr
 	GasLimit        uint64
@@ -30,6 +34,8 @@ func NewInstanceMock(code []byte) *InstanceMock {
 	return &InstanceMock{
 		Code:            code,
 		Exports:         make(wasmer.ExportsMap),
+		DefaultErrors:   make(map[string]error),
+		Methods:         make(map[string]mockMethod),
 		Points:          0,
 		Data:            0,
 		GasLimit:        0,
@@ -45,27 +51,32 @@ func (instance *InstanceMock) ID() string {
 }
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
-func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
+func (instance *InstanceMock) AddMockMethod(name string, method mockMethod) {
 	instance.AddMockMethodWithError(name, method, nil)
 }
 
 // AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
-func (instance *InstanceMock) AddMockMethodWithError(name string, method func() *InstanceMock, err error) {
-	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
-		instance := method()
-		if vmhost.BreakpointValue(instance.GetBreakpointValue()) != vmhost.BreakpointNone {
-			var errMsg string
-			if vmhost.BreakpointValue(instance.GetBreakpointValue()) == vmhost.BreakpointAsyncCall {
-				errMsg = "breakpoint"
-			} else {
-				errMsg = instance.Host.Output().GetVMOutput().ReturnMessage
-			}
-			err = errors.New(errMsg)
-		}
-		return wasmer.Void(), err
-	}
+func (instance *InstanceMock) AddMockMethodWithError(name string, method mockMethod, err error) {
+	instance.Methods[name] = method
+	instance.DefaultErrors[name] = err
+	instance.Exports[name] = &wasmer.ExportedFunctionCallInfo{}
+}
 
-	instance.Exports[name] = wrappedMethod
+// CallFunction mocked method
+func (instance *InstanceMock) CallFunction(funcName string) (wasmer.Value, error) {
+	err := instance.DefaultErrors[funcName]
+	method := instance.Methods[funcName]
+	newInstance := method()
+	if vmhost.BreakpointValue(instance.GetBreakpointValue()) != vmhost.BreakpointNone {
+		var errMsg string
+		if vmhost.BreakpointValue(instance.GetBreakpointValue()) == vmhost.BreakpointAsyncCall {
+			errMsg = "breakpoint"
+		} else {
+			errMsg = newInstance.Host.Output().GetVMOutput().ReturnMessage
+		}
+		err = errors.New(errMsg)
+	}
+	return wasmer.Void(), err
 }
 
 // HasMemory mocked method
@@ -162,6 +173,12 @@ func (instance *InstanceMock) GetMemory() wasmer.MemoryHandler {
 func (instance *InstanceMock) IsFunctionImported(name string) bool {
 	_, ok := instance.Exports[name]
 	return ok
+}
+
+// HasFunction mocked method
+func (instance *InstanceMock) HasFunction(name string) bool {
+	_, has := instance.Methods[name]
+	return has
 }
 
 // GetMockInstance gets the mock instance from the runtime of the provided host
