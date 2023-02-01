@@ -1,8 +1,8 @@
 package executorwrapper
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // WrapperExecutor is a wrapper around an executor, who additionally caches all created instances.

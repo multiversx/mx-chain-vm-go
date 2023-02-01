@@ -1,6 +1,8 @@
 package wasmer
 
-import "github.com/ElrondNetwork/wasm-vm/executor"
+import (
+	"github.com/multiversx/mx-chain-vm-go/executor"
+)
 
 // OpcodeCount is the number of opcodes that we account for when setting gas costs.
 const opcodeCount = 448

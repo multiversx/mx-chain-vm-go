@@ -10,7 +10,7 @@ import (
 const SCAddressNumLeadingZeros = 8
 
 // IsSmartContractAddress verifies the address format.
-// In Elrond, smart contract addresses start with 8 bytes of 0.
+// Smart contract addresses start with 8 bytes of 0.
 func IsSmartContractAddress(address []byte) bool {
 	leadingZeros := make([]byte, SCAddressNumLeadingZeros)
 	return bytes.Equal(address[:SCAddressNumLeadingZeros], leadingZeros)

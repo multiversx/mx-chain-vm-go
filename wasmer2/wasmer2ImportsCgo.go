@@ -263,7 +263,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // populateCgoFunctionPointers populates imports with the ElrondEI API methods

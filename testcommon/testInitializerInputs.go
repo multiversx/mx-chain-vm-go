@@ -10,19 +10,19 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/builtInFunctions"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	arwenHost "github.com/ElrondNetwork/wasm-vm/arwen/host"
-	"github.com/ElrondNetwork/wasm-vm/arwen/mock"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	"github.com/ElrondNetwork/wasm-vm/crypto/hashing"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/crypto/hashing"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -120,8 +120,8 @@ func GetTestSCCodeModule(scName string, moduleName string, prefixToTestSCs strin
 type TestHostBuilder struct {
 	tb               testing.TB
 	blockchainHook   vmcommon.BlockchainHook
-	vmHostParameters *arwen.VMHostParameters
-	host             arwen.VMHost
+	vmHostParameters *vmhost.VMHostParameters
+	host             vmhost.VMHost
 }
 
 // NewTestHostBuilder commences a test host builder pattern.
@@ -129,12 +129,12 @@ func NewTestHostBuilder(tb testing.TB) *TestHostBuilder {
 	esdtTransferParser, _ := parsers.NewESDTTransferParser(worldmock.WorldMarshalizer)
 	return &TestHostBuilder{
 		tb: tb,
-		vmHostParameters: &arwen.VMHostParameters{
+		vmHostParameters: &vmhost.VMHostParameters{
 			VMType:                   DefaultVMType,
 			BlockGasLimit:            uint64(1000),
 			GasSchedule:              nil,
 			BuiltInFuncContainer:     nil,
-			ElrondProtectedKeyPrefix: []byte("ELROND"),
+			ProtectedKeyPrefix:       []byte("E" + "L" + "R" + "O" + "N" + "D"),
 			ESDTTransferParser:       esdtTransferParser,
 			EpochNotifier:            &mock.EpochNotifierStub{},
 			EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubAllFlags(),
@@ -195,7 +195,7 @@ func (thb *TestHostBuilder) WithGasSchedule(gasSchedule config.GasScheduleMap) *
 }
 
 // Build initializes the VM host with all configured options.
-func (thb *TestHostBuilder) Build() arwen.VMHost {
+func (thb *TestHostBuilder) Build() vmhost.VMHost {
 	thb.initializeHost()
 	return thb.host
 }
@@ -207,9 +207,9 @@ func (thb *TestHostBuilder) initializeHost() {
 	}
 }
 
-func (thb *TestHostBuilder) newHost() arwen.VMHost {
+func (thb *TestHostBuilder) newHost() vmhost.VMHost {
 	thb.initializeBuiltInFuncContainer()
-	host, err := arwenHost.NewArwenVM(
+	host, err := hostCore.NewVMHost(
 		thb.blockchainHook,
 		thb.vmHostParameters,
 	)

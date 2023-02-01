@@ -1,5 +1,5 @@
-#include "../elrond/context.h"
-#include "../elrond/bigInt.h"
+#include "../mxvm/context.h"
+#include "../mxvm/bigInt.h"
 
 void managedAsyncCall(int addressBuffer, int valueBuffer, int functionBuffer, int argumentsBuffer);
 
