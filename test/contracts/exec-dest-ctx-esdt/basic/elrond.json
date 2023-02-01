@@ -1,8 +1,0 @@
-{
-    "language": "clang",
-    "source_files": [
-        "basic.c",
-				"../../elrond/args.c",
-				"../../elrond/cbuiltins.c"
-    ]
-}

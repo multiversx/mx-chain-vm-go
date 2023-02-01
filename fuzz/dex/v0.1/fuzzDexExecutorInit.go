@@ -206,7 +206,7 @@ func (pfe *fuzzDexExecutor) setupPair(swapAddress, firstTokenId, secondTokenId, 
 						"str:send_fee_gas_limit": "25,000,000",
 						"str:extern_swap_gas_limit": "50,000,000"
 					},
-					"code": "file:elrond_dex_pair.wasm",
+					"code": "file:dex_pair.wasm",
 					"owner": "%s"
 				}
 			}
@@ -273,7 +273,7 @@ func (pfe *fuzzDexExecutor) setupFarm(farmAddress, farmTokenId, enterFarmTokenId
 						"str:nft_deposit_accepted_token_ids.node_links": "0",
 						"str:nft_deposit_accepted_token_ids.value|u32:1": "str:%s"
 					},
-					"code": "file:elrond_dex_farm.wasm",
+					"code": "file:dex_farm.wasm",
 					"owner": "%s"
 				}
 			}

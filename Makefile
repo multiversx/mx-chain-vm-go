@@ -1,6 +1,6 @@
-.PHONY: test test-short build arwendebug clean
+.PHONY: test test-short build vmserver clean
 
-ARWEN_VERSION := $(shell git describe --tags --long --dirty --always)
+VM_VERSION := $(shell git describe --tags --long --dirty --always)
 
 clean:
 	go clean -cache -testcache
@@ -8,12 +8,12 @@ clean:
 build:
 	go build ./...
 
-arwendebug:
-ifndef ARWENDEBUG_PATH
-	$(error ARWENDEBUG_PATH is undefined)
+vmserver:
+ifndef VMSERVER_PATH
+	$(error VMSERVER_PATH is undefined)
 endif
-	go build -o ./cmd/arwendebug/arwendebug ./cmd/arwendebug
-	cp ./cmd/arwendebug/arwendebug ${ARWENDEBUG_PATH}
+	go build -o ./cmd/vmserver/vmserver ./cmd/vmserver
+	cp ./cmd/vmserver/vmserver ${VMSERVER_PATH}
 
 test: clean
 	go test ./...
@@ -35,19 +35,19 @@ test-short-serial:
 
 print-api-costs:
 	@echo "bigIntOps.go:"
-	@grep "func v1_5\|GasSchedule" arwen/elrondapi/bigIntOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_5\|GasSchedule" vmhost/vmhooks/bigIntOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
-	@echo "elrondei.go:"
-	@grep "func v1_5\|GasSchedule" arwen/elrondapi/elrondei.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@echo "baseOps.go:"
+	@grep "func v1_5\|GasSchedule" vmhost/vmhooks/baseOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
 	@echo "managedei.go:"
-	@grep "func v1_5\|GasSchedule" arwen/elrondapi/managedei.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_5\|GasSchedule" vmhost/vmhooks/managedei.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
 	@echo "manBufOps.go:"
-	@grep "func v1_5\|GasSchedule" arwen/elrondapi/manBufOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_5\|GasSchedule" vmhost/vmhooks/manBufOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 	@echo "----------------"
 	@echo "smallIntOps.go:"
-	@grep "func v1_5\|GasSchedule" arwen/elrondapi/smallIntOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
+	@grep "func v1_5\|GasSchedule" vmhost/vmhooks/smallIntOps.go | sed -e "/func/ s:func v1_5_\(.*\)(.*:\1:" -e "/GasSchedule/ s:metering.GasSchedule()::"
 
 
 build-test-contracts: build-test-contracts-erdpy build-test-contracts-wat
@@ -88,7 +88,7 @@ build-test-contracts-erdpy:
 	erdpy contract build ./test/contracts/deployer-child
 	erdpy contract build ./test/contracts/deployer-fromanother-contract
 	erdpy contract build ./test/contracts/deployer-parent
-	erdpy contract build ./test/contracts/elrondei
+	erdpy contract build ./test/contracts/vmhooks
 	erdpy contract build ./test/contracts/erc20
 	erdpy contract build ./test/contracts/exchange
 	
@@ -133,7 +133,7 @@ ifndef SANDBOX
 	$(error SANDBOX variable is undefined)
 endif
 	rm -rf ${SANDBOX}/sc-delegation-rs
-	git clone --depth=1 --branch=master https://github.com/ElrondNetwork/sc-delegation-rs.git ${SANDBOX}/sc-delegation-rs
+	git clone --depth=1 --branch=master https://github.com/multiversx/sc-delegation-rs.git ${SANDBOX}/sc-delegation-rs
 	rm -rf ${SANDBOX}/sc-delegation-rs/.git
 	erdpy contract build ${SANDBOX}/sc-delegation-rs
 	erdpy contract test --directory="tests" ${SANDBOX}/sc-delegation-rs
@@ -145,7 +145,7 @@ ifndef SANDBOX
 	$(error SANDBOX variable is undefined)
 endif
 	rm -rf ${SANDBOX}/sc-dns-rs
-	git clone --depth=1 --branch=master https://github.com/ElrondNetwork/sc-dns-rs.git ${SANDBOX}/sc-dns-rs
+	git clone --depth=1 --branch=master https://github.com/multiversx/sc-dns-rs.git ${SANDBOX}/sc-dns-rs
 	rm -rf ${SANDBOX}/sc-dns-rs/.git
 	erdpy contract build ${SANDBOX}/sc-dns-rs
 	erdpy contract test --directory="tests" ${SANDBOX}/sc-dns-rs
@@ -160,7 +160,7 @@ endif
 
 	erdpy contract new --template=erc20-c --directory ${SANDBOX}/sc-examples erc20-c
 	erdpy contract build ${SANDBOX}/sc-examples/erc20-c
-	cp ${SANDBOX}/sc-examples/erc20-c/output/wrc20_arwen.wasm ./test/erc20/contracts/erc20-c.wasm
+	cp ${SANDBOX}/sc-examples/erc20-c/output/wrc20.wasm ./test/erc20/contracts/erc20-c.wasm
 
 
 build-sc-examples-rs:

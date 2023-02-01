@@ -1,8 +1,8 @@
 package contracts
 
 import (
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 )
 
 // ChildAsyncMultiGroupsMock is an exposed mock contract method

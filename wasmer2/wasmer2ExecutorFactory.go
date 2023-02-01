@@ -1,6 +1,6 @@
 package wasmer2
 
-import "github.com/ElrondNetwork/wasm-vm/executor"
+import "github.com/multiversx/mx-chain-vm-go/executor"
 
 var _ = (executor.ExecutorAbstractFactory)((*Wasmer2ExecutorFactory)(nil))
 

@@ -8,18 +8,18 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
 // VMOutputVerifier holds the output to be verified
 type VMOutputVerifier struct {
 	VmOutput  *vmcommon.VMOutput
-	AllErrors arwen.WrappableError
+	AllErrors vmhost.WrappableError
 	T         testing.TB
 }
 
@@ -33,9 +33,9 @@ func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput,
 	require.Nil(t, err, "Error is not nil")
 	require.NotNil(t, vmOutput, "Provided VMOutput is nil")
 
-	var allErrorsAsWrappable arwen.WrappableError
+	var allErrorsAsWrappable vmhost.WrappableError
 	if allErrors != nil {
-		allErrorsAsWrappable = allErrors.(arwen.WrappableError)
+		allErrorsAsWrappable = allErrors.(vmhost.WrappableError)
 	}
 
 	return &VMOutputVerifier{
