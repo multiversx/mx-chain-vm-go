@@ -11,7 +11,7 @@ import (
 const VMVersion = "v1.5"
 
 // WASMPageSize is the size in bytes of a WASM linear memory page
-const WASMPageSize = 65536
+const WASMPageSize = uint32(65536)
 
 // BreakpointValue encodes Wasmer runtime breakpoint types
 type BreakpointValue uint64

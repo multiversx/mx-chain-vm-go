@@ -419,6 +419,20 @@ func TestExecution_MultipleVMs_CleanInstanceWhileOthersAreRunning(t *testing.T) 
 	verify2.Ok()
 }
 
+func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
+	test.BuildInstanceCreatorTest(t).
+		WithInput(test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(1000).
+			WithCallValue(88).
+			WithArguments([]byte{2}).
+			WithContractCode(test.GetTestSCCode("num-with-fp", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
+}
+
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	errGetAccount := errors.New("get code error")
 	test.BuildInstanceCallTest(t).
@@ -536,7 +550,7 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	gasRemainingBeforeChange := vmOutput.GasRemaining
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
 
-	gasSchedule["BaseOpsAPICost"]["Finish"] += 1
+	gasSchedule["BaseOpsAPICost"]["Finish"]++
 	host.GasScheduleChange(gasSchedule)
 
 	vmOutput, err = host.RunSmartContractCall(input)
