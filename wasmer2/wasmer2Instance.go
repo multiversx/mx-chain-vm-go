@@ -21,7 +21,7 @@ type Wasmer2Instance struct {
 	// The exported memory of a WebAssembly instance.
 	memory Wasmer2Memory
 
-	alreadyCleaned bool
+	AlreadyClean bool
 }
 
 func emptyInstance() *Wasmer2Instance {
@@ -38,15 +38,18 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 }
 
 // Clean cleans instance
-func (instance *Wasmer2Instance) Clean() bool{
-	if instance.alreadyCleaned {
+func (instance *Wasmer2Instance) Clean() bool {
+	logWasmer2.Trace("cleaning instance", "id", instance.ID())
+	if instance.AlreadyClean {
+		logWasmer2.Trace("clean: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	if instance.cgoInstance != nil {
 		cWasmerInstanceDestroy(instance.cgoInstance)
 
-		instance.alreadyCleaned = true
+		instance.AlreadyClean = true
+		logWasmer2.Trace("cleaned instance", "id", instance.ID())
 
 		return true
 	}
@@ -213,12 +216,16 @@ func (instance *Wasmer2Instance) ID() string {
 
 // Reset resets the instance memories and globals
 func (instance *Wasmer2Instance) Reset() bool {
-	if instance.alreadyCleaned {
+	if instance.AlreadyClean {
+		logWasmer2.Trace("reset: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.cgoInstance)
-	return result == cWasmerOk
+	ok := result == cWasmerOk
+
+	logWasmer2.Trace("reset: warm instance", "id", instance.ID(), "ok", ok)
+	return ok
 }
 
 // IsInterfaceNil returns true if underlying object is nil
@@ -237,5 +244,5 @@ func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
 
 // AlreadyCleaned returns the internal field AlreadyClean
 func (instance *Wasmer2Instance) AlreadyCleaned() bool {
-	return instance.alreadyCleaned
+	return instance.AlreadyClean
 }
