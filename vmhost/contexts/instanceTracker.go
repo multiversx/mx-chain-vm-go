@@ -357,7 +357,7 @@ func (tracker *instanceTracker) CheckInstances() error {
 	}
 
 	for id, instance := range tracker.instances {
-		if instance.AlreadyCleaned() {
+		if instance.IsAlreadyCleaned() {
 			continue
 		}
 		_, isWarm := warmInstanceCacheByID[id]
