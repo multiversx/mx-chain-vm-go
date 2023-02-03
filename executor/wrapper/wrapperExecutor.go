@@ -75,3 +75,8 @@ func (wexec *WrapperExecutor) addContractInstanceToInstanceMap(code []byte, inst
 func (wexec *WrapperExecutor) GetContractInstances(code []byte) []executor.Instance {
 	return wexec.WrappedInstances[string(code)]
 }
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (wexec *WrapperExecutor) IsInterfaceNil() bool {
+	return wexec == nil
+}

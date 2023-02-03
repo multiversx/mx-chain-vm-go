@@ -7,8 +7,17 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
+// ErrNilVMType signals that the provided VMType is nil
+var ErrNilVMType = errors.New("nil VMType")
+
 // ErrNilVMHost signals that the provided VMHost is nil
 var ErrNilVMHost = errors.New("nil VMHost")
+
+// ErrNilExecutor signals that the provided Executor is nil
+var ErrNilExecutor = errors.New("nil Executor")
+
+// ErrNilHasher signals that the provided Hasher is nil
+var ErrNilHasher = errors.New("nil Hasher")
 
 // ErrReturnCodeNotOk signals that the returned code is different than vmcommon.Ok
 var ErrReturnCodeNotOk = errors.New("return code is not ok")

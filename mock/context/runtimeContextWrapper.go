@@ -118,7 +118,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CleanInstanceFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	NumRunningInstancesFunc func() (int, int)
+	GetInstanceTrackerFunc func() vmhost.InstanceTracker
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
@@ -314,8 +314,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *Runti
 		runtimeWrapper.runtimeContext.CleanInstance()
 	}
 
-	runtimeWrapper.NumRunningInstancesFunc = func() (int, int) {
-		return runtimeWrapper.runtimeContext.NumRunningInstances()
+	runtimeWrapper.GetInstanceTrackerFunc = func() vmhost.InstanceTracker {
+		return runtimeWrapper.runtimeContext.GetInstanceTracker()
 	}
 
 	return runtimeWrapper
@@ -585,7 +585,16 @@ func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
 }
 
-// NumRunningInstances calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) NumRunningInstances() (int, int) {
-	return contextWrapper.NumRunningInstancesFunc()
+// EndExecution -
+func (contextWrapper *RuntimeContextWrapper) EndExecution() {
+}
+
+// ValidateInstances -
+func (contextWrapper *RuntimeContextWrapper) ValidateInstances() error {
+	return nil
+}
+
+// GetInstanceTracker -
+func (contextWrapper *RuntimeContextWrapper) GetInstanceTracker() vmhost.InstanceTracker {
+	return contextWrapper.GetInstanceTrackerFunc()
 }

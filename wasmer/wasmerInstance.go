@@ -56,19 +56,26 @@ func (error *ExportedFunctionError) Error() string {
 	return error.message
 }
 
-// types used in the wasmer instances management process
-type (
-	ExportedFunctionCallback func(...interface{}) (Value, error)
-	ExportsMap               map[string]ExportedFunctionCallback
-	ExportSignaturesMap      map[string]*ExportedFunctionSignature
-)
+// ExportsMap is a map of names to ExportedFunctionCallInfo values
+type ExportsMap map[string]*ExportedFunctionCallInfo
+
+// ExportSignaturesMap is a map of names to ExportedFunctionSignatures
+type ExportSignaturesMap map[string]*ExportedFunctionSignature
+
+// ExportedFunctionCallInfo contains information required to call an exported WASM function
+type ExportedFunctionCallInfo struct {
+	FuncName       string
+	InputArity     cUint32T
+	InputSignature []cWasmerValueTag
+	OutputArity    cUint32T
+}
 
 // WasmerInstance represents a WebAssembly instance.
 type WasmerInstance struct {
 	// The underlying WebAssembly instance.
 	instance *cWasmerInstanceT
 
-	alreadyCleaned bool
+	AlreadyClean bool
 
 	// All functions exported by the WebAssembly instance, indexed
 	// by their name as a string. An exported function is a
@@ -138,6 +145,8 @@ func NewInstanceWithOptions(
 		cInstanceContext := cWasmerInstanceContextGet(cInstance)
 		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
+
+	logWasmer.Trace("new instance created", "id", instance.ID())
 	return instance, err
 }
 
@@ -202,11 +211,11 @@ func NewInstanceFromCompiledCodeWithOptions(
 }
 
 // Clean cleans instance
-func (instance *WasmerInstance) Clean() {
-	logWasmer.Trace("cleaning instance", "id", instance.Id())
-	if instance.alreadyCleaned {
-		logWasmer.Trace("clean: already cleaned instance", "id", instance.Id())
-		return
+func (instance *WasmerInstance) Clean() bool {
+	logWasmer.Trace("cleaning instance", "id", instance.ID())
+	if instance.AlreadyClean {
+		logWasmer.Trace("clean: already cleaned instance", "id", instance.ID())
+		return false
 	}
 
 	if instance.instance != nil {
@@ -216,10 +225,18 @@ func (instance *WasmerInstance) Clean() {
 			instance.Memory.Destroy()
 		}
 
-		instance.alreadyCleaned = true
-		logWasmer.Trace("cleaned instance", "id", instance.Id())
+		instance.AlreadyClean = true
+		logWasmer.Trace("cleaned instance", "id", instance.ID())
 
+		return true
 	}
+
+	return false
+}
+
+// IsAlreadyCleaned returns the internal field AlreadyClean
+func (instance *WasmerInstance) IsAlreadyCleaned() bool {
+	return instance.AlreadyClean
 }
 
 // GetPointsUsed returns the internal instance gas counter
@@ -276,12 +293,12 @@ func (instance *WasmerInstance) IsFunctionImported(name string) bool {
 
 // CallFunction executes given function from loaded contract.
 func (instance *WasmerInstance) CallFunction(functionName string) error {
-	if function, ok := instance.exports[functionName]; ok {
-		_, err := function()
-		return err
+	callInfo, found := instance.exports[functionName]
+	if !found {
+		return executor.ErrFuncNotFound
 	}
 
-	return executor.ErrFuncNotFound
+	return callExportedFunction(instance.instance, callInfo)
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.
@@ -337,15 +354,15 @@ func (instance *WasmerInstance) MemDump() []byte {
 
 // Reset resets the instance memories and globals
 func (instance *WasmerInstance) Reset() bool {
-	if instance.alreadyCleaned {
-		logWasmer.Trace("reset: already cleaned instance", "id", instance.Id())
+	if instance.AlreadyClean {
+		logWasmer.Trace("reset: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.instance)
 	ok := result == cWasmerOk
 
-	logWasmer.Trace("reset: warm instance", "id", instance.Id(), "ok", ok)
+	logWasmer.Trace("reset: warm instance", "id", instance.ID(), "ok", ok)
 	return ok
 }
 
@@ -366,7 +383,7 @@ func (instance *WasmerInstance) GetVMHooksPtr() uintptr {
 	return *(*uintptr)(instance.vmHooksPtr)
 }
 
-// Id returns an identifier for the instance, unique at runtime
-func (instance *WasmerInstance) Id() string {
+// ID returns an identifier for the instance, unique at runtime
+func (instance *WasmerInstance) ID() string {
 	return fmt.Sprintf("%p", instance.instance)
 }

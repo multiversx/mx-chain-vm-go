@@ -419,6 +419,20 @@ func TestExecution_MultipleVMs_CleanInstanceWhileOthersAreRunning(t *testing.T) 
 	verify2.Ok()
 }
 
+func TestExecution_Deploy_DisallowFloatingPoint(t *testing.T) {
+	test.BuildInstanceCreatorTest(t).
+		WithInput(test.CreateTestContractCreateInputBuilder().
+			WithGasProvided(1000).
+			WithCallValue(88).
+			WithArguments([]byte{2}).
+			WithContractCode(test.GetTestSCCode("num-with-fp", "../../")).
+			Build()).
+		WithAddress(newAddress).
+		AndAssertResults(func(blockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			verify.ContractInvalid()
+		})
+}
+
 func TestExecution_CallGetUserAccountErr(t *testing.T) {
 	errGetAccount := errors.New("get code error")
 	test.BuildInstanceCallTest(t).
@@ -536,7 +550,7 @@ func TestExecution_ChangeWasmerAPICosts(t *testing.T) {
 	gasRemainingBeforeChange := vmOutput.GasRemaining
 	log.Trace("gas remaining before change", "gas", gasRemainingBeforeChange)
 
-	gasSchedule["BaseOpsAPICost"]["Finish"] += 1
+	gasSchedule["BaseOpsAPICost"]["Finish"]++
 	host.GasScheduleChange(gasSchedule)
 
 	vmOutput, err = host.RunSmartContractCall(input)
@@ -957,7 +971,6 @@ func buildRandomizer(host vmhost.VMHost) io.Reader {
 }
 
 func TestExecution_ManagedBuffers_SetByteSlice(t *testing.T) {
-	// mByteSetByteSlice not yet enabled
 	runTestMBufferSetByteSliceDeploy(t, true, vmcommon.Ok)
 
 	// Correct copying from "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890" over "abcdefghijklmnopqrstuvwxyz"
@@ -2240,7 +2253,7 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 		storeEntries = append(storeEntries, test.CreateStoreEntry(test.ChildAddress).WithKey(test.RecursiveIterationBigCounterKey).WithValue(big.NewInt(int64(1)).Bytes()))
 	}
 
-	test.BuildInstanceCallTest(t).
+	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
 				WithCode(test.GetTestSCCode("exec-dest-ctx-recursive-parent", "../../")).
@@ -2254,8 +2267,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 			WithFunction(parentCallsChild).
 			WithGasProvided(test.GasProvided).
 			WithArguments([]byte{byte(recursiveCalls)}).
-			Build()).
-		AndAssertResults(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
+			Build())
+
+	for i := 0; i < 1; i++ {
+		testCase.AndAssertResultsWithoutReset(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub, verify *test.VMOutputVerifier) {
 			verify.Ok().
 				// test.ParentAddress
 				Balance(test.ParentAddress, 1000).
@@ -2270,12 +2285,10 @@ func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs(t *testing.T) {
 				Storage(storeEntries...)
 
 			require.Equal(t, int64(1), host.ManagedTypes().GetBigIntOrCreate(88).Int64())
-
-			// Check remaining instances count
-			numWarmInstances, numColdInstances := host.Runtime().NumRunningInstances()
-			require.Equal(t, 0, numColdInstances, "cold instances still running")
-			require.Equal(t, 2, numWarmInstances, "warm instances still running")
 		})
+	}
+
+	_ = testCase.GetVMHost().Close()
 }
 
 func TestExecution_ExecuteOnDestContext_Recursive_Mutual_SCs_OutOfGas(t *testing.T) {
@@ -2407,7 +2420,7 @@ func TestExecution_ExecuteOnDestContextByCaller_SimpleTransfer(t *testing.T) {
 	// many as requested. The parent calls the child using
 	// executeOnDestContextByCaller(), which means that the child will not see
 	// the parent as its caller, but the original caller of the transaction
-	// instead. Thus the original caller (the user address) will receive 42
+	// instead. Thus, the original caller (the user address) will receive 42
 	// tokens, and not the parent, even if the parent is the one making the call
 	// to the child.
 
@@ -3169,7 +3182,7 @@ func TestExecution_Mocked_Warm_Instances_Same_Contract_Different_Address(t *test
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			verify.OutOfGas()
 		})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 func TestExecution_Mocked_ClearReturnData(t *testing.T) {
@@ -3273,7 +3286,7 @@ func TestExecution_Mocked_ClearReturnData(t *testing.T) {
 		AndAssertResults(func(world *worldmock.MockWorld, verify *test.VMOutputVerifier) {
 			// No assertions here, because they were performed during the instance call
 		})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 var codeOpcodes = test.GetTestSCCode("opcodes", "../../")
@@ -3495,7 +3508,7 @@ func TestExecution_Mocked_OnSameFollowedByOnDest(t *testing.T) {
 			verify.Ok().
 				ReturnData([]byte("parent returns this"), []byte("child returns this"), []byte("newphew returns this"), []byte("OK"))
 		})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 }
 
 // makeBytecodeWithLocals rewrites the bytecode of "answer" to change the

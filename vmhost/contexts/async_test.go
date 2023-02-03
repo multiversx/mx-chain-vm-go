@@ -63,9 +63,7 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 	world := worldmock.NewMockWorld()
 	host.BlockchainContext, _ = NewBlockchainContext(host, world)
 
-	mockWasmerInstance = &contextmock.InstanceMock{
-		Exports: make(wasmer.ExportsMap),
-	}
+	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	exec, _ := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
@@ -75,8 +73,9 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 		testVmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
+		defaultHasher,
 	)
-	runtimeCtx.instance = mockWasmerInstance
+	runtimeCtx.iTracker.instance = mockWasmerInstance
 	host.RuntimeContext = runtimeCtx
 
 	storageCtx, _ := NewStorageContext(host, world, reservedTestPrefix)
@@ -334,12 +333,12 @@ func TestAsyncContext_IsValidCallbackName(t *testing.T) {
 	host, _ := initializeVMAndWasmerAsyncContext()
 	async := makeAsyncContext(t, host, nil)
 
-	mockWasmerInstance.Exports["a"] = nil
-	mockWasmerInstance.Exports["my_contract_method_22"] = nil
-	mockWasmerInstance.Exports["not_builtin"] = nil
-	mockWasmerInstance.Exports["callBack"] = nil
-	mockWasmerInstance.Exports["callback"] = nil
-	mockWasmerInstance.Exports["function_do"] = nil
+	mockWasmerInstance.AddMockMethod("a", nil)
+	mockWasmerInstance.AddMockMethod("my_contract_method_22", nil)
+	mockWasmerInstance.AddMockMethod("not_builtin", nil)
+	mockWasmerInstance.AddMockMethod("callBack", nil)
+	mockWasmerInstance.AddMockMethod("callback", nil)
+	mockWasmerInstance.AddMockMethod("function_do", nil)
 
 	require.True(t, async.isValidCallbackName("a"))
 	require.True(t, async.isValidCallbackName("my_contract_method_22"))
@@ -571,8 +570,8 @@ func TestAsyncContext_ExecuteSyncCall_Successful(t *testing.T) {
 	host, _, originalVMInput := initializeVMAndWasmerAsyncContextWithAliceAndBob()
 	host.Runtime().InitStateFromContractCallInput(originalVMInput)
 
-	mockWasmerInstance.Exports["successCallback"] = nil
-	mockWasmerInstance.Exports["errorCallback"] = nil
+	mockWasmerInstance.AddMockMethod("successCallback", nil)
+	mockWasmerInstance.AddMockMethod("errorCallback", nil)
 
 	async := makeAsyncContext(t, host, Alice)
 
