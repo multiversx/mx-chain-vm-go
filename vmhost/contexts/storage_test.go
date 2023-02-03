@@ -459,48 +459,40 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Parallel()
 
 	scAddress := []byte("account")
+	readable := []byte("readable")
+	nonreadable := []byte("nonreadable")
+
 	enableEpochsHandler := &worldmock.EnableEpochsHandlerStub{
 		IsStorageAPICostOptimizationFlagEnabledField: true,
+	}
+
+	mockOutput := &contextmock.OutputContextMock{}
+	account := mockOutput.NewVMOutputAccount(scAddress)
+	mockOutput.OutputAccountMock = account
+	mockOutput.OutputAccountIsNew = false
+
+	mockRuntime := &contextmock.RuntimeContextMock{}
+	mockMetering := &contextmock.MeteringContextMock{}
+	mockMetering.SetGasSchedule(config.MakeGasMapForTests())
+	mockMetering.BlockGasLimitMock = uint64(15000)
+
+	host := &contextmock.VMHostMock{
+		OutputContext:            mockOutput,
+		MeteringContext:          mockMetering,
+		RuntimeContext:           mockRuntime,
+		EnableEpochsHandlerField: enableEpochsHandler,
 	}
 
 	t.Run("blockchain hook errors", func(t *testing.T) {
 		t.Parallel()
 
-		mockOutput := &contextmock.OutputContextMock{}
-		account := mockOutput.NewVMOutputAccount(scAddress)
-		mockOutput.OutputAccountMock = account
-		mockOutput.OutputAccountIsNew = false
-
-		mockRuntime := &contextmock.RuntimeContextMock{}
-		mockMetering := &contextmock.MeteringContextMock{}
-		mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-		mockMetering.BlockGasLimitMock = uint64(15000)
-
-		host := &contextmock.VMHostMock{
-			OutputContext:            mockOutput,
-			MeteringContext:          mockMetering,
-			RuntimeContext:           mockRuntime,
-			EnableEpochsHandlerField: enableEpochsHandler,
-		}
-
-		readable := []byte("readable")
-		nonreadable := []byte("nonreadable")
-
 		errTooManyRequests := errors.New("too many requests")
-		bcHook := &contextmock.BlockchainHookStub{
-			GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
-				if bytes.Equal(readable, address) {
-					return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
-				}
-				if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-					return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
-				}
-				return nil, nil
-			},
-			GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
-				return nil, 0, errTooManyRequests
-			},
-		}
+		bcHook := makeBcHookStub(
+			scAddress,
+			readable,
+			nonreadable,
+			nil,
+			errTooManyRequests)
 
 		storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 		storageCtx.SetAddress(scAddress)
@@ -521,41 +513,14 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 	t.Run("should work when blockchain hook does not error", func(t *testing.T) {
 		t.Parallel()
 
-		mockOutput := &contextmock.OutputContextMock{}
-		account := mockOutput.NewVMOutputAccount(scAddress)
-		mockOutput.OutputAccountMock = account
-		mockOutput.OutputAccountIsNew = false
-
-		mockRuntime := &contextmock.RuntimeContextMock{}
-		mockMetering := &contextmock.MeteringContextMock{}
-		mockMetering.SetGasSchedule(config.MakeGasMapForTests())
-		mockMetering.BlockGasLimitMock = uint64(15000)
-
-		host := &contextmock.VMHostMock{
-			OutputContext:            mockOutput,
-			MeteringContext:          mockMetering,
-			RuntimeContext:           mockRuntime,
-			EnableEpochsHandlerField: enableEpochsHandler,
-		}
-
-		readable := []byte("readable")
-		nonreadable := []byte("nonreadable")
 		internalData := []byte("internalData")
 
-		bcHook := &contextmock.BlockchainHookStub{
-			GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
-				if bytes.Equal(readable, address) {
-					return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
-				}
-				if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
-					return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
-				}
-				return nil, nil
-			},
-			GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
-				return internalData, 0, nil
-			},
-		}
+		bcHook := makeBcHookStub(
+			scAddress,
+			readable,
+			nonreadable,
+			internalData,
+			nil)
 
 		storageCtx, _ := NewStorageContext(host, bcHook, reservedTestPrefix)
 		storageCtx.SetAddress(scAddress)
@@ -573,6 +538,29 @@ func TestStorageContext_GetStorageFromAddress(t *testing.T) {
 		require.Nil(t, err)
 		require.Nil(t, data)
 	})
+}
+
+func makeBcHookStub(
+	scAddress []byte,
+	readable []byte,
+	nonreadable []byte,
+	internalData []byte,
+	getStorageErr error,
+) *contextmock.BlockchainHookStub {
+	return &contextmock.BlockchainHookStub{
+		GetUserAccountCalled: func(address []byte) (vmcommon.UserAccountHandler, error) {
+			if bytes.Equal(readable, address) {
+				return &worldmock.Account{CodeMetadata: []byte{4, 0}}, nil
+			}
+			if bytes.Equal(nonreadable, address) || bytes.Equal(scAddress, address) {
+				return &worldmock.Account{CodeMetadata: []byte{0, 0}}, nil
+			}
+			return nil, nil
+		},
+		GetStorageDataCalled: func(accountsAddress []byte, index []byte) ([]byte, uint32, error) {
+			return internalData, 0, getStorageErr
+		},
+	}
 }
 
 func TestStorageContext_LoadGasStoreGasPerKey(t *testing.T) {
