@@ -588,6 +588,7 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		LocalGet:                  wasmOps.LocalGet,
 		LocalSet:                  wasmOps.LocalSet,
 		LocalTee:                  wasmOps.LocalTee,
+		LocalAllocate:             wasmOps.LocalAllocate,
 		Loop:                      wasmOps.Loop,
 		MemoryAtomicNotify:        wasmOps.MemoryAtomicNotify,
 		MemoryAtomicWait32:        wasmOps.MemoryAtomicWait32,

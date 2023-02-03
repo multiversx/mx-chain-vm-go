@@ -451,6 +451,7 @@ If
 LocalGet
 LocalSet
 LocalTee
+LocalAllocate
 Loop
 MemoryAtomicNotify
 MemoryAtomicWait32
