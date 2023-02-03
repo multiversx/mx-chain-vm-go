@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
+
+var consoleLogger = logger.GetOrCreate("vm/consoleLogger")
 
 // ExecutorLogger defines a logging interface for the WrapperExecutor.
 type ExecutorLogger interface {
@@ -13,6 +16,44 @@ type ExecutorLogger interface {
 	LogExecutorEvent(description string)
 	LogVMHookCallBefore(callInfo string)
 	LogVMHookCallAfter(callInfo string)
+}
+
+// ConsoleLogger is a simple ExecutorLogger that records data into the console.
+type ConsoleLogger struct {
+	currentInstance executor.Instance
+}
+
+// NewConsoleLogger creates a new ConsoleLogger, which records events into the console.
+func NewConsoleLogger() *ConsoleLogger {
+	cl := &ConsoleLogger{}
+	consoleLogger.Trace("Starting Console Logger:")
+	return cl
+}
+
+// SetCurrentInstance adds context pertaining to the current instance, when running tests.
+func (cl *ConsoleLogger) SetCurrentInstance(instance executor.Instance) {
+	cl.currentInstance = instance
+}
+
+// LogExecutorEvent logs a custom event from the executor.
+func (cl *ConsoleLogger) LogExecutorEvent(description string) {
+	consoleLogger.Trace(description)
+}
+
+// LogVMHookCallBefore is called before processing a wrapped VM hook.
+func (cl *ConsoleLogger) LogVMHookCallBefore(callInfo string) {
+	consoleLogger.Trace(fmt.Sprintf("VM hook begin: %s", callInfo))
+	if !cl.currentInstance.IsInterfaceNil() {
+		consoleLogger.Trace((fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed())))
+	}
+}
+
+// LogVMHookCallAfter is called after processing a wrapped VM hook.
+func (cl *ConsoleLogger) LogVMHookCallAfter(callInfo string) {
+	consoleLogger.Trace(fmt.Sprintf("VM hook end: %s", callInfo))
+	if !cl.currentInstance.IsInterfaceNil() {
+		consoleLogger.Trace(fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed()))
+	}
 }
 
 // StringLogger is a simple ExecutorLogger that records data into a string builder.
@@ -28,7 +69,7 @@ func NewStringLogger() *StringLogger {
 	return sl
 }
 
-// SetCurrentInstance adds context pertaiing to the current instance, when running tests.
+// SetCurrentInstance adds context pertaining to the current instance, when running tests.
 func (sl *StringLogger) SetCurrentInstance(instance executor.Instance) {
 	sl.currentInstance = instance
 }
@@ -67,14 +108,14 @@ func (sl *StringLogger) String() string {
 // NoLogger is an ExecutorLogger implementation that does nothing.
 type NoLogger struct{}
 
-// SetCurrentInstance does nothing
+// SetCurrentInstance does nothing.
 func (*NoLogger) SetCurrentInstance(_ executor.Instance) {}
 
-// LogExecutorEvent does nothing
+// LogExecutorEvent does nothing.
 func (*NoLogger) LogExecutorEvent(_ string) {}
 
-// LogVMHookCallBefore does nothing
+// LogVMHookCallBefore does nothing.
 func (*NoLogger) LogVMHookCallBefore(_ string) {}
 
-// LogVMHookCallAfter does nothing
+// LogVMHookCallAfter does nothing.
 func (*NoLogger) LogVMHookCallAfter(_ string) {}

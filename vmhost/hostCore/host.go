@@ -30,7 +30,7 @@ var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ vmhost.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = time.Second
+const minExecutionTimeout = time.Minute
 const internalVMErrors = "internalVMErrors"
 
 var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer2.ExecutorFactory()
