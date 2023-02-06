@@ -83,7 +83,7 @@ func TestInstanceTracker_GetWarmInstance(t *testing.T) {
 
 }
 
-func TestInstanceTracker_UserWarmInstance(t *testing.T) {
+func TestInstanceTracker_UseWarmInstance(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -112,8 +112,40 @@ func TestInstanceTracker_UserWarmInstance(t *testing.T) {
 	}
 }
 
+func TestInstanceTracker_IsCodeHashOnStack_Ok(t *testing.T) {
+	iTracker, err := NewInstanceTracker()
+	require.Nil(t, err)
+
+	testData := []string{"alpha", "beta", "alpha", "active"}
+
+	for i, codeHash := range testData {
+		iTracker.SetNewInstance(mock.NewInstanceMock([]byte(codeHash)), Bytecode)
+		iTracker.codeHash = []byte(codeHash)
+		if i < 2 || codeHash == "active" {
+			iTracker.SaveAsWarmInstance()
+		}
+		if codeHash != "active" {
+			iTracker.PushState()
+		}
+	}
+	require.Len(t, iTracker.codeHashStack, 3)
+	require.Len(t, iTracker.instanceStack, 3)
+
+	warm, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 3, warm)
+	require.Equal(t, 1, cold)
+
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("alpha"), iTracker.CodeHash())
+	require.True(t, iTracker.IsCodeHashOnTheStack(iTracker.codeHash))
+
+	iTracker.PopSetActiveState()
+	require.Equal(t, []byte("beta"), iTracker.CodeHash())
+	require.False(t, iTracker.IsCodeHashOnTheStack(iTracker.codeHash))
+}
+
 // stack: alpha<-alpha(cold)<-alpha(cold)<-alpha(cold)
-func TestInstancetracker_PopSetActiveSelfScenario(t *testing.T) {
+func TestInstanceTracker_PopSetActiveSelfScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -143,7 +175,7 @@ func TestInstancetracker_PopSetActiveSelfScenario(t *testing.T) {
 }
 
 // stack: alpha<-beta<-alpha(cold)<-beta(cold)
-func TestInstancetracker_PopSetActiveSimpleScenario(t *testing.T) {
+func TestInstanceTracker_PopSetActiveSimpleScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
@@ -173,7 +205,7 @@ func TestInstancetracker_PopSetActiveSimpleScenario(t *testing.T) {
 }
 
 // stack: alpha<-beta<-gamma<-beta(cold)<-gamma(cold)<-delta<-alpha(cold)
-func TestInstancetracker_PopSetActiveComplexSecanario(t *testing.T) {
+func TestInstanceTracker_PopSetActiveComplexScenario(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
 
