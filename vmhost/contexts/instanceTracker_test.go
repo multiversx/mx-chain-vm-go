@@ -35,6 +35,7 @@ func TestInstanceTracker_TrackInstance(t *testing.T) {
 func TestInstanceTracker_InitState(t *testing.T) {
 	iTracker, err := NewInstanceTracker()
 	require.Nil(t, err)
+	require.Equal(t, 0, iTracker.numRunningInstances)
 
 	for i := 0; i < 5; i++ {
 		iTracker.SetNewInstance(mock.NewInstanceMock(nil), Bytecode)
@@ -46,9 +47,11 @@ func TestInstanceTracker_InitState(t *testing.T) {
 	iTracker.InitState()
 
 	require.Nil(t, iTracker.instance)
-	require.Equal(t, 0, iTracker.numRunningInstances)
 	require.Len(t, iTracker.codeHash, 0)
 	require.Len(t, iTracker.instances, 0)
+
+	// InitState() must not reset numRunningInstances
+	require.Equal(t, 5, iTracker.numRunningInstances)
 }
 
 func TestInstanceTracker_GetWarmInstance(t *testing.T) {
@@ -198,9 +201,18 @@ func TestInstanceTracker_PopSetActiveSimpleScenario(t *testing.T) {
 	require.Equal(t, 3, warm)
 	require.Equal(t, 2, cold)
 
-	checkColdInstancesAfterEmptyingStack(t, iTracker)
+	emptyInstanceStack(iTracker)
+
+	warm, cold = iTracker.NumRunningInstances()
+	require.Equal(t, 3, warm)
+	require.Equal(t, 0, cold)
+
+	require.Equal(t, 3, iTracker.numRunningInstances)
+	iTracker.InitState()
+	require.Equal(t, 3, iTracker.numRunningInstances)
 
 	iTracker.ClearWarmInstanceCache()
+	require.Equal(t, 0, iTracker.numRunningInstances)
 	checkInstances(t, iTracker)
 }
 
@@ -332,12 +344,16 @@ func TestInstanceTracker_UnsetInstance_Ok(t *testing.T) {
 }
 
 func checkColdInstancesAfterEmptyingStack(t *testing.T, iTracker *instanceTracker) {
+	emptyInstanceStack(iTracker)
+	_, cold := iTracker.NumRunningInstances()
+	require.Equal(t, 0, cold)
+}
+
+func emptyInstanceStack(iTracker *instanceTracker) {
 	n := len(iTracker.instanceStack)
 	for i := 0; i < n; i++ {
 		iTracker.PopSetActiveState()
 	}
-	_, cold := iTracker.NumRunningInstances()
-	require.Equal(t, 0, cold)
 }
 
 func checkInstances(t *testing.T, iTracker *instanceTracker) {
