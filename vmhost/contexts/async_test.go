@@ -18,6 +18,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,7 +67,7 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 	mockWasmerInstance = &contextmock.InstanceMock{
 		Exports: make(wasmer.ExportsMap),
 	}
-	exec, _ := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+	exec, _ := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
 	})
