@@ -3,10 +3,11 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/multiversx/mx-chain-go/process/factory"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
+
+var WasmVirtualMachine = []byte{5, 0}
 
 // TestConfig is configuration for async call tests
 type TestConfig struct {
@@ -107,7 +108,7 @@ func CreateMockContractOnShard(address []byte, shardID uint32) *MockTestSmartCon
 		testSmartContract: testSmartContract{
 			address: address,
 			shardID: shardID,
-			vmType:  factory.WasmVirtualMachine,
+			vmType:  WasmVirtualMachine,
 		},
 		tempFunctionsList: make(map[string]bool, 0),
 	}
