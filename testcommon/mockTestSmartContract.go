@@ -3,6 +3,7 @@ package testcommon
 import (
 	"testing"
 
+	"github.com/multiversx/mx-chain-go/process/factory"
 	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
@@ -84,6 +85,7 @@ type testSmartContract struct {
 	codeHash     []byte
 	codeMetadata []byte
 	ownerAddress []byte
+	vmType       []byte
 }
 
 // MockTestSmartContract represents the config data for the mock smart contract instance to be tested
@@ -105,9 +107,16 @@ func CreateMockContractOnShard(address []byte, shardID uint32) *MockTestSmartCon
 		testSmartContract: testSmartContract{
 			address: address,
 			shardID: shardID,
+			vmType:  factory.WasmVirtualMachine,
 		},
 		tempFunctionsList: make(map[string]bool, 0),
 	}
+}
+
+// WithBalance provides the balance for the MockTestSmartContract
+func (mockSC *MockTestSmartContract) WithVMType(vmType []byte) *MockTestSmartContract {
+	mockSC.vmType = vmType
+	return mockSC
 }
 
 // WithBalance provides the balance for the MockTestSmartContract
@@ -155,6 +164,11 @@ func (mockSC *MockTestSmartContract) WithMethods(initMethods ...func(*mock.Insta
 // GetShardID -
 func (mockSC *MockTestSmartContract) GetShardID() uint32 {
 	return mockSC.shardID
+}
+
+// GetVMType -
+func (mockSC *MockTestSmartContract) GetVMType() []byte {
+	return mockSC.vmType
 }
 
 // Initialize -
