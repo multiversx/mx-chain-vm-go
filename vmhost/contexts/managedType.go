@@ -312,12 +312,13 @@ func (context *managedTypesContext) GetBigFloatOrCreate(handle int32) (*big.Floa
 	}
 	if value.IsInf() {
 		return nil, vmhost.ErrInfinityFloatOperation
-	} else {
-		exponent := value.MantExp(nil)
-		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
-			return nil, vmhost.ErrExponentTooBigOrTooSmall
-		}
 	}
+
+	exponent := value.MantExp(nil)
+	if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+		return nil, vmhost.ErrExponentTooBigOrTooSmall
+	}
+
 	return value, nil
 }
 
@@ -329,12 +330,13 @@ func (context *managedTypesContext) GetBigFloat(handle int32) (*big.Float, error
 	}
 	if value.IsInf() {
 		return nil, vmhost.ErrInfinityFloatOperation
-	} else {
-		exponent := value.MantExp(nil)
-		if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
-			return nil, vmhost.ErrExponentTooBigOrTooSmall
-		}
 	}
+
+	exponent := value.MantExp(nil)
+	if exponent > bigFloatMaxExponent || exponent < bigFloatMinExponent {
+		return nil, vmhost.ErrExponentTooBigOrTooSmall
+	}
+
 	return value, nil
 }
 
@@ -351,14 +353,15 @@ func (context *managedTypesContext) GetTwoBigFloats(handle1 int32, handle2 int32
 	}
 	if value1.IsInf() || value2.IsInf() {
 		return nil, nil, vmhost.ErrInfinityFloatOperation
-	} else {
-		exponent1 := value1.MantExp(nil)
-		exponent2 := value2.MantExp(nil)
-		if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
-			return nil, nil, vmhost.ErrExponentTooBigOrTooSmall
-
-		}
 	}
+
+	exponent1 := value1.MantExp(nil)
+	exponent2 := value2.MantExp(nil)
+	if context.BigFloatExpIsNotValid(exponent1) || context.BigFloatExpIsNotValid(exponent2) {
+		return nil, nil, vmhost.ErrExponentTooBigOrTooSmall
+
+	}
+
 	return value1, value2, nil
 }
 

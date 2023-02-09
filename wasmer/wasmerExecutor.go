@@ -69,3 +69,8 @@ func (wasmerExecutor *WasmerExecutor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
 	wasmerExecutor.vmHooksPtr = uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 }
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (wasmerExecutor *WasmerExecutor) IsInterfaceNil() bool {
+	return wasmerExecutor == nil
+}

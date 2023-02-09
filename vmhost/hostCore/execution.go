@@ -93,6 +93,12 @@ func (host *vmHost) performCodeDeployment(input vmhost.CodeDeployInput) (*vmcomm
 		return nil, vmhost.ErrContractInvalid
 	}
 
+	defer func() {
+		if !contexts.WarmInstancesEnabled {
+			runtime.CleanInstance()
+		}
+	}()
+
 	err = host.callInitFunction()
 	if err != nil {
 		return nil, err
@@ -170,7 +176,7 @@ func (host *vmHost) checkGasForGetCode(input *vmcommon.ContractCallInput, meteri
 	return nil
 }
 
-// doRunSmartContractDelete delete a contract directly
+// doRunSmartContractDelete deletes a contract directly
 func (host *vmHost) doRunSmartContractDelete(input *vmcommon.ContractCallInput) *vmcommon.VMOutput {
 	output := host.Output()
 	err := host.checkUpgradePermission(input)
@@ -240,6 +246,12 @@ func (host *vmHost) doRunSmartContractCall(input *vmcommon.ContractCallInput) *v
 		vmOutput = output.CreateVMOutputInCaseOfError(vmhost.ErrContractInvalid)
 		return vmOutput
 	}
+
+	defer func() {
+		if !contexts.WarmInstancesEnabled {
+			runtime.CleanInstance()
+		}
+	}()
 
 	err = host.callSCMethod()
 	if err != nil {

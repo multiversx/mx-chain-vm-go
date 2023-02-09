@@ -21,7 +21,7 @@ type Wasmer2Instance struct {
 	// The exported memory of a WebAssembly instance.
 	memory Wasmer2Memory
 
-	alreadyCleaned bool
+	AlreadyCleaned bool
 }
 
 func emptyInstance() *Wasmer2Instance {
@@ -38,16 +38,23 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 }
 
 // Clean cleans instance
-func (instance *Wasmer2Instance) Clean() {
-	if instance.alreadyCleaned {
-		return
+func (instance *Wasmer2Instance) Clean() bool {
+	if instance.AlreadyCleaned {
+		return false
 	}
 
 	if instance.cgoInstance != nil {
 		cWasmerInstanceDestroy(instance.cgoInstance)
 
-		instance.alreadyCleaned = true
+		instance.AlreadyCleaned = true
 	}
+
+	return true
+}
+
+// IsAlreadyCleaned returns the internal field AlreadyClean
+func (instance *Wasmer2Instance) IsAlreadyCleaned() bool {
+	return instance.AlreadyCleaned
 }
 
 // SetGasLimit sets the gas limit for the instance
@@ -209,7 +216,7 @@ func (instance *Wasmer2Instance) Id() string {
 
 // Reset resets the instance memories and globals
 func (instance *Wasmer2Instance) Reset() bool {
-	if instance.alreadyCleaned {
+	if instance.AlreadyCleaned {
 		return false
 	}
 
@@ -229,4 +236,9 @@ func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
 // GetVMHooksPtr returns the VM hooks pointer
 func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
 	return uintptr(0)
+}
+
+// ID returns an identifier for the instance, unique at runtime
+func (instance *Wasmer2Instance) ID() string {
+	return fmt.Sprintf("%p", instance.cgoInstance)
 }
