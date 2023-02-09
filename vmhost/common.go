@@ -144,9 +144,6 @@ const (
 	// InitFunctionName specifies the name for the init function
 	InitFunctionName = "init"
 
-	// InitFunctionNameEth specifies the name for the init function on Ethereum
-	InitFunctionNameEth = "solidity.ctor"
-
 	// UpgradeFunctionName specifies if the call is an upgradeContract call
 	UpgradeFunctionName = "upgradeContract"
 

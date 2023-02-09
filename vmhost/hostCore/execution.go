@@ -570,7 +570,7 @@ func (host *vmHost) finishExecuteOnSameContext(executeErr error) {
 
 func (host *vmHost) isInitFunctionBeingCalled() bool {
 	functionName := host.Runtime().FunctionName()
-	return functionName == vmhost.InitFunctionName || functionName == vmhost.InitFunctionNameEth
+	return functionName == vmhost.InitFunctionName
 }
 
 // IsOutOfVMFunctionExecution returns true if the call should be executed on ahother VM
@@ -1199,7 +1199,7 @@ func (host *vmHost) verifyAllowedFunctionCall() error {
 	runtime := host.Runtime()
 	functionName := runtime.FunctionName()
 
-	isInit := functionName == vmhost.InitFunctionName || functionName == vmhost.InitFunctionNameEth
+	isInit := functionName == vmhost.InitFunctionName
 	if isInit {
 		return vmhost.ErrInitFuncCalledInRun
 	}
