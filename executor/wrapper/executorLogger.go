@@ -8,7 +8,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var consoleLogger = logger.GetOrCreate("vm/consoleLogger")
+var log = logger.GetOrCreate("vm/executor")
 
 // ExecutorLogger defines a logging interface for the WrapperExecutor.
 type ExecutorLogger interface {
@@ -26,7 +26,7 @@ type ConsoleLogger struct {
 // NewConsoleLogger creates a new ConsoleLogger, which records events into the console.
 func NewConsoleLogger() *ConsoleLogger {
 	cl := &ConsoleLogger{}
-	consoleLogger.Trace("Starting Console Logger:")
+	log.Trace("Starting Console Logger:")
 	return cl
 }
 
@@ -37,22 +37,22 @@ func (cl *ConsoleLogger) SetCurrentInstance(instance executor.Instance) {
 
 // LogExecutorEvent logs a custom event from the executor.
 func (cl *ConsoleLogger) LogExecutorEvent(description string) {
-	consoleLogger.Trace(description)
+	log.Trace(description)
 }
 
 // LogVMHookCallBefore is called before processing a wrapped VM hook.
 func (cl *ConsoleLogger) LogVMHookCallBefore(callInfo string) {
-	consoleLogger.Trace(fmt.Sprintf("VM hook begin: %s", callInfo))
+	log.Trace(fmt.Sprintf("VM hook begin: %s", callInfo))
 	if !cl.currentInstance.IsInterfaceNil() {
-		consoleLogger.Trace((fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed())))
+		log.Trace((fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed())))
 	}
 }
 
 // LogVMHookCallAfter is called after processing a wrapped VM hook.
 func (cl *ConsoleLogger) LogVMHookCallAfter(callInfo string) {
-	consoleLogger.Trace(fmt.Sprintf("VM hook end: %s", callInfo))
+	log.Trace(fmt.Sprintf("VM hook end: %s", callInfo))
 	if !cl.currentInstance.IsInterfaceNil() {
-		consoleLogger.Trace(fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed()))
+		log.Trace(fmt.Sprintf("Points used: %d", cl.currentInstance.GetPointsUsed()))
 	}
 }
 
