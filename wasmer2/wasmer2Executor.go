@@ -124,6 +124,11 @@ func (wasmerExecutor *Wasmer2Executor) NewInstanceFromCompiledCodeWithOptions(
 	return newInstance(c_instance)
 }
 
+// IsInterfaceNil returns true if underlying object is nil
+func (wasmerExecutor *Wasmer2Executor) IsInterfaceNil() bool {
+	return wasmerExecutor == nil
+}
+
 // InitVMHooks inits the VM hooks
 func (wasmerExecutor *Wasmer2Executor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
