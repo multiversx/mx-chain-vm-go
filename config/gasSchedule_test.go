@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/executor"
 	"github.com/mitchellh/mapstructure"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,7 +31,7 @@ func TestDecode(t *testing.T) {
 	fmt.Printf("%+v\n", op)
 }
 
-func TestDecode_ArwenGas(t *testing.T) {
+func TestDecode_VMGas(t *testing.T) {
 	gasMap := make(map[string]uint64)
 	gasMap["StorePerByte"] = 4
 	gasMap["GetSCAddress"] = 4
@@ -50,7 +50,7 @@ func TestDecode_ArwenGas(t *testing.T) {
 
 	fmt.Printf("%+v\n", bigFloatOp)
 
-	erdOp := &ElrondAPICost{}
+	erdOp := &BaseOpsAPICost{}
 	err = mapstructure.Decode(gasMap, erdOp)
 	assert.Nil(t, err)
 
@@ -64,7 +64,7 @@ func TestDecode_ArwenGas(t *testing.T) {
 }
 
 func TestDecode_ZeroGasCostError(t *testing.T) {
-	gasMap := FillGasMap_WASMOpcodeValues(1)
+	gasMap := FillGasMapWASMOpcodeValues(1)
 
 	wasmCosts := &executor.WASMOpcodeCost{}
 	err := mapstructure.Decode(gasMap, wasmCosts)

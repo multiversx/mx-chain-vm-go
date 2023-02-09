@@ -3,10 +3,10 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // RecursiveAsyncCallRecursiveChildMock is an exposed mock contract method
@@ -19,7 +19,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByChild)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -40,7 +40,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 		}
 
 		destination := host.Runtime().GetContextAddress()
-		function := string("recursiveAsyncCall")
+		function := "recursiveAsyncCall"
 		value := big.NewInt(testConfig.TransferFromParentToChild).Bytes()
 
 		callData := txDataBuilder.NewBuilder()
@@ -50,7 +50,7 @@ func RecursiveAsyncCallRecursiveChildMock(instanceMock *mock.InstanceMock, confi
 		async := host.Async()
 		err = async.RegisterLegacyAsyncCall(destination, callData.ToBytes(), value)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointExecutionFailed)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointExecutionFailed)
 			return instance
 		}
 

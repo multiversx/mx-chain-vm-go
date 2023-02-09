@@ -3,10 +3,10 @@ package math
 import (
 	builtinMath "math"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
-var log = logger.GetOrCreate("arwen/overflow")
+var log = logger.GetOrCreate("vm/overflow")
 
 // AddUint64 performs addition on uint64 and logs an error if the addition overflows
 func AddUint64(a, b uint64) uint64 {
@@ -27,17 +27,6 @@ func AddUint64WithErr(a, b uint64) (uint64, error) {
 	}
 
 	return s, ErrAdditionOverflow
-}
-
-// AddInt64 performs addition on int64 and logs an error if the addition overflows
-func AddInt64(a, b int64) int64 {
-	res := a + b
-	if (res > a) == (b > 0) {
-		return res
-	}
-
-	log.Trace("AddInt64 overflow", "a", a, "b", b)
-	return builtinMath.MaxInt64
 }
 
 // SubUint64 performs subtraction on uint64, in case of underflow returns 0

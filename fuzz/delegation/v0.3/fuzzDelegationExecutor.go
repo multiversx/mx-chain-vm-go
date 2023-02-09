@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -7,22 +8,22 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 type fuzzDelegationExecutor struct {
-	arwenTestExecutor *am.ArwenTestExecutor
-	world             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	mandosParser      mjparse.Parser
-	txIndex           int
+	vmTestExecutor *am.VMTestExecutor
+	world          *worldhook.MockWorld
+	vm             vmi.VMExecutionHandler
+	parser         mjparse.Parser
+	txIndex        int
 
 	serviceFee                  int
 	numBlocksBeforeForceUnstake int
@@ -43,16 +44,16 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	vmTestExecutor, err := am.NewVMTestExecutor()
 	if err != nil {
 		return nil, err
 	}
 	parser := mjparse.NewParser(fileResolver)
 	return &fuzzDelegationExecutor{
-		arwenTestExecutor:   arwenTestExecutor,
-		world:               arwenTestExecutor.World,
-		vm:                  arwenTestExecutor.GetVM(),
-		mandosParser:        parser,
+		vmTestExecutor:      vmTestExecutor,
+		world:               vmTestExecutor.World,
+		vm:                  vmTestExecutor.GetVM(),
+		parser:              parser,
 		txIndex:             0,
 		numNodes:            0,
 		totalStakeAdded:     big.NewInt(0),
@@ -82,7 +83,7 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
-	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost := pfe.vm.(vmhost.VMHost)
 	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
@@ -103,7 +104,7 @@ func (pfe *fuzzDelegationExecutor) getContractBalance() *big.Int {
 }
 
 func (pfe *fuzzDelegationExecutor) getDelegatorBalance(delegIndex int) *big.Int {
-	delegAddr := []byte(pfe.delegatorAddress(delegIndex))
+	delegAddr := pfe.delegatorAddress(delegIndex)
 	acct := pfe.world.AcctMap.GetAccount(delegAddr)
 	return acct.Balance
 }
@@ -128,16 +129,16 @@ func (pfe *fuzzDelegationExecutor) getWithdrawTargetBalance() *big.Int {
 }
 
 func (pfe *fuzzDelegationExecutor) executeStep(stepSnippet string) error {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return err
 	}
 	pfe.addStep(step)
-	return pfe.arwenTestExecutor.ExecuteStep(step)
+	return pfe.vmTestExecutor.ExecuteStep(step)
 }
 
 func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +147,7 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 	if !isTx {
 		return nil, errors.New("tx step expected")
 	}
-	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
+	return pfe.vmTestExecutor.ExecuteTxStep(txStep)
 }
 
 func (pfe *fuzzDelegationExecutor) querySingleResult(funcName string, args string) (*big.Int, error) {
@@ -247,28 +248,4 @@ func blsKeySignatureArgsString(startIndex, numNodes int) string {
 		blsKeyArgs = append(blsKeyArgs, "\"''"+blsSignature(i)+"\"")
 	}
 	return strings.Join(blsKeyArgs, ",")
-}
-
-func blsKeyArgsString(numNodes int) string {
-	var blsKeyArgs []string
-	for i := 0; i < numNodes; i++ {
-		blsKey := fmt.Sprintf(
-			"bls key %5d ..................................................................................",
-			i)
-		blsKeyArg := "\"''" + blsKey + "\""
-		blsKeyArgs = append(blsKeyArgs, blsKeyArg)
-	}
-	return strings.Join(blsKeyArgs, ",")
-}
-
-func blsSignatureArgsString(numNodes int) string {
-	var blsSigArgs []string
-	for i := 0; i < numNodes; i++ {
-		blsSig := fmt.Sprintf(
-			"bls key signature %5d ........",
-			i)
-		blsSigArg := "\"''" + blsSig + "\""
-		blsSigArgs = append(blsSigArgs, blsSigArg)
-	}
-	return strings.Join(blsSigArgs, ",")
 }

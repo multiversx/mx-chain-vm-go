@@ -3,8 +3,8 @@ package wasmer
 import (
 	"unsafe"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
 // WasmerExecutor oversees the creation of Wasmer instances and execution.
@@ -14,8 +14,8 @@ type WasmerExecutor struct {
 	vmHooksPtr      uintptr
 }
 
-// NewExecutor creates a new wasmer executor.
-func NewExecutor() (*WasmerExecutor, error) {
+// CreateExecutor creates a new wasmer executor.
+func CreateExecutor() (*WasmerExecutor, error) {
 	functionNames, err := injectCgoFunctionPointers()
 	if err != nil {
 		return nil, err
@@ -30,16 +30,7 @@ func (wasmerExecutor *WasmerExecutor) SetOpcodeCosts(opcodeCosts *executor.WASMO
 	SetOpcodeCosts(opcodeCosts)
 }
 
-// SetRkyvSerializationEnabled controls a Wasmer flag.
-func (wasmerExecutor *WasmerExecutor) SetRkyvSerializationEnabled(enabled bool) {
-	SetRkyvSerializationEnabled(enabled)
-}
-
-// SetSIGSEGVPassthrough controls a Wasmer flag.
-func (wasmerExecutor *WasmerExecutor) SetSIGSEGVPassthrough() {
-	SetSIGSEGVPassthrough()
-}
-
+// FunctionNames returns the function names
 func (wasmerExecutor *WasmerExecutor) FunctionNames() vmcommon.FunctionNames {
 	return wasmerExecutor.eiFunctionNames
 }
@@ -71,13 +62,13 @@ func (wasmerExecutor *WasmerExecutor) NewInstanceFromCompiledCodeWithOptions(
 	return instance, err
 }
 
-// InitVMHooks inits the VM hooks
-func (wasmerExecutor *WasmerExecutor) InitVMHooks(vmHooks executor.VMHooks) {
+// initVMHooks inits the VM hooks
+func (wasmerExecutor *WasmerExecutor) initVMHooks(vmHooks executor.VMHooks) {
 	wasmerExecutor.vmHooks = vmHooks
 	wasmerExecutor.vmHooksPtr = uintptr(unsafe.Pointer(&wasmerExecutor.vmHooks))
 }
 
-// GetVMHooks returns the VM hooks
-func (wasmerExecutor *WasmerExecutor) GetVMHooks() executor.VMHooks {
-	return wasmerExecutor.vmHooks
+// IsInterfaceNil returns true if there is no value under the interface
+func (wasmerExecutor *WasmerExecutor) IsInterfaceNil() bool {
+	return wasmerExecutor == nil
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics) error {
@@ -24,7 +24,7 @@ func (pfe *fuzzDexExecutor) exitFarm(r *rand.Rand, statistics *eventsStatistics)
 	}
 
 	farm := pfe.farmers[nonce].farm
-	unstakeAmount := int64(amountMax)
+	var unstakeAmount int64
 	if int64(amountMax) > amount {
 		unstakeAmount = amount
 		delete(pfe.farmers, nonce)

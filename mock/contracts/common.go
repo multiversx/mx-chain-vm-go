@@ -1,9 +1,9 @@
 package contracts
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 // DirectCallGasTestConfig is configuration for direct call tests
@@ -80,12 +80,12 @@ func (config DirectCallGasTestConfig) GetGasUsedByChild() uint64 {
 	return config.GasUsedByChild
 }
 
-// ExecuteOnSameContextInMockContracts - calls the corresponding method in elrond api
-func ExecuteOnSameContextInMockContracts(host arwen.VMHost, input *vmcommon.ContractCallInput) int32 {
-	return elrondapi.ExecuteOnSameContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
+// ExecuteOnSameContextInMockContracts - calls the corresponding method in VM hooks
+func ExecuteOnSameContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
+	return vmhooks.ExecuteOnSameContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
 }
 
-// ExecuteOnDestContextInMockContracts - calls the corresponding method in elrond api
-func ExecuteOnDestContextInMockContracts(host arwen.VMHost, input *vmcommon.ContractCallInput) int32 {
-	return elrondapi.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
+// ExecuteOnDestContextInMockContracts - calls the corresponding method in VM hooks
+func ExecuteOnDestContextInMockContracts(host vmhost.VMHost, input *vmcommon.ContractCallInput) int32 {
+	return vmhooks.ExecuteOnDestContextWithTypedArgs(host, int64(input.GasProvided), input.CallValue, []byte(input.Function), input.RecipientAddr, input.Arguments)
 }

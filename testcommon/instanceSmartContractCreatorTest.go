@@ -3,28 +3,45 @@ package testcommon
 import (
 	"testing"
 
-	"github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	contextmock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/stretchr/testify/require"
 )
 
 // TestCreateTemplateConfig holds the data to build a contract creation test
 type TestCreateTemplateConfig struct {
-	t                  *testing.T
-	address            []byte
-	input              *vmcommon.ContractCreateInput
-	setup              func(arwen.VMHost, *contextmock.BlockchainHookStub)
-	assertResults      func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
-	host               arwen.VMHost
-	blockchainHookStub *contextmock.BlockchainHookStub
+	t                        *testing.T
+	address                  []byte
+	input                    *vmcommon.ContractCreateInput
+	setup                    func(vmhost.VMHost, *contextmock.BlockchainHookStub)
+	assertResults            func(*contextmock.BlockchainHookStub, *VMOutputVerifier)
+	host                     vmhost.VMHost
+	gasSchedule              config.GasScheduleMap
+	wasmerSIGSEGVPassthrough bool
+	overrideExecutorFactory  executor.ExecutorAbstractFactory
+	stubAccountInitialNonce  uint64
+	blockchainHookStub       *contextmock.BlockchainHookStub
 }
 
 // BuildInstanceCreatorTest starts the building process for a contract creation test
 func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 	return &TestCreateTemplateConfig{
-		t:     t,
-		setup: func(arwen.VMHost, *contextmock.BlockchainHookStub) {},
+		t:                        t,
+		setup:                    func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
+		gasSchedule:              config.MakeGasMapForTests(),
+		wasmerSIGSEGVPassthrough: true,
+		overrideExecutorFactory:  nil,
+		stubAccountInitialNonce:  24,
 	}
+}
+
+// WithExecutor allows caller to choose the Executor type.
+func (callerTest *TestCreateTemplateConfig) WithExecutor(executorFactory executor.ExecutorAbstractFactory) *TestCreateTemplateConfig {
+	callerTest.overrideExecutorFactory = executorFactory
+	return callerTest
 }
 
 // WithInput provides the ContractCreateInput for a TestCreateTemplateConfig
@@ -40,7 +57,7 @@ func (callerTest *TestCreateTemplateConfig) WithAddress(address []byte) *TestCre
 }
 
 // WithSetup provides the setup function for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(arwen.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
+func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
 	callerTest.setup = setup
 	return callerTest
 }
@@ -51,25 +68,54 @@ func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(
 	callerTest.runTest(true)
 }
 
-// AndAssertResults provides the function that will aserts the results
+// AndAssertResultsWithoutReset provides the function that will aserts the results
 func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
 	callerTest.assertResults = assertResults
 	callerTest.runTest(false)
 }
 
 func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
+	if callerTest.blockchainHookStub == nil {
+		callerTest.blockchainHookStub = callerTest.createBlockchainStub()
+	}
 	if callerTest.host == nil {
-		callerTest.host, callerTest.blockchainHookStub = DefaultTestArwenForDeployment(callerTest.t, 24, callerTest.address)
+		callerTest.host = callerTest.createTestVMVM()
 		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
 	}
 	defer func() {
 		if reset {
 			callerTest.host.Reset()
 		}
+
+		// Extra verification for instance leaks
+		err := callerTest.host.Runtime().ValidateInstances()
+		require.Nil(callerTest.t, err)
 	}()
 
 	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)
 
 	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
 	callerTest.assertResults(callerTest.blockchainHookStub, verify)
+}
+
+func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.BlockchainHookStub {
+	stubBlockchainHook := &contextmock.BlockchainHookStub{}
+	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
+		return &contextmock.StubAccount{
+			Nonce: 24,
+		}, nil
+	}
+	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
+		return callerTest.address, nil
+	}
+	return stubBlockchainHook
+}
+
+func (callerTest *TestCreateTemplateConfig) createTestVMVM() vmhost.VMHost {
+	return NewTestHostBuilder(callerTest.t).
+		WithExecutorFactory(callerTest.overrideExecutorFactory).
+		WithBlockchainHook(callerTest.blockchainHookStub).
+		WithGasSchedule(callerTest.gasSchedule).
+		WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
+		Build()
 }

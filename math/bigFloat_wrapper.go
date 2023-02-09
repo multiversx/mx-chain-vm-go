@@ -4,7 +4,7 @@ import (
 	"math/big"
 )
 
-// SubBigFloat substraction implementation with error handling for big float
+// SubBigFloat subtraction implementation with error handling for big float
 func SubBigFloat(op1, op2 *big.Float) (result *big.Float, err error) {
 	defer func() {
 		if r := recover(); r != nil {

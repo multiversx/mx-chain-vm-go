@@ -3,12 +3,12 @@ package mock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.OutputContext = (*OutputContextStub)(nil)
+var _ vmhost.OutputContext = (*OutputContextStub)(nil)
 
 // OutputContextStub is used in tests to check the OutputContext interface method calls
 type OutputContextStub struct {
@@ -40,7 +40,7 @@ type OutputContextStub struct {
 	DeleteFirstReturnDataCalled       func()
 	GetVMOutputCalled                 func() *vmcommon.VMOutput
 	AddTxValueToAccountCalled         func(address []byte, value *big.Int)
-	DeployCodeCalled                  func(input arwen.CodeDeployInput)
+	DeployCodeCalled                  func(input vmhost.CodeDeployInput)
 	CreateVMOutputInCaseOfErrorCalled func(err error) *vmcommon.VMOutput
 	AddToActiveStateCalled            func(vmOutput *vmcommon.VMOutput)
 	TransferValueOnlyCalled           func(destination []byte, sender []byte, value *big.Int, checkPayable bool) error
@@ -138,7 +138,6 @@ func (o *OutputContextStub) WriteLog(address []byte, topics [][]byte, data []byt
 	if o.WriteLogCalled != nil {
 		o.WriteLogCalled(address, topics, data)
 	}
-	return
 }
 
 // TransferValueOnly mocked method
@@ -263,7 +262,7 @@ func (o *OutputContextStub) GetVMOutput() *vmcommon.VMOutput {
 	return nil
 }
 
-// GetVMOutput mocked method
+// RemoveNonUpdatedStorage mocked method
 func (o *OutputContextStub) RemoveNonUpdatedStorage() {
 	if o.RemoveNonUpdatedStorageCalled != nil {
 		o.RemoveNonUpdatedStorageCalled()
@@ -278,7 +277,7 @@ func (o *OutputContextStub) AddTxValueToAccount(address []byte, value *big.Int) 
 }
 
 // DeployCode mocked method
-func (o *OutputContextStub) DeployCode(input arwen.CodeDeployInput) {
+func (o *OutputContextStub) DeployCode(input vmhost.CodeDeployInput) {
 	if o.DeployCodeCalled != nil {
 		o.DeployCodeCalled(input)
 	}

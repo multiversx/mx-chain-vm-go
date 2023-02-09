@@ -1,0 +1,5 @@
+# generated files that belong to other repos:
+output
+
+# optional path where to copy rust files
+wasm-vm-executor-rs-path.txt

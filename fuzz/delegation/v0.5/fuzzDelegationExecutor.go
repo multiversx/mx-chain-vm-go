@@ -1,3 +1,4 @@
+//nolint:all
 package delegation
 
 import (
@@ -10,17 +11,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	am "github.com/ElrondNetwork/wasm-vm/arwenmandos"
-	fr "github.com/ElrondNetwork/wasm-vm/mandos-go/fileresolver"
-	mjparse "github.com/ElrondNetwork/wasm-vm/mandos-go/json/parse"
-	mjwrite "github.com/ElrondNetwork/wasm-vm/mandos-go/json/write"
-	mj "github.com/ElrondNetwork/wasm-vm/mandos-go/model"
-	worldhook "github.com/ElrondNetwork/wasm-vm/mock/world"
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
+	worldhook "github.com/multiversx/mx-chain-vm-go/mock/world"
+	am "github.com/multiversx/mx-chain-vm-go/scenarioexec"
+	fr "github.com/multiversx/mx-chain-vm-go/scenarios/fileresolver"
+	mjparse "github.com/multiversx/mx-chain-vm-go/scenarios/json/parse"
+	mjwrite "github.com/multiversx/mx-chain-vm-go/scenarios/json/write"
+	mj "github.com/multiversx/mx-chain-vm-go/scenarios/model"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
+// constants used to define operations
 const (
 	UserWithdrawOnly    = "getUserWithdrawOnlyStake"
 	UserWaiting         = "getUserWaitingStake"
@@ -42,11 +44,11 @@ type fuzzDelegationExecutorInitArgs struct {
 }
 
 type fuzzDelegationExecutor struct {
-	arwenTestExecutor *am.ArwenTestExecutor
-	world             *worldhook.MockWorld
-	vm                vmi.VMExecutionHandler
-	mandosParser      mjparse.Parser
-	txIndex           int
+	vmTestExecutor *am.VMTestExecutor
+	world          *worldhook.MockWorld
+	vm             vmi.VMExecutionHandler
+	parser         mjparse.Parser
+	txIndex        int
 
 	serviceFee                  int
 	numBlocksBeforeForceUnstake int
@@ -67,13 +69,13 @@ type fuzzDelegationExecutor struct {
 }
 
 func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExecutor, error) {
-	arwenTestExecutor, err := am.NewArwenTestExecutor()
+	vmTestExecutor, err := am.NewVMTestExecutor()
 	if err != nil {
 		return nil, err
 	}
 
-	mandosGasSchedule := mj.GasScheduleV3
-	err = arwenTestExecutor.InitVM(mandosGasSchedule)
+	scenGasSchedule := mj.GasScheduleV3
+	err = vmTestExecutor.InitVM(scenGasSchedule)
 	if err != nil {
 		return nil, err
 	}
@@ -81,10 +83,10 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 	parser := mjparse.NewParser(fileResolver)
 
 	return &fuzzDelegationExecutor{
-		arwenTestExecutor:   arwenTestExecutor,
-		world:               arwenTestExecutor.World,
-		vm:                  arwenTestExecutor.GetVM(),
-		mandosParser:        parser,
+		vmTestExecutor:      vmTestExecutor,
+		world:               vmTestExecutor.World,
+		vm:                  vmTestExecutor.GetVM(),
+		parser:              parser,
 		txIndex:             0,
 		numNodes:            0,
 		totalStakeAdded:     big.NewInt(0),
@@ -92,19 +94,19 @@ func newFuzzDelegationExecutor(fileResolver fr.FileResolver) (*fuzzDelegationExe
 		totalRewards:        big.NewInt(0),
 		generatedScenario: &mj.Scenario{
 			Name:        "fuzz generated",
-			GasSchedule: mandosGasSchedule,
+			GasSchedule: scenGasSchedule,
 		},
 	}, nil
 }
 
 func (pfe *fuzzDelegationExecutor) executeStep(stepSnippet string) error {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return err
 	}
 
 	pfe.addStep(step)
-	return pfe.arwenTestExecutor.ExecuteStep(step)
+	return pfe.vmTestExecutor.ExecuteStep(step)
 }
 
 func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
@@ -112,7 +114,7 @@ func (pfe *fuzzDelegationExecutor) addStep(step mj.Step) {
 }
 
 func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
-	vmHost := pfe.vm.(arwen.VMHost)
+	vmHost := pfe.vm.(vmhost.VMHost)
 	vmHost.Reset()
 	serialized := mjwrite.ScenarioToJSONString(pfe.generatedScenario)
 
@@ -123,7 +125,7 @@ func (pfe *fuzzDelegationExecutor) saveGeneratedScenario() {
 }
 
 func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOutput, error) {
-	step, err := pfe.mandosParser.ParseScenarioStep(stepSnippet)
+	step, err := pfe.parser.ParseScenarioStep(stepSnippet)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +137,7 @@ func (pfe *fuzzDelegationExecutor) executeTxStep(stepSnippet string) (*vmi.VMOut
 
 	pfe.addStep(step)
 
-	return pfe.arwenTestExecutor.ExecuteTxStep(txStep)
+	return pfe.vmTestExecutor.ExecuteTxStep(txStep)
 }
 
 func (pfe *fuzzDelegationExecutor) log(info string, args ...interface{}) {

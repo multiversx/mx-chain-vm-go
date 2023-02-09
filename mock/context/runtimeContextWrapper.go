@@ -1,17 +1,17 @@
 package mock
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // making sure we implement all functions of RuntimeContext
-var _ arwen.RuntimeContext = (*RuntimeContextWrapper)(nil)
+var _ vmhost.RuntimeContext = (*RuntimeContextWrapper)(nil)
 
 // RuntimeContextWrapper a wrapper over a RuntimeContext that delegates to if if function is not redefined
 type RuntimeContextWrapper struct {
-	runtimeContext arwen.RuntimeContext
+	runtimeContext vmhost.RuntimeContext
 
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	InitStateFromContractCallInputFunc func(input *vmcommon.ContractCallInput)
@@ -48,19 +48,19 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	MustVerifyNextContractCodeFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetRuntimeBreakpointValueFunc func(value arwen.BreakpointValue)
+	SetRuntimeBreakpointValueFunc func(value vmhost.BreakpointValue)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetRuntimeBreakpointValueFunc func() arwen.BreakpointValue
+	GetRuntimeBreakpointValueFunc func() vmhost.BreakpointValue
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetAsyncCallInfoFunc func() *arwen.AsyncCallInfo
+	GetAsyncCallInfoFunc func() *vmhost.AsyncCallInfo
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetAsyncCallInfoFunc func(asyncCallInfo *arwen.AsyncCallInfo)
+	SetAsyncCallInfoFunc func(asyncCallInfo *vmhost.AsyncCallInfo)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	AddAsyncContextCallFunc func(contextIdentifier []byte, asyncCall *arwen.AsyncGeneratedCall) error
+	AddAsyncContextCallFunc func(contextIdentifier []byte, asyncCall *vmhost.AsyncGeneratedCall) error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	GetAsyncContextFunc func(contextIdentifier []byte) (*arwen.AsyncContext, error)
+	GetAsyncContextFunc func(contextIdentifier []byte) (*vmhost.AsyncContext, error)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	RunningInstancesCountFunc func() uint64
+	GetInstanceStackSizeFunc func() uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CountSameContractInstancesOnStackFunc func(address []byte) uint64
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -74,7 +74,7 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	ClearWarmInstanceCacheFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	SetMaxInstanceCountFunc func(maxInstances uint64)
+	SetMaxInstanceStackSizeFunc func(maxInstanceStackSize uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	VerifyContractCodeFunc func() error
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -88,15 +88,9 @@ type RuntimeContextWrapper struct {
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	SetPointsUsedFunc func(gasPoints uint64)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemStoreFunc func(offset int32, data []byte) error
+	BaseOpsErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemLoadFunc func(offset int32, length int32) ([]byte, error)
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	MemLoadMultipleFunc func(offset int32, lengths []int32) ([][]byte, error)
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ElrondAPIErrorShouldFailExecutionFunc func() bool
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ElrondSyncExecAPIErrorShouldFailExecutionFunc func() bool
+	SyncExecAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CryptoAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -107,8 +101,6 @@ type RuntimeContextWrapper struct {
 	ManagedBufferAPIErrorShouldFailExecutionFunc func() bool
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	GetVMExecutorFunc func() executor.Executor
-	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
-	ReplaceVMExecutorFunc func(vmExecutor executor.Executor)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	AddErrorFunc func(err error, otherInfo ...string)
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
@@ -125,10 +117,12 @@ type RuntimeContextWrapper struct {
 	ClearStateStackFunc func()
 	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
 	CleanInstanceFunc func()
+	// function that will be called by the corresponding RuntimeContext function implementation (by default this will call the same wrapped context function)
+	GetInstanceTrackerFunc func() vmhost.InstanceTracker
 }
 
 // NewRuntimeContextWrapper builds a new runtimeContextWrapper that by default will delagate all calls to the provided RuntimeContext
-func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *RuntimeContextWrapper {
+func NewRuntimeContextWrapper(inputRuntimeContext *vmhost.RuntimeContext) *RuntimeContextWrapper {
 
 	runtimeWrapper := &RuntimeContextWrapper{runtimeContext: *inputRuntimeContext}
 
@@ -204,16 +198,16 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.MustVerifyNextContractCode()
 	}
 
-	runtimeWrapper.SetRuntimeBreakpointValueFunc = func(value arwen.BreakpointValue) {
+	runtimeWrapper.SetRuntimeBreakpointValueFunc = func(value vmhost.BreakpointValue) {
 		runtimeWrapper.runtimeContext.SetRuntimeBreakpointValue(value)
 	}
 
-	runtimeWrapper.GetRuntimeBreakpointValueFunc = func() arwen.BreakpointValue {
+	runtimeWrapper.GetRuntimeBreakpointValueFunc = func() vmhost.BreakpointValue {
 		return runtimeWrapper.runtimeContext.GetRuntimeBreakpointValue()
 	}
 
-	runtimeWrapper.RunningInstancesCountFunc = func() uint64 {
-		return runtimeWrapper.runtimeContext.RunningInstancesCount()
+	runtimeWrapper.GetInstanceStackSizeFunc = func() uint64 {
+		return runtimeWrapper.runtimeContext.GetInstanceStackSize()
 	}
 
 	runtimeWrapper.IsFunctionImportedFunc = func(name string) bool {
@@ -236,8 +230,8 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.ClearWarmInstanceCache()
 	}
 
-	runtimeWrapper.SetMaxInstanceCountFunc = func(maxInstances uint64) {
-		runtimeWrapper.runtimeContext.SetMaxInstanceCount(maxInstances)
+	runtimeWrapper.SetMaxInstanceStackSizeFunc = func(maxInstanceStackSize uint64) {
+		runtimeWrapper.runtimeContext.SetMaxInstanceStackSize(maxInstanceStackSize)
 	}
 
 	runtimeWrapper.VerifyContractCodeFunc = func() error {
@@ -264,24 +258,12 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.SetPointsUsed(gasPoints)
 	}
 
-	runtimeWrapper.MemStoreFunc = func(offset int32, data []byte) error {
-		return runtimeWrapper.runtimeContext.MemStore(offset, data)
+	runtimeWrapper.BaseOpsErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.BaseOpsErrorShouldFailExecution()
 	}
 
-	runtimeWrapper.MemLoadFunc = func(offset int32, length int32) ([]byte, error) {
-		return runtimeWrapper.runtimeContext.MemLoad(offset, length)
-	}
-
-	runtimeWrapper.MemLoadMultipleFunc = func(offset int32, lengths []int32) ([][]byte, error) {
-		return runtimeWrapper.runtimeContext.MemLoadMultiple(offset, lengths)
-	}
-
-	runtimeWrapper.ElrondAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.ElrondAPIErrorShouldFailExecution()
-	}
-
-	runtimeWrapper.ElrondSyncExecAPIErrorShouldFailExecutionFunc = func() bool {
-		return runtimeWrapper.runtimeContext.ElrondSyncExecAPIErrorShouldFailExecution()
+	runtimeWrapper.SyncExecAPIErrorShouldFailExecutionFunc = func() bool {
+		return runtimeWrapper.runtimeContext.SyncExecAPIErrorShouldFailExecution()
 	}
 
 	runtimeWrapper.CryptoAPIErrorShouldFailExecutionFunc = func() bool {
@@ -298,9 +280,6 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 
 	runtimeWrapper.ManagedBufferAPIErrorShouldFailExecutionFunc = func() bool {
 		return runtimeWrapper.runtimeContext.ManagedBufferAPIErrorShouldFailExecution()
-	}
-	runtimeWrapper.ReplaceVMExecutorFunc = func(vmExecutor executor.Executor) {
-		runtimeWrapper.runtimeContext.ReplaceVMExecutor(vmExecutor)
 	}
 
 	runtimeWrapper.AddErrorFunc = func(err error, otherInfo ...string) {
@@ -335,11 +314,15 @@ func NewRuntimeContextWrapper(inputRuntimeContext *arwen.RuntimeContext) *Runtim
 		runtimeWrapper.runtimeContext.CleanInstance()
 	}
 
+	runtimeWrapper.GetInstanceTrackerFunc = func() vmhost.InstanceTracker {
+		return runtimeWrapper.runtimeContext.GetInstanceTracker()
+	}
+
 	return runtimeWrapper
 }
 
 // GetWrappedRuntimeContext gets the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetWrappedRuntimeContext() arwen.RuntimeContext {
+func (contextWrapper *RuntimeContextWrapper) GetWrappedRuntimeContext() vmhost.RuntimeContext {
 	return contextWrapper.runtimeContext
 }
 
@@ -429,12 +412,12 @@ func (contextWrapper *RuntimeContextWrapper) MustVerifyNextContractCode() {
 }
 
 // SetRuntimeBreakpointValue calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetRuntimeBreakpointValue(value arwen.BreakpointValue) {
+func (contextWrapper *RuntimeContextWrapper) SetRuntimeBreakpointValue(value vmhost.BreakpointValue) {
 	contextWrapper.SetRuntimeBreakpointValueFunc(value)
 }
 
 // GetRuntimeBreakpointValue calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) GetRuntimeBreakpointValue() arwen.BreakpointValue {
+func (contextWrapper *RuntimeContextWrapper) GetRuntimeBreakpointValue() vmhost.BreakpointValue {
 	return contextWrapper.GetRuntimeBreakpointValueFunc()
 }
 
@@ -443,9 +426,9 @@ func (contextWrapper *RuntimeContextWrapper) CountSameContractInstancesOnStack(a
 	return contextWrapper.CountSameContractInstancesOnStackFunc(address)
 }
 
-// RunningInstancesCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) RunningInstancesCount() uint64 {
-	return contextWrapper.RunningInstancesCountFunc()
+// GetInstanceStackSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) GetInstanceStackSize() uint64 {
+	return contextWrapper.GetInstanceStackSizeFunc()
 }
 
 // IsFunctionImported calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -473,9 +456,9 @@ func (contextWrapper *RuntimeContextWrapper) ClearWarmInstanceCache() {
 	contextWrapper.ClearWarmInstanceCacheFunc()
 }
 
-// SetMaxInstanceCount calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceCount(maxInstances uint64) {
-	contextWrapper.SetMaxInstanceCountFunc(maxInstances)
+// SetMaxInstanceStackSize calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SetMaxInstanceStackSize(maxInstanceStackSize uint64) {
+	contextWrapper.SetMaxInstanceStackSizeFunc(maxInstanceStackSize)
 }
 
 // VerifyContractCode calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -508,29 +491,14 @@ func (contextWrapper *RuntimeContextWrapper) SetPointsUsed(gasPoints uint64) {
 	contextWrapper.SetPointsUsedFunc(gasPoints)
 }
 
-// MemStore calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemStore(offset int32, data []byte) error {
-	return contextWrapper.MemStoreFunc(offset, data)
+// BaseOpsErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) BaseOpsErrorShouldFailExecution() bool {
+	return contextWrapper.BaseOpsErrorShouldFailExecutionFunc()
 }
 
-// MemLoad calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemLoad(offset int32, length int32) ([]byte, error) {
-	return contextWrapper.MemLoadFunc(offset, length)
-}
-
-// MemLoadMultiple calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) MemLoadMultiple(offset int32, lengths []int32) ([][]byte, error) {
-	return contextWrapper.MemLoadMultipleFunc(offset, lengths)
-}
-
-// ElrondAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ElrondAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ElrondAPIErrorShouldFailExecutionFunc()
-}
-
-// ElrondSyncExecAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
-func (contextWrapper *RuntimeContextWrapper) ElrondSyncExecAPIErrorShouldFailExecution() bool {
-	return contextWrapper.ElrondSyncExecAPIErrorShouldFailExecutionFunc()
+// SyncExecAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+func (contextWrapper *RuntimeContextWrapper) SyncExecAPIErrorShouldFailExecution() bool {
+	return contextWrapper.SyncExecAPIErrorShouldFailExecutionFunc()
 }
 
 // CryptoAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -543,7 +511,7 @@ func (contextWrapper *RuntimeContextWrapper) BigIntAPIErrorShouldFailExecution()
 	return contextWrapper.BigIntAPIErrorShouldFailExecutionFunc()
 }
 
-// BigIntAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// BigFloatAPIErrorShouldFailExecution calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) BigFloatAPIErrorShouldFailExecution() bool {
 	return contextWrapper.BigFloatAPIErrorShouldFailExecutionFunc()
 }
@@ -558,9 +526,8 @@ func (contextWrapper *RuntimeContextWrapper) GetVMExecutor() executor.Executor {
 	return contextWrapper.GetVMExecutorFunc()
 }
 
-// ReplaceVMExecutor calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
+// ReplaceVMExecutor mocked method
 func (contextWrapper *RuntimeContextWrapper) ReplaceVMExecutor(vmExecutor executor.Executor) {
-	contextWrapper.ReplaceVMExecutorFunc(vmExecutor)
 }
 
 // AddError calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
@@ -616,4 +583,18 @@ func (contextWrapper *RuntimeContextWrapper) GetPrevTxHash() []byte {
 // CleanInstance calls corresponding xxxFunc function, that by default in turn calls the original method of the wrapped RuntimeContext
 func (contextWrapper *RuntimeContextWrapper) CleanInstance() {
 	contextWrapper.CleanInstanceFunc()
+}
+
+// EndExecution -
+func (contextWrapper *RuntimeContextWrapper) EndExecution() {
+}
+
+// ValidateInstances -
+func (contextWrapper *RuntimeContextWrapper) ValidateInstances() error {
+	return nil
+}
+
+// GetInstanceTracker -
+func (contextWrapper *RuntimeContextWrapper) GetInstanceTracker() vmhost.InstanceTracker {
+	return contextWrapper.GetInstanceTrackerFunc()
 }

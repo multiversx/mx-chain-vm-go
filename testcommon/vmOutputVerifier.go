@@ -8,18 +8,18 @@ import (
 	"testing"
 	"unicode"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/parsers"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/parsers"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
 // VMOutputVerifier holds the output to be verified
 type VMOutputVerifier struct {
 	VmOutput  *vmcommon.VMOutput
-	AllErrors arwen.WrappableError
+	AllErrors vmhost.WrappableError
 	T         testing.TB
 }
 
@@ -33,9 +33,9 @@ func NewVMOutputVerifierWithAllErrors(t testing.TB, vmOutput *vmcommon.VMOutput,
 	require.Nil(t, err, "Error is not nil")
 	require.NotNil(t, vmOutput, "Provided VMOutput is nil")
 
-	var allErrorsAsWrappable arwen.WrappableError
+	var allErrorsAsWrappable vmhost.WrappableError
 	if allErrors != nil {
-		allErrorsAsWrappable = allErrors.(arwen.WrappableError)
+		allErrorsAsWrappable = allErrors.(vmhost.WrappableError)
 	}
 
 	return &VMOutputVerifier{
@@ -82,19 +82,19 @@ func (v *VMOutputVerifier) FunctionNotFound() *VMOutputVerifier {
 
 // ReturnCode verifies if ReturnCode of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnCode(code vmcommon.ReturnCode) *VMOutputVerifier {
-	require.Equal(v.T, code, v.VmOutput.ReturnCode, "ReturnCode")
+	require.Equal(v.T, code, v.VmOutput.ReturnCode, "returnCode")
 	return v
 }
 
 // ReturnMessage verifies if ReturnMessage of output is the same as the provided one
 func (v *VMOutputVerifier) ReturnMessage(message string) *VMOutputVerifier {
-	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "ReturnMessage")
+	require.Equal(v.T, message, v.VmOutput.ReturnMessage, "returnMessage")
 	return v
 }
 
 // ReturnMessageContains verifies if ReturnMessage of output contains the provided one
 func (v *VMOutputVerifier) ReturnMessageContains(message string) *VMOutputVerifier {
-	require.Contains(v.T, v.VmOutput.ReturnMessage, message, "ReturnMessage")
+	require.Contains(v.T, v.VmOutput.ReturnMessage, message, "returnMessage")
 	return v
 }
 
@@ -473,9 +473,9 @@ func (v *VMOutputVerifier) Print() *VMOutputVerifier {
 			log.Trace("VMOutput", "└ OutputTransfers["+fmt.Sprint(i)+"].Data", transfer.Data)
 		}
 		for i, storage := range account.StorageUpdates {
-			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Offset", string(storage.Offset), "len", len(storage.Offset))
-			log.Trace("VMOutput", "| StorageUpdate["+fmt.Sprintf(i)+"].Data", storage.Data, "len", len(storage.Data))
-			log.Trace("VMOutput", "└ StorageUpdate["+fmt.Sprintf(i)+"].Written", storage.Written)
+			log.Trace("VMOutput", "| StorageUpdate["+i+"].Offset", string(storage.Offset), "len", len(storage.Offset))
+			log.Trace("VMOutput", "| StorageUpdate["+i+"].Data", storage.Data, "len", len(storage.Data))
+			log.Trace("VMOutput", "└ StorageUpdate["+i+"].Written", storage.Written)
 		}
 	}
 	return v

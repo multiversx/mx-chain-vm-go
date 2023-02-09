@@ -1,6 +1,6 @@
 package worldmock
 
-import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+import vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 
 var _ vmcommon.EnableEpochsHandler = (*EnableEpochsHandlerStub)(nil)
 
@@ -43,6 +43,10 @@ type EnableEpochsHandlerStub struct {
 	RefactorContextEnableEpochField                      uint32
 	RemoveNonUpdatedStorageEnableEpochField              uint32
 	StorageAPICostOptimizationEnableEpochField           uint32
+	IsRuntimeMemStoreLimitEnabledField                   bool
+	IsMaxBlockchainHookCountersFlagEnabledField          bool
+	IsWipeSingleNFTLiquidityDecreaseEnabledField         bool
+	IsAlwaysSaveTokenMetaDataEnabledField                bool
 }
 
 // IsGlobalMintBurnFlagEnabled -
@@ -175,6 +179,7 @@ func (stub *EnableEpochsHandlerStub) IsESDTNFTImprovementV1FlagEnabled() bool {
 	return stub.IsESDTNFTImprovementV1FlagEnabledField
 }
 
+// IsFixOldTokenLiquidityEnabled -
 func (stub *EnableEpochsHandlerStub) IsFixOldTokenLiquidityEnabled() bool {
 	return stub.IsFixOldTokenLiquidityEnabledField
 }
@@ -229,6 +234,26 @@ func (stub *EnableEpochsHandlerStub) StorageAPICostOptimizationEnableEpoch() uin
 	return stub.StorageAPICostOptimizationEnableEpochField
 }
 
+// IsRuntimeMemStoreLimitEnabled -
+func (stub *EnableEpochsHandlerStub) IsRuntimeMemStoreLimitEnabled() bool {
+	return stub.IsRuntimeMemStoreLimitEnabledField
+}
+
+// IsMaxBlockchainHookCountersFlagEnabled -
+func (stub *EnableEpochsHandlerStub) IsMaxBlockchainHookCountersFlagEnabled() bool {
+	return stub.IsMaxBlockchainHookCountersFlagEnabledField
+}
+
+// IsWipeSingleNFTLiquidityDecreaseEnabled -
+func (stub *EnableEpochsHandlerStub) IsWipeSingleNFTLiquidityDecreaseEnabled() bool {
+	return stub.IsWipeSingleNFTLiquidityDecreaseEnabledField
+}
+
+// IsAlwaysSaveTokenMetaDataEnabled -
+func (stub *EnableEpochsHandlerStub) IsAlwaysSaveTokenMetaDataEnabled() bool {
+	return stub.IsAlwaysSaveTokenMetaDataEnabledField
+}
+
 // IsInterfaceNil -
 func (stub *EnableEpochsHandlerStub) IsInterfaceNil() bool {
 	return stub == nil
@@ -261,6 +286,7 @@ func EnableEpochsHandlerStubAllFlags() *EnableEpochsHandlerStub {
 		IsCheckFunctionArgumentFlagEnabledField:              true,
 		IsCheckExecuteOnReadOnlyFlagEnabledField:             true,
 		IsFixOldTokenLiquidityEnabledField:                   true,
+		IsAlwaysSaveTokenMetaDataEnabledField:                true,
 	}
 }
 

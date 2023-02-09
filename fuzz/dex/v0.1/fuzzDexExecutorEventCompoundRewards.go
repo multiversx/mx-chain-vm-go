@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	vmi "github.com/ElrondNetwork/elrond-vm-common"
+	vmi "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStatistics) error {
@@ -24,7 +24,7 @@ func (pfe *fuzzDexExecutor) compoundRewards(r *rand.Rand, statistics *eventsStat
 	}
 
 	farm := pfe.farmers[nonce].farm
-	claimAmount := int64(amountMax)
+	var claimAmount int64
 	if int64(amountMax) > amount {
 		claimAmount = amount
 		delete(pfe.farmers, nonce)

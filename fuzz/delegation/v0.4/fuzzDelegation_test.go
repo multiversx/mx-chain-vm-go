@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	fuzzutil "github.com/ElrondNetwork/wasm-vm/fuzz/util"
-	mc "github.com/ElrondNetwork/wasm-vm/mandos-go/controller"
+	fuzzutil "github.com/multiversx/mx-chain-vm-go/fuzz/util"
+	mc "github.com/multiversx/mx-chain-vm-go/scenarios/controller"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,8 +21,8 @@ func getTestRoot() string {
 	if err != nil {
 		panic(err)
 	}
-	arwenTestRoot := filepath.Join(exePath, "../../../test")
-	return arwenTestRoot
+	vmTestRoot := filepath.Join(exePath, "../../../test")
+	return vmTestRoot
 }
 
 func newExecutorWithPaths() *fuzzDelegationExecutor {
@@ -120,6 +120,8 @@ func TestFuzzDelegation_v0_4_0_genesis(t *testing.T) {
 
 	// all delegators (incl. owner) claim all rewards
 	err = pfe.computeAllRewards()
+	require.Nil(t, err)
+
 	for delegatorIdx := 0; delegatorIdx <= pfe.numDelegators; delegatorIdx++ {
 		err = pfe.claimRewards(delegatorIdx)
 		require.Nil(t, err)

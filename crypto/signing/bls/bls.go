@@ -1,10 +1,10 @@
 package bls
 
 import (
-	"github.com/ElrondNetwork/elrond-go-crypto"
-	"github.com/ElrondNetwork/elrond-go-crypto/signing"
-	"github.com/ElrondNetwork/elrond-go-crypto/signing/mcl"
-	"github.com/ElrondNetwork/elrond-go-crypto/signing/mcl/singlesig"
+	"github.com/multiversx/mx-chain-crypto-go"
+	"github.com/multiversx/mx-chain-crypto-go/signing"
+	"github.com/multiversx/mx-chain-crypto-go/signing/mcl"
+	"github.com/multiversx/mx-chain-crypto-go/signing/mcl/singlesig"
 )
 
 type bls struct {
@@ -12,6 +12,7 @@ type bls struct {
 	signer       crypto.SingleSigner
 }
 
+// NewBLS returns the component able to verify BLS signatures
 func NewBLS() *bls {
 	b := &bls{}
 	suite := mcl.NewSuiteBLS12()
@@ -21,6 +22,7 @@ func NewBLS() *bls {
 	return b
 }
 
+// VerifyBLS verifies a BLS signatures
 func (b *bls) VerifyBLS(key []byte, msg []byte, sig []byte) error {
 	publicKey, err := b.keyGenerator.PublicKeyFromByteArray(key)
 	if err != nil {

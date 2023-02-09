@@ -3,8 +3,8 @@ package worldmock
 import (
 	"fmt"
 
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/config"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
 )
 
 // NewAddressMock allows tests to specify what new addresses to generate
@@ -49,6 +49,7 @@ type MockWorld struct {
 	IsPausedValue              bool
 	IsLimitedTransferValue     bool
 	ProvidedBlockchainHook     vmcommon.BlockchainHook
+	OtherVMOutputMap           map[string]*vmcommon.VMOutput
 }
 
 // NewMockWorld creates a new MockWorld instance
@@ -64,6 +65,7 @@ func NewMockWorld() *MockWorld {
 		NewAddressMocks:   nil,
 		CompiledCode:      make(map[string][]byte),
 		BuiltinFuncs:      nil,
+		OtherVMOutputMap:  make(map[string]*vmcommon.VMOutput),
 	}
 	world.AccountsAdapter = NewMockAccountsAdapter(world)
 
@@ -149,4 +151,18 @@ func (b *MockWorld) GetSnapshot() int {
 // RevertToSnapshot -
 func (b *MockWorld) RevertToSnapshot(snapshot int) error {
 	return b.AccountsAdapter.RevertToSnapshot(snapshot)
+}
+
+// ExecuteSmartContractCallOnOtherVM -
+func (b *MockWorld) ExecuteSmartContractCallOnOtherVM(input *vmcommon.ContractCallInput) (*vmcommon.VMOutput, error) {
+	vmType, err := vmcommon.ParseVMTypeFromContractAddress(input.RecipientAddr)
+	if err != nil {
+		return nil, err
+	}
+	vmOutput := b.OtherVMOutputMap[string(vmType)]
+	if vmOutput == nil {
+		return &vmcommon.VMOutput{}, nil
+	}
+
+	return vmOutput, nil
 }

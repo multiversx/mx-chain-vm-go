@@ -3,11 +3,11 @@ package contracts
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	"github.com/ElrondNetwork/wasm-vm/testcommon"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/testcommon"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,7 +29,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -43,8 +43,8 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 				// child will return this
 				callData.Str(functionName + testcommon.TestReturnDataSuffix)
 
-				err := async.RegisterAsyncCall(groupName, &arwen.AsyncCall{
-					Status:          arwen.AsyncCallPending,
+				err := async.RegisterAsyncCall(groupName, &vmhost.AsyncCall{
+					Status:          vmhost.AsyncCallPending,
 					Destination:     destination,
 					Data:            callData.ToBytes(),
 					ValueBytes:      value,
@@ -56,7 +56,7 @@ func ForwardAsyncCallMultiGroupsMock(instanceMock *mock.InstanceMock, config int
 			}
 		}
 
-		async.SetContextCallback(
+		_ = async.SetContextCallback(
 			testcommon.TestContextCallbackFunction,
 			nil,
 			testConfig.GasProvidedToCallback)

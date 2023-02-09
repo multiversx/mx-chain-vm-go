@@ -6,21 +6,21 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/vm"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/arwen/elrondapi"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
+	"github.com/multiversx/mx-chain-core-go/data/vm"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
 )
 
 const generateGraphs = false
 const graphsFolder = "/home/bogdan/graphs/"
 
 // LogGraph -
-var LogGraph = logger.GetOrCreate("arwen/graph")
-var logAsync = logger.GetOrCreate("arwen/async")
+var LogGraph = logger.GetOrCreate("vm/graph")
+var logAsync = logger.GetOrCreate("vm/async")
 
 // TestReturnDataSuffix -
 var TestReturnDataSuffix = "_returnData"
@@ -168,13 +168,13 @@ func createGraphContractMockMethod(
 		for _, edge := range crtNode.AdjacentEdges {
 			if edge.Type == Sync {
 				breakPointValue := makeSyncCallFromEdge(host, edge, testConfig)
-				if breakPointValue == arwen.BreakpointExecutionFailed {
+				if breakPointValue == vmhost.BreakpointExecutionFailed {
 					err = ErrSyncCallFail
 					return instance
 				}
 			} else {
 				makeAsyncCallFromEdge(host, edge, testConfig)
-				if host.Runtime().GetRuntimeBreakpointValue() == arwen.BreakpointExecutionFailed {
+				if host.Runtime().GetRuntimeBreakpointValue() == vmhost.BreakpointExecutionFailed {
 					err = ErrAsyncRegisterFail
 					return instance
 				}
@@ -182,7 +182,7 @@ func createGraphContractMockMethod(
 		}
 
 		// burn gas for function
-		gasUsed := uint64(runtimeConfig.gasUsed)
+		gasUsed := runtimeConfig.gasUsed
 		logAsync.Trace("Burning", "gas", gasUsed, "function", crtFunctionCalled)
 		err = host.Metering().UseGasBounded(gasUsed)
 
@@ -193,7 +193,7 @@ func createGraphContractMockMethod(
 	}
 }
 
-func produceErrorForPreconfiguredFailure(runtimeConfig *RuntimeConfigOfCall, host arwen.VMHost) error {
+func produceErrorForPreconfiguredFailure(runtimeConfig *RuntimeConfigOfCall, host vmhost.VMHost) error {
 	if runtimeConfig.edgeType == Async || runtimeConfig.edgeType == AsyncCrossShard {
 		// prepare arguments for callback (in current's call ReturnData)
 		arguments := callbackArgumentsFromRuntimeConfig(runtimeConfig)
@@ -210,7 +210,7 @@ func produceErrorForPreconfiguredFailure(runtimeConfig *RuntimeConfigOfCall, hos
 	return nil
 }
 
-func getGraphNodeAndItsRuntimeConfig(callGraph *TestCallGraph, host arwen.VMHost, crtFunctionCalled string, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) (*TestCallNode, *RuntimeConfigOfCall) {
+func getGraphNodeAndItsRuntimeConfig(callGraph *TestCallGraph, host vmhost.VMHost, crtFunctionCalled string, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) (*TestCallNode, *RuntimeConfigOfCall) {
 	crtNode := callGraph.FindNode(host.Runtime().GetContextAddress(), crtFunctionCalled)
 	var runtimeConfig *RuntimeConfigOfCall
 	if crtNode.IsStartNode {
@@ -238,7 +238,7 @@ func callbackArgumentsFromRuntimeConfig(runtimeConfig *RuntimeConfigOfCall) [][]
 	return arguments
 }
 
-func makeSyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *TestConfig) arwen.BreakpointValue {
+func makeSyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *TestConfig) vmhost.BreakpointValue {
 	value := big.NewInt(testConfig.TransferFromParentToChild)
 	destFunctionName := edge.To.Call.FunctionName
 	destAddress := edge.To.Call.ContractAddress
@@ -249,7 +249,7 @@ func makeSyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Tes
 	setGraphCallArg(arguments, syncCallArgIndexes.gasUsedIdx, int(edge.GasUsed))
 
 	LogGraph.Trace("Sync call to ", string(destAddress), " func ", destFunctionName, " gas ", edge.GasLimit)
-	elrondapi.ExecuteOnDestContextWithTypedArgs(
+	vmhooks.ExecuteOnDestContextWithTypedArgs(
 		host,
 		int64(edge.GasLimit),
 		value,
@@ -261,18 +261,18 @@ func makeSyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Tes
 }
 
 func failAsInt(fail bool) int {
-	failAsInt := 0
+	result := 0
 	if fail {
-		failAsInt = 1
+		result = 1
 	}
-	return failAsInt
+	return result
 }
 
 func setGraphCallArg(arguments [][]byte, index int, value int) {
 	arguments[index] = big.NewInt(int64(value)).Bytes()
 }
 
-func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *TestConfig) {
+func makeAsyncCallFromEdge(host vmhost.VMHost, edge *TestCallEdge, testConfig *TestConfig) {
 	destFunctionName := edge.To.Call.FunctionName
 	destAddress := edge.To.Call.ContractAddress
 	value := big.NewInt(testConfig.TransferFromParentToChild)
@@ -298,7 +298,7 @@ func makeAsyncCallFromEdge(host arwen.VMHost, edge *TestCallEdge, testConfig *Te
 		gasLocked = edge.GasLocked - DefaultCallGraphLockedGas
 	}
 
-	elrondapi.CreateAsyncCallWithTypedArgs(host,
+	vmhooks.CreateAsyncCallWithTypedArgs(host,
 		destAddress,
 		value.Bytes(),
 		callDataAsBytes,
@@ -318,7 +318,7 @@ func createEncodedDataFromArguments(destFunctionName string, arguments [][]byte)
 	return callData.ToBytes(), callData.ToString()
 }
 
-func createFinishDataFromArguments(output arwen.OutputContext, arguments [][]byte) {
+func createFinishDataFromArguments(output vmhost.OutputContext, arguments [][]byte) {
 	for _, arg := range arguments {
 		output.Finish(arg)
 	}
@@ -337,8 +337,8 @@ type CallFinishDataItem struct {
 
 // return data is encoded using standard txDataBuilder
 // format is function@nodeLabel@providedGas@remainingGas
-func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHost, err error) *CallFinishDataItem {
-	runtime := host.Runtime()
+func computeReturnDataForTestFramework(crtFunctionCalled string, host vmhost.VMHost, err error) *CallFinishDataItem {
+	testRuntime := host.Runtime()
 	metering := host.Metering()
 	async := host.Async()
 	LogGraph.Trace("End of ", crtFunctionCalled, " on ", string(host.Runtime().GetContextAddress()))
@@ -360,8 +360,8 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 	}
 
 	return &CallFinishDataItem{
-		ContractAndFunction:          string(runtime.GetContextAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
-		GasProvided:                  runtime.GetVMInput().GasProvided,
+		ContractAndFunction:          string(testRuntime.GetContextAddress()) + "_" + crtFunctionCalled + TestReturnDataSuffix,
+		GasProvided:                  testRuntime.GetVMInput().GasProvided,
 		GasRemaining:                 gasLeft,
 		CallID:                       async.GetCallID(),
 		CallbackAsyncInitiatorCallID: async.GetCallbackAsyncInitiatorCallID(),
@@ -370,7 +370,7 @@ func computeReturnDataForTestFramework(crtFunctionCalled string, host arwen.VMHo
 	}
 }
 
-func readRuntimeConfigFromArguments(host arwen.VMHost, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) *RuntimeConfigOfCall {
+func readRuntimeConfigFromArguments(host vmhost.VMHost, runtimeConfigsForCalls map[string]*RuntimeConfigOfCall) *RuntimeConfigOfCall {
 	runtimeConfig := &RuntimeConfigOfCall{}
 	var argIndexes argIndexesForGraphCall
 
@@ -382,13 +382,17 @@ func readRuntimeConfigFromArguments(host arwen.VMHost, runtimeConfigsForCalls ma
 	} else if callType == vm.AsynchronousCall {
 		argIndexes = asyncCallArgIndexes
 		runtimeConfig.gasUsedByCallback = big.NewInt(0).SetBytes(arguments[argIndexes.gasUsedByCallbackIdx]).Uint64()
-		runtimeConfig.willCallbackFail = (big.NewInt(0).SetBytes(arguments[argIndexes.callbackFailureIdx]).Int64() == 1)
+		runtimeConfig.willCallbackFail = big.NewInt(0).SetBytes(arguments[argIndexes.callbackFailureIdx]).Int64() == 1
 	} else if callType == vm.AsynchronousCallBack {
 		// for callbacks, first argument is return code
 		returnCode := big.NewInt(0).SetBytes(arguments[0]).Int64()
 		argIndexes = callbackCallArgIndexes
 		if returnCode != 0 {
 			runtimeConfig = runtimeConfigsForCalls[string(host.Async().GetCallerCallID())]
+			if runtimeConfig == nil {
+				panic("runtimeConfig loaded is nil")
+			}
+
 			if runtimeConfig.edgeType == Async {
 				runtimeConfig.edgeType = Callback
 			} else if runtimeConfig.edgeType == AsyncCrossShard {
@@ -398,15 +402,13 @@ func readRuntimeConfigFromArguments(host arwen.VMHost, runtimeConfigsForCalls ma
 			}
 			runtimeConfig.gasUsed = runtimeConfig.gasUsedByCallback
 			runtimeConfig.willFail = runtimeConfig.willCallbackFail
-			if runtimeConfig != nil {
-				return runtimeConfig
-			}
+			return runtimeConfig
 		}
 	}
 
 	runtimeConfig.edgeType = TestCallEdgeType(big.NewInt(0).SetBytes(arguments[argIndexes.edgeTypeIdx]).Int64())
 	runtimeConfig.gasUsed = big.NewInt(0).SetBytes(arguments[argIndexes.gasUsedIdx]).Uint64()
-	runtimeConfig.willFail = (big.NewInt(0).SetBytes(arguments[argIndexes.failureIdx]).Int64() == 1)
+	runtimeConfig.willFail = big.NewInt(0).SetBytes(arguments[argIndexes.failureIdx]).Int64() == 1
 
 	return runtimeConfig
 }
@@ -485,72 +487,6 @@ func CreateGraphTestAsyncCallsAsync() *TestCallGraph {
 
 	sc3f3 := callGraph.AddNode("sc3", "f3")
 	callGraph.AddAsyncEdge(sc2f2, sc3f3, "cb2", "").
-		SetGasLimit(100).
-		SetGasUsed(6).
-		SetGasUsedByCallback(3)
-
-	callGraph.AddNode("sc2", "cb2")
-
-	return callGraph
-}
-
-// CreateGraphTestAsyncsOnMultiLevelFail1 -
-func CreateGraphTestAsyncsOnMultiLevelFail1() *TestCallGraph {
-	callGraph := CreateTestCallGraph()
-
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 1000, 10)
-
-	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
-		SetGasLimit(500).
-		SetGasUsed(7).
-		SetGasUsedByCallback(4)
-
-	callGraph.AddNode("sc1", "cb1")
-
-	sc3f4 := callGraph.AddNode("sc3", "f4")
-	callGraph.AddSyncEdge(sc2f2, sc3f4).
-		SetGasLimit(10).
-		SetGasUsed(3)
-
-	sc3f3 := callGraph.AddNode("sc3", "f3")
-	callGraph.AddAsyncEdge(sc2f2, sc3f3, "cb2", "").
-		SetGasLimit(100).
-		SetGasUsed(6).
-		SetGasUsedByCallback(3).
-		SetFailWithExpectedError(ErrAsyncRegisterFail)
-
-	callGraph.AddNode("sc2", "cb2")
-
-	return callGraph
-}
-
-// CreateGraphTestAsyncsOnMultiLevelFail2 -
-func CreateGraphTestAsyncsOnMultiLevelFail2() *TestCallGraph {
-	callGraph := CreateTestCallGraph()
-
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 1000, 10)
-
-	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddSyncEdge(sc1f1, sc2f2).
-		SetGasLimit(500).
-		SetGasUsed(7)
-
-	sc3f4 := callGraph.AddNode("sc3", "f4")
-	callGraph.AddSyncEdge(sc2f2, sc3f4).
-		SetGasLimit(10).
-		SetGasUsed(3)
-
-	sc4f4 := callGraph.AddNode("sc4", "f4")
-	callGraph.AddAsyncEdge(sc1f1, sc4f4, "cb1", "").
-		SetGasLimit(40).
-		SetGasUsed(12).
-		SetGasUsedByCallback(5)
-
-	callGraph.AddNode("sc1", "cb1")
-
-	sc3f3 := callGraph.AddNode("sc3", "f3")
-	callGraph.AddAsyncCrossShardEdge(sc2f2, sc3f3, "cb2", "").
 		SetGasLimit(100).
 		SetGasUsed(6).
 		SetGasUsedByCallback(3)
@@ -1679,39 +1615,6 @@ func CreateGraphTestCallbackCallsAsyncCallbackFailCrossCross() *TestCallGraph {
 		SetCallbackFail()
 
 	callGraph.AddNode("sc1", "cb2")
-
-	return callGraph
-}
-
-// CreateGraphTestAsyncCallsAsync2 -
-func CreateGraphTestAsyncCallsAsync2() *TestCallGraph {
-	callGraph := CreateTestCallGraph()
-
-	sc1f1 := callGraph.AddStartNode("sc1", "f1", 200, 10)
-
-	sc2f2 := callGraph.AddNode("sc2", "f2")
-	callGraph.AddAsyncEdge(sc1f1, sc2f2, "cb1", "").
-		SetGasLimit(100).
-		SetGasUsed(7).
-		SetGasUsedByCallback(5)
-
-	callGraph.AddNode("sc1", "cb1")
-
-	sc2f3 := callGraph.AddNode("sc2", "f3")
-	callGraph.AddAsyncEdge(sc2f2, sc2f3, "cb2", "").
-		SetGasLimit(30).
-		SetGasUsed(6).
-		SetGasUsedByCallback(3)
-
-	callGraph.AddNode("sc2", "cb2")
-
-	sc2f4 := callGraph.AddNode("sc2", "f4")
-	callGraph.AddAsyncEdge(sc2f3, sc2f4, "cb3", "").
-		SetGasLimit(10).
-		SetGasUsed(5).
-		SetGasUsedByCallback(2)
-
-	callGraph.AddNode("sc2", "cb3")
 
 	return callGraph
 }

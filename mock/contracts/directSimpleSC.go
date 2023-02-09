@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ElrondNetwork/elrond-vm-common/txDataBuilder"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/executor"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	test "github.com/ElrondNetwork/wasm-vm/testcommon"
+	"github.com/multiversx/mx-chain-vm-common-go/txDataBuilder"
+	"github.com/multiversx/mx-chain-vm-go/executor"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	test "github.com/multiversx/mx-chain-vm-go/testcommon"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
 // WasteGasChildMock is an exposed mock contract method
@@ -20,7 +20,7 @@ func WasteGasChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // FailChildMock is an exposed mock contract method
-func FailChildMock(instanceMock *mock.InstanceMock, config interface{}) {
+func FailChildMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("fail", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -30,7 +30,7 @@ func FailChildMock(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // FailChildAndBurnESDTMock is an exposed mock contract method
-func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{}) {
+func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("failAndBurn", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
@@ -49,7 +49,7 @@ func FailChildAndBurnESDTMock(instanceMock *mock.InstanceMock, config interface{
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 		}
 
 		host.Runtime().FailExecution(errors.New("forced fail"))
@@ -65,7 +65,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -88,7 +88,7 @@ func ExecOnSameCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			for i := uint64(0); i < numCalls; i++ {
 				returnValue := ExecuteOnSameContextInMockContracts(host, input)
 				if returnValue != 0 {
-					host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+					host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 				}
 			}
 		}
@@ -105,7 +105,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 		instance := mock.GetMockInstance(host)
 		err := host.Metering().UseGasBounded(testConfig.GasUsedByParent)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
@@ -128,7 +128,7 @@ func ExecOnDestCtxParentMock(instanceMock *mock.InstanceMock, config interface{}
 			for i := uint64(0); i < numCalls; i++ {
 				returnValue := ExecuteOnDestContextInMockContracts(host, input)
 				if returnValue != 0 {
-					host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+					host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 				}
 			}
 		}
@@ -160,7 +160,7 @@ func ExecOnDestCtxSingleCallParentMock(instanceMock *mock.InstanceMock, config i
 
 		returnValue := ExecuteOnDestContextInMockContracts(host, input)
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 		}
 
 		return instance
@@ -211,7 +211,7 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 		host.Metering().UseGas(testConfig.GasUsedByChild)
 
 		callData := txDataBuilder.NewBuilder()
-		callData.Func(string("ESDTTransfer"))
+		callData.Func("ESDTTransfer")
 		callData.Bytes(test.ESDTTestTokenName)
 		callData.Bytes(big.NewInt(int64(testConfig.CallbackESDTTokensToTransfer)).Bytes())
 
@@ -242,8 +242,8 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 			if host.Runtime().ValidateCallbackName(callbackName) == executor.ErrFuncNotFound {
 				callbackName = ""
 			}
-			err = host.Async().RegisterAsyncCall("testGroup", &arwen.AsyncCall{
-				Status:          arwen.AsyncCallPending,
+			err = host.Async().RegisterAsyncCall("testGroup", &vmhost.AsyncCall{
+				Status:          vmhost.AsyncCallPending,
 				Destination:     test.ParentAddress,
 				Data:            callData.ToBytes(),
 				ValueBytes:      value,
@@ -262,10 +262,13 @@ func esdtTransferToParentMock(instanceMock *mock.InstanceMock, config interface{
 	})
 }
 
-var TestStorageValue1 = []byte{1, 2, 3, 4}
-var TestStorageValue2 = []byte{1, 2, 3}
-var TestStorageValue3 = []byte{1, 2}
-var TestStorageValue4 = []byte{1}
+// test variables
+var (
+	TestStorageValue1 = []byte{1, 2, 3, 4}
+	TestStorageValue2 = []byte{1, 2, 3}
+	TestStorageValue3 = []byte{1, 2}
+	TestStorageValue4 = []byte{1}
+)
 
 // ParentSetStorageMock is an exposed mock contract method
 func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
@@ -273,10 +276,10 @@ func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
 	instanceMock.AddMockMethod("parentSetStorage", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Storage().SetStorage(test.ParentKeyA, TestStorageValue1) // add
-		host.Storage().SetStorage(test.ParentKeyA, TestStorageValue2) // delete
-		host.Storage().SetStorage(test.ParentKeyB, TestStorageValue2) // add
-		host.Storage().SetStorage(test.ParentKeyB, TestStorageValue3) // delete
+		_, _ = host.Storage().SetStorage(test.ParentKeyA, TestStorageValue1) // add
+		_, _ = host.Storage().SetStorage(test.ParentKeyA, TestStorageValue2) // delete
+		_, _ = host.Storage().SetStorage(test.ParentKeyB, TestStorageValue2) // add
+		_, _ = host.Storage().SetStorage(test.ParentKeyB, TestStorageValue3) // delete
 
 		input := test.DefaultTestContractCallInput()
 		input.GasProvided = testConfig.GasProvidedToChild
@@ -292,7 +295,7 @@ func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
 			returnValue = ExecuteOnDestContextInMockContracts(host, input)
 		}
 		if returnValue != 0 {
-			host.Runtime().FailExecution(fmt.Errorf("Return value %d", returnValue))
+			host.Runtime().FailExecution(fmt.Errorf("return value %d", returnValue))
 		}
 
 		return instance
@@ -300,14 +303,24 @@ func ParentSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
 }
 
 // ChildSetStorageMock is an exposed mock contract method
-func ChildSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
+func ChildSetStorageMock(instanceMock *mock.InstanceMock, _ interface{}) {
 	instanceMock.AddMockMethod("childSetStorage", func() *mock.InstanceMock {
 		host := instanceMock.Host
 		instance := mock.GetMockInstance(host)
-		host.Storage().SetStorage(test.ChildKey, TestStorageValue2)  // add
-		host.Storage().SetStorage(test.ChildKey, TestStorageValue1)  // add
-		host.Storage().SetStorage(test.ChildKeyB, TestStorageValue1) // add
-		host.Storage().SetStorage(test.ChildKeyB, TestStorageValue4) // delete
+		_, _ = host.Storage().SetStorage(test.ChildKey, TestStorageValue2)  // add
+		_, _ = host.Storage().SetStorage(test.ChildKey, TestStorageValue1)  // add
+		_, _ = host.Storage().SetStorage(test.ChildKeyB, TestStorageValue1) // add
+		_, _ = host.Storage().SetStorage(test.ChildKeyB, TestStorageValue4) // delete
+		return instance
+	})
+}
+
+// SimpleChildSetStorageMock is an exposed mock contract method
+func SimpleChildSetStorageMock(instanceMock *mock.InstanceMock, config interface{}) {
+	instanceMock.AddMockMethod("simpleChildSetStorage", func() *mock.InstanceMock {
+		host := instanceMock.Host
+		instance := mock.GetMockInstance(host)
+		_, _ = host.Storage().SetStorage(test.ChildKey, test.ChildData)
 		return instance
 	})
 }

@@ -3,16 +3,23 @@ package testcommon
 import (
 	"testing"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	mock "github.com/ElrondNetwork/wasm-vm/mock/context"
-	worldmock "github.com/ElrondNetwork/wasm-vm/mock/world"
+	logger "github.com/multiversx/mx-chain-logger-go"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	mock "github.com/multiversx/mx-chain-vm-go/mock/context"
+	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var logMock = logger.GetOrCreate("arwen/mock")
+var logMock = logger.GetOrCreate("vm/mock")
 
-type SetupFunction func(arwen.VMHost, *worldmock.MockWorld)
+// SetupFunction -
+type SetupFunction func(vmhost.VMHost, *worldmock.MockWorld)
+
+// AssertResultsFunc -
+type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
+
+// AssertResultsWithStartNodeFunc -
+type AssertResultsWithStartNodeFunc func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)
 
 type testTemplateConfig struct {
 	tb                       testing.TB
@@ -37,7 +44,7 @@ func BuildMockInstanceCallTest(tb testing.TB) *MockInstancesTestTemplate {
 			useMocks:                 true,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(arwen.VMHost, *worldmock.MockWorld) {},
+		setup: func(vmhost.VMHost, *worldmock.MockWorld) {},
 	}
 }
 
@@ -65,16 +72,12 @@ func (callerTest *MockInstancesTestTemplate) WithWasmerSIGSEGVPassthrough(wasmer
 	return callerTest
 }
 
-type AssertResultsFunc func(world *worldmock.MockWorld, verify *VMOutputVerifier)
-
 // AndAssertResults provides the function that will aserts the results
 func (callerTest *MockInstancesTestTemplate) AndAssertResults(assertResults AssertResultsFunc) (*vmcommon.VMOutput, error) {
 	return callerTest.AndAssertResultsWithWorld(nil, true, nil, nil, func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string) {
 		assertResults(world, verify)
 	})
 }
-
-type AssertResultsWithStartNodeFunc func(startNode *TestCallNode, world *worldmock.MockWorld, verify *VMOutputVerifier, expectedErrorsForRound []string)
 
 // AndAssertResultsWithWorld provides the function that will aserts the results
 func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
@@ -91,14 +94,21 @@ func (callerTest *MockInstancesTestTemplate) AndAssertResultsWithWorld(
 }
 
 func (callerTest *MockInstancesTestTemplate) runTest(startNode *TestCallNode, world *worldmock.MockWorld, createAccount bool, expectedErrorsForRound []string) (*vmcommon.VMOutput, error) {
-	host, imb := DefaultTestArwenForCallWithInstanceMocksAndWorld(callerTest.tb, world)
+	if world == nil {
+		world = worldmock.NewMockWorld()
+	}
+	executorFactory := mock.NewExecutorMockFactory(world)
+	host := NewTestHostBuilder(callerTest.tb).
+		WithExecutorFactory(executorFactory).
+		WithBlockchainHook(world).
+		Build()
 
 	defer func() {
 		host.Reset()
 	}()
 
 	for _, mockSC := range *callerTest.contracts {
-		mockSC.Initialize(callerTest.tb, host, imb, createAccount)
+		mockSC.Initialize(callerTest.tb, host, executorFactory.LastCreatedExecutor, createAccount)
 	}
 
 	callerTest.setup(host, world)
@@ -123,7 +133,7 @@ func SimpleWasteGasMockMethod(instanceMock *mock.InstanceMock, gas uint64) func(
 
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 		}
 
 		return instance
@@ -139,20 +149,11 @@ func WasteGasWithReturnDataMockMethod(instanceMock *mock.InstanceMock, gas uint6
 		logMock.Trace("instance mock waste gas", "sc", string(host.Runtime().GetContextAddress()), "func", host.Runtime().FunctionName(), "gas", gas)
 		err := host.Metering().UseGasBounded(gas)
 		if err != nil {
-			host.Runtime().SetRuntimeBreakpointValue(arwen.BreakpointOutOfGas)
+			host.Runtime().SetRuntimeBreakpointValue(vmhost.BreakpointOutOfGas)
 			return instance
 		}
 
 		host.Output().Finish(returnData)
-		return instance
-	}
-}
-
-// Empty
-func EmptyMockMethod(instanceMock *mock.InstanceMock) func() *mock.InstanceMock {
-	return func() *mock.InstanceMock {
-		host := instanceMock.Host
-		instance := mock.GetMockInstance(host)
 		return instance
 	}
 }

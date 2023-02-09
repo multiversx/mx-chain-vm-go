@@ -1,7 +1,9 @@
+// Package executor contains the interfaces and definitions for the VM Executor
 package executor
 
 import (
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/multiversx/mx-chain-core-go/core/check"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 )
 
 // CompilationOptions contains configurations for instantiating an executor instance.
@@ -17,14 +19,10 @@ type CompilationOptions struct {
 
 // Executor defines the functionality needed to create any executor instance.
 type Executor interface {
+	check.NilInterfaceChecker
+
 	// SetOpcodeCosts sets gas costs globally inside an executor.
 	SetOpcodeCosts(opcodeCosts *WASMOpcodeCost)
-
-	// SetRkyvSerializationEnabled controls a Wasmer flag.
-	SetRkyvSerializationEnabled(enabled bool)
-
-	// SetSIGSEGVPassthrough controls a Wasmer flag.
-	SetSIGSEGVPassthrough()
 
 	// FunctionNames return the low-level function names provided to contracts.
 	FunctionNames() vmcommon.FunctionNames
@@ -38,10 +36,4 @@ type Executor interface {
 	NewInstanceFromCompiledCodeWithOptions(
 		compiledCode []byte,
 		options CompilationOptions) (Instance, error)
-
-	// GetVMHooks returns the VM hooks.
-	GetVMHooks() VMHooks
-
-	// InitVMHooks inits the VM hooks.
-	InitVMHooks(vmHooks VMHooks)
 }

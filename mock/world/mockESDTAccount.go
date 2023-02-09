@@ -3,8 +3,8 @@ package worldmock
 import (
 	"math/big"
 
-	"github.com/ElrondNetwork/wasm-vm/mandos-go/esdtconvert"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/multiversx/mx-chain-core-go/data/esdt"
+	"github.com/multiversx/mx-chain-vm-go/scenarios/esdtconvert"
 )
 
 // GetTokenBalance returns the ESDT balance of the account, specified by the
@@ -13,7 +13,7 @@ func (a *Account) GetTokenBalance(tokenIdentifier []byte, nonce uint64) (*big.In
 	return esdtconvert.GetTokenBalance(tokenIdentifier, nonce, a.Storage)
 }
 
-// GetTokenBalance returns the ESDT balance of the account, specified by the
+// GetTokenBalanceUint64 returns the ESDT balance of the account, specified by the
 // token key.
 func (a *Account) GetTokenBalanceUint64(tokenIdentifier []byte, nonce uint64) (uint64, error) {
 	balance, err := a.GetTokenBalance(tokenIdentifier, nonce)

@@ -1,12 +1,12 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/wasm-vm/arwen"
-	"github.com/ElrondNetwork/wasm-vm/config"
-	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
+	"github.com/multiversx/mx-chain-vm-go/config"
+	"github.com/multiversx/mx-chain-vm-go/vmhost"
 )
 
-var _ arwen.MeteringContext = (*MeteringContextMock)(nil)
+var _ vmhost.MeteringContext = (*MeteringContextMock)(nil)
 
 // MeteringContextMock is used in tests to check the MeteringContext interface method calls
 type MeteringContextMock struct {
@@ -21,28 +21,22 @@ type MeteringContextMock struct {
 }
 
 // InitState mocked method
-func (m *MeteringContextMock) InitState() {
-}
+func (m *MeteringContextMock) InitState() {}
 
 // PushState mocked method
-func (m *MeteringContextMock) PushState() {
-}
+func (m *MeteringContextMock) PushState() {}
 
 // PopSetActiveState mocked method
-func (m *MeteringContextMock) PopSetActiveState() {
-}
+func (m *MeteringContextMock) PopSetActiveState() {}
 
 // PopMergeActiveState mocked method
-func (m *MeteringContextMock) PopMergeActiveState() {
-}
+func (m *MeteringContextMock) PopMergeActiveState() {}
 
 // PopDiscard mocked method
-func (m *MeteringContextMock) PopDiscard() {
-}
+func (m *MeteringContextMock) PopDiscard() {}
 
 // ClearStateStack mocked method
-func (m *MeteringContextMock) ClearStateStack() {
-}
+func (m *MeteringContextMock) ClearStateStack() {}
 
 // SetGasSchedule mocked method
 func (m *MeteringContextMock) SetGasSchedule(gasSchedule config.GasScheduleMap) {
@@ -66,11 +60,10 @@ func (m *MeteringContextMock) UseGas(gas uint64) {
 }
 
 // UseAndTraceGas mocked method
-func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {
-}
+func (m *MeteringContextMock) UseAndTraceGas(_ uint64) {}
 
-func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {
-}
+// UseGasAndAddTracedGas mocked method
+func (m *MeteringContextMock) UseGasAndAddTracedGas(_ string, _ uint64) {}
 
 // FreeGas mocked method
 func (m *MeteringContextMock) FreeGas(gas uint64) {
@@ -93,15 +86,13 @@ func (m *MeteringContextMock) UpdateGasStateOnSuccess(_ *vmcommon.VMOutput) erro
 }
 
 // UpdateGasStateOnFailure mocked method
-func (m *MeteringContextMock) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {
-}
+func (m *MeteringContextMock) UpdateGasStateOnFailure(_ *vmcommon.VMOutput) {}
 
 // InitStateFromContractCallInput mocked method
-func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput) {
-}
+func (m *MeteringContextMock) InitStateFromContractCallInput(_ *vmcommon.VMInput) {}
 
 // TrackGasUsedByBuiltinFunction mocked method
-func (m *MeteringContextMock) TrackGasUsedByBuiltinFunction(_ *vmcommon.ContractCallInput, _ *vmcommon.VMOutput, _ *vmcommon.ContractCallInput) {
+func (m *MeteringContextMock) TrackGasUsedByOutOfVMFunction(_ *vmcommon.ContractCallInput, _ *vmcommon.VMOutput, _ *vmcommon.ContractCallInput) {
 }
 
 // GasUsedByContract mocked method
@@ -161,15 +152,14 @@ func (m *MeteringContextMock) UseGasBounded(gas uint64) error {
 		return m.Err
 	}
 	if m.GasLeft() <= gas {
-		return arwen.ErrNotEnoughGas
+		return vmhost.ErrNotEnoughGas
 	}
 	m.UseGas(gas)
 	return nil
 }
 
 // UnlockGasIfAsyncCallback mocked method
-func (m *MeteringContextMock) UnlockGasIfAsyncCallback() {
-}
+func (m *MeteringContextMock) UnlockGasIfAsyncCallback() {}
 
 // UseGasForAsyncStep mocked method
 func (m *MeteringContextMock) UseGasForAsyncStep() error {
@@ -177,8 +167,7 @@ func (m *MeteringContextMock) UseGasForAsyncStep() error {
 }
 
 // UnlockGasIfAsyncStep mocked method
-func (m *MeteringContextMock) UnlockGasIfAsyncStep() {
-}
+func (m *MeteringContextMock) UnlockGasIfAsyncStep() {}
 
 // GetGasLocked mocked method
 func (m *MeteringContextMock) GetGasLocked() uint64 {
@@ -196,29 +185,28 @@ func (m *MeteringContextMock) DeductInitialGasForExecution(_ []byte) error {
 }
 
 // DeductInitialGasForDirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ arwen.CodeDeployInput) error {
+func (m *MeteringContextMock) DeductInitialGasForDirectDeployment(_ vmhost.CodeDeployInput) error {
 	return m.Err
 }
 
 // DeductInitialGasForIndirectDeployment mocked method
-func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ arwen.CodeDeployInput) error {
+func (m *MeteringContextMock) DeductInitialGasForIndirectDeployment(_ vmhost.CodeDeployInput) error {
 	return m.Err
 }
 
 // EnableRestoreGas mocked method
-func (m *MeteringContextMock) EnableRestoreGas() {
-}
+func (m *MeteringContextMock) EnableRestoreGas() {}
 
 // DisableRestoreGas mocked method
-func (m *MeteringContextMock) DisableRestoreGas() {
-}
+func (m *MeteringContextMock) DisableRestoreGas() {}
 
-func (m *MeteringContextMock) StartGasTracing(_ string) {
-}
+// StartGasTracing mocked method
+func (m *MeteringContextMock) StartGasTracing(_ string) {}
 
-func (m *MeteringContextMock) SetGasTracing(_ bool) {
-}
+// SetGasTracing mocked method
+func (m *MeteringContextMock) SetGasTracing(_ bool) {}
 
+// GetGasTrace returns nil
 func (m *MeteringContextMock) GetGasTrace() map[string]map[string][]uint64 {
 	return nil
 }
