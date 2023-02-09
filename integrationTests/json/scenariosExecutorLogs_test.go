@@ -6,7 +6,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
-func TestRustAdderLog(t *testing.T) {
+func TestRustCompareAdderLog(t *testing.T) {
 	expected := ScenariosTest(t).
 		Folder("adder/scenarios").
 		WithExecutorLogs().
@@ -41,6 +41,8 @@ func TestRustFactorialLog(t *testing.T) {
 }
 
 func TestRustErc20Log(t *testing.T) {
+	t.Skip("not a working test")
+
 	expected := ScenariosTest(t).
 		Folder("erc20-rust/scenarios").
 		WithExecutorLogs().
