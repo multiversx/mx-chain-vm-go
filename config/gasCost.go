@@ -9,7 +9,6 @@ type GasCost struct {
 	BaseOperationCost    BaseOperationCost
 	BigIntAPICost        BigIntAPICost
 	BigFloatAPICost      BigFloatAPICost
-	EthAPICost           EthAPICost
 	BaseOpsAPICost       BaseOpsAPICost
 	ManagedBufferAPICost ManagedBufferAPICost
 	CryptoAPICost        CryptoAPICost
@@ -78,44 +77,6 @@ type BaseOpsAPICost struct {
 	GetReturnDataSize       uint64
 	CleanReturnData         uint64
 	DeleteFromReturnData    uint64
-}
-
-// EthAPICost -
-// TODO remove this struct
-type EthAPICost struct {
-	UseGas              uint64
-	GetAddress          uint64
-	GetExternalBalance  uint64
-	GetBlockHash        uint64
-	Call                uint64
-	CallDataCopy        uint64
-	GetCallDataSize     uint64
-	CallCode            uint64
-	CallDelegate        uint64
-	CallStatic          uint64
-	StorageStore        uint64
-	StorageLoad         uint64
-	GetCaller           uint64
-	GetCallValue        uint64
-	CodeCopy            uint64
-	GetCodeSize         uint64
-	GetBlockCoinbase    uint64
-	Create              uint64
-	GetBlockDifficulty  uint64
-	ExternalCodeCopy    uint64
-	GetExternalCodeSize uint64
-	GetGasLeft          uint64
-	GetBlockGasLimit    uint64
-	GetTxGasPrice       uint64
-	Log                 uint64
-	GetBlockNumber      uint64
-	GetTxOrigin         uint64
-	Finish              uint64
-	Revert              uint64
-	GetReturnDataSize   uint64
-	ReturnDataCopy      uint64
-	SelfDestruct        uint64
-	GetBlockTimeStamp   uint64
 }
 
 // BigIntAPICost defines the big int operations gas cost config structure
