@@ -50,3 +50,8 @@ func (factory *WrapperExecutorFactory) CreateExecutor(args executor.ExecutorFact
 	}
 	return factory.LastCreatedExecutor, nil
 }
+
+// IsInterfaceNil returns true if there is no value under the interface
+func (factory *WrapperExecutorFactory) IsInterfaceNil() bool {
+	return factory == nil
+}

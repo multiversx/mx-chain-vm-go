@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/multiversx/mx-chain-core-go/core"
+	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-go/config"
@@ -20,6 +21,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/wasmer"
 	"github.com/stretchr/testify/require"
 )
+
+var defaultHasher = blake2b.NewBlake2b()
 
 const counterWasmCode = "./../../test/contracts/counter/output/counter.wasm"
 
@@ -51,11 +54,48 @@ func makeDefaultRuntimeContext(t *testing.T, host vmhost.VMHost) *runtimeContext
 		vmType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
+		defaultHasher,
 	)
 	require.Nil(t, err)
 	require.NotNil(t, runtimeCtx)
 
 	return runtimeCtx
+}
+func TestNewRuntimeContextErrors(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	bfc := builtInFunctions.NewBuiltInFunctionContainer()
+	hasher := defaultHasher
+
+	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
+		VMHooks: vmhooks.NewVMHooksImpl(host),
+	})
+	require.Nil(t, err)
+
+	t.Run("NilHost", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(nil, vmType, bfc, exec, hasher)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilVMHost)
+	})
+	t.Run("NilVMType", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, nil, bfc, exec, hasher)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilVMType)
+	})
+	t.Run("NilBuiltinFuncContainer", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, vmType, nil, exec, hasher)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilBuiltInFunctionsContainer)
+	})
+	t.Run("NilExecutor", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, nil, hasher)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilExecutor)
+	})
+	t.Run("NilHasher", func(t *testing.T) {
+		runtimeCtx, err := NewRuntimeContext(host, vmType, bfc, exec, nil)
+		require.Nil(t, runtimeCtx)
+		require.ErrorIs(t, err, vmhost.ErrNilHasher)
+	})
 }
 
 func TestNewRuntimeContext(t *testing.T) {
@@ -209,19 +249,19 @@ func TestRuntimeContext_PushPopInstance(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	instance := runtimeCtx.instance
+	instance := runtimeCtx.iTracker.instance
 
 	runtimeCtx.pushInstance()
-	runtimeCtx.instance = nil
-	require.Equal(t, 1, len(runtimeCtx.instanceStack))
+	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
+	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
 
 	runtimeCtx.popInstance()
-	require.NotNil(t, runtimeCtx.instance)
-	require.Equal(t, instance, runtimeCtx.instance)
-	require.Equal(t, 0, len(runtimeCtx.instanceStack))
+	require.NotNil(t, runtimeCtx.iTracker.instance)
+	require.Equal(t, instance, runtimeCtx.iTracker.instance)
+	require.Equal(t, 0, len(runtimeCtx.iTracker.instanceStack))
 
 	runtimeCtx.pushInstance()
-	require.Equal(t, 1, len(runtimeCtx.instanceStack))
+	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
 }
 
 func TestRuntimeContext_PushPopState(t *testing.T) {
@@ -247,7 +287,7 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	}
 	runtimeCtx.InitStateFromContractCallInput(input)
 
-	runtimeCtx.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
@@ -269,11 +309,11 @@ func TestRuntimeContext_PushPopState(t *testing.T) {
 	require.False(t, runtimeCtx.ReadOnly())
 	require.Nil(t, runtimeCtx.Arguments())
 
-	runtimeCtx.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
 	runtimeCtx.PushState()
 	require.Equal(t, 1, len(runtimeCtx.stateStack))
 
-	runtimeCtx.instance = &wasmer.WasmerInstance{}
+	runtimeCtx.iTracker.instance = &wasmer.WasmerInstance{}
 	runtimeCtx.PushState()
 	require.Equal(t, 2, len(runtimeCtx.stateStack))
 
@@ -291,16 +331,17 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 
 	host := &contextmock.VMHostMock{}
 
-	testVmType := []byte("type")
+	testVMType := []byte("type")
 	exec, err := wasmer.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks: vmhooks.NewVMHooksImpl(host),
 	})
 	require.Nil(t, err)
 	runtime, _ := NewRuntimeContext(
 		host,
-		testVmType,
+		testVMType,
 		builtInFunctions.NewBuiltInFunctionContainer(),
 		exec,
+		defaultHasher,
 	)
 
 	vmInput := vmcommon.VMInput{
@@ -319,7 +360,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.instance = &wasmer.WasmerInstance{}
+	runtime.iTracker.instance = &wasmer.WasmerInstance{}
 	runtime.PushState()
 	input.RecipientAddr = beta
 	runtime.InitStateFromContractCallInput(input)
@@ -327,7 +368,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.instance = &wasmer.WasmerInstance{}
+	runtime.iTracker.instance = &wasmer.WasmerInstance{}
 	runtime.PushState()
 	input.RecipientAddr = gamma
 	runtime.InitStateFromContractCallInput(input)
@@ -335,7 +376,7 @@ func TestRuntimeContext_CountContractInstancesOnStack(t *testing.T) {
 	require.Equal(t, uint64(1), runtime.CountSameContractInstancesOnStack(beta))
 	require.Equal(t, uint64(0), runtime.CountSameContractInstancesOnStack(gamma))
 
-	runtime.instance = &wasmer.WasmerInstance{}
+	runtime.iTracker.instance = &wasmer.WasmerInstance{}
 	runtime.PushState()
 	input.RecipientAddr = alpha
 	runtime.InitStateFromContractCallInput(input)
@@ -403,7 +444,7 @@ func TestRuntimeContext_Instance(t *testing.T) {
 	require.True(t, hasInitFunction)
 
 	runtimeCtx.ClearWarmInstanceCache()
-	require.Nil(t, runtimeCtx.instance)
+	require.Nil(t, runtimeCtx.iTracker.instance)
 }
 
 func TestRuntimeContext_Breakpoints(t *testing.T) {
@@ -493,12 +534,12 @@ func TestRuntimeContext_MemLoadStoreOk(t *testing.T) {
 	require.Equal(t, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, memContents)
 
 	pageSize := uint32(65536)
-	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
+	require.Equal(t, 2*pageSize, runtimeCtx.iTracker.instance.MemLength())
 
 	memContents = []byte("test data")
 	err = memStore(runtimeCtx, 10, memContents)
 	require.Nil(t, err)
-	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
+	require.Equal(t, 2*pageSize, runtimeCtx.iTracker.instance.MemLength())
 
 	memContents, err = memLoad(runtimeCtx, 10, 10)
 	require.Nil(t, err)
@@ -518,13 +559,10 @@ func TestRuntimeContext_MemoryIsBlank(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	err = runtimeCtx.instance.MemGrow(30)
-	require.Nil(t, err)
-
-	totalPages := 32
-	memoryContents := runtimeCtx.instance.MemDump()
-	require.Equal(t, runtimeCtx.instance.MemLength(), uint32(len(memoryContents)))
-	require.Equal(t, totalPages*vmhost.WASMPageSize, len(memoryContents))
+	totalPages := 2
+	memoryContents := runtimeCtx.iTracker.instance.MemDump()
+	require.Equal(t, runtimeCtx.iTracker.instance.MemLength(), uint32(len(memoryContents)))
+	require.Equal(t, totalPages*int(vmhost.WASMPageSize), len(memoryContents))
 
 	for i, value := range memoryContents {
 		if value != byte(0) {
@@ -557,7 +595,7 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 	require.Nil(t, memContents)
 
 	// Offset too larget
-	offset = int32(runtimeCtx.instance.MemLength() + 1)
+	offset = int32(runtimeCtx.iTracker.instance.MemLength() + 1)
 	length = 10
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
@@ -572,24 +610,24 @@ func TestRuntimeContext_MemLoadCases(t *testing.T) {
 
 	// Requested end too large
 	memContents = []byte("test data")
-	offset = int32(runtimeCtx.instance.MemLength() - 9)
+	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 9)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
-	offset = int32(runtimeCtx.instance.MemLength() - 9)
+	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 9)
 	length = 9
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte("test data"), memContents)
 
-	offset = int32(runtimeCtx.instance.MemLength() - 8)
+	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 8)
 	length = 9
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
 	require.Equal(t, []byte{'e', 's', 't', ' ', 'd', 'a', 't', 'a', 0}, memContents)
 
 	// Zero length
-	offset = int32(runtimeCtx.instance.MemLength() - 8)
+	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 8)
 	length = 0
 	memContents, err = memLoad(runtimeCtx, offset, length)
 	require.Nil(t, err)
@@ -609,8 +647,7 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
 	require.Nil(t, err)
 
-	pageSize := uint32(65536)
-	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
+	require.Equal(t, 2*vmhost.WASMPageSize, runtimeCtx.iTracker.instance.MemLength())
 
 	// Bad lower bounds
 	memContents := []byte("test data")
@@ -618,24 +655,9 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	err = memStore(runtimeCtx, offset, memContents)
 	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
 
-	// Memory growth
-	require.Equal(t, 2*pageSize, runtimeCtx.instance.MemLength())
-	offset = int32(runtimeCtx.instance.MemLength() - 4)
-	err = memStore(runtimeCtx, offset, memContents)
-	require.Nil(t, err)
-	require.Equal(t, 3*pageSize, runtimeCtx.instance.MemLength())
-
-	// Bad upper bounds - forcing the Wasmer memory to grow more than a page at a
-	// time is not allowed
-	memContents = make([]byte, pageSize+100)
-	offset = int32(runtimeCtx.instance.MemLength() - 50)
-	err = memStore(runtimeCtx, offset, memContents)
-	require.True(t, errors.Is(err, executor.ErrMemoryBadBounds))
-	require.Equal(t, 4*pageSize, runtimeCtx.instance.MemLength())
-
 	// Write something, then overwrite, then overwrite with empty byte slice
 	memContents = []byte("this is a message")
-	offset = int32(runtimeCtx.instance.MemLength() - 100)
+	offset = int32(runtimeCtx.iTracker.instance.MemLength() - 100)
 	err = memStore(runtimeCtx, offset, memContents)
 	require.Nil(t, err)
 
@@ -658,6 +680,38 @@ func TestRuntimeContext_MemStoreCases(t *testing.T) {
 	memContents, err = memLoad(runtimeCtx, offset, 17)
 	require.Nil(t, err)
 	require.Equal(t, []byte("this is something"), memContents)
+}
+
+func TestRuntimeContext_MemStoreForbiddenGrowth(t *testing.T) {
+	host := InitializeVMAndWasmer()
+	runtimeCtx := makeDefaultRuntimeContext(t, host)
+	defer runtimeCtx.ClearWarmInstanceCache()
+
+	runtimeCtx.SetMaxInstanceStackSize(1)
+
+	gasLimit := uint64(100000000)
+	path := counterWasmCode
+	contractCode := vmhost.GetSCCode(path)
+	err := runtimeCtx.StartWasmerInstance(contractCode, gasLimit, false)
+	require.Nil(t, err)
+
+	instance := runtimeCtx.iTracker.instance
+	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+
+	memContents := []byte("test data")
+
+	// Memory growth via MemStore forbidden
+	offset := int32(instance.MemLength() - 4)
+	err = memStore(runtimeCtx, offset, memContents)
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBoundsUpper))
+	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
+
+	// Memory growth via MemStore forbidden
+	memContents = make([]byte, vmhost.WASMPageSize+100)
+	offset = int32(instance.MemLength() - 50)
+	err = memStore(runtimeCtx, offset, memContents)
+	require.True(t, errors.Is(err, executor.ErrMemoryBadBoundsUpper))
+	require.Equal(t, 2*vmhost.WASMPageSize, instance.MemLength())
 }
 
 func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
@@ -684,7 +738,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Push the current instance down the instance stack
 	runtimeCtx.pushInstance()
-	require.Equal(t, 1, len(runtimeCtx.instanceStack))
+	require.Equal(t, 1, len(runtimeCtx.iTracker.instanceStack))
 
 	// Create a new Wasmer instance
 	contractCode = vmhost.GetSCCode(path)
@@ -702,7 +756,7 @@ func TestRuntimeContext_MemLoadStoreVsInstanceStack(t *testing.T) {
 
 	// Pop the initial instance from the stack, making it the 'current instance'
 	runtimeCtx.popInstance()
-	require.Equal(t, 0, len(runtimeCtx.instanceStack))
+	require.Equal(t, 0, len(runtimeCtx.iTracker.instanceStack))
 
 	// Check whether the previously-written string "test data1" is still in the
 	// memory of the initial instance

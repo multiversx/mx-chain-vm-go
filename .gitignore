@@ -14,13 +14,10 @@ bin/golangci-lint
 
 /vendor
 
-/arwen/debug
-/cmd/arwen/arwen
+/vmhost/debug
 /vmserver/testdata/db
 /cmd/vmserver/vmserver
 /cmd/vmserver/db
-/ipc/tests/testdata/streams
-/ipc/tests/arwen
 
 # VSCode settings
 .vscode
@@ -40,4 +37,4 @@ test/contracts/**/wasm/target
 **/.DS_Store
 
 **/Cargo.lock
-arwen/**/__debug_bin
+vmhost/**/__debug_bin

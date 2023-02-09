@@ -3,6 +3,7 @@ package vmserver
 import (
 	"math/big"
 
+	"github.com/multiversx/mx-chain-core-go/hashing/blake2b"
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-common-go/parsers"
@@ -12,6 +13,8 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost/hostCore"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/mock"
 )
+
+var defaultHasher = blake2b.NewBlake2b()
 
 type worldDataModel struct {
 	ID       string
@@ -64,6 +67,7 @@ func getHostParameters() *vmhost.VMHostParameters {
 		EpochNotifier:            &mock.EpochNotifierStub{},
 		EnableEpochsHandler:      worldmock.EnableEpochsHandlerStubNoFlags(),
 		WasmerSIGSEGVPassthrough: false,
+		Hasher:                   defaultHasher,
 	}
 }
 
