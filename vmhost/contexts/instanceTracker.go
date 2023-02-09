@@ -66,7 +66,6 @@ func NewInstanceTracker() (*instanceTracker, error) {
 
 // InitState initializes the internal instanceTracker state
 func (tracker *instanceTracker) InitState() {
-	tracker.numRunningInstances = 0
 	tracker.instance = nil
 	tracker.codeHash = make([]byte, 0)
 	tracker.instances = make(map[string]executor.Instance)
@@ -357,7 +356,7 @@ func (tracker *instanceTracker) CheckInstances() error {
 	}
 
 	for id, instance := range tracker.instances {
-		if instance.AlreadyCleaned() {
+		if instance.IsAlreadyCleaned() {
 			continue
 		}
 		_, isWarm := warmInstanceCacheByID[id]

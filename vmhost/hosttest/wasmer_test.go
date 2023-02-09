@@ -9,6 +9,7 @@ import (
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
+	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -240,6 +241,10 @@ func TestWASMMemories_MultipleMemories(t *testing.T) {
 }
 
 func TestWASMMemories_ResetContent(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("test only relevant with warm instances")
+	}
+
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -257,7 +262,7 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 		instance := extractSingleTrackedInstanceFromHost(verify.T, host)
 		require.NotNil(verify.T, instance)
 		memory := instance.MemDump()
-		require.Len(verify.T, memory, 1*vmhost.WASMPageSize)
+		require.Len(verify.T, memory, int(1*vmhost.WASMPageSize))
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
 
@@ -266,6 +271,10 @@ func TestWASMMemories_ResetContent(t *testing.T) {
 }
 
 func TestWASMMemories_ResetDataInitializers(t *testing.T) {
+	if !contexts.WarmInstancesEnabled {
+		t.Skip("test only relevant with warm instances")
+	}
+
 	testCase := test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).
@@ -285,7 +294,7 @@ func TestWASMMemories_ResetDataInitializers(t *testing.T) {
 		require.NotNil(verify.T, instance)
 
 		memory := instance.MemDump()
-		require.Len(verify.T, memory, 1*vmhost.WASMPageSize)
+		require.Len(verify.T, memory, int(1*vmhost.WASMPageSize))
 		require.Equal(verify.T, keyword, string(memory[keywordOffset:keywordOffset+len(keyword)]))
 	}
 

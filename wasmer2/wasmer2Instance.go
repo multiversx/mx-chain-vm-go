@@ -57,6 +57,11 @@ func (instance *Wasmer2Instance) Clean() bool {
 	return false
 }
 
+// IsAlreadyCleaned returns the internal field AlreadyClean
+func (instance *Wasmer2Instance) IsAlreadyCleaned() bool {
+	return instance.AlreadyClean
+}
+
 // SetGasLimit sets the gas limit for the instance
 func (instance *Wasmer2Instance) SetGasLimit(gasLimit uint64) {
 	cWasmerInstanceSetGasLimit(instance.cgoInstance, gasLimit)
@@ -240,9 +245,4 @@ func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
 // GetVMHooksPtr returns the VM hooks pointer
 func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
 	return uintptr(0)
-}
-
-// AlreadyCleaned returns the internal field AlreadyClean
-func (instance *Wasmer2Instance) AlreadyCleaned() bool {
-	return instance.AlreadyClean
 }

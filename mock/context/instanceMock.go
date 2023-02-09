@@ -12,11 +12,15 @@ import (
 
 var _ executor.Instance = (*InstanceMock)(nil)
 
+type mockMethod func() *InstanceMock
+
 // InstanceMock is a mock for Wasmer instances; it allows creating mock smart
 // contracts within tests, without needing actual WASM smart contracts.
 type InstanceMock struct {
 	Code            []byte
 	Exports         wasmer.ExportsMap
+	DefaultErrors   map[string]error
+	Methods         map[string]mockMethod
 	Points          uint64
 	Data            executor.VMHooks
 	GasLimit        uint64
@@ -33,27 +37,44 @@ func NewInstanceMock(code []byte) *InstanceMock {
 	return &InstanceMock{
 		Code:            code,
 		Exports:         make(wasmer.ExportsMap),
+		DefaultErrors:   make(map[string]error),
+		Methods:         make(map[string]mockMethod),
 		Points:          0,
 		Data:            nil,
 		GasLimit:        0,
 		BreakpointValue: 0,
 		Memory:          NewMemoryMock(),
+		AlreadyClean:    false,
 	}
 }
 
 // AddMockMethod adds the provided function as a mocked method to the instance under the specified name.
-func (instance *InstanceMock) AddMockMethod(name string, method func() *InstanceMock) {
-	wrappedMethod := func(...interface{}) (wasmer.Value, error) {
-		instance := method()
-		breakpoint := vmhost.BreakpointValue(instance.GetBreakpointValue())
-		var err error
-		if breakpoint != vmhost.BreakpointNone {
-			err = errors.New(breakpoint.String())
-		}
-		return wasmer.Void(), err
-	}
+func (instance *InstanceMock) AddMockMethod(name string, method mockMethod) {
+	instance.AddMockMethodWithError(name, method, nil)
+}
 
-	instance.Exports[name] = wrappedMethod
+// AddMockMethodWithError adds the provided function as a mocked method to the instance under the specified name and returns an error
+func (instance *InstanceMock) AddMockMethodWithError(name string, method mockMethod, err error) {
+	instance.Methods[name] = method
+	instance.DefaultErrors[name] = err
+	instance.Exports[name] = &wasmer.ExportedFunctionCallInfo{}
+}
+
+// CallFunction mocked method
+func (instance *InstanceMock) CallFunction(funcName string) error {
+	err := instance.DefaultErrors[funcName]
+	method := instance.Methods[funcName]
+	newInstance := method()
+	if vmhost.BreakpointValue(instance.GetBreakpointValue()) != vmhost.BreakpointNone {
+		var errMsg string
+		if vmhost.BreakpointValue(instance.GetBreakpointValue()) == vmhost.BreakpointAsyncCall {
+			errMsg = "breakpoint"
+		} else {
+			errMsg = newInstance.Host.Output().GetVMOutput().ReturnMessage
+		}
+		err = errors.New(errMsg)
+	}
+	return err
 }
 
 // GetPointsUsed mocked method
@@ -92,8 +113,8 @@ func (instance *InstanceMock) Clean() bool {
 	return true
 }
 
-// AlreadyCleaned mocked method
-func (instance *InstanceMock) AlreadyCleaned() bool {
+// IsAlreadyCleaned mocked method
+func (instance *InstanceMock) IsAlreadyCleaned() bool {
 	return instance.AlreadyClean
 }
 
@@ -102,20 +123,10 @@ func (instance *InstanceMock) Reset() bool {
 	return true
 }
 
-// CallFunction mocked method
-func (instance *InstanceMock) CallFunction(functionName string) error {
-	if function, ok := instance.Exports[functionName]; ok {
-		_, err := function()
-		return err
-	}
-
-	return executor.ErrFuncNotFound
-}
-
 // HasFunction mocked method
-func (instance *InstanceMock) HasFunction(functionName string) bool {
-	_, ok := instance.Exports[functionName]
-	return ok
+func (instance *InstanceMock) HasFunction(name string) bool {
+	_, has := instance.Methods[name]
+	return has
 }
 
 // GetFunctionNames mocked method

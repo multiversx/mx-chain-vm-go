@@ -56,12 +56,19 @@ func (error *ExportedFunctionError) Error() string {
 	return error.message
 }
 
-// types used in the wasmer instances management process
-type (
-	ExportedFunctionCallback func(...interface{}) (Value, error)
-	ExportsMap               map[string]ExportedFunctionCallback
-	ExportSignaturesMap      map[string]*ExportedFunctionSignature
-)
+// ExportsMap is a map of names to ExportedFunctionCallInfo values
+type ExportsMap map[string]*ExportedFunctionCallInfo
+
+// ExportSignaturesMap is a map of names to ExportedFunctionSignatures
+type ExportSignaturesMap map[string]*ExportedFunctionSignature
+
+// ExportedFunctionCallInfo contains information required to call an exported WASM function
+type ExportedFunctionCallInfo struct {
+	FuncName       string
+	InputArity     cUint32T
+	InputSignature []cWasmerValueTag
+	OutputArity    cUint32T
+}
 
 // WasmerInstance represents a WebAssembly instance.
 type WasmerInstance struct {
@@ -138,6 +145,8 @@ func NewInstanceWithOptions(
 		cInstanceContext := cWasmerInstanceContextGet(cInstance)
 		instance.InstanceCtx = IntoInstanceContextDirect(cInstanceContext)
 	}
+
+	logWasmer.Trace("new instance created", "id", instance.ID())
 	return instance, err
 }
 
@@ -225,8 +234,8 @@ func (instance *WasmerInstance) Clean() bool {
 	return false
 }
 
-// AlreadyCleaned returns the internal field AlreadyClean
-func (instance *WasmerInstance) AlreadyCleaned() bool {
+// IsAlreadyCleaned returns the internal field AlreadyClean
+func (instance *WasmerInstance) IsAlreadyCleaned() bool {
 	return instance.AlreadyClean
 }
 
@@ -284,12 +293,12 @@ func (instance *WasmerInstance) IsFunctionImported(name string) bool {
 
 // CallFunction executes given function from loaded contract.
 func (instance *WasmerInstance) CallFunction(functionName string) error {
-	if function, ok := instance.exports[functionName]; ok {
-		_, err := function()
-		return err
+	callInfo, found := instance.exports[functionName]
+	if !found {
+		return executor.ErrFuncNotFound
 	}
 
-	return executor.ErrFuncNotFound
+	return callExportedFunction(instance.instance, callInfo)
 }
 
 // HasFunction checks if loaded contract has a function (endpoint) with given name.

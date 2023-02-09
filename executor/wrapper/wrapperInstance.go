@@ -57,10 +57,10 @@ func (inst *WrapperInstance) Clean() bool {
 	return result
 }
 
-// AlreadyCleaned wraps the call to the underlying instance.
-func (inst *WrapperInstance) AlreadyCleaned() bool {
-	result := inst.wrappedInstance.AlreadyCleaned()
-	inst.logger.LogExecutorEvent(fmt.Sprintf("AlreadyCleaned: %t", result))
+// IsAlreadyCleaned wraps the call to the underlying instance.
+func (inst *WrapperInstance) IsAlreadyCleaned() bool {
+	result := inst.wrappedInstance.IsAlreadyCleaned()
+	inst.logger.LogExecutorEvent(fmt.Sprintf("IsAlreadyCleaned: %t", result))
 	return result
 }
 
