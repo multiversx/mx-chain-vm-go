@@ -11,7 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ = (executor.Instance)((*Wasmer2Instance)(nil))
+var _ executor.Instance = (*Wasmer2Instance)(nil)
 
 // Wasmer2Instance represents a WebAssembly instance.
 type Wasmer2Instance struct {

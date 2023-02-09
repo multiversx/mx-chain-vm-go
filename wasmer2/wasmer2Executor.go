@@ -656,8 +656,3 @@ func (wasmerExecutor *Wasmer2Executor) extractOpcodeCost(wasmOps *executor.WASMO
 		V128Xor:                   wasmOps.V128Xor,
 	}
 }
-
-// IsInterfaceNil returns true if there is no value under the interface
-func (wasmerExecutor *Wasmer2Executor) IsInterfaceNil() bool {
-	return wasmerExecutor == nil
-}

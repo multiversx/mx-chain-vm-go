@@ -64,9 +64,7 @@ func initializeVMAndWasmerAsyncContext() (*contextmock.VMHostMock, *worldmock.Mo
 	world := worldmock.NewMockWorld()
 	host.BlockchainContext, _ = NewBlockchainContext(host, world)
 
-	mockWasmerInstance = &contextmock.InstanceMock{
-		Exports: make(wasmer.ExportsMap),
-	}
+	mockWasmerInstance = contextmock.NewInstanceMock(nil)
 	exec, _ := wasmer2.ExecutorFactory().CreateExecutor(executor.ExecutorFactoryArgs{
 		VMHooks:     vmhooks.NewVMHooksImpl(host),
 		OpcodeCosts: gasCostConfig.WASMOpcodeCost,
