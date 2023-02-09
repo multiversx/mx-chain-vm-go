@@ -40,7 +40,7 @@ func WriteRustWasmerMeteringHelpers(out *eiGenWriter) {
 
 func writeFnGetLocalCost(out *eiGenWriter) {
 	out.WriteString("pub fn get_local_cost(opcode_cost: &OpcodeCost) -> u32 {\n")
-	out.WriteString("	opcode_cost.opcode_" + localCostName + "\n")
+	out.WriteString("    opcode_cost.opcode_" + localCostName + "\n")
 	out.WriteString("}\n\n")
 }
 
@@ -48,7 +48,7 @@ func writeFnGetOpcodeCost(out *eiGenWriter, content string) {
 	out.WriteString("pub fn get_opcode_cost(op: &Operator, opcode_cost: &OpcodeCost) -> Option<u32> {\n")
 	out.WriteString("    match op {\n")
 	out.WriteString(content)
-	out.WriteString("		_ => None,\n")
+	out.WriteString("        _ => None,\n")
 	out.WriteString("    }\n")
 	out.WriteString("}\n")
 }
