@@ -18,7 +18,7 @@ func WriteWasmer2OpcodeCost(out *eiGenWriter) {
 	out.WriteString("package wasmer2\n\n")
 	out.WriteString("type OpcodeCost struct {\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes_short.txt")
 	if err != nil {
 		panic(err)
 	}

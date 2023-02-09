@@ -19,7 +19,7 @@ func WriteRustOpcodeCost(out *eiGenWriter) {
 	out.WriteString("#[derive(Clone, Debug, Default)]\n")
 	out.WriteString("pub struct OpcodeCost {\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes_short.txt")
 	if err != nil {
 		panic(err)
 	}
