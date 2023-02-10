@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestCreateTemplateConfig holds the data to build a contract creation test
-type TestCreateTemplateConfig struct {
+// InstanceCreatorTestTemplate holds the data to build a contract creation test
+type InstanceCreatorTestTemplate struct {
 	t                        *testing.T
 	address                  []byte
 	input                    *vmcommon.ContractCreateInput
@@ -27,8 +27,8 @@ type TestCreateTemplateConfig struct {
 }
 
 // BuildInstanceCreatorTest starts the building process for a contract creation test
-func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
-	return &TestCreateTemplateConfig{
+func BuildInstanceCreatorTest(t *testing.T) *InstanceCreatorTestTemplate {
+	return &InstanceCreatorTestTemplate{
 		t:                        t,
 		setup:                    func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
 		gasSchedule:              config.MakeGasMapForTests(),
@@ -39,66 +39,66 @@ func BuildInstanceCreatorTest(t *testing.T) *TestCreateTemplateConfig {
 }
 
 // WithExecutor allows caller to choose the Executor type.
-func (callerTest *TestCreateTemplateConfig) WithExecutor(executorFactory executor.ExecutorAbstractFactory) *TestCreateTemplateConfig {
-	callerTest.overrideExecutorFactory = executorFactory
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithExecutor(executorFactory executor.ExecutorAbstractFactory) *InstanceCreatorTestTemplate {
+	template.overrideExecutorFactory = executorFactory
+	return template
 }
 
 // WithInput provides the ContractCreateInput for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithInput(input *vmcommon.ContractCreateInput) *TestCreateTemplateConfig {
-	callerTest.input = input
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithInput(input *vmcommon.ContractCreateInput) *InstanceCreatorTestTemplate {
+	template.input = input
+	return template
 }
 
 // WithAddress provides the address for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithAddress(address []byte) *TestCreateTemplateConfig {
-	callerTest.address = address
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithAddress(address []byte) *InstanceCreatorTestTemplate {
+	template.address = address
+	return template
 }
 
 // WithSetup provides the setup function for a TestCreateTemplateConfig
-func (callerTest *TestCreateTemplateConfig) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *TestCreateTemplateConfig {
-	callerTest.setup = setup
-	return callerTest
+func (template *InstanceCreatorTestTemplate) WithSetup(setup func(vmhost.VMHost, *contextmock.BlockchainHookStub)) *InstanceCreatorTestTemplate {
+	template.setup = setup
+	return template
 }
 
 // AndAssertResults provides the function that will aserts the results
-func (callerTest *TestCreateTemplateConfig) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	callerTest.runTest(true)
+func (template *InstanceCreatorTestTemplate) AndAssertResults(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	template.assertResults = assertResults
+	template.runTest(true)
 }
 
 // AndAssertResultsWithoutReset provides the function that will aserts the results
-func (callerTest *TestCreateTemplateConfig) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
-	callerTest.assertResults = assertResults
-	callerTest.runTest(false)
+func (template *InstanceCreatorTestTemplate) AndAssertResultsWithoutReset(assertResults func(*contextmock.BlockchainHookStub, *VMOutputVerifier)) {
+	template.assertResults = assertResults
+	template.runTest(false)
 }
 
-func (callerTest *TestCreateTemplateConfig) runTest(reset bool) {
-	if callerTest.blockchainHookStub == nil {
-		callerTest.blockchainHookStub = callerTest.createBlockchainStub()
+func (template *InstanceCreatorTestTemplate) runTest(reset bool) {
+	if template.blockchainHookStub == nil {
+		template.blockchainHookStub = template.createBlockchainStub()
 	}
-	if callerTest.host == nil {
-		callerTest.host = callerTest.createTestVMVM()
-		callerTest.setup(callerTest.host, callerTest.blockchainHookStub)
+	if template.host == nil {
+		template.host = template.createTestVMVM()
+		template.setup(template.host, template.blockchainHookStub)
 	}
 	defer func() {
 		if reset {
-			callerTest.host.Reset()
+			template.host.Reset()
 		}
 
 		// Extra verification for instance leaks
-		err := callerTest.host.Runtime().ValidateInstances()
-		require.Nil(callerTest.t, err)
+		err := template.host.Runtime().ValidateInstances()
+		require.Nil(template.t, err)
 	}()
 
-	vmOutput, err := callerTest.host.RunSmartContractCreate(callerTest.input)
+	vmOutput, err := template.host.RunSmartContractCreate(template.input)
 
-	verify := NewVMOutputVerifier(callerTest.t, vmOutput, err)
-	callerTest.assertResults(callerTest.blockchainHookStub, verify)
+	verify := NewVMOutputVerifier(template.t, vmOutput, err)
+	template.assertResults(template.blockchainHookStub, verify)
 }
 
-func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.BlockchainHookStub {
+func (template *InstanceCreatorTestTemplate) createBlockchainStub() *contextmock.BlockchainHookStub {
 	stubBlockchainHook := &contextmock.BlockchainHookStub{}
 	stubBlockchainHook.GetUserAccountCalled = func(address []byte) (vmcommon.UserAccountHandler, error) {
 		return &contextmock.StubAccount{
@@ -106,16 +106,16 @@ func (callerTest *TestCreateTemplateConfig) createBlockchainStub() *contextmock.
 		}, nil
 	}
 	stubBlockchainHook.NewAddressCalled = func(creatorAddress []byte, nonce uint64, vmType []byte) ([]byte, error) {
-		return callerTest.address, nil
+		return template.address, nil
 	}
 	return stubBlockchainHook
 }
 
-func (callerTest *TestCreateTemplateConfig) createTestVMVM() vmhost.VMHost {
-	return NewTestHostBuilder(callerTest.t).
-		WithExecutorFactory(callerTest.overrideExecutorFactory).
-		WithBlockchainHook(callerTest.blockchainHookStub).
-		WithGasSchedule(callerTest.gasSchedule).
-		WithWasmerSIGSEGVPassthrough(callerTest.wasmerSIGSEGVPassthrough).
+func (template *InstanceCreatorTestTemplate) createTestVMVM() vmhost.VMHost {
+	return NewTestHostBuilder(template.t).
+		WithExecutorFactory(template.overrideExecutorFactory).
+		WithBlockchainHook(template.blockchainHookStub).
+		WithGasSchedule(template.gasSchedule).
+		WithWasmerSIGSEGVPassthrough(template.wasmerSIGSEGVPassthrough).
 		Build()
 }
