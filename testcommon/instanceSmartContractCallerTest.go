@@ -6,6 +6,7 @@ import (
 	vmcommon "github.com/multiversx/mx-chain-vm-common-go"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/stretchr/testify/require"
@@ -53,6 +54,7 @@ type InstancesTestTemplate struct {
 	assertResults      func(vmhost.VMHost, *contextmock.BlockchainHookStub, *VMOutputVerifier)
 	host               vmhost.VMHost
 	blockchainHookStub *contextmock.BlockchainHookStub
+	executorLogger     executorwrapper.ExecutorLogger
 	executorFactory    executor.ExecutorAbstractFactory
 }
 
@@ -64,7 +66,8 @@ func BuildInstanceCallTest(tb testing.TB) *InstancesTestTemplate {
 			useMocks:                 false,
 			wasmerSIGSEGVPassthrough: false,
 		},
-		setup: func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
+		setup:          func(vmhost.VMHost, *contextmock.BlockchainHookStub) {},
+		executorLogger: nil,
 	}
 }
 
@@ -89,6 +92,12 @@ func (callerTest *InstancesTestTemplate) WithSetup(setup func(vmhost.VMHost, *co
 // WithGasSchedule provides gas schedule for the test
 func (callerTest *InstancesTestTemplate) WithGasSchedule(gasSchedule config.GasScheduleMap) *InstancesTestTemplate {
 	callerTest.gasSchedule = gasSchedule
+	return callerTest
+}
+
+// WithExecutorLogs sets an ExecutorLogger
+func (callerTest *InstancesTestTemplate) WithExecutorLogs(executorLogger executorwrapper.ExecutorLogger) *InstancesTestTemplate {
+	callerTest.executorLogger = executorLogger
 	return callerTest
 }
 
@@ -123,6 +132,12 @@ func (callerTest *InstancesTestTemplate) AndAssertResultsWithoutReset(assertResu
 
 func runTestWithInstances(callerTest *InstancesTestTemplate, reset bool) {
 	if callerTest.host == nil {
+		if callerTest.executorLogger != nil {
+			callerTest.executorFactory = executorwrapper.NewWrappedExecutorFactory(
+				callerTest.executorLogger,
+				callerTest.executorFactory)
+		}
+
 		callerTest.blockchainHookStub = BlockchainHookStubForContracts(callerTest.contracts)
 		callerTest.host = NewTestHostBuilder(callerTest.tb).
 			WithExecutorFactory(callerTest.executorFactory).

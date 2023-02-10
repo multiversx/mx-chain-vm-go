@@ -18,7 +18,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/contexts"
 	"github.com/multiversx/mx-chain-vm-go/vmhost/vmhooks"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 )
 
 var log = logger.GetOrCreate("vm/host")
@@ -30,10 +30,10 @@ var MaximumRuntimeInstanceStackSize = uint64(10)
 
 var _ vmhost.VMHost = (*vmHost)(nil)
 
-const minExecutionTimeout = time.Second
+const minExecutionTimeout = time.Minute
 const internalVMErrors = "internalVMErrors"
 
-var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer.ExecutorFactory()
+var defaultVMExecutorFactory executor.ExecutorAbstractFactory = wasmer2.ExecutorFactory()
 
 // vmHost implements HostContext interface.
 type vmHost struct {

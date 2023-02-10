@@ -11,7 +11,7 @@ import (
 	"github.com/multiversx/mx-chain-vm-go/executor"
 )
 
-var _ = (executor.Instance)((*Wasmer2Instance)(nil))
+var _ executor.Instance = (*Wasmer2Instance)(nil)
 
 // Wasmer2Instance represents a WebAssembly instance.
 type Wasmer2Instance struct {
@@ -21,7 +21,7 @@ type Wasmer2Instance struct {
 	// The exported memory of a WebAssembly instance.
 	memory Wasmer2Memory
 
-	AlreadyCleaned bool
+	AlreadyClean bool
 }
 
 func emptyInstance() *Wasmer2Instance {
@@ -39,22 +39,27 @@ func newInstance(c_instance *cWasmerInstanceT) (*Wasmer2Instance, error) {
 
 // Clean cleans instance
 func (instance *Wasmer2Instance) Clean() bool {
-	if instance.AlreadyCleaned {
+	logWasmer2.Trace("cleaning instance", "id", instance.ID())
+	if instance.AlreadyClean {
+		logWasmer2.Trace("clean: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	if instance.cgoInstance != nil {
 		cWasmerInstanceDestroy(instance.cgoInstance)
 
-		instance.AlreadyCleaned = true
+		instance.AlreadyClean = true
+		logWasmer2.Trace("cleaned instance", "id", instance.ID())
+
+		return true
 	}
 
-	return true
+	return false
 }
 
 // IsAlreadyCleaned returns the internal field AlreadyClean
 func (instance *Wasmer2Instance) IsAlreadyCleaned() bool {
-	return instance.AlreadyCleaned
+	return instance.AlreadyClean
 }
 
 // SetGasLimit sets the gas limit for the instance
@@ -210,18 +215,22 @@ func (instance *Wasmer2Instance) MemDump() []byte {
 }
 
 // Id returns an identifier for the instance, unique at runtime
-func (instance *Wasmer2Instance) Id() string {
+func (instance *Wasmer2Instance) ID() string {
 	return fmt.Sprintf("%p", instance.cgoInstance)
 }
 
 // Reset resets the instance memories and globals
 func (instance *Wasmer2Instance) Reset() bool {
-	if instance.AlreadyCleaned {
+	if instance.AlreadyClean {
+		logWasmer2.Trace("reset: already cleaned instance", "id", instance.ID())
 		return false
 	}
 
 	result := cWasmerInstanceReset(instance.cgoInstance)
-	return result == cWasmerOk
+	ok := result == cWasmerOk
+
+	logWasmer2.Trace("reset: warm instance", "id", instance.ID(), "ok", ok)
+	return ok
 }
 
 // IsInterfaceNil returns true if underlying object is nil
@@ -236,9 +245,4 @@ func (instance *Wasmer2Instance) SetVMHooksPtr(vmHooksPtr uintptr) {
 // GetVMHooksPtr returns the VM hooks pointer
 func (instance *Wasmer2Instance) GetVMHooksPtr() uintptr {
 	return uintptr(0)
-}
-
-// ID returns an identifier for the instance, unique at runtime
-func (instance *Wasmer2Instance) ID() string {
-	return fmt.Sprintf("%p", instance.cgoInstance)
 }

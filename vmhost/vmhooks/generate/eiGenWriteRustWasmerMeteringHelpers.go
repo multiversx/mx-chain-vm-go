@@ -15,7 +15,7 @@ func WriteRustWasmerMeteringHelpers(out *eiGenWriter) {
 	out.WriteString("\nuse multiversx_vm_executor::OpcodeCost;\n")
 	out.WriteString("use wasmer::wasmparser::Operator;\n\n")
 
-	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes.txt")
+	readFile, err := os.Open("generate/cmd/input/wasmer2_opcodes_short.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +31,7 @@ func WriteRustWasmerMeteringHelpers(out *eiGenWriter) {
 			// This operator doesn't really exist, so we skip it
 			continue
 		}
-		content += "        Operator::" + line + " { .. } => " + "opcode_cost.opcode_" + strings.ToLower(line) + ",\n"
+		content += "        Operator::" + line + " { .. } => " + "Some(opcode_cost.opcode_" + strings.ToLower(line) + "),\n"
 	}
 
 	writeFnGetLocalCost(out)
@@ -40,14 +40,15 @@ func WriteRustWasmerMeteringHelpers(out *eiGenWriter) {
 
 func writeFnGetLocalCost(out *eiGenWriter) {
 	out.WriteString("pub fn get_local_cost(opcode_cost: &OpcodeCost) -> u32 {\n")
-	out.WriteString("	opcode_cost.opcode_" + localCostName + "\n")
+	out.WriteString("    opcode_cost.opcode_" + localCostName + "\n")
 	out.WriteString("}\n\n")
 }
 
 func writeFnGetOpcodeCost(out *eiGenWriter, content string) {
-	out.WriteString("pub fn get_opcode_cost(op: &Operator, opcode_cost: &OpcodeCost) -> u32 {\n")
+	out.WriteString("pub fn get_opcode_cost(op: &Operator, opcode_cost: &OpcodeCost) -> Option<u32> {\n")
 	out.WriteString("    match op {\n")
 	out.WriteString(content)
+	out.WriteString("        _ => None,\n")
 	out.WriteString("    }\n")
 	out.WriteString("}\n")
 }

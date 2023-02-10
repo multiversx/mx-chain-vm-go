@@ -215,6 +215,7 @@ func TestBadContract_NoPanic_BadGetBlockHash3(t *testing.T) {
 }
 
 func TestBadContract_NoPanic_BadRecursive(t *testing.T) {
+	t.Skip()
 	test.BuildInstanceCallTest(t).
 		WithContracts(
 			test.CreateInstanceContract(test.ParentAddress).

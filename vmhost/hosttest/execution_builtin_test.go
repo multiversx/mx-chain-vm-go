@@ -13,11 +13,12 @@ import (
 	"github.com/multiversx/mx-chain-vm-common-go/builtInFunctions"
 	"github.com/multiversx/mx-chain-vm-go/config"
 	"github.com/multiversx/mx-chain-vm-go/executor"
+	executorwrapper "github.com/multiversx/mx-chain-vm-go/executor/wrapper"
 	contextmock "github.com/multiversx/mx-chain-vm-go/mock/context"
 	worldmock "github.com/multiversx/mx-chain-vm-go/mock/world"
 	test "github.com/multiversx/mx-chain-vm-go/testcommon"
 	"github.com/multiversx/mx-chain-vm-go/vmhost"
-	"github.com/multiversx/mx-chain-vm-go/wasmer"
+	"github.com/multiversx/mx-chain-vm-go/wasmer2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,7 +29,7 @@ func TestExecution_ExecuteOnDestContext_ESDTTransferWithoutExecute(t *testing.T)
 
 	world := worldmock.NewMockWorld()
 	host := test.NewTestHostBuilder(t).
-		WithExecutorFactory(wasmer.ExecutorFactory()).
+		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithBlockchainHook(world).
 		WithBuiltinFunctions().
 		WithGasSchedule(gasSchedule).
@@ -127,6 +128,8 @@ func TestExecution_ExecuteOnDestContext_MockBuiltinFunctions_Nonexistent(t *test
 			WithGasProvided(test.GasProvided).
 			WithFunction("callNonexistingBuiltin").
 			Build()).
+		WithExecutorLogs(executorwrapper.NewConsoleLogger()).
+		WithExecutorFactory(wasmer2.ExecutorFactory()).
 		WithSetup(func(host vmhost.VMHost, stubBlockchainHook *contextmock.BlockchainHookStub) {
 			stubBlockchainHook.ProcessBuiltInFunctionCalled = dummyProcessBuiltInFunction
 			host.SetBuiltInFunctionsContainer(getDummyBuiltinFunctionsContainer())

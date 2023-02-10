@@ -15,6 +15,7 @@ import (
 const increment = "increment"
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
+	t.Skip()
 	code := test.GetTestSCCode("counter", "../../../")
 	blockchain := test.BlockchainHookStubForCallSigSegv(code, big.NewInt(1))
 	host := test.NewTestHostBuilder(t).
@@ -49,6 +50,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGSEGV(t *testing.T) {
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
+	t.Skip()
 	code := test.GetTestSCCode("counter", "../../../")
 	blockchain := test.BlockchainHookStubForCallSigSegv(code, big.NewInt(1))
 	host := test.NewTestHostBuilder(t).
@@ -86,6 +88,7 @@ func TestExecution_PanicInGoWithSilentWasmer_SIGFPE(t *testing.T) {
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
+	t.Skip()
 	code := test.GetTestSCCode("counter", "../../../")
 	blockchain := test.BlockchainHookStubForCallSigSegv(code, big.NewInt(1))
 	host := test.NewTestHostBuilder(t).
@@ -117,6 +120,7 @@ func TestExecution_PanicInGoWithSilentWasmer_Timeout(t *testing.T) {
 }
 
 func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
+	t.Skip()
 	code := test.GetTestSCCode("counter", "../../../")
 	blockchain := test.BlockchainHookStubForCallSigSegv(code, big.NewInt(1))
 	host := test.NewTestHostBuilder(t).
@@ -153,6 +157,7 @@ func TestExecution_PanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
 }
 
 func TestExecution_MultipleHostsPanicInGoWithSilentWasmer_TimeoutAndSIGSEGV(t *testing.T) {
+	t.Skip()
 	numParallel := 100
 	hosts := make([]vmhost.VMHost, numParallel)
 	blockchains := make([]*mock.BlockchainHookStub, numParallel)

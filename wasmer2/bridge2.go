@@ -27,12 +27,10 @@ type cWasmerVmHookPointers = C.vm_exec_vm_hook_c_func_pointers
 
 const cWasmerOk = C.VM_EXEC_OK
 
-func cWasmerExecutorSetLogLevel(
-	executor *cWasmerExecutorT,
+func cWasmerSetLogLevel(
 	value uint64,
 ) cWasmerResultT {
-	return (cWasmerResultT)(C.vm_exec_executor_set_log_level(
-		(*C.vm_exec_executor_t)(executor),
+	return (cWasmerResultT)(C.vm_exec_set_log_level(
 		(C.uint64_t)(value),
 	))
 }
